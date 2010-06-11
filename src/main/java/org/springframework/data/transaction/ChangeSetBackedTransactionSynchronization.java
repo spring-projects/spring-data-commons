@@ -7,7 +7,7 @@ import org.springframework.data.support.ChangeSetBacked;
 import org.springframework.data.support.ChangeSetPersister;
 import org.springframework.transaction.support.TransactionSynchronization;
 
-public class ChangedSetBackedTransactionSynchronization implements TransactionSynchronization {
+public class ChangeSetBackedTransactionSynchronization implements TransactionSynchronization {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -17,7 +17,7 @@ public class ChangedSetBackedTransactionSynchronization implements TransactionSy
 
 	private int changeSetTxStatus = -1;
 
-	public ChangedSetBackedTransactionSynchronization(ChangeSetPersister<Object> changeSetPersister, ChangeSetBacked entity) {
+	public ChangeSetBackedTransactionSynchronization(ChangeSetPersister<Object> changeSetPersister, ChangeSetBacked entity) {
 		this.changeSetPersister = changeSetPersister;
 		this.entity = entity;
 	}
