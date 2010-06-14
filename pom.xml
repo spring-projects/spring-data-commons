@@ -4,9 +4,10 @@
 	<groupId>org.springframework.data</groupId>
 	<artifactId>common</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0.SNAPSHOT</version>
+	<version>1.0.0.CI-SNAPSHOT</version>
 	<name>Spring Data Common Interfaces and Implementations</name>
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.version>3.0.2.RELEASE</spring.version>
 		<slf4j.version>1.6.0</slf4j.version>
     </properties>
