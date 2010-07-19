@@ -1,4 +1,4 @@
-package org.springframework.data.serialization;
+package org.springframework.datastore.serialization;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
