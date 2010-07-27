@@ -9,6 +9,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.version>3.0.2.RELEASE</spring.version>
+		<aspectj.version>1.6.9</aspectj.version>
 		<slf4j.version>1.6.0</slf4j.version>
     </properties>
 	<repositories>
@@ -120,6 +121,11 @@
 			<artifactId>spring-tx</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${aspectj.version}</version>
+		</dependency>
         
         <dependency>
           <groupId>org.mockito</groupId>
@@ -133,6 +139,13 @@
           <version>1.8.0</version>
           <scope>test</scope>
         </dependency>
+
+		<!-- Java Persistence API (requires manual install) -->
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>persistence-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         
     </dependencies>
 	<build>
@@ -142,6 +155,43 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.1</version>
 				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<version>1.0</version>
+				<dependencies>
+					<!-- NB: You must use Maven 2.0.9 or above or these are ignored (see MNG-2972) -->
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjrt</artifactId>
+						<version>${aspectj.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjtools</artifactId>
+						<version>${aspectj.version}</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>test-compile</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outxml>true</outxml>
+					<aspectLibraries>
+						<aspectLibrary>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring-aspects</artifactId>
+						</aspectLibrary>
+					</aspectLibraries>
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>

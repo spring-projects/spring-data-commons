@@ -1,6 +1,7 @@
 <classpath>
-  <classpathentry kind="src" path="src/main/java" including="**/*.java"/>
+  <classpathentry kind="src" path="src/main/java" including="**/*.java|**/*.aj"/>
   <classpathentry kind="output" path="target/classes"/>
+  <classpathentry kind="var" path="M2_REPO/javax/persistence/persistence-api/1.0.0/persistence-api-1.0.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/aopalliance/aopalliance/1.0/aopalliance-1.0.jar" sourcepath="M2_REPO/aopalliance/aopalliance/1.0/aopalliance-1.0-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar" sourcepath="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/slf4j/jcl-over-slf4j/1.6.0/jcl-over-slf4j-1.6.0.jar" sourcepath="M2_REPO/org/slf4j/jcl-over-slf4j/1.6.0/jcl-over-slf4j-1.6.0-sources.jar"/>
@@ -13,7 +14,11 @@
   <classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-log4j12/1.6.0/slf4j-log4j12-1.6.0.jar" sourcepath="M2_REPO/org/slf4j/slf4j-log4j12/1.6.0/slf4j-log4j12-1.6.0-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/springframework/spring-aop/3.0.2.RELEASE/spring-aop-3.0.2.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-aop/3.0.2.RELEASE/spring-aop-3.0.2.RELEASE-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/springframework/spring-asm/3.0.2.RELEASE/spring-asm-3.0.2.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-asm/3.0.2.RELEASE/spring-asm-3.0.2.RELEASE-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/springframework/spring-aspects/3.0.2.RELEASE/spring-aspects-3.0.2.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-aspects/3.0.2.RELEASE/spring-aspects-3.0.2.RELEASE-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/springframework/spring-aspects/3.0.2.RELEASE/spring-aspects-3.0.2.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-aspects/3.0.2.RELEASE/spring-aspects-3.0.2.RELEASE-sources.jar">
+    <attributes>
+      <attribute name="org.eclipse.ajdt.aspectpath" value="true"/>
+    </attributes>
+  </classpathentry>
   <classpathentry kind="var" path="M2_REPO/org/springframework/spring-beans/3.0.2.RELEASE/spring-beans-3.0.2.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-beans/3.0.2.RELEASE/spring-beans-3.0.2.RELEASE-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/springframework/spring-context/3.0.2.RELEASE/spring-context-3.0.2.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-context/3.0.2.RELEASE/spring-context-3.0.2.RELEASE-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/springframework/spring-context-support/3.0.2.RELEASE/spring-context-support-3.0.2.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-context-support/3.0.2.RELEASE/spring-context-support-3.0.2.RELEASE-sources.jar"/>
@@ -22,4 +27,5 @@
   <classpathentry kind="var" path="M2_REPO/org/springframework/spring-test/3.0.2.RELEASE/spring-test-3.0.2.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-test/3.0.2.RELEASE/spring-test-3.0.2.RELEASE-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/springframework/spring-tx/3.0.2.RELEASE/spring-tx-3.0.2.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-tx/3.0.2.RELEASE/spring-tx-3.0.2.RELEASE-sources.jar"/>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
 </classpath>
