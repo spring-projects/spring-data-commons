@@ -1,6 +1,6 @@
 <projectDescription>
-  <name>data-commons</name>
-  <comment/>
+  <name>spring-data-commons</name>
+  <comment>Spring Data Common Interfaces and Implementations</comment>
   <projects/>
   <buildSpec>
     <buildCommand>
@@ -23,6 +23,9 @@
           <value>org.springframework.aspects</value>
         </dictionary>
       </arguments>
+    </buildCommand>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
     </buildCommand>
   </buildSpec>
   <natures>
