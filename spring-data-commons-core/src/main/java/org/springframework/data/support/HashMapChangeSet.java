@@ -23,27 +23,22 @@ public class HashMapChangeSet implements ChangeSet {
 		this(new HashMap<String, Object>());
 	}
 	
-	@Override
 	public void set(String key, Object o) {
 		values.put(key, o);
 	}
 
-	@Override
 	public String toString() {
 		return "HashMapChangeSet: values=[" + values + "]";
 	}
 
-	@Override
 	public Map<String, Object> getValues() {
 		return Collections.unmodifiableMap(values);
 	}
 
-	@Override
 	public Object removeProperty(String k) {
 		return this.values.remove(k);
 	}
 
-	@Override
 	public <T> T get(String key, Class<T> requiredClass, ConversionService conversionService) {
 		return conversionService.convert(values.get(key), requiredClass);
 	}

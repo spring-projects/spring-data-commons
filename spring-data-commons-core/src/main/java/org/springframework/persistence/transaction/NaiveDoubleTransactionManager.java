@@ -21,7 +21,6 @@ public class NaiveDoubleTransactionManager implements PlatformTransactionManager
 		this.b = b;
 	}
 
-	@Override
 	public void commit(TransactionStatus ts) throws TransactionException {
 		try {
 		final TransactionStatus tsb = copyTransactionStatus(status.get(ts));
@@ -48,7 +47,6 @@ public class NaiveDoubleTransactionManager implements PlatformTransactionManager
 		return new DefaultTransactionStatus(t,ts.isNewTransaction(), false,  false, false, null);
 	}
 	
-	@Override
 	public TransactionStatus getTransaction(TransactionDefinition td)
 			throws TransactionException {
 		TransactionStatus atx = a.getTransaction(td);
@@ -57,7 +55,6 @@ public class NaiveDoubleTransactionManager implements PlatformTransactionManager
 		return atx;
 	}
 
-	@Override
 	public void rollback(TransactionStatus ts) throws TransactionException {
 		final TransactionStatus tsb = copyTransactionStatus(status.remove(ts));
 		try {
