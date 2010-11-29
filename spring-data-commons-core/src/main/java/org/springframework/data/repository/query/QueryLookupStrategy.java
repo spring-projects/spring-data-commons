@@ -10,7 +10,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
-public interface QueryLookupStrategy {
+public interface QueryLookupStrategy<Q extends QueryMethod> {
 
     public static enum Key {
 
@@ -40,5 +40,5 @@ public interface QueryLookupStrategy {
      * @param method
      * @return
      */
-    RepositoryQuery resolveQuery(QueryMethod method);
+    RepositoryQuery resolveQuery(Q method);
 }

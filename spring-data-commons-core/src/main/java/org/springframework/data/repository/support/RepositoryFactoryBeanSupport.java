@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
         implements FactoryBean<T>, InitializingBean, BeanFactoryAware {
 
-    private RepositoryFactorySupport factory;
+    private RepositoryFactorySupport<?> factory;
 
     private Key queryLookupStrategyKey;
     private Class<? extends T> repositoryInterface;
@@ -102,8 +102,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
      */
     public T getObject() {
 
-        return factory.getRepository(repositoryInterface,
-                customImplementation);
+        return factory.getRepository(repositoryInterface, customImplementation);
     }
 
 
@@ -141,8 +140,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
 
         this.factory = createRepositoryFactory();
         this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
-        this.factory.validate(repositoryInterface,
-                customImplementation);
+        this.factory.validate(repositoryInterface, customImplementation);
         this.factory.addDaoProxyPostProcessor(txPostProcessor);
     }
 
@@ -152,7 +150,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
      * 
      * @return
      */
-    protected abstract RepositoryFactorySupport createRepositoryFactory();
+    protected abstract RepositoryFactorySupport<?> createRepositoryFactory();
 
 
     /*

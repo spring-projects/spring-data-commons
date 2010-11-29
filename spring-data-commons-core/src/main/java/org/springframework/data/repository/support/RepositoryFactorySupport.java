@@ -49,7 +49,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public abstract class RepositoryFactorySupport {
+public abstract class RepositoryFactorySupport<Q extends QueryMethod> {
 
     private QueryLookupStrategy.Key queryLookupStrategyKey;
 
@@ -117,8 +117,7 @@ public abstract class RepositoryFactorySupport {
         validate(repositoryInterface, customDaoImplementation);
 
         Class<?> domainClass = getDomainClass(repositoryInterface);
-        RepositorySupport<?, ?> target =
-                getTargetRepository(domainClass);
+        RepositorySupport<?, ?> target = getTargetRepository(domainClass);
 
         // Create proxy
         ProxyFactory result = new ProxyFactory();
@@ -137,8 +136,8 @@ public abstract class RepositoryFactorySupport {
 
 
     /**
-     * Create a {@link RepositorySupport} instance as backing for the
-     * query proxy.
+     * Create a {@link RepositorySupport} instance as backing for the query
+     * proxy.
      * 
      * @param <T>
      * @param domainClass
@@ -154,7 +153,7 @@ public abstract class RepositoryFactorySupport {
      * @param method
      * @return
      */
-    protected abstract QueryMethod getQueryMethod(Method method);
+    protected abstract Q getQueryMethod(Method method);
 
 
     /**
@@ -172,7 +171,7 @@ public abstract class RepositoryFactorySupport {
      * @param key can be {@literal null}
      * @return
      */
-    protected abstract QueryLookupStrategy getQueryLookupStrategy(Key key);
+    protected abstract QueryLookupStrategy<Q> getQueryLookupStrategy(Key key);
 
 
     /**
@@ -355,18 +354,17 @@ public abstract class RepositoryFactorySupport {
          * interface methods.
          */
         public QueryExecuterMethodInterceptor(Class<?> repositoryInterface,
-                Object customImplementation,
-                RepositorySupport<?, ?> target) {
+                Object customImplementation, RepositorySupport<?, ?> target) {
 
             this.repositoryInterface = repositoryInterface;
             this.customImplementation = customImplementation;
             this.target = target;
 
-            QueryLookupStrategy strategy =
+            QueryLookupStrategy<Q> strategy =
                     getQueryLookupStrategy(queryLookupStrategyKey);
 
             for (Method method : getFinderMethods(repositoryInterface)) {
-                QueryMethod queryMethod = getQueryMethod(method);
+                Q queryMethod = getQueryMethod(method);
                 queries.put(method, strategy.resolveQuery(queryMethod));
             }
         }
