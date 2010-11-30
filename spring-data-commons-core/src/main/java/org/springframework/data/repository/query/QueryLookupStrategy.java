@@ -1,5 +1,6 @@
 package org.springframework.data.repository.query;
 
+import java.lang.reflect.Method;
 import java.util.Locale;
 
 import org.springframework.util.StringUtils;
@@ -10,7 +11,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
-public interface QueryLookupStrategy<Q extends QueryMethod> {
+public interface QueryLookupStrategy {
 
     public static enum Key {
 
@@ -40,5 +41,5 @@ public interface QueryLookupStrategy<Q extends QueryMethod> {
      * @param method
      * @return
      */
-    RepositoryQuery resolveQuery(Q method);
+    RepositoryQuery resolveQuery(Method method);
 }

@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
         implements FactoryBean<T>, InitializingBean, BeanFactoryAware {
 
-    private RepositoryFactorySupport<?> factory;
+    private RepositoryFactorySupport factory;
 
     private Key queryLookupStrategyKey;
     private Class<? extends T> repositoryInterface;
@@ -150,7 +150,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
      * 
      * @return
      */
-    protected abstract RepositoryFactorySupport<?> createRepositoryFactory();
+    protected abstract RepositoryFactorySupport createRepositoryFactory();
 
 
     /*

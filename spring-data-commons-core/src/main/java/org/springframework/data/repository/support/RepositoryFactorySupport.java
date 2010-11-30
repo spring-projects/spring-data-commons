@@ -49,7 +49,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public abstract class RepositoryFactorySupport<Q extends QueryMethod> {
+public abstract class RepositoryFactorySupport {
 
     private QueryLookupStrategy.Key queryLookupStrategyKey;
 
@@ -148,15 +148,6 @@ public abstract class RepositoryFactorySupport<Q extends QueryMethod> {
 
 
     /**
-     * Create a {@link QueryMethod} instance for the given {@link Method}.
-     * 
-     * @param method
-     * @return
-     */
-    protected abstract Q getQueryMethod(Method method);
-
-
-    /**
      * Determines the base class for the repository to be created.
      * 
      * @return
@@ -171,7 +162,7 @@ public abstract class RepositoryFactorySupport<Q extends QueryMethod> {
      * @param key can be {@literal null}
      * @return
      */
-    protected abstract QueryLookupStrategy<Q> getQueryLookupStrategy(Key key);
+    protected abstract QueryLookupStrategy getQueryLookupStrategy(Key key);
 
 
     /**
@@ -360,12 +351,12 @@ public abstract class RepositoryFactorySupport<Q extends QueryMethod> {
             this.customImplementation = customImplementation;
             this.target = target;
 
-            QueryLookupStrategy<Q> strategy =
+            QueryLookupStrategy lookupStrategy =
                     getQueryLookupStrategy(queryLookupStrategyKey);
 
             for (Method method : getFinderMethods(repositoryInterface)) {
-                Q queryMethod = getQueryMethod(method);
-                queries.put(method, strategy.resolveQuery(queryMethod));
+
+                queries.put(method, lookupStrategy.resolveQuery(method));
             }
         }
 
