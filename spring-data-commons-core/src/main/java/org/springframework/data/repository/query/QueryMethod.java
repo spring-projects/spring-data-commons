@@ -113,7 +113,7 @@ public class QueryMethod {
      * 
      * @return
      */
-    protected boolean isCollectionQuery() {
+    public boolean isCollectionQuery() {
 
         Class<?> returnType = method.getReturnType();
         return org.springframework.util.ClassUtils.isAssignable(List.class,
@@ -126,7 +126,7 @@ public class QueryMethod {
      * 
      * @return
      */
-    protected boolean isPageQuery() {
+    public boolean isPageQuery() {
 
         Class<?> returnType = method.getReturnType();
         return org.springframework.util.ClassUtils.isAssignable(Page.class,
