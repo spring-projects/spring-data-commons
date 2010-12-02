@@ -103,8 +103,8 @@ public class ParametersUnitTests {
 
         Parameters parameters = new Parameters(method);
 
-        assertThat(parameters.getParameter(0).getParameterPosition(), is(0));
-        assertThat(parameters.getParameter(1).getParameterPosition(), is(1));
+        assertThat(parameters.getParameter(0).getParameterIndex(), is(-1));
+        assertThat(parameters.getParameter(1).getParameterIndex(), is(0));
 
         method =
                 SampleDao.class.getMethod("validWithSortInBetween",
@@ -112,9 +112,9 @@ public class ParametersUnitTests {
 
         parameters = new Parameters(method);
 
-        assertThat(parameters.getParameter(0).getParameterPosition(), is(1));
-        assertThat(parameters.getParameter(1).getParameterPosition(), is(0));
-        assertThat(parameters.getParameter(2).getParameterPosition(), is(2));
+        assertThat(parameters.getParameter(0).getParameterIndex(), is(0));
+        assertThat(parameters.getParameter(1).getParameterIndex(), is(-1));
+        assertThat(parameters.getParameter(2).getParameterIndex(), is(1));
     }
 
 

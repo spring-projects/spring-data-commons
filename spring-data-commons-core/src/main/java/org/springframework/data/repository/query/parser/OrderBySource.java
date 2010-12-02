@@ -65,6 +65,6 @@ public class OrderBySource {
 
     public Sort toSort() {
 
-        return new Sort(this.orders);
+        return this.orders.isEmpty() ? null : new Sort(this.orders);
     }
 }

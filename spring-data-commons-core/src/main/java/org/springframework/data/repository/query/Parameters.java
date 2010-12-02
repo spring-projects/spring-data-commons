@@ -273,11 +273,11 @@ public final class Parameters implements Iterable<Parameter> {
      * 
      * @param index
      * @return the placeholder postion for the parameter with the given index.
-     *         Will return 0 for special parameters.
+     *         Will return -1 for special parameters.
      */
     int getPlaceholderPosition(Parameter parameter) {
 
-        return parameter.isSpecialParameter() ? 0
+        return parameter.isSpecialParameter() ? -1
                 : getPlaceholderPositionRecursively(parameter);
     }
 
@@ -286,7 +286,7 @@ public final class Parameters implements Iterable<Parameter> {
 
         int result = parameter.isSpecialParameter() ? 0 : 1;
 
-        return parameter.isFirst() ? result : result
+        return parameter.isFirst() ? result - 1 : result
                 + getPlaceholderPositionRecursively(parameter.getPrevious());
     }
 

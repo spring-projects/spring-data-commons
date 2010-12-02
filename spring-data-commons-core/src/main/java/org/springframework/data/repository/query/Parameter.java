@@ -162,7 +162,7 @@ public final class Parameter {
         if (isNamedParameter()) {
             return format(NAMED_PARAMETER_TEMPLATE, getName());
         } else {
-            return format(POSITION_PARAMETER_TEMPLATE, getParameterPosition());
+            return format(POSITION_PARAMETER_TEMPLATE, getParameterIndex());
         }
     }
 
@@ -173,7 +173,7 @@ public final class Parameter {
      * 
      * @return
      */
-    public int getParameterPosition() {
+    public int getParameterIndex() {
 
         return parameters.getPlaceholderPosition(this);
     }

@@ -61,6 +61,44 @@ public class Part {
     }
 
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+
+        Part that = (Part) obj;
+
+        return this.property.equals(that.property)
+                && this.type.equals(that.type);
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+
+        int result = 37;
+        result += 17 * property.hashCode();
+        result += 17 * type.hashCode();
+        return result;
+    }
+
+
     /**
      * @return the type
      */
