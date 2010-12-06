@@ -87,7 +87,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
             }
 
             Object beanSource = parser.extractSource(element);
-            registerPostProcessors(parser.getRegistry(), beanSource);
+            registerBeansForRoot(parser.getRegistry(), beanSource);
 
         } catch (RuntimeException e) {
             handleError(e, element, parser.getReaderContext());
@@ -326,13 +326,16 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
 
     /**
-     * Registers necessary (Bean)PostProcessor instances if they have not
-     * already been registered.
+     * Callback to register additional bean definitions for a
+     * {@literal repositories} root node. This usually includes beans you have
+     * to set up once independently of the number of repositories to be created.
+     * Will be called before any repositories bean definitions have been
+     * registered.
      * 
      * @param registry
      * @param source
      */
-    protected void registerPostProcessors(BeanDefinitionRegistry registry,
+    protected void registerBeansForRoot(BeanDefinitionRegistry registry,
             Object source) {
 
         // Create PersistenceExceptionTranslationPostProcessor definition
