@@ -124,8 +124,7 @@ public final class Parameters implements Iterable<Parameter> {
         for (int i = 0; i < originals.size(); i++) {
 
             Parameter original = originals.get(i);
-
-            this.parameters.add(new Parameter(original, this, i));
+            this.parameters.add(original);
 
             pageableIndexTemp = original.isPageable() ? i : -1;
             sortIndexTemp = original.isSort() ? i : -1;
@@ -265,29 +264,17 @@ public final class Parameters implements Iterable<Parameter> {
 
 
     /**
-     * Returns the index of the placeholder inside a query for the parameter
-     * with the given index. They might differ from the parameter index as the
-     * method signature can contain special parameters (e.g. {@link Sort},
-     * {@link Pageable}) that are not bound as plain query parameters but rather
-     * handled differently.
+     * Returns a bindable parameter with the given index. So for a method with a
+     * signature of {@code (Pageable pageable, String name)} a call to
+     * {@code #getBindableParameter(0)} will return the {@link String}
+     * parameter.
      * 
-     * @param index
-     * @return the placeholder postion for the parameter with the given index.
-     *         Will return -1 for special parameters.
+     * @param bindableIndex
+     * @return
      */
-    int getPlaceholderPosition(Parameter parameter) {
+    public Parameter getBindableParameter(int bindableIndex) {
 
-        return parameter.isSpecialParameter() ? -1
-                : getPlaceholderPositionRecursively(parameter);
-    }
-
-
-    private int getPlaceholderPositionRecursively(Parameter parameter) {
-
-        int result = parameter.isSpecialParameter() ? 0 : 1;
-
-        return parameter.isFirst() ? result - 1 : result
-                + getPlaceholderPositionRecursively(parameter.getPrevious());
+        return getBindableParameters().getParameter(bindableIndex);
     }
 
 

@@ -90,20 +90,8 @@ public class SimpleParameterAccessor {
 
     private Object getBindableValue(int index) {
 
-        int bindableCount = 0;
 
-        for (Parameter parameter : parameters) {
-
-            if (parameter.isBindable() && bindableCount == index) {
-                return values[parameter.getParameterIndex()];
-            }
-
-            if (parameter.isBindable()) {
-                bindableCount++;
-            }
-        }
-
-        throw new IllegalArgumentException();
+        return values[parameters.getBindableParameter(index).getIndex()];
     }
 
 

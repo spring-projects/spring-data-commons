@@ -79,19 +79,6 @@ public final class Parameter {
 
 
     /**
-     * Copy constructor to put a {@link Parameter} into another context.
-     * 
-     * @param parameter
-     * @param parameters
-     * @param index
-     */
-    Parameter(Parameter parameter, Parameters parameters, int index) {
-
-        this(parameter.type, parameters, index, parameter.name);
-    }
-
-
-    /**
      * Returns whether the {@link Parameter} is the first one.
      * 
      * @return
@@ -162,7 +149,7 @@ public final class Parameter {
         if (isNamedParameter()) {
             return format(NAMED_PARAMETER_TEMPLATE, getName());
         } else {
-            return format(POSITION_PARAMETER_TEMPLATE, getParameterIndex());
+            return format(POSITION_PARAMETER_TEMPLATE, getIndex());
         }
     }
 
@@ -173,9 +160,9 @@ public final class Parameter {
      * 
      * @return
      */
-    public int getParameterIndex() {
+    public int getIndex() {
 
-        return parameters.getPlaceholderPosition(this);
+        return index;
     }
 
 
