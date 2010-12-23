@@ -1,5 +1,18 @@
-Spring Data Commons 1.0.0 Milestone 1 (?, 2010)
+Spring Data Commons Changelog
 =============================================
 
-New Features
-   * Lot's of good stuff
+Changes in version 1.0.0.M1 (2010-12-23)
+----------------------------------------
+
+General
+* Indexed annotation to indicate that a field should be indexed
+* Classes for change set support including ChangeSetBackedTransactionSynchronization
+
+Aspects
+* Abstract superaspect for aspects that advice field access with a mixin for all types annotated with a given annotation.
+* Abstract superaspect to advise field read and write and introduce a mixin interface.
+
+Repository
+* Base classes for the repository support
+* Pagination support
+
