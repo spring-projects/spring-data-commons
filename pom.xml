@@ -5,7 +5,7 @@
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons-dist</artifactId>
 	<name>Spring Data Commons Distribution</name>
-	<version>1.0.0.BUILD-SNAPSHOT</version>
+	<version>1.0.0.M1</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -59,7 +59,7 @@
 		<dist.name>Spring Data Commons</dist.name>
 		<dist.key>DATACMNS</dist.key>
 		<dist.version>${project.version}</dist.version>
-		<dist.releaseType>snapshot</dist.releaseType>
+		<dist.releaseType>milestone</dist.releaseType>
 		<dist.finalName>${dist.id}-${dist.version}</dist.finalName>
 		<dist.fileName>${dist.finalName}.zip</dist.fileName>
 		<dist.filePath>target/${dist.fileName}</dist.filePath>
@@ -163,37 +163,10 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.5</version>
-				<executions>
-					<execution>
-						<id>aggregate</id>
-						<goals>
-							<goal>aggregate</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-							<javadoc:aggregate>true</javadoc:aggregate>
-							<breakiterator>true</breakiterator>
-							<header>Spring Datastore Key-Value</header>
-							<source>1.5</source>
-							<quiet>true</quiet>
-							<javadocDirectory>${project.basedir}/src/main/javadoc</javadocDirectory>
-							<overview>${project.basedir}/src/main/javadoc/overview.html</overview>
-							<stylesheetfile>${project.basedir}/src/main/javadoc/spring-javadoc.css</stylesheetfile>
-							<!-- copies doc-files subdirectory which contains image resources -->
-							<docfilessubdirs>true</docfilessubdirs>
-							<links>
-								<link>http://static.springframework.org/spring/docs/3.0.x/javadoc-api</link>
-								<link>http://java.sun.com/javase/6/docs/api</link>
-							</links>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin><!--
+				<!--
 				run `mvn package assembly:assembly` to trigger assembly creation.
-				see http://www.sonatype.com/books/mvnref-book/reference/assemblies-set-dist-assemblies.html -->
+				see http://www.sonatype.com/books/mvnref-book/reference/assemblies-set-dist-assemblies.html
+			 	-->
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2-beta-5</version>
 				<inherited>false</inherited>
