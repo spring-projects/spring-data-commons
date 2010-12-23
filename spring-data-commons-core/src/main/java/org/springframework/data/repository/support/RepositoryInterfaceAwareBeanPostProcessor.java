@@ -39,7 +39,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
         InstantiationAwareBeanPostProcessorAdapter implements BeanFactoryAware {
 
     private static final Class<?> REPOSITORY_TYPE =
-            RepositoryFactorySupport.class;
+        RepositoryFactoryBeanSupport.class;
 
     private ConfigurableListableBeanFactory context;
 
@@ -76,7 +76,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 
         BeanDefinition definition = context.getBeanDefinition(beanName);
         PropertyValue value =
-                definition.getPropertyValues().getPropertyValue("daoInterface");
+            definition.getPropertyValues().getPropertyValue("repositoryInterface");
 
         return getClassForPropertyValue(value);
     }

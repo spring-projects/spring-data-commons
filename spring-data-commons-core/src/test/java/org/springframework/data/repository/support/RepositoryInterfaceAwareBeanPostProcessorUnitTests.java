@@ -40,9 +40,9 @@ import org.springframework.data.repository.Repository;
 public class RepositoryInterfaceAwareBeanPostProcessorUnitTests {
 
     private static final Class<?> FACTORY_CLASS =
-            RepositoryFactorySupport.class;
+        RepositoryFactoryBeanSupport.class;
     private static final String BEAN_NAME = "foo";
-    private static final String DAO_INTERFACE_PROPERTY = "daoInterface";
+    private static final String DAO_INTERFACE_PROPERTY = "repositoryInterface";
 
     private RepositoryInterfaceAwareBeanPostProcessor processor;
 
