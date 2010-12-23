@@ -5,7 +5,7 @@
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons-dist</artifactId>
 	<name>Spring Data Commons Distribution</name>
-	<version>1.0.0.M1</version>
+	<version>1.0.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -59,7 +59,7 @@
 		<dist.name>Spring Data Commons</dist.name>
 		<dist.key>DATACMNS</dist.key>
 		<dist.version>${project.version}</dist.version>
-		<dist.releaseType>milestone</dist.releaseType>
+		<dist.releaseType>snapshot</dist.releaseType>
 		<dist.finalName>${dist.id}-${dist.version}</dist.finalName>
 		<dist.fileName>${dist.finalName}.zip</dist.fileName>
 		<dist.filePath>target/${dist.fileName}</dist.filePath>
