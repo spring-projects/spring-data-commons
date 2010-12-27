@@ -218,7 +218,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
             beanDefinition.setSource(beanSource);
 
             LOG.debug(
-                    "Registering repository: %s - Interface: %s - Factory: %s, - Custom implementation: %s",
+                    "Registering repository: {} - Interface: {} - Factory: {}, - Custom implementation: {}",
                     new Object[] { context.getBeanId(),
                             context.getInterfaceName(),
                             context.getRepositoryFactoryBeanClassName(),
@@ -279,7 +279,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
                 return null;
             }
 
-            LOG.debug("Registering custom repository implementation: %s %s",
+            LOG.debug("Registering custom repository implementation: {} {}",
                     config.getImplementationBeanName(),
                     beanDefinition.getBeanClassName());
 
