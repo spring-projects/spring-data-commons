@@ -39,11 +39,12 @@ public interface Pageable {
 
 
     /**
-     * Returns the first item relatively to the total number of items.
+     * Returns the offset to be taken according to the underlying page and page
+     * size.
      * 
-     * @return the first item to be returned
+     * @return the offset to be taken
      */
-    int getFirstItem();
+    int getOffset();
 
 
     /**

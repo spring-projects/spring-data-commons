@@ -110,7 +110,7 @@ public class PageRequest implements Pageable {
      * 
      * @see org.springframework.data.domain.Pageable#getFirstItem()
      */
-    public int getFirstItem() {
+    public int getOffset() {
 
         return page * size;
     }
