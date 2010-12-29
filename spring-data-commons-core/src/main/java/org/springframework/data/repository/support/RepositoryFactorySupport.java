@@ -117,7 +117,8 @@ public abstract class RepositoryFactorySupport {
         validate(repositoryInterface, customImplementation);
 
         Class<?> domainClass = getDomainClass(repositoryInterface);
-        RepositorySupport<?, ?> target = getTargetRepository(domainClass);
+        RepositorySupport<?, ?> target =
+                getTargetRepository(domainClass, repositoryInterface);
 
         // Create proxy
         ProxyFactory result = new ProxyFactory();
@@ -144,7 +145,7 @@ public abstract class RepositoryFactorySupport {
      * @return
      */
     protected abstract <T, ID extends Serializable> RepositorySupport<T, ID> getTargetRepository(
-            Class<T> domainClass);
+            Class<T> domainClass, Class<?> repositoryInterface);
 
 
     /**
@@ -153,7 +154,8 @@ public abstract class RepositoryFactorySupport {
      * @return
      */
     @SuppressWarnings("rawtypes")
-    protected abstract Class<? extends RepositorySupport> getRepositoryClass();
+    protected abstract Class<? extends RepositorySupport> getRepositoryClass(
+            Class<?> repositoryInterface);
 
 
     /**
@@ -238,7 +240,8 @@ public abstract class RepositoryFactorySupport {
         }
 
         result =
-                getBaseClassMethodFor(method, getRepositoryClass(),
+                getBaseClassMethodFor(method,
+                        getRepositoryClass(repositoryInterface),
                         repositoryInterface);
         methodCache.put(method, result);
 
