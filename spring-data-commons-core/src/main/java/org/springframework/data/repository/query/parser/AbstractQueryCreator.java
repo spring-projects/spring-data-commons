@@ -61,7 +61,7 @@ public abstract class AbstractQueryCreator<T, S> {
      */
     public T createQuery() {
 
-        return finalize(createCriteria(tree), tree.getSort());
+        return complete(createCriteria(tree), tree.getSort());
     }
 
 
@@ -136,5 +136,5 @@ public abstract class AbstractQueryCreator<T, S> {
      * @param sort
      * @return
      */
-    protected abstract T finalize(S criteria, Sort sort);
+    protected abstract T complete(S criteria, Sort sort);
 }

@@ -92,7 +92,7 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
      */
     public boolean configureManually() {
 
-        return getRepositoryNodes().size() > 0;
+        return getRepositoryElements().size() > 0;
     }
 
 
@@ -182,15 +182,15 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
     public Iterable<T> getSingleRepositoryConfigInformations() {
 
         Set<T> infos = new HashSet<T>();
-        for (Element element : getRepositoryNodes()) {
-            infos.add(createSingleRepositoryConfigInformationFor(element));
+        for (Element repositoryElement : getRepositoryElements()) {
+            infos.add(createSingleRepositoryConfigInformationFor(repositoryElement));
         }
 
         return infos;
     }
 
 
-    private Collection<Element> getRepositoryNodes() {
+    private Collection<Element> getRepositoryElements() {
 
         NodeList nodes = element.getChildNodes();
         Set<Element> result = new HashSet<Element>();

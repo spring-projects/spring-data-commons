@@ -116,7 +116,7 @@ public class PartTree implements Iterable<OrPart> {
      * @param keyword
      * @return
      */
-    private String[] split(String text, String keyword) {
+    private static String[] split(String text, String keyword) {
 
         String regex = format(KEYWORD_TEMPLATE, keyword);
 
@@ -152,7 +152,7 @@ public class PartTree implements Iterable<OrPart> {
      * 
      * @author Oliver Gierke
      */
-    public class OrPart implements Iterable<Part> {
+    public static class OrPart implements Iterable<Part> {
 
         private final List<Part> children = new ArrayList<Part>();
 

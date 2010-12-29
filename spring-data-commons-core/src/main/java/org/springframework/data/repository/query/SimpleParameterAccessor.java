@@ -46,7 +46,7 @@ public class SimpleParameterAccessor {
                 "Invalid number of parameters given!");
 
         this.parameters = parameters;
-        this.values = values;
+        this.values = values.clone();
     }
 
 
