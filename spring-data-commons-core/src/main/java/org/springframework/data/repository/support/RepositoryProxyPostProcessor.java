@@ -19,8 +19,8 @@ import org.springframework.aop.framework.ProxyFactory;
 
 
 /**
- * Callback interface used during DAO proxy creation. Allows manipulating the
- * {@link ProxyFactory} creating the DAO.
+ * Callback interface used during repository proxy creation. Allows manipulating
+ * the {@link ProxyFactory} creating the repository.
  * 
  * @author Oliver Gierke
  */

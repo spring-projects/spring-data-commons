@@ -141,7 +141,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
         this.factory = createRepositoryFactory();
         this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
         this.factory.validate(repositoryInterface, customImplementation);
-        this.factory.addDaoProxyPostProcessor(txPostProcessor);
+        this.factory.addRepositoryProxyPostProcessor(txPostProcessor);
     }
 
 

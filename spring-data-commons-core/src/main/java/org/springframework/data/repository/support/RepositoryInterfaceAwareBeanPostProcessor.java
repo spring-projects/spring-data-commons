@@ -29,9 +29,10 @@ import org.springframework.util.ClassUtils;
  * A
  * {@link org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor}
  * implementing {@code #predictBeanType(Class, String)} to return the configured
- * DAO interface from {@link GenericDaoFactoryBean}s. This is done as shortcut
- * to prevent the need of instantiating {@link GenericDaoFactoryBean}s just to
- * find out what DAO interface they actually create.
+ * repository interface from {@link RepositoryFactoryBeanSupport}s. This is done
+ * as shortcut to prevent the need of instantiating
+ * {@link RepositoryFactoryBeanSupport}s just to find out what repository
+ * interface they actually create.
  * 
  * @author Oliver Gierke
  */
@@ -39,7 +40,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
         InstantiationAwareBeanPostProcessorAdapter implements BeanFactoryAware {
 
     private static final Class<?> REPOSITORY_TYPE =
-        RepositoryFactoryBeanSupport.class;
+            RepositoryFactoryBeanSupport.class;
 
     private ConfigurableListableBeanFactory context;
 
@@ -54,7 +55,6 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
     public void setBeanFactory(BeanFactory beanFactory) {
 
         if (beanFactory instanceof ConfigurableListableBeanFactory) {
-
             this.context = (ConfigurableListableBeanFactory) beanFactory;
         }
     }
@@ -76,7 +76,8 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 
         BeanDefinition definition = context.getBeanDefinition(beanName);
         PropertyValue value =
-            definition.getPropertyValues().getPropertyValue("repositoryInterface");
+                definition.getPropertyValues().getPropertyValue(
+                        "repositoryInterface");
 
         return getClassForPropertyValue(value);
     }
@@ -107,7 +108,8 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 
         try {
             return ClassUtils.resolveClassName(className,
-                    RepositoryInterfaceAwareBeanPostProcessor.class.getClassLoader());
+                    RepositoryInterfaceAwareBeanPostProcessor.class
+                            .getClassLoader());
         } catch (IllegalArgumentException ex) {
             return null;
         }

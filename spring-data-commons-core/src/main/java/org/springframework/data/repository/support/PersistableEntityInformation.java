@@ -15,7 +15,8 @@ public class PersistableEntityInformation implements IsNewAware, IdAware {
     /*
      * (non-Javadoc)
      * 
-     * @see org.synyx.hades.dao.orm.GenericJpaDao.IsNewStrategy#isNew(java.lang
+     * @see
+     * org.springframework.data.repository.support.IsNewAware#isNew(java.lang
      * .Object)
      */
     public boolean isNew(Object entity) {
@@ -27,8 +28,9 @@ public class PersistableEntityInformation implements IsNewAware, IdAware {
     /*
      * (non-Javadoc)
      * 
-     * @see org.synyx.hades.dao.orm.GenericDaoSupport.IdAware#getId(java.lang
-     * .Object)
+     * @see
+     * org.springframework.data.repository.support.IdAware#getId(java.lang.Object
+     * )
      */
     public Object getId(Object entity) {
 

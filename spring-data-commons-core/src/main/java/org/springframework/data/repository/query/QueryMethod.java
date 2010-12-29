@@ -28,9 +28,8 @@ import org.springframework.util.Assert;
 
 /**
  * Abstraction of a method that is designated to execute a finder query.
- * Enriches the standard {@link Method} interface with Hades specific
- * information that is necessary to construct {@link HadesQuery}s for the
- * method.
+ * Enriches the standard {@link Method} interface with specific information that
+ * is necessary to construct {@link RepositoryQuery}s for the method.
  * 
  * @author Oliver Gierke
  */

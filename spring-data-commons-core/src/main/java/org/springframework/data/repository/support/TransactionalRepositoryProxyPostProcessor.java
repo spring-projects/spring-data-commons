@@ -24,9 +24,9 @@ import org.springframework.util.Assert;
 
 
 /**
- * {@link DaoProxyPostProcessor} to add transactional behaviour to DAO proxies.
- * Adds a {@link PersistenceExceptionTranslationInterceptor} as well as an
- * annotation based {@link TransactionInterceptor} to the proxy.
+ * {@link RepositoryProxyPostProcessor} to add transactional behaviour to
+ * repository proxies. Adds a {@link PersistenceExceptionTranslationInterceptor}
+ * as well as an annotation based {@link TransactionInterceptor} to the proxy.
  * 
  * @author Oliver Gierke
  */
@@ -64,8 +64,8 @@ class TransactionalRepositoryProxyPostProcessor implements
      * (non-Javadoc)
      * 
      * @see
-     * org.synyx.hades.dao.orm.DaoProxyPostProcessor#postProcess(org.springframework
-     * .aop.framework.ProxyFactory)
+     * org.springframework.data.repository.support.RepositoryProxyPostProcessor
+     * #postProcess(org.springframework.aop.framework.ProxyFactory)
      */
     public void postProcess(ProxyFactory factory) {
 

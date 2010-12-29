@@ -39,10 +39,11 @@ import org.w3c.dom.NodeList;
 public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformation<S>, S extends CommonRepositoryConfigInformation>
         implements GlobalRepositoryConfigInformation<T> {
 
-    public static final String DEFAULT_DAO_IMPL_POSTFIX = "Impl";
+    public static final String DEFAULT_REPOSITORY_IMPL_POSTFIX = "Impl";
     public static final String QUERY_LOOKUP_STRATEGY = "query-lookup-strategy";
     public static final String BASE_PACKAGE = "base-package";
-    public static final String REPOSITORY_IMPL_POSTFIX = "dao-impl-postfix";
+    public static final String REPOSITORY_IMPL_POSTFIX =
+            "repository-impl-postfix";
     public static final String REPOSITORY_FACTORY_CLASS_NAME = "factory-class";
     public static final String TRANSACTION_MANAGER_REF =
             "transaction-manager-ref";
@@ -153,7 +154,7 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 
         String postfix = element.getAttribute(REPOSITORY_IMPL_POSTFIX);
         return StringUtils.hasText(postfix) ? postfix
-                : DEFAULT_DAO_IMPL_POSTFIX;
+                : DEFAULT_REPOSITORY_IMPL_POSTFIX;
     }
 
 
@@ -200,9 +201,9 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
             Node node = nodes.item(i);
 
             boolean isElement = Node.ELEMENT_NODE == node.getNodeType();
-            boolean isDao = "repository".equals(node.getLocalName());
+            boolean isRepository = "repository".equals(node.getLocalName());
 
-            if (isElement && isDao) {
+            if (isElement && isRepository) {
                 result.add((Element) node);
             }
         }

@@ -8,8 +8,8 @@ import org.w3c.dom.Element;
 
 
 /**
- * Base class for {@link SingleRepositoryConfigInformation} implementations. So these
- * implementations will capture information for XML elements manually
+ * Base class for {@link SingleRepositoryConfigInformation} implementations. So
+ * these implementations will capture information for XML elements manually
  * configuring a single repository bean.
  * 
  * @author Oliver Gierke
@@ -21,8 +21,8 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 
 
     /**
-     * Creates a new {@link ParentDelegatingRepositoryConfigInformation} with the given
-     * {@link CommonRepositoryConfigInformation} as parent.
+     * Creates a new {@link ParentDelegatingRepositoryConfigInformation} with
+     * the given {@link CommonRepositoryConfigInformation} as parent.
      * 
      * @param parent
      */
@@ -128,8 +128,8 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
      * (non-Javadoc)
      * 
      * @see
-     * org.springframework.data.jpa.repository.config.RepositoryInformation#
-     * getDaoImplPostfix()
+     * org.springframework.data.repository.config.CommonRepositoryConfigInformation
+     * #getRepositoryImplementationSuffix()
      */
     public String getRepositoryImplementationSuffix() {
 
@@ -141,8 +141,8 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
      * (non-Javadoc)
      * 
      * @see
-     * org.springframework.data.jpa.repository.config.RepositoryInformation#
-     * getDaoFactoryClassName()
+     * org.springframework.data.repository.config.CommonRepositoryConfigInformation
+     * #getRepositoryFactoryBeanClassName()
      */
     public String getRepositoryFactoryBeanClassName() {
 

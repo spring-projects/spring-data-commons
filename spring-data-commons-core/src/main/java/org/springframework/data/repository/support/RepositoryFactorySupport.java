@@ -79,7 +79,7 @@ public abstract class RepositoryFactorySupport {
      * 
      * @param processor
      */
-    protected void addDaoProxyPostProcessor(
+    protected void addRepositoryProxyPostProcessor(
             RepositoryProxyPostProcessor processor) {
 
         Assert.notNull(processor);
@@ -107,14 +107,14 @@ public abstract class RepositoryFactorySupport {
      * 
      * @param <T>
      * @param repositoryInterface
-     * @param customDaoImplementation
+     * @param customImplementation
      * @return
      */
     @SuppressWarnings("unchecked")
     public <T extends Repository<?, ?>> T getRepository(
-            Class<T> repositoryInterface, Object customDaoImplementation) {
+            Class<T> repositoryInterface, Object customImplementation) {
 
-        validate(repositoryInterface, customDaoImplementation);
+        validate(repositoryInterface, customImplementation);
 
         Class<?> domainClass = getDomainClass(repositoryInterface);
         RepositorySupport<?, ?> target = getTargetRepository(domainClass);
@@ -129,7 +129,7 @@ public abstract class RepositoryFactorySupport {
         }
 
         result.addAdvice(new QueryExecuterMethodInterceptor(
-                repositoryInterface, customDaoImplementation, target));
+                repositoryInterface, customImplementation, target));
 
         return (T) result.getProxy();
     }
@@ -166,26 +166,26 @@ public abstract class RepositoryFactorySupport {
 
 
     /**
-     * Returns if the configured DAO interface has custom methods, that might
-     * have to be delegated to a custom DAO implementation. This is used to
-     * verify DAO configuration.
+     * Returns if the configured repository interface has custom methods, that
+     * might have to be delegated to a custom implementation. This is used to
+     * verify repository configuration.
      * 
      * @return
      */
     private boolean hasCustomMethod(
-            Class<? extends Repository<?, ?>> daoInterface) {
+            Class<? extends Repository<?, ?>> repositoryInterface) {
 
         boolean hasCustomMethod = false;
 
         // No detection required if no typing interface was configured
-        if (isGenericRepositoryInterface(daoInterface)) {
+        if (isGenericRepositoryInterface(repositoryInterface)) {
             return false;
         }
 
-        for (Method method : daoInterface.getMethods()) {
+        for (Method method : repositoryInterface.getMethods()) {
 
-            if (isCustomMethod(method, daoInterface)
-                    && !isBaseClassMethod(method, daoInterface)) {
+            if (isCustomMethod(method, repositoryInterface)
+                    && !isBaseClassMethod(method, repositoryInterface)) {
                 return true;
             }
         }
@@ -195,34 +195,39 @@ public abstract class RepositoryFactorySupport {
 
 
     /**
-     * Returns whether the given method is considered to be a DAO base class
-     * method.
+     * Returns whether the given method is considered to be a repository base
+     * class method.
      * 
      * @param method
+     * @param repositoryInterface
      * @return
      */
-    private boolean isBaseClassMethod(Method method, Class<?> daoInterface) {
+    private boolean isBaseClassMethod(Method method,
+            Class<?> repositoryInterface) {
 
         Assert.notNull(method);
 
-        if (method.getDeclaringClass().isAssignableFrom(getRepositoryClass())) {
+        if (method.getDeclaringClass().isAssignableFrom(
+                getRepositoryClass(repositoryInterface))) {
             return true;
         }
 
-        return !method.equals(getBaseClassMethod(method, daoInterface));
+        return !method.equals(getBaseClassMethod(method, repositoryInterface));
     }
 
 
     /**
      * Returns the base class method that is backing the given method. This can
-     * be necessary if a DAO interface redeclares a method in {@link GenericDao}
-     * (e.g. for transaction behaviour customization). Returns the method itself
-     * if the base class does not implement the given method.
+     * be necessary if a repository interface redeclares a method in
+     * {@link Repository} (e.g. for transaction behaviour customization).
+     * Returns the method itself if the base class does not implement the given
+     * method.
      * 
      * @param method
      * @return
      */
-    private Method getBaseClassMethod(Method method, Class<?> daoInterface) {
+    private Method getBaseClassMethod(Method method,
+            Class<?> repositoryInterface) {
 
         Assert.notNull(method);
 
@@ -234,7 +239,7 @@ public abstract class RepositoryFactorySupport {
 
         result =
                 getBaseClassMethodFor(method, getRepositoryClass(),
-                        daoInterface);
+                        repositoryInterface);
         methodCache.put(method, result);
 
         return result;
@@ -242,38 +247,39 @@ public abstract class RepositoryFactorySupport {
 
 
     /**
-     * Returns whether the given method is a custom DAO method.
+     * Returns whether the given method is a custom repository method.
      * 
      * @param method
-     * @param daoInterface
+     * @param repositoryInterface
      * @return
      */
-    private boolean isCustomMethod(Method method, Class<?> daoInterface) {
+    private boolean isCustomMethod(Method method, Class<?> repositoryInterface) {
 
         Class<?> declaringClass = method.getDeclaringClass();
 
-        boolean isQueryMethod = declaringClass.equals(daoInterface);
-        boolean isHadesDaoInterface =
+        boolean isQueryMethod = declaringClass.equals(repositoryInterface);
+        boolean isRepositoryInterface =
                 isGenericRepositoryInterface(declaringClass);
-        boolean isBaseClassMethod = isBaseClassMethod(method, daoInterface);
+        boolean isBaseClassMethod =
+                isBaseClassMethod(method, repositoryInterface);
 
-        return !(isHadesDaoInterface || isBaseClassMethod || isQueryMethod);
+        return !(isRepositoryInterface || isBaseClassMethod || isQueryMethod);
     }
 
 
     /**
      * Returns all methods considered to be finder methods.
      * 
-     * @param daoInterface
+     * @param repositoryInterface
      * @return
      */
-    private Iterable<Method> getFinderMethods(Class<?> daoInterface) {
+    private Iterable<Method> getFinderMethods(Class<?> repositoryInterface) {
 
         Set<Method> result = new HashSet<Method>();
 
-        for (Method method : daoInterface.getDeclaredMethods()) {
-            if (!isCustomMethod(method, daoInterface)
-                    && !isBaseClassMethod(method, daoInterface)) {
+        for (Method method : repositoryInterface.getDeclaredMethods()) {
+            if (!isCustomMethod(method, repositoryInterface)
+                    && !isBaseClassMethod(method, repositoryInterface)) {
                 result.add(method);
             }
         }
@@ -285,13 +291,13 @@ public abstract class RepositoryFactorySupport {
     /**
      * Validates the given repository interface.
      * 
-     * @param daoInterface
+     * @param repositoryInterface
      */
-    private void validate(Class<?> daoInterface) {
+    private void validate(Class<?> repositoryInterface) {
 
-        Assert.notNull(daoInterface);
+        Assert.notNull(repositoryInterface);
         Assert.notNull(
-                getDomainClass(daoInterface),
+                getDomainClass(repositoryInterface),
                 "Could not retrieve domain class from interface. Make sure it extends GenericRepository.");
 
     }

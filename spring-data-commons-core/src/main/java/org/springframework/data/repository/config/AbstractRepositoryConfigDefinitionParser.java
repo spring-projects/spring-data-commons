@@ -64,7 +64,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
     private static final Class<?> PET_POST_PROCESSOR =
             PersistenceExceptionTranslationPostProcessor.class;
-    private static final String DAO_INTERFACE_POST_PROCESSOR =
+    private static final String REPOSITORY_INTERFACE_POST_PROCESSOR =
             "org.springframework.data.repository.support.RepositoryInterfaceAwareBeanPostProcessor";
 
 
@@ -111,14 +111,15 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
         ResourceLoader resourceLoader =
                 parser.getReaderContext().getResourceLoader();
 
-        // Detect available DAO interfaces
+        // Detect available repository interfaces
         Set<String> repositoryInterfaces =
                 getRepositoryInterfacesForAutoConfig(config, resourceLoader,
                         parser.getReaderContext());
 
-        for (String daoInterface : repositoryInterfaces) {
-            registerGenericRepositoryFactoryBean(parser,
-                    config.getAutoconfigRepositoryInformation(daoInterface));
+        for (String repositoryInterface : repositoryInterfaces) {
+            registerGenericRepositoryFactoryBean(
+                    parser,
+                    config.getAutoconfigRepositoryInformation(repositoryInterface));
         }
     }
 
@@ -168,8 +169,9 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
         LOG.debug("Triggering manual repository detection");
 
-        for (T daoContext : context.getSingleRepositoryConfigInformations()) {
-            registerGenericRepositoryFactoryBean(parser, daoContext);
+        for (T repositoryContext : context
+                .getSingleRepositoryConfigInformations()) {
+            registerGenericRepositoryFactoryBean(parser, repositoryContext);
         }
     }
 
@@ -351,7 +353,8 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
         AbstractBeanDefinition definition =
                 BeanDefinitionBuilder.rootBeanDefinition(
-                        DAO_INTERFACE_POST_PROCESSOR).getBeanDefinition();
+                        REPOSITORY_INTERFACE_POST_PROCESSOR)
+                        .getBeanDefinition();
 
         registerWithSourceAndGeneratedBeanName(registry, definition, source);
     }
@@ -431,13 +434,13 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
         protected boolean isCandidateComponent(
                 AnnotatedBeanDefinition beanDefinition) {
 
-            boolean isNonHadesInterfaces =
+            boolean isNonRepositoryInterface =
                     !isGenericRepositoryInterface(beanDefinition
                             .getBeanClassName());
             boolean isTopLevelType =
                     !beanDefinition.getMetadata().hasEnclosingClass();
 
-            return isNonHadesInterfaces && isTopLevelType;
+            return isNonRepositoryInterface && isTopLevelType;
         }
 
         /**

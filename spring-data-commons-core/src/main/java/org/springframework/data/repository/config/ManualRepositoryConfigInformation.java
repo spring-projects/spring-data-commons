@@ -68,7 +68,7 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 
 
     /**
-     * Returns if a custom DAO implementation shall be autodetected.
+     * Returns if a custom implementation shall be autodetected.
      * 
      * @return
      */
