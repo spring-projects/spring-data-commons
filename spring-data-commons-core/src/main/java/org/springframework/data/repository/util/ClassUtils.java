@@ -257,7 +257,7 @@ public abstract class ClassUtils {
     public static Method getBaseClassMethodFor(Method method,
             Class<?> baseClass, Class<?> repositoryInterface) {
 
-        for (Method baseClassMethod : baseClass.getDeclaredMethods()) {
+        for (Method baseClassMethod : baseClass.getMethods()) {
 
             // Wrong name
             if (!method.getName().equals(baseClassMethod.getName())) {
