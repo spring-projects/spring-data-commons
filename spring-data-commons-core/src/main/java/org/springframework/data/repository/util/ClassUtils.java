@@ -1,17 +1,17 @@
 /*
  * Copyright 2008-2010 the original author or authors.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.springframework.data.repository.util;
 
@@ -55,8 +55,8 @@ public abstract class ClassUtils {
 
     /**
      * Returns the domain class the given class is declared for. Will introspect
-     * the given class for extensions of {@link Repository} and retrieve
-     * the domain class type from its generics declaration.
+     * the given class for extensions of {@link Repository} and retrieve the
+     * domain class type from its generics declaration.
      * 
      * @param clazz
      * @return the domain class the given class is repository for or
@@ -64,16 +64,15 @@ public abstract class ClassUtils {
      */
     public static Class<?> getDomainClass(Class<?> clazz) {
 
-        Class<?>[] arguments =
-                resolveTypeArguments(clazz, Repository.class);
+        Class<?>[] arguments = resolveTypeArguments(clazz, Repository.class);
         return arguments == null ? null : arguments[0];
     }
 
 
     /**
      * Returns the id class the given class is declared for. Will introspect the
-     * given class for extensions of {@link Repository} or and retrieve
-     * the {@link Serializable} type from its generics declaration.
+     * given class for extensions of {@link Repository} or and retrieve the
+     * {@link Serializable} type from its generics declaration.
      * 
      * @param clazz
      * @return the id class the given class is repository for or {@code null} if
@@ -82,8 +81,7 @@ public abstract class ClassUtils {
     @SuppressWarnings("unchecked")
     public static Class<? extends Serializable> getIdClass(Class<?> clazz) {
 
-        Class<?>[] arguments =
-                resolveTypeArguments(clazz, Repository.class);
+        Class<?>[] arguments = resolveTypeArguments(clazz, Repository.class);
         return (Class<? extends Serializable>) (arguments == null ? null
                 : arguments[1]);
     }
