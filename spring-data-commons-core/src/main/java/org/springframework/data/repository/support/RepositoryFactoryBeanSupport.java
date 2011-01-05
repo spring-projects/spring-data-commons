@@ -53,7 +53,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
      * @param repositoryInterface the repository interface to set
      */
     @Required
-    public void setRepositoryInterface(Class<T> repositoryInterface) {
+    public void setRepositoryInterface(Class<? extends T> repositoryInterface) {
 
         Assert.notNull(repositoryInterface);
         this.repositoryInterface = repositoryInterface;
