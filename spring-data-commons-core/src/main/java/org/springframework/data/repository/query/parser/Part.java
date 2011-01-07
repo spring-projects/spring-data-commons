@@ -18,7 +18,6 @@ package org.springframework.data.repository.query.parser;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 
@@ -32,7 +31,7 @@ import org.springframework.util.StringUtils;
  */
 public class Part {
 
-    private final String property;
+    private final Property property;
     private final Part.Type type;
 
 
@@ -46,7 +45,7 @@ public class Part {
     public Part(String part, Class<?> clazz) {
 
         this.type = Type.fromProperty(part, clazz);
-        this.property = type.extractProperty(part);
+        this.property = Property.from(type.extractProperty(part), clazz);
     }
 
 
@@ -70,7 +69,7 @@ public class Part {
     /**
      * @return the part
      */
-    public String getProperty() {
+    public Property getProperty() {
 
         return property;
     }
@@ -223,10 +222,6 @@ public class Part {
 
             if (keywords == null) {
                 return true;
-            }
-
-            if (ClassUtils.hasProperty(clazz, property)) {
-                return false;
             }
 
             for (String keyword : keywords) {
