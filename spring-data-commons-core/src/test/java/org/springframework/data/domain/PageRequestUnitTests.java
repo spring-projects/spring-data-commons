@@ -43,6 +43,13 @@ public class PageRequestUnitTests {
     }
 
 
+    @Test(expected = IllegalArgumentException.class)
+    public void preventsZeroSize() {
+
+        new PageRequest(0, 0);
+    }
+
+
     @Test
     public void equalsRegardsSortCorrectly() {
 

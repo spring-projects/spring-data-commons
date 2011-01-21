@@ -72,7 +72,7 @@ public class PageRequest implements Pageable {
                     "Page index must not be less than zero!");
         }
 
-        if (0 > size) {
+        if (0 >= size) {
             throw new IllegalArgumentException(
                     "Page size must not be less than or equal to zero!");
         }
