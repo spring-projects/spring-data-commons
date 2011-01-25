@@ -71,7 +71,8 @@ public class PartTree implements Iterable<OrPart> {
 
         buildTree(parts[0], domainClass);
         this.orderBySource =
-                parts.length == 2 ? new OrderBySource(parts[1]) : null;
+                parts.length == 2 ? new OrderBySource(parts[1], domainClass)
+                        : null;
 
     }
 

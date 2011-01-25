@@ -17,11 +17,12 @@ package org.springframework.data.repository.query.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 
@@ -36,45 +37,59 @@ import org.springframework.util.StringUtils;
  */
 public class OrderBySource {
 
+    private final String BLOCK_SPLIT = "(?<=Asc|Desc)(?=[A-Z])";
+    private final Pattern DIRECTION_SPLIT = Pattern.compile("(.+)(Asc|Desc)$");
+
     private final List<Order> orders;
 
 
     public OrderBySource(String clause) {
 
+        this(clause, null);
+    }
+
+
+    public OrderBySource(String clause, Class<?> domainClass) {
+
         this.orders = new ArrayList<Sort.Order>();
-        List<String> properties = new ArrayList<String>();
 
-        for (String part : clause.split("(?<=[a-z])(?=[A-Z])")) {
+        for (String part : clause.split(BLOCK_SPLIT)) {
 
-            Direction direction = defaultedFrom(part);
+            Matcher matcher = DIRECTION_SPLIT.matcher(part);
 
-            if (direction == null) {
-                properties.add(StringUtils.uncapitalize(part));
-            } else {
-                Assert.notEmpty(
-                        properties,
-                        "Invalid order syntax! You have to provide at least one property before the sort direction.");
-                orders.addAll(Order.create(direction, properties));
-                properties.clear();
+            if (!matcher.find()) {
+                throw new IllegalArgumentException(String.format(
+                        "Invalid order syntax for part %s!", part));
             }
+
+            Direction direction = Direction.fromString(matcher.group(2));
+            this.orders.add(createOrder(matcher.group(1), direction,
+                    domainClass));
         }
     }
 
 
     /**
-     * Tries to resolve a {@link Direction} for the given {@link String}.
-     * Returns {@literal null} if resolving fails.
+     * Creates an {@link Order} instance from the given property source,
+     * direction and domain class. If the domain class is given, we will use it
+     * for nested property traversal checks.
      * 
-     * @param candidate
+     * @see Property#from(String, Class)
+     * @param propertySource
+     * @param direction
+     * @param domainClass can be {@literal null}.
      * @return
      */
-    private Direction defaultedFrom(String candidate) {
+    private Order createOrder(String propertySource, Direction direction,
+            Class<?> domainClass) {
 
-        try {
-            return Direction.fromString(candidate);
-        } catch (IllegalArgumentException e) {
-            return null;
+        if (null == domainClass) {
+            return new Order(direction,
+                    StringUtils.uncapitalize(propertySource));
         }
+
+        Property property = Property.from(propertySource, domainClass);
+        return new Order(direction, property.toDotPath());
     }
 
 

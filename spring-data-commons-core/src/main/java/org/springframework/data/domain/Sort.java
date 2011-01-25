@@ -192,7 +192,7 @@ public class Sort implements
             } catch (Exception e) {
                 throw new IllegalArgumentException(
                         String.format(
-                                "Invalid value '%s' for orders given! Has to be either 'desc' or 'asc'.",
+                                "Invalid value '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive).",
                                 value), e);
             }
         }

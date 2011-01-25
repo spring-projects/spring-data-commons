@@ -40,11 +40,10 @@ public class OrderBySourceUnitTests {
 
 
     @Test
-    public void handlesSingleDirectionAndMultiplePropertiesCorrectly()
-            throws Exception {
+    public void handlesCamelCasePropertyCorrecty() throws Exception {
 
         assertThat(new OrderBySource("LastnameUsernameDesc").toSort(),
-                is(new Sort(DESC, "lastname", "username")));
+                is(new Sort(DESC, "lastnameUsername")));
     }
 
 
@@ -62,5 +61,26 @@ public class OrderBySourceUnitTests {
     public void rejectsMissingProperty() throws Exception {
 
         new OrderBySource("Desc");
+    }
+
+
+    @Test
+    public void usesNestedPropertyCorrectly() throws Exception {
+
+        OrderBySource source = new OrderBySource("BarNameDesc", Foo.class);
+        assertThat(source.toSort(), is(new Sort(new Order(DESC, "bar.name"))));
+
+    }
+
+    @SuppressWarnings("unused")
+    private class Foo {
+
+        private Bar bar;
+    }
+
+    @SuppressWarnings("unused")
+    private class Bar {
+
+        private String name;
     }
 }
