@@ -15,15 +15,15 @@
  */
 package org.springframework.data.repository.support;
 
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
-import org.springframework.data.repository.util.TxUtils;
 import org.springframework.util.Assert;
 
 
@@ -35,16 +35,13 @@ import org.springframework.util.Assert;
  * @param <T> the type of the repository
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
-        implements FactoryBean<T>, InitializingBean, BeanFactoryAware {
+        implements FactoryBean<T>, InitializingBean {
 
     private RepositoryFactorySupport factory;
 
     private Key queryLookupStrategyKey;
     private Class<? extends T> repositoryInterface;
     private Object customImplementation;
-
-    private String transactionManagerName = TxUtils.DEFAULT_TRANSACTION_MANAGER;
-    private RepositoryProxyPostProcessor txPostProcessor;
 
 
     /**
@@ -60,26 +57,14 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
     }
 
 
+    /**
+     * Set the {@link QueryLookupStrategy.Key} to be used.
+     * 
+     * @param queryLookupStrategyKey
+     */
     public void setQueryLookupStrategyKey(Key queryLookupStrategyKey) {
 
         this.queryLookupStrategyKey = queryLookupStrategyKey;
-    }
-
-
-    /**
-     * Setter to configure which transaction manager to be used. We have to use
-     * the bean name explicitly as otherwise the qualifier of the
-     * {@link org.springframework.transaction.annotation.Transactional}
-     * annotation is used. By explicitly defining the transaction manager bean
-     * name we favour let this one be the default one chosen.
-     * 
-     * @param transactionManager
-     */
-    public void setTransactionManager(String transactionManager) {
-
-        this.transactionManagerName =
-                transactionManager == null ? TxUtils.DEFAULT_TRANSACTION_MANAGER
-                        : transactionManager;
     }
 
 
@@ -140,7 +125,23 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
         this.factory = createRepositoryFactory();
         this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
         this.factory.validate(repositoryInterface, customImplementation);
-        this.factory.addRepositoryProxyPostProcessor(txPostProcessor);
+
+        for (RepositoryProxyPostProcessor processor : getRepositoryPostProcessors()) {
+            this.factory.addRepositoryProxyPostProcessor(processor);
+        }
+    }
+
+
+    /**
+     * Returns all {@link RepositoryProxyPostProcessor} to be added to the
+     * repository factory to be created. Default implementation will return an
+     * empty list.
+     * 
+     * @return
+     */
+    protected List<RepositoryProxyPostProcessor> getRepositoryPostProcessors() {
+
+        return Collections.emptyList();
     }
 
 
@@ -150,22 +151,4 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
      * @return
      */
     protected abstract RepositoryFactorySupport createRepositoryFactory();
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org
-     * .springframework.beans.factory.BeanFactory)
-     */
-    public void setBeanFactory(BeanFactory beanFactory) {
-
-        Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
-
-        this.txPostProcessor =
-                new TransactionalRepositoryProxyPostProcessor(
-                        (ListableBeanFactory) beanFactory,
-                        transactionManagerName);
-    }
 }

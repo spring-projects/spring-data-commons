@@ -144,8 +144,14 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
     protected String getAttribute(String attribute) {
 
         String value = getSource().getAttribute(attribute);
-        return hasText(value) ? value : getParent().getSource().getAttribute(
-                attribute);
+
+        if (hasText(value)) {
+            return value;
+        }
+
+        value = getParent().getSource().getAttribute(attribute);
+
+        return hasText(value) ? value : null;
     }
 
 

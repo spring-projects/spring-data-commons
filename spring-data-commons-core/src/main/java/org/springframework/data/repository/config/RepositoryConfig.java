@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
-import org.springframework.data.repository.util.TxUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -167,8 +166,7 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
     public String getTransactionManagerRef() {
 
         String ref = element.getAttribute(TRANSACTION_MANAGER_REF);
-        return StringUtils.hasText(ref) ? ref
-                : TxUtils.DEFAULT_TRANSACTION_MANAGER;
+        return StringUtils.hasText(ref) ? ref : null;
     }
 
 

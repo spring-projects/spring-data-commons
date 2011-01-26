@@ -62,7 +62,8 @@ public interface CommonRepositoryConfigInformation {
 
     /**
      * Returns the bean name of the {@link PlatformTransactionManager} to be
-     * used.
+     * used. Returns {@literal null} if no reference has been configured
+     * explicitly.
      * 
      * @return
      */

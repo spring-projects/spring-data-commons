@@ -34,7 +34,6 @@
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attributeGroup ref="repository-attributes" />
 	</xsd:complexType>
 	
 	<xsd:complexType name="repository">
@@ -50,13 +49,16 @@
 		</xsd:annotation>
 		<xsd:attribute name="id" type="xsd:string" use="required" />
 		<xsd:attribute name="custom-impl-ref" type="customImplementationReference" />
-		<xsd:attributeGroup ref="repository-attributes" />
 	</xsd:complexType>
 
 	<xsd:attributeGroup name="repository-attributes">
 		<xsd:attribute name="repository-impl-postfix" type="xsd:string" />
 		<xsd:attribute name="query-lookup-strategy" type="query-strategy" />
 		<xsd:attribute name="factory-class" type="classType" />
+	</xsd:attributeGroup>
+	
+	<xsd:attributeGroup name="transactional-repository-attributes">
+		<xsd:attributeGroup ref="repository-attributes" />
 		<xsd:attribute name="transaction-manager-ref" type="transactionManagerRef" />
 	</xsd:attributeGroup>
 

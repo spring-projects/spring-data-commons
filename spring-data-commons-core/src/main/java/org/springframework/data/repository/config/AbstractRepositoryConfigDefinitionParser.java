@@ -43,6 +43,7 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 
@@ -204,6 +205,13 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
                     context.getInterfaceName());
             builder.addPropertyValue("queryLookupStrategyKey",
                     context.getQueryLookupStrategyKey());
+
+            String transactionManagerRef = context.getTransactionManagerRef();
+
+            if (StringUtils.hasText(transactionManagerRef)) {
+                builder.addPropertyValue("transactionManager",
+                        transactionManagerRef);
+            }
 
             String customImplementationBeanName =
                     registerCustomImplementation(context, parser, beanSource);
