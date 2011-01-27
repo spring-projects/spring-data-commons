@@ -41,7 +41,6 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
-import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -62,8 +61,6 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
     private static final Logger LOG = LoggerFactory
             .getLogger(AbstractRepositoryConfigDefinitionParser.class);
 
-    private static final Class<?> PET_POST_PROCESSOR =
-            PersistenceExceptionTranslationPostProcessor.class;
     private static final String REPOSITORY_INTERFACE_POST_PROCESSOR =
             "org.springframework.data.repository.support.RepositoryInterfaceAwareBeanPostProcessor";
 
@@ -346,17 +343,6 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
      */
     protected void registerBeansForRoot(BeanDefinitionRegistry registry,
             Object source) {
-
-        // Create PersistenceExceptionTranslationPostProcessor definition
-        if (!hasBean(PET_POST_PROCESSOR, registry)) {
-
-            AbstractBeanDefinition definition =
-                    BeanDefinitionBuilder
-                            .rootBeanDefinition(PET_POST_PROCESSOR)
-                            .getBeanDefinition();
-
-            registerWithSourceAndGeneratedBeanName(registry, definition, source);
-        }
 
         AbstractBeanDefinition definition =
                 BeanDefinitionBuilder.rootBeanDefinition(
