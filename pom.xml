@@ -5,7 +5,7 @@
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons-dist</artifactId>
 	<name>Spring Data Commons Distribution</name>
-	<version>1.0.0.BUILD-SNAPSHOT</version>
+	<version>1.0.0.M2</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -26,6 +26,28 @@
 				<role>Developer</role>
 			</roles>
 			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>olivergierke</id>
+			<name>Oliver Gierke</name>
+			<email>ogierke at vmware.com</email>
+			<organization>SpringSource</organization>
+			<organizationUrl>http://www.SpringSource.com</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+		<developer>
+			<id>mhunger</id>
+			<name>Michael Hunger</name>
+			<email>michael.hunger at neotechnology.com</email>
+			<organization>Neo Technology</organization>
+			<organizationUrl>http://www.neotechnology.com</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>+1</timezone>
 		</developer>
 	</developers>
 
