@@ -249,7 +249,7 @@
 	           <javadoc:aggregate>true</javadoc:aggregate>
 	           <aggregate>true</aggregate>
 	           <breakiterator>true</breakiterator>
-	           <header>Spring Data Key-Value</header>
+	           <header>Spring Data Commons</header>
 	           <source>1.5</source>
 	           <show>protected</show>
 	           <quiet>true</quiet>
@@ -358,10 +358,11 @@
 
 	<distributionManagement>
 		<!-- see 'staging' profile for dry-run deployment settings -->
-		<downloadUrl>http://www.springsource.com/download/community</downloadUrl>
+		<downloadUrl>http://www.springsource.com/spring-data</downloadUrl>
 		<site>
-			<id>spring-site</id>
-			<url>scp://static.springframework.org/var/www/domains/springframework.org/static/htdocs/spring-data/data-commons/docs/${project.version}</url>
+		        <id>static.springframework.org</id>
+			<url>
+        scp://static.springframework.org/var/www/domains/springframework.org/static/htdocs/spring-data/data-commons/snapshot-site</url>
 		</site>
 		<repository>
 			<id>spring-milestone</id>
