@@ -15,6 +15,10 @@
                 <firstname>Thomas</firstname>
                 <surname>Risberg</surname>
             </author>
+            <author>
+                <firstname>Oliver</firstname>
+                <surname>Gierke</surname>
+            </author>
         </authorgroup>
 
         <legalnotice>
@@ -38,6 +42,7 @@
                 This part of the reference documentation details the ...
             </para>
         </partintro>
+	<xi:include href="repositories.xml" />
         <!-- <xi:include href="data-commons.xml"/> -->
     </part>
 </book>
