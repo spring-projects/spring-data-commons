@@ -4,7 +4,7 @@
 <chapter id="repositories">
   <title>Repositories</title>
 
-  <section id="introduction">
+  <section id="repositories.introduction">
     <title>Introduction</title>
 
     <para>Implementing a data access layer of an application has been
@@ -23,7 +23,7 @@
     interfaces of Spring Data repositories.</para>
   </section>
 
-  <section id="core-concepts">
+  <section id="repositories.core-concepts">
     <title>Core concepts</title>
 
     <para>The central interface in Spring Data repository abstraction is
@@ -32,7 +32,7 @@
     type of the domain class and provides some sophisticated functionality
     around CRUD for the entity managed.</para>
 
-    <example id="repository">
+    <example id="repositories.repository">
       <title>Repository interface</title>
 
       <programlistingco>
@@ -109,7 +109,7 @@
     interface.</para>
   </section>
 
-  <section id="query-methods">
+  <section id="repositories.query-methods">
     <title>Query methods</title>
 
     <para>Next to standard CRUD functionality repositories are usually query
@@ -234,7 +234,7 @@
         </simplesect>
       </section>
 
-      <section id="query-methods.query-creation">
+      <section id="repositories.query-methods.query-creation">
         <title>Query creation</title>
 
         <para>The query builder mechanism built into Spring Data repository
@@ -308,7 +308,7 @@
         </section>
       </section>
 
-      <section id="special-parameters">
+      <section id="repositories.special-parameters">
         <title>Special parameter handling</title>
 
         <para>To hand parameters to your query you simply define method
@@ -456,10 +456,10 @@ UserRepository repository = factory.getRepository(UserRepository.class</programl
     </section>
   </section>
 
-  <section id="custom-implementations">
+  <section id="repositories.custom-implementations">
     <title>Custom implementations</title>
 
-    <section id="single-repository-behaviour">
+    <section id="repositories.single-repository-behaviour">
       <title>Adding behaviour to single repositories</title>
 
       <para>Often it is necessary to provide a custom implementation for a few
@@ -579,7 +579,7 @@ UserRepository repository = factory.getRepository(UserRepository.class</programl
       </simplesect>
     </section>
 
-    <section id="custom-behaviour-for-all-repositories">
+    <section id="repositories.custom-behaviour-for-all-repositories">
       <title>Adding custom behaviour to all repositories</title>
 
       <para>In other cases you might want to add a single method to all of
