@@ -107,6 +107,27 @@
     to include additional technology specific methods. We will now ship
     implementations for a variety of Spring Data modules that implement that
     interface.</para>
+
+    <para>On top of the Repository there is a PagingAndSortingRepository
+    abstraction that adds additional methods to ease paginated access to
+    entities:</para>
+
+    <example>
+      <title>PagingAndSortingRepository</title>
+
+      <programlisting language="java">public interface PagingAndSortingRepository&lt;T, ID extends Serializable&gt; extends Repository&lt;T, ID&gt; {
+
+    List&lt;T&gt; findAll(Sort sort);
+
+    Page&lt;T&gt; findAll(Pageable pageable);
+}</programlisting>
+    </example>
+
+    <para>Accessing the second page of User by a page size of 20 you could
+    simply do something like this:</para>
+
+    <programlisting>PagingAndSortingRepository&lt;User, Long&gt; repository = // … get access to a bean
+Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlisting>
   </section>
 
   <section id="repositories.query-methods">
@@ -385,7 +406,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
         <interfacename>UserRepository</interfacename> would be registered
         under <code>userRepository</code>. The <code>base-package</code>
         attribute allows to use wildcards, so that you can have a pattern of
-        packages parsed. </para>
+        packages parsed.</para>
 
         <simplesect>
           <title>Using filters</title>
