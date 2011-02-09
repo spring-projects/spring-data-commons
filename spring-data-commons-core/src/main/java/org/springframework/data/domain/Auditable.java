@@ -27,9 +27,9 @@ import org.joda.time.DateTime;
  * 
  * @author Oliver Gierke
  * @param <U> the auditing type. Typically some kind of user.
- * @param <PK> the type of the auditing type's idenifier
+ * @param <ID> the type of the auditing type's idenifier
  */
-public interface Auditable<U, PK extends Serializable> extends Persistable<PK> {
+public interface Auditable<U, ID extends Serializable> extends Persistable<ID> {
 
     /**
      * Returns the user who created this entity.
