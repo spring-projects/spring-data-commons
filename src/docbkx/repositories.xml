@@ -383,7 +383,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
         mechanism. Each of those includes a repositories element that allows
         you to simply define a base packge Spring shall scan for you.</para>
 
-        <programlisting language="java">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+        <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://www.springframework.org/schema/data/jpa
@@ -453,7 +453,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
           instances to create you can do this with nested <code>&lt;repository
           /&gt;</code> elements.</para>
 
-          <programlisting language="java">&lt;repositories base-package="com.acme.repositories"&gt;
+          <programlisting language="xml">&lt;repositories base-package="com.acme.repositories"&gt;
   &lt;repository id="userRepository" /&gt;
 &lt;/repositories&gt;
 </programlisting>
