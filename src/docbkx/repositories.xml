@@ -176,7 +176,8 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
 
         <programlisting language="java">public class SomeClient {
 
-  @Autowired private PersonRepoyitory repository;
+  @Autowired
+  private PersonRepoyitory repository;
 
   public void doSomething() {
     List&lt;Person&gt; persons = repository.findByLastname("Matthews");
@@ -202,7 +203,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
     <section>
       <title>Defining query methods</title>
 
-      <section>
+      <section id="repositories.query-methods.query-lookup-strategies">
         <title>Query lookup strategies</title>
 
         <para>The next thing we have to discuss is the definition of query
@@ -282,11 +283,13 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
         traversals combined with operators that can be concatenated. As you
         can see in the example you can combine property expressions with And
         and Or. Beyond that you will get support for various operators like
-        Between, LessThan, GreaterThan, Like for the property expressions. As
-        the operators supported can vary from datastore to datastore please
-        consult the according part of the reference documentation.</para>
+        <literal>Between</literal>, <literal>LessThan</literal>,
+        <literal>GreaterThan</literal>, <literal>Like</literal> for the
+        property expressions. As the operators supported can vary from
+        datastore to datastore please consult the according part of the
+        reference documentation.</para>
 
-        <section>
+        <section id="repositories.query-methods.property-expressions">
           <title>Property expressions</title>
 
           <para>Property expressions can just refer to a direct property of
@@ -471,7 +474,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
           <title>Standalone usage of repository factory</title>
 
           <programlisting>RepositoryFactorySupport factory = … // Instantiate factory here
-UserRepository repository = factory.getRepository(UserRepository.class</programlisting>
+UserRepository repository = factory.getRepository(UserRepository.class);</programlisting>
         </example>
       </section>
     </section>

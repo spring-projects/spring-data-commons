@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<appendix id="namespace-reference">
+  <title>Namespace reference</title>
+
+  <section id="namespace-dao-config">
+    <title>The <code>&lt;repositories /&gt;</code> element</title>
+
+    <para>The <code>&lt;repositories /&gt;</code> element acts as container
+    for <code>&lt;repository /&gt;</code> elements or can be left empty to
+    trigger auto detection<footnote>
+        <para>see <xref linkend="config.autoconfig" /></para>
+      </footnote> of repository instances. Attributes defined for
+    <code>&lt;repositories /&gt;</code> act are propagated to contained
+    <code>&lt;repository /&gt;</code> elements but can be overridden of
+    course.</para>
+
+    <table>
+      <title>Attributes</title>
+
+      <tgroup cols="2">
+        <colspec colwidth="1*" />
+
+        <colspec colwidth="2*" />
+
+        <thead>
+          <row>
+            <entry>Name</entry>
+
+            <entry>Description</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry><code>base-package</code></entry>
+
+            <entry>Defines the package to be used to be scanned for repository
+            interfaces extending <interfacename>*Repository</interfacename>
+            (actual interface is determined by specific Spring Data module) in
+            auto detection mode. All packages below the configured package
+            will be scanned, too. In auto configuration mode (no nested
+            <code>&lt;repository /&gt;</code> elements) wildcards are also
+            allowed.</entry>
+          </row>
+
+          <row>
+            <entry><code>repository-impl-postfix</code></entry>
+
+            <entry>Defines the postfix to autodetect custom repository
+            implementations. Classes whose names end with the configured
+            postfix will be considered as candidates. Defaults to
+            <code>Impl</code>.</entry>
+          </row>
+
+          <row>
+            <entry><code>query-lookup-strategy</code></entry>
+
+            <entry>Determines the strategy to be used to create finder
+            queries. See <xref linkend="sample-app.finders.strategies" /> for
+            details. Defaults to <code>create-if-not-found</code>.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+
+  <section id="namespace-dao">
+    <title>The <code>&lt;repository /&gt;</code> element</title>
+
+    <para>The <code>&lt;repository /&gt;</code> element can contain all
+    attributes of <code>&lt;repositories /&gt;</code> except
+    <code>base-package</code>. This will result in overriding the values
+    configured in the surrounding <code>&lt;repositories /&gt;</code> element.
+    Thus here we will only document extended attributes.</para>
+
+    <table>
+      <title>Attributes</title>
+
+      <tgroup cols="2">
+        <colspec colwidth="1*" />
+
+        <colspec colwidth="2*" />
+
+        <tbody>
+          <row>
+            <entry><code>id</code></entry>
+
+            <entry>Defines the id of the bean the repository instance will be
+            registered under as well as the repository interface name.</entry>
+          </row>
+
+          <row>
+            <entry><code>custom-impl-ref</code></entry>
+
+            <entry>Defines a reference to a custom repository implementation
+            bean.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</appendix>
