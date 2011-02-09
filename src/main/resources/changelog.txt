@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.0.0.M3 (2011-02-09)
+----------------------------------------
+
+* Improved documentation for repositories
+
 Changes in version 1.0.0.M2 (2011-01-31)
 ----------------------------------------
 
