@@ -15,29 +15,32 @@
  */
 package org.springframework.data.repository.query;
 
+import java.util.Iterator;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 
 /**
- * {@link SimpleParameterAccessor} is used to bind method parameters.
+ * {@link ParameterAccessor} implementation using a {@link Parameters} instance
+ * to find special parameters.
  * 
  * @author Oliver Gierke
  */
-public class SimpleParameterAccessor {
+public class ParametersParameterAccessor implements ParameterAccessor {
 
     private final Parameters parameters;
     private final Object[] values;
 
 
     /**
-     * Creates a new {@link SimpleParameterAccessor}.
+     * Creates a new {@link ParametersParameterAccessor}.
      * 
      * @param parameters
      * @param values
      */
-    public SimpleParameterAccessor(Parameters parameters, Object[] values) {
+    public ParametersParameterAccessor(Parameters parameters, Object[] values) {
 
         Assert.notNull(parameters);
         Assert.notNull(values);
@@ -50,11 +53,11 @@ public class SimpleParameterAccessor {
     }
 
 
-    /**
-     * Returns the {@link Pageable} of the parameters, if available. Returns
-     * {@code null} otherwise.
+    /*
+     * (non-Javadoc)
      * 
-     * @return
+     * @see
+     * org.springframework.data.repository.query.ParameterAccessor#getPageable()
      */
     public Pageable getPageable() {
 
@@ -66,13 +69,11 @@ public class SimpleParameterAccessor {
     }
 
 
-    /**
-     * Returns the sort instance to be used for query creation. Will use a
-     * {@link Sort} parameter if available or the {@link Sort} contained in a
-     * {@link Pageable} if available. Returns {@code null} if no {@link Sort}
-     * can be found.
+    /*
+     * (non-Javadoc)
      * 
-     * @return
+     * @see
+     * org.springframework.data.repository.query.ParameterAccessor#getSort()
      */
     public Sort getSort() {
 
@@ -94,11 +95,11 @@ public class SimpleParameterAccessor {
     }
 
 
-    /**
-     * Returns a {@link BindableParameterIterator} to traverse all bindable
-     * parameters.
+    /*
+     * (non-Javadoc)
      * 
-     * @return
+     * @see
+     * org.springframework.data.repository.query.ParameterAccessor#iterator()
      */
     public BindableParameterIterator iterator() {
 
@@ -111,7 +112,7 @@ public class SimpleParameterAccessor {
      * 
      * @author Oliver Gierke
      */
-    public class BindableParameterIterator {
+    private class BindableParameterIterator implements Iterator<Object> {
 
         private int currentIndex = 0;
 
@@ -124,6 +125,28 @@ public class SimpleParameterAccessor {
         public Object next() {
 
             return getBindableValue(currentIndex++);
+        }
+
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.util.Iterator#hasNext()
+         */
+        public boolean hasNext() {
+
+            return values.length <= currentIndex;
+        }
+
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.util.Iterator#remove()
+         */
+        public void remove() {
+
+            throw new UnsupportedOperationException();
         }
     }
 }

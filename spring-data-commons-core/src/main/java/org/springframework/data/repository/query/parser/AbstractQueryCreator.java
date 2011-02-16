@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
  */
 package org.springframework.data.repository.query.parser;
 
+import java.util.Iterator;
+
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.SimpleParameterAccessor;
-import org.springframework.data.repository.query.SimpleParameterAccessor.BindableParameterIterator;
+import org.springframework.data.repository.query.ParameterAccessor;
+import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.util.Assert;
 
@@ -32,19 +34,18 @@ import org.springframework.util.Assert;
  */
 public abstract class AbstractQueryCreator<T, S> {
 
-    private final SimpleParameterAccessor parameters;
+    private final ParameterAccessor parameters;
     private final PartTree tree;
 
 
     /**
      * Creates a new {@link AbstractQueryCreator} for the given {@link PartTree}
-     * and {@link SimpleParameterAccessor}.
+     * and {@link ParametersParameterAccessor}.
      * 
      * @param tree
      * @param parameters
      */
-    public AbstractQueryCreator(PartTree tree,
-            SimpleParameterAccessor parameters) {
+    public AbstractQueryCreator(PartTree tree, ParameterAccessor parameters) {
 
         Assert.notNull(tree);
         Assert.notNull(parameters);
@@ -75,7 +76,7 @@ public abstract class AbstractQueryCreator<T, S> {
     private S createCriteria(PartTree tree) {
 
         S base = null;
-        BindableParameterIterator iterator = parameters.iterator();
+        Iterator<Object> iterator = parameters.iterator();
 
         for (OrPart node : tree) {
 
@@ -102,7 +103,7 @@ public abstract class AbstractQueryCreator<T, S> {
      * @param iterator
      * @return
      */
-    protected abstract S create(Part part, BindableParameterIterator iterator);
+    protected abstract S create(Part part, Iterator<Object> iterator);
 
 
     /**
@@ -114,8 +115,7 @@ public abstract class AbstractQueryCreator<T, S> {
      * @param iterator
      * @return
      */
-    protected abstract S and(Part part, S base,
-            BindableParameterIterator iterator);
+    protected abstract S and(Part part, S base, Iterator<Object> iterator);
 
 
     /**
