@@ -91,6 +91,32 @@ public class PartTreeUnitTests {
     }
 
 
+    @Test
+    public void detectsDistinctCorrectly() throws Exception {
+
+        PartTree tree = new PartTree("findDistinctByLastname", User.class);
+        assertThat(tree.isDistinct(), is(true));
+
+        tree = new PartTree("findUsersDistinctByLastname", User.class);
+        assertThat(tree.isDistinct(), is(true));
+
+        tree = new PartTree("findDistinctUsersByLastname", User.class);
+        assertThat(tree.isDistinct(), is(true));
+
+        tree = new PartTree("findUsersByLastname", User.class);
+        assertThat(tree.isDistinct(), is(false));
+
+        tree = new PartTree("findByLastname", User.class);
+        assertThat(tree.isDistinct(), is(false));
+
+        // Check it's non-greedy (would strip everything until Order*By*
+        // otherwise)
+        tree = new PartTree("findByLastnameOrderByFirstnameDesc", User.class);
+        assertThat(tree.isDistinct(), is(false));
+        assertThat(tree.getSort(), is(new Sort(Direction.DESC, "firstname")));
+    }
+
+
     private void assertPart(PartTree tree, Part[]... parts) {
 
         Iterator<OrPart> iterator = tree.iterator();

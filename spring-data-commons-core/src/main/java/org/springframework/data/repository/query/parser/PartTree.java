@@ -21,6 +21,7 @@ import static java.util.regex.Pattern.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Sort;
@@ -40,11 +41,13 @@ import org.springframework.util.Assert;
 public class PartTree implements Iterable<OrPart> {
 
     private static final String ORDER_BY = "OrderBy";
-    private static final String[] PREFIXES = new String[] { "findBy", "find",
-            "readBy", "read", "getBy", "get" };
-    private static final String PREFIX_TEMPLATE = "^%s(?=[A-Z]).*";
     private static final String KEYWORD_TEMPLATE = "(%s)(?=[A-Z])";
+    private static final String DISTINCT = "Distinct";
 
+    private static final Pattern PREFIX_TEMPLATE = Pattern
+            .compile("^(find|read|get)(\\p{Upper}.*?)??By");
+
+    private final boolean distinct;
     private final OrderBySource orderBySource;
     private final List<OrPart> nodes = new ArrayList<PartTree.OrPart>();
 
@@ -61,6 +64,7 @@ public class PartTree implements Iterable<OrPart> {
         Assert.notNull(source);
         Assert.notNull(domainClass);
 
+        this.distinct = detectDistinct(source);
         String foo = strip(source);
         String[] parts = split(foo, ORDER_BY);
 
@@ -110,6 +114,17 @@ public class PartTree implements Iterable<OrPart> {
 
 
     /**
+     * Returns whether we indicate distinct lookup of entities.
+     * 
+     * @return
+     */
+    public boolean isDistinct() {
+
+        return distinct;
+    }
+
+
+    /**
      * Splits the given text at the given keywords. Expects camelcase style to
      * only match concrete keywords and not derivatives of it.
      * 
@@ -135,15 +150,33 @@ public class PartTree implements Iterable<OrPart> {
      */
     private String strip(String methodName) {
 
-        for (String prefix : PREFIXES) {
+        Matcher matcher = PREFIX_TEMPLATE.matcher(methodName);
 
-            String regex = format(PREFIX_TEMPLATE, prefix);
-            if (methodName.matches(regex)) {
-                return methodName.substring(prefix.length());
-            }
+        if (matcher.find()) {
+            return methodName.substring(matcher.group().length());
+        } else {
+            return methodName;
+        }
+    }
+
+
+    /**
+     * Checks whether the given source string contains the {@link #DISTINCT}
+     * keyword in it's prefix.
+     * 
+     * @param source
+     * @return
+     */
+    private boolean detectDistinct(String source) {
+
+        Matcher matcher = PREFIX_TEMPLATE.matcher(source);
+
+        if (!matcher.find()) {
+            return false;
         }
 
-        return methodName;
+        String group = matcher.group(2);
+        return group != null && group.contains(DISTINCT);
     }
 
     /**

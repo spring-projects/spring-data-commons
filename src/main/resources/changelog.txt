@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.0.0.M4
+----------------------------------------
+
+Repository
+* Improved ParameterAccessor infrastructure
+* Added support for 'Distinct' keyword in finder method names
+
 Changes in version 1.0.0.M3 (2011-02-09)
 ----------------------------------------
 
