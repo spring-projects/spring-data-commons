@@ -33,7 +33,7 @@ public abstract class RepositorySupport<T, ID extends Serializable> implements
         Repository<T, ID> {
 
     private final Class<T> domainClass;
-    private final IsNewAware isNewStrategy;
+    private IsNewAware isNewStrategy;
 
 
     /**
@@ -45,8 +45,6 @@ public abstract class RepositorySupport<T, ID extends Serializable> implements
 
         Assert.notNull(domainClass);
         this.domainClass = domainClass;
-        this.isNewStrategy = createIsNewStrategy(domainClass);
-        Assert.notNull(isNewStrategy);
     }
 
 
@@ -80,6 +78,11 @@ public abstract class RepositorySupport<T, ID extends Serializable> implements
      * @return the isNewStrategy
      */
     protected IsNewAware getIsNewStrategy() {
+
+        if (isNewStrategy == null) {
+            this.isNewStrategy = createIsNewStrategy(domainClass);
+            Assert.notNull(isNewStrategy);
+        }
 
         return isNewStrategy;
     }
