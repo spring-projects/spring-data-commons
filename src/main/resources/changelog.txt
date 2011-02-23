@@ -7,6 +7,7 @@ Changes in version 1.0.0.M4
 Repository
 * Improved ParameterAccessor infrastructure
 * Added support for 'Distinct' keyword in finder method names
+* Added support for 'In' and 'NotIn' keywords
 
 Changes in version 1.0.0.M3 (2011-02-09)
 ----------------------------------------
