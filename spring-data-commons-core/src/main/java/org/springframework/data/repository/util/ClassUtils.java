@@ -15,14 +15,10 @@
  */
 package org.springframework.data.repository.util;
 
-import static org.springframework.core.GenericTypeResolver.*;
-
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -38,52 +34,11 @@ import org.springframework.util.StringUtils;
  */
 public abstract class ClassUtils {
 
-    @SuppressWarnings("rawtypes")
-    private static final TypeVariable<Class<Repository>>[] PARAMETERS =
-            Repository.class.getTypeParameters();
-    private static final String DOMAIN_TYPE_NAME = PARAMETERS[0].getName();
-    private static final String ID_TYPE_NAME = PARAMETERS[1].getName();
-
-
     /**
      * Private constructor to prevent instantiation.
      */
     private ClassUtils() {
 
-    }
-
-
-    /**
-     * Returns the domain class the given class is declared for. Will introspect
-     * the given class for extensions of {@link Repository} and retrieve the
-     * domain class type from its generics declaration.
-     * 
-     * @param clazz
-     * @return the domain class the given class is repository for or
-     *         {@code null} if none found.
-     */
-    public static Class<?> getDomainClass(Class<?> clazz) {
-
-        Class<?>[] arguments = resolveTypeArguments(clazz, Repository.class);
-        return arguments == null ? null : arguments[0];
-    }
-
-
-    /**
-     * Returns the id class the given class is declared for. Will introspect the
-     * given class for extensions of {@link Repository} or and retrieve the
-     * {@link Serializable} type from its generics declaration.
-     * 
-     * @param clazz
-     * @return the id class the given class is repository for or {@code null} if
-     *         none found.
-     */
-    @SuppressWarnings("unchecked")
-    public static Class<? extends Serializable> getIdClass(Class<?> clazz) {
-
-        Class<?>[] arguments = resolveTypeArguments(clazz, Repository.class);
-        return (Class<? extends Serializable>) (arguments == null ? null
-                : arguments[1]);
     }
 
 
@@ -240,115 +195,5 @@ public abstract class ClassUtils {
         }
 
         throw ex;
-    }
-
-
-    /**
-     * Returns the given base class' method if the given method (declared in the
-     * interface) was also declared at the base class. Returns the given method
-     * if the given base class does not declare the method given. Takes generics
-     * into account.
-     * 
-     * @param method
-     * @param baseClass
-     * @param repositoryInterface
-     * @return
-     */
-    public static Method getBaseClassMethodFor(Method method,
-            Class<?> baseClass, Class<?> repositoryInterface) {
-
-        for (Method baseClassMethod : baseClass.getMethods()) {
-
-            // Wrong name
-            if (!method.getName().equals(baseClassMethod.getName())) {
-                continue;
-            }
-
-            // Wrong number of arguments
-            if (!(method.getParameterTypes().length == baseClassMethod
-                    .getParameterTypes().length)) {
-                continue;
-            }
-
-            // Check whether all parameters match
-            if (!parametersMatch(method, baseClassMethod, repositoryInterface)) {
-                continue;
-            }
-
-            return baseClassMethod;
-        }
-
-        return method;
-    }
-
-
-    /**
-     * Checks the given method's parameters to match the ones of the given base
-     * class method. Matches generic arguments agains the ones bound in the
-     * given repository interface.
-     * 
-     * @param method
-     * @param baseClassMethod
-     * @param repositoryInterface
-     * @return
-     */
-    private static boolean parametersMatch(Method method,
-            Method baseClassMethod, Class<?> repositoryInterface) {
-
-        Type[] genericTypes = baseClassMethod.getGenericParameterTypes();
-        Class<?>[] types = baseClassMethod.getParameterTypes();
-        Class<?>[] methodParameters = method.getParameterTypes();
-
-        for (int i = 0; i < genericTypes.length; i++) {
-
-            Type type = genericTypes[i];
-
-            if (type instanceof TypeVariable<?>) {
-
-                String name = ((TypeVariable<?>) type).getName();
-
-                if (!matchesGenericType(name, methodParameters[i],
-                        repositoryInterface)) {
-                    return false;
-                }
-
-            } else {
-
-                if (!types[i].equals(methodParameters[i])) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-
-    /**
-     * Checks whether the given parameter type matches the generic type of the
-     * given parameter. Thus when {@literal PK} is declared, the method ensures
-     * that given method parameter is the primary key type declared in the given
-     * repository interface e.g.
-     * 
-     * @param name
-     * @param parameterType
-     * @param repositoryInterface
-     * @return
-     */
-    private static boolean matchesGenericType(String name,
-            Class<?> parameterType, Class<?> repositoryInterface) {
-
-        Class<?> entityType = getDomainClass(repositoryInterface);
-        Class<?> idClass = getIdClass(repositoryInterface);
-
-        if (ID_TYPE_NAME.equals(name) && parameterType.equals(idClass)) {
-            return true;
-        }
-
-        if (DOMAIN_TYPE_NAME.equals(name) && parameterType.equals(entityType)) {
-            return true;
-        }
-
-        return false;
     }
 }

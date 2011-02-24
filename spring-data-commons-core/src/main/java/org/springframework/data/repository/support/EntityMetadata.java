@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,34 @@
 package org.springframework.data.repository.support;
 
 /**
- * Interface to abstract the ways to retrieve the id of the given entity.
+ * Metadata for entity types.
  * 
  * @author Oliver Gierke
  */
-public interface IdAware {
+public interface EntityMetadata<T> {
+
+    /**
+     * Returns whether the given entity is considered to be new.
+     * 
+     * @param entity must never be {@literal null}
+     * @return
+     */
+    boolean isNew(T entity);
+
 
     /**
      * Returns the id of the given entity.
      * 
-     * @param entity
+     * @param entity must never be {@literal null}
      * @return
      */
-    Object getId(Object entity);
+    Object getId(T entity);
+
+
+    /**
+     * Returns the actual domain class type.
+     * 
+     * @return
+     */
+    Class<T> getJavaType();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,31 @@
  */
 package org.springframework.data.repository.support;
 
-import org.springframework.data.domain.Persistable;
+import org.springframework.util.Assert;
 
 
 /**
- * Implementation of {@link IsNewAware} that assumes the entity handled
- * implements {@link Persistable} and uses {@link Persistable#isNew()} for the
- * {@link #isNew(Object)} check.
+ * Base class for implementations of {@link EntityMetadata}. Considers an entity
+ * to be new whenever {@link #getId(Object)} returns {@literal null}.
  * 
  * @author Oliver Gierke
  */
-public class PersistableEntityInformation implements IsNewAware, IdAware {
+public abstract class AbstractEntityMetadata<T> implements EntityMetadata<T> {
+
+    private final Class<T> domainClass;
+
+
+    /**
+     * Creates a new {@link AbstractEntityMetadata} from the given domain class.
+     * 
+     * @param domainClass
+     */
+    public AbstractEntityMetadata(Class<T> domainClass) {
+
+        Assert.notNull(domainClass);
+        this.domainClass = domainClass;
+    }
+
 
     /*
      * (non-Javadoc)
@@ -34,9 +48,9 @@ public class PersistableEntityInformation implements IsNewAware, IdAware {
      * org.springframework.data.repository.support.IsNewAware#isNew(java.lang
      * .Object)
      */
-    public boolean isNew(Object entity) {
+    public boolean isNew(T entity) {
 
-        return ((Persistable<?>) entity).isNew();
+        return getId(entity) == null;
     }
 
 
@@ -44,11 +58,11 @@ public class PersistableEntityInformation implements IsNewAware, IdAware {
      * (non-Javadoc)
      * 
      * @see
-     * org.springframework.data.repository.support.IdAware#getId(java.lang.Object
-     * )
+     * org.springframework.data.repository.support.EntityInformation#getJavaType
+     * ()
      */
-    public Object getId(Object entity) {
+    public Class<T> getJavaType() {
 
-        return ((Persistable<?>) entity).getId();
+        return this.domainClass;
     }
 }

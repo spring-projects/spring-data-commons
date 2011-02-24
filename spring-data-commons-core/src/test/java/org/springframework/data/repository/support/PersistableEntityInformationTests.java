@@ -23,7 +23,7 @@ import org.springframework.data.domain.Persistable;
 
 
 /**
- * Unit test for {@link PersistableEntityInformation}.
+ * Unit test for {@link PersistableEntityMetadata}.
  * 
  * @author Oliver Gierke
  */
@@ -32,23 +32,25 @@ public class PersistableEntityInformationTests {
     @Test
     public void detectsPersistableCorrectly() throws Exception {
 
-        PersistableEntityInformation info = new PersistableEntityInformation();
+        PersistableEntityMetadata info = new PersistableEntityMetadata();
 
         assertNewAndNoId(info, new PersistableEntity(null));
         assertNotNewAndId(info, new PersistableEntity(1L), 1L);
     }
 
 
-    private <T extends IdAware & IsNewAware> void assertNewAndNoId(T info,
-            Object entity) {
+    @SuppressWarnings("rawtypes")
+    private <S extends EntityMetadata<Persistable>> void assertNewAndNoId(
+            S info, Persistable entity) {
 
         assertThat(info.isNew(entity), is(true));
         assertThat(info.getId(entity), is(nullValue()));
     }
 
 
-    private <T extends IdAware & IsNewAware> void assertNotNewAndId(T info,
-            Object entity, Object id) {
+    @SuppressWarnings("rawtypes")
+    private <S extends EntityMetadata<Persistable>> void assertNotNewAndId(
+            S info, Persistable entity, Object id) {
 
         assertThat(info.isNew(entity), is(false));
         assertThat(info.getId(entity), is(id));
