@@ -111,6 +111,24 @@ public class Sort implements
     }
 
 
+    /**
+     * Returns the order registered for the given property.
+     * 
+     * @param property
+     * @return
+     */
+    public Order getOrderFor(String property) {
+
+        for (Order order : this) {
+            if (order.getProperty().equals(property)) {
+                return order;
+            }
+        }
+
+        return null;
+    }
+
+
     /*
      * (non-Javadoc)
      * 

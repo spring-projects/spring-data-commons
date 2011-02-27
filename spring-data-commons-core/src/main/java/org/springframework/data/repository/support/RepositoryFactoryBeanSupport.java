@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
@@ -124,23 +121,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
 
         this.factory = createRepositoryFactory();
         this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
-
-        for (RepositoryProxyPostProcessor processor : getRepositoryPostProcessors()) {
-            this.factory.addRepositoryProxyPostProcessor(processor);
-        }
-    }
-
-
-    /**
-     * Returns all {@link RepositoryProxyPostProcessor} to be added to the
-     * repository factory to be created. Default implementation will return an
-     * empty list.
-     * 
-     * @return
-     */
-    protected List<RepositoryProxyPostProcessor> getRepositoryPostProcessors() {
-
-        return Collections.emptyList();
     }
 
 

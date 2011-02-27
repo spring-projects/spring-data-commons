@@ -32,11 +32,11 @@ import org.springframework.data.domain.Persistable;
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PersistableEntityMetadataUnitTests {
+public class PersistableEntityInformationUnitTests {
 
     @SuppressWarnings("rawtypes")
-    static final PersistableEntityMetadata<Persistable> metadata =
-            new PersistableEntityMetadata<Persistable>(Persistable.class);
+    static final PersistableEntityInformation<Persistable> metadata =
+            new PersistableEntityInformation<Persistable>(Persistable.class);
 
     @Mock
     Persistable<Long> persistable;
@@ -64,8 +64,8 @@ public class PersistableEntityMetadataUnitTests {
     @Test
     public void returnsGivenClassAsEntityType() throws Exception {
 
-        PersistableEntityMetadata<PersistableEntity> info =
-                new PersistableEntityMetadata<PersistableEntity>(
+        PersistableEntityInformation<PersistableEntity> info =
+                new PersistableEntityInformation<PersistableEntity>(
                         PersistableEntity.class);
 
         assertEquals(PersistableEntity.class, info.getJavaType());

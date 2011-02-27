@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.query;
-
-
+package org.springframework.data.repository.support;
 
 /**
- * Interface for a query abstraction.
+ * Extension of {@link EntityMetadata} to add functionality to query information
+ * of entity instances.
  * 
  * @author Oliver Gierke
  */
-public interface RepositoryQuery {
+public interface EntityInformation<T> extends EntityMetadata<T> {
 
     /**
-     * Executes the {@link RepositoryQuery} with the given parameters.
+     * Returns whether the given entity is considered to be new.
      * 
-     * @param store
-     * @param parameters
+     * @param entity must never be {@literal null}
      * @return
      */
-    public Object execute(Object[] parameters);
+    boolean isNew(T entity);
 
 
     /**
-     * Returns the
+     * Returns the id of the given entity.
      * 
+     * @param entity must never be {@literal null}
      * @return
      */
-    public QueryMethod getQueryMethod();
+    Object getId(T entity);
 }

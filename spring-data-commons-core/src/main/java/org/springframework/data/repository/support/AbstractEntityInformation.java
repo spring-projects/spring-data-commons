@@ -19,22 +19,24 @@ import org.springframework.util.Assert;
 
 
 /**
- * Base class for implementations of {@link EntityMetadata}. Considers an entity
- * to be new whenever {@link #getId(Object)} returns {@literal null}.
+ * Base class for implementations of {@link EntityInformation}. Considers an
+ * entity to be new whenever {@link #getId(Object)} returns {@literal null}.
  * 
  * @author Oliver Gierke
  */
-public abstract class AbstractEntityMetadata<T> implements EntityMetadata<T> {
+public abstract class AbstractEntityInformation<T> implements
+        EntityInformation<T> {
 
     private final Class<T> domainClass;
 
 
     /**
-     * Creates a new {@link AbstractEntityMetadata} from the given domain class.
+     * Creates a new {@link AbstractEntityInformation} from the given domain
+     * class.
      * 
      * @param domainClass
      */
-    public AbstractEntityMetadata(Class<T> domainClass) {
+    public AbstractEntityInformation(Class<T> domainClass) {
 
         Assert.notNull(domainClass);
         this.domainClass = domainClass;

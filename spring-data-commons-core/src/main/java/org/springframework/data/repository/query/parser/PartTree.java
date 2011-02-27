@@ -126,6 +126,26 @@ public class PartTree implements Iterable<OrPart> {
 
 
     /**
+     * Returns an {@link Iterable} of all parts contained in the
+     * {@link PartTree}.
+     * 
+     * @return
+     */
+    public Iterable<Part> getParts() {
+
+        List<Part> result = new ArrayList<Part>();
+
+        for (OrPart orPart : this) {
+            for (Part part : orPart) {
+                result.add(part);
+            }
+        }
+
+        return result;
+    }
+
+
+    /**
      * Splits the given text at the given keywords. Expects camelcase style to
      * only match concrete keywords and not derivatives of it.
      * 

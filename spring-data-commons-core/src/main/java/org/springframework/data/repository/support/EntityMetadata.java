@@ -23,24 +23,6 @@ package org.springframework.data.repository.support;
 public interface EntityMetadata<T> {
 
     /**
-     * Returns whether the given entity is considered to be new.
-     * 
-     * @param entity must never be {@literal null}
-     * @return
-     */
-    boolean isNew(T entity);
-
-
-    /**
-     * Returns the id of the given entity.
-     * 
-     * @param entity must never be {@literal null}
-     * @return
-     */
-    Object getId(T entity);
-
-
-    /**
      * Returns the actual domain class type.
      * 
      * @return

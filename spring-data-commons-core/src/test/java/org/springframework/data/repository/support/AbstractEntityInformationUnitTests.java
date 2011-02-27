@@ -22,32 +22,32 @@ import org.junit.Test;
 
 
 /**
- * Unit tests for {@link AbstractEntityMetadata}.
+ * Unit tests for {@link AbstractEntityInformation}.
  * 
  * @author Oliver Gierke
  */
-public class AbstractEntityMetadataUnitTests {
+public class AbstractEntityInformationUnitTests {
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsNullDomainClass() throws Exception {
 
-        new DummyAbstractEntityMetadata(null);
+        new DummyAbstractEntityInformation(null);
     }
 
 
     @Test
     public void considersEntityNewIfGetIdReturnsNull() throws Exception {
 
-        EntityMetadata<Object> metadata =
-                new DummyAbstractEntityMetadata(Object.class);
+        EntityInformation<Object> metadata =
+                new DummyAbstractEntityInformation(Object.class);
         assertThat(metadata.isNew(null), is(true));
         assertThat(metadata.isNew(new Object()), is(false));
     }
 
-    private static class DummyAbstractEntityMetadata extends
-            AbstractEntityMetadata<Object> {
+    private static class DummyAbstractEntityInformation extends
+            AbstractEntityInformation<Object> {
 
-        public DummyAbstractEntityMetadata(Class<Object> domainClass) {
+        public DummyAbstractEntityInformation(Class<Object> domainClass) {
 
             super(domainClass);
         }

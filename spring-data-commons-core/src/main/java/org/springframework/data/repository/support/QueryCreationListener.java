@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.query;
+package org.springframework.data.repository.support;
 
+import org.springframework.data.repository.query.RepositoryQuery;
 
 
 /**
- * Interface for a query abstraction.
+ * Callback for listeners that want to execute functionality on
+ * {@link RepositoryQuery} creation.
  * 
  * @author Oliver Gierke
  */
-public interface RepositoryQuery {
+public interface QueryCreationListener<T extends RepositoryQuery> {
 
     /**
-     * Executes the {@link RepositoryQuery} with the given parameters.
+     * Will be invoked just after the {@link RepositoryQuery} was created.
      * 
-     * @param store
-     * @param parameters
-     * @return
+     * @param query
      */
-    public Object execute(Object[] parameters);
-
-
-    /**
-     * Returns the
-     * 
-     * @return
-     */
-    public QueryMethod getQueryMethod();
+    void onCreation(T query);
 }

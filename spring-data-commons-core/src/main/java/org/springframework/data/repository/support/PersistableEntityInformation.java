@@ -26,15 +26,15 @@ import org.springframework.data.domain.Persistable;
  * @author Oliver Gierke
  */
 @SuppressWarnings("rawtypes")
-public class PersistableEntityMetadata<T extends Persistable> extends
-        AbstractEntityMetadata<T> {
+public class PersistableEntityInformation<T extends Persistable> extends
+        AbstractEntityInformation<T> {
 
     /**
-     * Creates a new {@link PersistableEntityMetadata}.
+     * Creates a new {@link PersistableEntityInformation}.
      * 
      * @param domainClass
      */
-    public PersistableEntityMetadata(Class<T> domainClass) {
+    public PersistableEntityInformation(Class<T> domainClass) {
 
         super(domainClass);
     }

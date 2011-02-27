@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -59,18 +56,30 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
     }
 
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Delegates {@link RepositoryFactorySupport} creation to
+     * {@link #doCreateRepositoryFactory()} and applies the
+     * {@link TransactionalRepositoryProxyPostProcessor} to the created
+     * instance.
      * 
-     * @see
-     * org.springframework.data.repository.support.RepositoryFactoryBeanSupport
-     * #getRepositoryPostProcessors()
+     * @see org.springframework.data.repository.support.RepositoryFactoryBeanSupport
+     *      #createRepositoryFactory()
      */
     @Override
-    public List<RepositoryProxyPostProcessor> getRepositoryPostProcessors() {
+    protected final RepositoryFactorySupport createRepositoryFactory() {
 
-        return Arrays.asList(txPostProcessor);
+        RepositoryFactorySupport factory = doCreateRepositoryFactory();
+        factory.addRepositoryProxyPostProcessor(txPostProcessor);
+        return factory;
     }
+
+
+    /**
+     * Creates the actual {@link RepositoryFactorySupport} instance.
+     * 
+     * @return
+     */
+    protected abstract RepositoryFactorySupport doCreateRepositoryFactory();
 
 
     /*

@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
@@ -49,6 +50,8 @@ public abstract class RepositoryFactorySupport {
     private final List<RepositoryProxyPostProcessor> postProcessors =
             new ArrayList<RepositoryProxyPostProcessor>();
     private QueryLookupStrategy.Key queryLookupStrategyKey;
+    private List<QueryCreationListener<?>> queryPostProcessors =
+            new ArrayList<QueryCreationListener<?>>();
 
 
     /**
@@ -63,6 +66,20 @@ public abstract class RepositoryFactorySupport {
 
 
     /**
+     * Adds a {@link QueryCreationListener} to the factory to plug in
+     * functionality triggered right after creation of {@link RepositoryQuery}
+     * instances.
+     * 
+     * @param listener
+     */
+    public void addQueryCreationListener(QueryCreationListener<?> listener) {
+
+        Assert.notNull(listener);
+        this.queryPostProcessors.add(listener);
+    }
+
+
+    /**
      * Adds {@link RepositoryProxyPostProcessor}s to the factory to allow
      * manipulation of the {@link ProxyFactory} before the proxy gets created.
      * Note that the {@link QueryExecuterMethodInterceptor} will be added to the
@@ -71,7 +88,7 @@ public abstract class RepositoryFactorySupport {
      * 
      * @param processor
      */
-    protected void addRepositoryProxyPostProcessor(
+    public void addRepositoryProxyPostProcessor(
             RepositoryProxyPostProcessor processor) {
 
         Assert.notNull(processor);
@@ -205,10 +222,10 @@ public abstract class RepositoryFactorySupport {
          * interface methods.
          */
         public QueryExecuterMethodInterceptor(
-                RepositoryMetadata repositoryInterface,
+                RepositoryMetadata repositoryMetadata,
                 Object customImplementation, Object target) {
 
-            this.metadata = repositoryInterface;
+            this.metadata = repositoryMetadata;
             this.customImplementation = customImplementation;
             this.target = target;
 
@@ -216,10 +233,28 @@ public abstract class RepositoryFactorySupport {
                     getQueryLookupStrategy(queryLookupStrategyKey);
 
             for (Method method : metadata.getQueryMethods()) {
-                queries.put(
-                        method,
+                RepositoryQuery query =
                         lookupStrategy.resolveQuery(method,
-                                repositoryInterface.getDomainClass()));
+                                repositoryMetadata.getDomainClass());
+                invokeListeners(query, metadata);
+                queries.put(method, query);
+            }
+        }
+
+
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        private void invokeListeners(RepositoryQuery query,
+                RepositoryMetadata metadata) {
+
+            for (QueryCreationListener listener : queryPostProcessors) {
+                Class<?> typeArgument =
+                        GenericTypeResolver.resolveTypeArgument(
+                                listener.getClass(),
+                                QueryCreationListener.class);
+                if (typeArgument != null
+                        && typeArgument.isAssignableFrom(query.getClass())) {
+                    listener.onCreation(query);
+                }
             }
         }
 
