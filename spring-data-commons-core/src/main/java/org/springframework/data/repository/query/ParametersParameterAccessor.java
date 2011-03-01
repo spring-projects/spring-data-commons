@@ -89,7 +89,14 @@ public class ParametersParameterAccessor implements ParameterAccessor {
     }
 
 
-    private Object getBindableValue(int index) {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.springframework.data.repository.query.ParameterAccessor#getBindableValue
+     * (int)
+     */
+    public Object getBindableValue(int index) {
 
         return values[parameters.getBindableParameter(index).getIndex()];
     }
