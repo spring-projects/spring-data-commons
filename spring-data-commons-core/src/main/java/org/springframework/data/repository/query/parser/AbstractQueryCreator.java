@@ -62,7 +62,10 @@ public abstract class AbstractQueryCreator<T, S> {
      */
     public T createQuery() {
 
-        return complete(createCriteria(tree), tree.getSort());
+        Sort treeSort = tree.getSort();
+        Sort sort = treeSort != null ? treeSort : parameters.getSort();
+
+        return complete(createCriteria(tree), sort);
     }
 
 
