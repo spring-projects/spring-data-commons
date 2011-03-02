@@ -133,7 +133,7 @@
 							<goal>generate-html</goal>
 							<goal>generate-pdf</goal>
 						</goals>
-						<phase>package</phase>
+						<phase>pre-site</phase>
 					</execution>
 				</executions>
 				<dependencies>
