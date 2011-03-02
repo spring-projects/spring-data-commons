@@ -34,15 +34,15 @@ import org.springframework.data.domain.Persistable;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistableEntityMetadataUnitTests {
 
-    static final PersistableEntityMetadata metadata =
-            new PersistableEntityMetadata();
+    @SuppressWarnings("rawtypes")
+    static final PersistableEntityMetadata<Persistable> metadata =
+            new PersistableEntityMetadata<Persistable>(Persistable.class);
 
     @Mock
     Persistable<Long> persistable;
 
 
     @Test
-    @SuppressWarnings("serial")
     public void usesPersistablesGetId() throws Exception {
 
         when(persistable.getId()).thenReturn(2L, 1L, 3L);
@@ -58,5 +58,31 @@ public class PersistableEntityMetadataUnitTests {
         when(persistable.isNew()).thenReturn(true, false);
         assertThat(metadata.isNew(persistable), is(true));
         assertThat(metadata.isNew(persistable), is(false));
+    }
+
+
+    @Test
+    public void returnsGivenClassAsEntityType() throws Exception {
+
+        PersistableEntityMetadata<PersistableEntity> info =
+                new PersistableEntityMetadata<PersistableEntity>(
+                        PersistableEntity.class);
+
+        assertEquals(PersistableEntity.class, info.getJavaType());
+    }
+
+    @SuppressWarnings("serial")
+    static class PersistableEntity implements Persistable<Long> {
+
+        public Long getId() {
+
+            return null;
+        }
+
+
+        public boolean isNew() {
+
+            return false;
+        }
     }
 }
