@@ -113,6 +113,18 @@ public class Part {
     }
 
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+
+        return String.format("%s %s", property.getName(), type);
+    }
+
+
     /**
      * @return the type
      */

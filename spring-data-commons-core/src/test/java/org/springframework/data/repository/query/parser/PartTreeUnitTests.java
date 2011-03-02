@@ -83,6 +83,17 @@ public class PartTreeUnitTests {
 
 
     @Test
+    public void parsesCombinedAndAndOrPropertiesCorrectly() throws Exception {
+
+        PartTree tree =
+                new PartTree("firstnameAndLastnameOrLastname", User.class);
+        assertPart(tree, new Part[] { new Part("firstname", User.class),
+                new Part("lastname", User.class) }, new Part[] { new Part(
+                "lastname", User.class) });
+    }
+
+
+    @Test
     public void hasSortIfOrderByIsGiven() throws Exception {
 
         PartTree partTree =
