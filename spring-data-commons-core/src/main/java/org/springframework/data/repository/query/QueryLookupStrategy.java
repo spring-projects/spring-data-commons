@@ -54,7 +54,8 @@ public interface QueryLookupStrategy {
      * that can be executed afterwards.
      * 
      * @param method
+     * @param domainClass
      * @return
      */
-    RepositoryQuery resolveQuery(Method method);
+    RepositoryQuery resolveQuery(Method method, Class<?> domainClass);
 }

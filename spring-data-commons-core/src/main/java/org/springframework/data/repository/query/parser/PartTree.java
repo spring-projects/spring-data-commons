@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 
 /**
@@ -179,6 +180,20 @@ public class PartTree implements Iterable<OrPart> {
         return group != null && group.contains(DISTINCT);
     }
 
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+
+        return String.format("%s %s",
+                StringUtils.collectionToDelimitedString(nodes, " or "),
+                orderBySource.toString());
+    }
+
     /**
      * A part of the parsed source that results from splitting up the resource
      * ar {@literal Or} keywords. Consists of {@link Part}s that have to be
@@ -206,6 +221,18 @@ public class PartTree implements Iterable<OrPart> {
             for (String part : split) {
                 children.add(new Part(part, domainClass));
             }
+        }
+
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+
+            return StringUtils.collectionToDelimitedString(children, " and ");
         }
 
 

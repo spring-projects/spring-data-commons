@@ -216,7 +216,10 @@ public abstract class RepositoryFactorySupport {
                     getQueryLookupStrategy(queryLookupStrategyKey);
 
             for (Method method : metadata.getQueryMethods()) {
-                queries.put(method, lookupStrategy.resolveQuery(method));
+                queries.put(
+                        method,
+                        lookupStrategy.resolveQuery(method,
+                                repositoryInterface.getDomainClass()));
             }
         }
 

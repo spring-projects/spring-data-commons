@@ -42,6 +42,17 @@ public class ClassUtilsUnitTests {
 
 
     @Test
+    public void determinesReturnType() throws Exception {
+
+        assertEquals(User.class,
+                getReturnedDomainClass(SomeDao.class.getMethod(
+                        "findByFirstname", Pageable.class, String.class)));
+        assertEquals(GenericType.class,
+                getReturnedDomainClass(SomeDao.class.getMethod("someMethod")));
+    }
+
+
+    @Test
     public void determinesValidFieldsCorrectly() {
 
         assertTrue(hasProperty(User.class, "firstname"));
@@ -79,5 +90,12 @@ public class ClassUtilsUnitTests {
     private interface SomeDao extends Serializable, UserRepository {
 
         Page<User> findByFirstname(Pageable pageable, String firstname);
+
+
+        GenericType<User> someMethod();
+    }
+
+    private class GenericType<T> {
+
     }
 }

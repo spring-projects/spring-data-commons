@@ -26,17 +26,17 @@ import org.springframework.data.domain.Persistable;
  * @author Oliver Gierke
  */
 @SuppressWarnings("rawtypes")
-public class PersistableEntityMetadata extends
-        AbstractEntityMetadata<Persistable> {
+public class PersistableEntityMetadata<T extends Persistable> extends
+        AbstractEntityMetadata<T> {
 
     /**
      * Creates a new {@link PersistableEntityMetadata}.
      * 
      * @param domainClass
      */
-    public PersistableEntityMetadata() {
+    public PersistableEntityMetadata(Class<T> domainClass) {
 
-        super(Persistable.class);
+        super(domainClass);
     }
 
 
@@ -48,7 +48,7 @@ public class PersistableEntityMetadata extends
      * .Object)
      */
     @Override
-    public boolean isNew(Persistable entity) {
+    public boolean isNew(T entity) {
 
         return entity.isNew();
     }
@@ -61,7 +61,7 @@ public class PersistableEntityMetadata extends
      * org.springframework.data.repository.support.IdAware#getId(java.lang.Object
      * )
      */
-    public Object getId(Persistable entity) {
+    public Object getId(T entity) {
 
         return entity.getId();
     }

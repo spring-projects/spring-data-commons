@@ -50,6 +50,19 @@ public interface ParameterAccessor extends Iterable<Object> {
 
 
     /**
+     * Returns the bindable value with the given index. Bindable means, that
+     * {@link Pageable} and {@link Sort} values are skipped without noticed in
+     * the index. For a method signature taking {@link String}, {@link Pageable}
+     * , {@link String}, {@code #getBindableParameter(1)} would return the
+     * second {@link String} value.
+     * 
+     * @param index
+     * @return
+     */
+    Object getBindableValue(int index);
+
+
+    /**
      * Returns an iterator over all <em>bindable</em> parameters. This means
      * parameters implementing {@link Pageable} or {@link Sort} will not be
      * included in this {@link Iterator}.
