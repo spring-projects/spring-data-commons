@@ -11,7 +11,7 @@
 	<packaging>jar</packaging>
 	<name>Spring Data Commons Aspects</name>
 	<properties>
-		<aspectj.version>1.6.10.RELEASE</aspectj.version>
+		<aspectj.version>1.6.11.M2</aspectj.version>
 	</properties>
 	<dependencies>
 
