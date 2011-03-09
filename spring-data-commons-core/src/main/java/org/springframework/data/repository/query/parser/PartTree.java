@@ -21,11 +21,13 @@ import static java.util.regex.Pattern.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 
 /**
@@ -40,11 +42,13 @@ import org.springframework.util.Assert;
 public class PartTree implements Iterable<OrPart> {
 
     private static final String ORDER_BY = "OrderBy";
-    private static final String[] PREFIXES = new String[] { "findBy", "find",
-            "readBy", "read", "getBy", "get" };
-    private static final String PREFIX_TEMPLATE = "^%s(?=[A-Z]).*";
     private static final String KEYWORD_TEMPLATE = "(%s)(?=[A-Z])";
+    private static final String DISTINCT = "Distinct";
 
+    private static final Pattern PREFIX_TEMPLATE = Pattern
+            .compile("^(find|read|get)(\\p{Upper}.*?)??By");
+
+    private final boolean distinct;
     private final OrderBySource orderBySource;
     private final List<OrPart> nodes = new ArrayList<PartTree.OrPart>();
 
@@ -61,6 +65,7 @@ public class PartTree implements Iterable<OrPart> {
         Assert.notNull(source);
         Assert.notNull(domainClass);
 
+        this.distinct = detectDistinct(source);
         String foo = strip(source);
         String[] parts = split(foo, ORDER_BY);
 
@@ -110,6 +115,37 @@ public class PartTree implements Iterable<OrPart> {
 
 
     /**
+     * Returns whether we indicate distinct lookup of entities.
+     * 
+     * @return
+     */
+    public boolean isDistinct() {
+
+        return distinct;
+    }
+
+
+    /**
+     * Returns an {@link Iterable} of all parts contained in the
+     * {@link PartTree}.
+     * 
+     * @return
+     */
+    public Iterable<Part> getParts() {
+
+        List<Part> result = new ArrayList<Part>();
+
+        for (OrPart orPart : this) {
+            for (Part part : orPart) {
+                result.add(part);
+            }
+        }
+
+        return result;
+    }
+
+
+    /**
      * Splits the given text at the given keywords. Expects camelcase style to
      * only match concrete keywords and not derivatives of it.
      * 
@@ -135,15 +171,47 @@ public class PartTree implements Iterable<OrPart> {
      */
     private String strip(String methodName) {
 
-        for (String prefix : PREFIXES) {
+        Matcher matcher = PREFIX_TEMPLATE.matcher(methodName);
 
-            String regex = format(PREFIX_TEMPLATE, prefix);
-            if (methodName.matches(regex)) {
-                return methodName.substring(prefix.length());
-            }
+        if (matcher.find()) {
+            return methodName.substring(matcher.group().length());
+        } else {
+            return methodName;
+        }
+    }
+
+
+    /**
+     * Checks whether the given source string contains the {@link #DISTINCT}
+     * keyword in it's prefix.
+     * 
+     * @param source
+     * @return
+     */
+    private boolean detectDistinct(String source) {
+
+        Matcher matcher = PREFIX_TEMPLATE.matcher(source);
+
+        if (!matcher.find()) {
+            return false;
         }
 
-        return methodName;
+        String group = matcher.group(2);
+        return group != null && group.contains(DISTINCT);
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+
+        return String.format("%s %s",
+                StringUtils.collectionToDelimitedString(nodes, " or "),
+                orderBySource.toString());
     }
 
     /**
@@ -173,6 +241,18 @@ public class PartTree implements Iterable<OrPart> {
             for (String part : split) {
                 children.add(new Part(part, domainClass));
             }
+        }
+
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+
+            return StringUtils.collectionToDelimitedString(children, " and ");
         }
 
 

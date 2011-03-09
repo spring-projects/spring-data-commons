@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,21 @@
  */
 package org.springframework.data.repository.support;
 
+import org.springframework.data.repository.query.RepositoryQuery;
+
+
 /**
- * Interface to abstract the ways to determine if the given entity is to be
- * considered as new.
+ * Callback for listeners that want to execute functionality on
+ * {@link RepositoryQuery} creation.
  * 
  * @author Oliver Gierke
  */
-public interface IsNewAware {
+public interface QueryCreationListener<T extends RepositoryQuery> {
 
     /**
-     * Returns whether the given entity is considered to be new.
+     * Will be invoked just after the {@link RepositoryQuery} was created.
      * 
-     * @param entity
-     * @return
+     * @param query
      */
-    boolean isNew(Object entity);
+    void onCreation(T query);
 }

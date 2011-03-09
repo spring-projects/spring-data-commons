@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.query;
 
+
+
 /**
  * Interface for a query abstraction.
  * 
@@ -30,4 +32,12 @@ public interface RepositoryQuery {
      * @return
      */
     public Object execute(Object[] parameters);
+
+
+    /**
+     * Returns the
+     * 
+     * @return
+     */
+    public QueryMethod getQueryMethod();
 }

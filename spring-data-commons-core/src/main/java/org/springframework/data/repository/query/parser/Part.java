@@ -113,6 +113,18 @@ public class Part {
     }
 
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+
+        return String.format("%s %s", property.getName(), type);
+    }
+
+
     /**
      * @return the type
      */
@@ -129,31 +141,34 @@ public class Part {
      */
     public static enum Type {
 
-        BETWEEN(null, 2, "Between"),
+        BETWEEN(2, "Between"),
 
-        IS_NOT_NULL(null, 0, "IsNotNull", "NotNull"),
+        IS_NOT_NULL(0, "IsNotNull", "NotNull"),
 
-        IS_NULL(null, 0, "IsNull", "Null"),
+        IS_NULL(0, "IsNull", "Null"),
 
-        LESS_THAN("<", "LessThan"),
+        LESS_THAN("LessThan"),
 
-        GREATER_THAN(">", "GreaterThan"),
+        GREATER_THAN("GreaterThan"),
 
-        NOT_LIKE("not like", "NotLike"),
+        NOT_LIKE("NotLike"),
 
-        LIKE("like", "Like"),
+        LIKE("Like"),
 
-        NEGATING_SIMPLE_PROPERTY("<>", "Not"),
+        NOT_IN("NotIn"),
 
-        SIMPLE_PROPERTY("=");
+        IN("In"),
+
+        NEGATING_SIMPLE_PROPERTY("Not"),
+
+        SIMPLE_PROPERTY;
 
         // Need to list them again explicitly as the order is important
         // (esp. for IS_NULL, IS_NOT_NULL)
         private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL,
                 IS_NULL, BETWEEN, LESS_THAN, GREATER_THAN, NOT_LIKE, LIKE,
-                NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+                NOT_IN, IN, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
         private List<String> keywords;
-        private String operator;
         private int numberOfArguments;
 
 
@@ -166,17 +181,16 @@ public class Part {
          * @param numberOfArguments
          * @param keywords
          */
-        private Type(String operator, int numberOfArguments, String... keywords) {
+        private Type(int numberOfArguments, String... keywords) {
 
-            this.operator = operator;
             this.numberOfArguments = numberOfArguments;
             this.keywords = Arrays.asList(keywords);
         }
 
 
-        private Type(String operator, String... keywords) {
+        private Type(String... keywords) {
 
-            this(operator, 1, keywords);
+            this(1, keywords);
         }
 
 
@@ -199,12 +213,6 @@ public class Part {
             }
 
             return SIMPLE_PROPERTY;
-        }
-
-
-        public String getOperator() {
-
-            return this.operator;
         }
 
 

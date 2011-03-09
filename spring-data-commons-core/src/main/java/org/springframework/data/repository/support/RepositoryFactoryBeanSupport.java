@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 package org.springframework.data.repository.support;
-
-import java.util.Collections;
-import java.util.List;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -124,24 +121,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
 
         this.factory = createRepositoryFactory();
         this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
-        this.factory.validate(repositoryInterface, customImplementation);
-
-        for (RepositoryProxyPostProcessor processor : getRepositoryPostProcessors()) {
-            this.factory.addRepositoryProxyPostProcessor(processor);
-        }
-    }
-
-
-    /**
-     * Returns all {@link RepositoryProxyPostProcessor} to be added to the
-     * repository factory to be created. Default implementation will return an
-     * empty list.
-     * 
-     * @return
-     */
-    protected List<RepositoryProxyPostProcessor> getRepositoryPostProcessors() {
-
-        return Collections.emptyList();
     }
 
 

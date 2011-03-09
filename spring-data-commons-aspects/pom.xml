@@ -80,6 +80,24 @@
 			<artifactId>jsr250-api</artifactId>
 			<optional>true</optional>
 		</dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>1.0.0.GA</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>4.0.2.GA</version>
+            <scope>test</scope>
+        </dependency>
+
+		<!-- JPA -->
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+            <version>1.0.0.Final</version>
+        </dependency>
 
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -108,6 +126,11 @@
 			<name>Springframework Maven SNAPSHOT Repository</name>
 			<url>http://maven.springframework.org/snapshot</url>
         </repository>
+		<repository>
+			<id>jboss-repository</id>
+			<name>JBoss Public Repository</name>
+			<url>http://repository.jboss.org/nexus/content/groups/public-jboss</url>
+		</repository>
 	</repositories>
 	<build>
 		<plugins>

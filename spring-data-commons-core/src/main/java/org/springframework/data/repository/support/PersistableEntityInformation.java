@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-201 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,26 @@ import org.springframework.data.domain.Persistable;
 
 
 /**
- * Implementation of {@link IsNewAware} that assumes the entity handled
+ * Implementation of {@link EntityMetadata} that assumes the entity handled
  * implements {@link Persistable} and uses {@link Persistable#isNew()} for the
  * {@link #isNew(Object)} check.
  * 
  * @author Oliver Gierke
  */
-public class PersistableEntityInformation implements IsNewAware, IdAware {
+@SuppressWarnings("rawtypes")
+public class PersistableEntityInformation<T extends Persistable> extends
+        AbstractEntityInformation<T> {
+
+    /**
+     * Creates a new {@link PersistableEntityInformation}.
+     * 
+     * @param domainClass
+     */
+    public PersistableEntityInformation(Class<T> domainClass) {
+
+        super(domainClass);
+    }
+
 
     /*
      * (non-Javadoc)
@@ -34,9 +47,10 @@ public class PersistableEntityInformation implements IsNewAware, IdAware {
      * org.springframework.data.repository.support.IsNewAware#isNew(java.lang
      * .Object)
      */
-    public boolean isNew(Object entity) {
+    @Override
+    public boolean isNew(T entity) {
 
-        return ((Persistable<?>) entity).isNew();
+        return entity.isNew();
     }
 
 
@@ -47,8 +61,8 @@ public class PersistableEntityInformation implements IsNewAware, IdAware {
      * org.springframework.data.repository.support.IdAware#getId(java.lang.Object
      * )
      */
-    public Object getId(Object entity) {
+    public Object getId(T entity) {
 
-        return ((Persistable<?>) entity).getId();
+        return entity.getId();
     }
 }

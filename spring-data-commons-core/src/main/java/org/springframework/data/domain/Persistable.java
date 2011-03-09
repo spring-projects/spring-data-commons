@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ import java.io.Serializable;
  * Simple interface for entities.
  * 
  * @author Oliver Gierke
- * @param <PK> the type of the identifier
+ * @param <ID> the type of the identifier
  */
-public interface Persistable<PK extends Serializable> extends Serializable {
+public interface Persistable<ID extends Serializable> extends Serializable {
 
     /**
      * Returns the id of the entity.
      * 
      * @return the id
      */
-    PK getId();
+    ID getId();
 
 
     /**

@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.0.0.M4
+----------------------------------------
+
+Repository
+* Improved ParameterAccessor infrastructure
+* Added support for 'Distinct' keyword in finder method names (DATACMNS-15)
+* Added support for 'In' and 'NotIn' keywords (DATACMNS-16)
+* Introduced metamodel for entities and repositories (DATACMNS-17)
+* Fixed returning wrong class PersistableEntityMetadata(DATACMNS-19)
+
 Changes in version 1.0.0.M3 (2011-02-09)
 ----------------------------------------
 

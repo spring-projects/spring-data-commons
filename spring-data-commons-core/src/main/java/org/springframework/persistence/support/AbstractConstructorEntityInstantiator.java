@@ -44,8 +44,13 @@ public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, S
 		if (noArgConstructor != null) {
 			log.info("Using " + c + " no-arg constructor");
             StateProvider.setUnderlyingState(n);
-			T t = noArgConstructor.newInstance();
-			setState(t, n);
+            T t;
+            try {
+                t = noArgConstructor.newInstance();
+                setState(t, n);
+            } finally {
+            StateProvider.retrieveState();
+            }
 			return t;
 		}
 		

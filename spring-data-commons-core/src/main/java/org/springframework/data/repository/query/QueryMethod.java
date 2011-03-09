@@ -23,6 +23,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.support.EntityMetadata;
+import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
 
 
@@ -34,6 +36,11 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  */
 public class QueryMethod {
+
+    public static enum Type {
+
+        SINGLE_ENTITY, PAGING, COLLECTION, MODIFYING;
+    }
 
     private final Method method;
     private final Parameters parameters;
@@ -82,27 +89,21 @@ public class QueryMethod {
     }
 
 
-    /**
-     * Returns whether the given
-     * 
-     * @param number
-     * @return
-     */
-    public boolean isCorrectNumberOfParameters(int number) {
+    public EntityMetadata<?> getEntityMetadata() {
 
-        return number == parameters.getBindableParameters()
-                .getNumberOfParameters();
+        return new EntityMetadata() {
+
+            public Class<?> getJavaType() {
+
+                return getDomainClass();
+            }
+        };
     }
 
 
-    /**
-     * Returns the domain class for this method.
-     * 
-     * @return
-     */
-    public Class<?> getDomainClass() {
+    protected Class<?> getDomainClass() {
 
-        return getReturnedDomainClass(method);
+        return ClassUtils.getReturnedDomainClass(method);
     }
 
 
@@ -112,7 +113,7 @@ public class QueryMethod {
      * 
      * @return
      */
-    public boolean isCollectionQuery() {
+    protected boolean isCollectionQuery() {
 
         Class<?> returnType = method.getReturnType();
         return org.springframework.util.ClassUtils.isAssignable(List.class,
@@ -125,11 +126,35 @@ public class QueryMethod {
      * 
      * @return
      */
-    public boolean isPageQuery() {
+    protected boolean isPageQuery() {
 
         Class<?> returnType = method.getReturnType();
         return org.springframework.util.ClassUtils.isAssignable(Page.class,
                 returnType);
+    }
+
+
+    public Type getType() {
+
+        if (isModifyingQuery()) {
+            return Type.MODIFYING;
+        }
+
+        if (isPageQuery()) {
+            return Type.PAGING;
+        }
+
+        if (isCollectionQuery()) {
+            return Type.COLLECTION;
+        }
+
+        return Type.SINGLE_ENTITY;
+    }
+
+
+    protected boolean isModifyingQuery() {
+
+        return false;
     }
 
 

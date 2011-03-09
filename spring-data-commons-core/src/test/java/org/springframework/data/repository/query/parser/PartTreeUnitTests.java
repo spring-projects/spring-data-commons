@@ -83,11 +83,48 @@ public class PartTreeUnitTests {
 
 
     @Test
+    public void parsesCombinedAndAndOrPropertiesCorrectly() throws Exception {
+
+        PartTree tree =
+                new PartTree("firstnameAndLastnameOrLastname", User.class);
+        assertPart(tree, new Part[] { new Part("firstname", User.class),
+                new Part("lastname", User.class) }, new Part[] { new Part(
+                "lastname", User.class) });
+    }
+
+
+    @Test
     public void hasSortIfOrderByIsGiven() throws Exception {
 
         PartTree partTree =
                 new PartTree("firstnameOrderByLastnameDesc", User.class);
         assertThat(partTree.getSort(), is(new Sort(Direction.DESC, "lastname")));
+    }
+
+
+    @Test
+    public void detectsDistinctCorrectly() throws Exception {
+
+        PartTree tree = new PartTree("findDistinctByLastname", User.class);
+        assertThat(tree.isDistinct(), is(true));
+
+        tree = new PartTree("findUsersDistinctByLastname", User.class);
+        assertThat(tree.isDistinct(), is(true));
+
+        tree = new PartTree("findDistinctUsersByLastname", User.class);
+        assertThat(tree.isDistinct(), is(true));
+
+        tree = new PartTree("findUsersByLastname", User.class);
+        assertThat(tree.isDistinct(), is(false));
+
+        tree = new PartTree("findByLastname", User.class);
+        assertThat(tree.isDistinct(), is(false));
+
+        // Check it's non-greedy (would strip everything until Order*By*
+        // otherwise)
+        tree = new PartTree("findByLastnameOrderByFirstnameDesc", User.class);
+        assertThat(tree.isDistinct(), is(false));
+        assertThat(tree.getSort(), is(new Sort(Direction.DESC, "firstname")));
     }
 
 

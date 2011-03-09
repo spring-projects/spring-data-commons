@@ -15,21 +15,18 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.springframework.data.repository.util.ClassUtils.*;
 import static org.springframework.util.ReflectionUtils.*;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
@@ -50,12 +47,11 @@ import org.springframework.util.Assert;
  */
 public abstract class RepositoryFactorySupport {
 
-    private QueryLookupStrategy.Key queryLookupStrategyKey;
-
-    private final Map<Method, Method> methodCache =
-            new ConcurrentHashMap<Method, Method>();
     private final List<RepositoryProxyPostProcessor> postProcessors =
             new ArrayList<RepositoryProxyPostProcessor>();
+    private QueryLookupStrategy.Key queryLookupStrategyKey;
+    private List<QueryCreationListener<?>> queryPostProcessors =
+            new ArrayList<QueryCreationListener<?>>();
 
 
     /**
@@ -70,6 +66,20 @@ public abstract class RepositoryFactorySupport {
 
 
     /**
+     * Adds a {@link QueryCreationListener} to the factory to plug in
+     * functionality triggered right after creation of {@link RepositoryQuery}
+     * instances.
+     * 
+     * @param listener
+     */
+    public void addQueryCreationListener(QueryCreationListener<?> listener) {
+
+        Assert.notNull(listener);
+        this.queryPostProcessors.add(listener);
+    }
+
+
+    /**
      * Adds {@link RepositoryProxyPostProcessor}s to the factory to allow
      * manipulation of the {@link ProxyFactory} before the proxy gets created.
      * Note that the {@link QueryExecuterMethodInterceptor} will be added to the
@@ -78,7 +88,7 @@ public abstract class RepositoryFactorySupport {
      * 
      * @param processor
      */
-    protected void addRepositoryProxyPostProcessor(
+    public void addRepositoryProxyPostProcessor(
             RepositoryProxyPostProcessor processor) {
 
         Assert.notNull(processor);
@@ -109,15 +119,17 @@ public abstract class RepositoryFactorySupport {
      * @param customImplementation
      * @return
      */
-    @SuppressWarnings("unchecked")
-    public <T extends Repository<?, ?>> T getRepository(
-            Class<T> repositoryInterface, Object customImplementation) {
+    @SuppressWarnings({ "unchecked" })
+    public <T> T getRepository(Class<T> repositoryInterface,
+            Object customImplementation) {
 
-        validate(repositoryInterface, customImplementation);
+        RepositoryMetadata metadata =
+                new DefaultRepositoryMetadata(repositoryInterface,
+                        getRepositoryBaseClass(repositoryInterface));
 
-        Class<?> domainClass = getDomainClass(repositoryInterface);
-        RepositorySupport<?, ?> target =
-                getTargetRepository(domainClass, repositoryInterface);
+        validate(metadata, customImplementation);
+
+        Object target = getTargetRepository(metadata);
 
         // Create proxy
         ProxyFactory result = new ProxyFactory();
@@ -128,32 +140,31 @@ public abstract class RepositoryFactorySupport {
             processor.postProcess(result);
         }
 
-        result.addAdvice(new QueryExecuterMethodInterceptor(
-                repositoryInterface, customImplementation, target));
+        result.addAdvice(new QueryExecuterMethodInterceptor(metadata,
+                customImplementation, target));
 
         return (T) result.getProxy();
     }
 
 
     /**
-     * Create a {@link RepositorySupport} instance as backing for the query
-     * proxy.
+     * Create a repository instance as backing for the query proxy.
      * 
-     * @param <T>
      * @param domainClass
      * @return
      */
-    protected abstract <T, ID extends Serializable> RepositorySupport<T, ID> getTargetRepository(
-            Class<T> domainClass, Class<?> repositoryInterface);
+    protected abstract Object getTargetRepository(RepositoryMetadata metadata);
 
 
     /**
-     * Determines the base class for the repository to be created.
+     * Returns the base class backing the actual repository instance. Make sure
+     * {@link #getTargetRepository(RepositoryMetadata)} returns an instance of
+     * this class.
      * 
+     * @param repositoryInterface
      * @return
      */
-    @SuppressWarnings("rawtypes")
-    protected abstract Class<? extends RepositorySupport> getRepositoryClass(
+    protected abstract Class<?> getRepositoryBaseClass(
             Class<?> repositoryInterface);
 
 
@@ -167,164 +178,22 @@ public abstract class RepositoryFactorySupport {
 
 
     /**
-     * Returns if the configured repository interface has custom methods, that
-     * might have to be delegated to a custom implementation. This is used to
-     * verify repository configuration.
-     * 
-     * @return
-     */
-    private boolean hasCustomMethod(
-            Class<? extends Repository<?, ?>> repositoryInterface) {
-
-        boolean hasCustomMethod = false;
-
-        // No detection required if no typing interface was configured
-        if (isGenericRepositoryInterface(repositoryInterface)) {
-            return false;
-        }
-
-        for (Method method : repositoryInterface.getMethods()) {
-
-            if (isCustomMethod(method, repositoryInterface)
-                    && !isBaseClassMethod(method, repositoryInterface)) {
-                return true;
-            }
-        }
-
-        return hasCustomMethod;
-    }
-
-
-    /**
-     * Returns whether the given method is considered to be a repository base
-     * class method.
-     * 
-     * @param method
-     * @param repositoryInterface
-     * @return
-     */
-    private boolean isBaseClassMethod(Method method,
-            Class<?> repositoryInterface) {
-
-        Assert.notNull(method);
-
-        if (method.getDeclaringClass().isAssignableFrom(
-                getRepositoryClass(repositoryInterface))) {
-            return true;
-        }
-
-        return !method.equals(getBaseClassMethod(method, repositoryInterface));
-    }
-
-
-    /**
-     * Returns the base class method that is backing the given method. This can
-     * be necessary if a repository interface redeclares a method in
-     * {@link Repository} (e.g. for transaction behaviour customization).
-     * Returns the method itself if the base class does not implement the given
-     * method.
-     * 
-     * @param method
-     * @return
-     */
-    private Method getBaseClassMethod(Method method,
-            Class<?> repositoryInterface) {
-
-        Assert.notNull(method);
-
-        Method result = methodCache.get(method);
-
-        if (null != result) {
-            return result;
-        }
-
-        result =
-                getBaseClassMethodFor(method,
-                        getRepositoryClass(repositoryInterface),
-                        repositoryInterface);
-        methodCache.put(method, result);
-
-        return result;
-    }
-
-
-    /**
-     * Returns whether the given method is a custom repository method.
-     * 
-     * @param method
-     * @param repositoryInterface
-     * @return
-     */
-    private boolean isCustomMethod(Method method, Class<?> repositoryInterface) {
-
-        Class<?> declaringClass = method.getDeclaringClass();
-
-        boolean isQueryMethod = declaringClass.equals(repositoryInterface);
-        boolean isRepositoryInterface =
-                isGenericRepositoryInterface(declaringClass);
-        boolean isBaseClassMethod =
-                isBaseClassMethod(method, repositoryInterface);
-
-        return !(isRepositoryInterface || isBaseClassMethod || isQueryMethod);
-    }
-
-
-    /**
-     * Returns all methods considered to be finder methods.
-     * 
-     * @param repositoryInterface
-     * @return
-     */
-    private Iterable<Method> getFinderMethods(Class<?> repositoryInterface) {
-
-        Set<Method> result = new HashSet<Method>();
-
-        for (Method method : repositoryInterface.getDeclaredMethods()) {
-            if (!isCustomMethod(method, repositoryInterface)
-                    && !isBaseClassMethod(method, repositoryInterface)) {
-                result.add(method);
-            }
-        }
-
-        return result;
-    }
-
-
-    /**
-     * Validates the given repository interface.
-     * 
-     * @param repositoryInterface
-     */
-    private void validate(Class<?> repositoryInterface) {
-
-        Assert.notNull(repositoryInterface);
-        Assert.notNull(
-                getDomainClass(repositoryInterface),
-                "Could not retrieve domain class from interface. Make sure it extends GenericRepository.");
-
-    }
-
-
-    /**
      * Validates the given repository interface as well as the given custom
      * implementation.
      * 
-     * @param repositoryInterface
+     * @param repositoryMetadata
      * @param customImplementation
      */
-    protected void validate(
-            Class<? extends Repository<?, ?>> repositoryInterface,
+    protected void validate(RepositoryMetadata repositoryMetadata,
             Object customImplementation) {
 
-        validate(repositoryInterface);
-
         if (null == customImplementation
-                && hasCustomMethod(repositoryInterface)) {
+                && repositoryMetadata.hasCustomMethod()) {
 
             throw new IllegalArgumentException(
                     String.format(
                             "You have custom methods in %s but not provided a custom implementation!",
-                            repositoryInterface));
+                            repositoryMetadata.getRepositoryInterface()));
         }
     }
 
@@ -343,8 +212,8 @@ public abstract class RepositoryFactorySupport {
                 new ConcurrentHashMap<Method, RepositoryQuery>();
 
         private final Object customImplementation;
-        private final Class<?> repositoryInterface;
-        private final RepositorySupport<?, ?> target;
+        private final RepositoryMetadata metadata;
+        private final Object target;
 
 
         /**
@@ -352,19 +221,40 @@ public abstract class RepositoryFactorySupport {
          * of {@link QueryMethod}s to be invoked on execution of repository
          * interface methods.
          */
-        public QueryExecuterMethodInterceptor(Class<?> repositoryInterface,
-                Object customImplementation, RepositorySupport<?, ?> target) {
+        public QueryExecuterMethodInterceptor(
+                RepositoryMetadata repositoryMetadata,
+                Object customImplementation, Object target) {
 
-            this.repositoryInterface = repositoryInterface;
+            this.metadata = repositoryMetadata;
             this.customImplementation = customImplementation;
             this.target = target;
 
             QueryLookupStrategy lookupStrategy =
                     getQueryLookupStrategy(queryLookupStrategyKey);
 
-            for (Method method : getFinderMethods(repositoryInterface)) {
+            for (Method method : metadata.getQueryMethods()) {
+                RepositoryQuery query =
+                        lookupStrategy.resolveQuery(method,
+                                repositoryMetadata.getDomainClass());
+                invokeListeners(query, metadata);
+                queries.put(method, query);
+            }
+        }
 
-                queries.put(method, lookupStrategy.resolveQuery(method));
+
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        private void invokeListeners(RepositoryQuery query,
+                RepositoryMetadata metadata) {
+
+            for (QueryCreationListener listener : queryPostProcessors) {
+                Class<?> typeArgument =
+                        GenericTypeResolver.resolveTypeArgument(
+                                listener.getClass(),
+                                QueryCreationListener.class);
+                if (typeArgument != null
+                        && typeArgument.isAssignableFrom(query.getClass())) {
+                    listener.onCreation(query);
+                }
             }
         }
 
@@ -393,8 +283,7 @@ public abstract class RepositoryFactorySupport {
 
             // Lookup actual method as it might be redeclared in the interface
             // and we have to use the repository instance nevertheless
-            Method actualMethod =
-                    getBaseClassMethod(method, repositoryInterface);
+            Method actualMethod = metadata.getBaseClassMethod(method);
             return executeMethodOn(target, actualMethod,
                     invocation.getArguments());
         }
@@ -449,7 +338,7 @@ public abstract class RepositoryFactorySupport {
                 return false;
             }
 
-            return isCustomMethod(invocation.getMethod(), repositoryInterface);
+            return metadata.isCustomMethod(invocation.getMethod());
         }
     }
 }
