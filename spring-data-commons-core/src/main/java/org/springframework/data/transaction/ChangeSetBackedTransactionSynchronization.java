@@ -1,15 +1,14 @@
 package org.springframework.data.transaction;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.support.ChangeSetBacked;
 import org.springframework.data.support.ChangeSetPersister;
 import org.springframework.transaction.support.TransactionSynchronization;
 
 public class ChangeSetBackedTransactionSynchronization implements TransactionSynchronization {
 
-	protected final Log log = LogFactory.getLog(getClass());
+	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	private ChangeSetPersister<Object> changeSetPersister;
 

@@ -132,6 +132,13 @@
 			<url>http://repository.jboss.org/nexus/content/groups/public-jboss</url>
 		</repository>
 	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-maven-milestone</id>
+			<name>Springframework Maven Milestone Repository</name>
+			<url>http://maven.springframework.org/milestone</url>
+        </pluginRepository>
+	</pluginRepositories>
 	<build>
 		<plugins>
 			<plugin>

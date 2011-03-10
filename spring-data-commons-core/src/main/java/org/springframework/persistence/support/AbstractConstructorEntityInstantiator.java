@@ -3,8 +3,8 @@ package org.springframework.persistence.support;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -15,7 +15,7 @@ import org.springframework.util.ClassUtils;
  */
 public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, STATE> implements EntityInstantiator<BACKING_INTERFACE, STATE> {
 	
-	private final Log log = LogFactory.getLog(getClass());
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	
 	final public <T extends BACKING_INTERFACE> T createEntityFromState(STATE n, Class<T> c) {
 		try {
