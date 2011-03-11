@@ -81,6 +81,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
     /* (non-Javadoc)
      * @see org.springframework.data.repository.support.EntityMetadataProvider#getEntityMetadata()
      */
+    @SuppressWarnings("unchecked")
     public EntityInformation<S, ID> getEntityInformation() {
     
         RepositoryMetadata repositoryMetadata = factory.getRepositoryMetadata(repositoryInterface);

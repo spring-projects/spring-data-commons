@@ -85,20 +85,20 @@ public class DefaultRepositoryMetadataUnitTests {
     @Test
     public void discoversRepositoryBaseClassMethod() throws Exception {
 
-        Method method = FooDao.class.getMethod("findById", Integer.class);
+        Method method = FooDao.class.getMethod("findOne", Integer.class);
         DefaultRepositoryMetadata metadata =
                 new DefaultRepositoryMetadata(FooDao.class, REPOSITORY);
 
         Method reference = metadata.getBaseClassMethodFor(method);
         assertEquals(REPOSITORY, reference.getDeclaringClass());
-        assertThat(reference.getName(), is("findById"));
+        assertThat(reference.getName(), is("findOne"));
     }
 
 
     @Test
     public void discoveresNonRepositoryBaseClassMethod() throws Exception {
 
-        Method method = FooDao.class.getMethod("readById", Long.class);
+        Method method = FooDao.class.getMethod("findOne", Long.class);
 
         DefaultRepositoryMetadata metadata =
                 new DefaultRepositoryMetadata(FooDao.class, Repository.class);
@@ -141,11 +141,11 @@ public class DefaultRepositoryMetadataUnitTests {
     private static interface FooDao extends Repository<User, Integer> {
 
         // Redeclared method
-        User findById(Integer primaryKey);
+        User findOne(Integer primaryKey);
 
 
         // Not a redeclared method
-        User readById(Long primaryKey);
+        User findOne(Long primaryKey);
     }
 
     /**
@@ -166,7 +166,7 @@ public class DefaultRepositoryMetadataUnitTests {
     static abstract class DummyGenericRepositorySupport<T, ID extends Serializable>
             implements Repository<T, ID> {
 
-        public T findById(ID id) {
+        public T findOne(ID id) {
 
             return null;
         }

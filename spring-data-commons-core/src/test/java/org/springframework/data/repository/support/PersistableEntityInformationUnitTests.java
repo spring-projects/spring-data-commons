@@ -34,7 +34,7 @@ import org.springframework.data.domain.Persistable;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistableEntityInformationUnitTests {
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     static final PersistableEntityInformation metadata =
             new PersistableEntityInformation(Persistable.class);
 
@@ -43,6 +43,7 @@ public class PersistableEntityInformationUnitTests {
 
 
     @Test
+    @SuppressWarnings("unchecked")
     public void usesPersistablesGetId() throws Exception {
 
         when(persistable.getId()).thenReturn(2L, 1L, 3L);
@@ -53,6 +54,7 @@ public class PersistableEntityInformationUnitTests {
 
 
     @Test
+    @SuppressWarnings("unchecked")
     public void usesPersistablesIsNew() throws Exception {
 
         when(persistable.isNew()).thenReturn(true, false);

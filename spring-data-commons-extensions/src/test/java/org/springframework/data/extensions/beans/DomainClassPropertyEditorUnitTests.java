@@ -65,11 +65,11 @@ public class DomainClassPropertyEditorUnitTests {
 
         User user = new User(1);
         when(information.getId(user)).thenReturn(user.getId());
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findOne(1)).thenReturn(user);
 
         editor.setAsText("1");
 
-        verify(userRepository, times(1)).findById(1);
+        verify(userRepository, times(1)).findOne(1);
     }
 
 

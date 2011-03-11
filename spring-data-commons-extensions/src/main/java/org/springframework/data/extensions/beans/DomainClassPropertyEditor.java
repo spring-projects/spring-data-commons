@@ -74,7 +74,7 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends
             return;
         }
 
-        setValue(repository.findById(getId(idAsString)));
+        setValue(repository.findOne(getId(idAsString)));
     }
 
 

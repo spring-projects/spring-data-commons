@@ -54,7 +54,7 @@ public interface Repository<T, ID extends Serializable> {
      *         found
      * @throws IllegalArgumentException if primaryKey is {@code null}
      */
-    T findById(ID id);
+    T findOne(ID id);
 
 
     /**

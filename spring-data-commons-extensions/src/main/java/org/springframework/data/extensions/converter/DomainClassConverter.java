@@ -90,7 +90,7 @@ public class DomainClassConverter implements ConditionalGenericConverter,
 
         Repository<?, Serializable> repository = repositories.get(info);
         Serializable id = service.convert(source, info.getIdType());
-        return repository.findById(id);
+        return repository.findOne(id);
     }
 
 

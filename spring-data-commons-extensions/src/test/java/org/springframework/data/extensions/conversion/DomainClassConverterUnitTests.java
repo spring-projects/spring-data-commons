@@ -138,7 +138,7 @@ public class DomainClassConverterUnitTests {
 
         when(service.canConvert(String.class, Long.class)).thenReturn(true);
         when(service.convert(anyString(), eq(Long.class))).thenReturn(1L);
-        when(repository.findById(1L)).thenReturn(USER);
+        when(repository.findOne(1L)).thenReturn(USER);
 
         Object user =
                 converter.convert("1", sourceDescriptor, targetDescriptor);
