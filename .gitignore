@@ -2,3 +2,7 @@ target
 .springBeans
 .ant-targets-build.xml
 src/ant/.ant-targets-upload-dist.xml
+.DS_Store
+*.iml
+*.ipr
+*.iws
