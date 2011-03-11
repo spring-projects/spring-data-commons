@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.support;
 
+import java.io.Serializable;
+
+import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.domain.Persistable;
 
 
@@ -25,18 +28,21 @@ import org.springframework.data.domain.Persistable;
  * 
  * @author Oliver Gierke
  */
-@SuppressWarnings("rawtypes")
-public class PersistableEntityInformation<T extends Persistable> extends
-        AbstractEntityInformation<T> {
+public class PersistableEntityInformation<T extends Persistable<ID>, ID extends Serializable> extends
+        AbstractEntityInformation<T, ID> {
+    
+    private Class<ID> idClass;
 
     /**
      * Creates a new {@link PersistableEntityInformation}.
      * 
      * @param domainClass
      */
+    @SuppressWarnings("unchecked")
     public PersistableEntityInformation(Class<T> domainClass) {
 
         super(domainClass);
+        this.idClass = (Class<ID>) GenericTypeResolver.resolveTypeArgument(domainClass, Persistable.class);
     }
 
 
@@ -61,8 +67,15 @@ public class PersistableEntityInformation<T extends Persistable> extends
      * org.springframework.data.repository.support.IdAware#getId(java.lang.Object
      * )
      */
-    public Object getId(T entity) {
+    public ID getId(T entity) {
 
         return entity.getId();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.data.repository.support.EntityInformation#getIdType()
+     */
+    public Class<ID> getIdType() {
+        return this.idClass;
     }
 }

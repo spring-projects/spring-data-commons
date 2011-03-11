@@ -17,35 +17,29 @@ package org.springframework.data.repository.support;
 
 import java.io.Serializable;
 
+import org.springframework.data.repository.Repository;
+
+
 /**
- * Extension of {@link EntityMetadata} to add functionality to query information
- * of entity instances.
+ * Interface for components that can provide {@link EntityInformation} this
+ * interface
  * 
  * @author Oliver Gierke
  */
-public interface EntityInformation<T, ID extends Serializable> extends EntityMetadata<T> {
+public interface RepositoryFactoryInformation<T, ID extends Serializable> {
 
     /**
-     * Returns whether the given entity is considered to be new.
-     * 
-     * @param entity must never be {@literal null}
-     * @return
-     */
-    boolean isNew(T entity);
-
-
-    /**
-     * Returns the id of the given entity.
-     * 
-     * @param entity must never be {@literal null}
-     * @return
-     */
-    ID getId(T entity);
-    
-    /**
-     * Returns the type of the id of the entity.
+     * Returns {@link EntityInformation} the repository factory is using.
      * 
      * @return
      */
-    Class<ID> getIdType();
+    EntityInformation<T, ID> getEntityInformation();
+
+
+    /**
+     * Returns the interface of the {@link Repository} the factory will create.
+     * 
+     * @return
+     */
+    Class<? extends Repository<T, ID>> getRepositoryInterface();
 }

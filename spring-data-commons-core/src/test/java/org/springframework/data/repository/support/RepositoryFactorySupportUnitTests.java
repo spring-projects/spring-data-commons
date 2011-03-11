@@ -62,6 +62,16 @@ public class RepositoryFactorySupportUnitTests {
     }
 
     class DummyRepositoryFactory extends RepositoryFactorySupport {
+        
+        /* (non-Javadoc)
+         * @see org.springframework.data.repository.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
+         */
+        @Override
+        public <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(
+                Class<T> domainClass) {
+        
+            return mock(EntityInformation.class);
+        }
 
         @Override
         protected Object getTargetRepository(RepositoryMetadata metadata) {

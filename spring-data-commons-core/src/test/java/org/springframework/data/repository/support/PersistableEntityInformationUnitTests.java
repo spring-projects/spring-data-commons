@@ -35,8 +35,8 @@ import org.springframework.data.domain.Persistable;
 public class PersistableEntityInformationUnitTests {
 
     @SuppressWarnings("rawtypes")
-    static final PersistableEntityInformation<Persistable> metadata =
-            new PersistableEntityInformation<Persistable>(Persistable.class);
+    static final PersistableEntityInformation metadata =
+            new PersistableEntityInformation(Persistable.class);
 
     @Mock
     Persistable<Long> persistable;
@@ -64,8 +64,8 @@ public class PersistableEntityInformationUnitTests {
     @Test
     public void returnsGivenClassAsEntityType() throws Exception {
 
-        PersistableEntityInformation<PersistableEntity> info =
-                new PersistableEntityInformation<PersistableEntity>(
+        PersistableEntityInformation<PersistableEntity, Long> info =
+                new PersistableEntityInformation<PersistableEntity, Long>(
                         PersistableEntity.class);
 
         assertEquals(PersistableEntity.class, info.getJavaType());

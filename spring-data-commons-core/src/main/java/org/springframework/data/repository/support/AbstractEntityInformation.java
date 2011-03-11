@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.support;
 
+import java.io.Serializable;
+
 import org.springframework.util.Assert;
 
 
@@ -24,8 +26,8 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public abstract class AbstractEntityInformation<T> implements
-        EntityInformation<T> {
+public abstract class AbstractEntityInformation<T, ID extends Serializable> implements
+        EntityInformation<T, ID> {
 
     private final Class<T> domainClass;
 

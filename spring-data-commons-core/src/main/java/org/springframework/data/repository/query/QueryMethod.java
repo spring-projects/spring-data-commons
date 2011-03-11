@@ -89,7 +89,7 @@ public class QueryMethod {
     }
 
 
-    public EntityMetadata<?> getEntityMetadata() {
+    public EntityMetadata<?> getEntityInformation() {
 
         return new EntityMetadata() {
 

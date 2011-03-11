@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.support;
 
+import java.io.Serializable;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
@@ -31,8 +33,8 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @param <T> the type of the repository
  */
-public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
-        implements FactoryBean<T>, InitializingBean {
+public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable>
+        implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T> {
 
     private RepositoryFactorySupport factory;
 
@@ -75,6 +77,25 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<?, ?>>
         this.customImplementation = customImplementation;
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.springframework.data.repository.support.EntityMetadataProvider#getEntityMetadata()
+     */
+    public EntityInformation<S, ID> getEntityInformation() {
+    
+        RepositoryMetadata repositoryMetadata = factory.getRepositoryMetadata(repositoryInterface);
+        return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainClass());
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.springframework.data.repository.support.RepositoryFactoryInformation#getRepositoryInterface()
+     */
+    @Override
+    public Class<? extends T> getRepositoryInterface() {
+    
+        return repositoryInterface;
+    }
 
     /*
      * (non-Javadoc)

@@ -17,6 +17,7 @@ package org.springframework.data.repository.support;
 
 import static org.springframework.util.ReflectionUtils.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,8 +125,7 @@ public abstract class RepositoryFactorySupport {
             Object customImplementation) {
 
         RepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(repositoryInterface,
-                        getRepositoryBaseClass(repositoryInterface));
+                getRepositoryMetadata(repositoryInterface);
 
         validate(metadata, customImplementation);
 
@@ -145,6 +145,29 @@ public abstract class RepositoryFactorySupport {
 
         return (T) result.getProxy();
     }
+    
+    
+    /**
+     * Returns the {@link RepositoryMetadata} for the given repository interface.
+     * 
+     * @param repositoryInterface
+     * @return
+     */
+    protected RepositoryMetadata getRepositoryMetadata(Class<?> repositoryInterface) {
+        
+        return new DefaultRepositoryMetadata(repositoryInterface, getRepositoryBaseClass(repositoryInterface));
+    }
+    
+    
+    /**
+     * Returns the {@link EntityInformation} for the given domain class.
+     * 
+     * @param <T> the entity type
+     * @param <ID> the id type
+     * @param domainClass 
+     * @return
+     */
+    public abstract <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass);
 
 
     /**

@@ -18,6 +18,8 @@ package org.springframework.data.repository.support;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
+
 import org.junit.Test;
 
 
@@ -38,14 +40,14 @@ public class AbstractEntityInformationUnitTests {
     @Test
     public void considersEntityNewIfGetIdReturnsNull() throws Exception {
 
-        EntityInformation<Object> metadata =
+        EntityInformation<Object, Serializable> metadata =
                 new DummyAbstractEntityInformation(Object.class);
         assertThat(metadata.isNew(null), is(true));
         assertThat(metadata.isNew(new Object()), is(false));
     }
 
     private static class DummyAbstractEntityInformation extends
-            AbstractEntityInformation<Object> {
+            AbstractEntityInformation<Object, Serializable> {
 
         public DummyAbstractEntityInformation(Class<Object> domainClass) {
 
@@ -60,9 +62,18 @@ public class AbstractEntityInformationUnitTests {
          * org.springframework.data.repository.support.EntityMetadata#getId(
          * java.lang.Object)
          */
-        public Object getId(Object entity) {
+        public Serializable getId(Object entity) {
 
             return entity == null ? null : entity.toString();
+        }
+        
+        /* (non-Javadoc)
+         * @see org.springframework.data.repository.support.EntityInformation#getIdType()
+         */
+        @Override
+        public Class<Serializable> getIdType() {
+        
+            return Serializable.class;
         }
     }
 }

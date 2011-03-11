@@ -12,6 +12,7 @@
 		<module>spring-data-commons-parent</module>
 		<module>spring-data-commons-core</module>
 		<module>spring-data-commons-aspects</module>
+		<module>spring-data-commons-extensions</module>
 	</modules>
 
 	<developers>
