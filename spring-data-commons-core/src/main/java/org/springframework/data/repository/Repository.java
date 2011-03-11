@@ -43,7 +43,7 @@ public interface Repository<T, ID extends Serializable> {
      * @param entities
      * @return
      */
-    List<T> save(Iterable<? extends T> entities);
+    Iterable<T> save(Iterable<? extends T> entities);
 
 
     /**
@@ -72,7 +72,7 @@ public interface Repository<T, ID extends Serializable> {
      * 
      * @return all entities
      */
-    List<T> findAll();
+    Iterable<T> findAll();
 
 
     /**

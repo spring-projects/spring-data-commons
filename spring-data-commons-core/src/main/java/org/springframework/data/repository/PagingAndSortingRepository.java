@@ -16,7 +16,6 @@
 package org.springframework.data.repository;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,7 +40,7 @@ public interface PagingAndSortingRepository<T, ID extends Serializable> extends
      * @param sort
      * @return all entities sorted by the given options
      */
-    List<T> findAll(Sort sort);
+    Iterable<T> findAll(Sort sort);
 
 
     /**
