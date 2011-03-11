@@ -51,7 +51,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
   protected GenericConversionService conversionService = ConversionServiceFactory.createDefaultConversionService();
 
   public BasicMappingContext() {
-    builder = new BasicMappingConfigurationBuilder(this);
+    builder = new BasicMappingConfigurationBuilder();
   }
 
   public BasicMappingContext(MappingConfigurationBuilder builder) {
@@ -83,7 +83,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
   public <T> PersistentEntity<T> addPersistentEntity(Class<T> type) {
     if (null == persistentEntities.get(type.getName())) {
       try {
-        PersistentEntity<T> entity = builder.createPersistentEntity(type);
+        PersistentEntity<T> entity = builder.createPersistentEntity(type, this);
         BeanInfo info = Introspector.getBeanInfo(type);
 
         Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();

@@ -26,7 +26,7 @@ public interface MappingConfigurationBuilder {
 
   <T> boolean isPersistentEntity(Class<T> clazz);
 
-  <T> PersistentEntity<T> createPersistentEntity(Class<T> clazz) throws MappingConfigurationException;
+  <T> PersistentEntity<T> createPersistentEntity(Class<T> clazz, MappingContext mappingContext) throws MappingConfigurationException;
 
   boolean isPersistentProperty(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException;
 

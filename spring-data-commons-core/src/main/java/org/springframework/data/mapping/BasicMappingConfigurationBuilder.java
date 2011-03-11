@@ -41,12 +41,6 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
   protected static ConcurrentMap<Class<?>, BeanInfo> beanInfo = new ConcurrentHashMap<Class<?>, BeanInfo>();
   protected Logger log = LoggerFactory.getLogger(getClass());
 
-  protected MappingContext mappingContext;
-
-  public BasicMappingConfigurationBuilder(MappingContext mappingContext) {
-    this.mappingContext = mappingContext;
-  }
-
   @Override
   public <T> boolean isPersistentEntity(Class<T> type) {
     if (type.isAnnotationPresent(Persistent.class)) {
@@ -68,7 +62,7 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
 
   @SuppressWarnings({"unchecked"})
   @Override
-  public <T> PersistentEntity<T> createPersistentEntity(Class<T> type) throws MappingConfigurationException {
+  public <T> PersistentEntity<T> createPersistentEntity(Class<T> type, MappingContext mappingContext) throws MappingConfigurationException {
     return new BasicPersistentEntity<T>(mappingContext, type);
   }
 
