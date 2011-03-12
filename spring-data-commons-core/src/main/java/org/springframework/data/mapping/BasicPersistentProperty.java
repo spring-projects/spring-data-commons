@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class BasicPersistentProperty<T> implements PersistentProperty {
+public class BasicPersistentProperty<T> implements PersistentProperty<T> {
 
   protected final String name;
   protected final Class<T> type;
