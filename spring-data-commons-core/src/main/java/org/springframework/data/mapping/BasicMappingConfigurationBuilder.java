@@ -191,16 +191,6 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
   }
 
   protected boolean isIdField(Field field) {
-    if (field.isAnnotationPresent(Id.class)) {
-      return true;
-    }
-
-    if (field.getType() == String.class || field.getType() == BigInteger.class) {
-      if ("id".equals(field.getName()) || "_id".equals(field.getName())) {
-        return true;
-      }
-    }
-
-    return false;
+    return field.isAnnotationPresent(Id.class);
   }
 }
