@@ -80,16 +80,6 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
     return new BasicPersistentProperty(field.getName(), field.getType(), field, descriptor);
   }
 
-  @Override
-  public <T> PersistentProperty<?> getIdProperty(Class<T> type) throws MappingConfigurationException {
-    for (Field field : type.getDeclaredFields()) {
-      if (isIdField(field)) {
-        return createPersistentProperty(field, null);
-      }
-    }
-    return null;
-  }
-
   @SuppressWarnings({"unchecked"})
   @Override
   public <T> PreferredConstructor<T> getPreferredConstructor(Class<T> type) throws MappingConfigurationException {
@@ -188,9 +178,5 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
       return true;
     }
     return false;
-  }
-
-  protected boolean isIdField(Field field) {
-    return field.isAnnotationPresent(Id.class);
   }
 }

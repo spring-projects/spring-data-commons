@@ -18,6 +18,7 @@ package org.springframework.data.mapping;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.model.Association;
 import org.springframework.data.mapping.model.PersistentEntity;
@@ -145,5 +146,10 @@ public class BasicPersistentProperty<T> implements PersistentProperty<T> {
       }
     }
     return type.getComponentType();
+  }
+  
+  @Override
+  public boolean isIdProperty() {
+    return field.isAnnotationPresent(Id.class);
   }
 }

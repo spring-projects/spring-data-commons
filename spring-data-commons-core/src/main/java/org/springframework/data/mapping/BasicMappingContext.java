@@ -108,6 +108,10 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
                   Association association = builder.createAssociation(property);
                   entity.addAssociation(association);
                 }
+                
+                if (property.isIdProperty()) {
+                  entity.setIdProperty(property);
+                }
               }
             } catch (MappingConfigurationException e) {
               log.error(e.getMessage(), e);
@@ -115,8 +119,6 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
           }
         });
 
-
-        entity.setIdProperty(builder.getIdProperty(type));
         entity.setPreferredConstructor(builder.getPreferredConstructor(type));
 
         // Inform listeners

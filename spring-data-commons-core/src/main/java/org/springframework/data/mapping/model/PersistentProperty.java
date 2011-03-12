@@ -49,4 +49,5 @@ public interface PersistentProperty<T> {
 
   Class<?> getComponentType();
 
+  boolean isIdProperty();
 }
