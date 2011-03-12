@@ -26,6 +26,8 @@ import org.springframework.core.convert.support.ConversionServiceFactory;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.mapping.model.*;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.validation.Validator;
 
 import java.beans.BeanInfo;
@@ -83,32 +85,36 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
   public <T> PersistentEntity<T> addPersistentEntity(Class<T> type) {
     if (null == persistentEntities.get(type.getName())) {
       try {
-        PersistentEntity<T> entity = builder.createPersistentEntity(type, this);
+        final PersistentEntity<T> entity = builder.createPersistentEntity(type, this);
         BeanInfo info = Introspector.getBeanInfo(type);
 
-        Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
+        final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
         for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
           descriptors.put(descriptor.getName(), descriptor);
         }
-
-        List<Field> fields = new LinkedList<Field>(Arrays.asList(type.getDeclaredFields()));
-        Class<?> superClazz = type.getSuperclass();
-        while (Object.class != superClazz) {
-          fields.addAll(new LinkedList<Field>(Arrays.asList(superClazz.getDeclaredFields())));
-          superClazz = superClazz.getSuperclass();
-        }
-        for (Field field : fields) {
-          PropertyDescriptor descriptor = descriptors.get(field.getName());
-          if (builder.isPersistentProperty(field, descriptor)) {
-            PersistentProperty<?> property = builder.createPersistentProperty(field, descriptor);
-            property.setOwner(entity);
-            entity.addPersistentProperty(property);
-            if (builder.isAssociation(field, descriptor)) {
-              Association association = builder.createAssociation(property);
-              entity.addAssociation(association);
+        
+        ReflectionUtils.doWithFields(type, new FieldCallback() {
+            
+          @Override
+          public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+        
+            try {
+              PropertyDescriptor descriptor = descriptors.get(field.getName());
+              if (builder.isPersistentProperty(field, descriptor)) {
+                PersistentProperty<?> property = builder.createPersistentProperty(field, descriptor);
+                property.setOwner(entity);
+                entity.addPersistentProperty(property);
+                if (builder.isAssociation(field, descriptor)) {
+                  Association association = builder.createAssociation(property);
+                  entity.addAssociation(association);
+                }
+              }
+            } catch (MappingConfigurationException e) {
+              log.error(e.getMessage(), e);
             }
           }
-        }
+        });
+
 
         entity.setIdProperty(builder.getIdProperty(type));
         entity.setPreferredConstructor(builder.getPreferredConstructor(type));
