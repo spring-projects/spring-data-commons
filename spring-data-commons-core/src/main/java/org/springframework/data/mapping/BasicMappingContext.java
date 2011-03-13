@@ -91,7 +91,13 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
           descriptors.put(descriptor.getName(), descriptor);
         }
 
-        for (Field field : type.getDeclaredFields()) {
+        List<Field> fields = new LinkedList<Field>(Arrays.asList(type.getDeclaredFields()));
+        Class<?> superClazz = type.getSuperclass();
+        while (Object.class != superClazz) {
+          fields.addAll(new LinkedList<Field>(Arrays.asList(superClazz.getDeclaredFields())));
+          superClazz = superClazz.getSuperclass();
+        }
+        for (Field field : fields) {
           PropertyDescriptor descriptor = descriptors.get(field.getName());
           if (builder.isPersistentProperty(field, descriptor)) {
             PersistentProperty<?> property = builder.createPersistentProperty(field, descriptor);
