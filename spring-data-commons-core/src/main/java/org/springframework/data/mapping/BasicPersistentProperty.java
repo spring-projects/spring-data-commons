@@ -129,7 +129,11 @@ public class BasicPersistentProperty<T> implements PersistentProperty<T> {
 
   @Override
   public boolean isComplexType() {
-    return !MappingBeanHelper.getSimpleTypes().contains(field.getType().getName());
+    if (isCollection() || field.getType().isArray()) {
+      return !MappingBeanHelper.isSimpleType(getComponentType());
+    } else {
+      return !MappingBeanHelper.isSimpleType(field.getType());
+    }
   }
 
   @Override
@@ -147,7 +151,7 @@ public class BasicPersistentProperty<T> implements PersistentProperty<T> {
     }
     return type.getComponentType();
   }
-  
+
   @Override
   public boolean isIdProperty() {
     return field.isAnnotationPresent(Id.class);

@@ -31,11 +31,8 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -44,28 +41,30 @@ public abstract class MappingBeanHelper {
 
   protected static GenericConversionService conversionService = ConversionServiceFactory.createDefaultConversionService();
   protected static SpelExpressionParser parser = new SpelExpressionParser();
-  protected static Set<String> simpleTypes = new ConcurrentSkipListSet<String>() {{
-    add(boolean.class.getName());
-    add(long.class.getName());
-    add(short.class.getName());
-    add(int.class.getName());
-    add(byte.class.getName());
-    add(float.class.getName());
-    add(double.class.getName());
-    add(char.class.getName());
-    add(Boolean.class.getName());
-    add(Long.class.getName());
-    add(Short.class.getName());
-    add(Integer.class.getName());
-    add(Byte.class.getName());
-    add(Float.class.getName());
-    add(Double.class.getName());
-    add(Character.class.getName());
-    add(String.class.getName());
-    add(java.util.Date.class.getName());
-    add(Locale.class.getName());
-    add(Class.class.getName());
-  }};
+  protected static Set<Class<?>> simpleTypes = Collections.newSetFromMap(new ConcurrentHashMap<Class<?>, Boolean>());
+
+  static {
+    simpleTypes.add(boolean.class);
+    simpleTypes.add(long.class);
+    simpleTypes.add(short.class);
+    simpleTypes.add(int.class);
+    simpleTypes.add(byte.class);
+    simpleTypes.add(float.class);
+    simpleTypes.add(double.class);
+    simpleTypes.add(char.class);
+    simpleTypes.add(Boolean.class);
+    simpleTypes.add(Long.class);
+    simpleTypes.add(Short.class);
+    simpleTypes.add(Integer.class);
+    simpleTypes.add(Byte.class);
+    simpleTypes.add(Float.class);
+    simpleTypes.add(Double.class);
+    simpleTypes.add(Character.class);
+    simpleTypes.add(String.class);
+    simpleTypes.add(java.util.Date.class);
+    simpleTypes.add(Locale.class);
+    simpleTypes.add(Class.class);
+  }
 
   public static GenericConversionService getConversionService() {
     return conversionService;
@@ -75,8 +74,17 @@ public abstract class MappingBeanHelper {
     MappingBeanHelper.conversionService = conversionService;
   }
 
-  public static Set<String> getSimpleTypes() {
+  public static Set<Class<?>> getSimpleTypes() {
     return simpleTypes;
+  }
+
+  public static boolean isSimpleType(Class<?> type) {
+    for (Class<?> clazz : simpleTypes) {
+      if (type == clazz || type.isAssignableFrom(clazz)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static <T> T constructInstance(PersistentEntity<T> entity,
