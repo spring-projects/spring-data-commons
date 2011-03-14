@@ -150,8 +150,8 @@ public abstract class MappingBeanHelper {
       throws IllegalAccessException, InvocationTargetException {
 
     Field field = property.getField();
-    if (fieldAccessOnly || (null == property.getPropertyDescriptor() || null == property.getPropertyDescriptor().getWriteMethod())) {
-      field.setAccessible(true);
+    Method setter = (null != property.getPropertyDescriptor() ? property.getPropertyDescriptor().getWriteMethod() : null);
+    if (fieldAccessOnly || null == setter) {
       if (null != value && value.getClass().isAssignableFrom(field.getType())) {
         field.set(on, value);
       } else {
@@ -160,7 +160,6 @@ public abstract class MappingBeanHelper {
       return;
     }
 
-    Method setter = property.getPropertyDescriptor().getWriteMethod();
     Class<?>[] paramTypes = setter.getParameterTypes();
     if (null != value && paramTypes.length > 0 && !value.getClass().isAssignableFrom(paramTypes[0])) {
       setter.invoke(on, conversionService.convert(value, paramTypes[0]));
@@ -175,19 +174,14 @@ public abstract class MappingBeanHelper {
                                   Class<T> type,
                                   boolean fieldAccessOnly)
       throws IllegalAccessException, InvocationTargetException {
-
+    Object obj;
     Field field = property.getField();
-    if (fieldAccessOnly || (null == property.getPropertyDescriptor() || null == property.getPropertyDescriptor().getReadMethod())) {
-      field.setAccessible(true);
-      Object obj = field.get(from);
-      if (null != obj && !obj.getClass().isAssignableFrom(type)) {
-        return conversionService.convert(obj, type);
-      } else {
-        return (T) obj;
-      }
+    Method getter = (null != property.getPropertyDescriptor() ? property.getPropertyDescriptor().getReadMethod() : null);
+    if (fieldAccessOnly || null == getter) {
+      obj = field.get(from);
+    } else {
+      obj = getter.invoke(from);
     }
-
-    Object obj = property.getPropertyDescriptor().getReadMethod().invoke(from);
     if (null != obj && !obj.getClass().isAssignableFrom(type)) {
       return conversionService.convert(obj, type);
     } else {

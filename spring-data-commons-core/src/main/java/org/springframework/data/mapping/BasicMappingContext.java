@@ -92,15 +92,15 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
         for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
           descriptors.put(descriptor.getName(), descriptor);
         }
-        
+
         ReflectionUtils.doWithFields(type, new FieldCallback() {
-            
+
           @Override
           public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-        
             try {
               PropertyDescriptor descriptor = descriptors.get(field.getName());
               if (builder.isPersistentProperty(field, descriptor)) {
+                ReflectionUtils.makeAccessible(field);
                 PersistentProperty<?> property = builder.createPersistentProperty(field, descriptor);
                 property.setOwner(entity);
                 entity.addPersistentProperty(property);
@@ -108,7 +108,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
                   Association association = builder.createAssociation(property);
                   entity.addAssociation(association);
                 }
-                
+
                 if (property.isIdProperty()) {
                   entity.setIdProperty(property);
                 }
