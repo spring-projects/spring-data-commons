@@ -33,7 +33,6 @@ public class PreferredConstructor<T> {
 
   public PreferredConstructor(Constructor<T> constructor) {
     this.constructor = constructor;
-    this.parameters = parameters;
   }
 
   public Constructor<T> getConstructor() {

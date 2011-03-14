@@ -29,7 +29,6 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.math.BigInteger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -60,7 +59,6 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
     return false;
   }
 
-  @SuppressWarnings({"unchecked"})
   @Override
   public <T> PersistentEntity<T> createPersistentEntity(Class<T> type, MappingContext mappingContext) throws MappingConfigurationException {
     return new BasicPersistentEntity<T>(mappingContext, type);
@@ -74,10 +72,9 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
     return true;
   }
 
-  @SuppressWarnings({"unchecked"})
   @Override
-  public PersistentProperty<?> createPersistentProperty(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException {
-    return new BasicPersistentProperty(field.getName(), field.getType(), field, descriptor);
+  public <T> PersistentProperty<T> createPersistentProperty(Field field, PropertyDescriptor descriptor, Class<T> type) throws MappingConfigurationException {
+    return new BasicPersistentProperty<T>(field.getName(), type, field, descriptor);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -112,7 +109,8 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
               }
             } else {
               if (paramTypes[i] instanceof TypeVariable) {
-                Type[] bounds = ((TypeVariable) paramTypes[i]).getBounds();
+                @SuppressWarnings("rawtypes")
+				Type[] bounds = ((TypeVariable) paramTypes[i]).getBounds();
                 if (bounds.length > 0) {
                   targetType = (Class<?>) bounds[0];
                 }

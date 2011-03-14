@@ -30,9 +30,9 @@ public interface MappingConfigurationBuilder {
 
   boolean isPersistentProperty(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException;
 
-  PersistentProperty<?> createPersistentProperty(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException;
+  <T> PersistentProperty<T> createPersistentProperty(Field field, PropertyDescriptor descriptor, Class<T> type) throws MappingConfigurationException;
 
-  <T> PreferredConstructor<?> getPreferredConstructor(Class<T> clazz) throws MappingConfigurationException;
+  <T> PreferredConstructor<T> getPreferredConstructor(Class<T> clazz) throws MappingConfigurationException;
 
   boolean isAssociation(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException;
 

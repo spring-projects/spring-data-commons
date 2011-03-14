@@ -17,14 +17,17 @@
 package org.springframework.data.mapping.model;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jbrisbin
- * Date: 2/25/11
- * Time: 9:07 AM
- * To change this template use File | Settings | File Templates.
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class MappingInstantiationException extends RuntimeException {
-  public MappingInstantiationException(String s, Throwable throwable) {
+  
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public MappingInstantiationException(String s, Throwable throwable) {
     super(s, throwable);
   }
+	
 }

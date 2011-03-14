@@ -22,7 +22,12 @@ package org.springframework.data.mapping.model;
  */
 public class IllegalMappingException extends RuntimeException {
 
-  public IllegalMappingException(String s, Throwable throwable) {
+  /**
+   * 
+   */
+	private static final long serialVersionUID = 1L;
+
+public IllegalMappingException(String s, Throwable throwable) {
     super(s, throwable);
   }
 

@@ -101,7 +101,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
               PropertyDescriptor descriptor = descriptors.get(field.getName());
               if (builder.isPersistentProperty(field, descriptor)) {
                 ReflectionUtils.makeAccessible(field);
-                PersistentProperty<?> property = builder.createPersistentProperty(field, descriptor);
+                PersistentProperty<?> property = builder.createPersistentProperty(field, descriptor, field.getType());
                 property.setOwner(entity);
                 entity.addPersistentProperty(property);
                 if (builder.isAssociation(field, descriptor)) {
@@ -184,13 +184,12 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
     this.builder = builder;
   }
 
-  @SuppressWarnings({"unchecked"})
   @Override
   public boolean isPersistentEntity(Object value) {
     if (null != value) {
-      Class clazz;
+      Class<?> clazz;
       if (value instanceof Class) {
-        clazz = ((Class) value);
+        clazz = ((Class<?>) value);
       } else {
         clazz = value.getClass();
       }

@@ -20,7 +20,13 @@ package org.springframework.data.mapping.model;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class MappingException extends RuntimeException {
-  public MappingException(String s) {
+  
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public MappingException(String s) {
     super(s);
   }
 

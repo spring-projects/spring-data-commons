@@ -24,7 +24,7 @@ public interface PersistentEntity<T> extends InitializingBean {
 
   PreferredConstructor<T> getPreferredConstructor();
 
-  void setPreferredConstructor(PreferredConstructor constructor);
+  void setPreferredConstructor(PreferredConstructor<T> constructor);
 
   /**
    * Returns the identity of the instance

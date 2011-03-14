@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class BasicPersistentEntity<T> implements PersistentEntity {
+public class BasicPersistentEntity<T> implements PersistentEntity<T> {
 
   protected final Class<T> type;
   protected PreferredConstructor<T> preferredConstructor;
@@ -41,12 +41,12 @@ public class BasicPersistentEntity<T> implements PersistentEntity {
   }
 
   @Override
-  public PreferredConstructor getPreferredConstructor() {
+  public PreferredConstructor<T> getPreferredConstructor() {
     return preferredConstructor;
   }
 
   @Override
-  public void setPreferredConstructor(PreferredConstructor constructor) {
+  public void setPreferredConstructor(PreferredConstructor<T> constructor) {
     this.preferredConstructor = constructor;
   }
 
@@ -61,7 +61,7 @@ public class BasicPersistentEntity<T> implements PersistentEntity {
   }
 
   @Override
-  public void setIdProperty(PersistentProperty property) {
+  public void setIdProperty(PersistentProperty<?> property) {
     idProperty = property;
   }
 
@@ -71,7 +71,7 @@ public class BasicPersistentEntity<T> implements PersistentEntity {
   }
 
   @Override
-  public void addPersistentProperty(PersistentProperty property) {
+  public void addPersistentProperty(PersistentProperty<?> property) {
     persistentProperties.put(property.getName(), property);
   }
 
@@ -85,7 +85,7 @@ public class BasicPersistentEntity<T> implements PersistentEntity {
     associations.put(association.getInverse().getName(), association);
   }
 
-  public PersistentProperty getPersistentProperty(String name) {
+  public PersistentProperty<?> getPersistentProperty(String name) {
     return persistentProperties.get(name);
   }
 
