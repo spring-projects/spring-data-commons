@@ -18,6 +18,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.validation.Validator;
 
 import java.util.Collection;
@@ -46,16 +47,10 @@ public interface MappingContext extends InitializingBean {
    * @return A list of PersistentEntity instances
    */
   Collection<PersistentEntity<?>> getPersistentEntities();
-
-  /**
-   * Obtains a PersistentEntity by name
-   *
-   * @param name The name of the entity
-   * @return The entity or null
-   */
-  PersistentEntity<?> getPersistentEntity(String name);
-
+  
   <T> PersistentEntity<T> getPersistentEntity(Class<T> type);
+
+  <T> PersistentEntity<T> getPersistentEntity(TypeInformation type);
 
   /**
    * Adds a PersistentEntity instance

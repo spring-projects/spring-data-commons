@@ -17,6 +17,8 @@
 package org.springframework.data.mapping;
 
 import org.springframework.data.mapping.model.*;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,15 +31,18 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
 
   protected final Class<T> type;
   protected PreferredConstructor<T> preferredConstructor;
-  protected PersistentProperty<?> idProperty;
-  protected Map<String, PersistentProperty<?>> persistentProperties = new HashMap<String, PersistentProperty<?>>();
+  protected PersistentProperty idProperty;
+  protected Map<String, PersistentProperty> persistentProperties = new HashMap<String, PersistentProperty>();
   protected Map<String, Association> associations = new HashMap<String, Association>();
+  protected final TypeInformation information;
 
   protected MappingContext mappingContext;
-
-  public BasicPersistentEntity(MappingContext mappingContext, Class<T> type) {
+  
+  
+  public BasicPersistentEntity(MappingContext mappingContext, TypeInformation information) {
     this.mappingContext = mappingContext;
-    this.type = type;
+    this.type = (Class<T>) information.getType();
+    this.information = information;
   }
 
   @Override
@@ -56,22 +61,22 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
   }
 
   @Override
-  public PersistentProperty<?> getIdProperty() {
+  public PersistentProperty getIdProperty() {
     return idProperty;
   }
 
   @Override
-  public void setIdProperty(PersistentProperty<?> property) {
+  public void setIdProperty(PersistentProperty property) {
     idProperty = property;
   }
 
   @Override
-  public Collection<PersistentProperty<?>> getPersistentProperties() {
+  public Collection<PersistentProperty> getPersistentProperties() {
     return persistentProperties.values();
   }
 
   @Override
-  public void addPersistentProperty(PersistentProperty<?> property) {
+  public void addPersistentProperty(PersistentProperty property) {
     persistentProperties.put(property.getName(), property);
   }
 
@@ -85,13 +90,18 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
     associations.put(association.getInverse().getName(), association);
   }
 
-  public PersistentProperty<?> getPersistentProperty(String name) {
+  public PersistentProperty getPersistentProperty(String name) {
     return persistentProperties.get(name);
   }
 
   @Override
   public Class<T> getType() {
     return type;
+  }
+  
+  @Override
+  public TypeInformation getPropertyInformation() {
+    return information;
   }
 
   @Override
@@ -111,8 +121,8 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
 
   @Override
   public void doWithProperties(PropertyHandler handler) {
-    for (PersistentProperty<?> property : persistentProperties.values()) {
-      if (!property.isTransient() && !property.isAssociation()) {
+    for (PersistentProperty property : persistentProperties.values()) {
+      if (!property.isTransient() && !property.isAssociation() && !property.isIdProperty()) {
         handler.doWithPersistentProperty(property);
       }
     }

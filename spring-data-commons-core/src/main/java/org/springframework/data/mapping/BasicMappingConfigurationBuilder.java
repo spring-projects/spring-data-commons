@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.data.annotation.*;
 import org.springframework.data.mapping.model.*;
+import org.springframework.data.util.TypeInformation;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -29,6 +30,9 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -37,6 +41,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class BasicMappingConfigurationBuilder implements MappingConfigurationBuilder {
 
+  private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
   protected static ConcurrentMap<Class<?>, BeanInfo> beanInfo = new ConcurrentHashMap<Class<?>, BeanInfo>();
   protected Logger log = LoggerFactory.getLogger(getClass());
 
@@ -60,21 +65,21 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
   }
 
   @Override
-  public <T> PersistentEntity<T> createPersistentEntity(Class<T> type, MappingContext mappingContext) throws MappingConfigurationException {
-    return new BasicPersistentEntity<T>(mappingContext, type);
+  public <T> PersistentEntity<T> createPersistentEntity(TypeInformation typeInformation, MappingContext mappingContext) throws MappingConfigurationException {
+    return new BasicPersistentEntity<T>(mappingContext, typeInformation);
   }
 
   @Override
   public boolean isPersistentProperty(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException {
-    if ("class".equals(field.getName()) || isTransient(field)) {
+    if (UNMAPPED_FIELDS.contains(field.getName()) || isTransient(field)) {
       return false;
     }
     return true;
   }
 
   @Override
-  public <T> PersistentProperty<T> createPersistentProperty(Field field, PropertyDescriptor descriptor, Class<T> type) throws MappingConfigurationException {
-    return new BasicPersistentProperty<T>(field.getName(), type, field, descriptor);
+  public PersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor, TypeInformation information) throws MappingConfigurationException {
+    return new BasicPersistentProperty(field, descriptor, information);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -148,7 +153,7 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
   }
 
   @Override
-  public Association createAssociation(PersistentProperty<?> property) {
+  public Association createAssociation(PersistentProperty property) {
     // Only support uni-directional associations in the Basic configuration
     Association association = new Association(property, null);
     property.setAssociation(association);

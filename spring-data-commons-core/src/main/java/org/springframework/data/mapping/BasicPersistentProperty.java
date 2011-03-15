@@ -23,6 +23,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.model.Association;
 import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.data.mapping.model.PersistentProperty;
+import org.springframework.data.util.TypeInformation;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -31,27 +32,25 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class BasicPersistentProperty<T> implements PersistentProperty<T> {
+public class BasicPersistentProperty implements PersistentProperty {
 
   protected final String name;
-  protected final Class<T> type;
   protected final PropertyDescriptor propertyDescriptor;
+  protected final TypeInformation information;
   protected final Field field;
   protected Association association;
   protected Value value;
   protected boolean isTransient = false;
   protected PersistentEntity<?> owner;
 
-  public BasicPersistentProperty(String name,
-                                 Class<T> type,
-                                 Field field,
-                                 PropertyDescriptor propertyDescriptor) {
-    this.name = name;
-    this.type = type;
+  public BasicPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, TypeInformation information) {
+    this.name = field.getName();
+    this.information = information.getProperty(this.name);
     this.propertyDescriptor = propertyDescriptor;
     this.field = field;
     this.isTransient = Modifier.isTransient(field.getModifiers()) || field.isAnnotationPresent(Transient.class);
@@ -83,8 +82,13 @@ public class BasicPersistentProperty<T> implements PersistentProperty<T> {
   }
 
   @Override
-  public Class<T> getType() {
-    return type;
+  public Class<?> getType() {
+    return information.getType();
+  }
+  
+  @Override
+  public TypeInformation getTypeInformation() {
+    return information;
   }
 
   @Override
@@ -124,15 +128,29 @@ public class BasicPersistentProperty<T> implements PersistentProperty<T> {
 
   @Override
   public boolean isCollection() {
-    return type.isAssignableFrom(Collection.class) || type.isAssignableFrom(List.class);
+    return getType().isAssignableFrom(Collection.class) || getType().isAssignableFrom(List.class) || isArray();
+  }
+  
+  
+  @Override
+  public boolean isMap() {
+    return getType().isAssignableFrom(Map.class);
+  }
+  
+  /* (non-Javadoc)
+   * @see org.springframework.data.mapping.model.PersistentProperty#isArray()
+   */
+  @Override
+  public boolean isArray() {
+    return getType().isArray();
   }
 
   @Override
   public boolean isComplexType() {
-    if (isCollection() || type.isArray()) {
+    if (isCollection() || isArray()) {
       return !MappingBeanHelper.isSimpleType(getComponentType());
     } else {
-      return !MappingBeanHelper.isSimpleType(field.getType());
+      return !MappingBeanHelper.isSimpleType(getType());
     }
   }
 
@@ -149,7 +167,7 @@ public class BasicPersistentProperty<T> implements PersistentProperty<T> {
         }
       }
     }
-    return type.getComponentType();
+    return getType().getComponentType();
   }
 
   @Override

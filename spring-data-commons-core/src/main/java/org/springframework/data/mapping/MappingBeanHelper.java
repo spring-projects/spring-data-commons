@@ -137,14 +137,14 @@ public abstract class MappingBeanHelper {
   }
 
   public static void setProperty(Object on,
-                                 PersistentProperty<?> property,
+                                 PersistentProperty property,
                                  Object value)
       throws IllegalAccessException, InvocationTargetException {
     setProperty(on, property, value, false);
   }
 
   public static void setProperty(Object on,
-                                 PersistentProperty<?> property,
+                                 PersistentProperty property,
                                  Object value,
                                  boolean fieldAccessOnly)
       throws IllegalAccessException, InvocationTargetException {
@@ -170,7 +170,7 @@ public abstract class MappingBeanHelper {
 
   @SuppressWarnings({"unchecked"})
   public static <T> T getProperty(Object from,
-                                  PersistentProperty<?> property,
+                                  PersistentProperty property,
                                   Class<T> type,
                                   boolean fieldAccessOnly)
       throws IllegalAccessException, InvocationTargetException {

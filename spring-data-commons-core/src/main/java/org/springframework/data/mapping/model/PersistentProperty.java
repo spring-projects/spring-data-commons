@@ -1,6 +1,7 @@
 package org.springframework.data.mapping.model;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.TypeInformation;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -9,7 +10,7 @@ import java.lang.reflect.Field;
  * @author Graeme Rocher
  * @since 1.0
  */
-public interface PersistentProperty<T> {
+public interface PersistentProperty {
 
   Object getOwner();
 
@@ -27,7 +28,9 @@ public interface PersistentProperty<T> {
    *
    * @return The property type
    */
-  Class<T> getType();
+  Class<?> getType();
+  
+  TypeInformation getTypeInformation();
 
   PropertyDescriptor getPropertyDescriptor();
 
@@ -44,6 +47,10 @@ public interface PersistentProperty<T> {
   void setAssociation(Association association);
 
   boolean isCollection();
+  
+  boolean isMap();
+  
+  boolean isArray();
 
   boolean isComplexType();
 

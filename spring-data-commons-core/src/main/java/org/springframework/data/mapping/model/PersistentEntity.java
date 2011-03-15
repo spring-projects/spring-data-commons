@@ -3,6 +3,7 @@ package org.springframework.data.mapping.model;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.util.TypeInformation;
 
 import java.util.Collection;
 
@@ -31,18 +32,18 @@ public interface PersistentEntity<T> extends InitializingBean {
    *
    * @return The identity
    */
-  PersistentProperty<?> getIdProperty();
+  PersistentProperty getIdProperty();
 
-  void setIdProperty(PersistentProperty<?> property);
+  void setIdProperty(PersistentProperty property);
 
   /**
    * A list of properties to be persisted
    *
    * @return A list of PersistentProperty instances
    */
-  Collection<PersistentProperty<?>> getPersistentProperties();
+  Collection<PersistentProperty> getPersistentProperties();
 
-  void addPersistentProperty(PersistentProperty<?> property);
+  void addPersistentProperty(PersistentProperty property);
 
   /**
    * A list of the associations for this entity. This is typically a subset of the list returned by {@link #getPersistentProperties()}
@@ -59,12 +60,14 @@ public interface PersistentEntity<T> extends InitializingBean {
    * @param name The name of the property
    * @return The PersistentProperty or null if it doesn't exist
    */
-  PersistentProperty<?> getPersistentProperty(String name);
+  PersistentProperty getPersistentProperty(String name);
 
   /**
    * @return The underlying Java class for this entity
    */
   Class<T> getType();
+  
+  TypeInformation getPropertyInformation();
 
   /**
    * A list of property names

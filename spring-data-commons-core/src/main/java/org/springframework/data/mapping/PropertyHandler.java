@@ -19,8 +19,12 @@ package org.springframework.data.mapping;
 import org.springframework.data.mapping.model.PersistentProperty;
 
 /**
+ * Callback interface to do something with all plain {@link PersistentProperty}
+ * instances <em>except</em> associations, transient properties and the id-property.
+ * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public interface PropertyHandler {
-  void doWithPersistentProperty(PersistentProperty<?> persistentProperty);
+
+  void doWithPersistentProperty(PersistentProperty persistentProperty);
 }

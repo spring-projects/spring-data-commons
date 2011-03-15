@@ -21,27 +21,27 @@ package org.springframework.data.mapping.model;
  */
 public class Association {
 
-  protected PersistentProperty<?> inverse;
-  protected PersistentProperty<?> obverse;
+  protected PersistentProperty inverse;
+  protected PersistentProperty obverse;
 
-  public Association(PersistentProperty<?> inverse, PersistentProperty<?> obverse) {
+  public Association(PersistentProperty inverse, PersistentProperty obverse) {
     this.inverse = inverse;
     this.obverse = obverse;
   }
 
-  public PersistentProperty<?> getInverse() {
+  public PersistentProperty getInverse() {
     return inverse;
   }
 
-  public void setInverse(PersistentProperty<?> inverse) {
+  public void setInverse(PersistentProperty inverse) {
     this.inverse = inverse;
   }
 
-  public PersistentProperty<?> getObverse() {
+  public PersistentProperty getObverse() {
     return obverse;
   }
 
-  public void setObverse(PersistentProperty<?> obverse) {
+  public void setObverse(PersistentProperty obverse) {
     this.obverse = obverse;
   }
 }

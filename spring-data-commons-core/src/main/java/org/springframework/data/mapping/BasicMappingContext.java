@@ -25,6 +25,8 @@ import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.convert.support.ConversionServiceFactory;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.mapping.model.*;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -47,7 +49,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
 
   protected Logger log = LoggerFactory.getLogger(getClass());
   protected MappingConfigurationBuilder builder;
-  protected ConcurrentMap<String, PersistentEntity<?>> persistentEntities = new ConcurrentHashMap<String, PersistentEntity<?>>();
+  protected ConcurrentMap<TypeInformation, PersistentEntity<?>> persistentEntities = new ConcurrentHashMap<TypeInformation, PersistentEntity<?>>();
   protected ConcurrentMap<PersistentEntity<?>, List<Validator>> validators = new ConcurrentHashMap<PersistentEntity<?>, List<Validator>>();
   protected ConcurrentSkipListSet<Listener> listeners = new ConcurrentSkipListSet<Listener>();
   protected GenericConversionService conversionService = ConversionServiceFactory.createDefaultConversionService();
@@ -70,78 +72,98 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
     return persistentEntities.values();
   }
 
-  @SuppressWarnings({"unchecked"})
+  /* (non-Javadoc)
+   * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
+   */
   @Override
   public <T> PersistentEntity<T> getPersistentEntity(Class<T> type) {
-    return (PersistentEntity<T>) persistentEntities.get(type.getName());
+    return getPersistentEntity(new ClassTypeInformation(type));
   }
-
+  
+  @SuppressWarnings({"unchecked"})
   @Override
-  public PersistentEntity<?> getPersistentEntity(String name) {
-    return persistentEntities.get(name);
+  public <T> PersistentEntity<T> getPersistentEntity(TypeInformation type) {
+    return (PersistentEntity<T>) persistentEntities.get(type);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public <T> PersistentEntity<T> addPersistentEntity(TypeInformation typeInformation) {
+    
+    PersistentEntity<?> persistentEntity = persistentEntities.get(typeInformation);
+    
+    if (persistentEntity != null) {
+      return (PersistentEntity<T>) persistentEntity;
+    }
+    
+    Class<T> type = (Class<T>) typeInformation.getType();
+    
+    try {
+      final PersistentEntity<T> entity = builder.createPersistentEntity(typeInformation, this);
+      BeanInfo info = Introspector.getBeanInfo(type);
+
+      final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
+      for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
+        descriptors.put(descriptor.getName(), descriptor);
+      }
+
+      ReflectionUtils.doWithFields(type, new FieldCallback() {
+
+        @Override
+        public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+          try {
+            PropertyDescriptor descriptor = descriptors.get(field.getName());
+            if (builder.isPersistentProperty(field, descriptor)) {
+              ReflectionUtils.makeAccessible(field);
+              PersistentProperty property = builder.createPersistentProperty(field, descriptor, entity.getPropertyInformation());
+              property.setOwner(entity);
+              entity.addPersistentProperty(property);
+              if (builder.isAssociation(field, descriptor)) {
+                Association association = builder.createAssociation(property);
+                entity.addAssociation(association);
+              }
+
+              if (property.isIdProperty()) {
+                entity.setIdProperty(property);
+              }
+              
+              if (property.isComplexType() && !property.isTransient()) {
+                addPersistentEntity(property.getTypeInformation());
+              }
+            }
+          } catch (MappingConfigurationException e) {
+            log.error(e.getMessage(), e);
+          }
+        }
+      });
+
+      entity.setPreferredConstructor(builder.getPreferredConstructor(type));
+
+      // Inform listeners
+      List<Listener> listenersToRemove = new ArrayList<Listener>();
+      for (Listener listener : listeners) {
+        if (!listener.persistentEntityAdded(entity)) {
+          listenersToRemove.add(listener);
+        }
+      }
+      for (Listener listener : listenersToRemove) {
+        listeners.remove(listener);
+      }
+
+      persistentEntities.put(entity.getPropertyInformation(), entity);
+
+      return entity;
+    } catch (MappingConfigurationException e) {
+      log.error(e.getMessage(), e);
+    } catch (IntrospectionException e) {
+      throw new MappingException(e.getMessage(), e);
+    }
+    
+    return null;
   }
 
   @Override
   public <T> PersistentEntity<T> addPersistentEntity(Class<T> type) {
-    if (null == persistentEntities.get(type.getName())) {
-      try {
-        final PersistentEntity<T> entity = builder.createPersistentEntity(type, this);
-        BeanInfo info = Introspector.getBeanInfo(type);
-
-        final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
-        for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
-          descriptors.put(descriptor.getName(), descriptor);
-        }
-
-        ReflectionUtils.doWithFields(type, new FieldCallback() {
-
-          @Override
-          public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-            try {
-              PropertyDescriptor descriptor = descriptors.get(field.getName());
-              if (builder.isPersistentProperty(field, descriptor)) {
-                ReflectionUtils.makeAccessible(field);
-                PersistentProperty<?> property = builder.createPersistentProperty(field, descriptor, field.getType());
-                property.setOwner(entity);
-                entity.addPersistentProperty(property);
-                if (builder.isAssociation(field, descriptor)) {
-                  Association association = builder.createAssociation(property);
-                  entity.addAssociation(association);
-                }
-
-                if (property.isIdProperty()) {
-                  entity.setIdProperty(property);
-                }
-              }
-            } catch (MappingConfigurationException e) {
-              log.error(e.getMessage(), e);
-            }
-          }
-        });
-
-        entity.setPreferredConstructor(builder.getPreferredConstructor(type));
-
-        // Inform listeners
-        List<Listener> listenersToRemove = new ArrayList<Listener>();
-        for (Listener listener : listeners) {
-          if (!listener.persistentEntityAdded(entity)) {
-            listenersToRemove.add(listener);
-          }
-        }
-        for (Listener listener : listenersToRemove) {
-          listeners.remove(listener);
-        }
-
-        persistentEntities.put(type.getName(), entity);
-
-        return entity;
-      } catch (MappingConfigurationException e) {
-        log.error(e.getMessage(), e);
-      } catch (IntrospectionException e) {
-        throw new MappingException(e.getMessage(), e);
-      }
-    }
-    return null;
+    return addPersistentEntity(new ClassTypeInformation(type));
   }
 
   @Override
