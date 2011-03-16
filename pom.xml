@@ -5,14 +5,14 @@
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons-dist</artifactId>
 	<name>Spring Data Commons Distribution</name>
-	<version>1.0.0.M4</version>
+	<version>1.0.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
 		<module>spring-data-commons-parent</module>
 		<module>spring-data-commons-core</module>
-		<!-- <module>spring-data-commons-aspects</module> -->
-		<!-- <module>spring-data-commons-extensions</module> -->
+		<module>spring-data-commons-aspects</module>
+		<module>spring-data-commons-extensions</module>
 	</modules>
 
 	<developers>

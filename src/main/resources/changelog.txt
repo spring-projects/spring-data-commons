@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.0.0.M5
+----------------------------------------
+
+General
+
+
+Repository
+* Extension module for Spring MVC integration (DATAJPA-19)
+
+
 Changes in version 1.0.0.M4 (2011-03-15)
 ----------------------------------------
 
