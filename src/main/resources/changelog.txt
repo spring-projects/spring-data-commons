@@ -1,7 +1,7 @@
 Spring Data Commons Changelog
 =============================================
 
-Changes in version 1.0.0.M4
+Changes in version 1.0.0.M4 (2011-03-15)
 ----------------------------------------
 
 General
@@ -15,8 +15,8 @@ Repository
 * Fixed returning wrong class PersistableEntityMetadata (DATACMNS-19)
 * Introduced infrastructure to post-process RepositoryQuery instances (DATACMNS-18) 
 * Renamed Repository.findById(...) to findOne(É) (DATACMNS-20)
-* Extension module for Spring MVC integration (DATAJPA-19)
 * Changed method signature of Repository.findAll(...) and according methods to Iterable<T> (DATACMNS-21)
+
 
 Changes in version 1.0.0.M3 (2011-02-09)
 ----------------------------------------
