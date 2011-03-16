@@ -14,15 +14,15 @@
  */
 package org.springframework.data.mapping.model;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.validation.Validator;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * <p>This interface defines the overall context including all known
@@ -47,7 +47,7 @@ public interface MappingContext extends InitializingBean {
    * @return A list of PersistentEntity instances
    */
   Collection<PersistentEntity<?>> getPersistentEntities();
-  
+
   <T> PersistentEntity<T> getPersistentEntity(Class<T> type);
 
   <T> PersistentEntity<T> getPersistentEntity(TypeInformation type);
@@ -109,18 +109,4 @@ public interface MappingContext extends InitializingBean {
    */
   boolean isPersistentEntity(Object value);
 
-  void addContextListener(Listener listener);
-
-  /**
-   * Listener interface to deal with newly-added persistent entities.
-   */
-  public interface Listener {
-    /**
-     * Handle this new entity, return true or false, depending on whether this listener should continue listening.
-     *
-     * @param entity
-     * @return 'true' to leave listener attached, 'false' to remove this listener
-     */
-    boolean persistentEntityAdded(PersistentEntity<?> entity);
-  }
 }

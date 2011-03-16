@@ -16,15 +16,38 @@
 
 package org.springframework.data.mapping;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.convert.support.ConversionServiceFactory;
 import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.data.mapping.model.*;
+import org.springframework.data.mapping.event.MappingContextEvent;
+import org.springframework.data.mapping.model.Association;
+import org.springframework.data.mapping.model.MappingConfigurationBuilder;
+import org.springframework.data.mapping.model.MappingConfigurationException;
+import org.springframework.data.mapping.model.MappingContext;
+import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.model.PersistentEntity;
+import org.springframework.data.mapping.model.PersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -32,26 +55,16 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.validation.Validator;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class BasicMappingContext implements MappingContext, InitializingBean {
+public class BasicMappingContext implements MappingContext, InitializingBean, ApplicationContextAware {
 
   protected Logger log = LoggerFactory.getLogger(getClass());
+  protected ApplicationContext applicationContext;
   protected MappingConfigurationBuilder builder;
   protected ConcurrentMap<TypeInformation, PersistentEntity<?>> persistentEntities = new ConcurrentHashMap<TypeInformation, PersistentEntity<?>>();
   protected ConcurrentMap<PersistentEntity<?>, List<Validator>> validators = new ConcurrentHashMap<PersistentEntity<?>, List<Validator>>();
-  protected ConcurrentSkipListSet<Listener> listeners = new ConcurrentSkipListSet<Listener>();
   protected GenericConversionService conversionService = ConversionServiceFactory.createDefaultConversionService();
 
   public BasicMappingContext() {
@@ -68,6 +81,11 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
   }
 
   @Override
+  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    this.applicationContext = applicationContext;
+  }
+
+  @Override
   public Collection<PersistentEntity<?>> getPersistentEntities() {
     return persistentEntities.values();
   }
@@ -79,24 +97,24 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
   public <T> PersistentEntity<T> getPersistentEntity(Class<T> type) {
     return getPersistentEntity(new ClassTypeInformation(type));
   }
-  
+
   @SuppressWarnings({"unchecked"})
   @Override
   public <T> PersistentEntity<T> getPersistentEntity(TypeInformation type) {
     return (PersistentEntity<T>) persistentEntities.get(type);
   }
-  
+
   @SuppressWarnings("unchecked")
   public <T> PersistentEntity<T> addPersistentEntity(TypeInformation typeInformation) {
-    
+
     PersistentEntity<?> persistentEntity = persistentEntities.get(typeInformation);
-    
+
     if (persistentEntity != null) {
       return (PersistentEntity<T>) persistentEntity;
     }
-    
+
     Class<T> type = (Class<T>) typeInformation.getType();
-    
+
     try {
       final PersistentEntity<T> entity = builder.createPersistentEntity(typeInformation, this);
       BeanInfo info = Introspector.getBeanInfo(type);
@@ -125,7 +143,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
               if (property.isIdProperty()) {
                 entity.setIdProperty(property);
               }
-              
+
               if (property.isComplexType() && !property.isTransient()) {
                 addPersistentEntity(property.getTypeInformation());
               }
@@ -139,16 +157,9 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
       entity.setPreferredConstructor(builder.getPreferredConstructor(type));
 
       // Inform listeners
-      List<Listener> listenersToRemove = new ArrayList<Listener>();
-      for (Listener listener : listeners) {
-        if (!listener.persistentEntityAdded(entity)) {
-          listenersToRemove.add(listener);
-        }
-      }
-      for (Listener listener : listenersToRemove) {
-        listeners.remove(listener);
-      }
+      applicationContext.publishEvent(new MappingContextEvent(entity));
 
+      // Cache
       persistentEntities.put(entity.getPropertyInformation(), entity);
 
       return entity;
@@ -157,7 +168,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
     } catch (IntrospectionException e) {
       throw new MappingException(e.getMessage(), e);
     }
-    
+
     return null;
   }
 
@@ -218,11 +229,6 @@ public class BasicMappingContext implements MappingContext, InitializingBean {
       return builder.isPersistentEntity(clazz);
     }
     return false;
-  }
-
-  @Override
-  public void addContextListener(Listener listener) {
-    listeners.add(listener);
   }
 
   @Override

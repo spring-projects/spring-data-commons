@@ -16,13 +16,16 @@
 
 package org.springframework.data.mapping;
 
-import org.springframework.data.mapping.model.*;
-import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.data.mapping.model.Association;
+import org.springframework.data.mapping.model.MappingContext;
+import org.springframework.data.mapping.model.PersistentEntity;
+import org.springframework.data.mapping.model.PersistentProperty;
+import org.springframework.data.mapping.model.PreferredConstructor;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -37,8 +40,9 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
   protected final TypeInformation information;
 
   protected MappingContext mappingContext;
-  
-  
+
+
+  @SuppressWarnings({"unchecked"})
   public BasicPersistentEntity(MappingContext mappingContext, TypeInformation information) {
     this.mappingContext = mappingContext;
     this.type = (Class<T>) information.getType();
@@ -98,7 +102,7 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
   public Class<T> getType() {
     return type;
   }
-  
+
   @Override
   public TypeInformation getPropertyInformation() {
     return information;
