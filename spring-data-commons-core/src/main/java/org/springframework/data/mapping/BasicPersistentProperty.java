@@ -128,13 +128,13 @@ public class BasicPersistentProperty implements PersistentProperty {
 
   @Override
   public boolean isCollection() {
-    return getType().isAssignableFrom(Collection.class) || getType().isAssignableFrom(List.class) || isArray();
+    return Collection.class.isAssignableFrom(getType()) || isArray();
   }
   
   
   @Override
   public boolean isMap() {
-    return getType().isAssignableFrom(Map.class);
+    return Map.class.isAssignableFrom(getType());
   }
   
   /* (non-Javadoc)

@@ -84,7 +84,7 @@ public abstract class MappingBeanHelper {
         return true;
       }
     }
-    return false;
+    return type.isEnum();
   }
 
   public static <T> T constructInstance(PersistentEntity<T> entity,
