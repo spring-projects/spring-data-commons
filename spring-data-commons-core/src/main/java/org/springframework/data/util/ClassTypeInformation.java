@@ -60,6 +60,10 @@ public class ClassTypeInformation extends TypeDiscoverer {
    */
   @Override
   public TypeInformation getComponentType() {
+    
+    if (type.isArray()) {
+      return createInfo(type.getComponentType());
+    }
 
     TypeVariable<?>[] typeParameters = type.getTypeParameters();
     return typeParameters.length > 0 ? new TypeVariableTypeInformation(typeParameters[0], this.getType(), this) : null;
