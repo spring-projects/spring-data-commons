@@ -2,9 +2,11 @@ package org.springframework.data.util;
 
 import static org.springframework.util.ObjectUtils.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,7 +62,7 @@ class TypeDiscoverer implements TypeInformation {
    * @param fieldType
    * @return
    */
-  private TypeInformation createInfo(Type fieldType) {
+  protected TypeInformation createInfo(Type fieldType) {
 
     if (fieldType instanceof ParameterizedType) {
       ParameterizedType parameterizedType = (ParameterizedType) fieldType;
@@ -74,6 +76,10 @@ class TypeDiscoverer implements TypeInformation {
 
     if (fieldType instanceof Class) {
       return new ClassTypeInformation((Class<?>) fieldType, this);
+    }
+    
+    if (fieldType instanceof GenericArrayType) {
+      return new ArrayTypeDiscoverer((GenericArrayType) fieldType, this);
     }
 
     throw new IllegalArgumentException();
@@ -142,14 +148,28 @@ class TypeDiscoverer implements TypeInformation {
    * @see org.springframework.data.util.TypeInformation#getMapValueType()
    */
   @Override
-  public Class<?> getMapValueType() {
+  public TypeInformation getMapValueType() {
     
     if (!Map.class.isAssignableFrom(getType())) {
       return null;
     }
     
     ParameterizedType parameterizedType = (ParameterizedType) type;
-    return createInfo(parameterizedType.getActualTypeArguments()[1]).getType();
+    return createInfo(parameterizedType.getActualTypeArguments()[1]);
+  }
+  
+  /* (non-Javadoc)
+   * @see org.springframework.data.util.TypeInformation#getComponentType()
+   */
+  @Override
+  public TypeInformation getComponentType() {
+    
+    if (!(Map.class.isAssignableFrom(getType()) || Collection.class.isAssignableFrom(getType()))) {
+      return null;
+    }
+    
+    ParameterizedType parameterizedType = (ParameterizedType) type;
+    return createInfo(parameterizedType.getActualTypeArguments()[0]);
   }
 
   /*

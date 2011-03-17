@@ -1,5 +1,6 @@
 package org.springframework.data.util;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -20,13 +21,19 @@ public interface TypeInformation {
    */
   TypeInformation getProperty(String fieldname);
   
+  /**
+   * Returns the component type for {@link Collection}s or the key type for {@link Map}s.
+   * 
+   * @return
+   */
+  TypeInformation getComponentType();
   
   /**
    * Will return the type of the value in case the underlying type is a {@link Map}.
    * 
    * @return
    */
-  Class<?> getMapValueType();
+  TypeInformation getMapValueType();
 
   /**
    * Returns the type of the property. Will resolve generics and the generic

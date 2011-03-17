@@ -4,7 +4,9 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 import org.springframework.data.mapping.Person;
@@ -69,11 +71,25 @@ public class ClassTypeInformationUnitTests {
   }
   
   @Test
-  public void discoversArrays() {
-    ClassTypeInformation information = new ClassTypeInformation(CollectionContainer.class);
-    Class<?> type = information.getProperty("array").getType();
+  public void discoversArraysAndCollections() {
+    ClassTypeInformation information = new ClassTypeInformation(StringCollectionContainer.class);
+    
+    TypeInformation property = information.getProperty("array");
+    assertEquals(property.getComponentType().getType(), String.class);
+    
+    Class<?> type = property.getType();
     assertEquals(String[].class, type);
     assertThat(type.isArray(), is(true));
+    
+    property = information.getProperty("foo");
+    assertEquals(Collection[].class, property.getType());
+    assertEquals(Collection.class, property.getComponentType().getType());
+    assertEquals(String.class, property.getComponentType().getComponentType().getType());
+    
+    property = information.getProperty("rawSet");
+    assertEquals(Set.class, property.getType());
+    assertEquals(Object.class, property.getComponentType().getType());
+    assertNull(property.getMapValueType());
   }
   
   @Test
@@ -82,11 +98,11 @@ public class ClassTypeInformationUnitTests {
     ClassTypeInformation information = new ClassTypeInformation(StringMapContainer.class);
     TypeInformation genericMap = information.getProperty("genericMap");
     assertEquals(Map.class, genericMap.getType());
-    assertEquals(String.class, genericMap.getMapValueType());
+    assertEquals(String.class, genericMap.getMapValueType().getType());
 
     TypeInformation map = information.getProperty("map");
     assertEquals(Map.class, map.getType());
-    assertEquals(Calendar.class, map.getMapValueType());
+    assertEquals(Calendar.class, map.getMapValueType().getType());
   }
   
   private class StringMapContainer extends MapContainer<String> {
@@ -97,10 +113,17 @@ public class ClassTypeInformationUnitTests {
     Map<String, T> genericMap;
     Map<String, Calendar> map;
   }
-  
-  private class CollectionContainer {
+
+  private class StringCollectionContainer extends CollectionContainer<String> {
     
-    String[] array;
+  }
+  
+  private class CollectionContainer<T> {
+    
+    T[] array;
+    Collection<T>[] foo;
+    Set<String> set;
+    Set rawSet;
   }
 
   private class GenericTypeWithBound<T extends Person> {
