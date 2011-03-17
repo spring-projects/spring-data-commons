@@ -54,6 +54,14 @@ public interface PersistentProperty {
 
   boolean isComplexType();
 
+  /**
+   * Returns whether the property has to be regarded as entity which means its type will be also be considered to be a
+   * {@link PersistentEntity}.
+   * 
+   * @return
+   */
+  boolean isEntity();
+
   Class<?> getComponentType();
 
   boolean isIdProperty();

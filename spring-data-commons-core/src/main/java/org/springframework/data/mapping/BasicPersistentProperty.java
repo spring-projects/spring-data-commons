@@ -153,6 +153,11 @@ public class BasicPersistentProperty implements PersistentProperty {
       return !MappingBeanHelper.isSimpleType(getType());
     }
   }
+  
+  @Override
+  public boolean isEntity() {
+    return isComplexType() && !isTransient() && !isCollection() && !isMap();
+  }
 
   @Override
   public Class<?> getComponentType() {
