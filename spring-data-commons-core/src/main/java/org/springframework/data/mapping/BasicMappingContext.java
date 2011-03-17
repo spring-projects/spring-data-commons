@@ -21,6 +21,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -160,6 +161,10 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
           } catch (MappingConfigurationException e) {
             log.error(e.getMessage(), e);
           }
+        }
+      }, new ReflectionUtils.FieldFilter() {
+        public boolean matches(Field field) {
+          return !Modifier.isStatic(field.getModifiers());
         }
       });
 

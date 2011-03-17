@@ -20,26 +20,15 @@ public class ClassTypeInformation extends TypeDiscoverer {
    * @param type
    */
   public ClassTypeInformation(Class<?> type) {
-    this(type, GenericTypeResolver.getTypeVariableMap(type), null, null);
-  }
-
-  /**
-   * Creates {@link ClassTypeInformation} for the given type and the given basic types. Handing over a basic type will
-   * prevent it's nested fields to be traversed for further {@link TypeInformation}.
-   * 
-   * @param type
-   * @param basicTypes
-   */
-  public ClassTypeInformation(Class<?> type, Set<Class<?>> basicTypes) {
-    this(type, GenericTypeResolver.getTypeVariableMap(type), basicTypes, null);
+    this(type, GenericTypeResolver.getTypeVariableMap(type), null);
   }
 
   ClassTypeInformation(Class<?> type, TypeDiscoverer parent) {
-    this(type, null, null, parent);
+    this(type, null, parent);
   }
 
   @SuppressWarnings("rawtypes")
-  ClassTypeInformation(Class<?> type, Map<TypeVariable, Type> typeVariableMap, Set<Class<?>> basicTypes,
+  ClassTypeInformation(Class<?> type, Map<TypeVariable, Type> typeVariableMap,
       TypeDiscoverer parent) {
     super(type, typeVariableMap, parent);
     this.type = type;
