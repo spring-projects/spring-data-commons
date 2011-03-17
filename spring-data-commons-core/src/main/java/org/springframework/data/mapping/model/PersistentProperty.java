@@ -5,10 +5,12 @@ import org.springframework.data.util.TypeInformation;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Graeme Rocher
- * @since 1.0
+ * @author Oliver Gierke
  */
 public interface PersistentProperty {
 
@@ -62,7 +64,20 @@ public interface PersistentProperty {
    */
   boolean isEntity();
 
+  /**
+   * Returns the component type of the type if it is a {@link Collection}. Will return the type of the key if the
+   * property is a {@link Map}.
+   * 
+   * @return the component type, the map's key type or {@literal null} if neither {@link Collection} nor {@link Map}. 
+   */
   Class<?> getComponentType();
+  
+  /**
+   * Returns the type of the values if the property is a {@link Map}.
+   * 
+   * @return the map's value type or {@literal null} if no {@link Map}
+   */
+  Class<?> getMapValueType();
 
   boolean isIdProperty();
 }

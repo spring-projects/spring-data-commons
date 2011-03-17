@@ -22,7 +22,10 @@ public class ClassTypeInformationUnitTests {
     TypeInformation discoverer = new ClassTypeInformation(
         ConcreteType.class);
     assertEquals(ConcreteType.class, discoverer.getType());
-    assertEquals(String.class, discoverer.getProperty("content").getType());
+    TypeInformation content = discoverer.getProperty("content");
+    assertEquals(String.class, content.getType());
+    assertNull(content.getComponentType());
+    assertNull(content.getMapValueType());
   }
 
   @Test

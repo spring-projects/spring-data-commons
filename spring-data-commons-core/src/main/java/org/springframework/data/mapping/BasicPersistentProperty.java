@@ -28,14 +28,14 @@ import org.springframework.data.util.TypeInformation;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
+ * Simple impementation of {@link PersistentProperty}.
+ * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Oliver Gierke
  */
 public class BasicPersistentProperty implements PersistentProperty {
 
@@ -147,7 +147,7 @@ public class BasicPersistentProperty implements PersistentProperty {
 
   @Override
   public boolean isComplexType() {
-    if (isCollection() || isArray()) {
+    if (isCollection() || isArray()) { 
       return !MappingBeanHelper.isSimpleType(getComponentType());
     } else {
       return !MappingBeanHelper.isSimpleType(getType());
@@ -160,19 +160,16 @@ public class BasicPersistentProperty implements PersistentProperty {
   }
 
   @Override
-  public Class<?> getComponentType() {
-    if (isCollection()) {
-      Type genericType = field.getGenericType();
-      if (genericType instanceof ParameterizedType) {
-        Type[] genericTypes = ((ParameterizedType) genericType).getActualTypeArguments();
-        for (Type t : genericTypes) {
-          if (t instanceof Class) {
-            return (Class<?>) t;
-          }
-        }
-      }
-    }
-    return getType().getComponentType();
+  public Class<?> getComponentType() { 
+    return isMap() || isCollection() ? information.getComponentType().getType() : null;
+  }
+  
+  /* (non-Javadoc)
+   * @see org.springframework.data.mapping.model.PersistentProperty#getMapValueType()
+   */
+  @Override
+  public Class<?> getMapValueType() {
+    return isMap() ? information.getMapValueType().getType() : null;
   }
 
   @Override
