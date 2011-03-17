@@ -66,6 +66,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
   protected ConcurrentMap<TypeInformation, PersistentEntity<?>> persistentEntities = new ConcurrentHashMap<TypeInformation, PersistentEntity<?>>();
   protected ConcurrentMap<PersistentEntity<?>, List<Validator>> validators = new ConcurrentHashMap<PersistentEntity<?>, List<Validator>>();
   protected GenericConversionService conversionService = ConversionServiceFactory.createDefaultConversionService();
+  private List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
 
   public BasicMappingContext() {
     builder = new BasicMappingConfigurationBuilder();
@@ -78,6 +79,13 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
   public BasicMappingContext(MappingConfigurationBuilder builder, GenericConversionService conversionService) {
     this.builder = builder;
     this.conversionService = conversionService;
+  }
+  
+  /**
+   * @param customSimpleTypes the customSimpleTypes to set
+   */
+  public void setCustomSimpleTypes(List<Class<?>> customSimpleTypes) {
+    this.customSimpleTypes = customSimpleTypes;
   }
 
   @Override
@@ -143,9 +151,10 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
               if (property.isIdProperty()) {
                 entity.setIdProperty(property);
               }
-
-              if (property.isComplexType() && !property.isTransient()) {
-                addPersistentEntity(property.getTypeInformation());
+              
+              TypeInformation nestedType = getNestedTypeToAdd(property);
+              if (nestedType != null) {
+                addPersistentEntity(nestedType);
               }
             }
           } catch (MappingConfigurationException e) {
@@ -170,6 +179,42 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     }
 
     return null;
+  }
+
+  /**
+   * Returns a potential nested type tha needs to be added when adding the given property in the course of adding a
+   * {@link PersistentEntity}. Will return the property's {@link TypeInformation} directly if it is a potential entity,
+   * a collections component type if it's a collection as well as the value type of a {@link Map} if it's a map
+   * property.
+   * 
+   * @param property
+   * @return the TypeInformation to be added as {@link PersistentEntity} or {@literal
+   */
+  private TypeInformation getNestedTypeToAdd(PersistentProperty property) {
+    
+    TypeInformation typeInformation = property.getTypeInformation();
+    
+    if (customSimpleTypes.contains(typeInformation.getType())) {
+      return null;
+    }
+    
+    if (property.isEntity()) {
+      return typeInformation;
+    }
+    
+    if (property.isCollection()) {
+      return getTypeInformationIfNotSimpleType(typeInformation.getComponentType());
+    }
+    
+    if (property.isMap()) {
+      return getTypeInformationIfNotSimpleType(typeInformation.getMapValueType());
+    }
+    
+    return null;
+  }
+  
+  private TypeInformation getTypeInformationIfNotSimpleType(TypeInformation information) {
+    return information == null || MappingBeanHelper.isSimpleType(information.getType()) ? null : information;
   }
 
   @Override
