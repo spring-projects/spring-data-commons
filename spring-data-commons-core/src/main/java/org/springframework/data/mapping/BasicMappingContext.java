@@ -81,7 +81,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     this.builder = builder;
     this.conversionService = conversionService;
   }
-  
+
   /**
    * @param customSimpleTypes the customSimpleTypes to set
    */
@@ -147,7 +147,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
               if (property.isIdProperty()) {
                 entity.setIdProperty(property);
               }
-              
+
               TypeInformation nestedType = getNestedTypeToAdd(property);
               if (nestedType != null) {
                 addPersistentEntity(nestedType);
@@ -166,7 +166,9 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
       entity.setPreferredConstructor(builder.getPreferredConstructor(type));
 
       // Inform listeners
-      applicationContext.publishEvent(new MappingContextEvent(entity));
+      if (null != applicationContext) {
+        applicationContext.publishEvent(new MappingContextEvent(entity, typeInformation));
+      }
 
       // Cache
       persistentEntities.put(entity.getPropertyInformation(), entity);
@@ -186,33 +188,33 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
    * {@link PersistentEntity}. Will return the property's {@link TypeInformation} directly if it is a potential entity,
    * a collections component type if it's a collection as well as the value type of a {@link Map} if it's a map
    * property.
-   * 
+   *
    * @param property
    * @return the TypeInformation to be added as {@link PersistentEntity} or {@literal
    */
   private TypeInformation getNestedTypeToAdd(PersistentProperty property) {
-    
+
     TypeInformation typeInformation = property.getTypeInformation();
-    
+
     if (customSimpleTypes.contains(typeInformation.getType())) {
       return null;
     }
-    
+
     if (property.isEntity()) {
       return typeInformation;
     }
-    
+
     if (property.isCollection()) {
       return getTypeInformationIfNotSimpleType(typeInformation.getComponentType());
     }
-    
+
     if (property.isMap()) {
       return getTypeInformationIfNotSimpleType(typeInformation.getMapValueType());
     }
-    
+
     return null;
   }
-  
+
   private TypeInformation getTypeInformationIfNotSimpleType(TypeInformation information) {
     return information == null || MappingBeanHelper.isSimpleType(information.getType()) ? null : information;
   }

@@ -18,19 +18,26 @@ package org.springframework.data.mapping.event;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.mapping.model.PersistentEntity;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class MappingContextEvent extends ApplicationEvent {
 
-  public MappingContextEvent(PersistentEntity source) {
+  private TypeInformation typeInformation;
+
+  public MappingContextEvent(PersistentEntity<?> source, TypeInformation typeInformation) {
     super(source);
+    this.typeInformation = typeInformation;
   }
 
-  @Override
-  public PersistentEntity getSource() {
-    return (PersistentEntity) super.getSource();
+  public TypeInformation getTypeInformation() {
+    return typeInformation;
+  }
+
+  public PersistentEntity<?> getPersistentEntity() {
+    return (PersistentEntity<?>) source;
   }
   
 }
