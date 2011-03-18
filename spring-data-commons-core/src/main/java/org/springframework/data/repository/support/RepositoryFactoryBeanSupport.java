@@ -92,7 +92,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
     /* (non-Javadoc)
      * @see org.springframework.data.repository.support.RepositoryFactoryInformation#getRepositoryInterface()
      */
-    @Override
     public Class<? extends T> getRepositoryInterface() {
     
         return repositoryInterface;

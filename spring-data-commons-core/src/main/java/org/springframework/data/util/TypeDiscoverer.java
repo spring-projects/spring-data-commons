@@ -147,7 +147,6 @@ class TypeDiscoverer implements TypeInformation {
   /* (non-Javadoc)
    * @see org.springframework.data.util.TypeInformation#getMapValueType()
    */
-  @Override
   public TypeInformation getMapValueType() {
     
     if (!Map.class.isAssignableFrom(getType())) {
@@ -161,7 +160,6 @@ class TypeDiscoverer implements TypeInformation {
   /* (non-Javadoc)
    * @see org.springframework.data.util.TypeInformation#getComponentType()
    */
-  @Override
   public TypeInformation getComponentType() {
     
     if (!(Map.class.isAssignableFrom(getType()) || Collection.class.isAssignableFrom(getType()))) {

@@ -45,7 +45,6 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
   protected static ConcurrentMap<Class<?>, BeanInfo> beanInfo = new ConcurrentHashMap<Class<?>, BeanInfo>();
   protected Logger log = LoggerFactory.getLogger(getClass());
 
-  @Override
   public <T> boolean isPersistentEntity(Class<T> type) {
     if (type.isAnnotationPresent(Persistent.class)) {
       return true;
@@ -64,12 +63,10 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
     return false;
   }
 
-  @Override
   public <T> PersistentEntity<T> createPersistentEntity(TypeInformation typeInformation, MappingContext mappingContext) throws MappingConfigurationException {
     return new BasicPersistentEntity<T>(mappingContext, typeInformation);
   }
 
-  @Override
   public boolean isPersistentProperty(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException {
     if (UNMAPPED_FIELDS.contains(field.getName()) || isTransient(field)) {
       return false;
@@ -77,13 +74,11 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
     return true;
   }
 
-  @Override
   public PersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor, TypeInformation information) throws MappingConfigurationException {
     return new BasicPersistentProperty(field, descriptor, information);
   }
 
   @SuppressWarnings({"unchecked"})
-  @Override
   public <T> PreferredConstructor<T> getPreferredConstructor(Class<T> type) throws MappingConfigurationException {
     // Find the right constructor
     PreferredConstructor<T> preferredConstructor = null;
@@ -137,7 +132,6 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
     return preferredConstructor;
   }
 
-  @Override
   public boolean isAssociation(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException {
     if (!isTransient(field)) {
       if (field.isAnnotationPresent(Reference.class)) {
@@ -152,7 +146,6 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
     return false;
   }
 
-  @Override
   public Association createAssociation(PersistentProperty property) {
     // Only support uni-directional associations in the Basic configuration
     Association association = new Association(property, null);

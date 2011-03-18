@@ -89,12 +89,10 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     this.customSimpleTypes = customSimpleTypes;
   }
 
-  @Override
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
     this.applicationContext = applicationContext;
   }
 
-  @Override
   public Collection<PersistentEntity<?>> getPersistentEntities() {
     return persistentEntities.values();
   }
@@ -102,13 +100,11 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
   /* (non-Javadoc)
    * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
    */
-  @Override
   public <T> PersistentEntity<T> getPersistentEntity(Class<T> type) {
     return getPersistentEntity(new ClassTypeInformation(type));
   }
 
   @SuppressWarnings({"unchecked"})
-  @Override
   public <T> PersistentEntity<T> getPersistentEntity(TypeInformation type) {
     return (PersistentEntity<T>) persistentEntities.get(type);
   }
@@ -135,7 +131,6 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
 
       ReflectionUtils.doWithFields(type, new FieldCallback() {
 
-        @Override
         public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
           try {
             PropertyDescriptor descriptor = descriptors.get(field.getName());
@@ -222,12 +217,10 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     return information == null || MappingBeanHelper.isSimpleType(information.getType()) ? null : information;
   }
 
-  @Override
   public <T> PersistentEntity<T> addPersistentEntity(Class<T> type) {
     return addPersistentEntity(new ClassTypeInformation(type));
   }
 
-  @Override
   public void addEntityValidator(PersistentEntity<?> entity, Validator validator) {
     List<Validator> v = validators.get(entity);
     if (null == v) {
@@ -237,37 +230,30 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     v.add(validator);
   }
 
-  @Override
   public <S, T> void addTypeConverter(Converter<S, T> converter) {
     conversionService.addConverter(converter);
   }
 
-  @Override
   public ConversionService getConversionService() {
     return conversionService;
   }
 
-  @Override
   public ConverterRegistry getConverterRegistry() {
     return conversionService;
   }
 
-  @Override
   public List<Validator> getEntityValidators(PersistentEntity<?> entity) {
     return validators.get(entity);
   }
 
-  @Override
   public MappingConfigurationBuilder getMappingConfigurationBuilder() {
     return builder;
   }
 
-  @Override
   public void setMappingConfigurationBuilder(MappingConfigurationBuilder builder) {
     this.builder = builder;
   }
 
-  @Override
   public boolean isPersistentEntity(Object value) {
     if (null != value) {
       Class<?> clazz;
@@ -281,7 +267,6 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     return false;
   }
 
-  @Override
   public void afterPropertiesSet() throws Exception {
     Assert.notNull(builder, "No mapping configuration provider configured.");
   }

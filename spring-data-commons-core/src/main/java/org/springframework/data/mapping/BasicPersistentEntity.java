@@ -49,47 +49,38 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
     this.information = information;
   }
 
-  @Override
   public PreferredConstructor<T> getPreferredConstructor() {
     return preferredConstructor;
   }
 
-  @Override
   public void setPreferredConstructor(PreferredConstructor<T> constructor) {
     this.preferredConstructor = constructor;
   }
 
-  @Override
   public String getName() {
     return type.getName();
   }
 
-  @Override
   public PersistentProperty getIdProperty() {
     return idProperty;
   }
 
-  @Override
   public void setIdProperty(PersistentProperty property) {
     idProperty = property;
   }
 
-  @Override
   public Collection<PersistentProperty> getPersistentProperties() {
     return persistentProperties.values();
   }
 
-  @Override
   public void addPersistentProperty(PersistentProperty property) {
     persistentProperties.put(property.getName(), property);
   }
 
-  @Override
   public Collection<Association> getAssociations() {
     return associations.values();
   }
 
-  @Override
   public void addAssociation(Association association) {
     associations.put(association.getInverse().getName(), association);
   }
@@ -98,32 +89,26 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
     return persistentProperties.get(name);
   }
 
-  @Override
   public Class<T> getType() {
     return type;
   }
 
-  @Override
   public TypeInformation getPropertyInformation() {
     return information;
   }
 
-  @Override
   public Collection<String> getPersistentPropertyNames() {
     return persistentProperties.keySet();
   }
 
-  @Override
   public MappingContext getMappingContext() {
     return mappingContext;
   }
 
-  @Override
   public void afterPropertiesSet() throws Exception {
 
   }
 
-  @Override
   public void doWithProperties(PropertyHandler handler) {
     for (PersistentProperty property : persistentProperties.values()) {
       if (!property.isTransient() && !property.isAssociation() && !property.isIdProperty()) {
@@ -132,7 +117,6 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
     }
   }
 
-  @Override
   public void doWithAssociations(AssociationHandler handler) {
     for (Association association : associations.values()) {
       handler.doWithAssociation(association);

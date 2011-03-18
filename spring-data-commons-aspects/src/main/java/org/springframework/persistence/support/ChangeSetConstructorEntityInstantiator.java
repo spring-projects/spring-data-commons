@@ -9,7 +9,6 @@ package org.springframework.persistence.support;
  */
 public class ChangeSetConstructorEntityInstantiator extends AbstractConstructorEntityInstantiator<ChangeSetBacked, ChangeSet>{
 	
-	@Override
 	protected void setState(ChangeSetBacked entity, ChangeSet cs) {
 		entity.setChangeSet(cs);
 	}

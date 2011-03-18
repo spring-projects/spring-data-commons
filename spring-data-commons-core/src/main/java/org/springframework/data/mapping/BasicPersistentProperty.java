@@ -64,75 +64,60 @@ public class BasicPersistentProperty implements PersistentProperty {
     }
   }
 
-  @Override
   public Object getOwner() {
     return owner;
   }
 
-  @Override
   public void setOwner(Object owner) {
     if (null != owner && owner.getClass().isAssignableFrom(PersistentEntity.class)) {
       this.owner = (PersistentEntity<?>) owner;
     }
   }
 
-  @Override
   public String getName() {
     return name;
   }
 
-  @Override
   public Class<?> getType() {
     return information.getType();
   }
   
-  @Override
   public TypeInformation getTypeInformation() {
     return information;
   }
 
-  @Override
   public PropertyDescriptor getPropertyDescriptor() {
     return propertyDescriptor;
   }
 
-  @Override
   public Field getField() {
     return field;
   }
 
-  @Override
   public Value getValueAnnotation() {
     return value;
   }
 
-  @Override
   public boolean isTransient() {
     return isTransient;
   }
 
-  @Override
   public boolean isAssociation() {
     return null != association;
   }
 
-  @Override
   public Association getAssociation() {
     return association;
   }
 
-  @Override
   public void setAssociation(Association association) {
     this.association = association;
   }
 
-  @Override
   public boolean isCollection() {
     return Collection.class.isAssignableFrom(getType()) || isArray();
   }
   
-  
-  @Override
   public boolean isMap() {
     return Map.class.isAssignableFrom(getType());
   }
@@ -140,12 +125,10 @@ public class BasicPersistentProperty implements PersistentProperty {
   /* (non-Javadoc)
    * @see org.springframework.data.mapping.model.PersistentProperty#isArray()
    */
-  @Override
   public boolean isArray() {
     return getType().isArray();
   }
 
-  @Override
   public boolean isComplexType() {
     if (isCollection() || isArray()) { 
       return !MappingBeanHelper.isSimpleType(getComponentType());
@@ -154,12 +137,10 @@ public class BasicPersistentProperty implements PersistentProperty {
     }
   }
   
-  @Override
   public boolean isEntity() {
     return isComplexType() && !isTransient() && !isCollection() && !isMap();
   }
 
-  @Override
   public Class<?> getComponentType() { 
     return isMap() || isCollection() ? information.getComponentType().getType() : null;
   }
@@ -167,12 +148,10 @@ public class BasicPersistentProperty implements PersistentProperty {
   /* (non-Javadoc)
    * @see org.springframework.data.mapping.model.PersistentProperty#getMapValueType()
    */
-  @Override
   public Class<?> getMapValueType() {
     return isMap() ? information.getMapValueType().getType() : null;
   }
 
-  @Override
   public boolean isIdProperty() {
     return field.isAnnotationPresent(Id.class);
   }

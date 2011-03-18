@@ -70,7 +70,6 @@ public class AbstractEntityInformationUnitTests {
         /* (non-Javadoc)
          * @see org.springframework.data.repository.support.EntityInformation#getIdType()
          */
-        @Override
         public Class<Serializable> getIdType() {
         
             return Serializable.class;
