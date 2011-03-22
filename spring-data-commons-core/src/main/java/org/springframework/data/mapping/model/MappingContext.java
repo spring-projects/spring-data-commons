@@ -46,7 +46,7 @@ public interface MappingContext extends InitializingBean {
    *
    * @return A list of PersistentEntity instances
    */
-  Collection<PersistentEntity<?>> getPersistentEntities();
+  Collection<? extends PersistentEntity<?>> getPersistentEntities();
 
   <T> PersistentEntity<T> getPersistentEntity(Class<T> type);
 

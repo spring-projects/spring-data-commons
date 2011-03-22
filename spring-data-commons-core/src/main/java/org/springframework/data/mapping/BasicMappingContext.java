@@ -25,8 +25,10 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -69,6 +71,8 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
   protected GenericConversionService conversionService = ConversionServiceFactory.createDefaultConversionService();
   private List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
 
+  private Set<Class<?>> initialEntitySet = new HashSet<Class<?>>();
+
   public BasicMappingContext() {
     builder = new BasicMappingConfigurationBuilder();
   }
@@ -93,7 +97,11 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     this.applicationContext = applicationContext;
   }
 
-  public Collection<PersistentEntity<?>> getPersistentEntities() {
+  public void setInitialEntitySet(Set<Class<?>> initialEntitySet) {
+    this.initialEntitySet = initialEntitySet;
+  }
+
+  public Collection<? extends PersistentEntity<?>> getPersistentEntities() {
     return persistentEntities.values();
   }
 
@@ -121,7 +129,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     Class<T> type = (Class<T>) typeInformation.getType();
 
     try {
-      final PersistentEntity<T> entity = builder.createPersistentEntity(typeInformation, this);
+      final PersistentEntity<T> entity = createPersistentEntity(typeInformation, this);
       BeanInfo info = Introspector.getBeanInfo(type);
 
       final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
@@ -136,7 +144,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
             PropertyDescriptor descriptor = descriptors.get(field.getName());
             if (builder.isPersistentProperty(field, descriptor)) {
               ReflectionUtils.makeAccessible(field);
-              PersistentProperty property = builder.createPersistentProperty(field, descriptor, entity.getPropertyInformation());
+              PersistentProperty property = createPersistentProperty(field, descriptor, entity.getPropertyInformation());
               property.setOwner(entity);
               entity.addPersistentProperty(property);
               if (builder.isAssociation(field, descriptor)) {
@@ -269,7 +277,20 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     return false;
   }
 
+  protected <T> PersistentEntity<T> createPersistentEntity(TypeInformation typeInformation, MappingContext mappingContext)
+      throws MappingConfigurationException {
+    return new BasicPersistentEntity<T>(mappingContext, typeInformation);
+  }
+
+  protected PersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
+      TypeInformation information) throws MappingConfigurationException {
+    return new BasicPersistentProperty(field, descriptor, information);
+  }
+
   public void afterPropertiesSet() throws Exception {
     Assert.notNull(builder, "No mapping configuration provider configured.");
+    for (Class<?> initialEntity : initialEntitySet) {
+      addPersistentEntity(initialEntity);
+    }
   }
 }

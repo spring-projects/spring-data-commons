@@ -19,9 +19,6 @@ package org.springframework.data.mapping.model;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 
-import org.springframework.data.mapping.BasicPersistentEntity;
-import org.springframework.data.util.TypeInformation;
-
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
@@ -29,16 +26,11 @@ public interface MappingConfigurationBuilder {
 
   <T> boolean isPersistentEntity(Class<T> clazz);
 
-  <T> PersistentEntity<T> createPersistentEntity(TypeInformation typeInformation, MappingContext mappingContext) throws MappingConfigurationException;
-
   boolean isPersistentProperty(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException;
-
-  PersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor, TypeInformation owningTypeInformation) throws MappingConfigurationException;
 
   <T> PreferredConstructor<T> getPreferredConstructor(Class<T> clazz) throws MappingConfigurationException;
 
   boolean isAssociation(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException;
 
   Association createAssociation(PersistentProperty property);
-
 }
