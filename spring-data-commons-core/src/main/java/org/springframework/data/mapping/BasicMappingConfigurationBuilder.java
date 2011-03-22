@@ -16,25 +16,41 @@
 
 package org.springframework.data.mapping;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
-import org.springframework.data.annotation.*;
-import org.springframework.data.mapping.model.*;
-import org.springframework.data.util.TypeInformation;
-
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.Persistent;
+import org.springframework.data.annotation.Reference;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mapping.model.Association;
+import org.springframework.data.mapping.model.MappingConfigurationBuilder;
+import org.springframework.data.mapping.model.MappingConfigurationException;
+import org.springframework.data.mapping.model.MappingContext;
+import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.model.PersistentEntity;
+import org.springframework.data.mapping.model.PersistentProperty;
+import org.springframework.data.mapping.model.PreferredConstructor;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -110,7 +126,7 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
             } else {
               if (paramTypes[i] instanceof TypeVariable) {
                 @SuppressWarnings("rawtypes")
-				Type[] bounds = ((TypeVariable) paramTypes[i]).getBounds();
+                Type[] bounds = ((TypeVariable) paramTypes[i]).getBounds();
                 if (bounds.length > 0) {
                   targetType = (Class<?>) bounds[0];
                 }
@@ -118,7 +134,8 @@ public class BasicMappingConfigurationBuilder implements MappingConfigurationBui
                 targetType = (Class<?>) paramTypes[i];
               }
             }
-            preferredConstructor.addParameter(paramNames[i], targetType, targetType.getDeclaredAnnotations());
+            String paramName = (null != paramNames ? paramNames[i] : "param" + i);
+            preferredConstructor.addParameter(paramName, targetType, targetType.getDeclaredAnnotations());
           }
 
           if (constructor.isAnnotationPresent(PersistenceConstructor.class)) {
