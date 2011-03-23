@@ -19,8 +19,6 @@ package org.springframework.data.mapping;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.model.Association;
 import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.test.context.ContextConfiguration;
@@ -36,14 +34,10 @@ import static junit.framework.Assert.*;
 public class MappingMetadataTests {
 
   BasicMappingContext ctx;
-  
-  @Autowired
-  ApplicationContext applicationContext;
 
   @Before
   public void setup() {
     ctx = new BasicMappingContext();
-    ctx.setApplicationContext(applicationContext);
   }
 
   @Test

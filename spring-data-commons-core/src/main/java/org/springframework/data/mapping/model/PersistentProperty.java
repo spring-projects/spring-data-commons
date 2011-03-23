@@ -10,13 +10,12 @@ import java.util.Map;
 
 /**
  * @author Graeme Rocher
+ * @author Jon Brisbin
  * @author Oliver Gierke
  */
 public interface PersistentProperty {
 
   Object getOwner();
-
-  void setOwner(Object owner);
 
   /**
    * The name of the property
@@ -45,8 +44,6 @@ public interface PersistentProperty {
   boolean isAssociation();
 
   Association getAssociation();
-
-  void setAssociation(Association association);
 
   boolean isCollection();
   

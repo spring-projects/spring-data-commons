@@ -12,7 +12,8 @@ import java.util.Collection;
  * Represents a persistent entity
  *
  * @author Graeme Rocher
- * @since 1.0
+ * @author Jon Brisbin
+ * @author Oliver Gierke
  */
 public interface PersistentEntity<T> extends InitializingBean {
 
@@ -25,16 +26,12 @@ public interface PersistentEntity<T> extends InitializingBean {
 
   PreferredConstructor<T> getPreferredConstructor();
 
-  void setPreferredConstructor(PreferredConstructor<T> constructor);
-
   /**
    * Returns the identity of the instance
    *
    * @return The identity
    */
   PersistentProperty getIdProperty();
-
-  void setIdProperty(PersistentProperty property);
 
   /**
    * A list of properties to be persisted
@@ -43,16 +40,12 @@ public interface PersistentEntity<T> extends InitializingBean {
    */
   Collection<PersistentProperty> getPersistentProperties();
 
-  void addPersistentProperty(PersistentProperty property);
-
   /**
    * A list of the associations for this entity. This is typically a subset of the list returned by {@link #getPersistentProperties()}
    *
    * @return A list of associations
    */
   Collection<Association> getAssociations();
-
-  void addAssociation(Association association);
 
   /**
    * Obtains a PersistentProperty instance by name

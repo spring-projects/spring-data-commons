@@ -20,9 +20,15 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,23 +40,26 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.converter.ConverterRegistry;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.convert.support.ConversionServiceFactory;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.Persistent;
+import org.springframework.data.annotation.Reference;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.event.MappingContextEvent;
 import org.springframework.data.mapping.model.Association;
-import org.springframework.data.mapping.model.MappingConfigurationBuilder;
 import org.springframework.data.mapping.model.MappingConfigurationException;
 import org.springframework.data.mapping.model.MappingContext;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.data.mapping.model.PersistentProperty;
+import org.springframework.data.mapping.model.PreferredConstructor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -60,29 +69,26 @@ import org.springframework.validation.Validator;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Oliver Gierke
  */
-public class BasicMappingContext implements MappingContext, InitializingBean, ApplicationContextAware {
+public class BasicMappingContext implements MappingContext, InitializingBean, ApplicationEventPublisherAware {
 
+  private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
+  
   protected Logger log = LoggerFactory.getLogger(getClass());
-  protected ApplicationContext applicationContext;
-  protected MappingConfigurationBuilder builder;
+  protected ApplicationEventPublisher applicationEventPublisher;
   protected ConcurrentMap<TypeInformation, PersistentEntity<?>> persistentEntities = new ConcurrentHashMap<TypeInformation, PersistentEntity<?>>();
   protected ConcurrentMap<PersistentEntity<?>, List<Validator>> validators = new ConcurrentHashMap<PersistentEntity<?>, List<Validator>>();
-  protected GenericConversionService conversionService = ConversionServiceFactory.createDefaultConversionService();
+  protected final GenericConversionService conversionService;
   private List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
-
   private Set<Class<?>> initialEntitySet = new HashSet<Class<?>>();
-
+  
   public BasicMappingContext() {
-    builder = new BasicMappingConfigurationBuilder();
+    this(ConversionServiceFactory.createDefaultConversionService());
   }
 
-  public BasicMappingContext(MappingConfigurationBuilder builder) {
-    this.builder = builder;
-  }
-
-  public BasicMappingContext(MappingConfigurationBuilder builder, GenericConversionService conversionService) {
-    this.builder = builder;
+  public BasicMappingContext(GenericConversionService conversionService) {
+    Assert.notNull(conversionService);
     this.conversionService = conversionService;
   }
 
@@ -93,8 +99,9 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     this.customSimpleTypes = customSimpleTypes;
   }
 
-  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    this.applicationContext = applicationContext;
+
+  public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+    this.applicationEventPublisher = applicationEventPublisher;
   }
 
   public void setInitialEntitySet(Set<Class<?>> initialEntitySet) {
@@ -116,6 +123,10 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
   public <T> PersistentEntity<T> getPersistentEntity(TypeInformation type) {
     return (PersistentEntity<T>) persistentEntities.get(type);
   }
+  
+  public <T> PersistentEntity<T> addPersistentEntity(Class<T> type) {
+    return addPersistentEntity(new ClassTypeInformation(type));
+  }
 
   @SuppressWarnings("unchecked")
   public <T> PersistentEntity<T> addPersistentEntity(TypeInformation typeInformation) {
@@ -129,7 +140,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     Class<T> type = (Class<T>) typeInformation.getType();
 
     try {
-      final PersistentEntity<T> entity = createPersistentEntity(typeInformation, this);
+      final BasicPersistentEntity<T> entity = createPersistentEntity(typeInformation, this);
       BeanInfo info = Introspector.getBeanInfo(type);
 
       final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
@@ -142,13 +153,13 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
         public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
           try {
             PropertyDescriptor descriptor = descriptors.get(field.getName());
-            if (builder.isPersistentProperty(field, descriptor)) {
+            if (isPersistentProperty(field, descriptor)) {
               ReflectionUtils.makeAccessible(field);
-              PersistentProperty property = createPersistentProperty(field, descriptor, entity.getPropertyInformation());
+              BasicPersistentProperty property = createPersistentProperty(field, descriptor, entity.getPropertyInformation());
               property.setOwner(entity);
               entity.addPersistentProperty(property);
-              if (builder.isAssociation(field, descriptor)) {
-                Association association = builder.createAssociation(property);
+              if (isAssociation(field, descriptor)) {
+                Association association = createAssociation(property);
                 entity.addAssociation(association);
               }
 
@@ -171,11 +182,11 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
         }
       });
 
-      entity.setPreferredConstructor(builder.getPreferredConstructor(type));
+      entity.setPreferredConstructor(getPreferredConstructor(type));
 
       // Inform listeners
-      if (null != applicationContext) {
-        applicationContext.publishEvent(new MappingContextEvent(entity, typeInformation));
+      if (null != applicationEventPublisher) {
+        applicationEventPublisher.publishEvent(new MappingContextEvent(entity, typeInformation));
       }
 
       // Cache
@@ -227,41 +238,8 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     return information == null || MappingBeanHelper.isSimpleType(information.getType()) ? null : information;
   }
 
-  public <T> PersistentEntity<T> addPersistentEntity(Class<T> type) {
-    return addPersistentEntity(new ClassTypeInformation(type));
-  }
-
-  public void addEntityValidator(PersistentEntity<?> entity, Validator validator) {
-    List<Validator> v = validators.get(entity);
-    if (null == v) {
-      v = new ArrayList<Validator>();
-      validators.put(entity, v);
-    }
-    v.add(validator);
-  }
-
-  public <S, T> void addTypeConverter(Converter<S, T> converter) {
-    conversionService.addConverter(converter);
-  }
-
-  public ConversionService getConversionService() {
-    return conversionService;
-  }
-
-  public ConverterRegistry getConverterRegistry() {
-    return conversionService;
-  }
-
   public List<Validator> getEntityValidators(PersistentEntity<?> entity) {
     return validators.get(entity);
-  }
-
-  public MappingConfigurationBuilder getMappingConfigurationBuilder() {
-    return builder;
-  }
-
-  public void setMappingConfigurationBuilder(MappingConfigurationBuilder builder) {
-    this.builder = builder;
   }
 
   public boolean isPersistentEntity(Object value) {
@@ -272,23 +250,133 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
       } else {
         clazz = value.getClass();
       }
-      return builder.isPersistentEntity(clazz);
+      return isPersistentEntity(clazz);
+    }
+    return false;
+  }
+  
+  public boolean isPersistentEntity(Class<?> type) {
+    if (type.isAnnotationPresent(Persistent.class)) {
+      return true;
+    } else {
+      for (Annotation annotation : type.getDeclaredAnnotations()) {
+        if (annotation.annotationType().isAnnotationPresent(Persistent.class)) {
+          return true;
+        }
+      }
+      for (Field field : type.getDeclaredFields()) {
+        if (field.isAnnotationPresent(Id.class)) {
+          return true;
+        }
+      }
     }
     return false;
   }
 
-  protected <T> PersistentEntity<T> createPersistentEntity(TypeInformation typeInformation, MappingContext mappingContext)
+  protected <T> BasicPersistentEntity<T> createPersistentEntity(TypeInformation typeInformation, MappingContext mappingContext)
       throws MappingConfigurationException {
     return new BasicPersistentEntity<T>(mappingContext, typeInformation);
   }
 
-  protected PersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
+  protected BasicPersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
       TypeInformation information) throws MappingConfigurationException {
     return new BasicPersistentProperty(field, descriptor, information);
   }
 
+  public boolean isPersistentProperty(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException {
+    if (UNMAPPED_FIELDS.contains(field.getName()) || isTransient(field)) {
+      return false;
+    }
+    return true;
+  }
+
+  @SuppressWarnings({"unchecked"})
+  public <T> PreferredConstructor<T> getPreferredConstructor(Class<T> type) throws MappingConfigurationException {
+    // Find the right constructor
+    PreferredConstructor<T> preferredConstructor = null;
+
+    for (Constructor<?> constructor : type.getConstructors()) {
+      if (constructor.getParameterTypes().length != 0) {
+        // Non-no-arg constructor
+        if (null == preferredConstructor || constructor.isAnnotationPresent(PersistenceConstructor.class)) {
+          preferredConstructor = new PreferredConstructor<T>((Constructor<T>) constructor);
+
+          String[] paramNames = new LocalVariableTableParameterNameDiscoverer().getParameterNames(constructor);
+          Type[] paramTypes = constructor.getGenericParameterTypes();
+
+          for (int i = 0; i < paramTypes.length; i++) {
+            Class<?> targetType = Object.class;
+            if (paramTypes[i] instanceof ParameterizedType) {
+              ParameterizedType ptype = (ParameterizedType) paramTypes[i];
+              Type[] types = ptype.getActualTypeArguments();
+              if (types.length == 1) {
+                if (types[0] instanceof TypeVariable) {
+                  // Placeholder type
+                  targetType = Object.class;
+                } else {
+                  targetType = (Class<?>) types[0];
+                }
+              } else {
+                targetType = (Class<?>) ptype.getRawType();
+              }
+            } else {
+              if (paramTypes[i] instanceof TypeVariable) {
+                @SuppressWarnings("rawtypes")
+                Type[] bounds = ((TypeVariable) paramTypes[i]).getBounds();
+                if (bounds.length > 0) {
+                  targetType = (Class<?>) bounds[0];
+                }
+              } else if (paramTypes[i] instanceof Class<?>) {
+                targetType = (Class<?>) paramTypes[i];
+              }
+            }
+            String paramName = (null != paramNames ? paramNames[i] : "param" + i);
+            preferredConstructor.addParameter(paramName, targetType, targetType.getDeclaredAnnotations());
+          }
+
+          if (constructor.isAnnotationPresent(PersistenceConstructor.class)) {
+            // We're done
+            break;
+          }
+        }
+      }
+    }
+
+    return preferredConstructor;
+  }
+
+  public boolean isAssociation(Field field, PropertyDescriptor descriptor) throws MappingConfigurationException {
+    if (!isTransient(field)) {
+      if (field.isAnnotationPresent(Reference.class)) {
+        return true;
+      }
+      for (Annotation annotation : field.getDeclaredAnnotations()) {
+        if (annotation.annotationType().isAnnotationPresent(Reference.class)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  public Association createAssociation(BasicPersistentProperty property) {
+    // Only support uni-directional associations in the Basic configuration
+    Association association = new Association(property, null);
+    property.setAssociation(association);
+
+    return association;
+  }
+
+  protected boolean isTransient(Field field) {
+    if (Modifier.isTransient(field.getModifiers())
+        || null != field.getAnnotation(Transient.class)
+        || null != field.getAnnotation(Value.class)) {
+      return true;
+    }
+    return false;
+  }
+
   public void afterPropertiesSet() throws Exception {
-    Assert.notNull(builder, "No mapping configuration provider configured.");
     for (Class<?> initialEntity : initialEntitySet) {
       addPersistentEntity(initialEntity);
     }

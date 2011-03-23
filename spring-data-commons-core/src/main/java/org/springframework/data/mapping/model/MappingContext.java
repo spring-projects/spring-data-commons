@@ -18,9 +18,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.validation.Validator;
 
@@ -36,10 +33,18 @@ import org.springframework.validation.Validator;
  * <p/>
  *
  * @author Graeme Rocher
- * @since 1.0
+ * @author Jon Brisbin
+ * @author Oliver Gierke
  */
 public interface MappingContext extends InitializingBean {
-
+  
+  /**
+   * Adds a PersistentEntity instance
+   *
+   * @param type The Java class representing the entity
+   * @return The PersistentEntity instance
+   */
+  <T> PersistentEntity<T> addPersistentEntity(Class<T> type);
 
   /**
    * Obtains a list of PersistentEntity instances
@@ -53,53 +58,12 @@ public interface MappingContext extends InitializingBean {
   <T> PersistentEntity<T> getPersistentEntity(TypeInformation type);
 
   /**
-   * Adds a PersistentEntity instance
-   *
-   * @param type The Java class representing the entity
-   * @return The PersistentEntity instance
-   */
-  <T> PersistentEntity<T> addPersistentEntity(Class<T> type);
-
-  /**
-   * Adds a validator to be used by the entity for validation
-   *
-   * @param entity    The PersistentEntity
-   * @param validator The validator
-   */
-  void addEntityValidator(PersistentEntity<?> entity, Validator validator);
-
-  /**
-   * Add a converter used to convert property values to and from the datastore
-   *
-   * @param converter The converter to add
-   */
-  <S, T> void addTypeConverter(Converter<S, T> converter);
-
-  /**
-   * Obtains the ConversionService instance to use for type conversion
-   *
-   * @return The conversion service instance
-   */
-  ConversionService getConversionService();
-
-  /**
-   * Obtains the converter registry
-   *
-   * @return The converter registry used for type conversion
-   */
-  ConverterRegistry getConverterRegistry();
-
-  /**
    * Obtains a validator for the given entity
    *
    * @param entity The entity
    * @return A validator or null if none exists for the given entity
    */
   List<Validator> getEntityValidators(PersistentEntity<?> entity);
-
-  MappingConfigurationBuilder getMappingConfigurationBuilder();
-
-  void setMappingConfigurationBuilder(MappingConfigurationBuilder builder);
 
   /**
    * Returns whether the specified value is a persistent entity
