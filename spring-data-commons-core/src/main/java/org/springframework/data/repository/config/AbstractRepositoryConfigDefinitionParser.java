@@ -218,7 +218,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
                         customImplementationBeanName);
             }
 
-            postProcessBeanDefinition(context, builder, beanSource);
+            postProcessBeanDefinition(context, builder, parser.getRegistry(), beanSource);
 
             AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
             beanDefinition.setSource(beanSource);
@@ -249,7 +249,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
      * @param beanSource
      */
     protected void postProcessBeanDefinition(T context,
-            BeanDefinitionBuilder builder, Object beanSource) {
+            BeanDefinitionBuilder builder, BeanDefinitionRegistry registry, Object beanSource) {
 
     }
 
