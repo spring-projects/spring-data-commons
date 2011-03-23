@@ -1,4 +1,4 @@
-package org.springframework.persistence.transaction;
+package org.springframework.data.transaction;
 
 import java.util.IdentityHashMap;
 import java.util.Map;

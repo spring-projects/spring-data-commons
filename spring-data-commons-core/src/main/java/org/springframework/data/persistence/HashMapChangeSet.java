@@ -1,4 +1,4 @@
-package org.springframework.data.support;
+package org.springframework.data.persistence;
 
 import java.util.Collections;
 import java.util.HashMap;

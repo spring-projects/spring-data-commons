@@ -1,4 +1,4 @@
-package org.springframework.persistence.support;
+package org.springframework.data.persistence;
 
 /**
  * @author Michael Hunger

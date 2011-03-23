@@ -2,8 +2,8 @@ package org.springframework.data.transaction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.support.ChangeSetBacked;
-import org.springframework.data.support.ChangeSetPersister;
+import org.springframework.data.persistence.ChangeSetBacked;
+import org.springframework.data.persistence.ChangeSetPersister;
 import org.springframework.transaction.support.TransactionSynchronization;
 
 public class ChangeSetBackedTransactionSynchronization implements TransactionSynchronization {

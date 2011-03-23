@@ -1,4 +1,4 @@
-package org.springframework.data.support;
+package org.springframework.data.persistence;
 
 
 /**
