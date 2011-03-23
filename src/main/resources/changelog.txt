@@ -1,11 +1,12 @@
 Spring Data Commons Changelog
 =============================================
 
-Changes in version 1.0.0.M5
+Changes in version 1.0.0.M5 (2011-03-23)
 ----------------------------------------
 
 General
 * Polished basic mapping infrastructure
+* Changed package names for cross-store persistence support and removed unused prototype classes
 
 Repository
 * Minor API change in AbstractRepositoryConfigDefinitionParser
