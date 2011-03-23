@@ -89,6 +89,7 @@ public class QueryMethod {
     }
 
 
+    @SuppressWarnings("rawtypes")
     public EntityMetadata<?> getEntityInformation() {
 
         return new EntityMetadata() {

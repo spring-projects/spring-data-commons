@@ -3,7 +3,6 @@ package org.springframework.data.util;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Property information for a plain {@link Class}.

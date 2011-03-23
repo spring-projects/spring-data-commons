@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.springframework.core.GenericCollectionTypeResolver;
-import org.springframework.core.JdkVersion;
 import org.springframework.core.MethodParameter;
 import org.springframework.util.Assert;
 
@@ -40,6 +38,7 @@ import org.springframework.util.Assert;
  * TODO: remove that class, as soon as Spring 3.0.6 gets released.
  * @see SPR-8005
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 abstract class GenericTypeResolver {
 
   /** Cache from Class to TypeVariable Map */

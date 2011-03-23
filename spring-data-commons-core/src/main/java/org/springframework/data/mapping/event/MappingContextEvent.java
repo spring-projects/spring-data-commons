@@ -25,6 +25,7 @@ import org.springframework.data.util.TypeInformation;
  */
 public class MappingContextEvent extends ApplicationEvent {
 
+  private static final long serialVersionUID = 1336466833846092490L;
   private TypeInformation typeInformation;
 
   public MappingContextEvent(PersistentEntity<?> source, TypeInformation typeInformation) {
