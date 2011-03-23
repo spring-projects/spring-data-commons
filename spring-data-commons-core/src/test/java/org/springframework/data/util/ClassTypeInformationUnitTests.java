@@ -112,6 +112,7 @@ public class ClassTypeInformationUnitTests {
     
   }
   
+  @SuppressWarnings("unused")
   private class MapContainer<T> {
     Map<String, T> genericMap;
     Map<String, Calendar> map;
@@ -121,6 +122,7 @@ public class ClassTypeInformationUnitTests {
     
   }
   
+  @SuppressWarnings({"unused", "rawtypes"})
   private class CollectionContainer<T> {
     
     T[] array;
@@ -129,11 +131,13 @@ public class ClassTypeInformationUnitTests {
     Set rawSet;
   }
 
+  @SuppressWarnings("unused")
   private class GenericTypeWithBound<T extends Person> {
 
     T person;
   }
 
+  @SuppressWarnings("unused")
   private class AnotherGenericType<T extends Person, S extends GenericTypeWithBound<T>> {
 
     S nested;
@@ -151,6 +155,7 @@ public class ClassTypeInformationUnitTests {
     }
   }
 
+  @SuppressWarnings("unused")
   private class GenericType<T, S> {
 
     Long index;
@@ -161,6 +166,7 @@ public class ClassTypeInformationUnitTests {
 
   }
 
+  @SuppressWarnings("unused")
   private class GenericWrapper<S> {
 
     GenericType<S, Object> wrapped;

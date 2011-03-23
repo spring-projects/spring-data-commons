@@ -67,6 +67,7 @@ public class RepositoryFactorySupportUnitTests {
          * @see org.springframework.data.repository.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
          */
         @Override
+        @SuppressWarnings("unchecked")
         public <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(
                 Class<T> domainClass) {
         

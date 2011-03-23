@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.extensions.conversion;
+package org.springframework.data.repository.support;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -33,7 +33,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.extensions.converter.DomainClassConverter;
+import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.support.EntityInformation;
 import org.springframework.data.repository.support.RepositoryFactoryInformation;
@@ -54,6 +54,7 @@ public class DomainClassConverterUnitTests {
     TypeDescriptor sourceDescriptor;
     TypeDescriptor targetDescriptor;
 
+    @SuppressWarnings("rawtypes")
     Map<String, RepositoryFactoryInformation> providers;
 
     @Mock

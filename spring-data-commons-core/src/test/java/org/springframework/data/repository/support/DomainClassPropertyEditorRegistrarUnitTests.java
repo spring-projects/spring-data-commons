@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.extensions.beans;
+package org.springframework.data.repository.support;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.*;
