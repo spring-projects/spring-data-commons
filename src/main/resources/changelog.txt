@@ -5,9 +5,10 @@ Changes in version 1.0.0.M5
 ----------------------------------------
 
 General
-
+* Polished basic mapping infrastructure
 
 Repository
+* Minor API change in AbstractRepositoryConfigDefinitionParser
 * Extension module for Spring MVC integration (DATAJPA-19)
 
 
@@ -24,7 +25,7 @@ Repository
 * Introduced metamodel for entities and repositories (DATACMNS-17)
 * Fixed returning wrong class PersistableEntityMetadata (DATACMNS-19)
 * Introduced infrastructure to post-process RepositoryQuery instances (DATACMNS-18) 
-* Renamed Repository.findById(...) to findOne(É) (DATACMNS-20)
+* Renamed Repository.findById(...) to findOne(...) (DATACMNS-20)
 * Changed method signature of Repository.findAll(...) and according methods to Iterable<T> (DATACMNS-21)
 
 
