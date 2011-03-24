@@ -16,6 +16,8 @@
 
 package org.springframework.data.mapping;
 
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.ConversionServiceFactory;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -36,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Oliver Gierke
  */
 public abstract class MappingBeanHelper {
 
@@ -99,10 +102,8 @@ public abstract class MappingBeanHelper {
     PreferredConstructor<T> constructor = entity.getPreferredConstructor();
     if (null == constructor) {
       try {
-        return entity.getType().newInstance();
-      } catch (InstantiationException e) {
-        throw new MappingInstantiationException(e.getMessage(), e);
-      } catch (IllegalAccessException e) {
+        return BeanUtils.instantiateClass(entity.getType());  
+      } catch (BeanInstantiationException e) {
         throw new MappingInstantiationException(e.getMessage(), e);
       }
     }
@@ -124,12 +125,8 @@ public abstract class MappingBeanHelper {
 
     T obj = null;
     try {
-      obj = constructor.getConstructor().newInstance(params.toArray());
-    } catch (InstantiationException e) {
-      throw new MappingInstantiationException(e.getMessage(), e);
-    } catch (IllegalAccessException e) {
-      throw new MappingInstantiationException(e.getMessage(), e);
-    } catch (InvocationTargetException e) {
+      obj = BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());
+    } catch (BeanInstantiationException e) {
       throw new MappingInstantiationException(e.getMessage(), e);
     }
 
