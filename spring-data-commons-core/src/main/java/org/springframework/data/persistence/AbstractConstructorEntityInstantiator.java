@@ -17,24 +17,20 @@ import java.util.Map;
  */
 public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, STATE> implements EntityInstantiator<BACKING_INTERFACE, STATE> {
 
-    interface Instantiator<T, STATE> {
-       T create(STATE n, Class<T> c) throws Exception;
-    }
-
-	private final Logger log = LoggerFactory.getLogger(getClass());
-    private final Map<Class<? extends BACKING_INTERFACE>,Instantiator<? extends BACKING_INTERFACE,STATE>> cache = new HashMap<Class<? extends BACKING_INTERFACE>,Instantiator<? extends BACKING_INTERFACE,STATE>>();
+    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Map<Class<? extends BACKING_INTERFACE>,StateBackedCreator<? extends BACKING_INTERFACE,STATE>> cache = new HashMap<Class<? extends BACKING_INTERFACE>,StateBackedCreator<? extends BACKING_INTERFACE,STATE>>();
 
 	final public <T extends BACKING_INTERFACE> T createEntityFromState(STATE n, Class<T> c) {
 		try {
-            Instantiator<T, STATE> instantiator = (Instantiator<T, STATE>) cache.get(c);
-            if (instantiator!=null) return instantiator.create(n,c);
+            StateBackedCreator<T, STATE> creator = (StateBackedCreator<T, STATE>) cache.get(c);
+            if (creator !=null) return creator.create(n,c);
             synchronized (cache) {
-                instantiator = (Instantiator<T, STATE>) cache.get(c);
-                if (instantiator!=null) return instantiator.create(n,c);
+                creator = (StateBackedCreator<T, STATE>) cache.get(c);
+                if (creator !=null) return creator.create(n,c);
                 Class<STATE> stateClass = (Class<STATE>) n.getClass();
-                instantiator=createInstantiator(c, stateClass);
-                cache.put(c,instantiator);
-                return instantiator.create(n,c);
+                creator =createInstantiator(c, stateClass);
+                cache.put(c, creator);
+                return creator.create(n,c);
             }
         } catch (IllegalArgumentException e) {
             throw e;
@@ -46,20 +42,20 @@ public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, S
 	}
 
 
-    public void setInstantiators(Map<Class<? extends BACKING_INTERFACE>,Instantiator<? extends BACKING_INTERFACE,STATE>> instantiators) {
+    public void setInstantiators(Map<Class<? extends BACKING_INTERFACE>,StateBackedCreator<? extends BACKING_INTERFACE,STATE>> instantiators) {
         this.cache.putAll(instantiators);
     }
 
-    protected <T extends BACKING_INTERFACE> Instantiator<T, STATE> createInstantiator(Class<T> type, final Class<STATE> stateType) {
-        Instantiator<T,STATE> instantiator=stateTakingConstructorInstantiator(type,stateType);
-        if (instantiator!=null) return instantiator;
-        instantiator = emptyConstructorStateSettingInstantiator(type,stateType);
-        if (instantiator!=null) return instantiator;
+    protected <T extends BACKING_INTERFACE> StateBackedCreator<T, STATE> createInstantiator(Class<T> type, final Class<STATE> stateType) {
+        StateBackedCreator<T,STATE> creator =stateTakingConstructorInstantiator(type,stateType);
+        if (creator !=null) return creator;
+        creator = emptyConstructorStateSettingInstantiator(type,stateType);
+        if (creator !=null) return creator;
         return createFailingInstantiator(stateType);
     }
 
-    private <T extends BACKING_INTERFACE> Instantiator<T, STATE> createFailingInstantiator(final Class<STATE> stateType) {
-        return new Instantiator<T, STATE>() {
+    private <T extends BACKING_INTERFACE> StateBackedCreator<T, STATE> createFailingInstantiator(final Class<STATE> stateType) {
+        return new StateBackedCreator<T, STATE>() {
             public T create(STATE n, Class<T> c) throws Exception {
                 throw new IllegalArgumentException(getClass().getSimpleName() + ": entity " + c +
                         " must have either a constructor taking [" + stateType + "] or a no-arg constructor and state set method");
@@ -67,13 +63,13 @@ public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, S
         };
     }
 
-    private <T extends BACKING_INTERFACE> Instantiator<T, STATE> emptyConstructorStateSettingInstantiator(Class<T> type, Class<STATE> stateType) {
+    private <T extends BACKING_INTERFACE> StateBackedCreator<T, STATE> emptyConstructorStateSettingInstantiator(Class<T> type, Class<STATE> stateType) {
         final Constructor<T> constructor = getNoArgConstructor(type);
         if (constructor == null) return null;
 
         log.info("Using " + type + " no-arg constructor");
 
-        return new Instantiator<T, STATE>() {
+        return new StateBackedCreator<T, STATE>() {
             public T create(STATE n, Class<T> c) throws Exception {
                 try {
                     StateProvider.setUnderlyingState(n);
@@ -93,13 +89,13 @@ public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, S
         return getDeclaredConstructor(type);
     }
 
-    private <T extends BACKING_INTERFACE> Instantiator<T, STATE> stateTakingConstructorInstantiator(Class<T> type, Class<STATE> stateType) {
+    private <T extends BACKING_INTERFACE> StateBackedCreator<T, STATE> stateTakingConstructorInstantiator(Class<T> type, Class<STATE> stateType) {
         Class<? extends STATE> stateInterface = (Class<? extends STATE>) stateType.getInterfaces()[0];
         final Constructor<T> constructor = ClassUtils.getConstructorIfAvailable(type, stateInterface);
         if (constructor == null) return null;
 
         log.info("Using " + type + " constructor taking " + stateInterface);
-        return new Instantiator<T, STATE>() {
+        return new StateBackedCreator<T, STATE>() {
             public T create(STATE n, Class<T> c) throws Exception {
                 return constructor.newInstance(n);
             }
