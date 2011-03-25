@@ -43,7 +43,6 @@
 			<!-- adds module jars to the distribution archive under the 'dist' directory -->
 			<includes>
 				<include>org.springframework.data:spring-data-commons-core</include>
-				<include>org.springframework.data:spring-data-commons-aspects</include>
 			</includes>
 			<binaries>
 				<outputDirectory>dist</outputDirectory>
@@ -56,7 +55,6 @@
 				 see pom.xml 'maven-source-plugin' declaration -->
 			<includes>
 				<include>org.springframework.data:spring-data-commons-core</include>
-				<include>org.springframework.data:spring-data-commons-aspects</include>
 			</includes>
 			<binaries>
 				<attachmentClassifier>sources</attachmentClassifier>

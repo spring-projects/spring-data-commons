@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.0.0.M6 (2011-03-25)
+----------------------------------------
+
+General
+* extracted StateBackedCreator interface
+* added caching to AbstractConstructorEntityInstantiator
+* Use BeanUtils to instantiate objects to not enforce them to be public.
+
+
 Changes in version 1.0.0.M5 (2011-03-23)
 ----------------------------------------
 
