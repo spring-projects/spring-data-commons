@@ -22,19 +22,21 @@ public interface ChangeSetPersister<K> {
 	
 	/**
 	 * Return id
+	 * @param entity 
 	 * @param cs 
 	 * @return
 	 * @throws DataAccessException
 	 */
-	K getPersistentId(Class<? extends ChangeSetBacked> entityClass, ChangeSet cs) throws DataAccessException;
+	K getPersistentId(ChangeSetBacked entity, ChangeSet cs) throws DataAccessException;
 	
 	/**
 	 * Return key
+	 * @param entity 
 	 * @param cs Key may be null if not persistent
 	 * @return
 	 * @throws DataAccessException
 	 */
-	K persistState(Class<? extends ChangeSetBacked> entityClass, ChangeSet cs) throws DataAccessException;
+	K persistState(ChangeSetBacked entity, ChangeSet cs) throws DataAccessException;
 	
 	/**
 	 * Exception thrown in alternate control flow if getPersistentState
