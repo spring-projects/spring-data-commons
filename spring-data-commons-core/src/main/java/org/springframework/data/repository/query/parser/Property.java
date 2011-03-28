@@ -15,20 +15,14 @@
  */
 package org.springframework.data.repository.query.parser;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 
@@ -42,7 +36,7 @@ public class Property {
     private static String ERROR_TEMPLATE = "No property %s found for type %s";
 
     private final String name;
-    private final Class<?> type;
+    private final TypeInformation type;
     private final boolean isCollection;
 
     private Property next;
@@ -57,19 +51,38 @@ public class Property {
      */
     Property(String name, Class<?> owningType) {
 
-        Assert.hasText(name);
-        Assert.notNull(owningType);
+        this(name, new ClassTypeInformation(owningType));
+    }
+    
+    Property(String name, TypeInformation owningType) {
+      
+      Assert.hasText(name);
+      Assert.notNull(owningType);
+      
+      String propertyName = StringUtils.uncapitalize(name);
+      TypeInformation type = owningType.getProperty(propertyName);
 
-        Type genericType = getPropertyType(name, owningType);
-
-        if (genericType == null) {
-            throw new IllegalArgumentException(String.format(ERROR_TEMPLATE,
-                    name, owningType));
-        }
-
-        this.type = getType(genericType);
-        this.isCollection = isCollection(genericType);
-        this.name = StringUtils.uncapitalize(name);
+      if (type == null) {
+          throw new IllegalArgumentException(String.format(ERROR_TEMPLATE,
+                  propertyName, owningType.getType()));
+      }
+      
+      this.isCollection = type.isCollectionLike();
+      this.type = getPropertyType(type);
+      this.name = propertyName;
+    }
+    
+    private TypeInformation getPropertyType(TypeInformation type) {
+      
+      if (type.isCollectionLike()) {
+        return type.getComponentType();
+      }
+      
+      if (type.isMap()) {
+        return type.getMapValueType();
+      }
+      
+      return type;
     }
 
 
@@ -82,7 +95,7 @@ public class Property {
      * @param owningType
      * @param toTraverse
      */
-    Property(String name, Class<?> owningType, String toTraverse) {
+    Property(String name, TypeInformation owningType, String toTraverse) {
 
         this(name, owningType);
 
@@ -199,21 +212,26 @@ public class Property {
      */
     public static Property from(String source, Class<?> type) {
 
-        Iterator<String> parts = Arrays.asList(source.split("_")).iterator();
+        return from(source, new ClassTypeInformation(type));
+    }
+    
+    private static Property from(String source, TypeInformation type) {
+      
+      Iterator<String> parts = Arrays.asList(source.split("_")).iterator();
 
-        Property result = null;
-        Property current = null;
+      Property result = null;
+      Property current = null;
 
-        while (parts.hasNext()) {
-            if (result == null) {
-                result = create(parts.next(), type);
-                current = result;
-            } else {
-                current = create(parts.next(), current);
-            }
-        }
+      while (parts.hasNext()) {
+          if (result == null) {
+              result = create(parts.next(), type);
+              current = result;
+          } else {
+              current = create(parts.next(), current);
+          }
+      }
 
-        return result;
+      return result;
     }
 
 
@@ -245,7 +263,7 @@ public class Property {
      * @param type
      * @return
      */
-    private static Property create(String source, Class<?> type) {
+    private static Property create(String source, TypeInformation type) {
 
         return create(source, type, "");
     }
@@ -262,7 +280,7 @@ public class Property {
      * @param addTail
      * @return
      */
-    private static Property create(String source, Class<?> type, String addTail) {
+    private static Property create(String source, TypeInformation type, String addTail) {
 
         IllegalArgumentException exception = null;
 
@@ -275,103 +293,15 @@ public class Property {
         Pattern pattern = Pattern.compile("[A-Z]?[a-z]*$");
         Matcher matcher = pattern.matcher(source);
 
-        if (matcher.find()) {
+        if (matcher.find() && matcher.start() != 0) {
 
             int position = matcher.start();
             String head = source.substring(0, position);
             String tail = source.substring(position);
 
-            try {
-                return new Property(head, type, tail + addTail);
-            } catch (IllegalArgumentException e) {
-                if (position > 0) {
-                    return create(head, type, tail);
-                } else {
-                    throw exception;
-                }
-            }
+            return new Property(head, type, tail + addTail);
         }
 
-        throw new IllegalArgumentException("Foo!");
-    }
-
-
-    /**
-     * Looks up the {@link Property}s type for the given {@link Property} name
-     * and owning type.
-     * 
-     * @param name
-     * @param owningType
-     * @return
-     */
-    private static Type getPropertyType(String name, Class<?> owningType) {
-
-        Assert.notNull(name);
-        Assert.notNull(owningType);
-
-        Method method =
-                ReflectionUtils.findMethod(owningType,
-                        "get" + StringUtils.capitalize(name));
-
-        if (method != null) {
-            return method.getGenericReturnType();
-        }
-
-        Field field =
-                ReflectionUtils.findField(owningType,
-                        StringUtils.uncapitalize(name));
-
-        return field == null ? null : field.getGenericType();
-    }
-
-
-    /**
-     * Returns whether the given {@link Type} is a {@link Collection} type.
-     * 
-     * @param type
-     * @return
-     */
-    private boolean isCollection(Type type) {
-
-        if (type instanceof ParameterizedType) {
-            return isCollection(((ParameterizedType) type).getRawType());
-        } else if (type instanceof Class) {
-            Class<?> result = (Class<?>) type;
-            return result.isArray() ? true : Collection.class
-                    .isAssignableFrom(result);
-        }
-
-        return false;
-    }
-
-
-    /**
-     * Resolves the actual type of the field. Unpacks {@link Collection}s and
-     * {@link Map}s. Will return the value type in case the given type is a
-     * {@link Map}.
-     * 
-     * @param type
-     * @return
-     */
-    private static Class<?> getType(Type type) {
-
-        if (type instanceof ParameterizedType) {
-
-            ParameterizedType actualType = (ParameterizedType) type;
-            Class<?> rawType = getType(actualType.getRawType());
-
-            if (Map.class.isAssignableFrom(rawType)) {
-                return getType(actualType.getActualTypeArguments()[1]);
-            } else if (Collection.class.isAssignableFrom(rawType)) {
-                return getType(actualType.getActualTypeArguments()[0]);
-            }
-        } else if (type instanceof Class) {
-            Class<?> result = (Class<?>) type;
-            return result.isArray() ? result.getComponentType() : result;
-        } else if (type instanceof GenericArrayType) {
-            return getType(((GenericArrayType) type).getGenericComponentType());
-        }
-
-        throw new IllegalArgumentException();
+        throw exception;
     }
 }

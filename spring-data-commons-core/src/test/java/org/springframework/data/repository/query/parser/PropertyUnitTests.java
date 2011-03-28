@@ -111,6 +111,18 @@ public class PropertyUnitTests {
         assertThat(reference.hasNext(), is(true));
         assertThat(reference.next(), is(new Property("name", FooBar.class)));
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void handlesInvalidCollectionCompountTypeProperl() {
+      
+      Property.from("usersMame", Bar.class);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void handlesInvalidMapValueTypeProperl() {
+      
+      Property.from("userMapMame", Bar.class);
+    }
 
     private class Foo {
 
