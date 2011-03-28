@@ -113,7 +113,9 @@ class TypeDiscoverer implements TypeInformation {
       }
 
       TypeInformation propertyInformation = getPropertyInformation(fieldname);
-      fieldTypes.put(fieldname, propertyInformation);
+      if (propertyInformation != null) {
+        fieldTypes.put(fieldname, propertyInformation);
+      }
       return propertyInformation;
     }
 
@@ -145,6 +147,15 @@ class TypeDiscoverer implements TypeInformation {
   }
   
   /* (non-Javadoc)
+   * @see org.springframework.data.util.TypeInformation#isMap()
+   */
+  @Override
+  public boolean isMap() {
+    Class<?> rawType = getType();
+    return rawType == null ? false : Map.class.isAssignableFrom(rawType);
+  }
+  
+  /* (non-Javadoc)
    * @see org.springframework.data.util.TypeInformation#getMapValueType()
    */
   public TypeInformation getMapValueType() {
@@ -158,11 +169,21 @@ class TypeDiscoverer implements TypeInformation {
   }
   
   /* (non-Javadoc)
+   * @see org.springframework.data.util.TypeInformation#isCollectionLike()
+   */
+  @Override
+  public boolean isCollectionLike() {
+   
+    Class<?> rawType = getType();
+    return rawType == null ? null : rawType.isArray() || Iterable.class.isAssignableFrom(rawType);
+  }
+  
+  /* (non-Javadoc)
    * @see org.springframework.data.util.TypeInformation#getComponentType()
    */
   public TypeInformation getComponentType() {
     
-    if (!(Map.class.isAssignableFrom(getType()) || Collection.class.isAssignableFrom(getType()))) {
+    if (!(Map.class.isAssignableFrom(getType()) || isCollectionLike())) {
       return null;
     }
     
