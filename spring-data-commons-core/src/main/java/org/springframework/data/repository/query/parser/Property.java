@@ -285,7 +285,7 @@ public class Property {
         IllegalArgumentException exception = null;
 
         try {
-            return new Property(source, type);
+            return new Property(source, type, addTail);
         } catch (IllegalArgumentException e) {
             exception = e;
         }
@@ -299,7 +299,7 @@ public class Property {
             String head = source.substring(0, position);
             String tail = source.substring(position);
 
-            return new Property(head, type, tail + addTail);
+            return create(head, type, tail + addTail);
         }
 
         throw exception;
