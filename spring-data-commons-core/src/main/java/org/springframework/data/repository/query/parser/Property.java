@@ -115,6 +115,18 @@ public class Property {
         return name;
     }
 
+	/**
+	 * Returns the type of the property will return the plain resolved type for
+	 * simple properties, the component type for any {@link Iterable} or the
+	 * value type of a {@link java.util.Map} if the property is one.
+	 * 
+	 * @return
+	 */
+	public Class<?> getType() {
+		
+		return this.type.getType();
+	}
+
 
     /**
      * Returns the next nested {@link Property}.
