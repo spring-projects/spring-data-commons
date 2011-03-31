@@ -190,14 +190,15 @@ public abstract class RepositoryFactorySupport {
     protected abstract Class<?> getRepositoryBaseClass(
             Class<?> repositoryInterface);
 
-
-    /**
-     * Returns the {@link QueryLookupStrategy} for the given {@link Key}.
-     * 
-     * @param key can be {@literal null}
-     * @return
-     */
-    protected abstract QueryLookupStrategy getQueryLookupStrategy(Key key);
+	/**
+	 * Returns the {@link QueryLookupStrategy} for the given {@link Key}.
+	 * 
+	 * @param key can be {@literal null}
+	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
+	 */
+    protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
+    	return null;
+    }
 
 
     /**
@@ -254,6 +255,18 @@ public abstract class RepositoryFactorySupport {
 
             QueryLookupStrategy lookupStrategy =
                     getQueryLookupStrategy(queryLookupStrategyKey);
+            
+            if (lookupStrategy == null) {
+            	
+            	if (repositoryMetadata.hasCustomMethod()) {
+					throw new IllegalStateException(
+							"You have defined query method in the repository but " +
+							"you don't have no query lookup strategy defined. The " +
+							"infrastructure apparently does not support query methods!");
+            	}
+            	
+            	return;
+            }
 
             for (Method method : metadata.getQueryMethods()) {
                 RepositoryQuery query =
