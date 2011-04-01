@@ -49,10 +49,7 @@ public class PageImpl<T> implements Page<T> {
 
         this.content.addAll(content);
         this.total = total;
-
-        this.pageable =
-                null == pageable ? new PageRequest(0, content.size())
-                        : pageable;
+        this.pageable = pageable;
     }
 
 
@@ -75,7 +72,7 @@ public class PageImpl<T> implements Page<T> {
      */
     public int getNumber() {
 
-        return pageable.getPageNumber();
+        return pageable == null ? 0 : pageable.getPageNumber();
     }
 
 
@@ -86,7 +83,7 @@ public class PageImpl<T> implements Page<T> {
      */
     public int getSize() {
 
-        return pageable.getPageSize();
+        return pageable == null ? 0 : pageable.getPageSize();
     }
 
 
@@ -97,7 +94,7 @@ public class PageImpl<T> implements Page<T> {
      */
     public int getTotalPages() {
 
-        return (int) Math.ceil((double) total / (double) getSize());
+        return getSize() == 0 ? 0 : (int) Math.ceil((double) total / (double) getSize());
     }
 
 
@@ -187,6 +184,17 @@ public class PageImpl<T> implements Page<T> {
 
         return Collections.unmodifiableList(content);
     }
+    
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.springframework.data.domain.Page#hasContent()
+	 */
+    @Override
+    public boolean hasContent() {
+    
+    	return !content.isEmpty();
+    }
 
 
     /*
@@ -196,7 +204,7 @@ public class PageImpl<T> implements Page<T> {
      */
     public Sort getSort() {
 
-        return pageable.getSort();
+        return pageable == null ? null : pageable.getSort();
     }
 
 
@@ -239,7 +247,7 @@ public class PageImpl<T> implements Page<T> {
 
         boolean totalEqual = this.total == that.total;
         boolean contentEqual = this.content.equals(that.content);
-        boolean pageableEqual = this.pageable.equals(that.pageable);
+		boolean pageableEqual = this.pageable == null ? that.pageable == null : this.pageable.equals(that.pageable);
 
         return totalEqual && contentEqual && pageableEqual;
     }
@@ -256,7 +264,7 @@ public class PageImpl<T> implements Page<T> {
         int result = 17;
 
         result = 31 * result + (int) (total ^ total >>> 32);
-        result = 31 * result + pageable.hashCode();
+        result = 31 * result + (pageable == null ? 0 : pageable.hashCode());
         result = 31 * result + content.hashCode();
 
         return result;
