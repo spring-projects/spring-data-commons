@@ -115,6 +115,14 @@ public interface Page<T> extends Iterable<T> {
      * @return
      */
     List<T> getContent();
+    
+    
+    /**
+     * Returns whether the {@link Page} has content at all.
+     * 
+     * @return
+     */
+    boolean hasContent();
 
 
     /**

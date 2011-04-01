@@ -123,6 +123,12 @@ public class PropertyUnitTests {
       
       Property.from("userMapMame", Bar.class);
     }
+    
+    @Test
+    public void findsNested() {
+      
+      Property from = Property.from("barUserName", Sample.class);
+    }
 
     private class Foo {
 
@@ -146,6 +152,7 @@ public class PropertyUnitTests {
 
         private String userName;
         private FooBar user;
+        private Bar bar;
     }
 
     private class Sample2 {

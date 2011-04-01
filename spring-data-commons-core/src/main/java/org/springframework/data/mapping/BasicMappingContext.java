@@ -295,7 +295,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
     // Find the right constructor
     PreferredConstructor<T> preferredConstructor = null;
 
-    for (Constructor<?> constructor : type.getConstructors()) {
+    for (Constructor<?> constructor : type.getDeclaredConstructors()) {
       if (constructor.getParameterTypes().length != 0) {
         // Non-no-arg constructor
         if (null == preferredConstructor || constructor.isAnnotationPresent(PersistenceConstructor.class)) {

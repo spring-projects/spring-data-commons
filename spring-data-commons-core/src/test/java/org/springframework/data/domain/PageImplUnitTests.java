@@ -16,9 +16,12 @@
 
 package org.springframework.data.domain;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -78,4 +81,22 @@ public class PageImplUnitTests {
 
         new PageImpl<Object>(null, null, 0);
     }
+    
+    @Test
+	public void createsPageForEmptyContentCorrectly() {
+    	List<String> list = Collections.emptyList();
+		Page<String> page = new PageImpl<String>(list);
+		assertThat(page.getContent(), is(list));
+		assertThat(page.getNumber(), is(0));
+		assertThat(page.getNumberOfElements(), is(0));
+		assertThat(page.getSize(), is(0));
+		assertThat(page.getSort(), is((Sort) null));
+		assertThat(page.getTotalElements(), is(0L));
+		assertThat(page.getTotalPages(), is(0));
+		assertThat(page.hasNextPage(), is(false));
+		assertThat(page.hasPreviousPage(), is(false));
+		assertThat(page.isFirstPage(), is(true));
+		assertThat(page.isLastPage(), is(true));
+		assertThat(page.hasContent(), is(false));
+	}
 }

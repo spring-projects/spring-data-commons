@@ -115,6 +115,18 @@ public class Property {
         return name;
     }
 
+	/**
+	 * Returns the type of the property will return the plain resolved type for
+	 * simple properties, the component type for any {@link Iterable} or the
+	 * value type of a {@link java.util.Map} if the property is one.
+	 * 
+	 * @return
+	 */
+	public Class<?> getType() {
+		
+		return this.type.getType();
+	}
+
 
     /**
      * Returns the next nested {@link Property}.
@@ -285,7 +297,7 @@ public class Property {
         IllegalArgumentException exception = null;
 
         try {
-            return new Property(source, type);
+            return new Property(source, type, addTail);
         } catch (IllegalArgumentException e) {
             exception = e;
         }
@@ -299,7 +311,7 @@ public class Property {
             String head = source.substring(0, position);
             String tail = source.substring(position);
 
-            return new Property(head, type, tail + addTail);
+            return create(head, type, tail + addTail);
         }
 
         throw exception;
