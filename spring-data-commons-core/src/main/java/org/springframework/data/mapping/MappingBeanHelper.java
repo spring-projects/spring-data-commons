@@ -48,13 +48,21 @@ public abstract class MappingBeanHelper {
 
   static {
     simpleTypes.add(boolean.class);
+    simpleTypes.add(boolean[].class);
     simpleTypes.add(long.class);
+    simpleTypes.add(long[].class);
     simpleTypes.add(short.class);
+    simpleTypes.add(short[].class);
     simpleTypes.add(int.class);
+    simpleTypes.add(int[].class);
     simpleTypes.add(byte.class);
+    simpleTypes.add(byte[].class);
     simpleTypes.add(float.class);
+    simpleTypes.add(float[].class);
     simpleTypes.add(double.class);
+    simpleTypes.add(double[].class);
     simpleTypes.add(char.class);
+    simpleTypes.add(char[].class);
     simpleTypes.add(Boolean.class);
     simpleTypes.add(Long.class);
     simpleTypes.add(Short.class);
