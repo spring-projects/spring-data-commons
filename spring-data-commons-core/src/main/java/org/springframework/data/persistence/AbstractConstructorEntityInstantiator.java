@@ -1,7 +1,7 @@
 package org.springframework.data.persistence;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Constructor;
@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, STATE> implements EntityInstantiator<BACKING_INTERFACE, STATE> {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Log log = LogFactory.getLog(getClass());
     private final Map<Class<? extends BACKING_INTERFACE>,StateBackedCreator<? extends BACKING_INTERFACE,STATE>> cache = new HashMap<Class<? extends BACKING_INTERFACE>,StateBackedCreator<? extends BACKING_INTERFACE,STATE>>();
 
 	final public <T extends BACKING_INTERFACE> T createEntityFromState(STATE n, Class<T> c) {
