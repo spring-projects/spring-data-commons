@@ -95,7 +95,7 @@ public class RepositoryFactorySupportUnitTests {
             RepositoryQuery queryTwo = mock(RepositoryQuery.class);
 
             QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
-            when(strategy.resolveQuery(any(Method.class), any(Class.class)))
+            when(strategy.resolveQuery(any(Method.class), any(RepositoryMetadata.class)))
                     .thenReturn(queryOne, queryTwo);
 
             return strategy;

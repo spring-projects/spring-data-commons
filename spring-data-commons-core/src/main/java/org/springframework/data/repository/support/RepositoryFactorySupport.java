@@ -285,17 +285,15 @@ public abstract class RepositoryFactorySupport {
 
             for (Method method : repositoryInformation.getQueryMethods()) {
                 RepositoryQuery query =
-                        lookupStrategy.resolveQuery(method,
-                                repositoryInformation.getDomainClass());
-                invokeListeners(query, repositoryInformation);
+                        lookupStrategy.resolveQuery(method,repositoryInformation);
+                invokeListeners(query);
                 queries.put(method, query);
             }
         }
 
 
         @SuppressWarnings({ "rawtypes", "unchecked" })
-        private void invokeListeners(RepositoryQuery query,
-                RepositoryInformation information) {
+        private void invokeListeners(RepositoryQuery query) {
 
             for (QueryCreationListener listener : queryPostProcessors) {
                 Class<?> typeArgument =
