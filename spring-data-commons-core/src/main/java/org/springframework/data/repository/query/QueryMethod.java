@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.EntityMetadata;
+import org.springframework.data.repository.support.RepositoryMetadata;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
 
@@ -42,6 +43,7 @@ public class QueryMethod {
         SINGLE_ENTITY, PAGING, COLLECTION, MODIFYING;
     }
 
+    private final RepositoryMetadata metadata;
     private final Method method;
     private final Parameters parameters;
 
@@ -52,7 +54,7 @@ public class QueryMethod {
      * 
      * @param method must not be {@literal null}
      */
-    public QueryMethod(Method method) {
+    public QueryMethod(Method method, RepositoryMetadata metadata) {
 
         Assert.notNull(method, "Method must not be null!");
 
@@ -75,6 +77,7 @@ public class QueryMethod {
 
         this.method = method;
         this.parameters = new Parameters(method);
+        this.metadata = metadata;
     }
 
 
@@ -103,8 +106,12 @@ public class QueryMethod {
 
 
     protected Class<?> getDomainClass() {
+      
+      Class<?> repositoryDomainClass = metadata.getDomainClass();
+      Class<?> methodDomainClass = ClassUtils.getReturnedDomainClass(method);
 
-        return ClassUtils.getReturnedDomainClass(method);
+      return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass) ? methodDomainClass
+          : repositoryDomainClass;
     }
 
 

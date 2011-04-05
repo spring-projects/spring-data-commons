@@ -124,12 +124,12 @@ public abstract class RepositoryFactorySupport {
     public <T> T getRepository(Class<T> repositoryInterface,
             Object customImplementation) {
 
-        RepositoryMetadata metadata =
-                getRepositoryMetadata(repositoryInterface);
+        RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
+        RepositoryInformation information = getRepositoryInformation(metadata);
 
-        validate(metadata, customImplementation);
+        validate(information, customImplementation);
 
-        Object target = getTargetRepository(metadata);
+        Object target = getTargetRepository(information);
 
         // Create proxy
         ProxyFactory result = new ProxyFactory();
@@ -140,12 +140,11 @@ public abstract class RepositoryFactorySupport {
             processor.postProcess(result);
         }
 
-        result.addAdvice(new QueryExecuterMethodInterceptor(metadata,
+        result.addAdvice(new QueryExecuterMethodInterceptor(information,
                 customImplementation, target));
 
         return (T) result.getProxy();
     }
-    
     
     /**
      * Returns the {@link RepositoryMetadata} for the given repository interface.
@@ -153,9 +152,19 @@ public abstract class RepositoryFactorySupport {
      * @param repositoryInterface
      * @return
      */
-    protected RepositoryMetadata getRepositoryMetadata(Class<?> repositoryInterface) {
-        
-        return new DefaultRepositoryMetadata(repositoryInterface, getRepositoryBaseClass(repositoryInterface));
+    RepositoryMetadata getRepositoryMetadata(Class<?> repositoryInterface) {
+      return new DefaultRepositoryMetadata(repositoryInterface);
+    }
+    
+    
+    /**
+     * Returns the {@link RepositoryInformation} for the given repository interface.
+     * 
+     * @param repositoryInterface
+     * @return
+     */
+    private RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata) {        
+      return new DefaultRepositoryInformation(metadata, getRepositoryBaseClass(metadata));
     }
     
     
@@ -173,7 +182,7 @@ public abstract class RepositoryFactorySupport {
     /**
      * Create a repository instance as backing for the query proxy.
      * 
-     * @param domainClass
+     * @param metadata
      * @return
      */
     protected abstract Object getTargetRepository(RepositoryMetadata metadata);
@@ -184,11 +193,11 @@ public abstract class RepositoryFactorySupport {
      * {@link #getTargetRepository(RepositoryMetadata)} returns an instance of
      * this class.
      * 
-     * @param repositoryInterface
+     * @param metadata
      * @return
      */
     protected abstract Class<?> getRepositoryBaseClass(
-            Class<?> repositoryInterface);
+            RepositoryMetadata metadata);
 
 	/**
 	 * Returns the {@link QueryLookupStrategy} for the given {@link Key}.
@@ -205,20 +214,26 @@ public abstract class RepositoryFactorySupport {
      * Validates the given repository interface as well as the given custom
      * implementation.
      * 
-     * @param repositoryMetadata
+     * @param repositoryInformation
      * @param customImplementation
      */
-    protected void validate(RepositoryMetadata repositoryMetadata,
+    private void validate(RepositoryInformation repositoryInformation,
             Object customImplementation) {
 
         if (null == customImplementation
-                && repositoryMetadata.hasCustomMethod()) {
+                && repositoryInformation.hasCustomMethod()) {
 
             throw new IllegalArgumentException(
                     String.format(
                             "You have custom methods in %s but not provided a custom implementation!",
-                            repositoryMetadata.getRepositoryInterface()));
+                            repositoryInformation.getRepositoryInterface()));
         }
+        
+        validate(repositoryInformation);
+    }
+    
+    protected void validate(RepositoryMetadata repositoryMetadata) {
+      
     }
 
     /**
@@ -236,7 +251,7 @@ public abstract class RepositoryFactorySupport {
                 new ConcurrentHashMap<Method, RepositoryQuery>();
 
         private final Object customImplementation;
-        private final RepositoryMetadata metadata;
+        private final RepositoryInformation repositoryInformation;
         private final Object target;
 
 
@@ -246,10 +261,10 @@ public abstract class RepositoryFactorySupport {
          * interface methods.
          */
         public QueryExecuterMethodInterceptor(
-                RepositoryMetadata repositoryMetadata,
+                RepositoryInformation repositoryInformation,
                 Object customImplementation, Object target) {
 
-            this.metadata = repositoryMetadata;
+            this.repositoryInformation = repositoryInformation;
             this.customImplementation = customImplementation;
             this.target = target;
 
@@ -258,7 +273,7 @@ public abstract class RepositoryFactorySupport {
             
             if (lookupStrategy == null) {
             	
-            	if (repositoryMetadata.hasCustomMethod()) {
+            	if (repositoryInformation.hasCustomMethod()) {
 					throw new IllegalStateException(
 							"You have defined query method in the repository but " +
 							"you don't have no query lookup strategy defined. The " +
@@ -268,19 +283,17 @@ public abstract class RepositoryFactorySupport {
             	return;
             }
 
-            for (Method method : metadata.getQueryMethods()) {
+            for (Method method : repositoryInformation.getQueryMethods()) {
                 RepositoryQuery query =
-                        lookupStrategy.resolveQuery(method,
-                                repositoryMetadata.getDomainClass());
-                invokeListeners(query, metadata);
+                        lookupStrategy.resolveQuery(method,repositoryInformation);
+                invokeListeners(query);
                 queries.put(method, query);
             }
         }
 
 
         @SuppressWarnings({ "rawtypes", "unchecked" })
-        private void invokeListeners(RepositoryQuery query,
-                RepositoryMetadata metadata) {
+        private void invokeListeners(RepositoryQuery query) {
 
             for (QueryCreationListener listener : queryPostProcessors) {
                 Class<?> typeArgument =
@@ -319,7 +332,7 @@ public abstract class RepositoryFactorySupport {
 
             // Lookup actual method as it might be redeclared in the interface
             // and we have to use the repository instance nevertheless
-            Method actualMethod = metadata.getBaseClassMethod(method);
+            Method actualMethod = repositoryInformation.getBaseClassMethod(method);
             return executeMethodOn(target, actualMethod,
                     invocation.getArguments());
         }
@@ -374,7 +387,7 @@ public abstract class RepositoryFactorySupport {
                 return false;
             }
 
-            return metadata.isCustomMethod(invocation.getMethod());
+            return repositoryInformation.isCustomMethod(invocation.getMethod());
         }
     }
 }

@@ -15,11 +15,9 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 
 import org.junit.Test;
 import org.springframework.data.domain.Page;
@@ -35,19 +33,14 @@ import org.springframework.data.repository.util.ClassUtils;
  */
 public class DefaultRepositoryMetadataUnitTests {
 
-    @SuppressWarnings("rawtypes")
-    static final Class<DummyGenericRepositorySupport> REPOSITORY =
-            DummyGenericRepositorySupport.class;
-
-
     @Test
     public void looksUpDomainClassCorrectly() throws Exception {
 
         RepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(UserRepository.class, REPOSITORY);
+                new DefaultRepositoryMetadata(UserRepository.class);
         assertEquals(User.class, metadata.getDomainClass());
 
-        metadata = new DefaultRepositoryMetadata(SomeDao.class, REPOSITORY);
+        metadata = new DefaultRepositoryMetadata(SomeDao.class);
         assertEquals(User.class, metadata.getDomainClass());
     }
 
@@ -57,7 +50,7 @@ public class DefaultRepositoryMetadataUnitTests {
 
         RepositoryMetadata metadata =
                 new DefaultRepositoryMetadata(
-                        ExtensionOfUserCustomExtendedDao.class, REPOSITORY);
+                        ExtensionOfUserCustomExtendedDao.class);
         assertEquals(User.class, metadata.getDomainClass());
     }
 
@@ -66,8 +59,7 @@ public class DefaultRepositoryMetadataUnitTests {
     public void detectsParameterizedEntitiesCorrectly() {
 
         RepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(GenericEntityRepository.class,
-                        REPOSITORY);
+                new DefaultRepositoryMetadata(GenericEntityRepository.class);
         assertEquals(GenericEntity.class, metadata.getDomainClass());
     }
 
@@ -76,35 +68,11 @@ public class DefaultRepositoryMetadataUnitTests {
     public void looksUpIdClassCorrectly() throws Exception {
 
         RepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(UserRepository.class, REPOSITORY);
+                new DefaultRepositoryMetadata(UserRepository.class);
 
         assertEquals(Integer.class, metadata.getIdClass());
     }
 
-
-    @Test
-    public void discoversRepositoryBaseClassMethod() throws Exception {
-
-        Method method = FooDao.class.getMethod("findOne", Integer.class);
-        DefaultRepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(FooDao.class, REPOSITORY);
-
-        Method reference = metadata.getBaseClassMethodFor(method);
-        assertEquals(REPOSITORY, reference.getDeclaringClass());
-        assertThat(reference.getName(), is("findOne"));
-    }
-
-
-    @Test
-    public void discoveresNonRepositoryBaseClassMethod() throws Exception {
-
-        Method method = FooDao.class.getMethod("findOne", Long.class);
-
-        DefaultRepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(FooDao.class, Repository.class);
-
-        assertThat(metadata.getBaseClassMethodFor(method), is(method));
-    }
 
     @SuppressWarnings("unused")
     private class User {
@@ -136,16 +104,6 @@ public class DefaultRepositoryMetadataUnitTests {
     private interface SomeDao extends Serializable, UserRepository {
 
         Page<User> findByFirstname(Pageable pageable, String firstname);
-    }
-
-    private static interface FooDao extends Repository<User, Integer> {
-
-        // Redeclared method
-        User findOne(Integer primaryKey);
-
-
-        // Not a redeclared method
-        User findOne(Long primaryKey);
     }
 
     /**

@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
@@ -58,8 +58,8 @@ import org.w3c.dom.Element;
 public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalRepositoryConfigInformation<T>, T extends SingleRepositoryConfigInformation<S>>
         implements BeanDefinitionParser {
 
-    private static final Logger LOG = LoggerFactory
-            .getLogger(AbstractRepositoryConfigDefinitionParser.class);
+    private static final Log LOG = LogFactory.getLog(
+    		AbstractRepositoryConfigDefinitionParser.class);
 
     private static final String REPOSITORY_INTERFACE_POST_PROCESSOR =
             "org.springframework.data.repository.support.RepositoryInterfaceAwareBeanPostProcessor";
@@ -223,12 +223,13 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
             AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
             beanDefinition.setSource(beanSource);
 
-            LOG.debug(
-                    "Registering repository: {} - Interface: {} - Factory: {}, - Custom implementation: {}",
-                    new Object[] { context.getBeanId(),
-                            context.getInterfaceName(),
-                            context.getRepositoryFactoryBeanClassName(),
-                            customImplementationBeanName });
+            if (LOG.isDebugEnabled()) {
+              LOG.debug(
+                  "Registering repository: " + context.getBeanId() + 
+                  " - Interface: " + context.getInterfaceName() + 
+                  " - Factory: " + context.getRepositoryFactoryBeanClassName() + 
+                  ", - Custom implementation: " + customImplementationBeanName);
+            }
 
             BeanComponentDefinition definition =
                     new BeanComponentDefinition(beanDefinition,
@@ -285,9 +286,11 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
                 return null;
             }
 
-            LOG.debug("Registering custom repository implementation: {} {}",
-                    config.getImplementationBeanName(),
-                    beanDefinition.getBeanClassName());
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Registering custom repository implementation: " +
+                  config.getImplementationBeanName() + " " +
+                  beanDefinition.getBeanClassName());
+            }
 
             beanDefinition.setSource(source);
             parser.registerBeanComponent(new BeanComponentDefinition(

@@ -18,6 +18,7 @@ package org.springframework.data.repository.query;
 import java.lang.reflect.Method;
 import java.util.Locale;
 
+import org.springframework.data.repository.support.RepositoryMetadata;
 import org.springframework.util.StringUtils;
 
 
@@ -54,8 +55,8 @@ public interface QueryLookupStrategy {
      * that can be executed afterwards.
      * 
      * @param method
-     * @param domainClass
+     * @param metadata
      * @return
      */
-    RepositoryQuery resolveQuery(Method method, Class<?> domainClass);
+    RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata);
 }

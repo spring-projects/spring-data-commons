@@ -36,24 +36,24 @@ public class QueryExecuterMethodInterceptorUnitTests {
 	@Mock
 	RepositoryFactorySupport factory;
 	@Mock
-	RepositoryMetadata metadata;
+	RepositoryInformation information;
 	
 	@Test(expected=IllegalStateException.class)
 	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() {
 		
-		when(metadata.hasCustomMethod()).thenReturn(true);
+		when(information.hasCustomMethod()).thenReturn(true);
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(null);
 		
-		factory.new QueryExecuterMethodInterceptor(metadata, null, new Object());
+		factory.new QueryExecuterMethodInterceptor(information, null, new Object());
 	}
 	
 	@Test
 	public void skipsQueryLookupsIfQueryLookupStrategyIsNull() {
 		
-		when(metadata.hasCustomMethod()).thenReturn(false);
+		when(information.hasCustomMethod()).thenReturn(false);
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(null);
 		
-		factory.new QueryExecuterMethodInterceptor(metadata, null, new Object());
-		verify(metadata, times(0)).getQueryMethods();
+		factory.new QueryExecuterMethodInterceptor(information, null, new Object());
+		verify(information, times(0)).getQueryMethods();
 	}
 }
