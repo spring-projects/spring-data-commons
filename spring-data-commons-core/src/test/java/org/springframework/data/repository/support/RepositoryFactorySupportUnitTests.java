@@ -82,7 +82,7 @@ public class RepositoryFactorySupportUnitTests {
 
 
         @Override
-        protected Class<?> getRepositoryBaseClass(Class<?> repositoryInterface) {
+        protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 
             return Object.class;
         }
