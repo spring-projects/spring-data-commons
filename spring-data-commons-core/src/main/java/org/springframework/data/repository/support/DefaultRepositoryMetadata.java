@@ -37,17 +37,7 @@ import org.springframework.util.Assert;
  */
 public class DefaultRepositoryMetadata implements RepositoryMetadata {
 
-    @SuppressWarnings("rawtypes")
-    private static final TypeVariable<Class<Repository>>[] PARAMETERS =
-            Repository.class.getTypeParameters();
-    private static final String DOMAIN_TYPE_NAME = PARAMETERS[0].getName();
-    private static final String ID_TYPE_NAME = PARAMETERS[1].getName();
-
-    private final Map<Method, Method> methodCache =
-            new ConcurrentHashMap<Method, Method>();
-
     private final Class<?> repositoryInterface;
-    private final Class<?> repositoryBaseClass;
 
 
     /**
@@ -56,13 +46,10 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
      * 
      * @param repositoryInterface
      */
-    public DefaultRepositoryMetadata(Class<?> repositoryInterface,
-            Class<?> repositoryBaseClass) {
+    public DefaultRepositoryMetadata(Class<?> repositoryInterface) {
 
         Assert.notNull(repositoryInterface);
-        Assert.notNull(repositoryBaseClass);
         this.repositoryInterface = repositoryInterface;
-        this.repositoryBaseClass = repositoryBaseClass;
     }
 
 
@@ -77,17 +64,6 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
         return repositoryInterface;
     }
 
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.data.repository.support.RepositoryMetadata#
-     * getRepositoryBaseClass()
-     */
-    public Class<?> getRepositoryBaseClass() {
-
-        return this.repositoryBaseClass;
-    }
 
 
     /*
@@ -117,212 +93,5 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
         Class<?>[] arguments =
                 resolveTypeArguments(repositoryInterface, Repository.class);
         return arguments == null ? null : arguments[1];
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.data.repository.support.RepositoryMetadata#
-     * getBaseClassMethod(java.lang.reflect.Method)
-     */
-    public Method getBaseClassMethod(Method method) {
-
-        Assert.notNull(method);
-
-        Method result = methodCache.get(method);
-
-        if (null != result) {
-            return result;
-        }
-
-        result = getBaseClassMethodFor(method);
-        methodCache.put(method, result);
-
-        return result;
-    }
-
-
-    /**
-     * Returns whether the given method is considered to be a repository base
-     * class method.
-     * 
-     * @param method
-     * @return
-     */
-    private boolean isBaseClassMethod(Method method) {
-
-        Assert.notNull(method);
-
-        if (method.getDeclaringClass().isAssignableFrom(repositoryBaseClass)) {
-            return true;
-        }
-
-        return !method.equals(getBaseClassMethod(method));
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.data.repository.support.RepositoryMetadata#
-     * getFinderMethods()
-     */
-    public Iterable<Method> getQueryMethods() {
-
-        Set<Method> result = new HashSet<Method>();
-
-        for (Method method : repositoryInterface.getDeclaredMethods()) {
-            if (!isCustomMethod(method) && !isBaseClassMethod(method)) {
-                result.add(method);
-            }
-        }
-
-        return result;
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.support.RepositoryMetadata#isCustomMethod
-     * (java.lang.reflect.Method)
-     */
-    public boolean isCustomMethod(Method method) {
-
-        Class<?> declaringClass = method.getDeclaringClass();
-
-        boolean isQueryMethod = declaringClass.equals(repositoryInterface);
-        boolean isRepositoryInterface =
-                isGenericRepositoryInterface(declaringClass);
-        boolean isBaseClassMethod = isBaseClassMethod(method);
-
-        return !(isRepositoryInterface || isBaseClassMethod || isQueryMethod);
-    }
-
-
-    /**
-     * Returns the given base class' method if the given method (declared in the
-     * repository interface) was also declared at the repository base class.
-     * Returns the given method if the given base class does not declare the
-     * method given. Takes generics into account.
-     * 
-     * @param method
-     * @return
-     */
-    Method getBaseClassMethodFor(Method method) {
-
-        for (Method baseClassMethod : repositoryBaseClass.getMethods()) {
-
-            // Wrong name
-            if (!method.getName().equals(baseClassMethod.getName())) {
-                continue;
-            }
-
-            // Wrong number of arguments
-            if (!(method.getParameterTypes().length == baseClassMethod
-                    .getParameterTypes().length)) {
-                continue;
-            }
-
-            // Check whether all parameters match
-            if (!parametersMatch(method, baseClassMethod)) {
-                continue;
-            }
-
-            return baseClassMethod;
-        }
-
-        return method;
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.data.repository.support.RepositoryMetadata#
-     * hasCustomMethod()
-     */
-    public boolean hasCustomMethod() {
-
-        // No detection required if no typing interface was configured
-        if (isGenericRepositoryInterface(repositoryInterface)) {
-            return false;
-        }
-
-        for (Method method : repositoryInterface.getMethods()) {
-            if (isCustomMethod(method) && !isBaseClassMethod(method)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
-    /**
-     * Checks the given method's parameters to match the ones of the given base
-     * class method. Matches generic arguments agains the ones bound in the
-     * given repository interface.
-     * 
-     * @param method
-     * @param baseClassMethod
-     * @return
-     */
-    private boolean parametersMatch(Method method, Method baseClassMethod) {
-
-        Type[] genericTypes = baseClassMethod.getGenericParameterTypes();
-        Class<?>[] types = baseClassMethod.getParameterTypes();
-        Class<?>[] methodParameters = method.getParameterTypes();
-
-        for (int i = 0; i < genericTypes.length; i++) {
-
-            Type type = genericTypes[i];
-
-            if (type instanceof TypeVariable<?>) {
-
-                String name = ((TypeVariable<?>) type).getName();
-
-                if (!matchesGenericType(name, methodParameters[i])) {
-                    return false;
-                }
-
-            } else {
-
-                if (!types[i].equals(methodParameters[i])) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-
-    /**
-     * Checks whether the given parameter type matches the generic type of the
-     * given parameter. Thus when {@literal PK} is declared, the method ensures
-     * that given method parameter is the primary key type declared in the given
-     * repository interface e.g.
-     * 
-     * @param name
-     * @param parameterType
-     * @return
-     */
-    private boolean matchesGenericType(String name, Class<?> parameterType) {
-
-        Class<?> entityType = getDomainClass();
-        Class<?> idClass = getIdClass();
-
-        if (ID_TYPE_NAME.equals(name) && parameterType.equals(idClass)) {
-            return true;
-        }
-
-        if (DOMAIN_TYPE_NAME.equals(name) && parameterType.equals(entityType)) {
-            return true;
-        }
-
-        return false;
     }
 }

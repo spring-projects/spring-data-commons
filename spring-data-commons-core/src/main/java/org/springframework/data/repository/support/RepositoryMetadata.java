@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import java.lang.reflect.Method;
 
 
 /**
@@ -24,81 +23,29 @@ import java.lang.reflect.Method;
  * @author Oliver Gierke
  */
 public interface RepositoryMetadata {
+	
+	/**
+	 * Returns the id class the given class is declared for.
+	 * 
+	 * @param clazz
+	 * @return the id class of the entity managed by the repository for or
+	 *         {@code null} if none found.
+	 */
+	Class<?> getIdClass();
 
-    /**
-     * Returns the repository interface.
-     * 
-     * @return
-     */
-    Class<?> getRepositoryInterface();
+	/**
+	 * Returns the domain class the repository is declared for.
+	 * 
+	 * @param clazz
+	 * @return the domain class the repository is handling or {@code null} if
+	 *         none found.
+	 */
+	Class<?> getDomainClass();
 
-
-    /**
-     * Returns the base class to be used to create the proxy backing instance.
-     * 
-     * @return
-     */
-    Class<?> getRepositoryBaseClass();
-
-
-    /**
-     * Returns if the configured repository interface has custom methods, that
-     * might have to be delegated to a custom implementation. This is used to
-     * verify repository configuration.
-     * 
-     * @return
-     */
-    boolean hasCustomMethod();
-
-
-    /**
-     * Returns whether the given method is a custom repository method.
-     * 
-     * @param method
-     * @param baseClass
-     * @return
-     */
-    boolean isCustomMethod(Method method);
-
-
-    /**
-     * Returns all methods considered to be query methods.
-     * 
-     * @param repositoryInterface
-     * @return
-     */
-    Iterable<Method> getQueryMethods();
-
-
-    /**
-     * Returns the base class method that is backing the given method. This can
-     * be necessary if a repository interface redeclares a method of the core
-     * repository interface (e.g. for transaction behaviour customization).
-     * Returns the method itself if the base class does not implement the given
-     * method.
-     * 
-     * @param method
-     * @return
-     */
-    Method getBaseClassMethod(Method method);
-
-
-    /**
-     * Returns the domain class the repository is declared for.
-     * 
-     * @param clazz
-     * @return the domain class the repository is handling or {@code null} if
-     *         none found.
-     */
-    Class<?> getDomainClass();
-
-
-    /**
-     * Returns the id class the given class is declared for.
-     * 
-     * @param clazz
-     * @return the id class of the entity managed by the repository for or
-     *         {@code null} if none found.
-     */
-    Class<?> getIdClass();
+	/**
+	 * Returns the repository interface.
+	 * 
+	 * @return
+	 */
+	Class<?> getRepositoryInterface();
 }
