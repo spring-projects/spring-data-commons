@@ -57,14 +57,18 @@ public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, S
 
     protected <T extends BACKING_INTERFACE> StateBackedCreator<T, STATE> createFailingInstantiator(final Class<STATE> stateType) {
         return new StateBackedCreator<T, STATE>() {
-            public T create(STATE state, Class<T> c) throws Exception {
-                throw new IllegalArgumentException(getClass().getSimpleName() + ": entity " + c +
-                        " must have either a constructor taking [" + stateType + "] or a no-arg constructor and state set method");
+            public T create(STATE n, Class<T> c) throws Exception {
+                throw new IllegalArgumentException(getFailingMessageForClass(c, stateType));
             }
         };
     }
 
-    protected <T extends BACKING_INTERFACE> StateBackedCreator<T, STATE> emptyConstructorStateSettingInstantiator(Class<T> type, Class<STATE> stateType) {
+    protected String getFailingMessageForClass(Class<?> entityClass, Class<STATE> stateClass) {
+        return getClass().getSimpleName() + ": entity " + entityClass +
+                " must have either a constructor taking [" + stateClass + "] or a no-arg constructor and state setter.";
+    }
+
+    private <T extends BACKING_INTERFACE> StateBackedCreator<T, STATE> emptyConstructorStateSettingInstantiator(Class<T> type, Class<STATE> stateType) {
         final Constructor<T> constructor = getNoArgConstructor(type);
         if (constructor == null) return null;
 
