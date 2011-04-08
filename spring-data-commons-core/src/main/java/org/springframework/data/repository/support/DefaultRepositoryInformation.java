@@ -60,7 +60,6 @@ class DefaultRepositoryInformation implements RepositoryInformation {
   /* (non-Javadoc)
    * @see org.springframework.data.repository.support.RepositoryMetadata#getRepositoryInterface()
    */
-  @Override
   public Class<?> getRepositoryInterface() {
     return metadata.getRepositoryInterface();
   }
@@ -68,7 +67,6 @@ class DefaultRepositoryInformation implements RepositoryInformation {
   /* (non-Javadoc)
    * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
    */
-  @Override
   public Class<?> getDomainClass() {
     return metadata.getDomainClass();
   }
@@ -76,7 +74,6 @@ class DefaultRepositoryInformation implements RepositoryInformation {
   /* (non-Javadoc)
    * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
    */
-  @Override
   public Class<?> getIdClass() {
     return metadata.getIdClass();
   }

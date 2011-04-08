@@ -190,7 +190,6 @@ public class PageImpl<T> implements Page<T> {
 	 * 
 	 * @see org.springframework.data.domain.Page#hasContent()
 	 */
-    @Override
     public boolean hasContent() {
     
     	return !content.isEmpty();

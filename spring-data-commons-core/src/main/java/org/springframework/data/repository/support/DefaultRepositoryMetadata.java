@@ -16,15 +16,6 @@
 package org.springframework.data.repository.support;
 
 import static org.springframework.core.GenericTypeResolver.*;
-import static org.springframework.data.repository.util.ClassUtils.*;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.repository.Repository;
 import org.springframework.util.Assert;

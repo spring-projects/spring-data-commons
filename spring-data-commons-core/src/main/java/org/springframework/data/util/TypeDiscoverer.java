@@ -6,7 +6,6 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -149,7 +148,6 @@ class TypeDiscoverer implements TypeInformation {
   /* (non-Javadoc)
    * @see org.springframework.data.util.TypeInformation#isMap()
    */
-  @Override
   public boolean isMap() {
     Class<?> rawType = getType();
     return rawType == null ? false : Map.class.isAssignableFrom(rawType);
@@ -171,7 +169,6 @@ class TypeDiscoverer implements TypeInformation {
   /* (non-Javadoc)
    * @see org.springframework.data.util.TypeInformation#isCollectionLike()
    */
-  @Override
   public boolean isCollectionLike() {
    
     Class<?> rawType = getType();

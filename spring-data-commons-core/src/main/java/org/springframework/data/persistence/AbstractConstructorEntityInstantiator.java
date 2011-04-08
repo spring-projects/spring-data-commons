@@ -88,7 +88,6 @@ public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, S
         };
     }
 
-    @SuppressWarnings("unchecked")
     protected <T extends BACKING_INTERFACE> StateBackedCreator<T, STATE> createWithoutConstructorInvocation(final Class<T> type, Class<STATE> stateType) {
         ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
         Constructor<?> objectConstructor = getDeclaredConstructor(Object.class);
