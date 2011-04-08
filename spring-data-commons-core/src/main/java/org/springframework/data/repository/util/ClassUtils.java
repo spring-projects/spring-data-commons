@@ -22,8 +22,11 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -53,18 +56,19 @@ public abstract class ClassUtils {
      */
     public static Class<?> getReturnedDomainClass(Method method) {
 
-        Class<?> returnType = method.getReturnType();
+        Class<?> type = method.getReturnType();
 
-        if (Collection.class.isAssignableFrom(returnType)
-                || Page.class.isAssignableFrom(returnType)) {
+        if (Collection.class.isAssignableFrom(type)
+                || Page.class.isAssignableFrom(type)) {
 
-            Type type = method.getGenericReturnType();
-
-            return (Class<?>) ((ParameterizedType) type)
-                    .getActualTypeArguments()[0];
+            ParameterizedType returnType = (ParameterizedType) method.getGenericReturnType();
+            Type componentType = returnType.getActualTypeArguments()[0];
+            
+            return componentType instanceof ParameterizedType ? (Class<?>) ((ParameterizedType) componentType).getRawType()
+                : (Class<?>) componentType;
         }
 
-        return returnType;
+        return type;
     }
 
 

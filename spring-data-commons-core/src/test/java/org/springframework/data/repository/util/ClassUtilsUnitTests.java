@@ -15,10 +15,13 @@
  */
 package org.springframework.data.repository.util;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.data.domain.Page;
@@ -59,6 +62,11 @@ public class ClassUtilsUnitTests {
         assertTrue(hasProperty(User.class, "Firstname"));
         assertFalse(hasProperty(User.class, "address"));
     }
+    
+    @Test
+    public void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
+        assertEquals(Map.class, getReturnedDomainClass(SomeDao.class.getMethod("anotherMethod")));
+    }
 
     @SuppressWarnings("unused")
     private class User {
@@ -93,6 +101,9 @@ public class ClassUtilsUnitTests {
 
 
         GenericType<User> someMethod();
+        
+        
+        List<Map<String, Object>> anotherMethod();
     }
 
     private class GenericType<T> {
