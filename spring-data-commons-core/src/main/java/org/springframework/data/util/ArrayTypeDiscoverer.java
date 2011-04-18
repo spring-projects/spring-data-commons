@@ -15,7 +15,7 @@ public class ArrayTypeDiscoverer extends TypeDiscoverer {
   
   /**
    * @param type
-   * @param typeVariableMap
+   * @param parent
    * @param parent
    */
   protected ArrayTypeDiscoverer(GenericArrayType type, TypeDiscoverer parent) {
