@@ -306,6 +306,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
 
 					for (int i = 0; i < paramTypes.length; i++) {
 						Class<?> targetType = Object.class;
+						Class<?> rawType = constructor.getParameterTypes()[i];
 						if (paramTypes[i] instanceof ParameterizedType) {
 							ParameterizedType ptype = (ParameterizedType) paramTypes[i];
 							targetType = getTargetType(ptype);
@@ -317,7 +318,7 @@ public class BasicMappingContext implements MappingContext, InitializingBean, Ap
 							}
 						}
 						String paramName = (null != paramNames ? paramNames[i] : "param" + i);
-						preferredConstructor.addParameter(paramName, targetType, targetType.getDeclaredAnnotations());
+						preferredConstructor.addParameter(paramName, targetType, rawType, targetType.getDeclaredAnnotations());
 					}
 
 					if (constructor.isAnnotationPresent(PersistenceConstructor.class)) {

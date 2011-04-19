@@ -16,6 +16,12 @@
 
 package org.springframework.data.mapping;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
@@ -25,134 +31,134 @@ import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.data.mapping.model.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.Map;
-
 /**
  * Simple impementation of {@link PersistentProperty}.
- * 
+ *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
  */
 public class BasicPersistentProperty implements PersistentProperty {
 
-  protected final String name;
-  protected final PropertyDescriptor propertyDescriptor;
-  protected final TypeInformation information;
-  protected final Field field;
-  protected Association association;
-  protected Value value;
-  protected boolean isTransient = false;
-  protected PersistentEntity<?> owner;
+	protected final String name;
+	protected final PropertyDescriptor propertyDescriptor;
+	protected final TypeInformation information;
+	protected final Class<?> rawType;
+	protected final Field field;
+	protected Association association;
+	protected Value value;
+	protected boolean isTransient = false;
+	protected PersistentEntity<?> owner;
 
-  public BasicPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, TypeInformation information) {
-    this.name = field.getName();
-    this.information = information.getProperty(this.name);
-    this.propertyDescriptor = propertyDescriptor;
-    this.field = field;
-    this.isTransient = Modifier.isTransient(field.getModifiers()) || field.isAnnotationPresent(Transient.class);
-    if (field.isAnnotationPresent(Value.class)) {
-      this.value = field.getAnnotation(Value.class);
-      // Fields with @Value annotations are considered the same as transient fields
-      this.isTransient = true;
-    }
-    if (field.isAnnotationPresent(Autowired.class)) {
-      this.isTransient = true;
-    }
-  }
+	public BasicPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, TypeInformation information) {
+		this.name = field.getName();
+		this.rawType = field.getType();
+		this.information = information.getProperty(this.name);
+		this.propertyDescriptor = propertyDescriptor;
+		this.field = field;
+		this.isTransient = Modifier.isTransient(field.getModifiers()) || field.isAnnotationPresent(Transient.class);
+		if (field.isAnnotationPresent(Value.class)) {
+			this.value = field.getAnnotation(Value.class);
+			// Fields with @Value annotations are considered the same as transient fields
+			this.isTransient = true;
+		}
+		if (field.isAnnotationPresent(Autowired.class)) {
+			this.isTransient = true;
+		}
+	}
 
-  public Object getOwner() {
-    return owner;
-  }
+	public Object getOwner() {
+		return owner;
+	}
 
-  public void setOwner(Object owner) {
-    if (null != owner && owner.getClass().isAssignableFrom(PersistentEntity.class)) {
-      this.owner = (PersistentEntity<?>) owner;
-    }
-  }
+	public void setOwner(Object owner) {
+		if (null != owner && owner.getClass().isAssignableFrom(PersistentEntity.class)) {
+			this.owner = (PersistentEntity<?>) owner;
+		}
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public Class<?> getType() {
-    return information.getType();
-  }
-  
-  public TypeInformation getTypeInformation() {
-    return information;
-  }
+	public Class<?> getType() {
+		return information.getType();
+	}
 
-  public PropertyDescriptor getPropertyDescriptor() {
-    return propertyDescriptor;
-  }
+	public Class<?> getRawType() {
+		return this.rawType;
+	}
 
-  public Field getField() {
-    return field;
-  }
+	public TypeInformation getTypeInformation() {
+		return information;
+	}
 
-  public Value getValueAnnotation() {
-    return value;
-  }
+	public PropertyDescriptor getPropertyDescriptor() {
+		return propertyDescriptor;
+	}
 
-  public boolean isTransient() {
-    return isTransient;
-  }
+	public Field getField() {
+		return field;
+	}
 
-  public boolean isAssociation() {
-    return null != association;
-  }
+	public Value getValueAnnotation() {
+		return value;
+	}
 
-  public Association getAssociation() {
-    return association;
-  }
+	public boolean isTransient() {
+		return isTransient;
+	}
 
-  public void setAssociation(Association association) {
-    this.association = association;
-  }
+	public boolean isAssociation() {
+		return null != association;
+	}
 
-  public boolean isCollection() {
-    return Collection.class.isAssignableFrom(getType()) || isArray();
-  }
-  
-  public boolean isMap() {
-    return Map.class.isAssignableFrom(getType());
-  }
-  
-  /* (non-Javadoc)
-   * @see org.springframework.data.mapping.model.PersistentProperty#isArray()
-   */
-  public boolean isArray() {
-    return getType().isArray();
-  }
+	public Association getAssociation() {
+		return association;
+	}
 
-  public boolean isComplexType() {
-    if (isCollection() || isArray()) { 
-      return !MappingBeanHelper.isSimpleType(getComponentType());
-    } else {
-      return !MappingBeanHelper.isSimpleType(getType());
-    }
-  }
-  
-  public boolean isEntity() {
-    return isComplexType() && !isTransient() && !isCollection() && !isMap();
-  }
+	public void setAssociation(Association association) {
+		this.association = association;
+	}
 
-  public Class<?> getComponentType() { 
-    return isMap() || isCollection() ? information.getComponentType().getType() : null;
-  }
-  
-  /* (non-Javadoc)
-   * @see org.springframework.data.mapping.model.PersistentProperty#getMapValueType()
-   */
-  public Class<?> getMapValueType() {
-    return isMap() ? information.getMapValueType().getType() : null;
-  }
+	public boolean isCollection() {
+		return Collection.class.isAssignableFrom(getType()) || isArray();
+	}
 
-  public boolean isIdProperty() {
-    return field.isAnnotationPresent(Id.class);
-  }
+	public boolean isMap() {
+		return Map.class.isAssignableFrom(getType());
+	}
+
+	/* (non-Javadoc)
+		 * @see org.springframework.data.mapping.model.PersistentProperty#isArray()
+		 */
+	public boolean isArray() {
+		return getType().isArray();
+	}
+
+	public boolean isComplexType() {
+		if (isCollection() || isArray()) {
+			return !MappingBeanHelper.isSimpleType(getComponentType());
+		} else {
+			return !MappingBeanHelper.isSimpleType(getType());
+		}
+	}
+
+	public boolean isEntity() {
+		return isComplexType() && !isTransient() && !isCollection() && !isMap();
+	}
+
+	public Class<?> getComponentType() {
+		return isMap() || isCollection() ? information.getComponentType().getType() : null;
+	}
+
+	/* (non-Javadoc)
+		 * @see org.springframework.data.mapping.model.PersistentProperty#getMapValueType()
+		 */
+	public Class<?> getMapValueType() {
+		return isMap() ? information.getMapValueType().getType() : null;
+	}
+
+	public boolean isIdProperty() {
+		return field.isAnnotationPresent(Id.class);
+	}
 }

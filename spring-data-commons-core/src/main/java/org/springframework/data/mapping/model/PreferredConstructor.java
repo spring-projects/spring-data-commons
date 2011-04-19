@@ -16,74 +16,80 @@
 
 package org.springframework.data.mapping.model;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class PreferredConstructor<T> {
 
-  protected Constructor<T> constructor;
-  protected List<Parameter> parameters = new LinkedList<Parameter>();
+	protected Constructor<T> constructor;
+	protected List<Parameter> parameters = new LinkedList<Parameter>();
 
-  public PreferredConstructor(Constructor<T> constructor) {
-    this.constructor = constructor;
-  }
+	public PreferredConstructor(Constructor<T> constructor) {
+		this.constructor = constructor;
+	}
 
-  public Constructor<T> getConstructor() {
-    return constructor;
-  }
+	public Constructor<T> getConstructor() {
+		return constructor;
+	}
 
-  public List<Parameter> getParameters() {
-    return parameters;
-  }
+	public List<Parameter> getParameters() {
+		return parameters;
+	}
 
-  public void addParameter(String name, Class<?> type, Annotation[] annotations) {
-    parameters.add(new Parameter(name, type, annotations));
-  }
+	public void addParameter(String name, Class<?> type, Class<?> rawType, Annotation[] annotations) {
+		parameters.add(new Parameter(name, type, rawType, annotations));
+	}
 
-  public static class Parameter {
-    protected final String name;
-    protected final Class<?> type;
-    protected final Annotation[] annotations;
-    protected Value value;
+	public static class Parameter {
+		protected final String name;
+		protected final Class<?> type;
+		protected final Class<?> rawType;
+		protected final Annotation[] annotations;
+		protected Value value;
 
-    public Parameter(String name, Class<?> type, Annotation[] annotations) {
-      this.name = name;
-      this.type = type;
-      this.annotations = annotations;
-      for (Annotation anno : annotations) {
-        if (anno.annotationType() == Value.class) {
-          this.value = (Value) anno;
-          break;
-        }
-      }
-    }
+		public Parameter(String name, Class<?> type, Class<?> rawType, Annotation[] annotations) {
+			this.name = name;
+			this.type = type;
+			this.rawType = rawType;
+			this.annotations = annotations;
+			for (Annotation anno : annotations) {
+				if (anno.annotationType() == Value.class) {
+					this.value = (Value) anno;
+					break;
+				}
+			}
+		}
 
-    public String getName() {
-      return name;
-    }
+		public String getName() {
+			return name;
+		}
 
-    public Class<?> getType() {
-      return type;
-    }
+		public Class<?> getType() {
+			return type;
+		}
 
-    public Annotation[] getAnnotations() {
-      return annotations;
-    }
+		public Class<?> getRawType() {
+			return rawType;
+		}
 
-    public Value getValue() {
-      return value;
-    }
-  }
+		public Annotation[] getAnnotations() {
+			return annotations;
+		}
 
-  public static interface ParameterValueProvider {
-    Object getParameterValue(Parameter parameter);
-  }
+		public Value getValue() {
+			return value;
+		}
+	}
+
+	public static interface ParameterValueProvider {
+		Object getParameterValue(Parameter parameter);
+	}
 
 }
