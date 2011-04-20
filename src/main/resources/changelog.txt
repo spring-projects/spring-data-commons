@@ -7,6 +7,39 @@ Changes in version 1.0.1
 General
 * Implementations of Page, Pageable and Sort are now serializable (DATACMNS-30)
 
+Changes in version 1.0.0 (2011-04-18)
+----------------------------------------
+
+General
+* Deal with multi-dimensional arrays as property types. 
+
+Changes in version 1.0.0.RC1 (2011-04-8)
+----------------------------------------
+
+General
+* Added MappingContextAware interface 
+* Made failure message customizable. 
+* Changing to use source 1.5; removed some @override on interface methods
+
+Repository
+* ClassUtils.getReturnedDomainClass works for parameterized component types of Collections and Page.
+
+Changes in version 1.0.0.M7 (2011-04-5)
+----------------------------------------
+
+General
+* Added isCollectionLike() and isMap() to TypeInformation interface. 
+* Refactored Property to use TypeInformation infrastructure. 
+* Persistent constructor now detects non-public constructor. 
+* Removed slf4j dependency 
+
+Repository
+* Expose type of a query parser Property. 
+* Refactored RepositoryFactorySupport.getQueryLookupStrategy
+* Made PageImpl safe to take an empty collection. 
+* Domain class lookup in QueryMethod falls back to the repository domain class for methods not returning a domain class.
+
+
 Changes in version 1.0.0.M6 (2011-03-25)
 ----------------------------------------
 
