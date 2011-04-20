@@ -10,6 +10,11 @@
   <artifactId>spring-data-commons-core</artifactId>
   <packaging>jar</packaging>
   <name>Spring Data Commons Core</name>
+  
+  <properties>
+  	<querydsl.version>2.1.1</querydsl.version>
+  </properties>
+  
   <dependencies>
 
     <!--  Spring -->
@@ -69,6 +74,26 @@
       <version>1.6</version>
       <optional>true</optional>
     </dependency>
+    
+    <dependency>
+      <groupId>com.mysema.querydsl</groupId>
+      <artifactId>querydsl-mongodb</artifactId>
+      <version>${querydsl.version}</version>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.morphia</groupId>
+          <artifactId>morphia</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.mysema.querydsl</groupId>
+      <artifactId>querydsl-apt</artifactId>
+      <version>${querydsl.version}</version>
+      <scope>provided</scope>
+    </dependency>
 
   </dependencies>
   <build>
@@ -76,6 +101,23 @@
       <plugin>
         <groupId>com.springsource.bundlor</groupId>
         <artifactId>com.springsource.bundlor.maven</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.mysema.maven</groupId>
+        <artifactId>maven-apt-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>test-process</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>target/generated-sources/test-annotations</outputDirectory>
+              <processor>com.mysema.query.apt.QuerydslAnnotationProcessor</processor>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
