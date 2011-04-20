@@ -15,6 +15,8 @@
  */
 package org.springframework.data.domain;
 
+import java.io.Serializable;
+
 import org.springframework.data.domain.Sort.Direction;
 
 
@@ -23,8 +25,10 @@ import org.springframework.data.domain.Sort.Direction;
  * 
  * @author Oliver Gierke
  */
-public class PageRequest implements Pageable {
+public class PageRequest implements Pageable, Serializable {
 
+    private static final long serialVersionUID = 8280485938848398236L;
+    
     private final int page;
     private final int size;
     private final Sort sort;

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -32,8 +33,9 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  */
 public class Sort implements
-        Iterable<org.springframework.data.domain.Sort.Order> {
+        Iterable<org.springframework.data.domain.Sort.Order>, Serializable {
 
+    private static final long serialVersionUID = 5737186511678863905L;
     public static final Direction DEFAULT_DIRECTION = Direction.ASC;
 
     private List<Order> orders;

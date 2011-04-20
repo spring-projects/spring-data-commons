@@ -1,6 +1,12 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.0.1
+----------------------------------------
+
+General
+* Implementations of Page, Pageable and Sort are now serializable (DATACMNS-30)
+
 Changes in version 1.0.0.M6 (2011-03-25)
 ----------------------------------------
 

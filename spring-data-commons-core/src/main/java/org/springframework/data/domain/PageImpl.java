@@ -15,6 +15,7 @@
  */
 package org.springframework.data.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -27,8 +28,10 @@ import java.util.List;
  * @author Oliver Gierke
  * @param <T> the type of which the page consists.
  */
-public class PageImpl<T> implements Page<T> {
+public class PageImpl<T> implements Page<T>, Serializable {
 
+    private static final long serialVersionUID = 867755909294344406L;
+    
     private final List<T> content = new ArrayList<T>();
     private final Pageable pageable;
     private final long total;
