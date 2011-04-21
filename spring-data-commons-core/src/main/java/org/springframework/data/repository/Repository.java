@@ -79,7 +79,7 @@ public interface Repository<T, ID extends Serializable> {
      * 
      * @return the number of entities
      */
-    Long count();
+    long count();
 
 
     /**
