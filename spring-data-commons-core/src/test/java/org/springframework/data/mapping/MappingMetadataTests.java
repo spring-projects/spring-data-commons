@@ -19,12 +19,14 @@ package org.springframework.data.mapping;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.model.Association;
+import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -40,43 +42,21 @@ public class MappingMetadataTests {
     ctx = new BasicMappingContext();
   }
 
-  @Test
-  public void testDoesRecognizePersistentEntities() {
-    boolean persistentEntity = ctx.isPersistentEntity(PersonNoId.class);
-    assertFalse(persistentEntity);
-
-    persistentEntity = ctx.isPersistentEntity(PersonPersistent.class);
-    assertTrue(persistentEntity);
-  }
 
   @Test
   public void testPojoWithId() {
-    PersistentEntity<PersonWithId> person = ctx.addPersistentEntity(PersonWithId.class);
+    PersistentEntity<?> person = ctx.addPersistentEntity(PersonWithId.class);
     assertNotNull(person.getIdProperty());
     assertEquals(String.class, person.getIdProperty().getType());
   }
 
   @Test
-  public void testPojoWithoutId() {
-    PersistentEntity<PersonNoId> person = ctx.addPersistentEntity(PersonNoId.class);
-    assertNull(person.getIdProperty());
-  }
-
-  @Test
   public void testAssociations() {
-    PersistentEntity<PersonWithChildren> person = ctx.addPersistentEntity(PersonWithChildren.class);
+    PersistentEntity<?> person = ctx.addPersistentEntity(PersonWithChildren.class);
     assertNotNull(person.getAssociations());
 
     for (Association association : person.getAssociations()) {
       assertEquals(Child.class, association.getInverse().getComponentType());
     }
   }
-
-  @Test
-  public void testDoesRecognizeDocumentEntities() {
-    // PersistentEntity<PersonDocument> person = ctx.addPersistentEntity(PersonDocument.class);
-    boolean persistentEntity = ctx.isPersistentEntity(PersonDocument.class);
-    assertTrue(persistentEntity);
-  }
-
 }

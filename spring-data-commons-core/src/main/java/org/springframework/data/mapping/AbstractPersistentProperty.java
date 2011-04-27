@@ -17,15 +17,13 @@
 package org.springframework.data.mapping;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.model.Association;
 import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.data.mapping.model.PersistentProperty;
@@ -37,43 +35,28 @@ import org.springframework.data.util.TypeInformation;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
  */
-public class BasicPersistentProperty implements PersistentProperty {
+public abstract class AbstractPersistentProperty implements PersistentProperty {
 
 	protected final String name;
 	protected final PropertyDescriptor propertyDescriptor;
 	protected final TypeInformation information;
 	protected final Class<?> rawType;
 	protected final Field field;
-	protected Association association;
-	protected Value value;
-	protected boolean isTransient = false;
-	protected PersistentEntity<?> owner;
+	protected final Association association;
+	protected final PersistentEntity<?> owner;
 
-	public BasicPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, TypeInformation information) {
+	public AbstractPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?> owner) {
 		this.name = field.getName();
 		this.rawType = field.getType();
-		this.information = information.getProperty(this.name);
+		this.information = owner.getPropertyInformation().getProperty(this.name);
 		this.propertyDescriptor = propertyDescriptor;
 		this.field = field;
-		this.isTransient = Modifier.isTransient(field.getModifiers()) || field.isAnnotationPresent(Transient.class);
-		if (field.isAnnotationPresent(Value.class)) {
-			this.value = field.getAnnotation(Value.class);
-			// Fields with @Value annotations are considered the same as transient fields
-			this.isTransient = true;
-		}
-		if (field.isAnnotationPresent(Autowired.class)) {
-			this.isTransient = true;
-		}
+		this.association = isAssociation() ? new Association(this, null) : null;
+		this.owner = owner;
 	}
 
-	public Object getOwner() {
+	public PersistentEntity<?> getOwner() {
 		return owner;
-	}
-
-	public void setOwner(Object owner) {
-		if (null != owner && owner.getClass().isAssignableFrom(PersistentEntity.class)) {
-			this.owner = (PersistentEntity<?>) owner;
-		}
 	}
 
 	public String getName() {
@@ -100,24 +83,29 @@ public class BasicPersistentProperty implements PersistentProperty {
 		return field;
 	}
 
-	public Value getValueAnnotation() {
-		return value;
+	public String getSpelExpression() {
+		return null;
 	}
 
 	public boolean isTransient() {
-		return isTransient;
+		return Modifier.isTransient(field.getModifiers());
 	}
 
 	public boolean isAssociation() {
-		return null != association;
+	    if (field.isAnnotationPresent(Reference.class)) {
+                return true;
+                    }
+                    for (Annotation annotation : field.getDeclaredAnnotations()) {
+                            if (annotation.annotationType().isAnnotationPresent(Reference.class)) {
+                                    return true;
+                            }
+                    }
+            
+            return false;
 	}
 
 	public Association getAssociation() {
 		return association;
-	}
-
-	public void setAssociation(Association association) {
-		this.association = association;
 	}
 
 	public boolean isCollection() {
@@ -156,9 +144,5 @@ public class BasicPersistentProperty implements PersistentProperty {
 		 */
 	public Class<?> getMapValueType() {
 		return isMap() ? information.getMapValueType().getType() : null;
-	}
-
-	public boolean isIdProperty() {
-		return field.isAnnotationPresent(Id.class);
 	}
 }

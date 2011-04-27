@@ -16,6 +16,7 @@
 
 package org.springframework.data.mapping;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 
 import java.util.List;
@@ -25,6 +26,9 @@ import java.util.List;
  */
 public class PersonWithChildren extends Person {
 
+  @Id
+  private String id;
+    
   @Reference
   private List<Child> children;
 

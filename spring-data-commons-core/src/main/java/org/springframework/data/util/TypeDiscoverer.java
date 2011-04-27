@@ -62,6 +62,10 @@ class TypeDiscoverer implements TypeInformation {
    * @return
    */
   protected TypeInformation createInfo(Type fieldType) {
+      
+    if (fieldType.equals(this.type)) {
+        return this;
+    }
 
     if (fieldType instanceof ParameterizedType) {
       ParameterizedType parameterizedType = (ParameterizedType) fieldType;

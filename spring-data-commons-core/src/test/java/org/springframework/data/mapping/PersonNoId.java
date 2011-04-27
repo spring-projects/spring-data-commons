@@ -19,6 +19,7 @@ package org.springframework.data.mapping;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
+@Document
 public class PersonNoId extends Person {
 
   public PersonNoId(Integer ssn, String firstName, String lastName) {

@@ -15,7 +15,7 @@ import org.springframework.data.util.TypeInformation;
  */
 public interface PersistentProperty {
 
-	Object getOwner();
+	PersistentEntity<?> getOwner();
 
 	/**
 	 * The name of the property
@@ -37,7 +37,7 @@ public interface PersistentProperty {
 
 	Field getField();
 
-	Value getValueAnnotation();
+	String getSpelExpression();
 
 	boolean isTransient();
 

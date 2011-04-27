@@ -1,6 +1,5 @@
 package org.springframework.data.mapping.model;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.util.TypeInformation;
@@ -15,7 +14,7 @@ import java.util.Collection;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public interface PersistentEntity<T> extends InitializingBean {
+public interface PersistentEntity<T> {
 
   /**
    * The entity name including any package prefix
@@ -26,11 +25,14 @@ public interface PersistentEntity<T> extends InitializingBean {
 
   PreferredConstructor<T> getPreferredConstructor();
 
-  /**
-   * Returns the identity of the instance
-   *
-   * @return The identity
-   */
+
+    /**
+     * Returns the id property of the {@link PersistentEntity}. Must never
+     * return {@literal null} as a {@link PersistentEntity} instance must not be
+     * created if there is no id property.
+     * 
+     * @return the id property of the {@link PersistentEntity}.
+     */
   PersistentProperty getIdProperty();
 
   /**
@@ -69,15 +71,7 @@ public interface PersistentEntity<T> extends InitializingBean {
    */
   Collection<String> getPersistentPropertyNames();
 
-  /**
-   * Obtains the MappingContext where this PersistentEntity is defined
-   *
-   * @return The MappingContext instance
-   */
-  MappingContext getMappingContext();
-
   void doWithProperties(PropertyHandler handler);
 
   void doWithAssociations(AssociationHandler handler);
-
 }

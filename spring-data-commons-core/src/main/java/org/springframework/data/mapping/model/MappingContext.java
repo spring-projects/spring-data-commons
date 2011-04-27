@@ -17,7 +17,6 @@ package org.springframework.data.mapping.model;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.validation.Validator;
 
@@ -36,41 +35,25 @@ import org.springframework.validation.Validator;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public interface MappingContext extends InitializingBean {
+public interface MappingContext<E extends PersistentEntity<?>> {
   
-  /**
-   * Adds a PersistentEntity instance
-   *
-   * @param type The Java class representing the entity
-   * @return The PersistentEntity instance
-   */
-  <T> PersistentEntity<T> addPersistentEntity(Class<T> type);
-
   /**
    * Obtains a list of PersistentEntity instances
    *
    * @return A list of PersistentEntity instances
    */
-  Collection<? extends PersistentEntity<?>> getPersistentEntities();
+  Collection<E> getPersistentEntities();
 
-  <T> PersistentEntity<T> getPersistentEntity(Class<T> type);
+  E getPersistentEntity(Class<?> type);
 
-  <T> PersistentEntity<T> getPersistentEntity(TypeInformation type);
+  E getPersistentEntity(TypeInformation type);
 
   /**
    * Obtains a validator for the given entity
+   * TODO: Why do we need validators at the {@link MappingContext}?
    *
    * @param entity The entity
    * @return A validator or null if none exists for the given entity
    */
-  List<Validator> getEntityValidators(PersistentEntity<?> entity);
-
-  /**
-   * Returns whether the specified value is a persistent entity
-   *
-   * @param value The value to check
-   * @return True if it is
-   */
-  boolean isPersistentEntity(Object value);
-
+  List<Validator> getEntityValidators(E entity);
 }

@@ -152,7 +152,6 @@ public class DomainClassPropertyEditorUnitTests {
          * 
          * @see org.springframework.data.domain.Persistable#getId()
          */
-        @Override
         public Integer getId() {
 
             return id;
@@ -164,7 +163,6 @@ public class DomainClassPropertyEditorUnitTests {
          * 
          * @see org.springframework.data.domain.Persistable#isNew()
          */
-        @Override
         public boolean isNew() {
 
             return getId() != null;

@@ -106,15 +106,12 @@ public abstract class MappingBeanHelper {
 		return type.isEnum();
 	}
 
-	public static <T> T constructInstance(PersistentEntity<T> entity,
-																				PreferredConstructor.ParameterValueProvider provider) {
+	public static <T> T constructInstance(PersistentEntity<T> entity, PreferredConstructor.ParameterValueProvider provider) {
 		return constructInstance(entity, provider, new StandardEvaluationContext());
 	}
 
 	@SuppressWarnings({"unchecked"})
-	public static <T> T constructInstance(PersistentEntity<T> entity,
-																				PreferredConstructor.ParameterValueProvider provider,
-																				EvaluationContext spelCtx) {
+	public static <T> T constructInstance(PersistentEntity<T> entity, PreferredConstructor.ParameterValueProvider provider, EvaluationContext spelCtx) {
 
 		PreferredConstructor<T> constructor = entity.getPreferredConstructor();
 		if (null == constructor) {

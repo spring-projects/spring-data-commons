@@ -4,6 +4,8 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
 
+import org.springframework.util.Assert;
+
 /**
  * Property information for a plain {@link Class}.
  * 
@@ -50,11 +52,17 @@ public class ClassTypeInformation extends TypeDiscoverer {
   public TypeInformation getComponentType() {
     
     if (type.isArray()) {
-      return createInfo(type.getComponentType());
+      return createInfo(resolveArrayType(type));
     }
 
     TypeVariable<?>[] typeParameters = type.getTypeParameters();
     return typeParameters.length > 0 ? new TypeVariableTypeInformation(typeParameters[0], this.getType(), this) : null;
+  }
+  
+  private static Type resolveArrayType(Class<?> type) {
+    Assert.isTrue(type.isArray());
+    Class<?> componentType = type.getComponentType();
+    return componentType.isArray() ? resolveArrayType(componentType) : componentType;
   }
 
   /* (non-Javadoc)
