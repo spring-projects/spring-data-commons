@@ -158,16 +158,20 @@ public class Part {
         NOT_IN("NotIn"),
 
         IN("In"),
+        
+        NEAR("Near"),
+        
+        WITHIN("Within"),
 
         NEGATING_SIMPLE_PROPERTY("Not"),
-
+        
         SIMPLE_PROPERTY;
 
         // Need to list them again explicitly as the order is important
         // (esp. for IS_NULL, IS_NOT_NULL)
         private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL,
                 IS_NULL, BETWEEN, LESS_THAN, GREATER_THAN, NOT_LIKE, LIKE,
-                NOT_IN, IN, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+                NOT_IN, IN, NEAR, WITHIN, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
         private List<String> keywords;
         private int numberOfArguments;
 

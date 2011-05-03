@@ -23,6 +23,7 @@ import java.util.Iterator;
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 
 
@@ -127,6 +128,24 @@ public class PartTreeUnitTests {
         assertThat(tree.getSort(), is(new Sort(Direction.DESC, "firstname")));
     }
 
+    
+    @Test
+    public void parsesWithinCorrectly () {
+      PartTree tree = new PartTree("findByLocationWithin", User.class);
+      for (Part part : tree.getParts()) {
+        assertThat(part.getType(), is(Type.WITHIN));
+        assertThat(part.getProperty(), is(new Property("location", User.class)));
+      }
+    }
+    
+    @Test
+    public void parsesNearCorrectly () {
+      PartTree tree = new PartTree("findByLocationNear", User.class);
+      for (Part part : tree.getParts()) {
+        assertThat(part.getType(), is(Type.NEAR));
+        assertThat(part.getProperty(), is(new Property("location", User.class)));
+      }
+    }
 
     private void assertPart(PartTree tree, Part[]... parts) {
 
@@ -151,5 +170,6 @@ public class PartTreeUnitTests {
 
         String firstname;
         String lastname;
+        double[] location;
     }
 }
