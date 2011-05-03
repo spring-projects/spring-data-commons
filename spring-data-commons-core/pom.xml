@@ -12,7 +12,7 @@
   <name>Spring Data Commons Core</name>
   
   <properties>
-  	<querydsl.version>2.1.1</querydsl.version>
+  	<querydsl.version>2.2.0-beta4</querydsl.version>
   </properties>
   
   <dependencies>
@@ -105,7 +105,7 @@
       <plugin>
         <groupId>com.mysema.maven</groupId>
         <artifactId>maven-apt-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.0.1</version>
         <executions>
           <execution>
             <phase>generate-test-sources</phase>
