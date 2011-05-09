@@ -24,7 +24,7 @@ import org.springframework.data.mapping.model.PersistentProperty;
  * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public interface PropertyHandler {
+public interface PropertyHandler<P extends PersistentProperty<P>> {
 
-  void doWithPersistentProperty(PersistentProperty persistentProperty);
+  void doWithPersistentProperty(P persistentProperty);
 }

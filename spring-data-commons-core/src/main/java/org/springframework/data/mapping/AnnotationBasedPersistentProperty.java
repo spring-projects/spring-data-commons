@@ -34,7 +34,7 @@ import org.springframework.data.mapping.model.PersistentProperty;
  * 
  * @author Oliver Gierke
  */
-public class AnnotationBasedPersistentProperty extends AbstractPersistentProperty {
+public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>> extends AbstractPersistentProperty<P> {
     
     private final Value value;
     
@@ -46,7 +46,7 @@ public class AnnotationBasedPersistentProperty extends AbstractPersistentPropert
      * @param owner
      */
     public AnnotationBasedPersistentProperty(Field field,
-            PropertyDescriptor propertyDescriptor, PersistentEntity<?> owner) {
+            PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner) {
 
         super(field, propertyDescriptor, owner);
         this.value = field.getAnnotation(Value.class);

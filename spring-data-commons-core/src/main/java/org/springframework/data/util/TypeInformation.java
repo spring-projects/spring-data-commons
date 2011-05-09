@@ -1,7 +1,9 @@
 package org.springframework.data.util;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -11,7 +13,9 @@ import java.util.Map;
  * 
  * @author Oliver Gierke
  */
-public interface TypeInformation {
+public interface TypeInformation<S> {
+    
+  List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor);
 
   /**
    * Returns the property information for the property with the given name.
@@ -20,7 +24,7 @@ public interface TypeInformation {
    * @param fieldname
    * @return
    */
-  TypeInformation getProperty(String fieldname);
+  TypeInformation<?> getProperty(String fieldname);
 
   /**
    * Returns whether the type can be considered a collection, which means it's a container of elements, e.g. a
@@ -36,7 +40,7 @@ public interface TypeInformation {
    * 
    * @return
    */
-  TypeInformation getComponentType();
+  TypeInformation<?> getComponentType();
 
   /**
    * Returns whether the property is a {@link Map}. If this returns {@literal true} you can expect
@@ -51,7 +55,7 @@ public interface TypeInformation {
    * 
    * @return
    */
-  TypeInformation getMapValueType();
+  TypeInformation<?> getMapValueType();
 
   /**
    * Returns the type of the property. Will resolve generics and the generic
@@ -59,5 +63,5 @@ public interface TypeInformation {
    * 
    * @return
    */
-  Class<?> getType();
+  Class<S> getType();
 }

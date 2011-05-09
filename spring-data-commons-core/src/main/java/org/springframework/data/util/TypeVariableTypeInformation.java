@@ -13,7 +13,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-class TypeVariableTypeInformation extends TypeDiscoverer {
+class TypeVariableTypeInformation<T> extends TypeDiscoverer<T> {
 
 	private final TypeVariable<?> variable;
 	private final Type owningType;
@@ -26,7 +26,7 @@ class TypeVariableTypeInformation extends TypeDiscoverer {
 	 * @param owningType must not be {@literal null}
 	 * @param parent
 	 */
-	public TypeVariableTypeInformation(TypeVariable<?> variable, Type owningType, TypeDiscoverer parent) {
+	public TypeVariableTypeInformation(TypeVariable<?> variable, Type owningType, TypeDiscoverer<?> parent) {
 
 		super(variable, null, parent);
 		Assert.notNull(variable);
@@ -40,7 +40,7 @@ class TypeVariableTypeInformation extends TypeDiscoverer {
 	 * @see org.springframework.data.document.mongodb.TypeDiscovererTest.TypeDiscoverer#getType()
 	 */
 	@Override
-	public Class<?> getType() {
+	public Class<T> getType() {
 
 	  int index = getIndex(variable);
 	  
@@ -82,7 +82,7 @@ class TypeVariableTypeInformation extends TypeDiscoverer {
       return false;
     }
 
-    TypeVariableTypeInformation that = (TypeVariableTypeInformation) obj;
+    TypeVariableTypeInformation<?> that = (TypeVariableTypeInformation<?>) obj;
     return nullSafeEquals(this.owningType, that.owningType)
         && nullSafeEquals(this.variable, that.variable);
   }

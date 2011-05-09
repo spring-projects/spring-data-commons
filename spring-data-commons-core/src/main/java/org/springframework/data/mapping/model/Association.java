@@ -19,29 +19,21 @@ package org.springframework.data.mapping.model;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class Association {
+public class Association<P extends PersistentProperty<P>> {
 
-  protected PersistentProperty inverse;
-  protected PersistentProperty obverse;
+  protected P inverse;
+  protected P obverse;
 
-  public Association(PersistentProperty inverse, PersistentProperty obverse) {
+  public Association(P inverse, P obverse) {
     this.inverse = inverse;
     this.obverse = obverse;
   }
 
-  public PersistentProperty getInverse() {
+  public P getInverse() {
     return inverse;
   }
 
-  public void setInverse(PersistentProperty inverse) {
-    this.inverse = inverse;
-  }
-
-  public PersistentProperty getObverse() {
+  public P getObverse() {
     return obverse;
-  }
-
-  public void setObverse(PersistentProperty obverse) {
-    this.obverse = obverse;
   }
 }

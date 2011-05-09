@@ -30,6 +30,6 @@ public interface MappingContextAware {
    *
    * @param mappingContext
    */
-  void setMappingContext(MappingContext<?> mappingContext);
+  void setMappingContext(MappingContext<?, ?> mappingContext);
 
 }

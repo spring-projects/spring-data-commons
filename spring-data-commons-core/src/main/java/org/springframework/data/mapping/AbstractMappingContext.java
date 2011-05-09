@@ -35,8 +35,6 @@ import java.util.concurrent.ConcurrentMap;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.core.convert.support.ConversionServiceFactory;
-import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.mapping.event.MappingContextEvent;
 import org.springframework.data.mapping.model.MappingContext;
 import org.springframework.data.mapping.model.MappingException;
@@ -44,7 +42,6 @@ import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.data.mapping.model.PersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.validation.Validator;
@@ -58,12 +55,12 @@ import org.springframework.validation.Validator;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
  */
-public abstract class AbstractMappingContext<E extends BasicPersistentEntity<?>, P extends PersistentProperty> implements MappingContext<E>, InitializingBean, ApplicationEventPublisherAware {
+public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>> implements MappingContext<E, P>, InitializingBean, ApplicationEventPublisherAware {
 
         private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
 
         private ApplicationEventPublisher applicationEventPublisher;
-        private ConcurrentMap<TypeInformation, E> persistentEntities = new ConcurrentHashMap<TypeInformation, E>();
+        private ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
         private ConcurrentMap<E, List<Validator>> validators = new ConcurrentHashMap<E, List<Validator>>();
         private List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
         private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
@@ -114,14 +111,14 @@ public abstract class AbstractMappingContext<E extends BasicPersistentEntity<?>,
                  */
         public E getPersistentEntity(Class<?> type) {
             
-            return getPersistentEntity(new ClassTypeInformation(type));
+            return getPersistentEntity(ClassTypeInformation.from(type));
         }
 
         /*
          * (non-Javadoc)
          * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
          */
-        public E getPersistentEntity(TypeInformation type) {
+        public E getPersistentEntity(TypeInformation<?> type) {
           
               E entity = persistentEntities.get(type);
                 
@@ -144,7 +141,7 @@ public abstract class AbstractMappingContext<E extends BasicPersistentEntity<?>,
          */
         protected E addPersistentEntity(Class<?> type) {
             
-            return addPersistentEntity(new ClassTypeInformation(type));
+            return addPersistentEntity(ClassTypeInformation.from(type));
         }
 
         /**
@@ -153,7 +150,7 @@ public abstract class AbstractMappingContext<E extends BasicPersistentEntity<?>,
          * @param typeInformation
          * @return
          */
-        protected E addPersistentEntity(TypeInformation typeInformation) {
+        protected E addPersistentEntity(TypeInformation<?> typeInformation) {
 
                 E persistentEntity = persistentEntities.get(typeInformation);
 
@@ -195,7 +192,7 @@ public abstract class AbstractMappingContext<E extends BasicPersistentEntity<?>,
                                                                 entity.setIdProperty(property);
                                                         }
 
-                                                        TypeInformation nestedType = getNestedTypeToAdd(property, entity);
+                                                        TypeInformation<?> nestedType = getNestedTypeToAdd(property, entity);
                                                         if (nestedType != null) {
                                                                 addPersistentEntity(nestedType);
                                                         }
@@ -212,11 +209,11 @@ public abstract class AbstractMappingContext<E extends BasicPersistentEntity<?>,
 
                         // Inform listeners
                         if (null != applicationEventPublisher) {
-                                applicationEventPublisher.publishEvent(new MappingContextEvent(entity, typeInformation));
+                                applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(entity, typeInformation));
                         }
 
                         // Cache
-                        persistentEntities.put(entity.getPropertyInformation(), (E) entity);
+                        persistentEntities.put(entity.getTypeInformation(), (E) entity);
 
                         return entity;
                 } catch (IntrospectionException e) {
@@ -233,13 +230,13 @@ public abstract class AbstractMappingContext<E extends BasicPersistentEntity<?>,
          * @param property
          * @return the TypeInformation to be added as {@link PersistentEntity} or {@literal
          */
-        private TypeInformation getNestedTypeToAdd(PersistentProperty property, PersistentEntity<?> entity) {
+        private TypeInformation<?> getNestedTypeToAdd(P property, PersistentEntity<?, P> entity) {
             
             if (entity.getType().equals(property.getRawType())) {
                 return null;
             }
 
-                TypeInformation typeInformation = property.getTypeInformation();
+                TypeInformation<?> typeInformation = property.getTypeInformation();
 
                 if (customSimpleTypes.contains(typeInformation.getType())) {
                         return null;
@@ -260,7 +257,7 @@ public abstract class AbstractMappingContext<E extends BasicPersistentEntity<?>,
                 return null;
         }
 
-        private TypeInformation getTypeInformationIfNotSimpleType(TypeInformation information) {
+        private TypeInformation<?> getTypeInformationIfNotSimpleType(TypeInformation<?> information) {
                 return information == null || MappingBeanHelper.isSimpleType(information.getType()) ? null : information;
         }
 
@@ -268,7 +265,7 @@ public abstract class AbstractMappingContext<E extends BasicPersistentEntity<?>,
                 return validators.get(entity);
         }
 
-    protected abstract E createPersistentEntity(TypeInformation typeInformation);
+    protected abstract <T> E createPersistentEntity(TypeInformation<T> typeInformation);
 
     protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner);
 

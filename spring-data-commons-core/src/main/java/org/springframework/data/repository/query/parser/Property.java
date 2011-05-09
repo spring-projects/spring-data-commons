@@ -36,7 +36,7 @@ public class Property {
     private static String ERROR_TEMPLATE = "No property %s found for type %s";
 
     private final String name;
-    private final TypeInformation type;
+    private final TypeInformation<?> type;
     private final boolean isCollection;
 
     private Property next;
@@ -51,16 +51,16 @@ public class Property {
      */
     Property(String name, Class<?> owningType) {
 
-        this(name, new ClassTypeInformation(owningType));
+        this(name, ClassTypeInformation.from(owningType));
     }
     
-    Property(String name, TypeInformation owningType) {
+    Property(String name, TypeInformation<?> owningType) {
       
       Assert.hasText(name);
       Assert.notNull(owningType);
       
       String propertyName = StringUtils.uncapitalize(name);
-      TypeInformation type = owningType.getProperty(propertyName);
+      TypeInformation<?> type = owningType.getProperty(propertyName);
 
       if (type == null) {
           throw new IllegalArgumentException(String.format(ERROR_TEMPLATE,
@@ -72,7 +72,7 @@ public class Property {
       this.name = propertyName;
     }
     
-    private TypeInformation getPropertyType(TypeInformation type) {
+    private TypeInformation<?> getPropertyType(TypeInformation<?> type) {
       
       if (type.isCollectionLike()) {
         return type.getComponentType();
@@ -95,7 +95,7 @@ public class Property {
      * @param owningType
      * @param toTraverse
      */
-    Property(String name, TypeInformation owningType, String toTraverse) {
+    Property(String name, TypeInformation<?> owningType, String toTraverse) {
 
         this(name, owningType);
 
@@ -224,10 +224,10 @@ public class Property {
      */
     public static Property from(String source, Class<?> type) {
 
-        return from(source, new ClassTypeInformation(type));
+        return from(source, ClassTypeInformation.from(type));
     }
     
-    private static Property from(String source, TypeInformation type) {
+    private static Property from(String source, TypeInformation<?> type) {
       
       Iterator<String> parts = Arrays.asList(source.split("_")).iterator();
 
@@ -275,7 +275,7 @@ public class Property {
      * @param type
      * @return
      */
-    private static Property create(String source, TypeInformation type) {
+    private static Property create(String source, TypeInformation<?> type) {
 
         return create(source, type, "");
     }
@@ -292,7 +292,7 @@ public class Property {
      * @param addTail
      * @return
      */
-    private static Property create(String source, TypeInformation type, String addTail) {
+    private static Property create(String source, TypeInformation<?> type, String addTail) {
 
         IllegalArgumentException exception = null;
 

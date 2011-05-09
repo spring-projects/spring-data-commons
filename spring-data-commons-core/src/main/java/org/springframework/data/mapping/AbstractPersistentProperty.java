@@ -35,27 +35,29 @@ import org.springframework.data.util.TypeInformation;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
  */
-public abstract class AbstractPersistentProperty implements PersistentProperty {
+public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>> implements PersistentProperty<P> {
 
 	protected final String name;
 	protected final PropertyDescriptor propertyDescriptor;
-	protected final TypeInformation information;
+	protected final TypeInformation<?> information;
 	protected final Class<?> rawType;
 	protected final Field field;
-	protected final Association association;
-	protected final PersistentEntity<?> owner;
+	protected final Association<P> association;
+	protected final PersistentEntity<?, P> owner;
 
-	public AbstractPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?> owner) {
+	public AbstractPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner) {
 		this.name = field.getName();
 		this.rawType = field.getType();
-		this.information = owner.getPropertyInformation().getProperty(this.name);
+		this.information = owner.getTypeInformation().getProperty(this.name);
 		this.propertyDescriptor = propertyDescriptor;
 		this.field = field;
-		this.association = isAssociation() ? new Association(this, null) : null;
+		this.association = isAssociation() ? createAssociation() : null;
 		this.owner = owner;
 	}
+	
+	protected abstract Association<P> createAssociation();
 
-	public PersistentEntity<?> getOwner() {
+	public PersistentEntity<?, P> getOwner() {
 		return owner;
 	}
 
@@ -71,7 +73,7 @@ public abstract class AbstractPersistentProperty implements PersistentProperty {
 		return this.rawType;
 	}
 
-	public TypeInformation getTypeInformation() {
+	public TypeInformation<?> getTypeInformation() {
 		return information;
 	}
 
@@ -104,7 +106,7 @@ public abstract class AbstractPersistentProperty implements PersistentProperty {
             return false;
 	}
 
-	public Association getAssociation() {
+	public Association<P> getAssociation() {
 		return association;
 	}
 

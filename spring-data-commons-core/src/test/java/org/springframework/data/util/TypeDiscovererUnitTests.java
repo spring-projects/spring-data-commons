@@ -11,6 +11,6 @@ public class TypeDiscovererUnitTests {
 
   @Test(expected = IllegalArgumentException.class)
   public void rejectsNullType() {
-    new TypeDiscoverer(null, null, null);
+    new TypeDiscoverer<Object>(null, null, null);
   }
 }

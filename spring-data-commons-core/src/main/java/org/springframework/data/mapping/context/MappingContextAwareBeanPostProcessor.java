@@ -35,12 +35,12 @@ public class MappingContextAwareBeanPostProcessor implements BeanPostProcessor, 
 
 	private ApplicationContext applicationContext;
 	private String mappingContextBeanName = "mappingContext";
-	private MappingContext mappingContext;
+	private MappingContext<?, ?> mappingContext;
 
 	public MappingContextAwareBeanPostProcessor() {
 	}
 
-	public MappingContextAwareBeanPostProcessor(MappingContext mappingContext) {
+	public MappingContextAwareBeanPostProcessor(MappingContext<?, ?> mappingContext) {
 		this.mappingContext = mappingContext;
 	}
 
@@ -60,7 +60,8 @@ public class MappingContextAwareBeanPostProcessor implements BeanPostProcessor, 
 		return bean;
 	}
 
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+	@SuppressWarnings("rawtypes")
+        public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof MappingContextAware) {
 			if (null == mappingContext) {
 				Map<String, MappingContext> mappingContexts = applicationContext.getBeansOfType(MappingContext.class);

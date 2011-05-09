@@ -14,7 +14,7 @@ import java.util.Collection;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public interface PersistentEntity<T> {
+public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
   /**
    * The entity name including any package prefix
@@ -33,21 +33,21 @@ public interface PersistentEntity<T> {
      * 
      * @return the id property of the {@link PersistentEntity}.
      */
-  PersistentProperty getIdProperty();
+  P getIdProperty();
 
   /**
    * A list of properties to be persisted
    *
    * @return A list of PersistentProperty instances
    */
-  Collection<PersistentProperty> getPersistentProperties();
+  Collection<P> getPersistentProperties();
 
   /**
    * A list of the associations for this entity. This is typically a subset of the list returned by {@link #getPersistentProperties()}
    *
    * @return A list of associations
    */
-  Collection<Association> getAssociations();
+  Collection<Association<P>> getAssociations();
 
   /**
    * Obtains a PersistentProperty instance by name
@@ -55,14 +55,14 @@ public interface PersistentEntity<T> {
    * @param name The name of the property
    * @return The PersistentProperty or null if it doesn't exist
    */
-  PersistentProperty getPersistentProperty(String name);
+  P getPersistentProperty(String name);
 
   /**
    * @return The underlying Java class for this entity
    */
   Class<T> getType();
   
-  TypeInformation getPropertyInformation();
+  TypeInformation<T> getTypeInformation();
 
   /**
    * A list of property names
@@ -71,7 +71,7 @@ public interface PersistentEntity<T> {
    */
   Collection<String> getPersistentPropertyNames();
 
-  void doWithProperties(PropertyHandler handler);
+  void doWithProperties(PropertyHandler<P> handler);
 
-  void doWithAssociations(AssociationHandler handler);
+  void doWithAssociations(AssociationHandler<P> handler);
 }

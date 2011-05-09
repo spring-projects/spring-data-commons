@@ -35,6 +35,7 @@ import org.springframework.util.Assert;
  */
 class DefaultRepositoryInformation implements RepositoryInformation {
 
+  @SuppressWarnings("rawtypes")
   private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class.getTypeParameters();
   private static final String DOMAIN_TYPE_NAME = PARAMETERS[0].getName();
   private static final String ID_TYPE_NAME = PARAMETERS[1].getName();

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.util;
 
-import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.repository.util.ClassUtils.*;
 

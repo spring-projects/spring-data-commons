@@ -17,10 +17,11 @@
 package org.springframework.data.mapping;
 
 import org.springframework.data.mapping.model.Association;
+import org.springframework.data.mapping.model.PersistentProperty;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public interface AssociationHandler {
-  void doWithAssociation(Association association);
+public interface AssociationHandler<P extends PersistentProperty<P>> {
+  void doWithAssociation(Association<P> association);
 }

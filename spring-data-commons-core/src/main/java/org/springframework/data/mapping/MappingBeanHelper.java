@@ -32,17 +32,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.ConversionServiceFactory;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.data.mapping.model.PersistentProperty;
 import org.springframework.data.mapping.model.PreferredConstructor;
+import org.springframework.data.mapping.model.PreferredConstructor.Parameter;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -106,12 +107,12 @@ public abstract class MappingBeanHelper {
 		return type.isEnum();
 	}
 
-	public static <T> T constructInstance(PersistentEntity<T> entity, PreferredConstructor.ParameterValueProvider provider) {
+	public static <T, P extends PersistentProperty<P>> T constructInstance(PersistentEntity<T, P> entity, PreferredConstructor.ParameterValueProvider provider) {
 		return constructInstance(entity, provider, new StandardEvaluationContext());
 	}
 
 	@SuppressWarnings({"unchecked"})
-	public static <T> T constructInstance(PersistentEntity<T> entity, PreferredConstructor.ParameterValueProvider provider, EvaluationContext spelCtx) {
+	public static <T, P extends PersistentProperty<P>> T constructInstance(PersistentEntity<T, P> entity, PreferredConstructor.ParameterValueProvider provider, EvaluationContext spelCtx) {
 
 		PreferredConstructor<T> constructor = entity.getPreferredConstructor();
 		if (null == constructor) {
@@ -135,11 +136,11 @@ public abstract class MappingBeanHelper {
 
 		List<Object> params = new LinkedList<Object>();
 		if (null != provider && constructor.getParameters().size() > 0) {
-			for (PreferredConstructor.Parameter parameter : constructor.getParameters()) {
-				Value v = parameter.getValue();
+			for (Parameter<?> parameter : constructor.getParameters()) {
+				String key = parameter.getKey();
 				Object obj;
-				if (null != v) {
-					Expression x = parser.parseExpression(v.value());
+				if (null != key) {
+					Expression x = parser.parseExpression(key);
 					obj = x.getValue(spelCtx);
 				} else {
 					obj = provider.getParameterValue(parameter);
@@ -159,40 +160,51 @@ public abstract class MappingBeanHelper {
 	}
 
 	public static void setProperty(Object on,
-																 PersistentProperty property,
+																 PersistentProperty<?> property,
 																 Object value)
 			throws IllegalAccessException, InvocationTargetException {
 		setProperty(on, property, value, false);
 	}
 
 	public static void setProperty(Object on,
-																 PersistentProperty property,
+																 PersistentProperty<?> property,
 																 Object value,
 																 boolean fieldAccessOnly)
 			throws IllegalAccessException, InvocationTargetException {
 
-		Field field = property.getField();
-		Method setter = (null != property.getPropertyDescriptor() ? property.getPropertyDescriptor().getWriteMethod() : null);
-		if (fieldAccessOnly || null == setter) {
-			if (null != value && value.getClass().isAssignableFrom(field.getType())) {
-				field.set(on, value);
-			} else {
-				field.set(on, conversionService.convert(value, field.getType()));
-			}
-			return;
-		}
+		Method setter = property.getPropertyDescriptor() != null ? property.getPropertyDescriptor().getWriteMethod() : null;
+
+		if (fieldAccessOnly || null == setter) {		    
+		    Object valueToSet = getPotentiallyConvertedValue(value, property.getType());
+		    ReflectionUtils.makeAccessible(property.getField());
+		    ReflectionUtils.setField(property.getField(), on, valueToSet);
+		    return;
+		} 
 
 		Class<?>[] paramTypes = setter.getParameterTypes();
-		if (null != value && paramTypes.length > 0 && !value.getClass().isAssignableFrom(paramTypes[0])) {
-			setter.invoke(on, conversionService.convert(value, paramTypes[0]));
-		} else {
-			setter.invoke(on, value);
-		}
+		Object valueToSet = getPotentiallyConvertedValue(value, paramTypes[0]);
+		ReflectionUtils.makeAccessible(setter);
+		ReflectionUtils.invokeMethod(setter, on, valueToSet);
+	}
+	
+	/**
+	 * Converts the given source value if it is not assignable to the given target type.
+	 * 
+	 * @param source
+	 * @param targetType
+	 * @return
+	 */
+	private static Object getPotentiallyConvertedValue(Object source, Class<?> targetType) {
+	    if (source != null && source.getClass().isAssignableFrom(targetType)) {
+	        return source;
+	    }
+	    
+	    return conversionService.convert(source, targetType);
 	}
 
 	@SuppressWarnings({"unchecked"})
 	public static <T> T getProperty(Object from,
-																	PersistentProperty property,
+																	PersistentProperty<?> property,
 																	Class<T> type,
 																	boolean fieldAccessOnly)
 			throws IllegalAccessException, InvocationTargetException {

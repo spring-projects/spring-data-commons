@@ -1,11 +1,15 @@
 package org.springframework.data.util;
 
 import static org.springframework.util.ObjectUtils.*;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,13 +22,13 @@ import org.springframework.util.ReflectionUtils;
  * 
  * @author Oliver Gierke
  */
-class TypeDiscoverer implements TypeInformation {
+class TypeDiscoverer<S> implements TypeInformation<S> {
 
   private final Type type;
   @SuppressWarnings("rawtypes")
   private final Map<TypeVariable, Type> typeVariableMap;
-  private final Map<String, TypeInformation> fieldTypes = new ConcurrentHashMap<String, TypeInformation>();
-  private final TypeDiscoverer parent;
+  private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
+  private final TypeDiscoverer<?> parent;
 
   /**
    * Creates a ne {@link TypeDiscoverer} for the given type, type variable map and parent.
@@ -35,7 +39,7 @@ class TypeDiscoverer implements TypeInformation {
    */
   @SuppressWarnings("rawtypes")
   protected TypeDiscoverer(Type type, Map<TypeVariable, Type> typeVariableMap,
-      TypeDiscoverer parent) {
+      TypeDiscoverer<?> parent) {
 
     Assert.notNull(type);
     this.type = type;
@@ -61,7 +65,8 @@ class TypeDiscoverer implements TypeInformation {
    * @param fieldType
    * @return
    */
-  protected TypeInformation createInfo(Type fieldType) {
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  protected TypeInformation<?> createInfo(Type fieldType) {
       
     if (fieldType.equals(this.type)) {
         return this;
@@ -94,9 +99,25 @@ class TypeDiscoverer implements TypeInformation {
    * @param type
    * @return
    */
-  protected Class<?> resolveType(Type type) {
+  @SuppressWarnings("unchecked")
+  protected Class<S> resolveType(Type type) {
 
     return GenericTypeResolver.resolveType(type, getTypeVariableMap());
+  }
+  
+  /* 
+   * (non-Javadoc)
+   * @see org.springframework.data.util.TypeInformation#getParameterTypes(java.lang.reflect.Constructor)
+   */
+  public List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor) {
+
+    List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();  
+      
+    for (Class<?> type : constructor.getParameterTypes()) {
+      result.add(createInfo(type));
+    }
+    
+    return result;
   }
 
   /*
@@ -106,7 +127,7 @@ class TypeDiscoverer implements TypeInformation {
    * org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation
    * #getField(java.lang.String)
    */
-  public TypeInformation getProperty(String fieldname) {
+  public TypeInformation<?> getProperty(String fieldname) {
 
     int separatorIndex = fieldname.indexOf(".");
 
@@ -115,7 +136,7 @@ class TypeDiscoverer implements TypeInformation {
         return fieldTypes.get(fieldname);
       }
 
-      TypeInformation propertyInformation = getPropertyInformation(fieldname);
+      TypeInformation<?> propertyInformation = getPropertyInformation(fieldname);
       if (propertyInformation != null) {
         fieldTypes.put(fieldname, propertyInformation);
       }
@@ -123,11 +144,11 @@ class TypeDiscoverer implements TypeInformation {
     }
 
     String head = fieldname.substring(0, separatorIndex);
-    TypeInformation info = fieldTypes.get(head);
+    TypeInformation<?> info = fieldTypes.get(head);
     return info.getProperty(fieldname.substring(separatorIndex + 1));
   }
 
-  private TypeInformation getPropertyInformation(String fieldname) {
+  private TypeInformation<?> getPropertyInformation(String fieldname) {
 
     Field field = ReflectionUtils.findField(getType(), fieldname);
 
@@ -145,7 +166,7 @@ class TypeDiscoverer implements TypeInformation {
    * org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation
    * #getType()
    */
-  public Class<?> getType() {
+  public Class<S> getType() {
     return resolveType(type);
   }
   
@@ -160,7 +181,7 @@ class TypeDiscoverer implements TypeInformation {
   /* (non-Javadoc)
    * @see org.springframework.data.util.TypeInformation#getMapValueType()
    */
-  public TypeInformation getMapValueType() {
+  public TypeInformation<?> getMapValueType() {
     
     if (!Map.class.isAssignableFrom(getType())) {
       return null;
@@ -182,7 +203,7 @@ class TypeDiscoverer implements TypeInformation {
   /* (non-Javadoc)
    * @see org.springframework.data.util.TypeInformation#getComponentType()
    */
-  public TypeInformation getComponentType() {
+  public TypeInformation<?> getComponentType() {
     
     if (!(Map.class.isAssignableFrom(getType()) || isCollectionLike())) {
       return null;
@@ -211,7 +232,7 @@ class TypeDiscoverer implements TypeInformation {
       return false;
     }
 
-    TypeDiscoverer that = (TypeDiscoverer) obj;
+    TypeDiscoverer<?> that = (TypeDiscoverer<?>) obj;
 
     boolean typeEqual = nullSafeEquals(this.type, that.type);
     boolean typeVariableMapEqual = nullSafeEquals(this.typeVariableMap,

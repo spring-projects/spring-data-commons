@@ -18,27 +18,28 @@ package org.springframework.data.mapping.event;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.mapping.model.PersistentEntity;
+import org.springframework.data.mapping.model.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class MappingContextEvent extends ApplicationEvent {
+public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> extends ApplicationEvent {
 
   private static final long serialVersionUID = 1336466833846092490L;
-  private TypeInformation typeInformation;
+  private TypeInformation<?> typeInformation;
 
-  public MappingContextEvent(PersistentEntity<?> source, TypeInformation typeInformation) {
+  public MappingContextEvent(E source, TypeInformation<?> typeInformation) {
     super(source);
     this.typeInformation = typeInformation;
   }
 
-  public TypeInformation getTypeInformation() {
+  public TypeInformation<?> getTypeInformation() {
     return typeInformation;
   }
 
-  public PersistentEntity<?> getPersistentEntity() {
-    return (PersistentEntity<?>) source;
-  }
-  
+  @SuppressWarnings("unchecked")
+  public E getPersistentEntity() {
+    return (E) source;
+  }  
 }

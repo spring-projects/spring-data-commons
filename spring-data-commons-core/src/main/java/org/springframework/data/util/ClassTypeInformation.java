@@ -11,26 +11,30 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class ClassTypeInformation extends TypeDiscoverer {
+public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
-  private final Class<?> type;
+  private final Class<S> type;
+  
+  public static <S> TypeInformation<S> from(Class<S> type) {
+      return new ClassTypeInformation<S>(type);
+  }
 
   /**
    * Creates {@link ClassTypeInformation} for the given type.
    * 
    * @param type
    */
-  public ClassTypeInformation(Class<?> type) {
+  public ClassTypeInformation(Class<S> type) {
     this(type, GenericTypeResolver.getTypeVariableMap(type), null);
   }
 
-  ClassTypeInformation(Class<?> type, TypeDiscoverer parent) {
+  ClassTypeInformation(Class<S> type, TypeDiscoverer<?> parent) {
     this(type, null, parent);
   }
 
   @SuppressWarnings("rawtypes")
-  ClassTypeInformation(Class<?> type, Map<TypeVariable, Type> typeVariableMap,
-      TypeDiscoverer parent) {
+  ClassTypeInformation(Class<S> type, Map<TypeVariable, Type> typeVariableMap,
+      TypeDiscoverer<?> parent) {
     super(type, typeVariableMap, parent);
     this.type = type;
   }
@@ -41,7 +45,7 @@ public class ClassTypeInformation extends TypeDiscoverer {
    * @see org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation#getType()
    */
   @Override
-  public Class<?> getType() {
+  public Class<S> getType() {
     return type;
   }
 
@@ -49,7 +53,8 @@ public class ClassTypeInformation extends TypeDiscoverer {
    * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
    */
   @Override
-  public TypeInformation getComponentType() {
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public TypeInformation<?> getComponentType() {
     
     if (type.isArray()) {
       return createInfo(resolveArrayType(type));
@@ -75,7 +80,7 @@ public class ClassTypeInformation extends TypeDiscoverer {
       return false;
     }
 
-    ClassTypeInformation that = (ClassTypeInformation) obj;
+    ClassTypeInformation<?> that = (ClassTypeInformation<?>) obj;
     return this.type.equals(that.type);
   }
 

@@ -12,6 +12,8 @@ import org.junit.Test;
 import org.springframework.data.mapping.Person;
 
 /**
+ * Unit tests for {@link ClassTypeInformation}.
+ * 
  * @author Oliver Gierke
  */
 public class ClassTypeInformationUnitTests {
@@ -19,10 +21,9 @@ public class ClassTypeInformationUnitTests {
   @Test
   public void discoversTypeForSimpleGenericField() {
 
-    TypeInformation discoverer = new ClassTypeInformation(
-        ConcreteType.class);
+    TypeInformation<ConcreteType> discoverer = ClassTypeInformation.from(ConcreteType.class);
     assertEquals(ConcreteType.class, discoverer.getType());
-    TypeInformation content = discoverer.getProperty("content");
+    TypeInformation<?> content = discoverer.getProperty("content");
     assertEquals(String.class, content.getType());
     assertNull(content.getComponentType());
     assertNull(content.getMapValueType());
@@ -31,12 +32,11 @@ public class ClassTypeInformationUnitTests {
   @Test
   public void discoversTypeForNestedGenericField() {
 
-    TypeInformation discoverer = new ClassTypeInformation(
-        ConcreteWrapper.class);
+    TypeInformation<ConcreteWrapper> discoverer = ClassTypeInformation.from(ConcreteWrapper.class);
     assertEquals(ConcreteWrapper.class, discoverer.getType());
-    TypeInformation wrapper = discoverer.getProperty("wrapped");
+    TypeInformation<?> wrapper = discoverer.getProperty("wrapped");
     assertEquals(GenericType.class, wrapper.getType());
-    TypeInformation content = wrapper.getProperty("content");
+    TypeInformation<?> content = wrapper.getProperty("content");
 
     assertEquals(String.class, content.getType());
     assertEquals(String.class,
@@ -46,9 +46,10 @@ public class ClassTypeInformationUnitTests {
   }
 
   @Test
+  @SuppressWarnings("rawtypes")
   public void discoversBoundType() {
 
-    ClassTypeInformation information = new ClassTypeInformation(
+    TypeInformation<GenericTypeWithBound> information = ClassTypeInformation.from(
         GenericTypeWithBound.class);
     assertEquals(Person.class, information.getProperty("person").getType());
   }
@@ -56,16 +57,17 @@ public class ClassTypeInformationUnitTests {
   @Test
   public void discoversBoundTypeForSpecialization() {
 
-    ClassTypeInformation information = new ClassTypeInformation(
+    TypeInformation<SpecialGenericTypeWithBound> information = ClassTypeInformation.from(
         SpecialGenericTypeWithBound.class);
     assertEquals(SpecialPerson.class, information.getProperty("person")
         .getType());
   }
 
   @Test
+  @SuppressWarnings("rawtypes")
   public void discoversBoundTypeForNested() {
 
-    ClassTypeInformation information = new ClassTypeInformation(
+    TypeInformation<AnotherGenericType> information = ClassTypeInformation.from(
         AnotherGenericType.class);
     assertEquals(GenericTypeWithBound.class, information.getProperty("nested")
         .getType());
@@ -75,9 +77,9 @@ public class ClassTypeInformationUnitTests {
   
   @Test
   public void discoversArraysAndCollections() {
-    ClassTypeInformation information = new ClassTypeInformation(StringCollectionContainer.class);
+    TypeInformation<StringCollectionContainer> information = ClassTypeInformation.from(StringCollectionContainer.class);
     
-    TypeInformation property = information.getProperty("array");
+    TypeInformation<?> property = information.getProperty("array");
     assertEquals(property.getComponentType().getType(), String.class);
     
     Class<?> type = property.getType();
@@ -98,32 +100,31 @@ public class ClassTypeInformationUnitTests {
   @Test
   public void discoversMapValueType() {
     
-    ClassTypeInformation information = new ClassTypeInformation(StringMapContainer.class);
-    TypeInformation genericMap = information.getProperty("genericMap");
+    TypeInformation<StringMapContainer> information = ClassTypeInformation.from(StringMapContainer.class);
+    TypeInformation<?> genericMap = information.getProperty("genericMap");
     assertEquals(Map.class, genericMap.getType());
     assertEquals(String.class, genericMap.getMapValueType().getType());
 
-    TypeInformation map = information.getProperty("map");
+    TypeInformation<?> map = information.getProperty("map");
     assertEquals(Map.class, map.getType());
     assertEquals(Calendar.class, map.getMapValueType().getType());
   }
   
-  private class StringMapContainer extends MapContainer<String> {
+  static class StringMapContainer extends MapContainer<String> {
     
   }
   
-  @SuppressWarnings("unused")
-  private class MapContainer<T> {
+  static class MapContainer<T> {
     Map<String, T> genericMap;
     Map<String, Calendar> map;
   }
 
-  private class StringCollectionContainer extends CollectionContainer<String> {
+  static class StringCollectionContainer extends CollectionContainer<String> {
     
   }
   
-  @SuppressWarnings({"unused", "rawtypes"})
-  private class CollectionContainer<T> {
+  @SuppressWarnings("rawtypes")
+  static class CollectionContainer<T> {
     
     T[] array;
     Collection<T>[] foo;
@@ -131,48 +132,43 @@ public class ClassTypeInformationUnitTests {
     Set rawSet;
   }
 
-  @SuppressWarnings("unused")
-  private class GenericTypeWithBound<T extends Person> {
+  static class GenericTypeWithBound<T extends Person> {
 
     T person;
   }
 
-  @SuppressWarnings("unused")
-  private class AnotherGenericType<T extends Person, S extends GenericTypeWithBound<T>> {
-
+  static class AnotherGenericType<T extends Person, S extends GenericTypeWithBound<T>> {
     S nested;
   }
 
-  private class SpecialGenericTypeWithBound extends
+  static class SpecialGenericTypeWithBound extends
       GenericTypeWithBound<SpecialPerson> {
 
   }
 
-  private abstract class SpecialPerson extends Person {
-
+  static abstract class SpecialPerson extends Person {
     protected SpecialPerson(Integer ssn, String firstName, String lastName) {
       super(ssn, firstName, lastName);
     }
   }
 
-  @SuppressWarnings("unused")
-  private class GenericType<T, S> {
+  static class GenericType<T, S> {
 
     Long index;
     T content;
   }
+  
 
-  private class ConcreteType extends GenericType<String, Object> {
+  static class ConcreteType extends GenericType<String, Object> {
 
   }
 
-  @SuppressWarnings("unused")
-  private class GenericWrapper<S> {
+  static class GenericWrapper<S> {
 
     GenericType<S, Object> wrapped;
   }
 
-  private class ConcreteWrapper extends GenericWrapper<String> {
+  static class ConcreteWrapper extends GenericWrapper<String> {
 
   }
 }

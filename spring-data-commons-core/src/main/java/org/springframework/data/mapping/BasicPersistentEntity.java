@@ -15,16 +15,10 @@
  */
 package org.springframework.data.mapping;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
-import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mapping.model.Association;
 import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.data.mapping.model.PersistentProperty;
@@ -36,14 +30,13 @@ import org.springframework.data.util.TypeInformation;
  * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class BasicPersistentEntity<T> implements PersistentEntity<T> {
+public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
-  protected final Class<T> type;
   protected final PreferredConstructor<T> preferredConstructor;
-  protected final TypeInformation information;
-  protected final Map<String, PersistentProperty> persistentProperties = new HashMap<String, PersistentProperty>();
-  protected final Map<String, Association> associations = new HashMap<String, Association>();
-  protected PersistentProperty idProperty;
+  protected final TypeInformation<T> information;
+  protected final Map<String, P> persistentProperties = new HashMap<String, P>();
+  protected final Map<String, Association<P>> associations = new HashMap<String, Association<P>>();
+  protected P idProperty;
 
 
   /**
@@ -51,131 +44,61 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
    * 
    * @param information
    */
-  @SuppressWarnings("unchecked")
-  public BasicPersistentEntity(TypeInformation information) {
-    this.type = (Class<T>) information.getType();
+  public BasicPersistentEntity(TypeInformation<T> information) {
     this.information = information;
-    this.preferredConstructor = getPreferredConstructor(type);
+    this.preferredConstructor = new PreferredConstructorDiscoverer<T>(information).getConstructor();
   }
-  
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  private final PreferredConstructor<T> getPreferredConstructor(Class<T> type) {
-      // Find the right constructor
-      PreferredConstructor<T> preferredConstructor = null;
-
-      for (Constructor<?> constructor : type.getDeclaredConstructors()) {
-              if (constructor.getParameterTypes().length != 0) {
-                      // Non-no-arg constructor
-                      if (null == preferredConstructor || constructor.isAnnotationPresent(PersistenceConstructor.class)) {
-                              preferredConstructor = new PreferredConstructor<T>((Constructor<T>) constructor);
-
-                              String[] paramNames = new LocalVariableTableParameterNameDiscoverer().getParameterNames(constructor);
-                              Type[] paramTypes = constructor.getGenericParameterTypes();
-
-                              for (int i = 0; i < paramTypes.length; i++) {
-                                      Class<?> targetType = Object.class;
-                                      Class<?> rawType = constructor.getParameterTypes()[i];
-                                      if (paramTypes[i] instanceof ParameterizedType) {
-                                              ParameterizedType ptype = (ParameterizedType) paramTypes[i];
-                                              targetType = getTargetType(ptype);
-                                      } else {
-                                              if (paramTypes[i] instanceof TypeVariable) {
-                                                      targetType = getTargetType((TypeVariable) paramTypes[i]);
-                                              } else if (paramTypes[i] instanceof Class<?>) {
-                                                      targetType = (Class<?>) paramTypes[i];
-                                              }
-                                      }
-                                      String paramName = (null != paramNames ? paramNames[i] : "param" + i);
-                                      preferredConstructor.addParameter(paramName, targetType, rawType, targetType.getDeclaredAnnotations());
-                              }
-
-                              if (constructor.isAnnotationPresent(PersistenceConstructor.class)) {
-                                      // We're done
-                                      break;
-                              }
-                      }
-              }
-      }
-
-      return preferredConstructor;
-}
-  
-  private Class<?> getTargetType(TypeVariable<?> tv) {
-      Class<?> targetType = Object.class;
-      Type[] bounds = tv.getBounds();
-      if (bounds.length > 0) {
-              if (bounds[0] instanceof ParameterizedType) {
-                      return getTargetType((ParameterizedType) bounds[0]);
-              } else if (bounds[0] instanceof TypeVariable) {
-                      return getTargetType((TypeVariable<?>) bounds[0]);
-              } else {
-                      targetType = (Class<?>) bounds[0];
-              }
-      }
-      return targetType;
-}
-
-  private Class<?> getTargetType(ParameterizedType ptype) {
-      Class<?> targetType = Object.class;
-      Type[] types = ptype.getActualTypeArguments();
-      if (types.length == 1) {
-              if (types[0] instanceof TypeVariable) {
-                      // Placeholder type
-                      targetType = Object.class;
-              } else {
-                      if (types[0] instanceof ParameterizedType) {
-                              return getTargetType((ParameterizedType) types[0]);
-                      } else {
-                              targetType = (Class<?>) types[0];
-                      }
-              }
-      } else {
-              targetType = (Class<?>) ptype.getRawType();
-      }
-      return targetType;
-}
 
   public PreferredConstructor<T> getPreferredConstructor() {
     return preferredConstructor;
   }
 
   public String getName() {
-    return type.getName();
+    return getType().getName();
   }
 
-  public PersistentProperty getIdProperty() {
+  public P getIdProperty() {
     return idProperty;
   }
 
-  public void setIdProperty(PersistentProperty property) {
+  /* (non-Javadoc)
+ * @see org.springframework.data.mapping.MutablePersistentEntity#setIdProperty(P)
+ */
+public void setIdProperty(P property) {
     idProperty = property;
   }
 
-  public Collection<PersistentProperty> getPersistentProperties() {
+  public Collection<P> getPersistentProperties() {
     return persistentProperties.values();
   }
 
-  public void addPersistentProperty(PersistentProperty property) {
+  /* (non-Javadoc)
+ * @see org.springframework.data.mapping.MutablePersistentEntity#addPersistentProperty(P)
+ */
+public void addPersistentProperty(P property) {
     persistentProperties.put(property.getName(), property);
   }
 
-  public Collection<Association> getAssociations() {
+  public Collection<Association<P>> getAssociations() {
     return associations.values();
   }
 
-  public void addAssociation(Association association) {
+  /* (non-Javadoc)
+ * @see org.springframework.data.mapping.MutablePersistentEntity#addAssociation(org.springframework.data.mapping.model.Association)
+ */
+public void addAssociation(Association<P> association) {
     associations.put(association.getInverse().getName(), association);
   }
 
-  public PersistentProperty getPersistentProperty(String name) {
+  public P getPersistentProperty(String name) {
     return persistentProperties.get(name);
   }
 
   public Class<T> getType() {
-    return type;
+    return information.getType();
   }
 
-  public TypeInformation getPropertyInformation() {
+  public TypeInformation<T> getTypeInformation() {
     return information;
   }
 
@@ -183,24 +106,23 @@ public class BasicPersistentEntity<T> implements PersistentEntity<T> {
     return persistentProperties.keySet();
   }
 
-  public void doWithProperties(PropertyHandler handler) {
-    for (PersistentProperty property : persistentProperties.values()) {
-      if (!property.isTransient() && !property.isAssociation() && !property.isIdProperty()) {
+  public void doWithProperties(PropertyHandler<P> handler) {
+    for (P property : persistentProperties.values()) {
+      if (!property.isTransient() && !property.isAssociation()) {
         handler.doWithPersistentProperty(property);
       }
     }
   }
 
-  public void doWithAssociations(AssociationHandler handler) {
-    for (Association association : associations.values()) {
+  public void doWithAssociations(AssociationHandler<P> handler) {
+    for (Association<P> association : associations.values()) {
       handler.doWithAssociation(association);
     }
   }
 
-  /**
-   * Callback method to trigger validation of the {@link PersistentEntity}. As {@link BasicPersistentEntity} is not
-   * immutable there might be some verification steps necessary after the object has reached is final state.
-   */
+  /* (non-Javadoc)
+ * @see org.springframework.data.mapping.MutablePersistentEntity#verify()
+ */
   public void verify() {
 
   }

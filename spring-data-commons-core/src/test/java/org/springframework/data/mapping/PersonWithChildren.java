@@ -27,7 +27,7 @@ import java.util.List;
 public class PersonWithChildren extends Person {
 
   @Id
-  private String id;
+  String id;
     
   @Reference
   private List<Child> children;

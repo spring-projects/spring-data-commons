@@ -18,78 +18,101 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.util.TypeInformation;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
+ * Value object to encapsulate the constructor to be used when mapping persistent data to objects. 
+ * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Oliver Gierke
  */
 public class PreferredConstructor<T> {
 
-	protected Constructor<T> constructor;
-	protected List<Parameter> parameters = new LinkedList<Parameter>();
+	private final Constructor<T> constructor;
+	private final List<Parameter<?>> parameters;
 
-	public PreferredConstructor(Constructor<T> constructor) {
+	public PreferredConstructor(Constructor<T> constructor, Parameter<?>... parameters) {
+	        ReflectionUtils.makeAccessible(constructor);
 		this.constructor = constructor;
+		this.parameters = Arrays.asList(parameters);
 	}
 
 	public Constructor<T> getConstructor() {
 		return constructor;
 	}
 
-	public List<Parameter> getParameters() {
+	public List<Parameter<?>> getParameters() {
 		return parameters;
 	}
-
-	public void addParameter(String name, Class<?> type, Class<?> rawType, Annotation[] annotations) {
-		parameters.add(new Parameter(name, type, rawType, annotations));
+	
+	/**
+	 * Returns whether the constructor does not have any arguments.
+	 * 
+	 * @return
+	 */
+	public boolean isNoArgConstructor() {
+	    return parameters.isEmpty();
+	}
+	
+	/**
+	 * Returns whether the constructor was explicitly selected (by {@link PersistenceConstructor}).
+	 * 
+	 * @return
+	 */
+	public boolean isExplicitlyAnnotated() {
+	    return constructor.isAnnotationPresent(PersistenceConstructor.class);
 	}
 
-	public static class Parameter {
-		protected final String name;
-		protected final Class<?> type;
-		protected final Class<?> rawType;
-		protected final Annotation[] annotations;
-		protected Value value;
+	public static class Parameter<T> {
+		private final String name;
+		private final TypeInformation<T> type;
+		private final String key;
 
-		public Parameter(String name, Class<?> type, Class<?> rawType, Annotation[] annotations) {
-			this.name = name;
-			this.type = type;
-			this.rawType = rawType;
-			this.annotations = annotations;
-			for (Annotation anno : annotations) {
-				if (anno.annotationType() == Value.class) {
-					this.value = (Value) anno;
-					break;
-				}
-			}
+		public Parameter(String name, TypeInformation<T> type, Annotation[] annotations) {
+		    
+		    Assert.notNull(type);
+		    Assert.notNull(annotations);
+		    
+		    this.name = name;
+		    this.type = type;
+		    this.key = getValue(annotations);
+		}
+		
+		private String getValue(Annotation[] annotations) {
+		    for (Annotation anno : annotations) {
+                        if (anno.annotationType() == Value.class) {
+                                return ((Value) anno).value();
+                        }
+		    }
+		    return null;
 		}
 
 		public String getName() {
 			return name;
 		}
 
-		public Class<?> getType() {
+		public TypeInformation<T> getType() {
 			return type;
 		}
-
-		public Class<?> getRawType() {
-			return rawType;
+		
+		public Class<T> getRawType() {
+		    return type.getType();
 		}
 
-		public Annotation[] getAnnotations() {
-			return annotations;
-		}
-
-		public Value getValue() {
-			return value;
+		public String getKey() {
+			return key;
 		}
 	}
 
 	public static interface ParameterValueProvider {
-		Object getParameterValue(Parameter parameter);
+		<T> T getParameterValue(Parameter<T> parameter);
 	}
 
 }

@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
  *
  * @author Oliver Gierke
  */
-public class ArrayTypeDiscoverer extends TypeDiscoverer {
+public class ArrayTypeDiscoverer<S> extends TypeDiscoverer<S> {
 
   private GenericArrayType type;
   
@@ -18,7 +18,7 @@ public class ArrayTypeDiscoverer extends TypeDiscoverer {
    * @param parent
    * @param parent
    */
-  protected ArrayTypeDiscoverer(GenericArrayType type, TypeDiscoverer parent) {
+  protected ArrayTypeDiscoverer(GenericArrayType type, TypeDiscoverer<?> parent) {
     super(type, null, parent);
     this.type = type;
   }
@@ -27,16 +27,17 @@ public class ArrayTypeDiscoverer extends TypeDiscoverer {
    * @see org.springframework.data.util.TypeDiscoverer#getType()
    */
   @Override
-  public Class<?> getType() {
+  @SuppressWarnings("unchecked")
+  public Class<S> getType() {
     
-    return Array.newInstance(resolveType(type.getGenericComponentType()), 0).getClass();
+    return (Class<S>) Array.newInstance(resolveType(type.getGenericComponentType()), 0).getClass();
   }
   
   /* (non-Javadoc)
    * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
    */
   @Override
-  public TypeInformation getComponentType() {
+  public TypeInformation<?> getComponentType() {
    
     Type componentType = type.getGenericComponentType();
     return createInfo(componentType);

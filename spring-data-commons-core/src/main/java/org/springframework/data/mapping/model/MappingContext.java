@@ -35,7 +35,7 @@ import org.springframework.validation.Validator;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public interface MappingContext<E extends PersistentEntity<?>> {
+public interface MappingContext<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> {
   
   /**
    * Obtains a list of PersistentEntity instances
@@ -46,7 +46,7 @@ public interface MappingContext<E extends PersistentEntity<?>> {
 
   E getPersistentEntity(Class<?> type);
 
-  E getPersistentEntity(TypeInformation type);
+  E getPersistentEntity(TypeInformation<?> type);
 
   /**
    * Obtains a validator for the given entity
