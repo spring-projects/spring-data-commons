@@ -29,198 +29,198 @@ import org.springframework.util.Assert;
 /**
  * Class to abstract a single parameter of a query method. It is held in the
  * context of a {@link Parameters} instance.
- * 
+ *
  * @author Oliver Gierke
  */
 public final class Parameter {
 
-    @SuppressWarnings("unchecked")
-    static final List<Class<?>> TYPES = Arrays.asList(Pageable.class,
-            Sort.class);
+	@SuppressWarnings("unchecked")
+	static final List<Class<?>> TYPES = Arrays.asList(Pageable.class,
+			Sort.class);
 
-    private static final String PARAM_ON_SPECIAL = format(
-            "You must not user @%s on a parameter typed %s or %s",
-            Param.class.getSimpleName(), Pageable.class.getSimpleName(),
-            Sort.class.getSimpleName());
+	private static final String PARAM_ON_SPECIAL = format(
+			"You must not user @%s on a parameter typed %s or %s",
+			Param.class.getSimpleName(), Pageable.class.getSimpleName(),
+			Sort.class.getSimpleName());
 
-    private static final String NAMED_PARAMETER_TEMPLATE = ":%s";
-    private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
+	private static final String NAMED_PARAMETER_TEMPLATE = ":%s";
+	private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
 
-    private final Class<?> type;
-    private final Parameters parameters;
-    private final int index;
-    private final String name;
-
-
-    /**
-     * Creates a new {@link Parameter} for the given type, {@link Annotation}s,
-     * positioned at the given index inside the given {@link Parameters}.
-     * 
-     * @param type
-     * @param parameters
-     * @param index
-     * @param name
-     */
-    Parameter(Class<?> type, Parameters parameters, int index, String name) {
-
-        Assert.notNull(type);
-        Assert.notNull(parameters);
-
-        this.parameters = parameters;
-        this.index = index;
-
-        this.type = type;
-        this.name = name;
-
-        if (isSpecialParameter() && isNamedParameter()) {
-            throw new IllegalArgumentException(PARAM_ON_SPECIAL);
-        }
-    }
+	private final Class<?> type;
+	private final Parameters parameters;
+	private final int index;
+	private final String name;
 
 
-    /**
-     * Returns whether the {@link Parameter} is the first one.
-     * 
-     * @return
-     */
-    boolean isFirst() {
+	/**
+	 * Creates a new {@link Parameter} for the given type, {@link Annotation}s,
+	 * positioned at the given index inside the given {@link Parameters}.
+	 *
+	 * @param type
+	 * @param parameters
+	 * @param index
+	 * @param name
+	 */
+	Parameter(Class<?> type, Parameters parameters, int index, String name) {
 
-        return index == 0;
-    }
+		Assert.notNull(type);
+		Assert.notNull(parameters);
 
+		this.parameters = parameters;
+		this.index = index;
 
-    /**
-     * Returns the next {@link Parameter} from the surrounding
-     * {@link Parameters}.
-     * 
-     * @throws ParameterOutOfBoundsException
-     * @return
-     */
-    public Parameter getNext() {
+		this.type = type;
+		this.name = name;
 
-        return parameters.getParameter(index + 1);
-    }
-
-
-    /**
-     * Returns the previous {@link Parameter}.
-     * 
-     * @return
-     */
-    Parameter getPrevious() {
-
-        return parameters.getParameter(index - 1);
-    }
+		if (isSpecialParameter() && isNamedParameter()) {
+			throw new IllegalArgumentException(PARAM_ON_SPECIAL);
+		}
+	}
 
 
-    /**
-     * Returns whether the parameter is a special parameter.
-     * 
-     * @see #TYPES
-     * @param index
-     * @return
-     */
-    public boolean isSpecialParameter() {
+	/**
+	 * Returns whether the {@link Parameter} is the first one.
+	 *
+	 * @return
+	 */
+	boolean isFirst() {
 
-        return TYPES.contains(type);
-    }
+		return index == 0;
+	}
 
 
-    /**
-     * Returns whether the {@link Parameter} is to be bound to a query.
-     * 
-     * @return
-     */
-    public boolean isBindable() {
+	/**
+	 * Returns the next {@link Parameter} from the surrounding
+	 * {@link Parameters}.
+	 *
+	 * @return
+	 * @throws ParameterOutOfBoundsException
+	 */
+	public Parameter getNext() {
 
-        return !isSpecialParameter();
-    }
-
-
-    /**
-     * Returns the placeholder to be used for the parameter. Can either be a
-     * named one or positional.
-     * 
-     * @param index
-     * @return
-     */
-    public String getPlaceholder() {
-
-        if (isNamedParameter()) {
-            return format(NAMED_PARAMETER_TEMPLATE, getName());
-        } else {
-            return format(POSITION_PARAMETER_TEMPLATE, getIndex());
-        }
-    }
+		return parameters.getParameter(index + 1);
+	}
 
 
-    /**
-     * Returns the position index the parameter is bound to in the context of
-     * its surrounding {@link Parameters}.
-     * 
-     * @return
-     */
-    public int getIndex() {
+	/**
+	 * Returns the previous {@link Parameter}.
+	 *
+	 * @return
+	 */
+	Parameter getPrevious() {
 
-        return index;
-    }
-
-
-    /**
-     * Returns whether the parameter is annotated with {@link Param}.
-     * 
-     * @param index
-     * @return
-     */
-    public boolean isNamedParameter() {
-
-        return !isSpecialParameter() && getName() != null;
-    }
+		return parameters.getParameter(index - 1);
+	}
 
 
-    /**
-     * Returns the name of the parameter (through {@link Param} annotation) or
-     * null if none can be found.
-     * 
-     * @return
-     */
-    public String getName() {
+	/**
+	 * Returns whether the parameter is a special parameter.
+	 *
+	 * @param index
+	 * @return
+	 * @see #TYPES
+	 */
+	public boolean isSpecialParameter() {
 
-        return name;
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-
-        return format("%s:%s", isNamedParameter() ? getName() : "#" + index,
-                type.getName());
-    }
+		return TYPES.contains(type);
+	}
 
 
-    /**
-     * Returns whether the {@link Parameter} is a {@link Pageable} parameter.
-     * 
-     * @return
-     */
-    boolean isPageable() {
+	/**
+	 * Returns whether the {@link Parameter} is to be bound to a query.
+	 *
+	 * @return
+	 */
+	public boolean isBindable() {
 
-        return Pageable.class.isAssignableFrom(type);
-    }
+		return !isSpecialParameter();
+	}
 
 
-    /**
-     * Returns whether the {@link Parameter} is a {@link Sort} parameter.
-     * 
-     * @return
-     */
-    boolean isSort() {
+	/**
+	 * Returns the placeholder to be used for the parameter. Can either be a
+	 * named one or positional.
+	 *
+	 * @param index
+	 * @return
+	 */
+	public String getPlaceholder() {
 
-        return Sort.class.isAssignableFrom(type);
-    }
+		if (isNamedParameter()) {
+			return format(NAMED_PARAMETER_TEMPLATE, getName());
+		} else {
+			return format(POSITION_PARAMETER_TEMPLATE, getIndex());
+		}
+	}
+
+
+	/**
+	 * Returns the position index the parameter is bound to in the context of
+	 * its surrounding {@link Parameters}.
+	 *
+	 * @return
+	 */
+	public int getIndex() {
+
+		return index;
+	}
+
+
+	/**
+	 * Returns whether the parameter is annotated with {@link Param}.
+	 *
+	 * @param index
+	 * @return
+	 */
+	public boolean isNamedParameter() {
+
+		return !isSpecialParameter() && getName() != null;
+	}
+
+
+	/**
+	 * Returns the name of the parameter (through {@link Param} annotation) or
+	 * null if none can be found.
+	 *
+	 * @return
+	 */
+	public String getName() {
+
+		return name;
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.lang.Object#toString()
+			 */
+	@Override
+	public String toString() {
+
+		return format("%s:%s", isNamedParameter() ? getName() : "#" + index,
+				type.getName());
+	}
+
+
+	/**
+	 * Returns whether the {@link Parameter} is a {@link Pageable} parameter.
+	 *
+	 * @return
+	 */
+	boolean isPageable() {
+
+		return Pageable.class.isAssignableFrom(type);
+	}
+
+
+	/**
+	 * Returns whether the {@link Parameter} is a {@link Sort} parameter.
+	 *
+	 * @return
+	 */
+	boolean isSort() {
+
+		return Sort.class.isAssignableFrom(type);
+	}
 }

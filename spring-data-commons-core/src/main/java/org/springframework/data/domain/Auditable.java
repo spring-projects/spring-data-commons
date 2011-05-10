@@ -24,73 +24,73 @@ import org.joda.time.DateTime;
  * Interface for auditable entities. Allows storing and retrieving creation and
  * modification information. The changing instance (typically some user) is to
  * be defined by a generics definition.
- * 
- * @author Oliver Gierke
- * @param <U> the auditing type. Typically some kind of user.
+ *
+ * @param <U>  the auditing type. Typically some kind of user.
  * @param <ID> the type of the auditing type's idenifier
+ * @author Oliver Gierke
  */
 public interface Auditable<U, ID extends Serializable> extends Persistable<ID> {
 
-    /**
-     * Returns the user who created this entity.
-     * 
-     * @return the createdBy
-     */
-    U getCreatedBy();
+	/**
+	 * Returns the user who created this entity.
+	 *
+	 * @return the createdBy
+	 */
+	U getCreatedBy();
 
 
-    /**
-     * Sets the user who created this entity.
-     * 
-     * @param createdBy the creating entity to set
-     */
-    void setCreatedBy(final U createdBy);
+	/**
+	 * Sets the user who created this entity.
+	 *
+	 * @param createdBy the creating entity to set
+	 */
+	void setCreatedBy(final U createdBy);
 
 
-    /**
-     * Returns the creation date of the entity.
-     * 
-     * @return the createdDate
-     */
-    DateTime getCreatedDate();
+	/**
+	 * Returns the creation date of the entity.
+	 *
+	 * @return the createdDate
+	 */
+	DateTime getCreatedDate();
 
 
-    /**
-     * Sets the creation date of the entity.
-     * 
-     * @param creationDate the creation date to set
-     */
-    void setCreatedDate(final DateTime creationDate);
+	/**
+	 * Sets the creation date of the entity.
+	 *
+	 * @param creationDate the creation date to set
+	 */
+	void setCreatedDate(final DateTime creationDate);
 
 
-    /**
-     * Returns the user who modified the entity lastly.
-     * 
-     * @return the lastModifiedBy
-     */
-    U getLastModifiedBy();
+	/**
+	 * Returns the user who modified the entity lastly.
+	 *
+	 * @return the lastModifiedBy
+	 */
+	U getLastModifiedBy();
 
 
-    /**
-     * Sets the user who modified the entity lastly.
-     * 
-     * @param lastModifiedBy the last modifying entity to set
-     */
-    void setLastModifiedBy(final U lastModifiedBy);
+	/**
+	 * Sets the user who modified the entity lastly.
+	 *
+	 * @param lastModifiedBy the last modifying entity to set
+	 */
+	void setLastModifiedBy(final U lastModifiedBy);
 
 
-    /**
-     * Returns the date of the last modification.
-     * 
-     * @return the lastModifiedDate
-     */
-    DateTime getLastModifiedDate();
+	/**
+	 * Returns the date of the last modification.
+	 *
+	 * @return the lastModifiedDate
+	 */
+	DateTime getLastModifiedDate();
 
 
-    /**
-     * Sets the date of the last modification.
-     * 
-     * @param lastModifiedDate the date of the last modification to set
-     */
-    void setLastModifiedDate(final DateTime lastModifiedDate);
+	/**
+	 * Sets the date of the last modification.
+	 *
+	 * @param lastModifiedDate the date of the last modification to set
+	 */
+	void setLastModifiedDate(final DateTime lastModifiedDate);
 }

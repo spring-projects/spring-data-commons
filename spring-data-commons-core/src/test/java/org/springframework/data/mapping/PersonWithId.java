@@ -23,15 +23,15 @@ import org.springframework.data.annotation.Id;
  */
 public class PersonWithId extends Person {
 
-  @Id
-  private String id;
+	@Id
+	private String id;
 
-  public PersonWithId(Integer ssn, String firstName, String lastName) {
-    super(ssn, firstName, lastName);
-  }
+	public PersonWithId(Integer ssn, String firstName, String lastName) {
+		super(ssn, firstName, lastName);
+	}
 
-  public String getId() {
-    return id;
-  }
+	public String getId() {
+		return id;
+	}
 
 }

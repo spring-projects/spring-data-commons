@@ -15,11 +15,10 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -40,69 +39,69 @@ import org.xml.sax.SAXException;
 
 /**
  * Unit test for {@link TypeFilterParser}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TypeFilterParserUnitTests {
 
-    private TypeFilterParser parser;
-    private Element documentElement;
+	private TypeFilterParser parser;
+	private Element documentElement;
 
-    @Mock
-    private ClassLoader classLoader;
+	@Mock
+	private ClassLoader classLoader;
 
-    @Mock
-    private ReaderContext context;
+	@Mock
+	private ReaderContext context;
 
-    @Mock
-    private ClassPathScanningCandidateComponentProvider scanner;
-
-
-    @Before
-    public void setUp() throws SAXException, IOException,
-            ParserConfigurationException {
-
-        parser = new TypeFilterParser(classLoader, context);
-
-        Resource sampleXmlFile =
-                new ClassPathResource("type-filter-test.xml",
-                        TypeFilterParserUnitTests.class);
-
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-
-        documentElement =
-                factory.newDocumentBuilder()
-                        .parse(sampleXmlFile.getInputStream())
-                        .getDocumentElement();
-    }
+	@Mock
+	private ClassPathScanningCandidateComponentProvider scanner;
 
 
-    @Test
-    public void parsesIncludesCorrectly() throws Exception {
+	@Before
+	public void setUp() throws SAXException, IOException,
+			ParserConfigurationException {
 
-        Element element =
-                DomUtils.getChildElementByTagName(documentElement,
-                        "firstSample");
+		parser = new TypeFilterParser(classLoader, context);
 
-        parser.parseFilters(element, scanner);
+		Resource sampleXmlFile =
+				new ClassPathResource("type-filter-test.xml",
+						TypeFilterParserUnitTests.class);
 
-        verify(scanner, atLeastOnce()).addIncludeFilter(
-                isA(AssignableTypeFilter.class));
-    }
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+
+		documentElement =
+				factory.newDocumentBuilder()
+						.parse(sampleXmlFile.getInputStream())
+						.getDocumentElement();
+	}
 
 
-    @Test
-    public void parsesExcludesCorrectly() throws Exception {
+	@Test
+	public void parsesIncludesCorrectly() throws Exception {
 
-        Element element =
-                DomUtils.getChildElementByTagName(documentElement,
-                        "secondSample");
+		Element element =
+				DomUtils.getChildElementByTagName(documentElement,
+						"firstSample");
 
-        parser.parseFilters(element, scanner);
+		parser.parseFilters(element, scanner);
 
-        verify(scanner, atLeastOnce()).addExcludeFilter(
-                isA(AssignableTypeFilter.class));
-    }
+		verify(scanner, atLeastOnce()).addIncludeFilter(
+				isA(AssignableTypeFilter.class));
+	}
+
+
+	@Test
+	public void parsesExcludesCorrectly() throws Exception {
+
+		Element element =
+				DomUtils.getChildElementByTagName(documentElement,
+						"secondSample");
+
+		parser.parseFilters(element, scanner);
+
+		verify(scanner, atLeastOnce()).addExcludeFilter(
+				isA(AssignableTypeFilter.class));
+	}
 }

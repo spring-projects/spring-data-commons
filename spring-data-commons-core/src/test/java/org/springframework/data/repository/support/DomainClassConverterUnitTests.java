@@ -17,7 +17,9 @@ package org.springframework.data.repository.support;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
@@ -33,161 +35,158 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.support.EntityInformation;
-import org.springframework.data.repository.support.RepositoryFactoryInformation;
 
 
 /**
  * Unit test for {@link DomainClassConverter}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainClassConverterUnitTests {
 
-    static final User USER = new User();
+	static final User USER = new User();
 
-    DomainClassConverter converter;
+	DomainClassConverter converter;
 
-    TypeDescriptor sourceDescriptor;
-    TypeDescriptor targetDescriptor;
+	TypeDescriptor sourceDescriptor;
+	TypeDescriptor targetDescriptor;
 
-    @SuppressWarnings("rawtypes")
-    Map<String, RepositoryFactoryInformation> providers;
+	@SuppressWarnings("rawtypes")
+	Map<String, RepositoryFactoryInformation> providers;
 
-    @Mock
-    ApplicationContext context;
-    @Mock
-    UserRepository repository;
-    @Mock
-    ConversionService service;
-    @Mock
-    EntityInformation<User, Long> information;
-    @Mock
-    RepositoryFactoryInformation<User, Long> provider;
-
-
-    @Before
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void setUp() {
-
-        converter = new DomainClassConverter(service);
-        providers = new HashMap<String, RepositoryFactoryInformation>();
-
-        sourceDescriptor = TypeDescriptor.valueOf(String.class);
-        targetDescriptor = TypeDescriptor.valueOf(User.class);
-
-        Map<String, UserRepository> map = getBeanAsMap(repository);
-        when(context.getBeansOfType(UserRepository.class)).thenReturn(map);
-        when(context.getBeansOfType(RepositoryFactoryInformation.class))
-                .thenReturn(providers);
-        when(provider.getEntityInformation()).thenReturn(information);
-        when(provider.getRepositoryInterface()).thenReturn(
-                (Class) UserRepository.class);
-        when(information.getJavaType()).thenReturn(User.class);
-        when(information.getIdType()).thenReturn(Long.class);
-    }
+	@Mock
+	ApplicationContext context;
+	@Mock
+	UserRepository repository;
+	@Mock
+	ConversionService service;
+	@Mock
+	EntityInformation<User, Long> information;
+	@Mock
+	RepositoryFactoryInformation<User, Long> provider;
 
 
-    @Test
-    public void matchFailsIfNoDaoAvailable() throws Exception {
+	@Before
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public void setUp() {
 
-        converter.setApplicationContext(context);
-        assertMatches(false);
-    }
+		converter = new DomainClassConverter(service);
+		providers = new HashMap<String, RepositoryFactoryInformation>();
 
+		sourceDescriptor = TypeDescriptor.valueOf(String.class);
+		targetDescriptor = TypeDescriptor.valueOf(User.class);
 
-    @Test
-    public void matchesIfConversionInBetweenIsPossible() throws Exception {
-
-        letContextContain(provider);
-        converter.setApplicationContext(context);
-
-        when(service.canConvert(String.class, Long.class)).thenReturn(true);
-
-        assertMatches(true);
-    }
-
-
-    @Test
-    public void matchFailsIfNoIntermediateConversionIsPossible()
-            throws Exception {
-
-        letContextContain(provider);
-        converter.setApplicationContext(context);
-
-        when(service.canConvert(String.class, Long.class)).thenReturn(false);
-
-        assertMatches(false);
-    }
+		Map<String, UserRepository> map = getBeanAsMap(repository);
+		when(context.getBeansOfType(UserRepository.class)).thenReturn(map);
+		when(context.getBeansOfType(RepositoryFactoryInformation.class))
+				.thenReturn(providers);
+		when(provider.getEntityInformation()).thenReturn(information);
+		when(provider.getRepositoryInterface()).thenReturn(
+				(Class) UserRepository.class);
+		when(information.getJavaType()).thenReturn(User.class);
+		when(information.getIdType()).thenReturn(Long.class);
+	}
 
 
-    private void assertMatches(boolean matchExpected) {
+	@Test
+	public void matchFailsIfNoDaoAvailable() throws Exception {
 
-        assertThat(converter.matches(sourceDescriptor, targetDescriptor),
-                is(matchExpected));
-    }
-
-
-    @Test
-    public void convertsStringToUserCorrectly() throws Exception {
-
-        letContextContain(provider);
-        converter.setApplicationContext(context);
-
-        when(service.canConvert(String.class, Long.class)).thenReturn(true);
-        when(service.convert(anyString(), eq(Long.class))).thenReturn(1L);
-        when(repository.findOne(1L)).thenReturn(USER);
-
-        Object user =
-                converter.convert("1", sourceDescriptor, targetDescriptor);
-        assertThat(user, is(instanceOf(User.class)));
-        assertThat(user, is((Object) USER));
-    }
+		converter.setApplicationContext(context);
+		assertMatches(false);
+	}
 
 
-    private void letContextContain(Object bean) {
+	@Test
+	public void matchesIfConversionInBetweenIsPossible() throws Exception {
 
-        Map<String, Object> beanMap = getBeanAsMap(bean);
-        when(context.getBeansOfType(argThat(is(subtypeOf(bean.getClass())))))
-                .thenReturn(beanMap);
-    }
+		letContextContain(provider);
+		converter.setApplicationContext(context);
 
+		when(service.canConvert(String.class, Long.class)).thenReturn(true);
 
-    private <T> Map<String, T> getBeanAsMap(T bean) {
-
-        Map<String, T> beanMap = new HashMap<String, T>();
-        beanMap.put(bean.getClass().getName(), bean);
-        return beanMap;
-    }
+		assertMatches(true);
+	}
 
 
-    private static <T> TypeSafeMatcher<Class<T>> subtypeOf(
-            final Class<? extends T> type) {
+	@Test
+	public void matchFailsIfNoIntermediateConversionIsPossible()
+			throws Exception {
 
-        return new TypeSafeMatcher<Class<T>>() {
+		letContextContain(provider);
+		converter.setApplicationContext(context);
 
-            public void describeTo(Description arg0) {
+		when(service.canConvert(String.class, Long.class)).thenReturn(false);
 
-                arg0.appendText("not a subtype of");
-            }
+		assertMatches(false);
+	}
 
 
-            @Override
-            public boolean matchesSafely(Class<T> arg0) {
+	private void assertMatches(boolean matchExpected) {
 
-                return arg0.isAssignableFrom(type);
-            }
-        };
-    }
+		assertThat(converter.matches(sourceDescriptor, targetDescriptor),
+				is(matchExpected));
+	}
 
-    private static class User {
 
-    }
+	@Test
+	public void convertsStringToUserCorrectly() throws Exception {
 
-    private static interface UserRepository extends Repository<User, Long> {
+		letContextContain(provider);
+		converter.setApplicationContext(context);
 
-    }
+		when(service.canConvert(String.class, Long.class)).thenReturn(true);
+		when(service.convert(anyString(), eq(Long.class))).thenReturn(1L);
+		when(repository.findOne(1L)).thenReturn(USER);
+
+		Object user =
+				converter.convert("1", sourceDescriptor, targetDescriptor);
+		assertThat(user, is(instanceOf(User.class)));
+		assertThat(user, is((Object) USER));
+	}
+
+
+	private void letContextContain(Object bean) {
+
+		Map<String, Object> beanMap = getBeanAsMap(bean);
+		when(context.getBeansOfType(argThat(is(subtypeOf(bean.getClass())))))
+				.thenReturn(beanMap);
+	}
+
+
+	private <T> Map<String, T> getBeanAsMap(T bean) {
+
+		Map<String, T> beanMap = new HashMap<String, T>();
+		beanMap.put(bean.getClass().getName(), bean);
+		return beanMap;
+	}
+
+
+	private static <T> TypeSafeMatcher<Class<T>> subtypeOf(
+			final Class<? extends T> type) {
+
+		return new TypeSafeMatcher<Class<T>>() {
+
+			public void describeTo(Description arg0) {
+
+				arg0.appendText("not a subtype of");
+			}
+
+
+			@Override
+			public boolean matchesSafely(Class<T> arg0) {
+
+				return arg0.isAssignableFrom(type);
+			}
+		};
+	}
+
+	private static class User {
+
+	}
+
+	private static interface UserRepository extends Repository<User, Long> {
+
+	}
 }

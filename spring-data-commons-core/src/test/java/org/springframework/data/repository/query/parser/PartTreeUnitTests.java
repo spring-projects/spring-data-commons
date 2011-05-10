@@ -29,147 +29,147 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
 
 /**
  * Unit tests for {@link PartTree}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PartTreeUnitTests {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsNullSource() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullSource() throws Exception {
 
-        new PartTree(null, getClass());
-    }
-
-
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsNullDomainClass() throws Exception {
-
-        new PartTree("test", null);
-    }
+		new PartTree(null, getClass());
+	}
 
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsMultipleOrderBy() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullDomainClass() throws Exception {
 
-        new PartTree("firstnameOrderByLastnameOrderByFirstname", User.class);
-    }
-
-
-    @Test
-    public void parsesSimplePropertyCorrectly() throws Exception {
-
-        PartTree partTree = new PartTree("firstname", User.class);
-        assertPart(partTree, new Part[] { new Part("firstname", User.class) });
-    }
+		new PartTree("test", null);
+	}
 
 
-    @Test
-    public void parsesAndPropertiesCorrectly() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsMultipleOrderBy() throws Exception {
 
-        PartTree partTree = new PartTree("firstnameAndLastname", User.class);
-        assertPart(partTree, new Part[] { new Part("firstname", User.class),
-                new Part("lastname", User.class) });
-        assertThat(partTree.getSort(), is(nullValue()));
-    }
+		new PartTree("firstnameOrderByLastnameOrderByFirstname", User.class);
+	}
 
 
-    @Test
-    public void parsesOrPropertiesCorrectly() throws Exception {
+	@Test
+	public void parsesSimplePropertyCorrectly() throws Exception {
 
-        PartTree partTree = new PartTree("firstnameOrLastname", User.class);
-        assertPart(partTree, new Part[] { new Part("firstname", User.class) },
-                new Part[] { new Part("lastname", User.class) });
-        assertThat(partTree.getSort(), is(nullValue()));
-    }
+		PartTree partTree = new PartTree("firstname", User.class);
+		assertPart(partTree, new Part[]{new Part("firstname", User.class)});
+	}
 
 
-    @Test
-    public void parsesCombinedAndAndOrPropertiesCorrectly() throws Exception {
+	@Test
+	public void parsesAndPropertiesCorrectly() throws Exception {
 
-        PartTree tree =
-                new PartTree("firstnameAndLastnameOrLastname", User.class);
-        assertPart(tree, new Part[] { new Part("firstname", User.class),
-                new Part("lastname", User.class) }, new Part[] { new Part(
-                "lastname", User.class) });
-    }
-
-
-    @Test
-    public void hasSortIfOrderByIsGiven() throws Exception {
-
-        PartTree partTree =
-                new PartTree("firstnameOrderByLastnameDesc", User.class);
-        assertThat(partTree.getSort(), is(new Sort(Direction.DESC, "lastname")));
-    }
+		PartTree partTree = new PartTree("firstnameAndLastname", User.class);
+		assertPart(partTree, new Part[]{new Part("firstname", User.class),
+				new Part("lastname", User.class)});
+		assertThat(partTree.getSort(), is(nullValue()));
+	}
 
 
-    @Test
-    public void detectsDistinctCorrectly() throws Exception {
+	@Test
+	public void parsesOrPropertiesCorrectly() throws Exception {
 
-        PartTree tree = new PartTree("findDistinctByLastname", User.class);
-        assertThat(tree.isDistinct(), is(true));
+		PartTree partTree = new PartTree("firstnameOrLastname", User.class);
+		assertPart(partTree, new Part[]{new Part("firstname", User.class)},
+				new Part[]{new Part("lastname", User.class)});
+		assertThat(partTree.getSort(), is(nullValue()));
+	}
 
-        tree = new PartTree("findUsersDistinctByLastname", User.class);
-        assertThat(tree.isDistinct(), is(true));
 
-        tree = new PartTree("findDistinctUsersByLastname", User.class);
-        assertThat(tree.isDistinct(), is(true));
+	@Test
+	public void parsesCombinedAndAndOrPropertiesCorrectly() throws Exception {
 
-        tree = new PartTree("findUsersByLastname", User.class);
-        assertThat(tree.isDistinct(), is(false));
+		PartTree tree =
+				new PartTree("firstnameAndLastnameOrLastname", User.class);
+		assertPart(tree, new Part[]{new Part("firstname", User.class),
+				new Part("lastname", User.class)}, new Part[]{new Part(
+				"lastname", User.class)});
+	}
 
-        tree = new PartTree("findByLastname", User.class);
-        assertThat(tree.isDistinct(), is(false));
 
-        // Check it's non-greedy (would strip everything until Order*By*
-        // otherwise)
-        tree = new PartTree("findByLastnameOrderByFirstnameDesc", User.class);
-        assertThat(tree.isDistinct(), is(false));
-        assertThat(tree.getSort(), is(new Sort(Direction.DESC, "firstname")));
-    }
+	@Test
+	public void hasSortIfOrderByIsGiven() throws Exception {
 
-    
-    @Test
-    public void parsesWithinCorrectly () {
-      PartTree tree = new PartTree("findByLocationWithin", User.class);
-      for (Part part : tree.getParts()) {
-        assertThat(part.getType(), is(Type.WITHIN));
-        assertThat(part.getProperty(), is(new Property("location", User.class)));
-      }
-    }
-    
-    @Test
-    public void parsesNearCorrectly () {
-      PartTree tree = new PartTree("findByLocationNear", User.class);
-      for (Part part : tree.getParts()) {
-        assertThat(part.getType(), is(Type.NEAR));
-        assertThat(part.getProperty(), is(new Property("location", User.class)));
-      }
-    }
+		PartTree partTree =
+				new PartTree("firstnameOrderByLastnameDesc", User.class);
+		assertThat(partTree.getSort(), is(new Sort(Direction.DESC, "lastname")));
+	}
 
-    private void assertPart(PartTree tree, Part[]... parts) {
 
-        Iterator<OrPart> iterator = tree.iterator();
-        for (Part[] part : parts) {
-            assertThat(iterator.hasNext(), is(true));
-            Iterator<Part> partIterator = iterator.next().iterator();
-            for (int k = 0; k < part.length; k++) {
-                assertThat(String.format("Expected %d parts but have %d",
-                        part.length, k + 1), partIterator.hasNext(), is(true));
-                Part next = partIterator.next();
-                assertThat(
-                        String.format("Expected %s but got %s!", part[k], next),
-                        part[k], is(next));
-            }
-            assertThat("Too many parts!", partIterator.hasNext(), is(false));
-        }
-        assertThat("Too many or parts!", iterator.hasNext(), is(false));
-    }
+	@Test
+	public void detectsDistinctCorrectly() throws Exception {
 
-    class User {
+		PartTree tree = new PartTree("findDistinctByLastname", User.class);
+		assertThat(tree.isDistinct(), is(true));
 
-        String firstname;
-        String lastname;
-        double[] location;
-    }
+		tree = new PartTree("findUsersDistinctByLastname", User.class);
+		assertThat(tree.isDistinct(), is(true));
+
+		tree = new PartTree("findDistinctUsersByLastname", User.class);
+		assertThat(tree.isDistinct(), is(true));
+
+		tree = new PartTree("findUsersByLastname", User.class);
+		assertThat(tree.isDistinct(), is(false));
+
+		tree = new PartTree("findByLastname", User.class);
+		assertThat(tree.isDistinct(), is(false));
+
+		// Check it's non-greedy (would strip everything until Order*By*
+		// otherwise)
+		tree = new PartTree("findByLastnameOrderByFirstnameDesc", User.class);
+		assertThat(tree.isDistinct(), is(false));
+		assertThat(tree.getSort(), is(new Sort(Direction.DESC, "firstname")));
+	}
+
+
+	@Test
+	public void parsesWithinCorrectly() {
+		PartTree tree = new PartTree("findByLocationWithin", User.class);
+		for (Part part : tree.getParts()) {
+			assertThat(part.getType(), is(Type.WITHIN));
+			assertThat(part.getProperty(), is(new Property("location", User.class)));
+		}
+	}
+
+	@Test
+	public void parsesNearCorrectly() {
+		PartTree tree = new PartTree("findByLocationNear", User.class);
+		for (Part part : tree.getParts()) {
+			assertThat(part.getType(), is(Type.NEAR));
+			assertThat(part.getProperty(), is(new Property("location", User.class)));
+		}
+	}
+
+	private void assertPart(PartTree tree, Part[]... parts) {
+
+		Iterator<OrPart> iterator = tree.iterator();
+		for (Part[] part : parts) {
+			assertThat(iterator.hasNext(), is(true));
+			Iterator<Part> partIterator = iterator.next().iterator();
+			for (int k = 0; k < part.length; k++) {
+				assertThat(String.format("Expected %d parts but have %d",
+						part.length, k + 1), partIterator.hasNext(), is(true));
+				Part next = partIterator.next();
+				assertThat(
+						String.format("Expected %s but got %s!", part[k], next),
+						part[k], is(next));
+			}
+			assertThat("Too many parts!", partIterator.hasNext(), is(false));
+		}
+		assertThat("Too many or parts!", iterator.hasNext(), is(false));
+	}
+
+	class User {
+
+		String firstname;
+		String lastname;
+		double[] location;
+	}
 }

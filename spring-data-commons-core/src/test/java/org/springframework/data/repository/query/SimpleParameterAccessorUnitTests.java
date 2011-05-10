@@ -27,117 +27,117 @@ import org.springframework.data.domain.Sort;
 
 /**
  * Unit tests for {@link ParametersParameterAccessor}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class SimpleParameterAccessorUnitTests {
 
-    Parameters parameters, sortParameters, pageableParameters;
+	Parameters parameters, sortParameters, pageableParameters;
 
 
-    @Before
-    public void setUp() throws SecurityException, NoSuchMethodException {
+	@Before
+	public void setUp() throws SecurityException, NoSuchMethodException {
 
-        parameters =
-                new Parameters(Sample.class.getMethod("sample", String.class));
-        sortParameters =
-                new Parameters(Sample.class.getMethod("sample1", String.class,
-                        Sort.class));
-        pageableParameters =
-                new Parameters(Sample.class.getMethod("sample2", String.class,
-                        Pageable.class));
-    }
-
-
-    @Test
-    public void testname() throws Exception {
-
-        new ParametersParameterAccessor(parameters, new Object[] { "test" });
-    }
+		parameters =
+				new Parameters(Sample.class.getMethod("sample", String.class));
+		sortParameters =
+				new Parameters(Sample.class.getMethod("sample1", String.class,
+						Sort.class));
+		pageableParameters =
+				new Parameters(Sample.class.getMethod("sample2", String.class,
+						Pageable.class));
+	}
 
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsNullParameters() throws Exception {
+	@Test
+	public void testname() throws Exception {
 
-        new ParametersParameterAccessor(null, new Object[0]);
-    }
-
-
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsNullValues() throws Exception {
-
-        new ParametersParameterAccessor(parameters, null);
-    }
+		new ParametersParameterAccessor(parameters, new Object[]{"test"});
+	}
 
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsTooLittleNumberOfArguments() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullParameters() throws Exception {
 
-        new ParametersParameterAccessor(parameters, new Object[0]);
-    }
-
-
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsTooManyArguments() throws Exception {
-
-        new ParametersParameterAccessor(parameters, new Object[] { "test", "test" });
-    }
+		new ParametersParameterAccessor(null, new Object[0]);
+	}
 
 
-    @Test
-    public void returnsNullForPageableAndSortIfNoneAvailable() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullValues() throws Exception {
 
-        ParameterAccessor accessor =
-                new ParametersParameterAccessor(parameters, new Object[] { "test" });
-        assertThat(accessor.getPageable(), is(nullValue()));
-        assertThat(accessor.getSort(), is(nullValue()));
-    }
+		new ParametersParameterAccessor(parameters, null);
+	}
 
 
-    @Test
-    public void returnsSortIfAvailable() {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsTooLittleNumberOfArguments() throws Exception {
 
-        Sort sort = new Sort("foo");
-        ParameterAccessor accessor =
-                new ParametersParameterAccessor(sortParameters, new Object[] {
-                        "test", sort });
-        assertThat(accessor.getSort(), is(sort));
-        assertThat(accessor.getPageable(), is(nullValue()));
-    }
+		new ParametersParameterAccessor(parameters, new Object[0]);
+	}
 
 
-    @Test
-    public void returnsPageableIfAvailable() {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsTooManyArguments() throws Exception {
 
-        Pageable pageable = new PageRequest(0, 10);
-        ParameterAccessor accessor =
-                new ParametersParameterAccessor(pageableParameters, new Object[] {
-                        "test", pageable });
-        assertThat(accessor.getPageable(), is(pageable));
-        assertThat(accessor.getSort(), is(nullValue()));
-    }
+		new ParametersParameterAccessor(parameters, new Object[]{"test", "test"});
+	}
 
 
-    @Test
-    public void returnsSortFromPageableIfAvailable() throws Exception {
+	@Test
+	public void returnsNullForPageableAndSortIfNoneAvailable() throws Exception {
 
-        Sort sort = new Sort("foo");
-        Pageable pageable = new PageRequest(0, 10, sort);
-        ParameterAccessor accessor =
-                new ParametersParameterAccessor(pageableParameters, new Object[] {
-                        "test", pageable });
-        assertThat(accessor.getPageable(), is(pageable));
-        assertThat(accessor.getSort(), is(sort));
-    }
-
-    interface Sample {
-
-        void sample(String firstname);
+		ParameterAccessor accessor =
+				new ParametersParameterAccessor(parameters, new Object[]{"test"});
+		assertThat(accessor.getPageable(), is(nullValue()));
+		assertThat(accessor.getSort(), is(nullValue()));
+	}
 
 
-        void sample1(String firstname, Sort sort);
+	@Test
+	public void returnsSortIfAvailable() {
+
+		Sort sort = new Sort("foo");
+		ParameterAccessor accessor =
+				new ParametersParameterAccessor(sortParameters, new Object[]{
+						"test", sort});
+		assertThat(accessor.getSort(), is(sort));
+		assertThat(accessor.getPageable(), is(nullValue()));
+	}
 
 
-        void sample2(String firstname, Pageable pageable);
-    }
+	@Test
+	public void returnsPageableIfAvailable() {
+
+		Pageable pageable = new PageRequest(0, 10);
+		ParameterAccessor accessor =
+				new ParametersParameterAccessor(pageableParameters, new Object[]{
+						"test", pageable});
+		assertThat(accessor.getPageable(), is(pageable));
+		assertThat(accessor.getSort(), is(nullValue()));
+	}
+
+
+	@Test
+	public void returnsSortFromPageableIfAvailable() throws Exception {
+
+		Sort sort = new Sort("foo");
+		Pageable pageable = new PageRequest(0, 10, sort);
+		ParameterAccessor accessor =
+				new ParametersParameterAccessor(pageableParameters, new Object[]{
+						"test", pageable});
+		assertThat(accessor.getPageable(), is(pageable));
+		assertThat(accessor.getSort(), is(sort));
+	}
+
+	interface Sample {
+
+		void sample(String firstname);
+
+
+		void sample1(String firstname, Sort sort);
+
+
+		void sample2(String firstname, Pageable pageable);
+	}
 }

@@ -16,32 +16,32 @@
 
 package org.springframework.data.mapping;
 
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
-
-import java.util.List;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class PersonWithChildren extends Person {
 
-  @Id
-  String id;
-    
-  @Reference
-  private List<Child> children;
+	@Id
+	String id;
 
-  public PersonWithChildren(Integer ssn, String firstName, String lastName) {
-    super(ssn, firstName, lastName);
-  }
+	@Reference
+	private List<Child> children;
 
-  public List<Child> getChildren() {
-    return children;
-  }
+	public PersonWithChildren(Integer ssn, String firstName, String lastName) {
+		super(ssn, firstName, lastName);
+	}
 
-  public void setChildren(List<Child> children) {
-    this.children = children;
-  }
+	public List<Child> getChildren() {
+		return children;
+	}
+
+	public void setChildren(List<Child> children) {
+		this.children = children;
+	}
 
 }

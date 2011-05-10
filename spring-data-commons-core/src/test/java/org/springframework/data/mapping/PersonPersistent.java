@@ -24,8 +24,8 @@ import org.springframework.data.annotation.Persistent;
 @Persistent
 public class PersonPersistent extends PersonWithId {
 
-  public PersonPersistent(Integer ssn, String firstName, String lastName) {
-    super(ssn, firstName, lastName);
-  }
+	public PersonPersistent(Integer ssn, String firstName, String lastName) {
+		super(ssn, firstName, lastName);
+	}
 
 }

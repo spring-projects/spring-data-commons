@@ -20,16 +20,16 @@ package org.springframework.data.mapping.model;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class MappingConfigurationException extends Throwable {
-  /**
-	 * 
+	/**
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
-public MappingConfigurationException(String s) {
-    super(s);
-  }
+	public MappingConfigurationException(String s) {
+		super(s);
+	}
 
-  public MappingConfigurationException(String s, Throwable throwable) {
-    super(s, throwable);
-  }
+	public MappingConfigurationException(String s, Throwable throwable) {
+		super(s, throwable);
+	}
 }

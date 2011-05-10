@@ -24,72 +24,72 @@ import org.springframework.data.domain.Sort.Direction;
 
 /**
  * Unit test for {@link Sort}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class SortUnitTests {
 
-    /**
-     * Asserts that the class applies the default sort order if no order or
-     * {@code null} was provided.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void appliesDefaultForOrder() throws Exception {
+	/**
+	 * Asserts that the class applies the default sort order if no order or
+	 * {@code null} was provided.
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void appliesDefaultForOrder() throws Exception {
 
-        assertEquals(Sort.DEFAULT_DIRECTION, new Sort("foo").iterator().next()
-                .getDirection());
-        assertEquals(Sort.DEFAULT_DIRECTION, new Sort((Direction) null, "foo")
-                .iterator().next().getDirection());
-    }
-
-
-    /**
-     * Asserts that the class rejects {@code null} as properties array.
-     * 
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void preventsNullProperties() throws Exception {
-
-        new Sort(Direction.ASC, (String[]) null);
-    }
+		assertEquals(Sort.DEFAULT_DIRECTION, new Sort("foo").iterator().next()
+				.getDirection());
+		assertEquals(Sort.DEFAULT_DIRECTION, new Sort((Direction) null, "foo")
+				.iterator().next().getDirection());
+	}
 
 
-    /**
-     * Asserts that the class rejects {@code null} values in the properties
-     * array.
-     * 
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void preventsNullProperty() throws Exception {
+	/**
+	 * Asserts that the class rejects {@code null} as properties array.
+	 *
+	 * @throws Exception
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void preventsNullProperties() throws Exception {
 
-        new Sort(Direction.ASC, (String) null);
-    }
-
-
-    /**
-     * Asserts that the class rejects empty strings in the properties array.
-     * 
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void preventsEmptyProperty() throws Exception {
-
-        new Sort(Direction.ASC, "");
-    }
+		new Sort(Direction.ASC, (String[]) null);
+	}
 
 
-    /**
-     * Asserts that the class rejects no properties given at all.
-     * 
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void preventsNoProperties() throws Exception {
+	/**
+	 * Asserts that the class rejects {@code null} values in the properties
+	 * array.
+	 *
+	 * @throws Exception
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void preventsNullProperty() throws Exception {
 
-        new Sort(Direction.ASC);
-    }
+		new Sort(Direction.ASC, (String) null);
+	}
+
+
+	/**
+	 * Asserts that the class rejects empty strings in the properties array.
+	 *
+	 * @throws Exception
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void preventsEmptyProperty() throws Exception {
+
+		new Sort(Direction.ASC, "");
+	}
+
+
+	/**
+	 * Asserts that the class rejects no properties given at all.
+	 *
+	 * @throws Exception
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void preventsNoProperties() throws Exception {
+
+		new Sort(Direction.ASC);
+	}
 }

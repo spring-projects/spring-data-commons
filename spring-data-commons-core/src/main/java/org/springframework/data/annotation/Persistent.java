@@ -26,10 +26,10 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {
-    ElementType.TYPE,
-    ElementType.ANNOTATION_TYPE,
-    ElementType.FIELD,
-    ElementType.PARAMETER
+		ElementType.TYPE,
+		ElementType.ANNOTATION_TYPE,
+		ElementType.FIELD,
+		ElementType.PARAMETER
 })
 public @interface Persistent {
 }

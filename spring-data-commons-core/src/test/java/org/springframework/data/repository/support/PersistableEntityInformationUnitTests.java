@@ -28,63 +28,63 @@ import org.springframework.data.domain.Persistable;
 
 /**
  * Unit tests for {@link PersistableEntityMetadata}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PersistableEntityInformationUnitTests {
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    static final PersistableEntityInformation metadata =
-            new PersistableEntityInformation(Persistable.class);
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	static final PersistableEntityInformation metadata =
+			new PersistableEntityInformation(Persistable.class);
 
-    @Mock
-    Persistable<Long> persistable;
-
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void usesPersistablesGetId() throws Exception {
-
-        when(persistable.getId()).thenReturn(2L, 1L, 3L);
-        assertEquals(2L, metadata.getId(persistable));
-        assertEquals(1L, metadata.getId(persistable));
-        assertEquals(3L, metadata.getId(persistable));
-    }
+	@Mock
+	Persistable<Long> persistable;
 
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void usesPersistablesIsNew() throws Exception {
+	@Test
+	@SuppressWarnings("unchecked")
+	public void usesPersistablesGetId() throws Exception {
 
-        when(persistable.isNew()).thenReturn(true, false);
-        assertThat(metadata.isNew(persistable), is(true));
-        assertThat(metadata.isNew(persistable), is(false));
-    }
-
-
-    @Test
-    public void returnsGivenClassAsEntityType() throws Exception {
-
-        PersistableEntityInformation<PersistableEntity, Long> info =
-                new PersistableEntityInformation<PersistableEntity, Long>(
-                        PersistableEntity.class);
-
-        assertEquals(PersistableEntity.class, info.getJavaType());
-    }
-
-    @SuppressWarnings("serial")
-    static class PersistableEntity implements Persistable<Long> {
-
-        public Long getId() {
-
-            return null;
-        }
+		when(persistable.getId()).thenReturn(2L, 1L, 3L);
+		assertEquals(2L, metadata.getId(persistable));
+		assertEquals(1L, metadata.getId(persistable));
+		assertEquals(3L, metadata.getId(persistable));
+	}
 
 
-        public boolean isNew() {
+	@Test
+	@SuppressWarnings("unchecked")
+	public void usesPersistablesIsNew() throws Exception {
 
-            return false;
-        }
-    }
+		when(persistable.isNew()).thenReturn(true, false);
+		assertThat(metadata.isNew(persistable), is(true));
+		assertThat(metadata.isNew(persistable), is(false));
+	}
+
+
+	@Test
+	public void returnsGivenClassAsEntityType() throws Exception {
+
+		PersistableEntityInformation<PersistableEntity, Long> info =
+				new PersistableEntityInformation<PersistableEntity, Long>(
+						PersistableEntity.class);
+
+		assertEquals(PersistableEntity.class, info.getJavaType());
+	}
+
+	@SuppressWarnings("serial")
+	static class PersistableEntity implements Persistable<Long> {
+
+		public Long getId() {
+
+			return null;
+		}
+
+
+		public boolean isNew() {
+
+			return false;
+		}
+	}
 }

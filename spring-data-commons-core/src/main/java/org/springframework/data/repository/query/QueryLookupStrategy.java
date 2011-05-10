@@ -24,39 +24,39 @@ import org.springframework.util.StringUtils;
 
 /**
  * Strategy interface for which way to lookup {@link RepositoryQuery}s.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface QueryLookupStrategy {
 
-    public static enum Key {
+	public static enum Key {
 
-        CREATE, USE_DECLARED_QUERY, CREATE_IF_NOT_FOUND;
+		CREATE, USE_DECLARED_QUERY, CREATE_IF_NOT_FOUND;
 
-        /**
-         * Returns a strategy key from the given XML value.
-         * 
-         * @param xml
-         * @return a strategy key from the given XML value
-         */
-        public static Key create(String xml) {
+		/**
+		 * Returns a strategy key from the given XML value.
+		 *
+		 * @param xml
+		 * @return a strategy key from the given XML value
+		 */
+		public static Key create(String xml) {
 
-            if (!StringUtils.hasText(xml)) {
-                return null;
-            }
+			if (!StringUtils.hasText(xml)) {
+				return null;
+			}
 
-            return valueOf(xml.toUpperCase(Locale.US).replace("-", "_"));
-        }
-    }
+			return valueOf(xml.toUpperCase(Locale.US).replace("-", "_"));
+		}
+	}
 
 
-    /**
-     * Resolves a {@link RepositoryQuery} from the given {@link QueryMethod}
-     * that can be executed afterwards.
-     * 
-     * @param method
-     * @param metadata
-     * @return
-     */
-    RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata);
+	/**
+	 * Resolves a {@link RepositoryQuery} from the given {@link QueryMethod}
+	 * that can be executed afterwards.
+	 *
+	 * @param method
+	 * @param metadata
+	 * @return
+	 */
+	RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata);
 }

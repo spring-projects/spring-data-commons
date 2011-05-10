@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;
@@ -37,22 +37,22 @@ public class QueryExecuterMethodInterceptorUnitTests {
 	RepositoryFactorySupport factory;
 	@Mock
 	RepositoryInformation information;
-	
-	@Test(expected=IllegalStateException.class)
+
+	@Test(expected = IllegalStateException.class)
 	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() {
-		
+
 		when(information.hasCustomMethod()).thenReturn(true);
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(null);
-		
+
 		factory.new QueryExecuterMethodInterceptor(information, null, new Object());
 	}
-	
+
 	@Test
 	public void skipsQueryLookupsIfQueryLookupStrategyIsNull() {
-		
+
 		when(information.hasCustomMethod()).thenReturn(false);
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(null);
-		
+
 		factory.new QueryExecuterMethodInterceptor(information, null, new Object());
 		verify(information, times(0)).getQueryMethods();
 	}

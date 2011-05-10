@@ -27,8 +27,6 @@ import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.support.EntityInformation;
-import org.springframework.data.repository.support.RepositoryFactoryInformation;
 
 
 /**
@@ -40,76 +38,76 @@ import org.springframework.data.repository.support.RepositoryFactoryInformation;
  * {@link org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter}
  * and register the {@link DomainClassPropertyEditorRegistrar} there: <code>
  * &lt;bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"&gt;
- *   &lt;property name="webBindingInitializer"&gt;
- *     &lt;bean class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer"&gt;
- *       &lt;property name="propertyEditorRegistrars"&gt;
- *         &lt;bean class="org.springframework.data.extensions.beans.DomainClassPropertyEditorRegistrar" /&gt;
- *       &lt;/property&gt;
- *     &lt;/bean&gt;
- *   &lt;/property&gt;
+ * &lt;property name="webBindingInitializer"&gt;
+ * &lt;bean class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer"&gt;
+ * &lt;property name="propertyEditorRegistrars"&gt;
+ * &lt;bean class="org.springframework.data.extensions.beans.DomainClassPropertyEditorRegistrar" /&gt;
+ * &lt;/property&gt;
+ * &lt;/bean&gt;
+ * &lt;/property&gt;
  * &lt;/bean&gt;
  * </code> Make sure this bean declaration is in the {@link ApplicationContext}
  * created by the {@link DispatcherServlet} whereas the repositories need to be
  * declared in the root
  * {@link org.springframework.web.context.WebApplicationContext}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DomainClassPropertyEditorRegistrar implements
-        PropertyEditorRegistrar, ApplicationContextAware {
+		PropertyEditorRegistrar, ApplicationContextAware {
 
-    private final Map<EntityInformation<Object, Serializable>, Repository<Object, Serializable>> repositories =
-            new HashMap<EntityInformation<Object, Serializable>, Repository<Object, Serializable>>();
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.beans.PropertyEditorRegistrar#registerCustomEditors
-     * (org.springframework.beans.PropertyEditorRegistry)
-     */
-    public void registerCustomEditors(PropertyEditorRegistry registry) {
-
-        for (Entry<EntityInformation<Object, Serializable>, Repository<Object, Serializable>> entry : repositories
-                .entrySet()) {
-
-            EntityInformation<Object, Serializable> metadata = entry.getKey();
-            Repository<Object, Serializable> repository = entry.getValue();
-
-            DomainClassPropertyEditor<Object, Serializable> editor =
-                    new DomainClassPropertyEditor<Object, Serializable>(
-                            repository, metadata, registry);
-
-            registry.registerCustomEditor(metadata.getJavaType(), editor);
-        }
-    }
+	private final Map<EntityInformation<Object, Serializable>, Repository<Object, Serializable>> repositories =
+			new HashMap<EntityInformation<Object, Serializable>, Repository<Object, Serializable>>();
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.context.ApplicationContextAware#setApplicationContext
-     * (org.springframework.context.ApplicationContext)
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void setApplicationContext(ApplicationContext context) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.beans.PropertyEditorRegistrar#registerCustomEditors
+			 * (org.springframework.beans.PropertyEditorRegistry)
+			 */
+	public void registerCustomEditors(PropertyEditorRegistry registry) {
 
-        Collection<RepositoryFactoryInformation> providers =
-                BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
-                        RepositoryFactoryInformation.class).values();
+		for (Entry<EntityInformation<Object, Serializable>, Repository<Object, Serializable>> entry : repositories
+				.entrySet()) {
 
-        for (RepositoryFactoryInformation information : providers) {
+			EntityInformation<Object, Serializable> metadata = entry.getKey();
+			Repository<Object, Serializable> repository = entry.getValue();
 
-            EntityInformation<Object, Serializable> metadata =
-                    information.getEntityInformation();
-            Class<Repository<Object, Serializable>> objectType =
-                    information.getRepositoryInterface();
-            Repository<Object, Serializable> repository =
-                    BeanFactoryUtils.beanOfType(context, objectType);
+			DomainClassPropertyEditor<Object, Serializable> editor =
+					new DomainClassPropertyEditor<Object, Serializable>(
+							repository, metadata, registry);
 
-            this.repositories.put(metadata, repository);
-        }
-    }
+			registry.registerCustomEditor(metadata.getJavaType(), editor);
+		}
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.context.ApplicationContextAware#setApplicationContext
+			 * (org.springframework.context.ApplicationContext)
+			 */
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public void setApplicationContext(ApplicationContext context) {
+
+		Collection<RepositoryFactoryInformation> providers =
+				BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
+						RepositoryFactoryInformation.class).values();
+
+		for (RepositoryFactoryInformation information : providers) {
+
+			EntityInformation<Object, Serializable> metadata =
+					information.getEntityInformation();
+			Class<Repository<Object, Serializable>> objectType =
+					information.getRepositoryInterface();
+			Repository<Object, Serializable> repository =
+					BeanFactoryUtils.beanOfType(context, objectType);
+
+			this.repositories.put(metadata, repository);
+		}
+	}
 }

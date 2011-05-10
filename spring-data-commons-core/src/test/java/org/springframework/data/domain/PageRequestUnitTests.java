@@ -24,71 +24,71 @@ import org.springframework.data.domain.Sort.Direction;
 
 /**
  * Unit test for {@link PageRequest}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PageRequestUnitTests {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void preventsNegativePage() {
+	@Test(expected = IllegalArgumentException.class)
+	public void preventsNegativePage() {
 
-        new PageRequest(-1, 10);
-    }
-
-
-    @Test(expected = IllegalArgumentException.class)
-    public void preventsNegativeSize() {
-
-        new PageRequest(0, -1);
-    }
+		new PageRequest(-1, 10);
+	}
 
 
-    @Test(expected = IllegalArgumentException.class)
-    public void preventsZeroSize() {
+	@Test(expected = IllegalArgumentException.class)
+	public void preventsNegativeSize() {
 
-        new PageRequest(0, 0);
-    }
-
-
-    @Test
-    public void equalsRegardsSortCorrectly() {
-
-        Sort sort = new Sort(Direction.DESC, "foo");
-        PageRequest request = new PageRequest(0, 10, sort);
-
-        // Equals itself
-        assertEqualsAndHashcode(request, request);
-
-        // Equals another instance with same setup
-        assertEqualsAndHashcode(request, new PageRequest(0, 10, sort));
-
-        // Equals without sort entirely
-        assertEqualsAndHashcode(new PageRequest(0, 10), new PageRequest(0, 10));
-
-        // Is not equal to instance without sort
-        assertNotEqualsAndHashcode(request, new PageRequest(0, 10));
-
-        // Is not equal to instance with another sort
-        assertNotEqualsAndHashcode(request, new PageRequest(0, 10,
-                Direction.ASC, "foo"));
-    }
+		new PageRequest(0, -1);
+	}
 
 
-    @Test
-    public void equalsHonoursPageAndSize() {
+	@Test(expected = IllegalArgumentException.class)
+	public void preventsZeroSize() {
 
-        PageRequest request = new PageRequest(0, 10);
+		new PageRequest(0, 0);
+	}
 
-        // Equals itself
-        assertEqualsAndHashcode(request, request);
 
-        // Equals same setup
-        assertEqualsAndHashcode(request, new PageRequest(0, 10));
+	@Test
+	public void equalsRegardsSortCorrectly() {
 
-        // Does not equal on different page
-        assertNotEqualsAndHashcode(request, new PageRequest(1, 10));
+		Sort sort = new Sort(Direction.DESC, "foo");
+		PageRequest request = new PageRequest(0, 10, sort);
 
-        // Does not equal on different size
-        assertNotEqualsAndHashcode(request, new PageRequest(0, 11));
-    }
+		// Equals itself
+		assertEqualsAndHashcode(request, request);
+
+		// Equals another instance with same setup
+		assertEqualsAndHashcode(request, new PageRequest(0, 10, sort));
+
+		// Equals without sort entirely
+		assertEqualsAndHashcode(new PageRequest(0, 10), new PageRequest(0, 10));
+
+		// Is not equal to instance without sort
+		assertNotEqualsAndHashcode(request, new PageRequest(0, 10));
+
+		// Is not equal to instance with another sort
+		assertNotEqualsAndHashcode(request, new PageRequest(0, 10,
+				Direction.ASC, "foo"));
+	}
+
+
+	@Test
+	public void equalsHonoursPageAndSize() {
+
+		PageRequest request = new PageRequest(0, 10);
+
+		// Equals itself
+		assertEqualsAndHashcode(request, request);
+
+		// Equals same setup
+		assertEqualsAndHashcode(request, new PageRequest(0, 10));
+
+		// Does not equal on different page
+		assertNotEqualsAndHashcode(request, new PageRequest(1, 10));
+
+		// Does not equal on different size
+		assertNotEqualsAndHashcode(request, new PageRequest(0, 11));
+	}
 }

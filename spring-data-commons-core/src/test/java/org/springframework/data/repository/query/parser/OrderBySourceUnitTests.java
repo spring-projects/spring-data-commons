@@ -26,61 +26,61 @@ import org.springframework.data.domain.Sort.Order;
 
 /**
  * Unit test for {@link OrderBySource}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class OrderBySourceUnitTests {
 
-    @Test
-    public void handlesSingleDirectionAndPropertyCorrectly() throws Exception {
+	@Test
+	public void handlesSingleDirectionAndPropertyCorrectly() throws Exception {
 
-        assertThat(new OrderBySource("UsernameDesc").toSort(), is(new Sort(
-                DESC, "username")));
-    }
-
-
-    @Test
-    public void handlesCamelCasePropertyCorrecty() throws Exception {
-
-        assertThat(new OrderBySource("LastnameUsernameDesc").toSort(),
-                is(new Sort(DESC, "lastnameUsername")));
-    }
+		assertThat(new OrderBySource("UsernameDesc").toSort(), is(new Sort(
+				DESC, "username")));
+	}
 
 
-    @Test
-    public void handlesMultipleDirectionsCorrectly() throws Exception {
+	@Test
+	public void handlesCamelCasePropertyCorrecty() throws Exception {
 
-        OrderBySource orderBySource =
-                new OrderBySource("LastnameAscUsernameDesc");
-        assertThat(orderBySource.toSort(), is(new Sort(new Order(ASC,
-                "lastname"), new Order(DESC, "username"))));
-    }
+		assertThat(new OrderBySource("LastnameUsernameDesc").toSort(),
+				is(new Sort(DESC, "lastnameUsername")));
+	}
 
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsMissingProperty() throws Exception {
+	@Test
+	public void handlesMultipleDirectionsCorrectly() throws Exception {
 
-        new OrderBySource("Desc");
-    }
+		OrderBySource orderBySource =
+				new OrderBySource("LastnameAscUsernameDesc");
+		assertThat(orderBySource.toSort(), is(new Sort(new Order(ASC,
+				"lastname"), new Order(DESC, "username"))));
+	}
 
 
-    @Test
-    public void usesNestedPropertyCorrectly() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsMissingProperty() throws Exception {
 
-        OrderBySource source = new OrderBySource("BarNameDesc", Foo.class);
-        assertThat(source.toSort(), is(new Sort(new Order(DESC, "bar.name"))));
+		new OrderBySource("Desc");
+	}
 
-    }
 
-    @SuppressWarnings("unused")
-    private class Foo {
+	@Test
+	public void usesNestedPropertyCorrectly() throws Exception {
 
-        private Bar bar;
-    }
+		OrderBySource source = new OrderBySource("BarNameDesc", Foo.class);
+		assertThat(source.toSort(), is(new Sort(new Order(DESC, "bar.name"))));
 
-    @SuppressWarnings("unused")
-    private class Bar {
+	}
 
-        private String name;
-    }
+	@SuppressWarnings("unused")
+	private class Foo {
+
+		private Bar bar;
+	}
+
+	@SuppressWarnings("unused")
+	private class Bar {
+
+		private String name;
+	}
 }

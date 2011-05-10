@@ -16,17 +16,16 @@
 package org.springframework.data.repository.support;
 
 
-
 /**
  * Metadata for repository interfaces.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface RepositoryMetadata {
-	
+
 	/**
 	 * Returns the id class the given class is declared for.
-	 * 
+	 *
 	 * @param clazz
 	 * @return the id class of the entity managed by the repository for or
 	 *         {@code null} if none found.
@@ -35,7 +34,7 @@ public interface RepositoryMetadata {
 
 	/**
 	 * Returns the domain class the repository is declared for.
-	 * 
+	 *
 	 * @param clazz
 	 * @return the domain class the repository is handling or {@code null} if
 	 *         none found.
@@ -44,7 +43,7 @@ public interface RepositoryMetadata {
 
 	/**
 	 * Returns the repository interface.
-	 * 
+	 *
 	 * @return
 	 */
 	Class<?> getRepositoryInterface();

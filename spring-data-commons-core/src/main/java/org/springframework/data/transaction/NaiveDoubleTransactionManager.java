@@ -10,11 +10,11 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
 public class NaiveDoubleTransactionManager implements PlatformTransactionManager {
-	Map<TransactionStatus,TransactionStatus> status=new IdentityHashMap<TransactionStatus, TransactionStatus>();
+	Map<TransactionStatus, TransactionStatus> status = new IdentityHashMap<TransactionStatus, TransactionStatus>();
 	private final PlatformTransactionManager a;
-	
+
 	private final PlatformTransactionManager b;
-	
+
 	public NaiveDoubleTransactionManager(PlatformTransactionManager a, PlatformTransactionManager b) {
 		System.err.println("WARNING: Naive JTA/Neo4j Spring transaction manager--must implement properly");
 		this.a = a;
@@ -23,20 +23,19 @@ public class NaiveDoubleTransactionManager implements PlatformTransactionManager
 
 	public void commit(TransactionStatus ts) throws TransactionException {
 		try {
-		final TransactionStatus tsb = copyTransactionStatus(status.get(ts));
-		try {
-			a.commit(ts);
-		}
-		catch (Throwable t) {
-			System.err.println("Continuing to commit tx despite this:" + t);
-		}
-		try {
-			b.commit(tsb);
-		}
-		catch (Throwable t) {
-			System.err.println("Can't commit tx" + t);
-			throw new TransactionException(t.getMessage(), t) {}; 
-		}
+			final TransactionStatus tsb = copyTransactionStatus(status.get(ts));
+			try {
+				a.commit(ts);
+			} catch (Throwable t) {
+				System.err.println("Continuing to commit tx despite this:" + t);
+			}
+			try {
+				b.commit(tsb);
+			} catch (Throwable t) {
+				System.err.println("Can't commit tx" + t);
+				throw new TransactionException(t.getMessage(), t) {
+				};
+			}
 		} finally {
 			status.remove(ts);
 		}
@@ -44,9 +43,9 @@ public class NaiveDoubleTransactionManager implements PlatformTransactionManager
 
 	private TransactionStatus copyTransactionStatus(TransactionStatus ts) {
 		Object t = (ts instanceof DefaultTransactionStatus) ? ((DefaultTransactionStatus) ts).getTransaction() : null;
-		return new DefaultTransactionStatus(t,ts.isNewTransaction(), false,  false, false, null);
+		return new DefaultTransactionStatus(t, ts.isNewTransaction(), false, false, false, null);
 	}
-	
+
 	public TransactionStatus getTransaction(TransactionDefinition td)
 			throws TransactionException {
 		TransactionStatus atx = a.getTransaction(td);
@@ -59,16 +58,15 @@ public class NaiveDoubleTransactionManager implements PlatformTransactionManager
 		final TransactionStatus tsb = copyTransactionStatus(status.remove(ts));
 		try {
 			a.rollback(ts);
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			System.err.println("Continuing to rollback tx despite this:" + t);
 		}
 		try {
 			b.rollback(tsb);
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			System.err.println("Can't rollback tx" + t);
-			throw new TransactionException(t.getMessage(), t) {}; 
+			throw new TransactionException(t.getMessage(), t) {
+			};
 		}
 	}
 

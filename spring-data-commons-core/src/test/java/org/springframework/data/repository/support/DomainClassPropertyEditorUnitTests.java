@@ -29,152 +29,151 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.support.EntityInformation;
 
 
 /**
  * Unit test for {@link DomainClassPropertyEditor}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainClassPropertyEditorUnitTests {
 
-    DomainClassPropertyEditor<User, Integer> editor;
+	DomainClassPropertyEditor<User, Integer> editor;
 
-    @Mock
-    PropertyEditorRegistry registry;
-    @Mock
-    UserRepository userRepository;
-    @Mock
-    EntityInformation<User, Integer> information;
-
-
-    @Before
-    public void setUp() {
-
-        when(information.getIdType()).thenReturn(Integer.class);
-        editor =
-                new DomainClassPropertyEditor<User, Integer>(userRepository,
-                        information, registry);
-    }
+	@Mock
+	PropertyEditorRegistry registry;
+	@Mock
+	UserRepository userRepository;
+	@Mock
+	EntityInformation<User, Integer> information;
 
 
-    @Test
-    public void convertsPlainIdTypeCorrectly() throws Exception {
+	@Before
+	public void setUp() {
 
-        User user = new User(1);
-        when(information.getId(user)).thenReturn(user.getId());
-        when(userRepository.findOne(1)).thenReturn(user);
-
-        editor.setAsText("1");
-
-        verify(userRepository, times(1)).findOne(1);
-    }
+		when(information.getIdType()).thenReturn(Integer.class);
+		editor =
+				new DomainClassPropertyEditor<User, Integer>(userRepository,
+						information, registry);
+	}
 
 
-    @Test
-    public void convertsEntityToIdCorrectly() throws Exception {
+	@Test
+	public void convertsPlainIdTypeCorrectly() throws Exception {
 
-        User user = new User(1);
-        editor.setValue(user);
-        when(information.getId(user)).thenReturn(user.getId());
-        assertThat(editor.getAsText(), is("1"));
-    }
+		User user = new User(1);
+		when(information.getId(user)).thenReturn(user.getId());
+		when(userRepository.findOne(1)).thenReturn(user);
 
+		editor.setAsText("1");
 
-    @Test
-    public void usesCustomEditorIfConfigured() throws Exception {
-
-        PropertyEditor customEditor = mock(PropertyEditor.class);
-        when(customEditor.getValue()).thenReturn(1);
-
-        when(registry.findCustomEditor(Integer.class, null)).thenReturn(
-                customEditor);
-
-        convertsPlainIdTypeCorrectly();
-
-        verify(customEditor, times(1)).setAsText("1");
-    }
+		verify(userRepository, times(1)).findOne(1);
+	}
 
 
-    @Test
-    public void returnsNullIdIfNoEntitySet() throws Exception {
+	@Test
+	public void convertsEntityToIdCorrectly() throws Exception {
 
-        editor.setValue(null);
-        assertThat(editor.getAsText(), is(nullValue()));
-    }
-
-
-    @Test
-    public void resetsValueToNullAfterEmptyStringConversion() throws Exception {
-
-        assertValueResetToNullAfterConverting("");
-    }
+		User user = new User(1);
+		editor.setValue(user);
+		when(information.getId(user)).thenReturn(user.getId());
+		assertThat(editor.getAsText(), is("1"));
+	}
 
 
-    @Test
-    public void resetsValueToNullAfterNullStringConversion() throws Exception {
+	@Test
+	public void usesCustomEditorIfConfigured() throws Exception {
 
-        assertValueResetToNullAfterConverting(null);
-    }
+		PropertyEditor customEditor = mock(PropertyEditor.class);
+		when(customEditor.getValue()).thenReturn(1);
 
+		when(registry.findCustomEditor(Integer.class, null)).thenReturn(
+				customEditor);
 
-    private void assertValueResetToNullAfterConverting(String source)
-            throws Exception {
+		convertsPlainIdTypeCorrectly();
 
-        convertsPlainIdTypeCorrectly();
-        assertThat(editor.getValue(), is(notNullValue()));
-
-        editor.setAsText(source);
-        assertThat(editor.getValue(), is(nullValue()));
-    }
-
-    /**
-     * Sample entity.
-     * 
-     * @author Oliver Gierke
-     */
-    @SuppressWarnings("serial")
-    private static class User implements Persistable<Integer> {
-
-        private Integer id;
+		verify(customEditor, times(1)).setAsText("1");
+	}
 
 
-        public User(Integer id) {
+	@Test
+	public void returnsNullIdIfNoEntitySet() throws Exception {
 
-            this.id = id;
-        }
-
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.springframework.data.domain.Persistable#getId()
-         */
-        public Integer getId() {
-
-            return id;
-        }
+		editor.setValue(null);
+		assertThat(editor.getAsText(), is(nullValue()));
+	}
 
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.springframework.data.domain.Persistable#isNew()
-         */
-        public boolean isNew() {
+	@Test
+	public void resetsValueToNullAfterEmptyStringConversion() throws Exception {
 
-            return getId() != null;
-        }
-    }
+		assertValueResetToNullAfterConverting("");
+	}
 
-    /**
-     * Sample generic DAO interface.
-     * 
-     * @author Oliver Gierke
-     */
-    private static interface UserRepository extends Repository<User, Integer> {
 
-    }
+	@Test
+	public void resetsValueToNullAfterNullStringConversion() throws Exception {
+
+		assertValueResetToNullAfterConverting(null);
+	}
+
+
+	private void assertValueResetToNullAfterConverting(String source)
+			throws Exception {
+
+		convertsPlainIdTypeCorrectly();
+		assertThat(editor.getValue(), is(notNullValue()));
+
+		editor.setAsText(source);
+		assertThat(editor.getValue(), is(nullValue()));
+	}
+
+	/**
+	 * Sample entity.
+	 *
+	 * @author Oliver Gierke
+	 */
+	@SuppressWarnings("serial")
+	private static class User implements Persistable<Integer> {
+
+		private Integer id;
+
+
+		public User(Integer id) {
+
+			this.id = id;
+		}
+
+
+		/*
+						 * (non-Javadoc)
+						 *
+						 * @see org.springframework.data.domain.Persistable#getId()
+						 */
+		public Integer getId() {
+
+			return id;
+		}
+
+
+		/*
+						 * (non-Javadoc)
+						 *
+						 * @see org.springframework.data.domain.Persistable#isNew()
+						 */
+		public boolean isNew() {
+
+			return getId() != null;
+		}
+	}
+
+	/**
+	 * Sample generic DAO interface.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private static interface UserRepository extends Repository<User, Integer> {
+
+	}
 }

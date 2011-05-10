@@ -28,118 +28,118 @@ import org.springframework.data.repository.util.ClassUtils;
 
 /**
  * Unit tests for {@link DefaultRepositoryMetadata}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DefaultRepositoryMetadataUnitTests {
 
-    @Test
-    public void looksUpDomainClassCorrectly() throws Exception {
+	@Test
+	public void looksUpDomainClassCorrectly() throws Exception {
 
-        RepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(UserRepository.class);
-        assertEquals(User.class, metadata.getDomainClass());
+		RepositoryMetadata metadata =
+				new DefaultRepositoryMetadata(UserRepository.class);
+		assertEquals(User.class, metadata.getDomainClass());
 
-        metadata = new DefaultRepositoryMetadata(SomeDao.class);
-        assertEquals(User.class, metadata.getDomainClass());
-    }
-
-
-    @Test
-    public void findsDomainClassOnExtensionOfDaoInterface() throws Exception {
-
-        RepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(
-                        ExtensionOfUserCustomExtendedDao.class);
-        assertEquals(User.class, metadata.getDomainClass());
-    }
+		metadata = new DefaultRepositoryMetadata(SomeDao.class);
+		assertEquals(User.class, metadata.getDomainClass());
+	}
 
 
-    @Test
-    public void detectsParameterizedEntitiesCorrectly() {
+	@Test
+	public void findsDomainClassOnExtensionOfDaoInterface() throws Exception {
 
-        RepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(GenericEntityRepository.class);
-        assertEquals(GenericEntity.class, metadata.getDomainClass());
-    }
-
-
-    @Test
-    public void looksUpIdClassCorrectly() throws Exception {
-
-        RepositoryMetadata metadata =
-                new DefaultRepositoryMetadata(UserRepository.class);
-
-        assertEquals(Integer.class, metadata.getIdClass());
-    }
+		RepositoryMetadata metadata =
+				new DefaultRepositoryMetadata(
+						ExtensionOfUserCustomExtendedDao.class);
+		assertEquals(User.class, metadata.getDomainClass());
+	}
 
 
-    @SuppressWarnings("unused")
-    private class User {
+	@Test
+	public void detectsParameterizedEntitiesCorrectly() {
 
-        private String firstname;
+		RepositoryMetadata metadata =
+				new DefaultRepositoryMetadata(GenericEntityRepository.class);
+		assertEquals(GenericEntity.class, metadata.getDomainClass());
+	}
 
 
-        public String getAddress() {
+	@Test
+	public void looksUpIdClassCorrectly() throws Exception {
 
-            return null;
-        }
-    }
+		RepositoryMetadata metadata =
+				new DefaultRepositoryMetadata(UserRepository.class);
 
-    static interface UserRepository extends Repository<User, Integer> {
+		assertEquals(Integer.class, metadata.getIdClass());
+	}
 
-    }
 
-    /**
-     * Sample interface to serve two purposes:
-     * <ol>
-     * <li>Check that {@link ClassUtils#getDomainClass(Class)} skips non
-     * {@link GenericDao} interfaces</li>
-     * <li>Check that {@link ClassUtils#getDomainClass(Class)} traverses
-     * interface hierarchy</li>
-     * </ol>
-     * 
-     * @author Oliver Gierke
-     */
-    private interface SomeDao extends Serializable, UserRepository {
+	@SuppressWarnings("unused")
+	private class User {
 
-        Page<User> findByFirstname(Pageable pageable, String firstname);
-    }
+		private String firstname;
 
-    /**
-     * Sample interface to test recursive lookup of domain class.
-     * 
-     * @author Oliver Gierke
-     */
-    static interface ExtensionOfUserCustomExtendedDao extends
-            UserCustomExtendedRepository {
 
-    }
+		public String getAddress() {
 
-    static interface UserCustomExtendedRepository extends
-            Repository<User, Integer> {
+			return null;
+		}
+	}
 
-    }
+	static interface UserRepository extends Repository<User, Integer> {
 
-    static abstract class DummyGenericRepositorySupport<T, ID extends Serializable>
-            implements Repository<T, ID> {
+	}
 
-        public T findOne(ID id) {
+	/**
+	 * Sample interface to serve two purposes:
+	 * <ol>
+	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} skips non
+	 * {@link GenericDao} interfaces</li>
+	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} traverses
+	 * interface hierarchy</li>
+	 * </ol>
+	 *
+	 * @author Oliver Gierke
+	 */
+	private interface SomeDao extends Serializable, UserRepository {
 
-            return null;
-        }
-    }
+		Page<User> findByFirstname(Pageable pageable, String firstname);
+	}
 
-    /**
-     * Helper class to reproduce #256.
-     * 
-     * @author Oliver Gierke
-     */
-    static class GenericEntity<T> {
-    }
+	/**
+	 * Sample interface to test recursive lookup of domain class.
+	 *
+	 * @author Oliver Gierke
+	 */
+	static interface ExtensionOfUserCustomExtendedDao extends
+			UserCustomExtendedRepository {
 
-    static interface GenericEntityRepository extends
-            Repository<GenericEntity<String>, Long> {
+	}
 
-    }
+	static interface UserCustomExtendedRepository extends
+			Repository<User, Integer> {
+
+	}
+
+	static abstract class DummyGenericRepositorySupport<T, ID extends Serializable>
+			implements Repository<T, ID> {
+
+		public T findOne(ID id) {
+
+			return null;
+		}
+	}
+
+	/**
+	 * Helper class to reproduce #256.
+	 *
+	 * @author Oliver Gierke
+	 */
+	static class GenericEntity<T> {
+	}
+
+	static interface GenericEntityRepository extends
+			Repository<GenericEntity<String>, Long> {
+
+	}
 }

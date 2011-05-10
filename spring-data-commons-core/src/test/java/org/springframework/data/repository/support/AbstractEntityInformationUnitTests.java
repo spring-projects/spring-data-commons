@@ -25,54 +25,54 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link AbstractEntityInformation}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class AbstractEntityInformationUnitTests {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsNullDomainClass() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullDomainClass() throws Exception {
 
-        new DummyAbstractEntityInformation(null);
-    }
-
-
-    @Test
-    public void considersEntityNewIfGetIdReturnsNull() throws Exception {
-
-        EntityInformation<Object, Serializable> metadata =
-                new DummyAbstractEntityInformation(Object.class);
-        assertThat(metadata.isNew(null), is(true));
-        assertThat(metadata.isNew(new Object()), is(false));
-    }
-
-    private static class DummyAbstractEntityInformation extends
-            AbstractEntityInformation<Object, Serializable> {
-
-        public DummyAbstractEntityInformation(Class<Object> domainClass) {
-
-            super(domainClass);
-        }
+		new DummyAbstractEntityInformation(null);
+	}
 
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * org.springframework.data.repository.support.EntityMetadata#getId(
-         * java.lang.Object)
-         */
-        public Serializable getId(Object entity) {
+	@Test
+	public void considersEntityNewIfGetIdReturnsNull() throws Exception {
 
-            return entity == null ? null : entity.toString();
-        }
-        
-        /* (non-Javadoc)
-         * @see org.springframework.data.repository.support.EntityInformation#getIdType()
-         */
-        public Class<Serializable> getIdType() {
-        
-            return Serializable.class;
-        }
-    }
+		EntityInformation<Object, Serializable> metadata =
+				new DummyAbstractEntityInformation(Object.class);
+		assertThat(metadata.isNew(null), is(true));
+		assertThat(metadata.isNew(new Object()), is(false));
+	}
+
+	private static class DummyAbstractEntityInformation extends
+			AbstractEntityInformation<Object, Serializable> {
+
+		public DummyAbstractEntityInformation(Class<Object> domainClass) {
+
+			super(domainClass);
+		}
+
+
+		/*
+						 * (non-Javadoc)
+						 *
+						 * @see
+						 * org.springframework.data.repository.support.EntityMetadata#getId(
+						 * java.lang.Object)
+						 */
+		public Serializable getId(Object entity) {
+
+			return entity == null ? null : entity.toString();
+		}
+
+		/* (non-Javadoc)
+						 * @see org.springframework.data.repository.support.EntityInformation#getIdType()
+						 */
+		public Class<Serializable> getIdType() {
+
+			return Serializable.class;
+		}
+	}
 }

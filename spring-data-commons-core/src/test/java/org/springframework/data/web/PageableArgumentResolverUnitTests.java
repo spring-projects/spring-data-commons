@@ -33,161 +33,161 @@ import org.springframework.web.context.request.ServletWebRequest;
 
 /**
  * Unit test for {@link PageableArgumentResolver}.
- * 
+ *
  * @author Oliver Gierke - gierke@synyx.de
  */
 public class PageableArgumentResolverUnitTests {
 
-    Method correctMethod;
-    Method failedMethod;
-    Method invalidQualifiers;
-    Method defaultsMethod;
+	Method correctMethod;
+	Method failedMethod;
+	Method invalidQualifiers;
+	Method defaultsMethod;
 
-    MockHttpServletRequest request;
-
-
-    @Before
-    public void setUp() throws SecurityException, NoSuchMethodException {
-
-        correctMethod =
-                SampleController.class.getMethod("correctMethod",
-                        Pageable.class, Pageable.class);
-        failedMethod =
-                SampleController.class.getMethod("failedMethod",
-                        Pageable.class, Pageable.class);
-        invalidQualifiers =
-                SampleController.class.getMethod("invalidQualifiers",
-                        Pageable.class, Pageable.class);
-
-        defaultsMethod =
-                SampleController.class.getMethod("defaultsMethod",
-                        Pageable.class);
-
-        request = new MockHttpServletRequest();
-
-        // Add pagination info for foo table
-        request.addParameter("foo_page.size", "50");
-        request.addParameter("foo_page.sort", "foo");
-        request.addParameter("foo_page.sort.dir", "asc");
-
-        // Add pagination info for bar table
-        request.addParameter("bar_page.size", "60");
-    }
+	MockHttpServletRequest request;
 
 
-    @Test
-    public void testname() throws Exception {
+	@Before
+	public void setUp() throws SecurityException, NoSuchMethodException {
 
-        assertSizeForPrefix(50, new Sort(Direction.ASC, "foo"), 0);
-        assertSizeForPrefix(60, null, 1);
-    }
+		correctMethod =
+				SampleController.class.getMethod("correctMethod",
+						Pageable.class, Pageable.class);
+		failedMethod =
+				SampleController.class.getMethod("failedMethod",
+						Pageable.class, Pageable.class);
+		invalidQualifiers =
+				SampleController.class.getMethod("invalidQualifiers",
+						Pageable.class, Pageable.class);
 
+		defaultsMethod =
+				SampleController.class.getMethod("defaultsMethod",
+						Pageable.class);
 
-    @Test(expected = IllegalStateException.class)
-    public void rejectsInvalidlyMappedPageables() throws Exception {
+		request = new MockHttpServletRequest();
 
-        MethodParameter parameter = new MethodParameter(failedMethod, 0);
-        NativeWebRequest webRequest = new ServletWebRequest(request);
+		// Add pagination info for foo table
+		request.addParameter("foo_page.size", "50");
+		request.addParameter("foo_page.sort", "foo");
+		request.addParameter("foo_page.sort.dir", "asc");
 
-        new PageableArgumentResolver().resolveArgument(parameter, webRequest);
-    }
-
-
-    @Test(expected = IllegalStateException.class)
-    public void rejectsInvalidQualifiers() throws Exception {
-
-        MethodParameter parameter = new MethodParameter(invalidQualifiers, 0);
-        NativeWebRequest webRequest = new ServletWebRequest(request);
-
-        new PageableArgumentResolver().resolveArgument(parameter, webRequest);
-    }
-
-
-    @Test
-    public void assertDefaults() throws Exception {
-
-        MethodParameter parameter = new MethodParameter(defaultsMethod, 0);
-        NativeWebRequest webRequest =
-                new ServletWebRequest(new MockHttpServletRequest());
-        PageableArgumentResolver resolver = new PageableArgumentResolver();
-        Object argument = resolver.resolveArgument(parameter, webRequest);
-
-        assertTrue(argument instanceof Pageable);
-
-        Pageable pageable = (Pageable) argument;
-        assertEquals(SampleController.DEFAULT_PAGESIZE, pageable.getPageSize());
-        assertEquals(SampleController.DEFAULT_PAGENUMBER,
-                pageable.getPageNumber());
-    }
+		// Add pagination info for bar table
+		request.addParameter("bar_page.size", "60");
+	}
 
 
-    @Test
-    public void assertOverridesDefaults() throws Exception {
+	@Test
+	public void testname() throws Exception {
 
-        Integer sizeParam = 5;
-
-        MethodParameter parameter = new MethodParameter(defaultsMethod, 0);
-        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-
-        mockRequest.addParameter("page.page", sizeParam.toString());
-        NativeWebRequest webRequest = new ServletWebRequest(mockRequest);
-        PageableArgumentResolver resolver = new PageableArgumentResolver();
-        Object argument = resolver.resolveArgument(parameter, webRequest);
-
-        assertTrue(argument instanceof Pageable);
-
-        Pageable pageable = (Pageable) argument;
-        assertEquals(SampleController.DEFAULT_PAGESIZE, pageable.getPageSize());
-        assertEquals(sizeParam - 1, pageable.getPageNumber());
-    }
+		assertSizeForPrefix(50, new Sort(Direction.ASC, "foo"), 0);
+		assertSizeForPrefix(60, null, 1);
+	}
 
 
-    private void assertSizeForPrefix(int size, Sort sort, int index)
-            throws Exception {
+	@Test(expected = IllegalStateException.class)
+	public void rejectsInvalidlyMappedPageables() throws Exception {
 
-        MethodParameter parameter = new MethodParameter(correctMethod, index);
-        NativeWebRequest webRequest = new ServletWebRequest(request);
+		MethodParameter parameter = new MethodParameter(failedMethod, 0);
+		NativeWebRequest webRequest = new ServletWebRequest(request);
 
-        PageableArgumentResolver resolver = new PageableArgumentResolver();
-
-        Object argument = resolver.resolveArgument(parameter, webRequest);
-        assertTrue(argument instanceof Pageable);
-
-        Pageable pageable = (Pageable) argument;
-        assertEquals(size, pageable.getPageSize());
-
-        if (null != sort) {
-            assertEquals(sort, pageable.getSort());
-        }
-    }
-
-    @SuppressWarnings("unused")
-    private class SampleController {
-
-        static final int DEFAULT_PAGESIZE = 198;
-        static final int DEFAULT_PAGENUMBER = 42;
+		new PageableArgumentResolver().resolveArgument(parameter, webRequest);
+	}
 
 
-        public void defaultsMethod(
-                @PageableDefaults(value = DEFAULT_PAGESIZE, pageNumber = DEFAULT_PAGENUMBER) Pageable pageable) {
+	@Test(expected = IllegalStateException.class)
+	public void rejectsInvalidQualifiers() throws Exception {
 
-        }
+		MethodParameter parameter = new MethodParameter(invalidQualifiers, 0);
+		NativeWebRequest webRequest = new ServletWebRequest(request);
 
-
-        public void correctMethod(@Qualifier("foo") Pageable first,
-                @Qualifier("bar") Pageable second) {
-
-        }
+		new PageableArgumentResolver().resolveArgument(parameter, webRequest);
+	}
 
 
-        public void failedMethod(Pageable first, Pageable second) {
+	@Test
+	public void assertDefaults() throws Exception {
 
-        }
+		MethodParameter parameter = new MethodParameter(defaultsMethod, 0);
+		NativeWebRequest webRequest =
+				new ServletWebRequest(new MockHttpServletRequest());
+		PageableArgumentResolver resolver = new PageableArgumentResolver();
+		Object argument = resolver.resolveArgument(parameter, webRequest);
+
+		assertTrue(argument instanceof Pageable);
+
+		Pageable pageable = (Pageable) argument;
+		assertEquals(SampleController.DEFAULT_PAGESIZE, pageable.getPageSize());
+		assertEquals(SampleController.DEFAULT_PAGENUMBER,
+				pageable.getPageNumber());
+	}
 
 
-        public void invalidQualifiers(@Qualifier("foo") Pageable first,
-                @Qualifier("foo") Pageable second) {
+	@Test
+	public void assertOverridesDefaults() throws Exception {
 
-        }
-    }
+		Integer sizeParam = 5;
+
+		MethodParameter parameter = new MethodParameter(defaultsMethod, 0);
+		MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+
+		mockRequest.addParameter("page.page", sizeParam.toString());
+		NativeWebRequest webRequest = new ServletWebRequest(mockRequest);
+		PageableArgumentResolver resolver = new PageableArgumentResolver();
+		Object argument = resolver.resolveArgument(parameter, webRequest);
+
+		assertTrue(argument instanceof Pageable);
+
+		Pageable pageable = (Pageable) argument;
+		assertEquals(SampleController.DEFAULT_PAGESIZE, pageable.getPageSize());
+		assertEquals(sizeParam - 1, pageable.getPageNumber());
+	}
+
+
+	private void assertSizeForPrefix(int size, Sort sort, int index)
+			throws Exception {
+
+		MethodParameter parameter = new MethodParameter(correctMethod, index);
+		NativeWebRequest webRequest = new ServletWebRequest(request);
+
+		PageableArgumentResolver resolver = new PageableArgumentResolver();
+
+		Object argument = resolver.resolveArgument(parameter, webRequest);
+		assertTrue(argument instanceof Pageable);
+
+		Pageable pageable = (Pageable) argument;
+		assertEquals(size, pageable.getPageSize());
+
+		if (null != sort) {
+			assertEquals(sort, pageable.getSort());
+		}
+	}
+
+	@SuppressWarnings("unused")
+	private class SampleController {
+
+		static final int DEFAULT_PAGESIZE = 198;
+		static final int DEFAULT_PAGENUMBER = 42;
+
+
+		public void defaultsMethod(
+				@PageableDefaults(value = DEFAULT_PAGESIZE, pageNumber = DEFAULT_PAGENUMBER) Pageable pageable) {
+
+		}
+
+
+		public void correctMethod(@Qualifier("foo") Pageable first,
+															@Qualifier("bar") Pageable second) {
+
+		}
+
+
+		public void failedMethod(Pageable first, Pageable second) {
+
+		}
+
+
+		public void invalidQualifiers(@Qualifier("foo") Pageable first,
+																	@Qualifier("foo") Pageable second) {
+
+		}
+	}
 }

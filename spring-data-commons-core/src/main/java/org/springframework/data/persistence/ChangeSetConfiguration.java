@@ -22,7 +22,6 @@ public class ChangeSetConfiguration<T> {
 			ChangeSetSynchronizer<ChangeSetBacked> changeSetManager) {
 		this.changeSetManager = changeSetManager;
 	}
-	
-	
-	
+
+
 }

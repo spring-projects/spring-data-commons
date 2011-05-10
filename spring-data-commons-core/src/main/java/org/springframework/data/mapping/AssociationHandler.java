@@ -23,5 +23,5 @@ import org.springframework.data.mapping.model.PersistentProperty;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public interface AssociationHandler<P extends PersistentProperty<P>> {
-  void doWithAssociation(Association<P> association);
+	void doWithAssociation(Association<P> association);
 }

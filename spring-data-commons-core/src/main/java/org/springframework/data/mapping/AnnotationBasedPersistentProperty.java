@@ -31,78 +31,78 @@ import org.springframework.data.mapping.model.PersistentProperty;
 
 /**
  * Special {@link PersistentProperty} that takes annotations at a property into account.
- * 
+ *
  * @author Oliver Gierke
  */
 public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>> extends AbstractPersistentProperty<P> {
-    
-    private final Value value;
-    
-    /**
-     * Creates a new {@link AnnotationBasedPersistentProperty}.
-     * 
-     * @param field
-     * @param propertyDescriptor
-     * @param owner
-     */
-    public AnnotationBasedPersistentProperty(Field field,
-            PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner) {
 
-        super(field, propertyDescriptor, owner);
-        this.value = field.getAnnotation(Value.class);
-        field.isAnnotationPresent(Autowired.class);
-    }
+	private final Value value;
 
-    /**
-     * Inspects a potentially available {@link Value} annotation at the property and returns the {@link String} value of
-     * it.
-     * 
-     * @see org.springframework.data.mapping.AbstractPersistentProperty#getSpelExpression()
-     */
-    public String getSpelExpression() {
-        return value == null ? null :value.value();
-    }
+	/**
+	 * Creates a new {@link AnnotationBasedPersistentProperty}.
+	 *
+	 * @param field
+	 * @param propertyDescriptor
+	 * @param owner
+	 */
+	public AnnotationBasedPersistentProperty(Field field,
+																					 PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner) {
 
-    /**
-     * Considers plain transient fields, fields annotated with {@link Transient}, {@link Value} or {@link Autowired} as
-     * transien.
-     * 
-     * @see org.springframework.data.mapping.BasicPersistentProperty#isTransient()
-     */
-    public boolean isTransient() {
-    
-        boolean isTransient = super.isTransient() || field.isAnnotationPresent(Transient.class);
-        
-        return isTransient || field.isAnnotationPresent(Value.class) || field.isAnnotationPresent(Autowired.class);
-    }
-    
-    /**
-     * Regards the property as ID if there is an {@link Id} annotation found on it.
-     */
-    public boolean isIdProperty() {
-        return field.isAnnotationPresent(Id.class);
-    }
-    
-    /**
-     * Considers the property an {@link Association} if it is annotated with {@link Reference}.
-     */
-    @Override
-    public boolean isAssociation() {
-    
-        if (isTransient()) {
-            return false;
-        }
-        if (field.isAnnotationPresent(Reference.class)) {
-                return true;
-        }
-        
-        // TODO: do we need this? Shouldn't the section above already find that annotation?
-        for (Annotation annotation : field.getDeclaredAnnotations()) {
-                if (annotation.annotationType().isAnnotationPresent(Reference.class)) {
-                        return true;
-                }
-        }
-        
-        return false;
-    }
+		super(field, propertyDescriptor, owner);
+		this.value = field.getAnnotation(Value.class);
+		field.isAnnotationPresent(Autowired.class);
+	}
+
+	/**
+	 * Inspects a potentially available {@link Value} annotation at the property and returns the {@link String} value of
+	 * it.
+	 *
+	 * @see org.springframework.data.mapping.AbstractPersistentProperty#getSpelExpression()
+	 */
+	public String getSpelExpression() {
+		return value == null ? null : value.value();
+	}
+
+	/**
+	 * Considers plain transient fields, fields annotated with {@link Transient}, {@link Value} or {@link Autowired} as
+	 * transien.
+	 *
+	 * @see org.springframework.data.mapping.BasicPersistentProperty#isTransient()
+	 */
+	public boolean isTransient() {
+
+		boolean isTransient = super.isTransient() || field.isAnnotationPresent(Transient.class);
+
+		return isTransient || field.isAnnotationPresent(Value.class) || field.isAnnotationPresent(Autowired.class);
+	}
+
+	/**
+	 * Regards the property as ID if there is an {@link Id} annotation found on it.
+	 */
+	public boolean isIdProperty() {
+		return field.isAnnotationPresent(Id.class);
+	}
+
+	/**
+	 * Considers the property an {@link Association} if it is annotated with {@link Reference}.
+	 */
+	@Override
+	public boolean isAssociation() {
+
+		if (isTransient()) {
+			return false;
+		}
+		if (field.isAnnotationPresent(Reference.class)) {
+			return true;
+		}
+
+		// TODO: do we need this? Shouldn't the section above already find that annotation?
+		for (Annotation annotation : field.getDeclaredAnnotations()) {
+			if (annotation.annotationType().isAnnotationPresent(Reference.class)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

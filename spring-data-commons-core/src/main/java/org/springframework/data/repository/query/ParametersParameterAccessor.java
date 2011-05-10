@@ -25,135 +25,135 @@ import org.springframework.util.Assert;
 /**
  * {@link ParameterAccessor} implementation using a {@link Parameters} instance
  * to find special parameters.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ParametersParameterAccessor implements ParameterAccessor {
 
-    private final Parameters parameters;
-    private final Object[] values;
+	private final Parameters parameters;
+	private final Object[] values;
 
 
-    /**
-     * Creates a new {@link ParametersParameterAccessor}.
-     * 
-     * @param parameters
-     * @param values
-     */
-    public ParametersParameterAccessor(Parameters parameters, Object[] values) {
+	/**
+	 * Creates a new {@link ParametersParameterAccessor}.
+	 *
+	 * @param parameters
+	 * @param values
+	 */
+	public ParametersParameterAccessor(Parameters parameters, Object[] values) {
 
-        Assert.notNull(parameters);
-        Assert.notNull(values);
+		Assert.notNull(parameters);
+		Assert.notNull(values);
 
-        Assert.isTrue(parameters.getNumberOfParameters() == values.length,
-                "Invalid number of parameters given!");
+		Assert.isTrue(parameters.getNumberOfParameters() == values.length,
+				"Invalid number of parameters given!");
 
-        this.parameters = parameters;
-        this.values = values.clone();
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.query.ParameterAccessor#getPageable()
-     */
-    public Pageable getPageable() {
-
-        if (!parameters.hasPageableParameter()) {
-            return null;
-        }
-
-        return (Pageable) values[parameters.getPageableIndex()];
-    }
+		this.parameters = parameters;
+		this.values = values.clone();
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.query.ParameterAccessor#getSort()
-     */
-    public Sort getSort() {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.data.repository.query.ParameterAccessor#getPageable()
+			 */
+	public Pageable getPageable() {
 
-        if (parameters.hasSortParameter()) {
-            return (Sort) values[parameters.getSortIndex()];
-        }
+		if (!parameters.hasPageableParameter()) {
+			return null;
+		}
 
-        if (parameters.hasPageableParameter() && getPageable() != null) {
-            return getPageable().getSort();
-        }
-
-        return null;
-    }
+		return (Pageable) values[parameters.getPageableIndex()];
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.query.ParameterAccessor#getBindableValue
-     * (int)
-     */
-    public Object getBindableValue(int index) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.data.repository.query.ParameterAccessor#getSort()
+			 */
+	public Sort getSort() {
 
-        return values[parameters.getBindableParameter(index).getIndex()];
-    }
+		if (parameters.hasSortParameter()) {
+			return (Sort) values[parameters.getSortIndex()];
+		}
 
+		if (parameters.hasPageableParameter() && getPageable() != null) {
+			return getPageable().getSort();
+		}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.query.ParameterAccessor#iterator()
-     */
-    public BindableParameterIterator iterator() {
-
-        return new BindableParameterIterator();
-    }
-
-    /**
-     * Iterator class to allow traversing all bindable parameters inside the
-     * accessor.
-     * 
-     * @author Oliver Gierke
-     */
-    private class BindableParameterIterator implements Iterator<Object> {
-
-        private int currentIndex = 0;
+		return null;
+	}
 
 
-        /**
-         * Returns the next bindable parameter.
-         * 
-         * @return
-         */
-        public Object next() {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.data.repository.query.ParameterAccessor#getBindableValue
+			 * (int)
+			 */
+	public Object getBindableValue(int index) {
 
-            return getBindableValue(currentIndex++);
-        }
-
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.util.Iterator#hasNext()
-         */
-        public boolean hasNext() {
-
-            return values.length <= currentIndex;
-        }
+		return values[parameters.getBindableParameter(index).getIndex()];
+	}
 
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.util.Iterator#remove()
-         */
-        public void remove() {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.data.repository.query.ParameterAccessor#iterator()
+			 */
+	public BindableParameterIterator iterator() {
 
-            throw new UnsupportedOperationException();
-        }
-    }
+		return new BindableParameterIterator();
+	}
+
+	/**
+	 * Iterator class to allow traversing all bindable parameters inside the
+	 * accessor.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private class BindableParameterIterator implements Iterator<Object> {
+
+		private int currentIndex = 0;
+
+
+		/**
+		 * Returns the next bindable parameter.
+		 *
+		 * @return
+		 */
+		public Object next() {
+
+			return getBindableValue(currentIndex++);
+		}
+
+
+		/*
+						 * (non-Javadoc)
+						 *
+						 * @see java.util.Iterator#hasNext()
+						 */
+		public boolean hasNext() {
+
+			return values.length <= currentIndex;
+		}
+
+
+		/*
+						 * (non-Javadoc)
+						 *
+						 * @see java.util.Iterator#remove()
+						 */
+		public void remove() {
+
+			throw new UnsupportedOperationException();
+		}
+	}
 }

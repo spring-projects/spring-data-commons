@@ -21,38 +21,38 @@ package org.springframework.data.mapping;
  */
 public abstract class Person {
 
-  private Integer ssn;
-  private String firstName;
-  private String lastName;
+	private Integer ssn;
+	private String firstName;
+	private String lastName;
 
-  protected Person(Integer ssn, String firstName, String lastName) {
-    this.ssn = ssn;
-    this.firstName = firstName;
-    this.lastName = lastName;
-  }
+	protected Person(Integer ssn, String firstName, String lastName) {
+		this.ssn = ssn;
+		this.firstName = firstName;
+		this.lastName = lastName;
+	}
 
-  public Integer getSsn() {
-    return ssn;
-  }
+	public Integer getSsn() {
+		return ssn;
+	}
 
-  public void setSsn(Integer ssn) {
-    this.ssn = ssn;
-  }
+	public void setSsn(Integer ssn) {
+		this.ssn = ssn;
+	}
 
-  public String getFirstName() {
-    return firstName;
-  }
+	public String getFirstName() {
+		return firstName;
+	}
 
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
-  }
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
 
-  public String getLastName() {
-    return lastName;
-  }
+	public String getLastName() {
+		return lastName;
+	}
 
-  public void setLastName(String lastName) {
-    this.lastName = lastName;
-  }
-  
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
 }

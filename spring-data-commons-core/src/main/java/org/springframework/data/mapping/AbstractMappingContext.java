@@ -49,7 +49,7 @@ import org.springframework.validation.Validator;
 
 /**
  * Base class to build mapping metadata and thus create instances of {@link PersistentEntity} and {@link PersistentProperty}.
- * 
+ *
  * @param E the concrete {@link PersistentEntity} type the {@link MappingContext} implementation creates
  * @param P the concrete {@link PersistentProperty} type the {@link MappingContext} implementation creates
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -57,223 +57,222 @@ import org.springframework.validation.Validator;
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>> implements MappingContext<E, P>, InitializingBean, ApplicationEventPublisherAware {
 
-        private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
+	private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
 
-        private ApplicationEventPublisher applicationEventPublisher;
-        private ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
-        private ConcurrentMap<E, List<Validator>> validators = new ConcurrentHashMap<E, List<Validator>>();
-        private List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
-        private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
-        private boolean strict = false;
+	private ApplicationEventPublisher applicationEventPublisher;
+	private ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
+	private ConcurrentMap<E, List<Validator>> validators = new ConcurrentHashMap<E, List<Validator>>();
+	private List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
+	private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
+	private boolean strict = false;
 
-        /**
-         * @param customSimpleTypes the customSimpleTypes to set
-         */
-        public void setCustomSimpleTypes(List<Class<?>> customSimpleTypes) {
-                this.customSimpleTypes = customSimpleTypes;
-        }
+	/**
+	 * @param customSimpleTypes the customSimpleTypes to set
+	 */
+	public void setCustomSimpleTypes(List<Class<?>> customSimpleTypes) {
+		this.customSimpleTypes = customSimpleTypes;
+	}
 
-        /*
-         * (non-Javadoc)
-         * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-         */
-        public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-                this.applicationEventPublisher = applicationEventPublisher;
-        }
+	/*
+					 * (non-Javadoc)
+					 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
+					 */
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.applicationEventPublisher = applicationEventPublisher;
+	}
 
-        /**
-         * Sets the {@link Set} of types to populate the context initially.
-         * 
-         * @param initialEntitySet
-         */
-        public void setInitialEntitySet(Set<? extends Class<?>> initialEntitySet) {
-                this.initialEntitySet = initialEntitySet;
-        }
+	/**
+	 * Sets the {@link Set} of types to populate the context initially.
+	 *
+	 * @param initialEntitySet
+	 */
+	public void setInitialEntitySet(Set<? extends Class<?>> initialEntitySet) {
+		this.initialEntitySet = initialEntitySet;
+	}
 
-        /**
-         * Configures whether the {@link MappingContext} is in strict mode which means, that it will throw
-         * {@link MappingException}s in case one tries to lookup a {@link PersistentEntity} not already in the context. This
-         * defaults to {@literal false} so that unknown types will be transparently added to the MappingContext if not known
-         * in advance.
-         * 
-         * @param strict
-         */
-        public void setStrict(boolean strict) {
-          this.strict = strict;
-        }
+	/**
+	 * Configures whether the {@link MappingContext} is in strict mode which means, that it will throw
+	 * {@link MappingException}s in case one tries to lookup a {@link PersistentEntity} not already in the context. This
+	 * defaults to {@literal false} so that unknown types will be transparently added to the MappingContext if not known
+	 * in advance.
+	 *
+	 * @param strict
+	 */
+	public void setStrict(boolean strict) {
+		this.strict = strict;
+	}
 
-        public Collection<E> getPersistentEntities() {
-                return persistentEntities.values();
-        }
+	public Collection<E> getPersistentEntities() {
+		return persistentEntities.values();
+	}
 
-        /* (non-Javadoc)
-                 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
-                 */
-        public E getPersistentEntity(Class<?> type) {
-            
-            return getPersistentEntity(ClassTypeInformation.from(type));
-        }
+	/* (non-Javadoc)
+									 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
+									 */
+	public E getPersistentEntity(Class<?> type) {
 
-        /*
-         * (non-Javadoc)
-         * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
-         */
-        public E getPersistentEntity(TypeInformation<?> type) {
-          
-              E entity = persistentEntities.get(type);
-                
-              if (entity != null) {
-                  return entity;
-              }
-              
-              if (strict) {
-                  throw new MappingException("Unknown persistent entity " + type);
-              }
-              
-              return addPersistentEntity(type);
-        }
+		return getPersistentEntity(ClassTypeInformation.from(type));
+	}
 
-        /**
-         * Adds the given type to the {@link MappingContext}.
-         * 
-         * @param type
-         * @return
-         */
-        protected E addPersistentEntity(Class<?> type) {
-            
-            return addPersistentEntity(ClassTypeInformation.from(type));
-        }
+	/*
+					 * (non-Javadoc)
+					 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
+					 */
+	public E getPersistentEntity(TypeInformation<?> type) {
 
-        /**
-         * Adds the given {@link TypeInformation} to the {@link MappingContext}.
-         * 
-         * @param typeInformation
-         * @return
-         */
-        protected E addPersistentEntity(TypeInformation<?> typeInformation) {
+		E entity = persistentEntities.get(type);
 
-                E persistentEntity = persistentEntities.get(typeInformation);
+		if (entity != null) {
+			return entity;
+		}
 
-                if (persistentEntity != null) {
-                        return persistentEntity;
-                }
+		if (strict) {
+			throw new MappingException("Unknown persistent entity " + type);
+		}
 
-                Class<?> type = typeInformation.getType();
+		return addPersistentEntity(type);
+	}
 
-                try {
-                        final E entity = createPersistentEntity(typeInformation);
-                        BeanInfo info = Introspector.getBeanInfo(type);
+	/**
+	 * Adds the given type to the {@link MappingContext}.
+	 *
+	 * @param type
+	 * @return
+	 */
+	protected E addPersistentEntity(Class<?> type) {
 
-                        final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
-                        for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
-                                descriptors.put(descriptor.getName(), descriptor);
-                        }
+		return addPersistentEntity(ClassTypeInformation.from(type));
+	}
 
-                        ReflectionUtils.doWithFields(type, new FieldCallback() {
+	/**
+	 * Adds the given {@link TypeInformation} to the {@link MappingContext}.
+	 *
+	 * @param typeInformation
+	 * @return
+	 */
+	protected E addPersistentEntity(TypeInformation<?> typeInformation) {
 
-                                public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-                                        
-                                                PropertyDescriptor descriptor = descriptors.get(field.getName());
-                                                
-                                                        ReflectionUtils.makeAccessible(field);
-                                                        P property = createPersistentProperty(field, descriptor, entity);
+		E persistentEntity = persistentEntities.get(typeInformation);
 
-                                                        if (property.isTransient()) {
-                                                            return;
-                                                        }
-                                                        
-                                                        entity.addPersistentProperty(property);
-                                                        
-                                                        if (property.isAssociation()) {
-                                                            entity.addAssociation(property.getAssociation());
-                                                        }
+		if (persistentEntity != null) {
+			return persistentEntity;
+		}
 
-                                                        if (property.isIdProperty()) {
-                                                                entity.setIdProperty(property);
-                                                        }
+		Class<?> type = typeInformation.getType();
 
-                                                        TypeInformation<?> nestedType = getNestedTypeToAdd(property, entity);
-                                                        if (nestedType != null) {
-                                                                addPersistentEntity(nestedType);
-                                                        }
-                                                
-                                        
-                                }
-                        }, new ReflectionUtils.FieldFilter() {
-                                public boolean matches(Field field) {
-                                        return !Modifier.isStatic(field.getModifiers()) && !UNMAPPED_FIELDS.contains(field.getName());
-                                }
-                        });
-                        
-                        entity.verify();
+		try {
+			final E entity = createPersistentEntity(typeInformation);
+			BeanInfo info = Introspector.getBeanInfo(type);
 
-                        // Inform listeners
-                        if (null != applicationEventPublisher) {
-                                applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(entity, typeInformation));
-                        }
+			final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
+			for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
+				descriptors.put(descriptor.getName(), descriptor);
+			}
 
-                        // Cache
-                        persistentEntities.put(entity.getTypeInformation(), (E) entity);
+			ReflectionUtils.doWithFields(type, new FieldCallback() {
 
-                        return entity;
-                } catch (IntrospectionException e) {
-                        throw new MappingException(e.getMessage(), e);
-                }
-        }
+				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 
-        /**
-         * Returns a potential nested type tha needs to be added when adding the given property in the course of adding a
-         * {@link PersistentEntity}. Will return the property's {@link TypeInformation} directly if it is a potential entity,
-         * a collections component type if it's a collection as well as the value type of a {@link Map} if it's a map
-         * property.
-         *
-         * @param property
-         * @return the TypeInformation to be added as {@link PersistentEntity} or {@literal
-         */
-        private TypeInformation<?> getNestedTypeToAdd(P property, PersistentEntity<?, P> entity) {
-            
-            if (entity.getType().equals(property.getRawType())) {
-                return null;
-            }
+					PropertyDescriptor descriptor = descriptors.get(field.getName());
 
-                TypeInformation<?> typeInformation = property.getTypeInformation();
+					ReflectionUtils.makeAccessible(field);
+					P property = createPersistentProperty(field, descriptor, entity);
 
-                if (customSimpleTypes.contains(typeInformation.getType())) {
-                        return null;
-                }
+					if (property.isTransient()) {
+						return;
+					}
 
-                if (property.isEntity()) {
-                        return typeInformation;
-                }
+					entity.addPersistentProperty(property);
 
-                if (property.isCollection()) {
-                        return getTypeInformationIfNotSimpleType(typeInformation.getComponentType());
-                }
+					if (property.isAssociation()) {
+						entity.addAssociation(property.getAssociation());
+					}
 
-                if (property.isMap()) {
-                        return getTypeInformationIfNotSimpleType(typeInformation.getMapValueType());
-                }
+					if (property.isIdProperty()) {
+						entity.setIdProperty(property);
+					}
 
-                return null;
-        }
-
-        private TypeInformation<?> getTypeInformationIfNotSimpleType(TypeInformation<?> information) {
-                return information == null || MappingBeanHelper.isSimpleType(information.getType()) ? null : information;
-        }
-
-        public List<Validator> getEntityValidators(E entity) {
-                return validators.get(entity);
-        }
-
-    protected abstract <T> E createPersistentEntity(TypeInformation<T> typeInformation);
-
-    protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner);
+					TypeInformation<?> nestedType = getNestedTypeToAdd(property, entity);
+					if (nestedType != null) {
+						addPersistentEntity(nestedType);
+					}
 
 
+				}
+			}, new ReflectionUtils.FieldFilter() {
+				public boolean matches(Field field) {
+					return !Modifier.isStatic(field.getModifiers()) && !UNMAPPED_FIELDS.contains(field.getName());
+				}
+			});
 
-        public void afterPropertiesSet() throws Exception {
-                for (Class<?> initialEntity : initialEntitySet) {
-                        addPersistentEntity(initialEntity);
-                }
-        }
+			entity.verify();
+
+			// Inform listeners
+			if (null != applicationEventPublisher) {
+				applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(entity, typeInformation));
+			}
+
+			// Cache
+			persistentEntities.put(entity.getTypeInformation(), (E) entity);
+
+			return entity;
+		} catch (IntrospectionException e) {
+			throw new MappingException(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Returns a potential nested type tha needs to be added when adding the given property in the course of adding a
+	 * {@link PersistentEntity}. Will return the property's {@link TypeInformation} directly if it is a potential entity,
+	 * a collections component type if it's a collection as well as the value type of a {@link Map} if it's a map
+	 * property.
+	 *
+	 * @param property
+	 * @return the TypeInformation to be added as {@link PersistentEntity} or {@literal
+	 */
+	private TypeInformation<?> getNestedTypeToAdd(P property, PersistentEntity<?, P> entity) {
+
+		if (entity.getType().equals(property.getRawType())) {
+			return null;
+		}
+
+		TypeInformation<?> typeInformation = property.getTypeInformation();
+
+		if (customSimpleTypes.contains(typeInformation.getType())) {
+			return null;
+		}
+
+		if (property.isEntity()) {
+			return typeInformation;
+		}
+
+		if (property.isCollection()) {
+			return getTypeInformationIfNotSimpleType(typeInformation.getComponentType());
+		}
+
+		if (property.isMap()) {
+			return getTypeInformationIfNotSimpleType(typeInformation.getMapValueType());
+		}
+
+		return null;
+	}
+
+	private TypeInformation<?> getTypeInformationIfNotSimpleType(TypeInformation<?> information) {
+		return information == null || MappingBeanHelper.isSimpleType(information.getType()) ? null : information;
+	}
+
+	public List<Validator> getEntityValidators(E entity) {
+		return validators.get(entity);
+	}
+
+	protected abstract <T> E createPersistentEntity(TypeInformation<T> typeInformation);
+
+	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner);
+
+
+	public void afterPropertiesSet() throws Exception {
+		for (Class<?> initialEntity : initialEntitySet) {
+			addPersistentEntity(initialEntity);
+		}
+	}
 }

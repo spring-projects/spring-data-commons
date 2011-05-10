@@ -19,241 +19,241 @@ import org.springframework.util.ReflectionUtils;
 /**
  * Basic {@link TypeDiscoverer} that contains basic functionality to discover
  * property types.
- * 
+ *
  * @author Oliver Gierke
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
-  private final Type type;
-  @SuppressWarnings("rawtypes")
-  private final Map<TypeVariable, Type> typeVariableMap;
-  private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
-  private final TypeDiscoverer<?> parent;
+	private final Type type;
+	@SuppressWarnings("rawtypes")
+	private final Map<TypeVariable, Type> typeVariableMap;
+	private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
+	private final TypeDiscoverer<?> parent;
 
-  /**
-   * Creates a ne {@link TypeDiscoverer} for the given type, type variable map and parent.
-   * 
-   * @param type must not be null.
-   * @param typeVariableMap
-   * @param parent
-   */
-  @SuppressWarnings("rawtypes")
-  protected TypeDiscoverer(Type type, Map<TypeVariable, Type> typeVariableMap,
-      TypeDiscoverer<?> parent) {
+	/**
+	 * Creates a ne {@link TypeDiscoverer} for the given type, type variable map and parent.
+	 *
+	 * @param type						must not be null.
+	 * @param typeVariableMap
+	 * @param parent
+	 */
+	@SuppressWarnings("rawtypes")
+	protected TypeDiscoverer(Type type, Map<TypeVariable, Type> typeVariableMap,
+													 TypeDiscoverer<?> parent) {
 
-    Assert.notNull(type);
-    this.type = type;
-    this.typeVariableMap = typeVariableMap;
-    this.parent = parent;
-  }
+		Assert.notNull(type);
+		this.type = type;
+		this.typeVariableMap = typeVariableMap;
+		this.parent = parent;
+	}
 
-  /**
-   * Returns the type variable map. Will traverse the parents up to the root on
-   * and use it's map.
-   * 
-   * @return
-   */
-  @SuppressWarnings("rawtypes")
-  private Map<TypeVariable, Type> getTypeVariableMap() {
+	/**
+	 * Returns the type variable map. Will traverse the parents up to the root on
+	 * and use it's map.
+	 *
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	private Map<TypeVariable, Type> getTypeVariableMap() {
 
-    return parent != null ? parent.getTypeVariableMap() : typeVariableMap;
-  }
+		return parent != null ? parent.getTypeVariableMap() : typeVariableMap;
+	}
 
-  /**
-   * Creates {@link TypeInformation} for the given {@link Type}.
-   * 
-   * @param fieldType
-   * @return
-   */
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  protected TypeInformation<?> createInfo(Type fieldType) {
-      
-    if (fieldType.equals(this.type)) {
-        return this;
-    }
+	/**
+	 * Creates {@link TypeInformation} for the given {@link Type}.
+	 *
+	 * @param fieldType
+	 * @return
+	 */
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	protected TypeInformation<?> createInfo(Type fieldType) {
 
-    if (fieldType instanceof ParameterizedType) {
-      ParameterizedType parameterizedType = (ParameterizedType) fieldType;
-      return new TypeDiscoverer(parameterizedType, null, this);
-    }
+		if (fieldType.equals(this.type)) {
+			return this;
+		}
 
-    if (fieldType instanceof TypeVariable) {
-      TypeVariable<?> variable = (TypeVariable<?>) fieldType;
-      return new TypeVariableTypeInformation(variable, type, this);
-    }
+		if (fieldType instanceof ParameterizedType) {
+			ParameterizedType parameterizedType = (ParameterizedType) fieldType;
+			return new TypeDiscoverer(parameterizedType, null, this);
+		}
 
-    if (fieldType instanceof Class) {
-      return new ClassTypeInformation((Class<?>) fieldType, this);
-    }
-    
-    if (fieldType instanceof GenericArrayType) {
-      return new ArrayTypeDiscoverer((GenericArrayType) fieldType, this);
-    }
+		if (fieldType instanceof TypeVariable) {
+			TypeVariable<?> variable = (TypeVariable<?>) fieldType;
+			return new TypeVariableTypeInformation(variable, type, this);
+		}
 
-    throw new IllegalArgumentException();
-  }
+		if (fieldType instanceof Class) {
+			return new ClassTypeInformation((Class<?>) fieldType, this);
+		}
 
-  /**
-   * Resolves the given type into a plain {@link Class}.
-   * 
-   * @param type
-   * @return
-   */
-  @SuppressWarnings("unchecked")
-  protected Class<S> resolveType(Type type) {
+		if (fieldType instanceof GenericArrayType) {
+			return new ArrayTypeDiscoverer((GenericArrayType) fieldType, this);
+		}
 
-    return GenericTypeResolver.resolveType(type, getTypeVariableMap());
-  }
-  
-  /* 
-   * (non-Javadoc)
-   * @see org.springframework.data.util.TypeInformation#getParameterTypes(java.lang.reflect.Constructor)
-   */
-  public List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor) {
+		throw new IllegalArgumentException();
+	}
 
-    List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();  
-      
-    for (Class<?> type : constructor.getParameterTypes()) {
-      result.add(createInfo(type));
-    }
-    
-    return result;
-  }
+	/**
+	 * Resolves the given type into a plain {@link Class}.
+	 *
+	 * @param type
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	protected Class<S> resolveType(Type type) {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation
-   * #getField(java.lang.String)
-   */
-  public TypeInformation<?> getProperty(String fieldname) {
+		return GenericTypeResolver.resolveType(type, getTypeVariableMap());
+	}
 
-    int separatorIndex = fieldname.indexOf(".");
+	/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.TypeInformation#getParameterTypes(java.lang.reflect.Constructor)
+		 */
+	public List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor) {
 
-    if (separatorIndex == -1) {
-      if (fieldTypes.containsKey(fieldname)) {
-        return fieldTypes.get(fieldname);
-      }
+		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
 
-      TypeInformation<?> propertyInformation = getPropertyInformation(fieldname);
-      if (propertyInformation != null) {
-        fieldTypes.put(fieldname, propertyInformation);
-      }
-      return propertyInformation;
-    }
+		for (Class<?> type : constructor.getParameterTypes()) {
+			result.add(createInfo(type));
+		}
 
-    String head = fieldname.substring(0, separatorIndex);
-    TypeInformation<?> info = fieldTypes.get(head);
-    return info.getProperty(fieldname.substring(separatorIndex + 1));
-  }
+		return result;
+	}
 
-  private TypeInformation<?> getPropertyInformation(String fieldname) {
+	/*
+		 * (non-Javadoc)
+		 *
+		 * @see
+		 * org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation
+		 * #getField(java.lang.String)
+		 */
+	public TypeInformation<?> getProperty(String fieldname) {
 
-    Field field = ReflectionUtils.findField(getType(), fieldname);
+		int separatorIndex = fieldname.indexOf(".");
 
-    if (field == null) {
-      return null;
-    }
+		if (separatorIndex == -1) {
+			if (fieldTypes.containsKey(fieldname)) {
+				return fieldTypes.get(fieldname);
+			}
 
-    return createInfo(field.getGenericType());
-  }
+			TypeInformation<?> propertyInformation = getPropertyInformation(fieldname);
+			if (propertyInformation != null) {
+				fieldTypes.put(fieldname, propertyInformation);
+			}
+			return propertyInformation;
+		}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation
-   * #getType()
-   */
-  public Class<S> getType() {
-    return resolveType(type);
-  }
-  
-  /* (non-Javadoc)
-   * @see org.springframework.data.util.TypeInformation#isMap()
-   */
-  public boolean isMap() {
-    Class<?> rawType = getType();
-    return rawType == null ? false : Map.class.isAssignableFrom(rawType);
-  }
-  
-  /* (non-Javadoc)
-   * @see org.springframework.data.util.TypeInformation#getMapValueType()
-   */
-  public TypeInformation<?> getMapValueType() {
-    
-    if (!Map.class.isAssignableFrom(getType())) {
-      return null;
-    }
-    
-    ParameterizedType parameterizedType = (ParameterizedType) type;
-    return createInfo(parameterizedType.getActualTypeArguments()[1]);
-  }
-  
-  /* (non-Javadoc)
-   * @see org.springframework.data.util.TypeInformation#isCollectionLike()
-   */
-  public boolean isCollectionLike() {
-   
-    Class<?> rawType = getType();
-    return rawType == null ? null : rawType.isArray() || Iterable.class.isAssignableFrom(rawType);
-  }
-  
-  /* (non-Javadoc)
-   * @see org.springframework.data.util.TypeInformation#getComponentType()
-   */
-  public TypeInformation<?> getComponentType() {
-    
-    if (!(Map.class.isAssignableFrom(getType()) || isCollectionLike())) {
-      return null;
-    }
-    
-    ParameterizedType parameterizedType = (ParameterizedType) type;
-    return createInfo(parameterizedType.getActualTypeArguments()[0]);
-  }
+		String head = fieldname.substring(0, separatorIndex);
+		TypeInformation<?> info = fieldTypes.get(head);
+		return info.getProperty(fieldname.substring(separatorIndex + 1));
+	}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == this) {
-      return true;
-    }
+	private TypeInformation<?> getPropertyInformation(String fieldname) {
 
-    if (obj == null) {
-      return false;
-    }
+		Field field = ReflectionUtils.findField(getType(), fieldname);
 
-    if (!this.getClass().equals(obj.getClass())) {
-      return false;
-    }
+		if (field == null) {
+			return null;
+		}
 
-    TypeDiscoverer<?> that = (TypeDiscoverer<?>) obj;
+		return createInfo(field.getGenericType());
+	}
 
-    boolean typeEqual = nullSafeEquals(this.type, that.type);
-    boolean typeVariableMapEqual = nullSafeEquals(this.typeVariableMap,
-        that.typeVariableMap);
-    boolean parentEqual = nullSafeEquals(this.parent, that.parent);
+	/*
+		 * (non-Javadoc)
+		 *
+		 * @see
+		 * org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation
+		 * #getType()
+		 */
+	public Class<S> getType() {
+		return resolveType(type);
+	}
 
-    return typeEqual && typeVariableMapEqual && parentEqual;
-  }
+	/* (non-Javadoc)
+		 * @see org.springframework.data.util.TypeInformation#isMap()
+		 */
+	public boolean isMap() {
+		Class<?> rawType = getType();
+		return rawType == null ? false : Map.class.isAssignableFrom(rawType);
+	}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
+	/* (non-Javadoc)
+		 * @see org.springframework.data.util.TypeInformation#getMapValueType()
+		 */
+	public TypeInformation<?> getMapValueType() {
 
-    int result = 17;
-    result += nullSafeHashCode(type);
-    result += nullSafeHashCode(typeVariableMap);
-    result += nullSafeHashCode(parent);
-    return result;
-  }
+		if (!Map.class.isAssignableFrom(getType())) {
+			return null;
+		}
+
+		ParameterizedType parameterizedType = (ParameterizedType) type;
+		return createInfo(parameterizedType.getActualTypeArguments()[1]);
+	}
+
+	/* (non-Javadoc)
+		 * @see org.springframework.data.util.TypeInformation#isCollectionLike()
+		 */
+	public boolean isCollectionLike() {
+
+		Class<?> rawType = getType();
+		return rawType == null ? null : rawType.isArray() || Iterable.class.isAssignableFrom(rawType);
+	}
+
+	/* (non-Javadoc)
+		 * @see org.springframework.data.util.TypeInformation#getComponentType()
+		 */
+	public TypeInformation<?> getComponentType() {
+
+		if (!(Map.class.isAssignableFrom(getType()) || isCollectionLike())) {
+			return null;
+		}
+
+		ParameterizedType parameterizedType = (ParameterizedType) type;
+		return createInfo(parameterizedType.getActualTypeArguments()[0]);
+	}
+
+	/*
+		 * (non-Javadoc)
+		 *
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+
+		if (obj == null) {
+			return false;
+		}
+
+		if (!this.getClass().equals(obj.getClass())) {
+			return false;
+		}
+
+		TypeDiscoverer<?> that = (TypeDiscoverer<?>) obj;
+
+		boolean typeEqual = nullSafeEquals(this.type, that.type);
+		boolean typeVariableMapEqual = nullSafeEquals(this.typeVariableMap,
+				that.typeVariableMap);
+		boolean parentEqual = nullSafeEquals(this.parent, that.parent);
+
+		return typeEqual && typeVariableMapEqual && parentEqual;
+	}
+
+	/*
+		 * (non-Javadoc)
+		 *
+		 * @see java.lang.Object#hashCode()
+		 */
+	@Override
+	public int hashCode() {
+
+		int result = 17;
+		result += nullSafeHashCode(type);
+		result += nullSafeHashCode(typeVariableMap);
+		result += nullSafeHashCode(parent);
+		return result;
+	}
 }

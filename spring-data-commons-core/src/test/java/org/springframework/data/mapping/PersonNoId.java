@@ -22,8 +22,8 @@ package org.springframework.data.mapping;
 @Document
 public class PersonNoId extends Person {
 
-  public PersonNoId(Integer ssn, String firstName, String lastName) {
-    super(ssn, firstName, lastName);
-  }
+	public PersonNoId(Integer ssn, String firstName, String lastName) {
+		super(ssn, firstName, lastName);
+	}
 
 }

@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation to bind let method parameters be bound to a query via a named
  * parameter.
- * 
+ *
  * @author Oliver Gierke
  */
 @Target(ElementType.PARAMETER)
@@ -33,5 +33,5 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Param {
 
-    String value();
+	String value();
 }

@@ -26,256 +26,256 @@ import org.springframework.util.StringUtils;
  * The actual transformation is defined by a {@link Type} that is determined
  * from inspecting the given part. The query part can then be looked up via
  * {@link #getQueryPart()}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class Part {
 
-    private final Property property;
-    private final Part.Type type;
+	private final Property property;
+	private final Part.Type type;
 
 
-    /**
-     * Creates a new {@link Part} from the given method name part, the
-     * {@link Class} the part originates from and the start parameter index.
-     * 
-     * @param part
-     * @param clazz
-     */
-    public Part(String part, Class<?> clazz) {
+	/**
+	 * Creates a new {@link Part} from the given method name part, the
+	 * {@link Class} the part originates from and the start parameter index.
+	 *
+	 * @param part
+	 * @param clazz
+	 */
+	public Part(String part, Class<?> clazz) {
 
-        this.type = Type.fromProperty(part, clazz);
-        this.property = Property.from(type.extractProperty(part), clazz);
-    }
-
-
-    public boolean getParameterRequired() {
-
-        return getNumberOfArguments() > 0;
-    }
+		this.type = Type.fromProperty(part, clazz);
+		this.property = Property.from(type.extractProperty(part), clazz);
+	}
 
 
-    /**
-     * Returns how many method parameters are bound by this part.
-     * 
-     * @return
-     */
-    public int getNumberOfArguments() {
+	public boolean getParameterRequired() {
 
-        return type.getNumberOfArguments();
-    }
+		return getNumberOfArguments() > 0;
+	}
 
 
-    /**
-     * @return the part
-     */
-    public Property getProperty() {
+	/**
+	 * Returns how many method parameters are bound by this part.
+	 *
+	 * @return
+	 */
+	public int getNumberOfArguments() {
 
-        return property;
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-
-        if (obj == this) {
-            return true;
-        }
-
-        if (obj == null || !getClass().equals(obj.getClass())) {
-            return false;
-        }
-
-        Part that = (Part) obj;
-
-        return this.property.equals(that.property)
-                && this.type.equals(that.type);
-    }
+		return type.getNumberOfArguments();
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
+	/**
+	 * @return the part
+	 */
+	public Property getProperty() {
 
-        int result = 37;
-        result += 17 * property.hashCode();
-        result += 17 * type.hashCode();
-        return result;
-    }
+		return property;
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.lang.Object#equals(java.lang.Object)
+			 */
+	@Override
+	public boolean equals(Object obj) {
 
-        return String.format("%s %s", property.getName(), type);
-    }
+		if (obj == this) {
+			return true;
+		}
 
+		if (obj == null || !getClass().equals(obj.getClass())) {
+			return false;
+		}
 
-    /**
-     * @return the type
-     */
-    public Part.Type getType() {
+		Part that = (Part) obj;
 
-        return type;
-    }
-
-    /**
-     * The type of a method name part. Used to create query parts in various
-     * ways.
-     * 
-     * @author Oliver Gierke
-     */
-    public static enum Type {
-
-        BETWEEN(2, "Between"),
-
-        IS_NOT_NULL(0, "IsNotNull", "NotNull"),
-
-        IS_NULL(0, "IsNull", "Null"),
-
-        LESS_THAN("LessThan"),
-
-        GREATER_THAN("GreaterThan"),
-
-        NOT_LIKE("NotLike"),
-
-        LIKE("Like"),
-
-        NOT_IN("NotIn"),
-
-        IN("In"),
-        
-        NEAR("Near"),
-        
-        WITHIN("Within"),
-
-        NEGATING_SIMPLE_PROPERTY("Not"),
-        
-        SIMPLE_PROPERTY;
-
-        // Need to list them again explicitly as the order is important
-        // (esp. for IS_NULL, IS_NOT_NULL)
-        private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL,
-                IS_NULL, BETWEEN, LESS_THAN, GREATER_THAN, NOT_LIKE, LIKE,
-                NOT_IN, IN, NEAR, WITHIN, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
-        private List<String> keywords;
-        private int numberOfArguments;
+		return this.property.equals(that.property)
+				&& this.type.equals(that.type);
+	}
 
 
-        /**
-         * Creates a new {@link Type} using the given keyword, number of
-         * arguments to be bound and operator. Keyword and operator can be
-         * {@literal null}.
-         * 
-         * @param operator
-         * @param numberOfArguments
-         * @param keywords
-         */
-        private Type(int numberOfArguments, String... keywords) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.lang.Object#hashCode()
+			 */
+	@Override
+	public int hashCode() {
 
-            this.numberOfArguments = numberOfArguments;
-            this.keywords = Arrays.asList(keywords);
-        }
-
-
-        private Type(String... keywords) {
-
-            this(1, keywords);
-        }
+		int result = 37;
+		result += 17 * property.hashCode();
+		result += 17 * type.hashCode();
+		return result;
+	}
 
 
-        /**
-         * Returns the {@link Type} of the {@link Part} for the given raw
-         * property and the given {@link Class}. This will try to detect e.g.
-         * keywords contained in the raw property that trigger special query
-         * creation. Returns {@link #SIMPLE_PROPERTY} by default.
-         * 
-         * @param rawProperty
-         * @param clazz
-         * @return
-         */
-        public static Part.Type fromProperty(String rawProperty, Class<?> clazz) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.lang.Object#toString()
+			 */
+	@Override
+	public String toString() {
 
-            for (Part.Type type : ALL) {
-                if (type.supports(rawProperty, clazz)) {
-                    return type;
-                }
-            }
-
-            return SIMPLE_PROPERTY;
-        }
+		return String.format("%s %s", property.getName(), type);
+	}
 
 
-        /**
-         * Returns whether the the type supports the given raw property. Default
-         * implementation checks whether the property ends with the registered
-         * keyword. Does not support the keyword if the property is a valid
-         * field as is.
-         * 
-         * @param property
-         * @param clazz
-         * @return
-         */
-        protected boolean supports(String property, Class<?> clazz) {
+	/**
+	 * @return the type
+	 */
+	public Part.Type getType() {
 
-            if (keywords == null) {
-                return true;
-            }
+		return type;
+	}
 
-            for (String keyword : keywords) {
-                if (property.endsWith(keyword)) {
-                    return true;
-                }
-            }
+	/**
+	 * The type of a method name part. Used to create query parts in various
+	 * ways.
+	 *
+	 * @author Oliver Gierke
+	 */
+	public static enum Type {
 
-            return false;
-        }
+		BETWEEN(2, "Between"),
+
+		IS_NOT_NULL(0, "IsNotNull", "NotNull"),
+
+		IS_NULL(0, "IsNull", "Null"),
+
+		LESS_THAN("LessThan"),
+
+		GREATER_THAN("GreaterThan"),
+
+		NOT_LIKE("NotLike"),
+
+		LIKE("Like"),
+
+		NOT_IN("NotIn"),
+
+		IN("In"),
+
+		NEAR("Near"),
+
+		WITHIN("Within"),
+
+		NEGATING_SIMPLE_PROPERTY("Not"),
+
+		SIMPLE_PROPERTY;
+
+		// Need to list them again explicitly as the order is important
+		// (esp. for IS_NULL, IS_NOT_NULL)
+		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL,
+				IS_NULL, BETWEEN, LESS_THAN, GREATER_THAN, NOT_LIKE, LIKE,
+				NOT_IN, IN, NEAR, WITHIN, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+		private List<String> keywords;
+		private int numberOfArguments;
 
 
-        /**
-         * Returns the number of arguments the property binds. By default this
-         * exactly one argument.
-         * 
-         * @return
-         */
-        public int getNumberOfArguments() {
+		/**
+		 * Creates a new {@link Type} using the given keyword, number of
+		 * arguments to be bound and operator. Keyword and operator can be
+		 * {@literal null}.
+		 *
+		 * @param operator
+		 * @param numberOfArguments
+		 * @param keywords
+		 */
+		private Type(int numberOfArguments, String... keywords) {
 
-            return numberOfArguments;
-        }
+			this.numberOfArguments = numberOfArguments;
+			this.keywords = Arrays.asList(keywords);
+		}
 
 
-        /**
-         * Callback method to extract the actual property to be bound from the
-         * given part. Strips the keyword from the part's end if available.
-         * 
-         * @param part
-         * @return
-         */
-        public String extractProperty(String part) {
+		private Type(String... keywords) {
 
-            String candidate = StringUtils.uncapitalize(part);
+			this(1, keywords);
+		}
 
-            for (String keyword : keywords) {
-                if (candidate.endsWith(keyword)) {
-                    return candidate.substring(0, candidate.indexOf(keyword));
-                }
-            }
 
-            return candidate;
-        }
-    }
+		/**
+		 * Returns the {@link Type} of the {@link Part} for the given raw
+		 * property and the given {@link Class}. This will try to detect e.g.
+		 * keywords contained in the raw property that trigger special query
+		 * creation. Returns {@link #SIMPLE_PROPERTY} by default.
+		 *
+		 * @param rawProperty
+		 * @param clazz
+		 * @return
+		 */
+		public static Part.Type fromProperty(String rawProperty, Class<?> clazz) {
+
+			for (Part.Type type : ALL) {
+				if (type.supports(rawProperty, clazz)) {
+					return type;
+				}
+			}
+
+			return SIMPLE_PROPERTY;
+		}
+
+
+		/**
+		 * Returns whether the the type supports the given raw property. Default
+		 * implementation checks whether the property ends with the registered
+		 * keyword. Does not support the keyword if the property is a valid
+		 * field as is.
+		 *
+		 * @param property
+		 * @param clazz
+		 * @return
+		 */
+		protected boolean supports(String property, Class<?> clazz) {
+
+			if (keywords == null) {
+				return true;
+			}
+
+			for (String keyword : keywords) {
+				if (property.endsWith(keyword)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+
+		/**
+		 * Returns the number of arguments the property binds. By default this
+		 * exactly one argument.
+		 *
+		 * @return
+		 */
+		public int getNumberOfArguments() {
+
+			return numberOfArguments;
+		}
+
+
+		/**
+		 * Callback method to extract the actual property to be bound from the
+		 * given part. Strips the keyword from the part's end if available.
+		 *
+		 * @param part
+		 * @return
+		 */
+		public String extractProperty(String part) {
+
+			String candidate = StringUtils.uncapitalize(part);
+
+			for (String keyword : keywords) {
+				if (candidate.endsWith(keyword)) {
+					return candidate.substring(0, candidate.indexOf(keyword));
+				}
+			}
+
+			return candidate;
+		}
+	}
 }

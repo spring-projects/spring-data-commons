@@ -33,159 +33,159 @@ import org.springframework.util.Assert;
  * Abstraction of a method that is designated to execute a finder query.
  * Enriches the standard {@link Method} interface with specific information that
  * is necessary to construct {@link RepositoryQuery}s for the method.
- * 
+ *
  * @author Oliver Gierke
  */
 public class QueryMethod {
 
-    public static enum Type {
+	public static enum Type {
 
-        SINGLE_ENTITY, PAGING, COLLECTION, MODIFYING;
-    }
+		SINGLE_ENTITY, PAGING, COLLECTION, MODIFYING;
+	}
 
-    private final RepositoryMetadata metadata;
-    private final Method method;
-    private final Parameters parameters;
-
-
-    /**
-     * Creates a new {@link QueryMethod} from the given parameters. Looks up the
-     * correct query to use for following invocations of the method given.
-     * 
-     * @param method must not be {@literal null}
-     */
-    public QueryMethod(Method method, RepositoryMetadata metadata) {
-
-        Assert.notNull(method, "Method must not be null!");
-
-        for (Class<?> type : Parameters.TYPES) {
-            if (getNumberOfOccurences(method, type) > 1) {
-                throw new IllegalStateException(String.format(
-                        "Method must only one argument of type %s!",
-                        type.getSimpleName()));
-            }
-        }
-
-        if (hasParameterOfType(method, Pageable.class)) {
-            assertReturnType(method, Page.class, List.class);
-            if (hasParameterOfType(method, Sort.class)) {
-                throw new IllegalStateException(
-                        "Method must not have Pageable *and* Sort parameter. "
-                                + "Use sorting capabilities on Pageble instead!");
-            }
-        }
-
-        this.method = method;
-        this.parameters = new Parameters(method);
-        this.metadata = metadata;
-    }
+	private final RepositoryMetadata metadata;
+	private final Method method;
+	private final Parameters parameters;
 
 
-    /**
-     * Returns the method's name.
-     * 
-     * @return
-     */
-    public String getName() {
+	/**
+	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the
+	 * correct query to use for following invocations of the method given.
+	 *
+	 * @param method must not be {@literal null}
+	 */
+	public QueryMethod(Method method, RepositoryMetadata metadata) {
 
-        return method.getName();
-    }
+		Assert.notNull(method, "Method must not be null!");
 
+		for (Class<?> type : Parameters.TYPES) {
+			if (getNumberOfOccurences(method, type) > 1) {
+				throw new IllegalStateException(String.format(
+						"Method must only one argument of type %s!",
+						type.getSimpleName()));
+			}
+		}
 
-    @SuppressWarnings("rawtypes")
-    public EntityMetadata<?> getEntityInformation() {
+		if (hasParameterOfType(method, Pageable.class)) {
+			assertReturnType(method, Page.class, List.class);
+			if (hasParameterOfType(method, Sort.class)) {
+				throw new IllegalStateException(
+						"Method must not have Pageable *and* Sort parameter. "
+								+ "Use sorting capabilities on Pageble instead!");
+			}
+		}
 
-        return new EntityMetadata() {
-
-            public Class<?> getJavaType() {
-
-                return getDomainClass();
-            }
-        };
-    }
-
-
-    protected Class<?> getDomainClass() {
-      
-      Class<?> repositoryDomainClass = metadata.getDomainClass();
-      Class<?> methodDomainClass = ClassUtils.getReturnedDomainClass(method);
-
-      return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass) ? methodDomainClass
-          : repositoryDomainClass;
-    }
-
-
-    /**
-     * Returns whether the finder will actually return a collection of entities
-     * or a single one.
-     * 
-     * @return
-     */
-    protected boolean isCollectionQuery() {
-
-        Class<?> returnType = method.getReturnType();
-        return org.springframework.util.ClassUtils.isAssignable(List.class,
-                returnType);
-    }
+		this.method = method;
+		this.parameters = new Parameters(method);
+		this.metadata = metadata;
+	}
 
 
-    /**
-     * Returns whether the finder will return a {@link Page} of results.
-     * 
-     * @return
-     */
-    protected boolean isPageQuery() {
+	/**
+	 * Returns the method's name.
+	 *
+	 * @return
+	 */
+	public String getName() {
 
-        Class<?> returnType = method.getReturnType();
-        return org.springframework.util.ClassUtils.isAssignable(Page.class,
-                returnType);
-    }
+		return method.getName();
+	}
 
 
-    public Type getType() {
+	@SuppressWarnings("rawtypes")
+	public EntityMetadata<?> getEntityInformation() {
 
-        if (isModifyingQuery()) {
-            return Type.MODIFYING;
-        }
+		return new EntityMetadata() {
 
-        if (isPageQuery()) {
-            return Type.PAGING;
-        }
+			public Class<?> getJavaType() {
 
-        if (isCollectionQuery()) {
-            return Type.COLLECTION;
-        }
-
-        return Type.SINGLE_ENTITY;
-    }
+				return getDomainClass();
+			}
+		};
+	}
 
 
-    protected boolean isModifyingQuery() {
+	protected Class<?> getDomainClass() {
 
-        return false;
-    }
+		Class<?> repositoryDomainClass = metadata.getDomainClass();
+		Class<?> methodDomainClass = ClassUtils.getReturnedDomainClass(method);
 
-
-    /**
-     * Returns the {@link Parameters} wrapper to gain additional information
-     * about {@link Method} parameters.
-     * 
-     * @return
-     */
-    public Parameters getParameters() {
-
-        return parameters;
-    }
+		return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass) ? methodDomainClass
+				: repositoryDomainClass;
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
+	/**
+	 * Returns whether the finder will actually return a collection of entities
+	 * or a single one.
+	 *
+	 * @return
+	 */
+	protected boolean isCollectionQuery() {
 
-        return method.toString();
-    }
+		Class<?> returnType = method.getReturnType();
+		return org.springframework.util.ClassUtils.isAssignable(List.class,
+				returnType);
+	}
+
+
+	/**
+	 * Returns whether the finder will return a {@link Page} of results.
+	 *
+	 * @return
+	 */
+	protected boolean isPageQuery() {
+
+		Class<?> returnType = method.getReturnType();
+		return org.springframework.util.ClassUtils.isAssignable(Page.class,
+				returnType);
+	}
+
+
+	public Type getType() {
+
+		if (isModifyingQuery()) {
+			return Type.MODIFYING;
+		}
+
+		if (isPageQuery()) {
+			return Type.PAGING;
+		}
+
+		if (isCollectionQuery()) {
+			return Type.COLLECTION;
+		}
+
+		return Type.SINGLE_ENTITY;
+	}
+
+
+	protected boolean isModifyingQuery() {
+
+		return false;
+	}
+
+
+	/**
+	 * Returns the {@link Parameters} wrapper to gain additional information
+	 * about {@link Method} parameters.
+	 *
+	 * @return
+	 */
+	public Parameters getParameters() {
+
+		return parameters;
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.lang.Object#toString()
+			 */
+	@Override
+	public String toString() {
+
+		return method.toString();
+	}
 }

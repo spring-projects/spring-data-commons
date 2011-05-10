@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -33,94 +33,94 @@ import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryFactorySupportUnitTests {
 
-    RepositoryFactorySupport factory = new DummyRepositoryFactory();
+	RepositoryFactorySupport factory = new DummyRepositoryFactory();
 
-    @Mock
-    MyQueryCreationListener listener;
-    @Mock
-    PlainQueryCreationListener otherListener;
-
-
-    @Test
-    public void invokesCustomQueryCreationListenerForSpecialRepositoryQueryOnly()
-            throws Exception {
-
-        factory.addQueryCreationListener(listener);
-        factory.addQueryCreationListener(otherListener);
-
-        factory.getRepository(ObjectRepository.class);
-
-        verify(listener, times(1)).onCreation(any(MyRepositoryQuery.class));
-        verify(otherListener, times(2)).onCreation(any(RepositoryQuery.class));
-
-    }
-
-    class DummyRepositoryFactory extends RepositoryFactorySupport {
-        
-        /* (non-Javadoc)
-         * @see org.springframework.data.repository.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
-         */
-        @Override
-        @SuppressWarnings("unchecked")
-        public <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(
-                Class<T> domainClass) {
-        
-            return mock(EntityInformation.class);
-        }
-
-        @Override
-        protected Object getTargetRepository(RepositoryMetadata metadata) {
-
-            return new Object();
-        }
+	@Mock
+	MyQueryCreationListener listener;
+	@Mock
+	PlainQueryCreationListener otherListener;
 
 
-        @Override
-        protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
+	@Test
+	public void invokesCustomQueryCreationListenerForSpecialRepositoryQueryOnly()
+			throws Exception {
 
-            return Object.class;
-        }
+		factory.addQueryCreationListener(listener);
+		factory.addQueryCreationListener(otherListener);
+
+		factory.getRepository(ObjectRepository.class);
+
+		verify(listener, times(1)).onCreation(any(MyRepositoryQuery.class));
+		verify(otherListener, times(2)).onCreation(any(RepositoryQuery.class));
+
+	}
+
+	class DummyRepositoryFactory extends RepositoryFactorySupport {
+
+		/* (non-Javadoc)
+						 * @see org.springframework.data.repository.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
+						 */
+		@Override
+		@SuppressWarnings("unchecked")
+		public <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(
+				Class<T> domainClass) {
+
+			return mock(EntityInformation.class);
+		}
+
+		@Override
+		protected Object getTargetRepository(RepositoryMetadata metadata) {
+
+			return new Object();
+		}
 
 
-        @Override
-        protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
+		@Override
+		protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 
-            MyRepositoryQuery queryOne = mock(MyRepositoryQuery.class);
-            RepositoryQuery queryTwo = mock(RepositoryQuery.class);
-
-            QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
-            when(strategy.resolveQuery(any(Method.class), any(RepositoryMetadata.class)))
-                    .thenReturn(queryOne, queryTwo);
-
-            return strategy;
-        }
-    }
-
-    interface ObjectRepository extends Repository<Object, Serializable> {
-
-        Object findByClass(Class<?> clazz);
+			return Object.class;
+		}
 
 
-        Object findByFoo();
-    }
+		@Override
+		protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
 
-    interface PlainQueryCreationListener extends
-            QueryCreationListener<RepositoryQuery> {
+			MyRepositoryQuery queryOne = mock(MyRepositoryQuery.class);
+			RepositoryQuery queryTwo = mock(RepositoryQuery.class);
 
-    }
+			QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
+			when(strategy.resolveQuery(any(Method.class), any(RepositoryMetadata.class)))
+					.thenReturn(queryOne, queryTwo);
 
-    interface MyQueryCreationListener extends
-            QueryCreationListener<MyRepositoryQuery> {
+			return strategy;
+		}
+	}
 
-    }
+	interface ObjectRepository extends Repository<Object, Serializable> {
 
-    interface MyRepositoryQuery extends RepositoryQuery {
+		Object findByClass(Class<?> clazz);
 
-    }
+
+		Object findByFoo();
+	}
+
+	interface PlainQueryCreationListener extends
+			QueryCreationListener<RepositoryQuery> {
+
+	}
+
+	interface MyQueryCreationListener extends
+			QueryCreationListener<MyRepositoryQuery> {
+
+	}
+
+	interface MyRepositoryQuery extends RepositoryQuery {
+
+	}
 }

@@ -22,8 +22,8 @@ package org.springframework.data.mapping;
 @Document
 public class PersonDocument extends Person {
 
-  public PersonDocument(Integer ssn, String firstName, String lastName) {
-    super(ssn, firstName, lastName);
-  }
+	public PersonDocument(Integer ssn, String firstName, String lastName) {
+		super(ssn, firstName, lastName);
+	}
 
 }

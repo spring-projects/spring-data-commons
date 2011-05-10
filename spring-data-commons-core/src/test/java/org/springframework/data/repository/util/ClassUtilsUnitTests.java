@@ -30,82 +30,82 @@ import org.springframework.data.repository.Repository;
 
 /**
  * Unit test for {@link ClassUtils}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ClassUtilsUnitTests {
 
-    @Test(expected = IllegalStateException.class)
-    public void rejectsInvalidReturnType() throws Exception {
+	@Test(expected = IllegalStateException.class)
+	public void rejectsInvalidReturnType() throws Exception {
 
-        assertReturnType(SomeDao.class.getMethod("findByFirstname",
-                Pageable.class, String.class), User.class);
-    }
-
-
-    @Test
-    public void determinesReturnType() throws Exception {
-
-        assertEquals(User.class,
-                getReturnedDomainClass(SomeDao.class.getMethod(
-                        "findByFirstname", Pageable.class, String.class)));
-        assertEquals(GenericType.class,
-                getReturnedDomainClass(SomeDao.class.getMethod("someMethod")));
-    }
+		assertReturnType(SomeDao.class.getMethod("findByFirstname",
+				Pageable.class, String.class), User.class);
+	}
 
 
-    @Test
-    public void determinesValidFieldsCorrectly() {
+	@Test
+	public void determinesReturnType() throws Exception {
 
-        assertTrue(hasProperty(User.class, "firstname"));
-        assertTrue(hasProperty(User.class, "Firstname"));
-        assertFalse(hasProperty(User.class, "address"));
-    }
-    
-    @Test
-    public void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
-        assertEquals(Map.class, getReturnedDomainClass(SomeDao.class.getMethod("anotherMethod")));
-    }
-
-    @SuppressWarnings("unused")
-    private class User {
-
-        private String firstname;
+		assertEquals(User.class,
+				getReturnedDomainClass(SomeDao.class.getMethod(
+						"findByFirstname", Pageable.class, String.class)));
+		assertEquals(GenericType.class,
+				getReturnedDomainClass(SomeDao.class.getMethod("someMethod")));
+	}
 
 
-        public String getAddress() {
+	@Test
+	public void determinesValidFieldsCorrectly() {
 
-            return null;
-        }
-    }
+		assertTrue(hasProperty(User.class, "firstname"));
+		assertTrue(hasProperty(User.class, "Firstname"));
+		assertFalse(hasProperty(User.class, "address"));
+	}
 
-    static interface UserRepository extends Repository<User, Integer> {
+	@Test
+	public void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
+		assertEquals(Map.class, getReturnedDomainClass(SomeDao.class.getMethod("anotherMethod")));
+	}
 
-    }
+	@SuppressWarnings("unused")
+	private class User {
 
-    /**
-     * Sample interface to serve two purposes:
-     * <ol>
-     * <li>Check that {@link ClassUtils#getDomainClass(Class)} skips non
-     * {@link GenericDao} interfaces</li>
-     * <li>Check that {@link ClassUtils#getDomainClass(Class)} traverses
-     * interface hierarchy</li>
-     * </ol>
-     * 
-     * @author Oliver Gierke
-     */
-    private interface SomeDao extends Serializable, UserRepository {
-
-        Page<User> findByFirstname(Pageable pageable, String firstname);
+		private String firstname;
 
 
-        GenericType<User> someMethod();
-        
-        
-        List<Map<String, Object>> anotherMethod();
-    }
+		public String getAddress() {
 
-    private class GenericType<T> {
+			return null;
+		}
+	}
 
-    }
+	static interface UserRepository extends Repository<User, Integer> {
+
+	}
+
+	/**
+	 * Sample interface to serve two purposes:
+	 * <ol>
+	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} skips non
+	 * {@link GenericDao} interfaces</li>
+	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} traverses
+	 * interface hierarchy</li>
+	 * </ol>
+	 *
+	 * @author Oliver Gierke
+	 */
+	private interface SomeDao extends Serializable, UserRepository {
+
+		Page<User> findByFirstname(Pageable pageable, String firstname);
+
+
+		GenericType<User> someMethod();
+
+
+		List<Map<String, Object>> anotherMethod();
+	}
+
+	private class GenericType<T> {
+
+	}
 }

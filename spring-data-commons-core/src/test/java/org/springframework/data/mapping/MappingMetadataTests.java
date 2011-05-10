@@ -16,6 +16,8 @@
 
 package org.springframework.data.mapping;
 
+import static org.junit.Assert.*;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 
@@ -26,71 +28,69 @@ import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.data.mapping.model.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 
-import static org.junit.Assert.*;
-
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class MappingMetadataTests {
 
-  SampleMappingContext ctx;
+	SampleMappingContext ctx;
 
-  @Before
-  public void setup() {
-    ctx = new SampleMappingContext();
-  }
+	@Before
+	public void setup() {
+		ctx = new SampleMappingContext();
+	}
 
 
-  @Test
-  public void testPojoWithId() {
-    PersistentEntity<?, SampleProperty> person = ctx.addPersistentEntity(PersonWithId.class);
-    assertNotNull(person.getIdProperty());
-    assertEquals(String.class, person.getIdProperty().getType());
-  }
+	@Test
+	public void testPojoWithId() {
+		PersistentEntity<?, SampleProperty> person = ctx.addPersistentEntity(PersonWithId.class);
+		assertNotNull(person.getIdProperty());
+		assertEquals(String.class, person.getIdProperty().getType());
+	}
 
-  @Test
-  public void testAssociations() {
-    PersistentEntity<?, SampleProperty> person = ctx.addPersistentEntity(PersonWithChildren.class);
-    assertNotNull(person.getAssociations());
+	@Test
+	public void testAssociations() {
+		PersistentEntity<?, SampleProperty> person = ctx.addPersistentEntity(PersonWithChildren.class);
+		assertNotNull(person.getAssociations());
 
-    for (Association<SampleProperty> association : person.getAssociations()) {
-      assertEquals(Child.class, association.getInverse().getComponentType());
-    }
-  }
-  
-  public interface SampleProperty extends PersistentProperty<SampleProperty> {
-  }
-  
-  public class SampleMappingContext extends AbstractMappingContext<MutablePersistentEntity<?, SampleProperty>, SampleProperty> {
+		for (Association<SampleProperty> association : person.getAssociations()) {
+			assertEquals(Child.class, association.getInverse().getComponentType());
+		}
+	}
 
-    @Override
-    protected <T> MutablePersistentEntity<?, SampleProperty> createPersistentEntity(
-            TypeInformation<T> typeInformation) {
+	public interface SampleProperty extends PersistentProperty<SampleProperty> {
+	}
 
-        return new BasicPersistentEntity<T, MappingMetadataTests.SampleProperty>(typeInformation);
-    }
+	public class SampleMappingContext extends AbstractMappingContext<MutablePersistentEntity<?, SampleProperty>, SampleProperty> {
 
-    @Override
-    protected SampleProperty createPersistentProperty(Field field,
-            PropertyDescriptor descriptor,
-            MutablePersistentEntity<?, SampleProperty> owner) {
-        return new SamplePropertyImpl(field, descriptor, owner);
-    }
-  }
-  
-  public class SamplePropertyImpl extends AnnotationBasedPersistentProperty<SampleProperty> implements SampleProperty {
+		@Override
+		protected <T> MutablePersistentEntity<?, SampleProperty> createPersistentEntity(
+				TypeInformation<T> typeInformation) {
 
-    public SamplePropertyImpl(Field field,
-            PropertyDescriptor propertyDescriptor,
-            PersistentEntity<?, SampleProperty> owner) {
+			return new BasicPersistentEntity<T, MappingMetadataTests.SampleProperty>(typeInformation);
+		}
 
-        super(field, propertyDescriptor, owner);
-    }
-    
-    @Override
-    protected Association<SampleProperty> createAssociation() {
-    
-        return new Association<MappingMetadataTests.SampleProperty>(this, null);
-    }
-  }
+		@Override
+		protected SampleProperty createPersistentProperty(Field field,
+																											PropertyDescriptor descriptor,
+																											MutablePersistentEntity<?, SampleProperty> owner) {
+			return new SamplePropertyImpl(field, descriptor, owner);
+		}
+	}
+
+	public class SamplePropertyImpl extends AnnotationBasedPersistentProperty<SampleProperty> implements SampleProperty {
+
+		public SamplePropertyImpl(Field field,
+															PropertyDescriptor propertyDescriptor,
+															PersistentEntity<?, SampleProperty> owner) {
+
+			super(field, propertyDescriptor, owner);
+		}
+
+		@Override
+		protected Association<SampleProperty> createAssociation() {
+
+			return new Association<MappingMetadataTests.SampleProperty>(this, null);
+		}
+	}
 }

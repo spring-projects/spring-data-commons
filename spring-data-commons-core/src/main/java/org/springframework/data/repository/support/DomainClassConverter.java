@@ -29,8 +29,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.support.EntityInformation;
-import org.springframework.data.repository.support.RepositoryFactoryInformation;
 
 
 /**
@@ -39,121 +37,121 @@ import org.springframework.data.repository.support.RepositoryFactoryInformation;
  * s. The implementation uses a {@link ConversionService} in turn to convert the
  * source type into the domain class' id type which is then converted into a
  * domain class object by using a {@link Repository}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DomainClassConverter implements ConditionalGenericConverter,
-        ApplicationContextAware {
+		ApplicationContextAware {
 
-    private final Map<EntityInformation<?, Serializable>, Repository<?, Serializable>> repositories =
-            new HashMap<EntityInformation<?, Serializable>, Repository<?, Serializable>>();
-    private final ConversionService service;
-
-
-    /**
-     * Creates a new {@link DomainClassConverter}.
-     * 
-     * @param service
-     */
-    public DomainClassConverter(ConversionService service) {
-
-        this.service = service;
-    }
+	private final Map<EntityInformation<?, Serializable>, Repository<?, Serializable>> repositories =
+			new HashMap<EntityInformation<?, Serializable>, Repository<?, Serializable>>();
+	private final ConversionService service;
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.core.convert.converter.GenericConverter#
-     * getConvertibleTypes()
-     */
-    public Set<ConvertiblePair> getConvertibleTypes() {
+	/**
+	 * Creates a new {@link DomainClassConverter}.
+	 *
+	 * @param service
+	 */
+	public DomainClassConverter(ConversionService service) {
 
-        return Collections.singleton(new ConvertiblePair(Object.class,
-                Object.class));
-    }
+		this.service = service;
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.core.convert.converter.GenericConverter#convert(java
-     * .lang.Object, org.springframework.core.convert.TypeDescriptor,
-     * org.springframework.core.convert.TypeDescriptor)
-     */
-    public Object convert(Object source, TypeDescriptor sourceType,
-            TypeDescriptor targetType) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see org.springframework.core.convert.converter.GenericConverter#
+			 * getConvertibleTypes()
+			 */
+	public Set<ConvertiblePair> getConvertibleTypes() {
 
-        EntityInformation<?, Serializable> info =
-                getRepositoryForDomainType(targetType.getType());
-
-        Repository<?, Serializable> repository = repositories.get(info);
-        Serializable id = service.convert(source, info.getIdType());
-        return repository.findOne(id);
-    }
+		return Collections.singleton(new ConvertiblePair(Object.class,
+				Object.class));
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.core.convert.converter.ConditionalGenericConverter
-     * #matches(org.springframework.core.convert.TypeDescriptor,
-     * org.springframework.core.convert.TypeDescriptor)
-     */
-    public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.core.convert.converter.GenericConverter#convert(java
+			 * .lang.Object, org.springframework.core.convert.TypeDescriptor,
+			 * org.springframework.core.convert.TypeDescriptor)
+			 */
+	public Object convert(Object source, TypeDescriptor sourceType,
+												TypeDescriptor targetType) {
 
-        EntityInformation<?, ?> info =
-                getRepositoryForDomainType(targetType.getType());
+		EntityInformation<?, Serializable> info =
+				getRepositoryForDomainType(targetType.getType());
 
-        if (info == null) {
-            return false;
-        }
-
-        return service.canConvert(sourceType.getType(), info.getIdType());
-    }
-
-
-    private EntityInformation<?, Serializable> getRepositoryForDomainType(
-            Class<?> domainType) {
-
-        for (EntityInformation<?, Serializable> information : repositories
-                .keySet()) {
-
-            if (domainType.equals(information.getJavaType())) {
-                return information;
-            }
-        }
-
-        return null;
-    }
+		Repository<?, Serializable> repository = repositories.get(info);
+		Serializable id = service.convert(source, info.getIdType());
+		return repository.findOne(id);
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.context.ApplicationContextAware#setApplicationContext
-     * (org.springframework.context.ApplicationContext)
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void setApplicationContext(ApplicationContext context) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.core.convert.converter.ConditionalGenericConverter
+			 * #matches(org.springframework.core.convert.TypeDescriptor,
+			 * org.springframework.core.convert.TypeDescriptor)
+			 */
+	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-        Collection<RepositoryFactoryInformation> providers =
-                BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
-                        RepositoryFactoryInformation.class).values();
+		EntityInformation<?, ?> info =
+				getRepositoryForDomainType(targetType.getType());
 
-        for (RepositoryFactoryInformation entry : providers) {
+		if (info == null) {
+			return false;
+		}
 
-            EntityInformation<Object, Serializable> metadata =
-                    entry.getEntityInformation();
-            Class<Repository<Object, Serializable>> objectType =
-                    entry.getRepositoryInterface();
-            Repository<Object, Serializable> repository =
-                    BeanFactoryUtils.beanOfType(context, objectType);
+		return service.canConvert(sourceType.getType(), info.getIdType());
+	}
 
-            this.repositories.put(metadata, repository);
-        }
-    }
+
+	private EntityInformation<?, Serializable> getRepositoryForDomainType(
+			Class<?> domainType) {
+
+		for (EntityInformation<?, Serializable> information : repositories
+				.keySet()) {
+
+			if (domainType.equals(information.getJavaType())) {
+				return information;
+			}
+		}
+
+		return null;
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.context.ApplicationContextAware#setApplicationContext
+			 * (org.springframework.context.ApplicationContext)
+			 */
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public void setApplicationContext(ApplicationContext context) {
+
+		Collection<RepositoryFactoryInformation> providers =
+				BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
+						RepositoryFactoryInformation.class).values();
+
+		for (RepositoryFactoryInformation entry : providers) {
+
+			EntityInformation<Object, Serializable> metadata =
+					entry.getEntityInformation();
+			Class<Repository<Object, Serializable>> objectType =
+					entry.getRepositoryInterface();
+			Repository<Object, Serializable> repository =
+					BeanFactoryUtils.beanOfType(context, objectType);
+
+			this.repositories.put(metadata, repository);
+		}
+	}
 }

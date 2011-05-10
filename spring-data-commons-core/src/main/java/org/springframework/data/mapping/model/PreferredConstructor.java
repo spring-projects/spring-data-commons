@@ -28,8 +28,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Value object to encapsulate the constructor to be used when mapping persistent data to objects. 
- * 
+ * Value object to encapsulate the constructor to be used when mapping persistent data to objects.
+ *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
  */
@@ -39,7 +39,7 @@ public class PreferredConstructor<T> {
 	private final List<Parameter<?>> parameters;
 
 	public PreferredConstructor(Constructor<T> constructor, Parameter<?>... parameters) {
-	        ReflectionUtils.makeAccessible(constructor);
+		ReflectionUtils.makeAccessible(constructor);
 		this.constructor = constructor;
 		this.parameters = Arrays.asList(parameters);
 	}
@@ -51,23 +51,23 @@ public class PreferredConstructor<T> {
 	public List<Parameter<?>> getParameters() {
 		return parameters;
 	}
-	
+
 	/**
 	 * Returns whether the constructor does not have any arguments.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isNoArgConstructor() {
-	    return parameters.isEmpty();
+		return parameters.isEmpty();
 	}
-	
+
 	/**
 	 * Returns whether the constructor was explicitly selected (by {@link PersistenceConstructor}).
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isExplicitlyAnnotated() {
-	    return constructor.isAnnotationPresent(PersistenceConstructor.class);
+		return constructor.isAnnotationPresent(PersistenceConstructor.class);
 	}
 
 	public static class Parameter<T> {
@@ -76,22 +76,22 @@ public class PreferredConstructor<T> {
 		private final String key;
 
 		public Parameter(String name, TypeInformation<T> type, Annotation[] annotations) {
-		    
-		    Assert.notNull(type);
-		    Assert.notNull(annotations);
-		    
-		    this.name = name;
-		    this.type = type;
-		    this.key = getValue(annotations);
+
+			Assert.notNull(type);
+			Assert.notNull(annotations);
+
+			this.name = name;
+			this.type = type;
+			this.key = getValue(annotations);
 		}
-		
+
 		private String getValue(Annotation[] annotations) {
-		    for (Annotation anno : annotations) {
-                        if (anno.annotationType() == Value.class) {
-                                return ((Value) anno).value();
-                        }
-		    }
-		    return null;
+			for (Annotation anno : annotations) {
+				if (anno.annotationType() == Value.class) {
+					return ((Value) anno).value();
+				}
+			}
+			return null;
 		}
 
 		public String getName() {
@@ -101,9 +101,9 @@ public class PreferredConstructor<T> {
 		public TypeInformation<T> getType() {
 			return type;
 		}
-		
+
 		public Class<T> getRawType() {
-		    return type.getType();
+			return type.getType();
 		}
 
 		public String getKey() {

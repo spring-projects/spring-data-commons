@@ -8,21 +8,22 @@ import org.springframework.core.convert.ConversionService;
 
 /**
  * Simple ChangeSet implementation backed by a HashMap.
+ *
  * @author Thomas Risberg
  * @author Rod Johnson
  */
 public class HashMapChangeSet implements ChangeSet {
-	
+
 	private Map<String, Object> values;
-		
-	public HashMapChangeSet(Map<String,Object> values) {
+
+	public HashMapChangeSet(Map<String, Object> values) {
 		this.values = values;
 	}
-	
+
 	public HashMapChangeSet() {
 		this(new HashMap<String, Object>());
 	}
-	
+
 	public void set(String key, Object o) {
 		values.put(key, o);
 	}

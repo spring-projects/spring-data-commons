@@ -36,24 +36,24 @@ import org.springframework.validation.Validator;
  * @author Oliver Gierke
  */
 public interface MappingContext<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> {
-  
-  /**
-   * Obtains a list of PersistentEntity instances
-   *
-   * @return A list of PersistentEntity instances
-   */
-  Collection<E> getPersistentEntities();
 
-  E getPersistentEntity(Class<?> type);
+	/**
+	 * Obtains a list of PersistentEntity instances
+	 *
+	 * @return A list of PersistentEntity instances
+	 */
+	Collection<E> getPersistentEntities();
 
-  E getPersistentEntity(TypeInformation<?> type);
+	E getPersistentEntity(Class<?> type);
 
-  /**
-   * Obtains a validator for the given entity
-   * TODO: Why do we need validators at the {@link MappingContext}?
-   *
-   * @param entity The entity
-   * @return A validator or null if none exists for the given entity
-   */
-  List<Validator> getEntityValidators(E entity);
+	E getPersistentEntity(TypeInformation<?> type);
+
+	/**
+	 * Obtains a validator for the given entity
+	 * TODO: Why do we need validators at the {@link MappingContext}?
+	 *
+	 * @param entity The entity
+	 * @return A validator or null if none exists for the given entity
+	 */
+	List<Validator> getEntityValidators(E entity);
 }

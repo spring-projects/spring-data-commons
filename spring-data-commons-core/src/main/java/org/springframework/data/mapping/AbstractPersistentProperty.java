@@ -54,7 +54,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.association = isAssociation() ? createAssociation() : null;
 		this.owner = owner;
 	}
-	
+
 	protected abstract Association<P> createAssociation();
 
 	public PersistentEntity<?, P> getOwner() {
@@ -94,16 +94,16 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	}
 
 	public boolean isAssociation() {
-	    if (field.isAnnotationPresent(Reference.class)) {
-                return true;
-                    }
-                    for (Annotation annotation : field.getDeclaredAnnotations()) {
-                            if (annotation.annotationType().isAnnotationPresent(Reference.class)) {
-                                    return true;
-                            }
-                    }
-            
-            return false;
+		if (field.isAnnotationPresent(Reference.class)) {
+			return true;
+		}
+		for (Annotation annotation : field.getDeclaredAnnotations()) {
+			if (annotation.annotationType().isAnnotationPresent(Reference.class)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public Association<P> getAssociation() {

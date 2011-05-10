@@ -31,73 +31,73 @@ import org.springframework.util.Assert;
  * capabilities to the repository proxy. Will register a
  * {@link TransactionalRepositoryProxyPostProcessor} that in turn adds a
  * {@link TransactionInterceptor} to the repository proxy to be created.
- * 
+ *
  * @author Oliver Gierke
  */
 public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable>
-        extends RepositoryFactoryBeanSupport<T, S, ID> implements BeanFactoryAware {
+		extends RepositoryFactoryBeanSupport<T, S, ID> implements BeanFactoryAware {
 
-    private String transactionManagerName = TxUtils.DEFAULT_TRANSACTION_MANAGER;
-    private RepositoryProxyPostProcessor txPostProcessor;
-
-
-    /**
-     * Setter to configure which transaction manager to be used. We have to use
-     * the bean name explicitly as otherwise the qualifier of the
-     * {@link org.springframework.transaction.annotation.Transactional}
-     * annotation is used. By explicitly defining the transaction manager bean
-     * name we favour let this one be the default one chosen.
-     * 
-     * @param transactionManager
-     */
-    public void setTransactionManager(String transactionManager) {
-
-        this.transactionManagerName =
-                transactionManager == null ? TxUtils.DEFAULT_TRANSACTION_MANAGER
-                        : transactionManager;
-    }
+	private String transactionManagerName = TxUtils.DEFAULT_TRANSACTION_MANAGER;
+	private RepositoryProxyPostProcessor txPostProcessor;
 
 
-    /**
-     * Delegates {@link RepositoryFactorySupport} creation to
-     * {@link #doCreateRepositoryFactory()} and applies the
-     * {@link TransactionalRepositoryProxyPostProcessor} to the created
-     * instance.
-     * 
-     * @see org.springframework.data.repository.support.RepositoryFactoryBeanSupport
-     *      #createRepositoryFactory()
-     */
-    @Override
-    protected final RepositoryFactorySupport createRepositoryFactory() {
+	/**
+	 * Setter to configure which transaction manager to be used. We have to use
+	 * the bean name explicitly as otherwise the qualifier of the
+	 * {@link org.springframework.transaction.annotation.Transactional}
+	 * annotation is used. By explicitly defining the transaction manager bean
+	 * name we favour let this one be the default one chosen.
+	 *
+	 * @param transactionManager
+	 */
+	public void setTransactionManager(String transactionManager) {
 
-        RepositoryFactorySupport factory = doCreateRepositoryFactory();
-        factory.addRepositoryProxyPostProcessor(txPostProcessor);
-        return factory;
-    }
-
-
-    /**
-     * Creates the actual {@link RepositoryFactorySupport} instance.
-     * 
-     * @return
-     */
-    protected abstract RepositoryFactorySupport doCreateRepositoryFactory();
+		this.transactionManagerName =
+				transactionManager == null ? TxUtils.DEFAULT_TRANSACTION_MANAGER
+						: transactionManager;
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org
-     * .springframework.beans.factory.BeanFactory)
-     */
-    public void setBeanFactory(BeanFactory beanFactory) {
+	/**
+	 * Delegates {@link RepositoryFactorySupport} creation to
+	 * {@link #doCreateRepositoryFactory()} and applies the
+	 * {@link TransactionalRepositoryProxyPostProcessor} to the created
+	 * instance.
+	 *
+	 * @see org.springframework.data.repository.support.RepositoryFactoryBeanSupport
+	 *      #createRepositoryFactory()
+	 */
+	@Override
+	protected final RepositoryFactorySupport createRepositoryFactory() {
 
-        Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
+		RepositoryFactorySupport factory = doCreateRepositoryFactory();
+		factory.addRepositoryProxyPostProcessor(txPostProcessor);
+		return factory;
+	}
 
-        this.txPostProcessor =
-                new TransactionalRepositoryProxyPostProcessor(
-                        (ListableBeanFactory) beanFactory,
-                        transactionManagerName);
-    }
+
+	/**
+	 * Creates the actual {@link RepositoryFactorySupport} instance.
+	 *
+	 * @return
+	 */
+	protected abstract RepositoryFactorySupport doCreateRepositoryFactory();
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org
+			 * .springframework.beans.factory.BeanFactory)
+			 */
+	public void setBeanFactory(BeanFactory beanFactory) {
+
+		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
+
+		this.txPostProcessor =
+				new TransactionalRepositoryProxyPostProcessor(
+						(ListableBeanFactory) beanFactory,
+						transactionManagerName);
+	}
 }

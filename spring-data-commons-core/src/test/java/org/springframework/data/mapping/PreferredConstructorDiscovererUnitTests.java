@@ -28,106 +28,106 @@ import org.springframework.data.mapping.model.PreferredConstructor.Parameter;
 
 /**
  * Unit tests for {@link PreferredConstructorDiscoverer}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PreferredConstructorDiscovererUnitTests {
 
-    @Test
-    public void findsNoArgConstructorForClassWithoutExplicitConstructor() {
+	@Test
+	public void findsNoArgConstructorForClassWithoutExplicitConstructor() {
 
-        PreferredConstructorDiscoverer<EntityWithoutConstructor> discoverer =
-                new PreferredConstructorDiscoverer<EntityWithoutConstructor>(
-                        EntityWithoutConstructor.class);
-        PreferredConstructor<EntityWithoutConstructor> constructor =
-                discoverer.getConstructor();
+		PreferredConstructorDiscoverer<EntityWithoutConstructor> discoverer =
+				new PreferredConstructorDiscoverer<EntityWithoutConstructor>(
+						EntityWithoutConstructor.class);
+		PreferredConstructor<EntityWithoutConstructor> constructor =
+				discoverer.getConstructor();
 
-        assertThat(constructor, is(notNullValue()));
-        assertThat(constructor.isNoArgConstructor(), is(true));
-        assertThat(constructor.isExplicitlyAnnotated(), is(false));
-    }
-
-
-    @Test
-    public void findsNoArgConstructorForClassWithMultipleConstructorsAndNoArgOne() {
-
-        PreferredConstructorDiscoverer<ClassWithEmptyConstructor> discoverer =
-                new PreferredConstructorDiscoverer<ClassWithEmptyConstructor>(
-                        ClassWithEmptyConstructor.class);
-        PreferredConstructor<ClassWithEmptyConstructor> constructor =
-                discoverer.getConstructor();
-
-        assertThat(constructor, is(notNullValue()));
-        assertThat(constructor.isNoArgConstructor(), is(true));
-        assertThat(constructor.isExplicitlyAnnotated(), is(false));
-    }
+		assertThat(constructor, is(notNullValue()));
+		assertThat(constructor.isNoArgConstructor(), is(true));
+		assertThat(constructor.isExplicitlyAnnotated(), is(false));
+	}
 
 
-    @Test(expected=IllegalArgumentException.class)
-    public void throwsExceptionForMultipleConstructorsAndNoNoArgConstructorWithoutAnnotation() {
+	@Test
+	public void findsNoArgConstructorForClassWithMultipleConstructorsAndNoArgOne() {
 
-        new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne>(
-                ClassWithMultipleConstructorsWithoutEmptyOne.class);
-    }
-    
-    @Test
-    public void usesConstructorWithAnnotationOverEveryOther() {
+		PreferredConstructorDiscoverer<ClassWithEmptyConstructor> discoverer =
+				new PreferredConstructorDiscoverer<ClassWithEmptyConstructor>(
+						ClassWithEmptyConstructor.class);
+		PreferredConstructor<ClassWithEmptyConstructor> constructor =
+				discoverer.getConstructor();
 
-        PreferredConstructorDiscoverer<ClassWithMultipleConstructorsAndAnnotation> discoverer =
-                new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsAndAnnotation>(
-                        ClassWithMultipleConstructorsAndAnnotation.class);
-        PreferredConstructor<ClassWithMultipleConstructorsAndAnnotation> constructor =
-                discoverer.getConstructor();
-        
-        assertThat(constructor, is(notNullValue()));
-        assertThat(constructor.isNoArgConstructor(), is(false));
-        assertThat(constructor.isExplicitlyAnnotated(), is(true));
-        
-        List<Parameter<?>> parameters = constructor.getParameters();
-        
-        assertThat(parameters.size(), is(1));
-        assertThat(parameters.get(0).getType().getType(), typeCompatibleWith(Long.class));
-    }
-
-    static class EntityWithoutConstructor {
-
-    }
-
-    static class ClassWithEmptyConstructor {
-
-        public ClassWithEmptyConstructor() {
-        }
-    }
-
-    static class ClassWithMultipleConstructorsAndEmptyOne {
-
-        public ClassWithMultipleConstructorsAndEmptyOne(String value) {
-        }
+		assertThat(constructor, is(notNullValue()));
+		assertThat(constructor.isNoArgConstructor(), is(true));
+		assertThat(constructor.isExplicitlyAnnotated(), is(false));
+	}
 
 
-        public ClassWithMultipleConstructorsAndEmptyOne() {
-        }
-    }
+	@Test(expected = IllegalArgumentException.class)
+	public void throwsExceptionForMultipleConstructorsAndNoNoArgConstructorWithoutAnnotation() {
 
-    static class ClassWithMultipleConstructorsWithoutEmptyOne {
+		new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne>(
+				ClassWithMultipleConstructorsWithoutEmptyOne.class);
+	}
 
-        public ClassWithMultipleConstructorsWithoutEmptyOne(String value) {
-        }
+	@Test
+	public void usesConstructorWithAnnotationOverEveryOther() {
 
-        public ClassWithMultipleConstructorsWithoutEmptyOne(Long value) {
-        }
-    }
-    
-    static class ClassWithMultipleConstructorsAndAnnotation {
-        
-        public ClassWithMultipleConstructorsAndAnnotation() {
-        }
+		PreferredConstructorDiscoverer<ClassWithMultipleConstructorsAndAnnotation> discoverer =
+				new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsAndAnnotation>(
+						ClassWithMultipleConstructorsAndAnnotation.class);
+		PreferredConstructor<ClassWithMultipleConstructorsAndAnnotation> constructor =
+				discoverer.getConstructor();
 
-        public ClassWithMultipleConstructorsAndAnnotation(String value) {
-        }
+		assertThat(constructor, is(notNullValue()));
+		assertThat(constructor.isNoArgConstructor(), is(false));
+		assertThat(constructor.isExplicitlyAnnotated(), is(true));
 
-        @PersistenceConstructor
-        public ClassWithMultipleConstructorsAndAnnotation(Long value) {
-        }
-    }
+		List<Parameter<?>> parameters = constructor.getParameters();
+
+		assertThat(parameters.size(), is(1));
+		assertThat(parameters.get(0).getType().getType(), typeCompatibleWith(Long.class));
+	}
+
+	static class EntityWithoutConstructor {
+
+	}
+
+	static class ClassWithEmptyConstructor {
+
+		public ClassWithEmptyConstructor() {
+		}
+	}
+
+	static class ClassWithMultipleConstructorsAndEmptyOne {
+
+		public ClassWithMultipleConstructorsAndEmptyOne(String value) {
+		}
+
+
+		public ClassWithMultipleConstructorsAndEmptyOne() {
+		}
+	}
+
+	static class ClassWithMultipleConstructorsWithoutEmptyOne {
+
+		public ClassWithMultipleConstructorsWithoutEmptyOne(String value) {
+		}
+
+		public ClassWithMultipleConstructorsWithoutEmptyOne(Long value) {
+		}
+	}
+
+	static class ClassWithMultipleConstructorsAndAnnotation {
+
+		public ClassWithMultipleConstructorsAndAnnotation() {
+		}
+
+		public ClassWithMultipleConstructorsAndAnnotation(String value) {
+		}
+
+		@PersistenceConstructor
+		public ClassWithMultipleConstructorsAndAnnotation(Long value) {
+		}
+	}
 }

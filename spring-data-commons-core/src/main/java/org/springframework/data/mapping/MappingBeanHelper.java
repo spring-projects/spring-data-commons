@@ -174,32 +174,32 @@ public abstract class MappingBeanHelper {
 
 		Method setter = property.getPropertyDescriptor() != null ? property.getPropertyDescriptor().getWriteMethod() : null;
 
-		if (fieldAccessOnly || null == setter) {		    
-		    Object valueToSet = getPotentiallyConvertedValue(value, property.getType());
-		    ReflectionUtils.makeAccessible(property.getField());
-		    ReflectionUtils.setField(property.getField(), on, valueToSet);
-		    return;
-		} 
+		if (fieldAccessOnly || null == setter) {
+			Object valueToSet = getPotentiallyConvertedValue(value, property.getType());
+			ReflectionUtils.makeAccessible(property.getField());
+			ReflectionUtils.setField(property.getField(), on, valueToSet);
+			return;
+		}
 
 		Class<?>[] paramTypes = setter.getParameterTypes();
 		Object valueToSet = getPotentiallyConvertedValue(value, paramTypes[0]);
 		ReflectionUtils.makeAccessible(setter);
 		ReflectionUtils.invokeMethod(setter, on, valueToSet);
 	}
-	
+
 	/**
 	 * Converts the given source value if it is not assignable to the given target type.
-	 * 
+	 *
 	 * @param source
 	 * @param targetType
 	 * @return
 	 */
 	private static Object getPotentiallyConvertedValue(Object source, Class<?> targetType) {
-	    if (source != null && source.getClass().isAssignableFrom(targetType)) {
-	        return source;
-	    }
-	    
-	    return conversionService.convert(source, targetType);
+		if (source != null && source.getClass().isAssignableFrom(targetType)) {
+			return source;
+		}
+
+		return conversionService.convert(source, targetType);
 	}
 
 	@SuppressWarnings({"unchecked"})

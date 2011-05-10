@@ -22,7 +22,6 @@ import java.io.Serializable;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.support.EntityInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -30,151 +29,151 @@ import org.springframework.util.StringUtils;
 /**
  * Generic {@link PropertyEditor} to map entities handled by a
  * {@link Repository} to their id's and vice versa.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DomainClassPropertyEditor<T, ID extends Serializable> extends
-        PropertyEditorSupport {
+		PropertyEditorSupport {
 
-    private final Repository<T, ID> repository;
-    private final EntityInformation<T, ID> information;
-    private final PropertyEditorRegistry registry;
-
-
-    /**
-     * Creates a new {@link DomainClassPropertyEditor} for the given
-     * {@link Repository}.
-     * 
-     * @param repository
-     * @param registry
-     */
-    public DomainClassPropertyEditor(Repository<T, ID> repository,
-            EntityInformation<T, ID> information,
-            PropertyEditorRegistry registry) {
-
-        Assert.notNull(repository);
-        Assert.notNull(registry);
-
-        this.repository = repository;
-        this.information = information;
-        this.registry = registry;
-    }
+	private final Repository<T, ID> repository;
+	private final EntityInformation<T, ID> information;
+	private final PropertyEditorRegistry registry;
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.beans.PropertyEditorSupport#setAsText(java.lang.String)
-     */
-    @Override
-    public void setAsText(String idAsString) throws IllegalArgumentException {
+	/**
+	 * Creates a new {@link DomainClassPropertyEditor} for the given
+	 * {@link Repository}.
+	 *
+	 * @param repository
+	 * @param registry
+	 */
+	public DomainClassPropertyEditor(Repository<T, ID> repository,
+																	 EntityInformation<T, ID> information,
+																	 PropertyEditorRegistry registry) {
 
-        if (!StringUtils.hasText(idAsString)) {
-            setValue(null);
-            return;
-        }
+		Assert.notNull(repository);
+		Assert.notNull(registry);
 
-        setValue(repository.findOne(getId(idAsString)));
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.beans.PropertyEditorSupport#getAsText()
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public String getAsText() {
-
-        T entity = (T) getValue();
-
-        if (null == entity) {
-            return null;
-        }
-
-        Object id = getId(entity);
-        return id == null ? null : id.toString();
-    }
+		this.repository = repository;
+		this.information = information;
+		this.registry = registry;
+	}
 
 
-    /**
-     * Looks up the id of the given entity using one of the
-     * {@link org.synyx.hades.dao.orm.GenericDaoSupport.IdAware} implementations
-     * of Hades.
-     * 
-     * @param entity
-     * @return
-     */
-    private ID getId(T entity) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.beans.PropertyEditorSupport#setAsText(java.lang.String)
+			 */
+	@Override
+	public void setAsText(String idAsString) throws IllegalArgumentException {
 
-        return information.getId(entity);
-    }
+		if (!StringUtils.hasText(idAsString)) {
+			setValue(null);
+			return;
+		}
 
-
-    /**
-     * Returns the actual typed id. Looks up an available customly registered
-     * {@link PropertyEditor} from the {@link PropertyEditorRegistry} before
-     * falling back on a {@link SimpleTypeConverter} to translate the
-     * {@link String} id into the type one.
-     * 
-     * @param idAsString
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    private ID getId(String idAsString) {
-
-        Class<ID> idClass = information.getIdType();
-
-        PropertyEditor idEditor = registry.findCustomEditor(idClass, null);
-
-        if (idEditor != null) {
-            idEditor.setAsText(idAsString);
-            return (ID) idEditor.getValue();
-        }
-
-        return new SimpleTypeConverter()
-                .convertIfNecessary(idAsString, idClass);
-    }
+		setValue(repository.findOne(getId(idAsString)));
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.beans.PropertyEditorSupport#getAsText()
+			 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public String getAsText() {
 
-        if (this == obj) {
-            return true;
-        }
+		T entity = (T) getValue();
 
-        if (obj == null || this.getClass() != obj.getClass()) {
-            return false;
-        }
+		if (null == entity) {
+			return null;
+		}
 
-        DomainClassPropertyEditor<?, ?> that =
-                (DomainClassPropertyEditor<?, ?>) obj;
-
-        return this.repository.equals(that.repository)
-                && this.registry.equals(that.registry)
-                && this.information.equals(that.information);
-    }
+		Object id = getId(entity);
+		return id == null ? null : id.toString();
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
+	/**
+	 * Looks up the id of the given entity using one of the
+	 * {@link org.synyx.hades.dao.orm.GenericDaoSupport.IdAware} implementations
+	 * of Hades.
+	 *
+	 * @param entity
+	 * @return
+	 */
+	private ID getId(T entity) {
 
-        int hashCode = 17;
-        hashCode += repository.hashCode() * 32;
-        hashCode += information.hashCode() * 32;
-        hashCode += registry.hashCode() * 32;
-        return hashCode;
-    }
+		return information.getId(entity);
+	}
+
+
+	/**
+	 * Returns the actual typed id. Looks up an available customly registered
+	 * {@link PropertyEditor} from the {@link PropertyEditorRegistry} before
+	 * falling back on a {@link SimpleTypeConverter} to translate the
+	 * {@link String} id into the type one.
+	 *
+	 * @param idAsString
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private ID getId(String idAsString) {
+
+		Class<ID> idClass = information.getIdType();
+
+		PropertyEditor idEditor = registry.findCustomEditor(idClass, null);
+
+		if (idEditor != null) {
+			idEditor.setAsText(idAsString);
+			return (ID) idEditor.getValue();
+		}
+
+		return new SimpleTypeConverter()
+				.convertIfNecessary(idAsString, idClass);
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.lang.Object#equals(java.lang.Object)
+			 */
+	@Override
+	public boolean equals(Object obj) {
+
+		if (this == obj) {
+			return true;
+		}
+
+		if (obj == null || this.getClass() != obj.getClass()) {
+			return false;
+		}
+
+		DomainClassPropertyEditor<?, ?> that =
+				(DomainClassPropertyEditor<?, ?>) obj;
+
+		return this.repository.equals(that.repository)
+				&& this.registry.equals(that.registry)
+				&& this.information.equals(that.information);
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.lang.Object#hashCode()
+			 */
+	@Override
+	public int hashCode() {
+
+		int hashCode = 17;
+		hashCode += repository.hashCode() * 32;
+		hashCode += information.hashCode() * 32;
+		hashCode += registry.hashCode() * 32;
+		return hashCode;
+	}
 }

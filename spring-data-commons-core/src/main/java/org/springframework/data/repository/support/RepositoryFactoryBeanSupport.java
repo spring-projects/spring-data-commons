@@ -29,126 +29,126 @@ import org.springframework.util.Assert;
 /**
  * Adapter for Springs {@link FactoryBean} interface to allow easy setup of
  * repository factories via Spring configuration.
- * 
- * @author Oliver Gierke
+ *
  * @param <T> the type of the repository
+ * @author Oliver Gierke
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable>
-        implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T> {
+		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T> {
 
-    private RepositoryFactorySupport factory;
+	private RepositoryFactorySupport factory;
 
-    private Key queryLookupStrategyKey;
-    private Class<? extends T> repositoryInterface;
-    private Object customImplementation;
-
-
-    /**
-     * Setter to inject the repository interface to implement.
-     * 
-     * @param repositoryInterface the repository interface to set
-     */
-    @Required
-    public void setRepositoryInterface(Class<? extends T> repositoryInterface) {
-
-        Assert.notNull(repositoryInterface);
-        this.repositoryInterface = repositoryInterface;
-    }
+	private Key queryLookupStrategyKey;
+	private Class<? extends T> repositoryInterface;
+	private Object customImplementation;
 
 
-    /**
-     * Set the {@link QueryLookupStrategy.Key} to be used.
-     * 
-     * @param queryLookupStrategyKey
-     */
-    public void setQueryLookupStrategyKey(Key queryLookupStrategyKey) {
+	/**
+	 * Setter to inject the repository interface to implement.
+	 *
+	 * @param repositoryInterface the repository interface to set
+	 */
+	@Required
+	public void setRepositoryInterface(Class<? extends T> repositoryInterface) {
 
-        this.queryLookupStrategyKey = queryLookupStrategyKey;
-    }
-
-
-    /**
-     * Setter to inject a custom repository implementation.
-     * 
-     * @param customImplementation
-     */
-    public void setCustomImplementation(Object customImplementation) {
-
-        this.customImplementation = customImplementation;
-    }
-
-    
-    /* (non-Javadoc)
-     * @see org.springframework.data.repository.support.EntityMetadataProvider#getEntityMetadata()
-     */
-    @SuppressWarnings("unchecked")
-    public EntityInformation<S, ID> getEntityInformation() {
-    
-        RepositoryMetadata repositoryMetadata = factory.getRepositoryMetadata(repositoryInterface);
-        return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainClass());
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see org.springframework.data.repository.support.RepositoryFactoryInformation#getRepositoryInterface()
-     */
-    public Class<? extends T> getRepositoryInterface() {
-    
-        return repositoryInterface;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.beans.factory.FactoryBean#getObject()
-     */
-    public T getObject() {
-
-        return factory.getRepository(repositoryInterface, customImplementation);
-    }
+		Assert.notNull(repositoryInterface);
+		this.repositoryInterface = repositoryInterface;
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-     */
-    @SuppressWarnings("unchecked")
-    public Class<? extends T> getObjectType() {
+	/**
+	 * Set the {@link QueryLookupStrategy.Key} to be used.
+	 *
+	 * @param queryLookupStrategyKey
+	 */
+	public void setQueryLookupStrategyKey(Key queryLookupStrategyKey) {
 
-        return (Class<? extends T>) (null == repositoryInterface ? Repository.class
-                : repositoryInterface);
-    }
+		this.queryLookupStrategyKey = queryLookupStrategyKey;
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-     */
-    public boolean isSingleton() {
+	/**
+	 * Setter to inject a custom repository implementation.
+	 *
+	 * @param customImplementation
+	 */
+	public void setCustomImplementation(Object customImplementation) {
 
-        return true;
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
-    public void afterPropertiesSet() {
-
-        this.factory = createRepositoryFactory();
-        this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
-    }
+		this.customImplementation = customImplementation;
+	}
 
 
-    /**
-     * Create the actual {@link RepositoryFactorySupport} instance.
-     * 
-     * @return
-     */
-    protected abstract RepositoryFactorySupport createRepositoryFactory();
+	/* (non-Javadoc)
+			 * @see org.springframework.data.repository.support.EntityMetadataProvider#getEntityMetadata()
+			 */
+	@SuppressWarnings("unchecked")
+	public EntityInformation<S, ID> getEntityInformation() {
+
+		RepositoryMetadata repositoryMetadata = factory.getRepositoryMetadata(repositoryInterface);
+		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainClass());
+	}
+
+
+	/* (non-Javadoc)
+			 * @see org.springframework.data.repository.support.RepositoryFactoryInformation#getRepositoryInterface()
+			 */
+	public Class<? extends T> getRepositoryInterface() {
+
+		return repositoryInterface;
+	}
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see org.springframework.beans.factory.FactoryBean#getObject()
+			 */
+	public T getObject() {
+
+		return factory.getRepository(repositoryInterface, customImplementation);
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+			 */
+	@SuppressWarnings("unchecked")
+	public Class<? extends T> getObjectType() {
+
+		return (Class<? extends T>) (null == repositoryInterface ? Repository.class
+				: repositoryInterface);
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+			 */
+	public boolean isSingleton() {
+
+		return true;
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+			 */
+	public void afterPropertiesSet() {
+
+		this.factory = createRepositoryFactory();
+		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
+	}
+
+
+	/**
+	 * Create the actual {@link RepositoryFactorySupport} instance.
+	 *
+	 * @return
+	 */
+	protected abstract RepositoryFactorySupport createRepositoryFactory();
 }

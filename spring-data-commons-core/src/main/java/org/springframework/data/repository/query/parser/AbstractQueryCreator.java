@@ -27,117 +27,117 @@ import org.springframework.util.Assert;
 /**
  * Base class for query creators that create criteria based queries from a
  * {@link PartTree}.
- * 
+ *
  * @param T the actual query type to be created
  * @param S the intermediate criteria type
  * @author Oliver Gierke
  */
 public abstract class AbstractQueryCreator<T, S> {
 
-    private final ParameterAccessor parameters;
-    private final PartTree tree;
+	private final ParameterAccessor parameters;
+	private final PartTree tree;
 
 
-    /**
-     * Creates a new {@link AbstractQueryCreator} for the given {@link PartTree}
-     * and {@link ParametersParameterAccessor}.
-     * 
-     * @param tree
-     * @param parameters
-     */
-    public AbstractQueryCreator(PartTree tree, ParameterAccessor parameters) {
+	/**
+	 * Creates a new {@link AbstractQueryCreator} for the given {@link PartTree}
+	 * and {@link ParametersParameterAccessor}.
+	 *
+	 * @param tree
+	 * @param parameters
+	 */
+	public AbstractQueryCreator(PartTree tree, ParameterAccessor parameters) {
 
-        Assert.notNull(tree);
-        Assert.notNull(parameters);
+		Assert.notNull(tree);
+		Assert.notNull(parameters);
 
-        this.tree = tree;
-        this.parameters = parameters;
-    }
-
-
-    /**
-     * Creates the actual query object.
-     * 
-     * @return
-     */
-    public T createQuery() {
-
-        Sort treeSort = tree.getSort();
-        Sort sort = treeSort != null ? treeSort : parameters.getSort();
-
-        return complete(createCriteria(tree), sort);
-    }
+		this.tree = tree;
+		this.parameters = parameters;
+	}
 
 
-    /**
-     * Actual query building logic. Traverses the {@link PartTree} and invokes
-     * callback methods to delegate actual criteria creation and concatenation.
-     * 
-     * @param tree
-     * @return
-     */
-    private S createCriteria(PartTree tree) {
+	/**
+	 * Creates the actual query object.
+	 *
+	 * @return
+	 */
+	public T createQuery() {
 
-        S base = null;
-        Iterator<Object> iterator = parameters.iterator();
+		Sort treeSort = tree.getSort();
+		Sort sort = treeSort != null ? treeSort : parameters.getSort();
 
-        for (OrPart node : tree) {
-
-            S criteria = null;
-
-            for (Part part : node) {
-
-                criteria =
-                        criteria == null ? create(part, iterator) : and(part,
-                                criteria, iterator);
-            }
-
-            base = base == null ? criteria : or(base, criteria);
-        }
-
-        return base;
-    }
+		return complete(createCriteria(tree), sort);
+	}
 
 
-    /**
-     * Creates a new atomic instance of the criteria object.
-     * 
-     * @param part
-     * @param iterator
-     * @return
-     */
-    protected abstract S create(Part part, Iterator<Object> iterator);
+	/**
+	 * Actual query building logic. Traverses the {@link PartTree} and invokes
+	 * callback methods to delegate actual criteria creation and concatenation.
+	 *
+	 * @param tree
+	 * @return
+	 */
+	private S createCriteria(PartTree tree) {
+
+		S base = null;
+		Iterator<Object> iterator = parameters.iterator();
+
+		for (OrPart node : tree) {
+
+			S criteria = null;
+
+			for (Part part : node) {
+
+				criteria =
+						criteria == null ? create(part, iterator) : and(part,
+								criteria, iterator);
+			}
+
+			base = base == null ? criteria : or(base, criteria);
+		}
+
+		return base;
+	}
 
 
-    /**
-     * Creates a new criteria object from the given part and and-concatenates it
-     * to the given base criteria.
-     * 
-     * @param part
-     * @param base will never be {@literal null}.
-     * @param iterator
-     * @return
-     */
-    protected abstract S and(Part part, S base, Iterator<Object> iterator);
+	/**
+	 * Creates a new atomic instance of the criteria object.
+	 *
+	 * @param part
+	 * @param iterator
+	 * @return
+	 */
+	protected abstract S create(Part part, Iterator<Object> iterator);
 
 
-    /**
-     * Or-concatenates the given base criteria to the given new criteria.
-     * 
-     * @param base
-     * @param criteria
-     * @return
-     */
-    protected abstract S or(S base, S criteria);
+	/**
+	 * Creates a new criteria object from the given part and and-concatenates it
+	 * to the given base criteria.
+	 *
+	 * @param part
+	 * @param base		 will never be {@literal null}.
+	 * @param iterator
+	 * @return
+	 */
+	protected abstract S and(Part part, S base, Iterator<Object> iterator);
 
 
-    /**
-     * Actually creates the query object applying the given criteria object and
-     * {@link Sort} definition.
-     * 
-     * @param criteria
-     * @param sort
-     * @return
-     */
-    protected abstract T complete(S criteria, Sort sort);
+	/**
+	 * Or-concatenates the given base criteria to the given new criteria.
+	 *
+	 * @param base
+	 * @param criteria
+	 * @return
+	 */
+	protected abstract S or(S base, S criteria);
+
+
+	/**
+	 * Actually creates the query object applying the given criteria object and
+	 * {@link Sort} definition.
+	 *
+	 * @param criteria
+	 * @param sort
+	 * @return
+	 */
+	protected abstract T complete(S criteria, Sort sort);
 }

@@ -36,234 +36,234 @@ import org.springframework.util.StringUtils;
  * validate that each of the {@link Part}s are refering to a property of the
  * domain class. The {@link PartTree} can then be used to build queries based on
  * its API instead of parsing the method name for each query execution.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PartTree implements Iterable<OrPart> {
 
-    private static final String ORDER_BY = "OrderBy";
-    private static final String KEYWORD_TEMPLATE = "(%s)(?=[A-Z])";
-    private static final String DISTINCT = "Distinct";
+	private static final String ORDER_BY = "OrderBy";
+	private static final String KEYWORD_TEMPLATE = "(%s)(?=[A-Z])";
+	private static final String DISTINCT = "Distinct";
 
-    private static final Pattern PREFIX_TEMPLATE = Pattern
-            .compile("^(find|read|get)(\\p{Upper}.*?)??By");
+	private static final Pattern PREFIX_TEMPLATE = Pattern
+			.compile("^(find|read|get)(\\p{Upper}.*?)??By");
 
-    private final boolean distinct;
-    private final OrderBySource orderBySource;
-    private final List<OrPart> nodes = new ArrayList<PartTree.OrPart>();
-
-
-    /**
-     * Creates a new {@link PartTree} by parsing the given {@link String}
-     * 
-     * @param source the {@link String} to parse
-     * @param domainClass the domain class to check indiviual parts against to
-     *            ensure they refer to a property of the class
-     */
-    public PartTree(String source, Class<?> domainClass) {
-
-        Assert.notNull(source);
-        Assert.notNull(domainClass);
-
-        this.distinct = detectDistinct(source);
-        String foo = strip(source);
-        String[] parts = split(foo, ORDER_BY);
-
-        if (parts.length > 2) {
-            throw new IllegalArgumentException(
-                    "OrderBy must not be used more than once in a method name!");
-        }
-
-        buildTree(parts[0], domainClass);
-        this.orderBySource =
-                parts.length == 2 ? new OrderBySource(parts[1], domainClass)
-                        : null;
-
-    }
+	private final boolean distinct;
+	private final OrderBySource orderBySource;
+	private final List<OrPart> nodes = new ArrayList<PartTree.OrPart>();
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Iterable#iterator()
-     */
-    public Iterator<OrPart> iterator() {
+	/**
+	 * Creates a new {@link PartTree} by parsing the given {@link String}
+	 *
+	 * @param source			the {@link String} to parse
+	 * @param domainClass the domain class to check indiviual parts against to
+	 *                    ensure they refer to a property of the class
+	 */
+	public PartTree(String source, Class<?> domainClass) {
 
-        return nodes.iterator();
-    }
+		Assert.notNull(source);
+		Assert.notNull(domainClass);
 
+		this.distinct = detectDistinct(source);
+		String foo = strip(source);
+		String[] parts = split(foo, ORDER_BY);
 
-    private void buildTree(String source, Class<?> domainClass) {
+		if (parts.length > 2) {
+			throw new IllegalArgumentException(
+					"OrderBy must not be used more than once in a method name!");
+		}
 
-        String[] split = split(source, "Or");
+		buildTree(parts[0], domainClass);
+		this.orderBySource =
+				parts.length == 2 ? new OrderBySource(parts[1], domainClass)
+						: null;
 
-        for (String part : split) {
-            nodes.add(new OrPart(part, domainClass));
-        }
-    }
-
-
-    /**
-     * Returns the {@link Sort} specification parsed from the source.
-     * 
-     * @return
-     */
-    public Sort getSort() {
-
-        return orderBySource == null ? null : orderBySource.toSort();
-    }
+	}
 
 
-    /**
-     * Returns whether we indicate distinct lookup of entities.
-     * 
-     * @return
-     */
-    public boolean isDistinct() {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.lang.Iterable#iterator()
+			 */
+	public Iterator<OrPart> iterator() {
 
-        return distinct;
-    }
-
-
-    /**
-     * Returns an {@link Iterable} of all parts contained in the
-     * {@link PartTree}.
-     * 
-     * @return
-     */
-    public Iterable<Part> getParts() {
-
-        List<Part> result = new ArrayList<Part>();
-
-        for (OrPart orPart : this) {
-            for (Part part : orPart) {
-                result.add(part);
-            }
-        }
-
-        return result;
-    }
+		return nodes.iterator();
+	}
 
 
-    /**
-     * Splits the given text at the given keywords. Expects camelcase style to
-     * only match concrete keywords and not derivatives of it.
-     * 
-     * @param text
-     * @param keyword
-     * @return
-     */
-    private static String[] split(String text, String keyword) {
+	private void buildTree(String source, Class<?> domainClass) {
 
-        String regex = format(KEYWORD_TEMPLATE, keyword);
+		String[] split = split(source, "Or");
 
-        Pattern pattern = compile(regex);
-        return pattern.split(text);
-    }
+		for (String part : split) {
+			nodes.add(new OrPart(part, domainClass));
+		}
+	}
 
 
-    /**
-     * Strips a prefix from the given method name if it starts with one of
-     * {@value #PREFIXES}.
-     * 
-     * @param methodName
-     * @return
-     */
-    private String strip(String methodName) {
+	/**
+	 * Returns the {@link Sort} specification parsed from the source.
+	 *
+	 * @return
+	 */
+	public Sort getSort() {
 
-        Matcher matcher = PREFIX_TEMPLATE.matcher(methodName);
-
-        if (matcher.find()) {
-            return methodName.substring(matcher.group().length());
-        } else {
-            return methodName;
-        }
-    }
+		return orderBySource == null ? null : orderBySource.toSort();
+	}
 
 
-    /**
-     * Checks whether the given source string contains the {@link #DISTINCT}
-     * keyword in it's prefix.
-     * 
-     * @param source
-     * @return
-     */
-    private boolean detectDistinct(String source) {
+	/**
+	 * Returns whether we indicate distinct lookup of entities.
+	 *
+	 * @return
+	 */
+	public boolean isDistinct() {
 
-        Matcher matcher = PREFIX_TEMPLATE.matcher(source);
-
-        if (!matcher.find()) {
-            return false;
-        }
-
-        String group = matcher.group(2);
-        return group != null && group.contains(DISTINCT);
-    }
+		return distinct;
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
+	/**
+	 * Returns an {@link Iterable} of all parts contained in the
+	 * {@link PartTree}.
+	 *
+	 * @return
+	 */
+	public Iterable<Part> getParts() {
 
-        return String.format("%s %s",
-                StringUtils.collectionToDelimitedString(nodes, " or "),
-                orderBySource.toString());
-    }
+		List<Part> result = new ArrayList<Part>();
 
-    /**
-     * A part of the parsed source that results from splitting up the resource
-     * ar {@literal Or} keywords. Consists of {@link Part}s that have to be
-     * concatenated by {@literal And}.
-     * 
-     * @author Oliver Gierke
-     */
-    public static class OrPart implements Iterable<Part> {
+		for (OrPart orPart : this) {
+			for (Part part : orPart) {
+				result.add(part);
+			}
+		}
 
-        private final List<Part> children = new ArrayList<Part>();
+		return result;
+	}
 
 
-        /**
-         * Creates a new {@link OrPart}.
-         * 
-         * @param source the source to split up into {@literal And} parts in
-         *            turn.
-         * @param domainClass the domain class to check the resulting
-         *            {@link Part}s against.
-         */
-        OrPart(String source, Class<?> domainClass) {
+	/**
+	 * Splits the given text at the given keywords. Expects camelcase style to
+	 * only match concrete keywords and not derivatives of it.
+	 *
+	 * @param text
+	 * @param keyword
+	 * @return
+	 */
+	private static String[] split(String text, String keyword) {
 
-            String[] split = split(source, "And");
+		String regex = format(KEYWORD_TEMPLATE, keyword);
 
-            for (String part : split) {
-                children.add(new Part(part, domainClass));
-            }
-        }
-
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString() {
-
-            return StringUtils.collectionToDelimitedString(children, " and ");
-        }
+		Pattern pattern = compile(regex);
+		return pattern.split(text);
+	}
 
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Iterable#iterator()
-         */
-        public Iterator<Part> iterator() {
+	/**
+	 * Strips a prefix from the given method name if it starts with one of
+	 * {@value #PREFIXES}.
+	 *
+	 * @param methodName
+	 * @return
+	 */
+	private String strip(String methodName) {
 
-            return children.iterator();
-        }
-    }
+		Matcher matcher = PREFIX_TEMPLATE.matcher(methodName);
+
+		if (matcher.find()) {
+			return methodName.substring(matcher.group().length());
+		} else {
+			return methodName;
+		}
+	}
+
+
+	/**
+	 * Checks whether the given source string contains the {@link #DISTINCT}
+	 * keyword in it's prefix.
+	 *
+	 * @param source
+	 * @return
+	 */
+	private boolean detectDistinct(String source) {
+
+		Matcher matcher = PREFIX_TEMPLATE.matcher(source);
+
+		if (!matcher.find()) {
+			return false;
+		}
+
+		String group = matcher.group(2);
+		return group != null && group.contains(DISTINCT);
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see java.lang.Object#toString()
+			 */
+	@Override
+	public String toString() {
+
+		return String.format("%s %s",
+				StringUtils.collectionToDelimitedString(nodes, " or "),
+				orderBySource.toString());
+	}
+
+	/**
+	 * A part of the parsed source that results from splitting up the resource
+	 * ar {@literal Or} keywords. Consists of {@link Part}s that have to be
+	 * concatenated by {@literal And}.
+	 *
+	 * @author Oliver Gierke
+	 */
+	public static class OrPart implements Iterable<Part> {
+
+		private final List<Part> children = new ArrayList<Part>();
+
+
+		/**
+		 * Creates a new {@link OrPart}.
+		 *
+		 * @param source			the source to split up into {@literal And} parts in
+		 *                    turn.
+		 * @param domainClass the domain class to check the resulting
+		 *                    {@link Part}s against.
+		 */
+		OrPart(String source, Class<?> domainClass) {
+
+			String[] split = split(source, "And");
+
+			for (String part : split) {
+				children.add(new Part(part, domainClass));
+			}
+		}
+
+
+		/*
+						 * (non-Javadoc)
+						 *
+						 * @see java.lang.Object#toString()
+						 */
+		@Override
+		public String toString() {
+
+			return StringUtils.collectionToDelimitedString(children, " and ");
+		}
+
+
+		/*
+						 * (non-Javadoc)
+						 *
+						 * @see java.lang.Iterable#iterator()
+						 */
+		public Iterator<Part> iterator() {
+
+			return children.iterator();
+		}
+	}
 }

@@ -24,50 +24,50 @@ import org.springframework.data.domain.Sort;
 /**
  * Interface to access method parameters. Allows dedicated access to parameters
  * of special types
- * 
+ *
  * @author Oliver Gierke
  */
 public interface ParameterAccessor extends Iterable<Object> {
 
-    /**
-     * Returns the {@link Pageable} of the parameters, if available. Returns
-     * {@code null} otherwise.
-     * 
-     * @return
-     */
-    Pageable getPageable();
+	/**
+	 * Returns the {@link Pageable} of the parameters, if available. Returns
+	 * {@code null} otherwise.
+	 *
+	 * @return
+	 */
+	Pageable getPageable();
 
 
-    /**
-     * Returns the sort instance to be used for query creation. Will use a
-     * {@link Sort} parameter if available or the {@link Sort} contained in a
-     * {@link Pageable} if available. Returns {@code null} if no {@link Sort}
-     * can be found.
-     * 
-     * @return
-     */
-    Sort getSort();
+	/**
+	 * Returns the sort instance to be used for query creation. Will use a
+	 * {@link Sort} parameter if available or the {@link Sort} contained in a
+	 * {@link Pageable} if available. Returns {@code null} if no {@link Sort}
+	 * can be found.
+	 *
+	 * @return
+	 */
+	Sort getSort();
 
 
-    /**
-     * Returns the bindable value with the given index. Bindable means, that
-     * {@link Pageable} and {@link Sort} values are skipped without noticed in
-     * the index. For a method signature taking {@link String}, {@link Pageable}
-     * , {@link String}, {@code #getBindableParameter(1)} would return the
-     * second {@link String} value.
-     * 
-     * @param index
-     * @return
-     */
-    Object getBindableValue(int index);
+	/**
+	 * Returns the bindable value with the given index. Bindable means, that
+	 * {@link Pageable} and {@link Sort} values are skipped without noticed in
+	 * the index. For a method signature taking {@link String}, {@link Pageable}
+	 * , {@link String}, {@code #getBindableParameter(1)} would return the
+	 * second {@link String} value.
+	 *
+	 * @param index
+	 * @return
+	 */
+	Object getBindableValue(int index);
 
 
-    /**
-     * Returns an iterator over all <em>bindable</em> parameters. This means
-     * parameters implementing {@link Pageable} or {@link Sort} will not be
-     * included in this {@link Iterator}.
-     * 
-     * @return
-     */
-    Iterator<Object> iterator();
+	/**
+	 * Returns an iterator over all <em>bindable</em> parameters. This means
+	 * parameters implementing {@link Pageable} or {@link Sort} will not be
+	 * included in this {@link Iterator}.
+	 *
+	 * @return
+	 */
+	Iterator<Object> iterator();
 }

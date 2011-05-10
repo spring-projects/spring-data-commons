@@ -26,138 +26,138 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link Property}.
- * 
+ *
  * @author Oliver Gierke
  */
 @SuppressWarnings("unused")
 public class PropertyUnitTests {
 
-    @Test
-    public void parsesSimplePropertyCorrectly() throws Exception {
+	@Test
+	public void parsesSimplePropertyCorrectly() throws Exception {
 
-        Property reference = Property.from("userName", Foo.class);
-        assertThat(reference.hasNext(), is(false));
-        assertThat(reference.toDotPath(), is("userName"));
-    }
-
-
-    @Test
-    public void parsesPathPropertyCorrectly() throws Exception {
-
-        Property reference = Property.from("userName", Bar.class);
-        assertThat(reference.hasNext(), is(true));
-        assertThat(reference.next(), is(new Property("name", FooBar.class)));
-        assertThat(reference.toDotPath(), is("user.name"));
-    }
+		Property reference = Property.from("userName", Foo.class);
+		assertThat(reference.hasNext(), is(false));
+		assertThat(reference.toDotPath(), is("userName"));
+	}
 
 
-    @Test
-    public void prefersLongerMatches() throws Exception {
+	@Test
+	public void parsesPathPropertyCorrectly() throws Exception {
 
-        Property reference = Property.from("userName", Sample.class);
-        assertThat(reference.hasNext(), is(false));
-        assertThat(reference.toDotPath(), is("userName"));
-    }
-
-
-    @Test
-    public void testname() throws Exception {
-
-        Property reference = Property.from("userName", Sample2.class);
-        assertThat(reference.getName(), is("user"));
-        assertThat(reference.hasNext(), is(true));
-        assertThat(reference.next(), is(new Property("name", FooBar.class)));
-    }
+		Property reference = Property.from("userName", Bar.class);
+		assertThat(reference.hasNext(), is(true));
+		assertThat(reference.next(), is(new Property("name", FooBar.class)));
+		assertThat(reference.toDotPath(), is("user.name"));
+	}
 
 
-    @Test
-    public void prfersExplicitPaths() throws Exception {
+	@Test
+	public void prefersLongerMatches() throws Exception {
 
-        Property reference = Property.from("user_name", Sample.class);
-        assertThat(reference.getName(), is("user"));
-        assertThat(reference.hasNext(), is(true));
-        assertThat(reference.next(), is(new Property("name", FooBar.class)));
-    }
-
-
-    @Test
-    public void handlesGenericsCorrectly() throws Exception {
-
-        Property reference = Property.from("usersName", Bar.class);
-        assertThat(reference.getName(), is("users"));
-        assertThat(reference.isCollection(), is(true));
-        assertThat(reference.hasNext(), is(true));
-        assertThat(reference.next(), is(new Property("name", FooBar.class)));
-    }
+		Property reference = Property.from("userName", Sample.class);
+		assertThat(reference.hasNext(), is(false));
+		assertThat(reference.toDotPath(), is("userName"));
+	}
 
 
-    @Test
-    public void handlesMapCorrectly() throws Exception {
+	@Test
+	public void testname() throws Exception {
 
-        Property reference = Property.from("userMapName", Bar.class);
-        assertThat(reference.getName(), is("userMap"));
-        assertThat(reference.isCollection(), is(false));
-        assertThat(reference.hasNext(), is(true));
-        assertThat(reference.next(), is(new Property("name", FooBar.class)));
-    }
+		Property reference = Property.from("userName", Sample2.class);
+		assertThat(reference.getName(), is("user"));
+		assertThat(reference.hasNext(), is(true));
+		assertThat(reference.next(), is(new Property("name", FooBar.class)));
+	}
 
 
-    @Test
-    public void handlesArrayCorrectly() throws Exception {
+	@Test
+	public void prfersExplicitPaths() throws Exception {
 
-        Property reference = Property.from("userArrayName", Bar.class);
-        assertThat(reference.getName(), is("userArray"));
-        assertThat(reference.isCollection(), is(true));
-        assertThat(reference.hasNext(), is(true));
-        assertThat(reference.next(), is(new Property("name", FooBar.class)));
-    }
-    
-    @Test(expected = IllegalArgumentException.class)
-    public void handlesInvalidCollectionCompountTypeProperl() {
-      
-      Property.from("usersMame", Bar.class);
-    }
-    
-    @Test(expected = IllegalArgumentException.class)
-    public void handlesInvalidMapValueTypeProperl() {
-      
-      Property.from("userMapMame", Bar.class);
-    }
-    
-    @Test
-    public void findsNested() {
-      
-      Property from = Property.from("barUserName", Sample.class);
-    }
+		Property reference = Property.from("user_name", Sample.class);
+		assertThat(reference.getName(), is("user"));
+		assertThat(reference.hasNext(), is(true));
+		assertThat(reference.next(), is(new Property("name", FooBar.class)));
+	}
 
-    private class Foo {
 
-        String userName;
-    }
+	@Test
+	public void handlesGenericsCorrectly() throws Exception {
 
-    private class Bar {
+		Property reference = Property.from("usersName", Bar.class);
+		assertThat(reference.getName(), is("users"));
+		assertThat(reference.isCollection(), is(true));
+		assertThat(reference.hasNext(), is(true));
+		assertThat(reference.next(), is(new Property("name", FooBar.class)));
+	}
 
-        private FooBar user;
-        private Set<FooBar> users;
-        private Map<String, FooBar> userMap;
-        private FooBar[] userArray;
-    }
 
-    private class FooBar {
+	@Test
+	public void handlesMapCorrectly() throws Exception {
 
-        private String name;
-    }
+		Property reference = Property.from("userMapName", Bar.class);
+		assertThat(reference.getName(), is("userMap"));
+		assertThat(reference.isCollection(), is(false));
+		assertThat(reference.hasNext(), is(true));
+		assertThat(reference.next(), is(new Property("name", FooBar.class)));
+	}
 
-    private class Sample {
 
-        private String userName;
-        private FooBar user;
-        private Bar bar;
-    }
+	@Test
+	public void handlesArrayCorrectly() throws Exception {
 
-    private class Sample2 {
+		Property reference = Property.from("userArrayName", Bar.class);
+		assertThat(reference.getName(), is("userArray"));
+		assertThat(reference.isCollection(), is(true));
+		assertThat(reference.hasNext(), is(true));
+		assertThat(reference.next(), is(new Property("name", FooBar.class)));
+	}
 
-        private String userNameWhatever;
-        private FooBar user;
-    }
+	@Test(expected = IllegalArgumentException.class)
+	public void handlesInvalidCollectionCompountTypeProperl() {
+
+		Property.from("usersMame", Bar.class);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void handlesInvalidMapValueTypeProperl() {
+
+		Property.from("userMapMame", Bar.class);
+	}
+
+	@Test
+	public void findsNested() {
+
+		Property from = Property.from("barUserName", Sample.class);
+	}
+
+	private class Foo {
+
+		String userName;
+	}
+
+	private class Bar {
+
+		private FooBar user;
+		private Set<FooBar> users;
+		private Map<String, FooBar> userMap;
+		private FooBar[] userArray;
+	}
+
+	private class FooBar {
+
+		private String name;
+	}
+
+	private class Sample {
+
+		private String userName;
+		private FooBar user;
+		private Bar bar;
+	}
+
+	private class Sample2 {
+
+		private String userNameWhatever;
+		private FooBar user;
+	}
 }

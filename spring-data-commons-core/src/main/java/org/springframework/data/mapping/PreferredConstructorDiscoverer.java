@@ -34,85 +34,85 @@ import org.springframework.data.util.TypeInformation;
  */
 public class PreferredConstructorDiscoverer<T> {
 
-    private final ParameterNameDiscoverer nameDiscoverer =
-            new LocalVariableTableParameterNameDiscoverer();
+	private final ParameterNameDiscoverer nameDiscoverer =
+			new LocalVariableTableParameterNameDiscoverer();
 
-    private PreferredConstructor<T> constructor;
-    
-    public PreferredConstructorDiscoverer(Class<T> type) {
-        this(ClassTypeInformation.from(type));
-    }
+	private PreferredConstructor<T> constructor;
 
-    /**
-     * Creates a new {@link PreferredConstructorDiscoverer} for the given type.
-     * 
-     * @param owningType
-     */
-    protected PreferredConstructorDiscoverer(TypeInformation<T> owningType) {
-        
-        boolean noArgConstructorFound = false;
-        int numberOfArgConstructors = 0;
-        Class<?> rawOwningType = owningType.getType();
+	public PreferredConstructorDiscoverer(Class<T> type) {
+		this(ClassTypeInformation.from(type));
+	}
 
-        for (Constructor<?> constructor : rawOwningType.getDeclaredConstructors()) {
+	/**
+	 * Creates a new {@link PreferredConstructorDiscoverer} for the given type.
+	 *
+	 * @param owningType
+	 */
+	protected PreferredConstructorDiscoverer(TypeInformation<T> owningType) {
 
-            PreferredConstructor<T> preferredConstructor =
-                    buildPreferredConstructor(constructor, owningType);
+		boolean noArgConstructorFound = false;
+		int numberOfArgConstructors = 0;
+		Class<?> rawOwningType = owningType.getType();
 
-            // Explicitly defined constructor trumps all
-            if (preferredConstructor.isExplicitlyAnnotated()) {
-                this.constructor = preferredConstructor;
-                return;
-            }
+		for (Constructor<?> constructor : rawOwningType.getDeclaredConstructors()) {
 
-            // No-arg constructor trumps custom ones
-            if (this.constructor == null || preferredConstructor.isNoArgConstructor()) {
-                this.constructor = preferredConstructor;
-            }
-            
-            if (preferredConstructor.isNoArgConstructor()) {
-                noArgConstructorFound = true;
-            } else {
-                numberOfArgConstructors++;
-            }
-        }
-        
-        if (!noArgConstructorFound && numberOfArgConstructors > 1) {
-            throw new IllegalArgumentException(
-                "Multiple no-arg constructors found! Annotate one with @PreferedConstructor explicitly to select it to be used in persistence operations.");
-        }
-    }
+			PreferredConstructor<T> preferredConstructor =
+					buildPreferredConstructor(constructor, owningType);
 
+			// Explicitly defined constructor trumps all
+			if (preferredConstructor.isExplicitlyAnnotated()) {
+				this.constructor = preferredConstructor;
+				return;
+			}
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private PreferredConstructor<T> buildPreferredConstructor(
-            Constructor<?> constructor, TypeInformation<T> typeInformation) {
+			// No-arg constructor trumps custom ones
+			if (this.constructor == null || preferredConstructor.isNoArgConstructor()) {
+				this.constructor = preferredConstructor;
+			}
 
-        List<TypeInformation<?>> parameterTypes = typeInformation.getParameterTypes(constructor);
-        
-        if (parameterTypes.isEmpty()) {
-            return new PreferredConstructor<T>((Constructor<T>) constructor);
-        }
-        
-        String[] parameterNames = nameDiscoverer.getParameterNames(constructor);
-        Parameter<?>[] parameters = new Parameter[parameterTypes.size()];
-        Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
+			if (preferredConstructor.isNoArgConstructor()) {
+				noArgConstructorFound = true;
+			} else {
+				numberOfArgConstructors++;
+			}
+		}
 
-        for (int i = 0; i < parameterTypes.size(); i++) {
-            
-            String name = parameterNames == null ? null : parameterNames[i];
-            TypeInformation<?> type = parameterTypes.get(i);
-            Annotation[] annotations = parameterAnnotations[i];
-            
-            parameters[i] = new Parameter(name, type, annotations);
-        }
-
-        return new PreferredConstructor<T>((Constructor<T>) constructor,
-                parameters);
-    }
+		if (!noArgConstructorFound && numberOfArgConstructors > 1) {
+			throw new IllegalArgumentException(
+					"Multiple no-arg constructors found! Annotate one with @PreferedConstructor explicitly to select it to be used in persistence operations.");
+		}
+	}
 
 
-    public PreferredConstructor<T> getConstructor() {
-        return constructor;
-    }
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	private PreferredConstructor<T> buildPreferredConstructor(
+			Constructor<?> constructor, TypeInformation<T> typeInformation) {
+
+		List<TypeInformation<?>> parameterTypes = typeInformation.getParameterTypes(constructor);
+
+		if (parameterTypes.isEmpty()) {
+			return new PreferredConstructor<T>((Constructor<T>) constructor);
+		}
+
+		String[] parameterNames = nameDiscoverer.getParameterNames(constructor);
+		Parameter<?>[] parameters = new Parameter[parameterTypes.size()];
+		Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
+
+		for (int i = 0; i < parameterTypes.size(); i++) {
+
+			String name = parameterNames == null ? null : parameterNames[i];
+			TypeInformation<?> type = parameterTypes.get(i);
+			Annotation[] annotations = parameterAnnotations[i];
+
+			parameters[i] = new Parameter(name, type, annotations);
+		}
+
+		return new PreferredConstructor<T>((Constructor<T>) constructor,
+				parameters);
+	}
+
+
+	public PreferredConstructor<T> getConstructor() {
+		return constructor;
+	}
 }

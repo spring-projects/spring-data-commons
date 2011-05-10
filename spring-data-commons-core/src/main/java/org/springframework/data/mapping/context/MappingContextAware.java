@@ -25,11 +25,11 @@ import org.springframework.data.mapping.model.MappingContext;
  */
 public interface MappingContextAware {
 
-  /**
-   * The active MappingContext for the environment.
-   *
-   * @param mappingContext
-   */
-  void setMappingContext(MappingContext<?, ?> mappingContext);
+	/**
+	 * The active MappingContext for the environment.
+	 *
+	 * @param mappingContext
+	 */
+	void setMappingContext(MappingContext<?, ?> mappingContext);
 
 }

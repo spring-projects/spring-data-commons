@@ -21,19 +21,19 @@ package org.springframework.data.mapping.model;
  */
 public class Association<P extends PersistentProperty<P>> {
 
-  protected P inverse;
-  protected P obverse;
+	protected P inverse;
+	protected P obverse;
 
-  public Association(P inverse, P obverse) {
-    this.inverse = inverse;
-    this.obverse = obverse;
-  }
+	public Association(P inverse, P obverse) {
+		this.inverse = inverse;
+		this.obverse = obverse;
+	}
 
-  public P getInverse() {
-    return inverse;
-  }
+	public P getInverse() {
+		return inverse;
+	}
 
-  public P getObverse() {
-    return obverse;
-  }
+	public P getObverse() {
+		return obverse;
+	}
 }

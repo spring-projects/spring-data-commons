@@ -28,137 +28,137 @@ import org.springframework.data.domain.Sort;
 
 /**
  * Unit test for {@link Parameters}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ParametersUnitTests {
 
-    private Method valid;
+	private Method valid;
 
 
-    @Before
-    public void setUp() throws SecurityException, NoSuchMethodException {
+	@Before
+	public void setUp() throws SecurityException, NoSuchMethodException {
 
-        valid = SampleDao.class.getMethod("valid", String.class);
-    }
-
-
-    @Test
-    public void checksValidMethodCorrectly() throws Exception {
-
-        Method validWithPageable =
-                SampleDao.class.getMethod("validWithPageable", String.class,
-                        Pageable.class);
-        Method validWithSort =
-                SampleDao.class.getMethod("validWithSort", String.class,
-                        Sort.class);
-
-        new Parameters(valid);
-        new Parameters(validWithPageable);
-        new Parameters(validWithSort);
-    }
+		valid = SampleDao.class.getMethod("valid", String.class);
+	}
 
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsInvalidMethodWithParamMissing() throws Exception {
+	@Test
+	public void checksValidMethodCorrectly() throws Exception {
 
-        Method method =
-                SampleDao.class.getMethod("invalidParamMissing", String.class,
-                        String.class);
-        new Parameters(method);
-    }
+		Method validWithPageable =
+				SampleDao.class.getMethod("validWithPageable", String.class,
+						Pageable.class);
+		Method validWithSort =
+				SampleDao.class.getMethod("validWithSort", String.class,
+						Sort.class);
 
-
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsNullMethod() throws Exception {
-
-        new Parameters(null);
-    }
-
-
-    @Test
-    public void detectsNamedParameterCorrectly() throws Exception {
-
-        Parameters parameters =
-                getParametersFor("validWithSort", String.class, Sort.class);
-
-        Parameter parameter = parameters.getParameter(0);
-
-        assertThat(parameter.isNamedParameter(), is(true));
-        assertThat(parameter.getPlaceholder(), is(":username"));
-
-        parameter = parameters.getParameter(1);
-
-        assertThat(parameter.isNamedParameter(), is(false));
-        assertThat(parameter.isSpecialParameter(), is(true));
-    }
+		new Parameters(valid);
+		new Parameters(validWithPageable);
+		new Parameters(validWithSort);
+	}
 
 
-    @Test
-    public void calculatesPlaceholderPositionCorrectly() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsInvalidMethodWithParamMissing() throws Exception {
 
-        Method method =
-                SampleDao.class.getMethod("validWithSortFirst", Sort.class,
-                        String.class);
-
-        Parameters parameters = new Parameters(method);
-        assertThat(parameters.getBindableParameter(0).getIndex(), is(1));
-
-        method =
-                SampleDao.class.getMethod("validWithSortInBetween",
-                        String.class, Sort.class, String.class);
-
-        parameters = new Parameters(method);
-
-        assertThat(parameters.getBindableParameter(0).getIndex(), is(0));
-        assertThat(parameters.getBindableParameter(1).getIndex(), is(2));
-    }
+		Method method =
+				SampleDao.class.getMethod("invalidParamMissing", String.class,
+						String.class);
+		new Parameters(method);
+	}
 
 
-    @Test
-    public void detectsEmptyParameterListCorrectly() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullMethod() throws Exception {
 
-        Parameters parameters = getParametersFor("emptyParameters");
-        assertThat(parameters.hasParameterAt(0), is(false));
-    }
-
-
-    private Parameters getParametersFor(String methodName,
-            Class<?>... parameterTypes) throws SecurityException,
-            NoSuchMethodException {
-
-        Method method = SampleDao.class.getMethod(methodName, parameterTypes);
-
-        return new Parameters(method);
-    }
-
-    static class User {
-
-    }
-
-    static interface SampleDao {
-
-        User valid(@Param("username") String username);
+		new Parameters(null);
+	}
 
 
-        User invalidParamMissing(@Param("username") String username,
-                String lastname);
+	@Test
+	public void detectsNamedParameterCorrectly() throws Exception {
+
+		Parameters parameters =
+				getParametersFor("validWithSort", String.class, Sort.class);
+
+		Parameter parameter = parameters.getParameter(0);
+
+		assertThat(parameter.isNamedParameter(), is(true));
+		assertThat(parameter.getPlaceholder(), is(":username"));
+
+		parameter = parameters.getParameter(1);
+
+		assertThat(parameter.isNamedParameter(), is(false));
+		assertThat(parameter.isSpecialParameter(), is(true));
+	}
 
 
-        User validWithPageable(@Param("username") String username,
-                Pageable pageable);
+	@Test
+	public void calculatesPlaceholderPositionCorrectly() throws Exception {
+
+		Method method =
+				SampleDao.class.getMethod("validWithSortFirst", Sort.class,
+						String.class);
+
+		Parameters parameters = new Parameters(method);
+		assertThat(parameters.getBindableParameter(0).getIndex(), is(1));
+
+		method =
+				SampleDao.class.getMethod("validWithSortInBetween",
+						String.class, Sort.class, String.class);
+
+		parameters = new Parameters(method);
+
+		assertThat(parameters.getBindableParameter(0).getIndex(), is(0));
+		assertThat(parameters.getBindableParameter(1).getIndex(), is(2));
+	}
 
 
-        User validWithSort(@Param("username") String username, Sort sort);
+	@Test
+	public void detectsEmptyParameterListCorrectly() throws Exception {
+
+		Parameters parameters = getParametersFor("emptyParameters");
+		assertThat(parameters.hasParameterAt(0), is(false));
+	}
 
 
-        User validWithSortFirst(Sort sort, String username);
+	private Parameters getParametersFor(String methodName,
+																			Class<?>... parameterTypes) throws SecurityException,
+			NoSuchMethodException {
+
+		Method method = SampleDao.class.getMethod(methodName, parameterTypes);
+
+		return new Parameters(method);
+	}
+
+	static class User {
+
+	}
+
+	static interface SampleDao {
+
+		User valid(@Param("username") String username);
 
 
-        User validWithSortInBetween(String firstname, Sort sort, String lastname);
+		User invalidParamMissing(@Param("username") String username,
+														 String lastname);
 
 
-        User emptyParameters();
+		User validWithPageable(@Param("username") String username,
+													 Pageable pageable);
 
-    }
+
+		User validWithSort(@Param("username") String username, Sort sort);
+
+
+		User validWithSortFirst(Sort sort, String username);
+
+
+		User validWithSortInBetween(String firstname, Sort sort, String lastname);
+
+
+		User emptyParameters();
+
+	}
 }

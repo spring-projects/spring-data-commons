@@ -30,175 +30,175 @@ import org.springframework.util.StringUtils;
 
 /**
  * Utility class to work with classes.
- * 
+ *
  * @author Oliver Gierke
  */
 public abstract class ClassUtils {
 
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private ClassUtils() {
+	/**
+	 * Private constructor to prevent instantiation.
+	 */
+	private ClassUtils() {
 
-    }
-
-
-    /**
-     * Returns the domain class returned by the given {@link Method}. Will
-     * extract the type from {@link Collection}s and
-     * {@link org.springframework.data.domain.Page} as well.
-     * 
-     * @param method
-     * @return
-     */
-    public static Class<?> getReturnedDomainClass(Method method) {
-
-        Class<?> type = method.getReturnType();
-
-        if (Collection.class.isAssignableFrom(type)
-                || Page.class.isAssignableFrom(type)) {
-
-            ParameterizedType returnType = (ParameterizedType) method.getGenericReturnType();
-            Type componentType = returnType.getActualTypeArguments()[0];
-            
-            return componentType instanceof ParameterizedType ? (Class<?>) ((ParameterizedType) componentType).getRawType()
-                : (Class<?>) componentType;
-        }
-
-        return type;
-    }
+	}
 
 
-    /**
-     * Returns whether the given class contains a property with the given name.
-     * 
-     * @param fieldName
-     * @return
-     */
-    public static boolean hasProperty(Class<?> type, String property) {
+	/**
+	 * Returns the domain class returned by the given {@link Method}. Will
+	 * extract the type from {@link Collection}s and
+	 * {@link org.springframework.data.domain.Page} as well.
+	 *
+	 * @param method
+	 * @return
+	 */
+	public static Class<?> getReturnedDomainClass(Method method) {
 
-        if (null != ReflectionUtils.findMethod(type, "get" + property)) {
-            return true;
-        }
+		Class<?> type = method.getReturnType();
 
-        return null != ReflectionUtils.findField(type,
-                StringUtils.uncapitalize(property));
-    }
+		if (Collection.class.isAssignableFrom(type)
+				|| Page.class.isAssignableFrom(type)) {
 
+			ParameterizedType returnType = (ParameterizedType) method.getGenericReturnType();
+			Type componentType = returnType.getActualTypeArguments()[0];
 
-    /**
-     * Returns wthere the given type is the {@link Repository} interface.
-     * 
-     * @param interfaze
-     * @return
-     */
-    public static boolean isGenericRepositoryInterface(Class<?> interfaze) {
+			return componentType instanceof ParameterizedType ? (Class<?>) ((ParameterizedType) componentType).getRawType()
+					: (Class<?>) componentType;
+		}
 
-        return Repository.class.equals(interfaze);
-    }
+		return type;
+	}
 
 
-    /**
-     * Returns whether the given type name is a repository interface name.
-     * 
-     * @param interfaceName
-     * @return
-     */
-    public static boolean isGenericRepositoryInterface(String interfaceName) {
+	/**
+	 * Returns whether the given class contains a property with the given name.
+	 *
+	 * @param fieldName
+	 * @return
+	 */
+	public static boolean hasProperty(Class<?> type, String property) {
 
-        return Repository.class.getName().equals(interfaceName);
-    }
+		if (null != ReflectionUtils.findMethod(type, "get" + property)) {
+			return true;
+		}
 
-
-    /**
-     * Returns the number of occurences of the given type in the given
-     * {@link Method}s parameters.
-     * 
-     * @param method
-     * @param type
-     * @return
-     */
-    public static int getNumberOfOccurences(Method method, Class<?> type) {
-
-        int result = 0;
-        for (Class<?> clazz : method.getParameterTypes()) {
-            if (type.equals(clazz)) {
-                result++;
-            }
-        }
-
-        return result;
-    }
+		return null != ReflectionUtils.findField(type,
+				StringUtils.uncapitalize(property));
+	}
 
 
-    /**
-     * Asserts the given {@link Method}'s return type to be one of the given
-     * types.
-     * 
-     * @param method
-     * @param types
-     */
-    public static void assertReturnType(Method method, Class<?>... types) {
+	/**
+	 * Returns wthere the given type is the {@link Repository} interface.
+	 *
+	 * @param interfaze
+	 * @return
+	 */
+	public static boolean isGenericRepositoryInterface(Class<?> interfaze) {
 
-        if (!Arrays.asList(types).contains(method.getReturnType())) {
-            throw new IllegalStateException(
-                    "Method has to have one of the following return types! "
-                            + Arrays.toString(types));
-        }
-    }
+		return Repository.class.equals(interfaze);
+	}
 
 
-    /**
-     * Returns whether the given object is of one of the given types. Will
-     * return {@literal false} for {@literal null}.
-     * 
-     * @param object
-     * @param types
-     * @return
-     */
-    public static boolean isOfType(Object object, Collection<Class<?>> types) {
+	/**
+	 * Returns whether the given type name is a repository interface name.
+	 *
+	 * @param interfaceName
+	 * @return
+	 */
+	public static boolean isGenericRepositoryInterface(String interfaceName) {
 
-        if (null == object) {
-            return false;
-        }
-
-        for (Class<?> type : types) {
-            if (type.isAssignableFrom(object.getClass())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+		return Repository.class.getName().equals(interfaceName);
+	}
 
 
-    /**
-     * Returns whether the given {@link Method} has a parameter of the given
-     * type.
-     * 
-     * @param method
-     * @param type
-     * @return
-     */
-    public static boolean hasParameterOfType(Method method, Class<?> type) {
+	/**
+	 * Returns the number of occurences of the given type in the given
+	 * {@link Method}s parameters.
+	 *
+	 * @param method
+	 * @param type
+	 * @return
+	 */
+	public static int getNumberOfOccurences(Method method, Class<?> type) {
 
-        return Arrays.asList(method.getParameterTypes()).contains(type);
-    }
+		int result = 0;
+		for (Class<?> clazz : method.getParameterTypes()) {
+			if (type.equals(clazz)) {
+				result++;
+			}
+		}
+
+		return result;
+	}
 
 
-    /**
-     * Helper method to extract the original exception that can possibly occur
-     * during a reflection call.
-     * 
-     * @param ex
-     * @throws Throwable
-     */
-    public static void unwrapReflectionException(Exception ex) throws Throwable {
+	/**
+	 * Asserts the given {@link Method}'s return type to be one of the given
+	 * types.
+	 *
+	 * @param method
+	 * @param types
+	 */
+	public static void assertReturnType(Method method, Class<?>... types) {
 
-        if (ex instanceof InvocationTargetException) {
-            throw ((InvocationTargetException) ex).getTargetException();
-        }
+		if (!Arrays.asList(types).contains(method.getReturnType())) {
+			throw new IllegalStateException(
+					"Method has to have one of the following return types! "
+							+ Arrays.toString(types));
+		}
+	}
 
-        throw ex;
-    }
+
+	/**
+	 * Returns whether the given object is of one of the given types. Will
+	 * return {@literal false} for {@literal null}.
+	 *
+	 * @param object
+	 * @param types
+	 * @return
+	 */
+	public static boolean isOfType(Object object, Collection<Class<?>> types) {
+
+		if (null == object) {
+			return false;
+		}
+
+		for (Class<?> type : types) {
+			if (type.isAssignableFrom(object.getClass())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * Returns whether the given {@link Method} has a parameter of the given
+	 * type.
+	 *
+	 * @param method
+	 * @param type
+	 * @return
+	 */
+	public static boolean hasParameterOfType(Method method, Class<?> type) {
+
+		return Arrays.asList(method.getParameterTypes()).contains(type);
+	}
+
+
+	/**
+	 * Helper method to extract the original exception that can possibly occur
+	 * during a reflection call.
+	 *
+	 * @param ex
+	 * @throws Throwable
+	 */
+	public static void unwrapReflectionException(Exception ex) throws Throwable {
+
+		if (ex instanceof InvocationTargetException) {
+			throw ((InvocationTargetException) ex).getTargetException();
+		}
+
+		throw ex;
+	}
 }

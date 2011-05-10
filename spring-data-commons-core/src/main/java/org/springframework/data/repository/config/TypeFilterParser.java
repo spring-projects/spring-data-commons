@@ -36,251 +36,244 @@ import org.w3c.dom.NodeList;
  * Parser to populate the given
  * {@link ClassPathScanningCandidateComponentProvider} with {@link TypeFilter}s
  * parsed from the given {@link Element}'s children.
- * 
+ *
  * @author Oliver Gierke
  */
 class TypeFilterParser {
 
-    private static final String FILTER_TYPE_ATTRIBUTE = "type";
-    private static final String FILTER_EXPRESSION_ATTRIBUTE = "expression";
+	private static final String FILTER_TYPE_ATTRIBUTE = "type";
+	private static final String FILTER_EXPRESSION_ATTRIBUTE = "expression";
 
-    private final ClassLoader classLoader;
-    private final ReaderContext readerContext;
-
-
-    /**
-     * Creates a new {@link TypeFilterParser} with the given {@link ClassLoader}
-     * and {@link ReaderContext}.
-     * 
-     * @param classLoader
-     * @param readerContext
-     */
-    public TypeFilterParser(ClassLoader classLoader, ReaderContext readerContext) {
-
-        this.classLoader = classLoader;
-        this.readerContext = readerContext;
-    }
+	private final ClassLoader classLoader;
+	private final ReaderContext readerContext;
 
 
-    /**
-     * Parses include and exclude filters form the given {@link Element}'s child
-     * elements and populates the given
-     * {@link ClassPathScanningCandidateComponentProvider} with the according
-     * {@link TypeFilter}s.
-     * 
-     * @param element
-     * @param scanner
-     */
-    public void parseFilters(Element element,
-            ClassPathScanningCandidateComponentProvider scanner) {
+	/**
+	 * Creates a new {@link TypeFilterParser} with the given {@link ClassLoader}
+	 * and {@link ReaderContext}.
+	 *
+	 * @param classLoader
+	 * @param readerContext
+	 */
+	public TypeFilterParser(ClassLoader classLoader, ReaderContext readerContext) {
 
-        parseTypeFilters(element, scanner, Type.INCLUDE);
-        parseTypeFilters(element, scanner, Type.EXCLUDE);
-    }
+		this.classLoader = classLoader;
+		this.readerContext = readerContext;
+	}
 
 
-    private void parseTypeFilters(Element element,
-            ClassPathScanningCandidateComponentProvider scanner, Type type) {
+	/**
+	 * Parses include and exclude filters form the given {@link Element}'s child
+	 * elements and populates the given
+	 * {@link ClassPathScanningCandidateComponentProvider} with the according
+	 * {@link TypeFilter}s.
+	 *
+	 * @param element
+	 * @param scanner
+	 */
+	public void parseFilters(Element element,
+													 ClassPathScanningCandidateComponentProvider scanner) {
 
-        NodeList nodeList = element.getChildNodes();
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Node node = nodeList.item(i);
-
-            Element childElement = type.getElement(node);
-
-            if (childElement != null) {
-
-                try {
-
-                    type.addFilter(
-                            createTypeFilter((Element) node, classLoader),
-                            scanner);
-
-                } catch (RuntimeException e) {
-                    readerContext.error(e.getMessage(),
-                            readerContext.extractSource(element), e.getCause());
-                }
-            }
-        }
-    }
+		parseTypeFilters(element, scanner, Type.INCLUDE);
+		parseTypeFilters(element, scanner, Type.EXCLUDE);
+	}
 
 
-    protected TypeFilter createTypeFilter(Element element,
-            ClassLoader classLoader) {
+	private void parseTypeFilters(Element element,
+																ClassPathScanningCandidateComponentProvider scanner, Type type) {
 
-        String filterType = element.getAttribute(FILTER_TYPE_ATTRIBUTE);
-        String expression = element.getAttribute(FILTER_EXPRESSION_ATTRIBUTE);
+		NodeList nodeList = element.getChildNodes();
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
 
-        try {
+			Element childElement = type.getElement(node);
 
-            FilterType filter = FilterType.fromString(filterType);
-            return filter.getFilter(expression, classLoader);
+			if (childElement != null) {
 
-        } catch (ClassNotFoundException ex) {
-            throw new FatalBeanException("Type filter class not found: "
-                    + expression, ex);
-        }
-    }
+				try {
 
-    /**
-     * Enum representing all the filter types available for {@code include} and
-     * {@code exclude} elements. This acts as factory for {@link TypeFilter}
-     * instances.
-     * 
-     * @see #getFilter(String, ClassLoader)
-     * @author Oliver Gierke
-     */
-    private static enum FilterType {
+					type.addFilter(
+							createTypeFilter((Element) node, classLoader),
+							scanner);
 
-        ANNOTATION {
-
-            @Override
-            @SuppressWarnings("unchecked")
-            public TypeFilter getFilter(String expression,
-                    ClassLoader classLoader) throws ClassNotFoundException {
-
-                return new AnnotationTypeFilter(
-                        (Class<Annotation>) classLoader.loadClass(expression));
-            }
-        },
-
-        ASSIGNABLE {
-
-            @Override
-            public TypeFilter getFilter(String expression,
-                    ClassLoader classLoader) throws ClassNotFoundException {
-
-                return new AssignableTypeFilter(
-                        classLoader.loadClass(expression));
-            }
-
-        },
-
-        ASPECTJ {
-
-            @Override
-            public TypeFilter getFilter(String expression,
-                    ClassLoader classLoader) {
-
-                return new AspectJTypeFilter(expression, classLoader);
-            }
-
-        },
-
-        REGEX {
-
-            @Override
-            public TypeFilter getFilter(String expression,
-                    ClassLoader classLoader) {
-
-                return new RegexPatternTypeFilter(Pattern.compile(expression));
-            }
-
-        },
-
-        CUSTOM {
-
-            @Override
-            public TypeFilter getFilter(String expression,
-                    ClassLoader classLoader) throws ClassNotFoundException {
-
-                Class<?> filterClass = classLoader.loadClass(expression);
-                if (!TypeFilter.class.isAssignableFrom(filterClass)) {
-                    throw new IllegalArgumentException(
-                            "Class is not assignable to ["
-                                    + TypeFilter.class.getName() + "]: "
-                                    + expression);
-                }
-                return (TypeFilter) BeanUtils.instantiateClass(filterClass);
-            }
-        };
-
-        /**
-         * Returns the {@link TypeFilter} for the given expression and
-         * {@link ClassLoader}.
-         * 
-         * @param expression
-         * @param classLoader
-         * @return
-         * @throws ClassNotFoundException
-         */
-        abstract TypeFilter getFilter(String expression, ClassLoader classLoader)
-                throws ClassNotFoundException;
+				} catch (RuntimeException e) {
+					readerContext.error(e.getMessage(),
+							readerContext.extractSource(element), e.getCause());
+				}
+			}
+		}
+	}
 
 
-        /**
-         * Returns the {@link FilterType} for the given type as {@link String}.
-         * 
-         * @param typeString
-         * @return
-         * @throws IllegalArgumentException if no {@link FilterType} could be
-         *             found for the given argument.
-         */
-        static FilterType fromString(String typeString) {
+	protected TypeFilter createTypeFilter(Element element,
+																				ClassLoader classLoader) {
 
-            for (FilterType filter : FilterType.values()) {
-                if (filter.name().equalsIgnoreCase(typeString)) {
-                    return filter;
-                }
-            }
+		String filterType = element.getAttribute(FILTER_TYPE_ATTRIBUTE);
+		String expression = element.getAttribute(FILTER_EXPRESSION_ATTRIBUTE);
 
-            throw new IllegalArgumentException("Unsupported filter type: "
-                    + typeString);
-        }
-    }
+		try {
 
-    private static enum Type {
+			FilterType filter = FilterType.fromString(filterType);
+			return filter.getFilter(expression, classLoader);
 
-        INCLUDE("include-filter") {
+		} catch (ClassNotFoundException ex) {
+			throw new FatalBeanException("Type filter class not found: "
+					+ expression, ex);
+		}
+	}
 
-            @Override
-            public void addFilter(TypeFilter filter,
-                    ClassPathScanningCandidateComponentProvider scanner) {
+	/**
+	 * Enum representing all the filter types available for {@code include} and
+	 * {@code exclude} elements. This acts as factory for {@link TypeFilter}
+	 * instances.
+	 *
+	 * @author Oliver Gierke
+	 * @see #getFilter(String, ClassLoader)
+	 */
+	private static enum FilterType {
 
-                scanner.addIncludeFilter(filter);
-            }
+		ANNOTATION {
+			@Override
+			@SuppressWarnings("unchecked")
+			public TypeFilter getFilter(String expression,
+																	ClassLoader classLoader) throws ClassNotFoundException {
 
-        },
-        EXCLUDE("exclude-filter") {
+				return new AnnotationTypeFilter(
+						(Class<Annotation>) classLoader.loadClass(expression));
+			}
+		},
 
-            @Override
-            public void addFilter(TypeFilter filter,
-                    ClassPathScanningCandidateComponentProvider scanner) {
+		ASSIGNABLE {
+			@Override
+			public TypeFilter getFilter(String expression,
+																	ClassLoader classLoader) throws ClassNotFoundException {
 
-                scanner.addExcludeFilter(filter);
-            }
-        };
+				return new AssignableTypeFilter(
+						classLoader.loadClass(expression));
+			}
 
-        private String elementName;
+		},
+
+		ASPECTJ {
+			@Override
+			public TypeFilter getFilter(String expression,
+																	ClassLoader classLoader) {
+
+				return new AspectJTypeFilter(expression, classLoader);
+			}
+
+		},
+
+		REGEX {
+			@Override
+			public TypeFilter getFilter(String expression,
+																	ClassLoader classLoader) {
+
+				return new RegexPatternTypeFilter(Pattern.compile(expression));
+			}
+
+		},
+
+		CUSTOM {
+			@Override
+			public TypeFilter getFilter(String expression,
+																	ClassLoader classLoader) throws ClassNotFoundException {
+
+				Class<?> filterClass = classLoader.loadClass(expression);
+				if (!TypeFilter.class.isAssignableFrom(filterClass)) {
+					throw new IllegalArgumentException(
+							"Class is not assignable to ["
+									+ TypeFilter.class.getName() + "]: "
+									+ expression);
+				}
+				return (TypeFilter) BeanUtils.instantiateClass(filterClass);
+			}
+		};
+
+		/**
+		 * Returns the {@link TypeFilter} for the given expression and
+		 * {@link ClassLoader}.
+		 *
+		 * @param expression
+		 * @param classLoader
+		 * @return
+		 * @throws ClassNotFoundException
+		 */
+		abstract TypeFilter getFilter(String expression, ClassLoader classLoader)
+				throws ClassNotFoundException;
 
 
-        private Type(String elementName) {
+		/**
+		 * Returns the {@link FilterType} for the given type as {@link String}.
+		 *
+		 * @param typeString
+		 * @return
+		 * @throws IllegalArgumentException if no {@link FilterType} could be
+		 *                                  found for the given argument.
+		 */
+		static FilterType fromString(String typeString) {
 
-            this.elementName = elementName;
-        }
+			for (FilterType filter : FilterType.values()) {
+				if (filter.name().equalsIgnoreCase(typeString)) {
+					return filter;
+				}
+			}
+
+			throw new IllegalArgumentException("Unsupported filter type: "
+					+ typeString);
+		}
+	}
+
+	private static enum Type {
+
+		INCLUDE("include-filter") {
+			@Override
+			public void addFilter(TypeFilter filter,
+														ClassPathScanningCandidateComponentProvider scanner) {
+
+				scanner.addIncludeFilter(filter);
+			}
+
+		},
+		EXCLUDE("exclude-filter") {
+			@Override
+			public void addFilter(TypeFilter filter,
+														ClassPathScanningCandidateComponentProvider scanner) {
+
+				scanner.addExcludeFilter(filter);
+			}
+		};
+
+		private String elementName;
 
 
-        /**
-         * Returns the {@link Element} if the given {@link Node} is an
-         * {@link Element} and it's name equals the one of the type.
-         * 
-         * @param node
-         * @return
-         */
-        Element getElement(Node node) {
+		private Type(String elementName) {
 
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                String localName = node.getLocalName();
-                if (elementName.equals(localName)) {
-                    return (Element) node;
-                }
-            }
-
-            return null;
-        }
+			this.elementName = elementName;
+		}
 
 
-        abstract void addFilter(TypeFilter filter,
-                ClassPathScanningCandidateComponentProvider scanner);
-    }
+		/**
+		 * Returns the {@link Element} if the given {@link Node} is an
+		 * {@link Element} and it's name equals the one of the type.
+		 *
+		 * @param node
+		 * @return
+		 */
+		Element getElement(Node node) {
+
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				String localName = node.getLocalName();
+				if (elementName.equals(localName)) {
+					return (Element) node;
+				}
+			}
+
+			return null;
+		}
+
+
+		abstract void addFilter(TypeFilter filter,
+														ClassPathScanningCandidateComponentProvider scanner);
+	}
 }

@@ -9,8 +9,8 @@ import org.junit.Test;
  */
 public class TypeDiscovererUnitTests {
 
-  @Test(expected = IllegalArgumentException.class)
-  public void rejectsNullType() {
-    new TypeDiscoverer<Object>(null, null, null);
-  }
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullType() {
+		new TypeDiscoverer<Object>(null, null, null);
+	}
 }

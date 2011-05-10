@@ -26,20 +26,20 @@ import org.springframework.data.util.TypeInformation;
  */
 public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> extends ApplicationEvent {
 
-  private static final long serialVersionUID = 1336466833846092490L;
-  private TypeInformation<?> typeInformation;
+	private static final long serialVersionUID = 1336466833846092490L;
+	private TypeInformation<?> typeInformation;
 
-  public MappingContextEvent(E source, TypeInformation<?> typeInformation) {
-    super(source);
-    this.typeInformation = typeInformation;
-  }
+	public MappingContextEvent(E source, TypeInformation<?> typeInformation) {
+		super(source);
+		this.typeInformation = typeInformation;
+	}
 
-  public TypeInformation<?> getTypeInformation() {
-    return typeInformation;
-  }
+	public TypeInformation<?> getTypeInformation() {
+		return typeInformation;
+	}
 
-  @SuppressWarnings("unchecked")
-  public E getPersistentEntity() {
-    return (E) source;
-  }  
+	@SuppressWarnings("unchecked")
+	public E getPersistentEntity() {
+		return (E) source;
+	}
 }

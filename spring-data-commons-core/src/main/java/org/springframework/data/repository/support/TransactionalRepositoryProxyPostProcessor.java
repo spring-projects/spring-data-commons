@@ -27,49 +27,49 @@ import org.springframework.util.Assert;
  * {@link RepositoryProxyPostProcessor} to add transactional behaviour to
  * repository proxies. Adds a {@link PersistenceExceptionTranslationInterceptor}
  * as well as an annotation based {@link TransactionInterceptor} to the proxy.
- * 
+ *
  * @author Oliver Gierke
  */
 class TransactionalRepositoryProxyPostProcessor implements
-        RepositoryProxyPostProcessor {
+		RepositoryProxyPostProcessor {
 
-    private final TransactionInterceptor transactionInterceptor;
-    private final PersistenceExceptionTranslationInterceptor petInterceptor;
-
-
-    /**
-     * Creates a new {@link TransactionalRepositoryProxyPostProcessor}.
-     */
-    public TransactionalRepositoryProxyPostProcessor(
-            ListableBeanFactory beanFactory, String transactionManagerName) {
-
-        Assert.notNull(beanFactory);
-        Assert.notNull(transactionManagerName);
-
-        this.petInterceptor = new PersistenceExceptionTranslationInterceptor();
-        this.petInterceptor.setBeanFactory(beanFactory);
-        this.petInterceptor.afterPropertiesSet();
-
-        this.transactionInterceptor =
-                new TransactionInterceptor(null,
-                        new AnnotationTransactionAttributeSource());
-        this.transactionInterceptor
-                .setTransactionManagerBeanName(transactionManagerName);
-        this.transactionInterceptor.setBeanFactory(beanFactory);
-        this.transactionInterceptor.afterPropertiesSet();
-    }
+	private final TransactionInterceptor transactionInterceptor;
+	private final PersistenceExceptionTranslationInterceptor petInterceptor;
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.support.RepositoryProxyPostProcessor
-     * #postProcess(org.springframework.aop.framework.ProxyFactory)
-     */
-    public void postProcess(ProxyFactory factory) {
+	/**
+	 * Creates a new {@link TransactionalRepositoryProxyPostProcessor}.
+	 */
+	public TransactionalRepositoryProxyPostProcessor(
+			ListableBeanFactory beanFactory, String transactionManagerName) {
 
-        factory.addAdvice(petInterceptor);
-        factory.addAdvice(transactionInterceptor);
-    }
+		Assert.notNull(beanFactory);
+		Assert.notNull(transactionManagerName);
+
+		this.petInterceptor = new PersistenceExceptionTranslationInterceptor();
+		this.petInterceptor.setBeanFactory(beanFactory);
+		this.petInterceptor.afterPropertiesSet();
+
+		this.transactionInterceptor =
+				new TransactionInterceptor(null,
+						new AnnotationTransactionAttributeSource());
+		this.transactionInterceptor
+				.setTransactionManagerBeanName(transactionManagerName);
+		this.transactionInterceptor.setBeanFactory(beanFactory);
+		this.transactionInterceptor.afterPropertiesSet();
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.data.repository.support.RepositoryProxyPostProcessor
+			 * #postProcess(org.springframework.aop.framework.ProxyFactory)
+			 */
+	public void postProcess(ProxyFactory factory) {
+
+		factory.addAdvice(petInterceptor);
+		factory.addAdvice(transactionInterceptor);
+	}
 }

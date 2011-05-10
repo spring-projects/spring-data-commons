@@ -20,7 +20,7 @@ public class ChangeSetBackedTransactionSynchronization implements TransactionSyn
 		this.changeSetPersister = changeSetPersister;
 		this.entity = entity;
 	}
-	
+
 	public void afterCommit() {
 		log.debug("After Commit called for " + entity);
 		changeSetPersister.persistState(entity, entity.getChangeSet());
@@ -33,8 +33,7 @@ public class ChangeSetBackedTransactionSynchronization implements TransactionSyn
 			if (status == STATUS_COMMITTED) {
 				// this is good
 				log.debug("ChangedSetBackedTransactionSynchronization completed successfully for " + this.entity);
-			}
-			else {
+			} else {
 				// this could be bad - TODO: compensate
 				log.error("ChangedSetBackedTransactionSynchronization failed for " + this.entity);
 			}
@@ -57,5 +56,5 @@ public class ChangeSetBackedTransactionSynchronization implements TransactionSyn
 	public void suspend() {
 		throw new IllegalStateException("ChangedSetBackedTransactionSynchronization does not support transaction suspension currently.");
 	}
-	
+
 }

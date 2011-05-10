@@ -61,7 +61,7 @@ public class MappingContextAwareBeanPostProcessor implements BeanPostProcessor, 
 	}
 
 	@SuppressWarnings("rawtypes")
-        public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof MappingContextAware) {
 			if (null == mappingContext) {
 				Map<String, MappingContext> mappingContexts = applicationContext.getBeansOfType(MappingContext.class);

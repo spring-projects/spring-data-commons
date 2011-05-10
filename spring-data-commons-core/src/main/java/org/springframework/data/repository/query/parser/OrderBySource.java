@@ -32,69 +32,69 @@ import org.springframework.util.StringUtils;
  * up multiple properties ending with the sorting direction. So the following
  * method ends are valid: {@code LastnameUsernameDesc},
  * {@code LastnameAscUsernameDesc}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class OrderBySource {
 
-    private final String BLOCK_SPLIT = "(?<=Asc|Desc)(?=[A-Z])";
-    private final Pattern DIRECTION_SPLIT = Pattern.compile("(.+)(Asc|Desc)$");
+	private final String BLOCK_SPLIT = "(?<=Asc|Desc)(?=[A-Z])";
+	private final Pattern DIRECTION_SPLIT = Pattern.compile("(.+)(Asc|Desc)$");
 
-    private final List<Order> orders;
-
-
-    public OrderBySource(String clause) {
-
-        this(clause, null);
-    }
+	private final List<Order> orders;
 
 
-    public OrderBySource(String clause, Class<?> domainClass) {
+	public OrderBySource(String clause) {
 
-        this.orders = new ArrayList<Sort.Order>();
-
-        for (String part : clause.split(BLOCK_SPLIT)) {
-
-            Matcher matcher = DIRECTION_SPLIT.matcher(part);
-
-            if (!matcher.find()) {
-                throw new IllegalArgumentException(String.format(
-                        "Invalid order syntax for part %s!", part));
-            }
-
-            Direction direction = Direction.fromString(matcher.group(2));
-            this.orders.add(createOrder(matcher.group(1), direction,
-                    domainClass));
-        }
-    }
+		this(clause, null);
+	}
 
 
-    /**
-     * Creates an {@link Order} instance from the given property source,
-     * direction and domain class. If the domain class is given, we will use it
-     * for nested property traversal checks.
-     * 
-     * @see Property#from(String, Class)
-     * @param propertySource
-     * @param direction
-     * @param domainClass can be {@literal null}.
-     * @return
-     */
-    private Order createOrder(String propertySource, Direction direction,
-            Class<?> domainClass) {
+	public OrderBySource(String clause, Class<?> domainClass) {
 
-        if (null == domainClass) {
-            return new Order(direction,
-                    StringUtils.uncapitalize(propertySource));
-        }
+		this.orders = new ArrayList<Sort.Order>();
 
-        Property property = Property.from(propertySource, domainClass);
-        return new Order(direction, property.toDotPath());
-    }
+		for (String part : clause.split(BLOCK_SPLIT)) {
+
+			Matcher matcher = DIRECTION_SPLIT.matcher(part);
+
+			if (!matcher.find()) {
+				throw new IllegalArgumentException(String.format(
+						"Invalid order syntax for part %s!", part));
+			}
+
+			Direction direction = Direction.fromString(matcher.group(2));
+			this.orders.add(createOrder(matcher.group(1), direction,
+					domainClass));
+		}
+	}
 
 
-    public Sort toSort() {
+	/**
+	 * Creates an {@link Order} instance from the given property source,
+	 * direction and domain class. If the domain class is given, we will use it
+	 * for nested property traversal checks.
+	 *
+	 * @param propertySource
+	 * @param direction
+	 * @param domainClass		can be {@literal null}.
+	 * @return
+	 * @see Property#from(String, Class)
+	 */
+	private Order createOrder(String propertySource, Direction direction,
+														Class<?> domainClass) {
 
-        return this.orders.isEmpty() ? null : new Sort(this.orders);
-    }
+		if (null == domainClass) {
+			return new Order(direction,
+					StringUtils.uncapitalize(propertySource));
+		}
+
+		Property property = Property.from(propertySource, domainClass);
+		return new Order(direction, property.toDotPath());
+	}
+
+
+	public Sort toSort() {
+
+		return this.orders.isEmpty() ? null : new Sort(this.orders);
+	}
 }

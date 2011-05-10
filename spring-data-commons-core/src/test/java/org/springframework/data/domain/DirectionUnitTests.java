@@ -8,22 +8,22 @@ import org.springframework.data.domain.Sort.Direction;
 
 /**
  * Unit test for {@link Direction}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DirectionUnitTests {
 
-    @Test
-    public void jpaValueMapping() throws Exception {
+	@Test
+	public void jpaValueMapping() throws Exception {
 
-        assertEquals(Direction.ASC, Direction.fromString("asc"));
-        assertEquals(Direction.DESC, Direction.fromString("desc"));
-    }
+		assertEquals(Direction.ASC, Direction.fromString("asc"));
+		assertEquals(Direction.DESC, Direction.fromString("desc"));
+	}
 
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsInvalidString() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsInvalidString() throws Exception {
 
-        Direction.fromString("foo");
-    }
+		Direction.fromString("foo");
+	}
 }

@@ -18,55 +18,49 @@ package org.springframework.data.querydsl;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import org.junit.Test;
-import org.springframework.data.querydsl.EntityPathResolver;
-import org.springframework.data.querydsl.SimpleEntityPathResolver;
-import org.springframework.data.querydsl.QSimpleEntityPathResolverUnitTests_NamedUser;
-import org.springframework.data.querydsl.QSimpleEntityPathResolverUnitTests_Sample;
-import org.springframework.data.querydsl.QUser;
-
 import com.mysema.query.annotations.QueryEntity;
+import org.junit.Test;
 
 
 /**
  * Unit test for {@link SimpleEntityPathResolver}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class SimpleEntityPathResolverUnitTests {
 
-    EntityPathResolver resolver = SimpleEntityPathResolver.INSTANCE;
+	EntityPathResolver resolver = SimpleEntityPathResolver.INSTANCE;
 
 
-    @Test
-    public void createsRepositoryFromDomainClassCorrectly() throws Exception {
+	@Test
+	public void createsRepositoryFromDomainClassCorrectly() throws Exception {
 
-        assertThat(resolver.createPath(User.class), is(QUser.class));
-    }
-
-
-    @Test
-    public void resolvesEntityPathForInnerClassCorrectly() throws Exception {
-
-        assertThat(resolver.createPath(NamedUser.class),
-                is(QSimpleEntityPathResolverUnitTests_NamedUser.class));
-    }
+		assertThat(resolver.createPath(User.class), is(QUser.class));
+	}
 
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme()
-            throws Exception {
+	@Test
+	public void resolvesEntityPathForInnerClassCorrectly() throws Exception {
 
-        resolver.createPath(QSimpleEntityPathResolverUnitTests_Sample.class);
-    }
+		assertThat(resolver.createPath(NamedUser.class),
+				is(QSimpleEntityPathResolverUnitTests_NamedUser.class));
+	}
 
-    @QueryEntity
-    static class Sample {
 
-    }
-    
-    @QueryEntity
-    static class NamedUser {
-      
-    }
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme()
+			throws Exception {
+
+		resolver.createPath(QSimpleEntityPathResolverUnitTests_Sample.class);
+	}
+
+	@QueryEntity
+	static class Sample {
+
+	}
+
+	@QueryEntity
+	static class NamedUser {
+
+	}
 }

@@ -17,11 +17,10 @@ package org.springframework.data.querydsl;
 
 
 /**
- *
  * @author Oliver Gierke
  */
 public class QueryDslUtils {
 
-  public static final boolean QUERY_DSL_PRESENT = org.springframework.util.ClassUtils.isPresent(
-      "com.mysema.query.types.Predicate", QueryDslUtils.class.getClassLoader());
+	public static final boolean QUERY_DSL_PRESENT = org.springframework.util.ClassUtils.isPresent(
+			"com.mysema.query.types.Predicate", QueryDslUtils.class.getClassLoader());
 }

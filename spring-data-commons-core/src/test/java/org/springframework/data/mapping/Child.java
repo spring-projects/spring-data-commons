@@ -24,8 +24,8 @@ import org.springframework.data.annotation.Persistent;
 @Persistent
 public class Child extends PersonWithId {
 
-  public Child(Integer ssn, String firstName, String lastName) {
-    super(ssn, firstName, lastName);
-  }
+	public Child(Integer ssn, String firstName, String lastName) {
+		super(ssn, firstName, lastName);
+	}
 
 }

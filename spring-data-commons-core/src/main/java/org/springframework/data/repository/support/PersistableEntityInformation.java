@@ -25,57 +25,57 @@ import org.springframework.data.domain.Persistable;
  * Implementation of {@link EntityMetadata} that assumes the entity handled
  * implements {@link Persistable} and uses {@link Persistable#isNew()} for the
  * {@link #isNew(Object)} check.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PersistableEntityInformation<T extends Persistable<ID>, ID extends Serializable> extends
-        AbstractEntityInformation<T, ID> {
-    
-    private Class<ID> idClass;
+		AbstractEntityInformation<T, ID> {
 
-    /**
-     * Creates a new {@link PersistableEntityInformation}.
-     * 
-     * @param domainClass
-     */
-    @SuppressWarnings("unchecked")
-    public PersistableEntityInformation(Class<T> domainClass) {
+	private Class<ID> idClass;
 
-        super(domainClass);
-        this.idClass = (Class<ID>) GenericTypeResolver.resolveTypeArgument(domainClass, Persistable.class);
-    }
+	/**
+	 * Creates a new {@link PersistableEntityInformation}.
+	 *
+	 * @param domainClass
+	 */
+	@SuppressWarnings("unchecked")
+	public PersistableEntityInformation(Class<T> domainClass) {
 
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.support.IsNewAware#isNew(java.lang
-     * .Object)
-     */
-    @Override
-    public boolean isNew(T entity) {
-
-        return entity.isNew();
-    }
+		super(domainClass);
+		this.idClass = (Class<ID>) GenericTypeResolver.resolveTypeArgument(domainClass, Persistable.class);
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.support.IdAware#getId(java.lang.Object
-     * )
-     */
-    public ID getId(T entity) {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.data.repository.support.IsNewAware#isNew(java.lang
+			 * .Object)
+			 */
+	@Override
+	public boolean isNew(T entity) {
 
-        return entity.getId();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.springframework.data.repository.support.EntityInformation#getIdType()
-     */
-    public Class<ID> getIdType() {
-        return this.idClass;
-    }
+		return entity.isNew();
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.data.repository.support.IdAware#getId(java.lang.Object
+			 * )
+			 */
+	public ID getId(T entity) {
+
+		return entity.getId();
+	}
+
+	/* (non-Javadoc)
+			 * @see org.springframework.data.repository.support.EntityInformation#getIdType()
+			 */
+	public Class<ID> getIdType() {
+		return this.idClass;
+	}
 }

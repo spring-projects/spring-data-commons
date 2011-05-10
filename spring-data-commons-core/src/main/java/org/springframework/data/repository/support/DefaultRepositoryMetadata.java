@@ -23,66 +23,65 @@ import org.springframework.util.Assert;
 
 /**
  * Default implementation of {@link RepositoryMetadata}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DefaultRepositoryMetadata implements RepositoryMetadata {
 
-    private final Class<?> repositoryInterface;
+	private final Class<?> repositoryInterface;
 
 
-    /**
-     * Creates a new {@link DefaultRepositoryMetadata} for the given repository
-     * interface and repository base class.
-     * 
-     * @param repositoryInterface
-     */
-    public DefaultRepositoryMetadata(Class<?> repositoryInterface) {
+	/**
+	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository
+	 * interface and repository base class.
+	 *
+	 * @param repositoryInterface
+	 */
+	public DefaultRepositoryMetadata(Class<?> repositoryInterface) {
 
-        Assert.notNull(repositoryInterface);
-        this.repositoryInterface = repositoryInterface;
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.data.repository.support.RepositoryMetadata#
-     * getRepositoryInterface()
-     */
-    public Class<?> getRepositoryInterface() {
-
-        return repositoryInterface;
-    }
+		Assert.notNull(repositoryInterface);
+		this.repositoryInterface = repositoryInterface;
+	}
 
 
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see org.springframework.data.repository.support.RepositoryMetadata#
+			 * getRepositoryInterface()
+			 */
+	public Class<?> getRepositoryInterface() {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.support.RepositoryMetadata#getDomainClass
-     * ()
-     */
-    public Class<?> getDomainClass() {
-
-        Class<?>[] arguments =
-                resolveTypeArguments(repositoryInterface, Repository.class);
-        return arguments == null ? null : arguments[0];
-    }
+		return repositoryInterface;
+	}
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.springframework.data.repository.support.RepositoryMetadata#getIdClass
-     * ()
-     */
-    public Class<?> getIdClass() {
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.data.repository.support.RepositoryMetadata#getDomainClass
+			 * ()
+			 */
+	public Class<?> getDomainClass() {
 
-        Class<?>[] arguments =
-                resolveTypeArguments(repositoryInterface, Repository.class);
-        return arguments == null ? null : arguments[1];
-    }
+		Class<?>[] arguments =
+				resolveTypeArguments(repositoryInterface, Repository.class);
+		return arguments == null ? null : arguments[0];
+	}
+
+
+	/*
+			 * (non-Javadoc)
+			 *
+			 * @see
+			 * org.springframework.data.repository.support.RepositoryMetadata#getIdClass
+			 * ()
+			 */
+	public Class<?> getIdClass() {
+
+		Class<?>[] arguments =
+				resolveTypeArguments(repositoryInterface, Repository.class);
+		return arguments == null ? null : arguments[1];
+	}
 }
