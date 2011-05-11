@@ -212,9 +212,11 @@ public abstract class MappingBeanHelper {
 		Field field = property.getField();
 		Method getter = (null != property.getPropertyDescriptor() ? property.getPropertyDescriptor().getReadMethod() : null);
 		if (fieldAccessOnly || null == getter) {
-			obj = field.get(from);
+			ReflectionUtils.makeAccessible(field);
+			obj = ReflectionUtils.getField(field, from);
 		} else {
-			obj = getter.invoke(from);
+			ReflectionUtils.makeAccessible(getter);
+			obj = ReflectionUtils.invokeMethod(getter, from);
 		}
 		if (null != obj && !obj.getClass().isAssignableFrom(type)) {
 			return conversionService.convert(obj, type);
