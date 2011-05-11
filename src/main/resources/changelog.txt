@@ -8,6 +8,14 @@ General
 * Extracted Querydsl support code from JPA and Mongo modules (DATACMNS-32)
 * Implementations of Page, Pageable and Sort are now serializable (DATACMNS-30)
 * Refactored mapping subsystem (DATADOC-109)
+* Mapping subsystem can now work with multi-dimensional arrays and collections (DATADOC-98)
+* Upgraded to Querydsl 2.2.0-beta4 (DATADOC-115)
+* Improved algorithm to detect persistence constructors (DATACMNS-34)
+
+Repositories
+* Repository.count() now returns a primitive long (DATACMNS-33)
+* Added Near and Within as keywords for query method parser (DATADOC-43)
+* Repository has now a delete(ID id) method (DATACMNS-35)
 
 Changes in version 1.0.0 (2011-04-18)
 ----------------------------------------
