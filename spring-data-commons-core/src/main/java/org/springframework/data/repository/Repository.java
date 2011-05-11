@@ -81,7 +81,15 @@ public interface Repository<T, ID extends Serializable> {
 	 */
 	long count();
 
+	
+	/**
+	 * Deletes the entity with the given id.
+	 * 
+	 * @param id
+	 */
+	void delete(ID id);
 
+	
 	/**
 	 * Deletes a given entity.
 	 *
@@ -89,7 +97,7 @@ public interface Repository<T, ID extends Serializable> {
 	 */
 	void delete(T entity);
 
-
+	
 	/**
 	 * Deletes the given entities.
 	 *
