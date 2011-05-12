@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 import java.lang.reflect.Method;
 
 import org.junit.Test;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.support.DefaultRepositoryMetadataUnitTests.DummyGenericRepositorySupport;
 
 /**
@@ -35,12 +35,12 @@ public class DefaultRepositoryInformationUnitTests {
 		Method method = FooDao.class.getMethod("findOne", Long.class);
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooDao.class);
-		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, Repository.class);
+		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class);
 
 		assertThat(information.getBaseClassMethodFor(method), is(method));
 	}
 
-	private static interface FooDao extends Repository<User, Integer> {
+	private static interface FooDao extends CrudRepository<User, Integer> {
 
 		// Redeclared method
 		User findOne(Integer primaryKey);

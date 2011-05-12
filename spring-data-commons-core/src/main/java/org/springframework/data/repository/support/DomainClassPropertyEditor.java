@@ -21,35 +21,35 @@ import java.io.Serializable;
 
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.SimpleTypeConverter;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 
 /**
  * Generic {@link PropertyEditor} to map entities handled by a
- * {@link Repository} to their id's and vice versa.
+ * {@link CrudRepository} to their id's and vice versa.
  *
  * @author Oliver Gierke
  */
 public class DomainClassPropertyEditor<T, ID extends Serializable> extends
 		PropertyEditorSupport {
 
-	private final Repository<T, ID> repository;
+	private final CrudRepository<T, ID> repository;
 	private final EntityInformation<T, ID> information;
 	private final PropertyEditorRegistry registry;
 
 
 	/**
 	 * Creates a new {@link DomainClassPropertyEditor} for the given
-	 * {@link Repository}.
+	 * {@link CrudRepository}, {@link EntityInformation} and {@link PropertyEditorRegistry}.
 	 *
 	 * @param repository
+	 * @param information
 	 * @param registry
 	 */
-	public DomainClassPropertyEditor(Repository<T, ID> repository,
-																	 EntityInformation<T, ID> information,
-																	 PropertyEditorRegistry registry) {
+	public DomainClassPropertyEditor(CrudRepository<T, ID> repository, EntityInformation<T, ID> information,
+	    PropertyEditorRegistry registry) {
 
 		Assert.notNull(repository);
 		Assert.notNull(registry);

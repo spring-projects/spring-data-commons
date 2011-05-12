@@ -28,7 +28,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 
 /**
@@ -173,7 +173,7 @@ public class DomainClassPropertyEditorUnitTests {
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static interface UserRepository extends Repository<User, Integer> {
+	private static interface UserRepository extends CrudRepository<User, Integer> {
 
 	}
 }

@@ -35,7 +35,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 
 /**
@@ -186,7 +186,7 @@ public class DomainClassConverterUnitTests {
 
 	}
 
-	private static interface UserRepository extends Repository<User, Long> {
+	private static interface UserRepository extends CrudRepository<User, Long> {
 
 	}
 }

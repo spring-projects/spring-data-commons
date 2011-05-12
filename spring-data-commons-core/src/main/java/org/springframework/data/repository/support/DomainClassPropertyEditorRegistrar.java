@@ -26,7 +26,7 @@ import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 
 /**
@@ -56,8 +56,8 @@ import org.springframework.data.repository.Repository;
 public class DomainClassPropertyEditorRegistrar implements
 		PropertyEditorRegistrar, ApplicationContextAware {
 
-	private final Map<EntityInformation<Object, Serializable>, Repository<Object, Serializable>> repositories =
-			new HashMap<EntityInformation<Object, Serializable>, Repository<Object, Serializable>>();
+	private final Map<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>> repositories =
+			new HashMap<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>>();
 
 
 	/*
@@ -69,11 +69,11 @@ public class DomainClassPropertyEditorRegistrar implements
 			 */
 	public void registerCustomEditors(PropertyEditorRegistry registry) {
 
-		for (Entry<EntityInformation<Object, Serializable>, Repository<Object, Serializable>> entry : repositories
+		for (Entry<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>> entry : repositories
 				.entrySet()) {
 
 			EntityInformation<Object, Serializable> metadata = entry.getKey();
-			Repository<Object, Serializable> repository = entry.getValue();
+			CrudRepository<Object, Serializable> repository = entry.getValue();
 
 			DomainClassPropertyEditor<Object, Serializable> editor =
 					new DomainClassPropertyEditor<Object, Serializable>(
@@ -102,9 +102,9 @@ public class DomainClassPropertyEditorRegistrar implements
 
 			EntityInformation<Object, Serializable> metadata =
 					information.getEntityInformation();
-			Class<Repository<Object, Serializable>> objectType =
+			Class<CrudRepository<Object, Serializable>> objectType =
 					information.getRepositoryInterface();
-			Repository<Object, Serializable> repository =
+			CrudRepository<Object, Serializable> repository =
 					BeanFactoryUtils.beanOfType(context, objectType);
 
 			this.repositories.put(metadata, repository);

@@ -23,7 +23,7 @@ import org.springframework.data.domain.Sort;
 
 
 /**
- * Extension of {@link Repository} to provide additional methods to retrieve
+ * Extension of {@link CrudRepository} to provide additional methods to retrieve
  * entities using the pagination and sorting abstraction.
  *
  * @author Oliver Gierke
@@ -31,8 +31,9 @@ import org.springframework.data.domain.Sort;
  * @see Pageable
  * @see Page
  */
+@NoRepositoryBean
 public interface PagingAndSortingRepository<T, ID extends Serializable> extends
-		Repository<T, ID> {
+		CrudRepository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.

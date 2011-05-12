@@ -33,7 +33,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 
 /**
@@ -121,7 +121,7 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 
 	}
 
-	private static interface EntityRepository extends Repository<Entity, Long> {
+	private static interface EntityRepository extends CrudRepository<Entity, Long> {
 
 	}
 

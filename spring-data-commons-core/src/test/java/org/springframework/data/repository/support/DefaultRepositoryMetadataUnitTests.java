@@ -22,7 +22,7 @@ import java.io.Serializable;
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.util.ClassUtils;
 
 
@@ -86,7 +86,7 @@ public class DefaultRepositoryMetadataUnitTests {
 		}
 	}
 
-	static interface UserRepository extends Repository<User, Integer> {
+	static interface UserRepository extends CrudRepository<User, Integer> {
 
 	}
 
@@ -117,12 +117,12 @@ public class DefaultRepositoryMetadataUnitTests {
 	}
 
 	static interface UserCustomExtendedRepository extends
-			Repository<User, Integer> {
+			CrudRepository<User, Integer> {
 
 	}
 
 	static abstract class DummyGenericRepositorySupport<T, ID extends Serializable>
-			implements Repository<T, ID> {
+			implements CrudRepository<T, ID> {
 
 		public T findOne(ID id) {
 
@@ -139,7 +139,7 @@ public class DefaultRepositoryMetadataUnitTests {
 	}
 
 	static interface GenericEntityRepository extends
-			Repository<GenericEntity<String>, Long> {
+			CrudRepository<GenericEntity<String>, Long> {
 
 	}
 }

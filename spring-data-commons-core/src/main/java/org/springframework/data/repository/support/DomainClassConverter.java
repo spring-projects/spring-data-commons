@@ -28,23 +28,23 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 
 /**
  * {@link org.springframework.core.convert.converter.Converter} to convert
- * arbitrary input into domain classes managed by Spring Data {@link Repository}
+ * arbitrary input into domain classes managed by Spring Data {@link CrudRepository}
  * s. The implementation uses a {@link ConversionService} in turn to convert the
  * source type into the domain class' id type which is then converted into a
- * domain class object by using a {@link Repository}.
+ * domain class object by using a {@link CrudRepository}.
  *
  * @author Oliver Gierke
  */
 public class DomainClassConverter implements ConditionalGenericConverter,
 		ApplicationContextAware {
 
-	private final Map<EntityInformation<?, Serializable>, Repository<?, Serializable>> repositories =
-			new HashMap<EntityInformation<?, Serializable>, Repository<?, Serializable>>();
+	private final Map<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>> repositories =
+			new HashMap<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>>();
 	private final ConversionService service;
 
 
@@ -86,7 +86,7 @@ public class DomainClassConverter implements ConditionalGenericConverter,
 		EntityInformation<?, Serializable> info =
 				getRepositoryForDomainType(targetType.getType());
 
-		Repository<?, Serializable> repository = repositories.get(info);
+		CrudRepository<?, Serializable> repository = repositories.get(info);
 		Serializable id = service.convert(source, info.getIdType());
 		return repository.findOne(id);
 	}
@@ -146,9 +146,9 @@ public class DomainClassConverter implements ConditionalGenericConverter,
 
 			EntityInformation<Object, Serializable> metadata =
 					entry.getEntityInformation();
-			Class<Repository<Object, Serializable>> objectType =
+			Class<CrudRepository<Object, Serializable>> objectType =
 					entry.getRepositoryInterface();
-			Repository<Object, Serializable> repository =
+			CrudRepository<Object, Serializable> repository =
 					BeanFactoryUtils.beanOfType(context, objectType);
 
 			this.repositories.put(metadata, repository);
