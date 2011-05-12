@@ -94,6 +94,14 @@
 			<version>${querydsl.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<!-- EJB Transactions -->
+		<dependency>
+			<groupId>javax.ejb</groupId>
+			<artifactId>ejb-api</artifactId>
+			<version>3.0</version>
+			<optional>true</optional>
+		</dependency>
 
 	</dependencies>
 	<build>
