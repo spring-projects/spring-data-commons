@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -185,6 +186,14 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 		}
 
 		return infos;
+	}
+	
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.GlobalRepositoryConfigInformation#getRepositoryBaseInterface()
+	 */
+	public Class<?> getRepositoryBaseInterface() {
+	  return Repository.class;
 	}
 
 
