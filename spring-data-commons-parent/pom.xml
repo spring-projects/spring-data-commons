@@ -369,6 +369,12 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<!-- Necessary for EJB Tx support in Commons Core -->
+			<id>jboss</id>
+			<name>JBoss repository</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public</url>
+		</repository>
 	</repositories>
 	<reporting>
 		<plugins>
