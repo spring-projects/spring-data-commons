@@ -79,7 +79,9 @@ public class PreferredConstructorDiscoverer<T> {
 
 		if (!noArgConstructorFound && numberOfArgConstructors > 1) {
 			throw new IllegalArgumentException(
-					"Multiple no-arg constructors found! Annotate one with @PreferedConstructor explicitly to select it to be used in persistence operations.");
+					String.format("Multiple constructors with arguments found in class %s! Annotate " +
+							"one with @PreferedConstructor explicitly to select it to be used in " +
+							"persistence operations.", rawOwningType.getName()));
 		}
 	}
 
