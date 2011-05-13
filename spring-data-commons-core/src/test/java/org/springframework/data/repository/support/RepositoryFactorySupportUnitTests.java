@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
@@ -40,6 +41,9 @@ import org.springframework.data.repository.query.RepositoryQuery;
 public class RepositoryFactorySupportUnitTests {
 
 	RepositoryFactorySupport factory = new DummyRepositoryFactory();
+	
+	@Mock
+	CrudRepository<Object, Serializable> backingRepo;
 
 	@Mock
 	MyQueryCreationListener listener;
@@ -58,7 +62,15 @@ public class RepositoryFactorySupportUnitTests {
 
 		verify(listener, times(1)).onCreation(any(MyRepositoryQuery.class));
 		verify(otherListener, times(2)).onCreation(any(RepositoryQuery.class));
-
+	}
+	
+	@Test
+	public void routesCallToRedeclaredMethodIntoTarget() {
+		
+		ObjectRepository repository = factory.getRepository(ObjectRepository.class);
+		repository.save(repository);
+		
+		verify(backingRepo, times(1)).save(any(Object.class));
 	}
 
 	class DummyRepositoryFactory extends RepositoryFactorySupport {
@@ -77,14 +89,14 @@ public class RepositoryFactorySupportUnitTests {
 		@Override
 		protected Object getTargetRepository(RepositoryMetadata metadata) {
 
-			return new Object();
+			return backingRepo;
 		}
 
 
 		@Override
 		protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 
-			return Object.class;
+			return CrudRepository.class;
 		}
 
 
@@ -108,6 +120,8 @@ public class RepositoryFactorySupportUnitTests {
 
 
 		Object findByFoo();
+		
+		Object save(Object entity);
 	}
 
 	interface PlainQueryCreationListener extends
