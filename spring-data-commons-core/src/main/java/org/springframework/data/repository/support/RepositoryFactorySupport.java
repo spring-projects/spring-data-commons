@@ -153,7 +153,8 @@ public abstract class RepositoryFactorySupport {
 	 * @return
 	 */
 	RepositoryMetadata getRepositoryMetadata(Class<?> repositoryInterface) {
-		return new DefaultRepositoryMetadata(repositoryInterface);
+		return Repository.class.isAssignableFrom(repositoryInterface) ? new DefaultRepositoryMetadata(repositoryInterface)
+				: new AnnotationRepositoryMetadata(repositoryInterface);
 	}
 
 

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.RepositoryProxy;
 import org.springframework.data.repository.util.ClassUtils;
 
 
@@ -72,7 +74,6 @@ public class DefaultRepositoryMetadataUnitTests {
 
 		assertEquals(Integer.class, metadata.getIdClass());
 	}
-
 
 	@SuppressWarnings("unused")
 	private class User {

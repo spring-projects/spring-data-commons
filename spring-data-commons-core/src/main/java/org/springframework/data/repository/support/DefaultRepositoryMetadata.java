@@ -20,10 +20,10 @@ import static org.springframework.core.GenericTypeResolver.*;
 import org.springframework.data.repository.Repository;
 import org.springframework.util.Assert;
 
-
 /**
- * Default implementation of {@link RepositoryMetadata}.
- *
+ * Default implementation of {@link RepositoryMetadata}. Will inspect generic types of
+ * {@link Repository} to find out about domain and id class.
+ * 
  * @author Oliver Gierke
  */
 public class DefaultRepositoryMetadata implements RepositoryMetadata {
@@ -33,23 +33,22 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
 
 	/**
 	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository
-	 * interface and repository base class.
+	 * interface.
 	 *
 	 * @param repositoryInterface
 	 */
 	public DefaultRepositoryMetadata(Class<?> repositoryInterface) {
 
 		Assert.notNull(repositoryInterface);
+		Assert.isTrue(Repository.class.isAssignableFrom(repositoryInterface));
 		this.repositoryInterface = repositoryInterface;
 	}
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.repository.support.RepositoryMetadata#
-			 * getRepositoryInterface()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryMetadata#getRepositoryInterface()
+	 */
 	public Class<?> getRepositoryInterface() {
 
 		return repositoryInterface;
@@ -57,14 +56,11 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.support.RepositoryMetadata#getDomainClass
-			 * ()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
+	 */
 	public Class<?> getDomainClass() {
-
+		
 		Class<?>[] arguments =
 				resolveTypeArguments(repositoryInterface, Repository.class);
 		return arguments == null ? null : arguments[0];
@@ -72,12 +68,9 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.support.RepositoryMetadata#getIdClass
-			 * ()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
+	 */
 	public Class<?> getIdClass() {
 
 		Class<?>[] arguments =
