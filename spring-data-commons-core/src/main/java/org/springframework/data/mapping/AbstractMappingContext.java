@@ -162,6 +162,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		try {
 			final E entity = createPersistentEntity(typeInformation);
+			
+			// Eagerly cache the entity as we might have to find it during recursive lookups.
+			persistentEntities.put(entity.getTypeInformation(), entity);
+			
 			BeanInfo info = Introspector.getBeanInfo(type);
 
 			final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
@@ -196,8 +200,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 					if (nestedType != null) {
 						addPersistentEntity(nestedType);
 					}
-
-
 				}
 			}, new ReflectionUtils.FieldFilter() {
 				public boolean matches(Field field) {
@@ -211,9 +213,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			if (null != applicationEventPublisher) {
 				applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(entity, typeInformation));
 			}
-
-			// Cache
-			persistentEntities.put(entity.getTypeInformation(), (E) entity);
 
 			return entity;
 		} catch (IntrospectionException e) {
@@ -270,7 +269,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner);
 
 
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		for (Class<?> initialEntity : initialEntitySet) {
 			addPersistentEntity(initialEntity);
 		}

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2011 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.util;
 
 import static org.springframework.util.ObjectUtils.*;
@@ -28,23 +43,19 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@SuppressWarnings("rawtypes")
 	private final Map<TypeVariable, Type> typeVariableMap;
 	private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
-	private final TypeDiscoverer<?> parent;
 
 	/**
 	 * Creates a ne {@link TypeDiscoverer} for the given type, type variable map and parent.
 	 *
-	 * @param type						must not be null.
+	 * @param type must not be null.
 	 * @param typeVariableMap
-	 * @param parent
 	 */
 	@SuppressWarnings("rawtypes")
-	protected TypeDiscoverer(Type type, Map<TypeVariable, Type> typeVariableMap,
-													 TypeDiscoverer<?> parent) {
+	protected TypeDiscoverer(Type type, Map<TypeVariable, Type> typeVariableMap) {
 
 		Assert.notNull(type);
 		this.type = type;
 		this.typeVariableMap = typeVariableMap;
-		this.parent = parent;
 	}
 
 	/**
@@ -54,9 +65,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	private Map<TypeVariable, Type> getTypeVariableMap() {
+	protected Map<TypeVariable, Type> getTypeVariableMap() {
 
-		return parent != null ? parent.getTypeVariableMap() : typeVariableMap;
+		return typeVariableMap;
 	}
 
 	/**
@@ -71,10 +82,14 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		if (fieldType.equals(this.type)) {
 			return this;
 		}
+		
+		if (fieldType instanceof Class) {
+			return new ClassTypeInformation((Class<?>) fieldType);
+		}
 
 		if (fieldType instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) fieldType;
-			return new TypeDiscoverer(parameterizedType, null, this);
+			return new ParameterizedTypeInformation(parameterizedType, this);
 		}
 
 		if (fieldType instanceof TypeVariable) {
@@ -82,12 +97,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return new TypeVariableTypeInformation(variable, type, this);
 		}
 
-		if (fieldType instanceof Class) {
-			return new ClassTypeInformation((Class<?>) fieldType, this);
-		}
-
 		if (fieldType instanceof GenericArrayType) {
-			return new ArrayTypeDiscoverer((GenericArrayType) fieldType, this);
+			return new GenericArrayTypeInformation((GenericArrayType) fieldType, this);
 		}
 
 		throw new IllegalArgumentException();
@@ -145,7 +156,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		String head = fieldname.substring(0, separatorIndex);
 		TypeInformation<?> info = fieldTypes.get(head);
-		return info.getProperty(fieldname.substring(separatorIndex + 1));
+		return info == null ? null : info.getProperty(fieldname.substring(separatorIndex + 1));
 	}
 
 	private TypeInformation<?> getPropertyInformation(String fieldname) {
@@ -237,9 +248,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		boolean typeEqual = nullSafeEquals(this.type, that.type);
 		boolean typeVariableMapEqual = nullSafeEquals(this.typeVariableMap,
 				that.typeVariableMap);
-		boolean parentEqual = nullSafeEquals(this.parent, that.parent);
 
-		return typeEqual && typeVariableMapEqual && parentEqual;
+		return typeEqual && typeVariableMapEqual;
 	}
 
 	/*
@@ -253,7 +263,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		int result = 17;
 		result += nullSafeHashCode(type);
 		result += nullSafeHashCode(typeVariableMap);
-		result += nullSafeHashCode(parent);
 		return result;
 	}
 }

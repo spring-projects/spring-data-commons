@@ -1,3 +1,18 @@
+/*
+ * Copyright 2011 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.util;
 
 import java.lang.reflect.Type;
@@ -15,6 +30,13 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	private final Class<S> type;
 
+	/**
+	 * Simple factory method to easily create new instances of {@link ClassTypeInformation}.
+	 *  
+	 * @param <S>
+	 * @param type
+	 * @return
+	 */
 	public static <S> TypeInformation<S> from(Class<S> type) {
 		return new ClassTypeInformation<S>(type);
 	}
@@ -25,16 +47,13 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @param type
 	 */
 	public ClassTypeInformation(Class<S> type) {
-		this(type, GenericTypeResolver.getTypeVariableMap(type), null);
+		this(type, GenericTypeResolver.getTypeVariableMap(type));
 	}
 
-	ClassTypeInformation(Class<S> type, TypeDiscoverer<?> parent) {
-		this(type, null, parent);
-	}
 
-	@SuppressWarnings("rawtypes") ClassTypeInformation(Class<S> type, Map<TypeVariable, Type> typeVariableMap,
-																										 TypeDiscoverer<?> parent) {
-		super(type, typeVariableMap, parent);
+	@SuppressWarnings("rawtypes") 
+	ClassTypeInformation(Class<S> type, Map<TypeVariable, Type> typeVariableMap) {
+		super(type, typeVariableMap);
 		this.type = type;
 	}
 
@@ -67,28 +86,5 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		Assert.isTrue(type.isArray());
 		Class<?> componentType = type.getComponentType();
 		return componentType.isArray() ? resolveArrayType(componentType) : componentType;
-	}
-
-	/* (non-Javadoc)
-		 * @see org.springframework.data.util.TypeDiscoverer#equals(java.lang.Object)
-		 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (!super.equals(obj)) {
-			return false;
-		}
-
-		ClassTypeInformation<?> that = (ClassTypeInformation<?>) obj;
-		return this.type.equals(that.type);
-	}
-
-	/* (non-Javadoc)
-		 * @see org.springframework.data.util.TypeDiscoverer#hashCode()
-		 */
-	@Override
-	public int hashCode() {
-		int result = super.hashCode();
-		return result += 31 * type.hashCode();
 	}
 }

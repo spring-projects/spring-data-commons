@@ -1,16 +1,96 @@
+/*
+ * Copyright 2011 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.util;
 
+import static org.junit.Assert.*;
+
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Map;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Unit tests for {@link TypeDiscoverer}.
- *
+ * 
  * @author Oliver Gierke
  */
+@RunWith(MockitoJUnitRunner.class)
 public class TypeDiscovererUnitTests {
+	
+	@Mock
+	@SuppressWarnings("rawtypes")
+	Map<TypeVariable, Type> firstMap;
+	
+	@Mock
+	@SuppressWarnings("rawtypes")
+	Map<TypeVariable, Type> secondMap;
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullType() {
-		new TypeDiscoverer<Object>(null, null, null);
+		new TypeDiscoverer<Object>(null, null);
+	}
+
+	@Test
+	public void isNotEqualIfTypesDiffer() {
+
+		TypeDiscoverer<Object> objectTypeInfo = new TypeDiscoverer<Object>(Object.class, null);
+		TypeDiscoverer<String> stringTypeInfo = new TypeDiscoverer<String>(String.class, null);
+
+		assertFalse(objectTypeInfo.equals(stringTypeInfo));
+	}
+
+	@Test
+	public void isNotEqualIfTypeVariableMapsDiffer() {
+
+		assertFalse(firstMap.equals(secondMap));
+		
+		TypeDiscoverer<Object> first = new TypeDiscoverer<Object>(Object.class, firstMap);
+		TypeDiscoverer<Object> second = new TypeDiscoverer<Object>(Object.class, secondMap);
+
+		assertFalse(first.equals(second));
+	}
+
+	@Test
+	public void dealsWithTypesReferencingThemselves() {
+
+		TypeInformation<SelfReferencing> information = new ClassTypeInformation<SelfReferencing>(SelfReferencing.class);
+		TypeInformation<?> first = information.getProperty("parent").getMapValueType();
+		TypeInformation<?> second = first.getProperty("map").getMapValueType();
+		assertEquals(first, second);
+	}
+
+	@Test
+	public void dealsWithTypesReferencingThemselvesInAMap() {
+
+		TypeInformation<SelfReferencingMap> information = new ClassTypeInformation<SelfReferencingMap>(
+				SelfReferencingMap.class);
+		TypeInformation<?> mapValueType = information.getProperty("map").getMapValueType();
+		assertEquals(mapValueType, information);
+	}
+
+	class SelfReferencing {
+
+		Map<String, SelfReferencingMap> parent;
+	}
+
+	class SelfReferencingMap {
+		Map<String, SelfReferencingMap> map;
 	}
 }
