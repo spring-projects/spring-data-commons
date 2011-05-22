@@ -218,47 +218,10 @@ public abstract class MappingBeanHelper {
 			ReflectionUtils.makeAccessible(getter);
 			obj = ReflectionUtils.invokeMethod(getter, from);
 		}
-		if (null != obj && !obj.getClass().isAssignableFrom(type)) {
+		if (null != obj && !type.isAssignableFrom(obj.getClass())) {
 			return conversionService.convert(obj, type);
 		} else {
 			return (T) obj;
 		}
 	}
-
-	public static Class<?> getTargetType(TypeVariable<?> tv) {
-		Class<?> targetType = Object.class;
-		Type[] bounds = tv.getBounds();
-		if (bounds.length > 0) {
-			if (bounds[0] instanceof ParameterizedType) {
-				return getTargetType((ParameterizedType) bounds[0]);
-			} else if (bounds[0] instanceof TypeVariable) {
-				return getTargetType((TypeVariable<?>) bounds[0]);
-			} else {
-				targetType = (Class<?>) bounds[0];
-			}
-		}
-		return targetType;
-	}
-
-	public static Class<?> getTargetType(ParameterizedType ptype) {
-		Class<?> targetType;
-		Type[] types = ptype.getActualTypeArguments();
-		if (types.length == 1) {
-			if (types[0] instanceof TypeVariable) {
-				// Placeholder type
-				targetType = Object.class;
-			} else {
-				if (types[0] instanceof ParameterizedType) {
-					return getTargetType((ParameterizedType) types[0]);
-				} else {
-					targetType = (Class<?>) types[0];
-				}
-			}
-		} else {
-			targetType = (Class<?>) ptype.getRawType();
-		}
-		return targetType;
-	}
-
-
 }
