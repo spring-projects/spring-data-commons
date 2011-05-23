@@ -18,7 +18,7 @@ package org.springframework.data.repository.support;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.springframework.data.repository.RepositoryProxy;
+import org.springframework.data.repository.RepositoryDefinition;
 
 
 /**
@@ -54,7 +54,7 @@ public class AnnotationRepositoryMetadataUnitTests {
 		}
 	}
 
-	@RepositoryProxy(domainClass = User.class, idClass = Integer.class)
+	@RepositoryDefinition(domainClass = User.class, idClass = Integer.class)
 	interface AnnotatedRepository {
 		
 	}

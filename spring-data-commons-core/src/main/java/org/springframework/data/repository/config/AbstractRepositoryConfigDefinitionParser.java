@@ -45,7 +45,7 @@ import org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilte
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.data.repository.NoRepositoryBean;
-import org.springframework.data.repository.RepositoryProxy;
+import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -418,7 +418,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
 			super(false);
 			addIncludeFilter(new InterfaceTypeFilter(repositoryInterface));
-			addIncludeFilter(new AnnotationTypeFilter(RepositoryProxy.class, true, true));
+			addIncludeFilter(new AnnotationTypeFilter(RepositoryDefinition.class, true, true));
 			addExcludeFilter(new AnnotationTypeFilter(NoRepositoryBean.class));
 		}
 

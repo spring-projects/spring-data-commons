@@ -17,14 +17,14 @@ package org.springframework.data.repository.sample;
 
 import java.io.Serializable;
 
-import org.springframework.data.repository.RepositoryProxy;
+import org.springframework.data.repository.RepositoryDefinition;
 
 /**
  * Sample interface for annotation based repository declaration.
  *
  * @author Oliver Gierke
  */
-@RepositoryProxy(domainClass = Object.class, idClass = Serializable.class)
+@RepositoryDefinition(domainClass = Object.class, idClass = Serializable.class)
 public interface SampleAnnotatedRepository {
 
 }

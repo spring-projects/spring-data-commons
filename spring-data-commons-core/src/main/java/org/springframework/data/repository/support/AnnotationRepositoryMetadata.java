@@ -15,11 +15,11 @@
  */
 package org.springframework.data.repository.support;
 
-import org.springframework.data.repository.RepositoryProxy;
+import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.util.Assert;
 
 /**
- * {@link RepositoryMetadata} implementation inspecting the given repository interface for a {@link RepositoryProxy}
+ * {@link RepositoryMetadata} implementation inspecting the given repository interface for a {@link RepositoryDefinition}
  * annotation.
  * 
  * @author Oliver Gierke
@@ -27,13 +27,13 @@ import org.springframework.util.Assert;
 public class AnnotationRepositoryMetadata implements RepositoryMetadata {
 	
 	private static final String NO_ANNOTATION_FOUND = String.format("Interface must be annotated with @%s!",
-			RepositoryProxy.class.getName());
+			RepositoryDefinition.class.getName());
 	
 	private final Class<?> repositoryInterface;
 	
 	public AnnotationRepositoryMetadata(Class<?> repositoryInterface) {
 		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
-		Assert.isTrue(repositoryInterface.isAnnotationPresent(RepositoryProxy.class), NO_ANNOTATION_FOUND);
+		Assert.isTrue(repositoryInterface.isAnnotationPresent(RepositoryDefinition.class), NO_ANNOTATION_FOUND);
 		this.repositoryInterface = repositoryInterface;
 	}
 
@@ -42,7 +42,7 @@ public class AnnotationRepositoryMetadata implements RepositoryMetadata {
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
 	 */
 	public Class<?> getIdClass() {
-		RepositoryProxy annotation = repositoryInterface.getAnnotation(RepositoryProxy.class);
+		RepositoryDefinition annotation = repositoryInterface.getAnnotation(RepositoryDefinition.class);
 		return annotation == null ? null : annotation.idClass();
 	}
 
@@ -51,7 +51,7 @@ public class AnnotationRepositoryMetadata implements RepositoryMetadata {
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
 	 */
 	public Class<?> getDomainClass() {
-		RepositoryProxy annotation = repositoryInterface.getAnnotation(RepositoryProxy.class);
+		RepositoryDefinition annotation = repositoryInterface.getAnnotation(RepositoryDefinition.class);
 		return annotation == null ? null : annotation.domainClass();
 	}
 

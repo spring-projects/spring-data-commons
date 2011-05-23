@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to demarcate interfaces a repository proxy shall be created for. Annotating an interface with
- * {@link RepositoryProxy} will cause the same behaviour as extending {@link Repository}.
+ * {@link RepositoryDefinition} will cause the same behaviour as extending {@link Repository}.
  * 
  * @see Repository
  * @author Oliver Gierke
@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
-public @interface RepositoryProxy {
+public @interface RepositoryDefinition {
 
 	/**
 	 * The domain class the repository manages. Equivalent to the T type parameter in {@link Repository}.
