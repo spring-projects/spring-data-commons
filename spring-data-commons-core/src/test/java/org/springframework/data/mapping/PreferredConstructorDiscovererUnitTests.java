@@ -18,6 +18,7 @@ package org.springframework.data.mapping;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
@@ -83,10 +84,12 @@ public class PreferredConstructorDiscovererUnitTests {
 		assertThat(constructor.isNoArgConstructor(), is(false));
 		assertThat(constructor.isExplicitlyAnnotated(), is(true));
 
-		List<Parameter<?>> parameters = constructor.getParameters();
+		assertThat(constructor.hasParameters(), is(true));
+		Iterator<Parameter<?>> parameters = constructor.getParameters().iterator();
 
-		assertThat(parameters.size(), is(1));
-		assertThat(parameters.get(0).getType().getType(), typeCompatibleWith(Long.class));
+		Parameter<?> parameter = parameters.next();
+		assertThat(parameter.getType().getType(), typeCompatibleWith(Long.class));
+		assertThat(parameters.hasNext(), is(false));
 	}
 
 	static class EntityWithoutConstructor {
