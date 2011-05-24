@@ -29,8 +29,11 @@
     <para>The central interface in Spring Data repository abstraction is
     <interfacename>Repository</interfacename> (probably not that much of a
     surprise). It is typeable to the domain class to manage as well as the id
-    type of the domain class and provides some sophisticated functionality
-    around CRUD for the entity managed.</para>
+    type of the domain class. This interface mainly acts as marker interface
+    to capture the types to deal with and helps us discovering interface that
+    extend this one. Beyond that there's
+    <interfacename>CrudRepository</interfacename> which provides some
+    sophisticated functionality around CRUD for the entity managed.</para>
 
     <example id="repositories.repository">
       <title>Repository interface</title>
@@ -43,8 +46,6 @@
 
           <area coords="7" id="repository.find-all" />
 
-          <area coords="9" id="repository.find-all-pageable" />
-
           <area coords="11" id="repository.count" />
 
           <area coords="13" id="repository.delete" />
@@ -52,15 +53,13 @@
           <area coords="15" id="repository.exists" />
         </areaspec>
 
-        <programlisting language="java">public interface Repository&lt;T, ID extends Serializable&gt; {
+        <programlisting language="java">public interface CrudRepository&lt;T, ID extends Serializable&gt; {
 
     T save(T entity);
 
-    T findById(ID primaryKey);
+    T findOne(ID primaryKey);
 
-    List&lt;T&gt; findAll();
-
-    Page&lt;T&gt; findAll(Pageable pageable);
+    Iterable&lt;T&gt; findAll();
 
     Long count();
 
@@ -84,10 +83,6 @@
             <para>Returns all entities.</para>
           </callout>
 
-          <callout arch="" arearefs="repository.find-all-pageable">
-            <para>Returns a page of entities.</para>
-          </callout>
-
           <callout arearefs="repository.count">
             <para>Returns the number of entities.</para>
           </callout>
@@ -108,23 +103,23 @@
     implementations for a variety of Spring Data modules that implement that
     interface.</para>
 
-    <para>On top of the Repository there is a PagingAndSortingRepository
-    abstraction that adds additional methods to ease paginated access to
-    entities:</para>
+    <para>On top of the <interfacename>CrudRepository</interfacename> there is
+    a <interfacename>PagingAndSortingRepository</interfacename> abstraction
+    that adds additional methods to ease paginated access to entities:</para>
 
     <example>
       <title>PagingAndSortingRepository</title>
 
       <programlisting language="java">public interface PagingAndSortingRepository&lt;T, ID extends Serializable&gt; extends Repository&lt;T, ID&gt; {
 
-    List&lt;T&gt; findAll(Sort sort);
+    Iterable&lt;T&gt; findAll(Sort sort);
 
     Page&lt;T&gt; findAll(Pageable pageable);
 }</programlisting>
     </example>
 
-    <para>Accessing the second page of User by a page size of 20 you could
-    simply do something like this:</para>
+    <para>Accessing the second page of <classname>User</classname> by a page
+    size of 20 you could simply do something like this:</para>
 
     <programlisting>PagingAndSortingRepository&lt;User, Long&gt; repository = // … get access to a bean
 Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlisting>
@@ -135,16 +130,15 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
 
     <para>Next to standard CRUD functionality repositories are usually query
     the underlying datastore. With Spring Data declaring those queries becomes
-    a four-step process (we use the JPA based module as example but that works
-    the same way for other stores):</para>
+    a four-step process.</para>
 
     <orderedlist>
       <listitem>
-        <para>Declare an interface extending the technology specific
-        Repository sub-interface and type it to the domain class it shall
-        handle.</para>
+        <para>Declare an interface extending
+        <interfacename>Repository</interfacename> or one of it's
+        sub-interfaces and type it to the domain class it shall handle.</para>
 
-        <programlisting language="java">public interface PersonRepository extends JpaRepository&lt;User, Long&gt; { … }</programlisting>
+        <programlisting language="java">public interface PersonRepository extends Repository&lt;User, Long&gt; { … }</programlisting>
       </listitem>
 
       <listitem>
@@ -194,10 +188,52 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
       <title>Defining repository interfaces</title>
 
       <para>As a very first step you define a domain class specific repository
-      interface to start with. It's got to be typed to the domain class and an
-      ID type so that you get CRUD methods of the
-      <interfacename>Repository</interfacename> interface tailored to
-      it.</para>
+      interface to start with. It's got to extend
+      <interfacename>Repository</interfacename> and be typed to the domain
+      class and an ID type. If you want to expose CRUD methods for that domain
+      type, extend <interfacename>CrudRepository</interfacename> instead of
+      <interfacename>Repository</interfacename>.</para>
+
+      <section>
+        <title>Fine tuning repository definition</title>
+
+        <para>Usually you will have your repository interface extend
+        <interfacename>Repository</interfacename>,
+        <interfacename>CrudRepository</interfacename> or
+        <interfacename>PagingAndSortingRepository</interfacename>. If you
+        don't like extending Spring Data interfaces at all you can also
+        annotate your repository interface with
+        <interfacename>@RepositoryDefinition</interfacename>. Extending
+        <interfacename>CrudRepository</interfacename> will expose a complete
+        set of methods to manipulate your entities. If you rather want to be
+        selective about the methods being expose simply copy the ones you want
+        to expose from <interfacename>CrudRepository</interfacename> into your
+        domain repository.</para>
+
+        <example>
+          <title>Selectively exposing CRUD methods</title>
+
+          <programlisting>interface MyBaseRepository&lt;T, ID extends Serializable&gt; extends Repository&lt;T, ID&gt; {
+  T findOne(ID id);
+  T save(T entity);
+}
+
+interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
+
+  User findByEmailAddress(EmailAddress emailAddress);
+}</programlisting>
+        </example>
+
+        <para>In the first step we define a common base interface for all our
+        domain repositories and expose <methodname>findOne(…)</methodname> as
+        well as <methodname>save(…)</methodname>.These methods will be routed
+        into the base repository implementation of the store of your choice
+        because they are matching the method signatures in
+        <interfacename>CrudRepository</interfacename>. So our
+        <interfacename>UserRepository</interfacename> will now be able to save
+        users, find single ones by id as well as triggering a query to find
+        <interfacename>User</interfacename>s by their email address.</para>
+      </section>
     </section>
 
     <section>
@@ -271,7 +307,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
         <example>
           <title>Query creation from method names</title>
 
-          <para><programlisting language="java">public interface PersonRepository extends JpaRepository&lt;User, Long&gt; {
+          <para><programlisting language="java">public interface PersonRepository extends Repository&lt;User, Long&gt; {
 
   List&lt;Person&gt; findByEmailAddressAndLastname(EmailAddress emailAddress, String lastname);
 }</programlisting></para>
@@ -398,10 +434,9 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
 
         <para>In this case we instruct Spring to scan
         <package>com.acme.repositories</package> and all it's sub packages for
-        interfaces extending the appropriate
-        <interfacename>Repository</interfacename> sub-interface (in this case
-        <interfacename>JpaRepository</interfacename>). For each interface
-        found it will register the presistence technology specific
+        interfaces extending <interfacename>Repository</interfacename> or one
+        of its sub-interfaces. For each interface found it will register the
+        presistence technology specific
         <interfacename>FactoryBean</interfacename> to create the according
         proxies that handle invocations of the query methods. Each of these
         beans will be registered under a bean name that is derived from the
@@ -520,7 +555,7 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
       <example>
         <title>Changes to the your basic repository interface</title>
 
-        <para><programlisting language="java">public interface UserRepository extends JpaRepository&lt;User, Long&gt;, UserRepositoryCustom {
+        <para><programlisting language="java">public interface UserRepository extends CrudRepository&lt;User, Long&gt;, UserRepositoryCustom {
 
   // Declare query methods here
 }</programlisting>Let your standard repository interface extend the custom
