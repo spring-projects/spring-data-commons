@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  */
-class DefaultRepositoryInformation implements RepositoryInformation {
+public class DefaultRepositoryInformation implements RepositoryInformation {
 
 	@SuppressWarnings("rawtypes")
 	private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class.getTypeParameters();
