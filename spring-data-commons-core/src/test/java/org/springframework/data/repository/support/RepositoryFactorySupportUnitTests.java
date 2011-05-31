@@ -44,6 +44,8 @@ public class RepositoryFactorySupportUnitTests {
 	
 	@Mock
 	CrudRepository<Object, Serializable> backingRepo;
+	@Mock
+	ObjectRepositoryCustom customImplementation;
 
 	@Mock
 	MyQueryCreationListener listener;
@@ -71,6 +73,16 @@ public class RepositoryFactorySupportUnitTests {
 		repository.save(repository);
 		
 		verify(backingRepo, times(1)).save(any(Object.class));
+	}
+	
+	@Test
+	public void invokesCustomMethodIfItRedeclaresACRUDOne() {
+		
+		ObjectRepository repository = factory.getRepository(ObjectRepository.class, customImplementation);
+		repository.findOne(1);
+		
+		verify(customImplementation, times(1)).findOne(1);
+		verify(backingRepo, times(0)).findOne(1);
 	}
 
 	class DummyRepositoryFactory extends RepositoryFactorySupport {
@@ -114,14 +126,18 @@ public class RepositoryFactorySupportUnitTests {
 		}
 	}
 
-	interface ObjectRepository extends Repository<Object, Serializable> {
+	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {
 
 		Object findByClass(Class<?> clazz);
-
 
 		Object findByFoo();
 		
 		Object save(Object entity);
+	}
+	
+	interface ObjectRepositoryCustom {
+		
+		Object findOne(Serializable id);
 	}
 
 	interface PlainQueryCreationListener extends

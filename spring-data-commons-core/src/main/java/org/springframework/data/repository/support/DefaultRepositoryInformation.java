@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  */
-public class DefaultRepositoryInformation implements RepositoryInformation {
+class DefaultRepositoryInformation implements RepositoryInformation {
 
 	@SuppressWarnings("rawtypes")
 	private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class.getTypeParameters();
@@ -44,71 +44,76 @@ public class DefaultRepositoryInformation implements RepositoryInformation {
 
 	private final RepositoryMetadata metadata;
 	private final Class<?> repositoryBaseClass;
+	private final Class<?> customImplementationClass;
 
 	/**
 	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository interface and repository base class.
 	 *
-	 * @param repositoryInterface
+	 * @param metadata
+	 * @param repositoryBaseClass
+	 * @param customImplementationClass
 	 */
-	public DefaultRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass) {
+	public DefaultRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass, Class<?> customImplementationClass) {
 
 		Assert.notNull(metadata);
 		Assert.notNull(repositoryBaseClass);
 		this.metadata = metadata;
 		this.repositoryBaseClass = repositoryBaseClass;
+		this.customImplementationClass = customImplementationClass;
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryMetadata#getRepositoryInterface()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryMetadata#getRepositoryInterface()
+	 */
 	public Class<?> getRepositoryInterface() {
 		return metadata.getRepositoryInterface();
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
+	 */
 	public Class<?> getDomainClass() {
 		return metadata.getDomainClass();
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
+	 */
 	public Class<?> getIdClass() {
 		return metadata.getIdClass();
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see org.springframework.data.repository.support.RepositoryMetadata#
-		 * getRepositoryBaseClass()
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryInformation#getRepositoryBaseClass()
+	 */
 	public Class<?> getRepositoryBaseClass() {
 
 		return this.repositoryBaseClass;
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see org.springframework.data.repository.support.RepositoryMetadata#
-		 * getBaseClassMethod(java.lang.reflect.Method)
-		 */
-	public Method getBaseClassMethod(Method method) {
-
-		Assert.notNull(method);
-
-		Method result = methodCache.get(method);
-
-		if (null != result) {
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryInformation#getTargetClassMethod(java.lang.reflect.Method)
+	 */
+	public Method getTargetClassMethod(Method method) {
+		
+		if (methodCache.containsKey(method)) {
+			return methodCache.get(method);
+		}
+		
+		Method result = getTargetClassMethod(method, customImplementationClass);
+		
+		if (!result.equals(method)) {
+			methodCache.put(method, result);
 			return result;
 		}
-
-		result = getBaseClassMethodFor(method);
+		
+		result = getTargetClassMethod(method, repositoryBaseClass);
 		methodCache.put(method, result);
-
 		return result;
 	}
 
@@ -118,28 +123,31 @@ public class DefaultRepositoryInformation implements RepositoryInformation {
 	 * @param method
 	 * @return
 	 */
-	private boolean isBaseClassMethod(Method method) {
+	private boolean isTargetClassMethod(Method method, Class<?> targetType) {
 
 		Assert.notNull(method);
+		
+		if (targetType == null) {
+			return false;
+		}
 
-		if (method.getDeclaringClass().isAssignableFrom(repositoryBaseClass)) {
+		if (method.getDeclaringClass().isAssignableFrom(targetType)) {
 			return true;
 		}
 
-		return !method.equals(getBaseClassMethod(method));
+		return !method.equals(getTargetClassMethod(method, targetType));
 	}
+		
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see org.springframework.data.repository.support.RepositoryMetadata#
-		 * getFinderMethods()
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryInformation#getQueryMethods()
+	 */
 	public Iterable<Method> getQueryMethods() {
 
 		Set<Method> result = new HashSet<Method>();
 
-		for (Method method : getRepositoryInterface().getDeclaredMethods()) {
+		for (Method method : getRepositoryInterface().getMethods()) {
 			if (!isCustomMethod(method) && !isBaseClassMethod(method)) {
 				result.add(method);
 			}
@@ -149,34 +157,39 @@ public class DefaultRepositoryInformation implements RepositoryInformation {
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see
-		 * org.springframework.data.repository.support.RepositoryMetadata#isCustomMethod
-		 * (java.lang.reflect.Method)
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryInformation#isCustomMethod(java.lang.reflect.Method)
+	 */
 	public boolean isCustomMethod(Method method) {
-
-		Class<?> declaringClass = method.getDeclaringClass();
-
-		boolean isQueryMethod = declaringClass.equals(getRepositoryInterface());
-		boolean isRepositoryInterface = isGenericRepositoryInterface(declaringClass);
-		boolean isBaseClassMethod = isBaseClassMethod(method);
-
-		return !(isRepositoryInterface || isBaseClassMethod || isQueryMethod);
+		return isTargetClassMethod(method, customImplementationClass);
 	}
-
+	
 	/**
-	 * Returns the given base class' method if the given method (declared in the repository interface) was also declared
-	 * at the repository base class. Returns the given method if the given base class does not declare the method given.
-	 * Takes generics into account.
-	 *
+	 * Returns whether the given method is a method covered by the base implementation.
+	 *  
 	 * @param method
 	 * @return
 	 */
-	Method getBaseClassMethodFor(Method method) {
+	public boolean isBaseClassMethod(Method method) {
+		return isTargetClassMethod(method, repositoryBaseClass);
+	}
 
-		for (Method baseClassMethod : repositoryBaseClass.getMethods()) {
+	/**
+	 * Returns the given target class' method if the given method (declared in the repository interface) was also declared
+	 * at the target class. Returns the given method if the given base class does not declare the method given.
+	 * Takes generics into account.
+	 *
+	 * @param method must not be {@literal null}
+	 * @param baseClass
+	 * @return
+	 */
+	Method getTargetClassMethod(Method method, Class<?> baseClass) {
+		
+		if (baseClass == null) {
+			return method;
+		}
+
+		for (Method baseClassMethod : baseClass.getMethods()) {
 
 			// Wrong name
 			if (!method.getName().equals(baseClassMethod.getName())) {
@@ -200,11 +213,9 @@ public class DefaultRepositoryInformation implements RepositoryInformation {
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see org.springframework.data.repository.support.RepositoryMetadata#
-		 * hasCustomMethod()
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryInformation#hasCustomMethod()
+	 */
 	public boolean hasCustomMethod() {
 
 		Class<?> repositoryInterface = getRepositoryInterface();

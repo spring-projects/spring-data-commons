@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
  *
  * @author Oliver Gierke
  */
-interface RepositoryInformation extends RepositoryMetadata {
+public interface RepositoryInformation extends RepositoryMetadata {
 
 	/**
 	 * Returns the base class to be used to create the proxy backing instance.
@@ -62,14 +62,14 @@ interface RepositoryInformation extends RepositoryMetadata {
 
 
 	/**
-	 * Returns the base class method that is backing the given method. This can
+	 * Returns the target class method that is backing the given method. This can
 	 * be necessary if a repository interface redeclares a method of the core
 	 * repository interface (e.g. for transaction behaviour customization).
-	 * Returns the method itself if the base class does not implement the given
+	 * Returns the method itself if the target class does not implement the given
 	 * method.
 	 *
 	 * @param method
 	 * @return
 	 */
-	Method getBaseClassMethod(Method method);
+	Method getTargetClassMethod(Method method);
 }

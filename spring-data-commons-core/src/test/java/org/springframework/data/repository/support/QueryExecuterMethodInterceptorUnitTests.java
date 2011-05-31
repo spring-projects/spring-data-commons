@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;

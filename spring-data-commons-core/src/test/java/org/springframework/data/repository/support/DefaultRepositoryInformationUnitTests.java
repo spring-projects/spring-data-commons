@@ -3,28 +3,36 @@ package org.springframework.data.repository.support;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.support.DefaultRepositoryMetadataUnitTests.DummyGenericRepositorySupport;
 
 /**
  * @author Oliver Gierke
  */
+@RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryInformationUnitTests {
 
 	@SuppressWarnings("rawtypes")
 	static final Class<DummyGenericRepositorySupport> REPOSITORY = DummyGenericRepositorySupport.class;
+	
+	@Mock
+	FooRepositoryCustom customImplementation;
 
 	@Test
 	public void discoversRepositoryBaseClassMethod() throws Exception {
 
-		Method method = FooDao.class.getMethod("findOne", Integer.class);
-		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooDao.class);
-		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY);
+		Method method = FooRepository.class.getMethod("findOne", Integer.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
+		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY, null);
 
-		Method reference = information.getBaseClassMethodFor(method);
+		Method reference = information.getTargetClassMethod(method);
 		assertEquals(REPOSITORY, reference.getDeclaringClass());
 		assertThat(reference.getName(), is("findOne"));
 	}
@@ -32,21 +40,47 @@ public class DefaultRepositoryInformationUnitTests {
 	@Test
 	public void discoveresNonRepositoryBaseClassMethod() throws Exception {
 
-		Method method = FooDao.class.getMethod("findOne", Long.class);
+		Method method = FooRepository.class.getMethod("findOne", Long.class);
 
-		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooDao.class);
-		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
+		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
 
-		assertThat(information.getBaseClassMethodFor(method), is(method));
+		assertThat(information.getTargetClassMethod(method), is(method));
+	}
+	
+	@Test
+	public void discoversCustomlyImplementedCrudMethod() throws SecurityException, NoSuchMethodException {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, customImplementation.getClass());
+		
+		Method source = FooRepositoryCustom.class.getMethod("save", User.class);
+		Method expected = customImplementation.getClass().getMethod("save", User.class);
+		
+		assertThat(information.getTargetClassMethod(source), is(expected));
+	}
+	
+	@Test
+	public void considersIntermediateMethodsAsFinderMethods() {
+		
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+		
+		assertThat(information.hasCustomMethod(), is(false));
 	}
 
-	private static interface FooDao extends CrudRepository<User, Integer> {
+	interface FooRepository extends CrudRepository<User, Integer>, FooRepositoryCustom {
 
 		// Redeclared method
 		User findOne(Integer primaryKey);
 
 		// Not a redeclared method
 		User findOne(Long primaryKey);
+	}
+	
+	interface FooRepositoryCustom {
+		
+		User save(User user);
 	}
 
 	@SuppressWarnings("unused")
@@ -58,5 +92,16 @@ public class DefaultRepositoryInformationUnitTests {
 
 			return null;
 		}
+	}
+
+
+	interface BaseRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
+		
+		T findBySomething(String something);
+	}
+	
+	interface ConcreteRepository extends BaseRepository<User, Integer> {
+		
+		User findBySomethingDifferent(String somethingDifferent);
 	}
 }

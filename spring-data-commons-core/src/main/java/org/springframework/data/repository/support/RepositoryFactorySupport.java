@@ -125,7 +125,8 @@ public abstract class RepositoryFactorySupport {
 														 Object customImplementation) {
 
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
-		RepositoryInformation information = getRepositoryInformation(metadata);
+		Class<?> customImplementationClass = null == customImplementation ? null : customImplementation.getClass();
+		RepositoryInformation information = getRepositoryInformation(metadata, customImplementationClass);
 
 		validate(information, customImplementation);
 
@@ -162,10 +163,11 @@ public abstract class RepositoryFactorySupport {
 	 * Returns the {@link RepositoryInformation} for the given repository interface.
 	 *
 	 * @param repositoryInterface
+	 * @param customImplementationClass
 	 * @return
 	 */
-	private RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata) {
-		return new DefaultRepositoryInformation(metadata, getRepositoryBaseClass(metadata));
+	private RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata, Class<?> customImplementationClass) {
+		return new DefaultRepositoryInformation(metadata, getRepositoryBaseClass(metadata), customImplementationClass);
 	}
 
 
@@ -321,9 +323,9 @@ public abstract class RepositoryFactorySupport {
 			Method method = invocation.getMethod();
 
 			if (isCustomMethodInvocation(invocation)) {
-
-				makeAccessible(method);
-				return executeMethodOn(customImplementation, method,
+				Method actualMethod = repositoryInformation.getTargetClassMethod(method);
+				makeAccessible(actualMethod);
+				return executeMethodOn(customImplementation, actualMethod,
 						invocation.getArguments());
 			}
 
@@ -333,7 +335,7 @@ public abstract class RepositoryFactorySupport {
 
 			// Lookup actual method as it might be redeclared in the interface
 			// and we have to use the repository instance nevertheless
-			Method actualMethod = repositoryInformation.getBaseClassMethod(method);
+			Method actualMethod = repositoryInformation.getTargetClassMethod(method);
 			return executeMethodOn(target, actualMethod,
 					invocation.getArguments());
 		}
@@ -387,6 +389,8 @@ public abstract class RepositoryFactorySupport {
 			if (null == customImplementation) {
 				return false;
 			}
+			
+			
 
 			return repositoryInformation.isCustomMethod(invocation.getMethod());
 		}
