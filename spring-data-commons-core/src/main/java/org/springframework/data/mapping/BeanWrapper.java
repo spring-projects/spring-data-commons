@@ -218,7 +218,7 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	private <S> S getPotentiallyConvertedValue(Object source, Class<S> targetType) {
 
 		boolean conversionServiceAvailable = conversionService != null;
-		boolean conversionNeeded = source == null || !source.getClass().isAssignableFrom(targetType);
+		boolean conversionNeeded = source == null || !targetType.isAssignableFrom(source.getClass());
 
 		if (conversionServiceAvailable && conversionNeeded) {
 			return conversionService.convert(source, targetType);

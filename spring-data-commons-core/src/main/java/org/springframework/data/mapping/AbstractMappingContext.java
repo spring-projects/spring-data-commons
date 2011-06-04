@@ -252,7 +252,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 
 		if (property.isCollection()) {
-			return getTypeInformationIfNotSimpleType(typeInformation.getComponentType());
+			return getTypeInformationIfNotSimpleType(getComponentTypeRecursively(typeInformation));
 		}
 
 		if (property.isMap()) {
@@ -260,6 +260,16 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 
 		return null;
+	}
+	
+	private TypeInformation<?> getComponentTypeRecursively(TypeInformation<?> typeInformation) {
+		TypeInformation<?> componentType = typeInformation.getComponentType();
+		
+		if (componentType == null) {
+			return null;
+		}
+		
+		return componentType.isCollectionLike() ? getComponentTypeRecursively(componentType) : componentType; 
 	}
 
 	private TypeInformation<?> getTypeInformationIfNotSimpleType(TypeInformation<?> information) {

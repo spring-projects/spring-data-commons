@@ -61,6 +61,7 @@ public abstract class MappingBeanHelper {
 		simpleTypes.add(Date.class);
 		simpleTypes.add(Locale.class);
 		simpleTypes.add(Class.class);
+		simpleTypes.add(Number.class);
 	}
 
 	/**
@@ -80,7 +81,7 @@ public abstract class MappingBeanHelper {
 	 */
 	public static boolean isSimpleType(Class<?> type) {
 		for (Class<?> clazz : simpleTypes) {
-			if (type == clazz || type.isAssignableFrom(clazz)) {
+			if (type == clazz || clazz.isAssignableFrom(type)) {
 				return true;
 			}
 		}
