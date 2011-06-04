@@ -67,6 +67,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private boolean strict = false;
 
 	/**
+	 * Sets types to be considered simple. That means these types will not be mapped recusively. 
+	 * 
 	 * @param customSimpleTypes the customSimpleTypes to set
 	 */
 	public void setCustomSimpleTypes(List<Class<?>> customSimpleTypes) {
@@ -74,9 +76,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	}
 
 	/*
-					 * (non-Javadoc)
-					 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-					 */
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
+	 */
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
@@ -102,22 +104,26 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		this.strict = strict;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntities()
+	 */
 	public Collection<E> getPersistentEntities() {
 		return persistentEntities.values();
 	}
 
-	/* (non-Javadoc)
-									 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
-									 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
+	 */
 	public E getPersistentEntity(Class<?> type) {
-
 		return getPersistentEntity(ClassTypeInformation.from(type));
 	}
 
 	/*
-					 * (non-Javadoc)
-					 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
-					 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
+	 */
 	public E getPersistentEntity(TypeInformation<?> type) {
 
 		E entity = persistentEntities.get(type);
