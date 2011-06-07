@@ -71,7 +71,7 @@ public class PropertyUnitTests {
 
 
 	@Test
-	public void prfersExplicitPaths() throws Exception {
+	public void prefersExplicitPaths() throws Exception {
 
 		Property reference = Property.from("user_name", Sample.class);
 		assertThat(reference.getName(), is("user"));
@@ -130,9 +130,24 @@ public class PropertyUnitTests {
 		Property from = Property.from("barUserName", Sample.class);
 	}
 
+	/**
+	 * @see DATACMNS-45
+	 */
+	@Test
+	public void handlesEmptyUnderscoresCorrectly() {
+		
+		Property property = Property.from("_foo", Sample2.class);
+		assertThat(property.getName(), is("_foo"));
+		assertThat(property.getType(), is(typeCompatibleWith(Foo.class)));
+		
+		property = Property.from("_foo__email", Sample2.class);
+		assertThat(property.toDotPath(), is("_foo._email"));
+	}
+	
 	private class Foo {
 
 		String userName;
+		String _email;
 	}
 
 	private class Bar {
@@ -159,5 +174,6 @@ public class PropertyUnitTests {
 
 		private String userNameWhatever;
 		private FooBar user;
+		private Foo _foo;
 	}
 }

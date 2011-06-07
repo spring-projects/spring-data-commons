@@ -17,9 +17,11 @@ package org.springframework.data.util;
 
 import static org.springframework.util.ObjectUtils.*;
 
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -159,15 +162,51 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return info == null ? null : info.getProperty(fieldname.substring(separatorIndex + 1));
 	}
 
+	/**
+	 * Returns the {@link TypeInformation} for the given atomic field. Will inspect fields first and return the type of a
+	 * field if available. Otherwise it will fall back to a {@link PropertyDescriptor}.
+	 * 
+	 * @see #getGenericType(PropertyDescriptor)
+	 * @param fieldname
+	 * @return
+	 */
 	private TypeInformation<?> getPropertyInformation(String fieldname) {
+		
+		Class<?> type = getType();
+		Field field = ReflectionUtils.findField(type, fieldname);
 
-		Field field = ReflectionUtils.findField(getType(), fieldname);
+		if (field != null) {
+			return createInfo(field.getGenericType());
+		}
+		
+		PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(type, fieldname);
 
-		if (field == null) {
+		return descriptor == null ? null : createInfo(getGenericType(descriptor));
+	}
+	
+	/**
+	 * Returns the generic type for the given {@link PropertyDescriptor}. Will inspect its read method
+	 * followed by the first parameter of the write method.
+	 * 
+	 * @param descriptor must not be {@literal null}
+	 * @return
+	 */
+	private static Type getGenericType(PropertyDescriptor descriptor) {
+		
+		Method method = descriptor.getReadMethod();
+		
+		if (method != null) {
+			return method.getGenericReturnType();
+		}
+		
+		method = descriptor.getWriteMethod();
+		
+		if (method == null) {
 			return null;
 		}
-
-		return createInfo(field.getGenericType());
+		
+		Type[] parameterTypes = method.getGenericParameterTypes();
+		return parameterTypes.length == 0 ? null : parameterTypes[0];
 	}
 
 	/*

@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.query.parser;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,8 +33,9 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  */
 public class Property {
-
-	private static String ERROR_TEMPLATE = "No property %s found for type %s";
+	
+	private static final Pattern SPLITTER = Pattern.compile("(?:_?(_*?[^_]+))");
+	private static final String ERROR_TEMPLATE = "No property %s found for type %s";
 
 	private final String name;
 	private final TypeInformation<?> type;
@@ -228,8 +230,15 @@ public class Property {
 	}
 
 	private static Property from(String source, TypeInformation<?> type) {
+		
+		List<String> iteratorSource = new ArrayList<String>();
+		Matcher matcher = SPLITTER.matcher("_" + source);
+		
+		while (matcher.find()) {
+			iteratorSource.add(matcher.group(1));
+		}
 
-		Iterator<String> parts = Arrays.asList(source.split("_")).iterator();
+		Iterator<String> parts = iteratorSource.iterator();
 
 		Property result = null;
 		Property current = null;

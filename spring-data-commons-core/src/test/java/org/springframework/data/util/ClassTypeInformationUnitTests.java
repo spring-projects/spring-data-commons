@@ -15,7 +15,7 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Calendar;
@@ -134,6 +134,20 @@ public class ClassTypeInformationUnitTests {
 		assertFalse(first.getProperty("wrapped").equals(second.getProperty("wrapped")));
 	}
 
+	@Test
+	public void handlesPropertyFieldMismatchCorrectly() {
+		
+		TypeInformation<PropertyGetter> from = ClassTypeInformation.from(PropertyGetter.class);
+		
+		TypeInformation<?> property = from.getProperty("_name");
+		assertThat(property, is(notNullValue()));
+		assertThat(property.getType(), is(typeCompatibleWith(String.class)));
+		
+		property = from.getProperty("name");
+		assertThat(property, is(notNullValue()));
+		assertThat(property.getType(), is(typeCompatibleWith(byte[].class)));
+	}
+	
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -198,5 +212,13 @@ public class ClassTypeInformationUnitTests {
 	
 	static class AnotherConcreteWrapper extends GenericWrapper<Long> {
 		
+	}
+
+	static class PropertyGetter {
+		private String _name;
+		
+		public byte[] getName() {
+			return _name.getBytes();
+		}
 	}
 }
