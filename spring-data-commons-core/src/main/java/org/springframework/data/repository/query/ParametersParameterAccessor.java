@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,11 +54,9 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.query.ParameterAccessor#getPageable()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.ParameterAccessor#getPageable()
+	 */
 	public Pageable getPageable() {
 
 		if (!parameters.hasPageableParameter()) {
@@ -70,11 +68,9 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.query.ParameterAccessor#getSort()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.ParameterAccessor#getSort()
+	 */
 	public Sort getSort() {
 
 		if (parameters.hasSortParameter()) {
@@ -90,12 +86,9 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.query.ParameterAccessor#getBindableValue
-			 * (int)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.ParameterAccessor#getBindableValue(int)
+	 */
 	public Object getBindableValue(int index) {
 
 		return values[parameters.getBindableParameter(index).getIndex()];
@@ -103,11 +96,9 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.query.ParameterAccessor#iterator()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.ParameterAccessor#iterator()
+	 */
 	public BindableParameterIterator iterator() {
 
 		return new BindableParameterIterator();
@@ -136,21 +127,19 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 
 		/*
-						 * (non-Javadoc)
-						 *
-						 * @see java.util.Iterator#hasNext()
-						 */
+		 * (non-Javadoc)
+		 * @see java.util.Iterator#hasNext()
+		 */
 		public boolean hasNext() {
 
-			return values.length <= currentIndex;
+			return values.length > currentIndex;
 		}
 
 
 		/*
-						 * (non-Javadoc)
-						 *
-						 * @see java.util.Iterator#remove()
-						 */
+		 * (non-Javadoc)
+		 * @see java.util.Iterator#remove()
+		 */
 		public void remove() {
 
 			throw new UnsupportedOperationException();
