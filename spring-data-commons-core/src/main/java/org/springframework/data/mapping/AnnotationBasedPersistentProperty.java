@@ -45,10 +45,9 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param propertyDescriptor
 	 * @param owner
 	 */
-	public AnnotationBasedPersistentProperty(Field field,
-																					 PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner) {
+	public AnnotationBasedPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
 
-		super(field, propertyDescriptor, owner);
+		super(field, propertyDescriptor, owner, simpleTypeHolder);
 		this.value = field.getAnnotation(Value.class);
 		field.isAnnotationPresent(Autowired.class);
 	}

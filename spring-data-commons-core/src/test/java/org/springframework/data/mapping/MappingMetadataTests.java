@@ -73,8 +73,9 @@ public class MappingMetadataTests {
 		@Override
 		protected SampleProperty createPersistentProperty(Field field,
 																											PropertyDescriptor descriptor,
-																											MutablePersistentEntity<?, SampleProperty> owner) {
-			return new SamplePropertyImpl(field, descriptor, owner);
+																											MutablePersistentEntity<?, SampleProperty> owner,
+																											SimpleTypeHolder simpleTypeHolder) {
+			return new SamplePropertyImpl(field, descriptor, owner, simpleTypeHolder);
 		}
 	}
 
@@ -82,9 +83,10 @@ public class MappingMetadataTests {
 
 		public SamplePropertyImpl(Field field,
 															PropertyDescriptor propertyDescriptor,
-															PersistentEntity<?, SampleProperty> owner) {
+															PersistentEntity<?, SampleProperty> owner,
+															SimpleTypeHolder simpleTypeHolder) {
 
-			super(field, propertyDescriptor, owner);
+			super(field, propertyDescriptor, owner, simpleTypeHolder);
 		}
 
 		@Override

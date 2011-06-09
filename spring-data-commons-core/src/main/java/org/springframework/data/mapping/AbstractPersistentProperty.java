@@ -28,6 +28,7 @@ import org.springframework.data.mapping.model.Association;
 import org.springframework.data.mapping.model.PersistentEntity;
 import org.springframework.data.mapping.model.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.Assert;
 
 /**
  * Simple impementation of {@link PersistentProperty}.
@@ -44,8 +45,12 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	protected final Field field;
 	protected final Association<P> association;
 	protected final PersistentEntity<?, P> owner;
+	private final SimpleTypeHolder simpleTypeHolder;
 
-	public AbstractPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner) {
+	public AbstractPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
+		
+		Assert.notNull(simpleTypeHolder);
+		
 		this.name = field.getName();
 		this.rawType = field.getType();
 		this.information = owner.getTypeInformation().getProperty(this.name);
@@ -53,6 +58,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.field = field;
 		this.association = isAssociation() ? createAssociation() : null;
 		this.owner = owner;
+		this.simpleTypeHolder = simpleTypeHolder;
 	}
 
 	protected abstract Association<P> createAssociation();
@@ -127,9 +133,9 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	public boolean isComplexType() {
 		if (isCollection() || isArray()) {
-			return !MappingBeanHelper.isSimpleType(getComponentType());
+			return !simpleTypeHolder.isSimpleType(getComponentType());
 		} else {
-			return !MappingBeanHelper.isSimpleType(getType());
+			return !simpleTypeHolder.isSimpleType(getType());
 		}
 	}
 

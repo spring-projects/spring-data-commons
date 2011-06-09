@@ -65,15 +65,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
 	private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
 	private boolean strict = false;
-
-	/**
-	 * Sets types to be considered simple. That means these types will not be mapped recusively. 
-	 * 
-	 * @param customSimpleTypes the customSimpleTypes to set
-	 */
-	public void setCustomSimpleTypes(List<Class<?>> customSimpleTypes) {
-		this.customSimpleTypes = customSimpleTypes;
-	}
+	private SimpleTypeHolder simpleTypeHolder = new SimpleTypeHolder();
 
 	/*
 	 * (non-Javadoc)
@@ -102,6 +94,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	public void setStrict(boolean strict) {
 		this.strict = strict;
+	}
+	
+	public void setSimpleTypeHolder(SimpleTypeHolder simpleTypes) {
+		this.simpleTypeHolder = simpleTypes;
 	}
 
 	/*
@@ -186,7 +182,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 					PropertyDescriptor descriptor = descriptors.get(field.getName());
 
 					ReflectionUtils.makeAccessible(field);
-					P property = createPersistentProperty(field, descriptor, entity);
+					P property = createPersistentProperty(field, descriptor, entity, simpleTypeHolder);
 
 					if (property.isTransient()) {
 						return;
@@ -273,7 +269,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	}
 
 	private TypeInformation<?> getTypeInformationIfNotSimpleType(TypeInformation<?> information) {
-		return information == null || MappingBeanHelper.isSimpleType(information.getType()) ? null : information;
+		return information == null || simpleTypeHolder.isSimpleType(information.getType()) ? null : information;
 	}
 
 	public List<Validator> getEntityValidators(E entity) {
@@ -282,7 +278,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	protected abstract <T> E createPersistentEntity(TypeInformation<T> typeInformation);
 
-	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner);
+	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner, SimpleTypeHolder simpleTypeHolder);
 
 
 	public void afterPropertiesSet() {
