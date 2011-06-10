@@ -354,6 +354,14 @@
 			<url>http://repository.springsource.com/maven/bundles/release</url>
 		</repository>
 	</repositories>
+	
+	<pluginRepositories>
+		<pluginRepository>
+			<id>repository.springframework.maven.release</id>
+			<name>Spring Framework Maven Release Repository</name>
+			<url>http://maven.springframework.org/release</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<distributionManagement>
 		<!-- see 'staging' profile for dry-run deployment settings -->
