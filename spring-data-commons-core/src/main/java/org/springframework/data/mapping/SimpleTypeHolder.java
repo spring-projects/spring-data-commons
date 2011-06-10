@@ -115,6 +115,7 @@ public class SimpleTypeHolder {
 	 * @return
 	 */
 	public boolean isSimpleType(Class<?> type) {
+		Assert.notNull(type);
 		for (Class<?> clazz : simpleTypes) {
 			if (type == clazz || clazz.isAssignableFrom(type)) {
 				return true;
