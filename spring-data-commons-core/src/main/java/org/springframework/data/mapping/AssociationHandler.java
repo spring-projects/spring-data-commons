@@ -16,12 +16,20 @@
 
 package org.springframework.data.mapping;
 
-import org.springframework.data.mapping.model.Association;
-import org.springframework.data.mapping.model.PersistentProperty;
+
 
 /**
+ * Callback interface to implement functionality to be applied to a collection of {@link Association}s.
+ * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Oliver Gierke
  */
 public interface AssociationHandler<P extends PersistentProperty<P>> {
+	
+	/**
+	 * Processes the given {@link Association}.
+	 * 
+	 * @param association
+	 */
 	void doWithAssociation(Association<P> association);
 }

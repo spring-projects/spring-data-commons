@@ -66,7 +66,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 			AbstractRepositoryConfigDefinitionParser.class);
 
 	private static final String REPOSITORY_INTERFACE_POST_PROCESSOR =
-			"org.springframework.data.repository.support.RepositoryInterfaceAwareBeanPostProcessor";
+			"org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor";
 
 
 	/*

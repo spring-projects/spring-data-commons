@@ -27,6 +27,8 @@ import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
 
 /**

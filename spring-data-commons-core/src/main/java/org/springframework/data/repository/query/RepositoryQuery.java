@@ -16,6 +16,7 @@
 package org.springframework.data.repository.query;
 
 
+
 /**
  * Interface for a query abstraction.
  *

@@ -22,7 +22,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.mapping.model.MappingContext;
 
 /**
  * BeanPostProcessor to make Spring beans aware of the current MappingContext. If a MappingContext exists with the

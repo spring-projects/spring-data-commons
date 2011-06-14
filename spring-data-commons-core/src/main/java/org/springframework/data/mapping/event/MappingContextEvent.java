@@ -17,8 +17,8 @@
 package org.springframework.data.mapping.event;
 
 import org.springframework.context.ApplicationEvent;
-import org.springframework.data.mapping.model.PersistentEntity;
-import org.springframework.data.mapping.model.PersistentProperty;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 
 /**

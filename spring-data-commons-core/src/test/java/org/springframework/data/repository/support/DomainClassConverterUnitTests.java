@@ -36,6 +36,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
 
 /**

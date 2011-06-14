@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.mapping;
-
-import org.springframework.data.mapping.model.PersistentProperty;
 
 /**
  * Callback interface to do something with all plain {@link PersistentProperty}
- * instances <em>except</em> associations, transient properties and the id-property.
+ * instances <em>except</em> associations and transient properties.
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */

@@ -23,8 +23,8 @@ import java.util.List;
 
 import org.junit.Test;
 import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.mapping.model.PreferredConstructor;
-import org.springframework.data.mapping.model.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 
 
 /**

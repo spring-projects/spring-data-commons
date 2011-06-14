@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.junit.Test;
+import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
  * Unit tests for {@link SimpleTypeHolder}.

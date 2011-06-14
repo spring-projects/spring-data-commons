@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.support.RepositoryMetadata;
+import org.springframework.data.repository.core.RepositoryMetadata;
 
 /**
  * Unit tests for {@link QueryMethod}.

@@ -20,12 +20,15 @@ import static org.junit.Assert.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.mapping.model.Association;
-import org.springframework.data.mapping.model.PersistentEntity;
-import org.springframework.data.mapping.model.PersistentProperty;
+import org.springframework.data.mapping.context.AbstractMappingContext;
+import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
+import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.MutablePersistentEntity;
+import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -43,19 +46,27 @@ public class MappingMetadataTests {
 
 	@Test
 	public void testPojoWithId() {
-		PersistentEntity<?, SampleProperty> person = ctx.addPersistentEntity(PersonWithId.class);
+		
+		ctx.setInitialEntitySet(Collections.singleton(PersonWithId.class));
+		ctx.afterPropertiesSet();
+		
+		PersistentEntity<?, SampleProperty> person = ctx.getPersistentEntity(PersonWithId.class);
 		assertNotNull(person.getIdProperty());
 		assertEquals(String.class, person.getIdProperty().getType());
 	}
 
 	@Test
 	public void testAssociations() {
-		PersistentEntity<?, SampleProperty> person = ctx.addPersistentEntity(PersonWithChildren.class);
-		assertNotNull(person.getAssociations());
-
-		for (Association<SampleProperty> association : person.getAssociations()) {
-			assertEquals(Child.class, association.getInverse().getComponentType());
-		}
+		
+		ctx.setInitialEntitySet(Collections.singleton(PersonWithChildren.class));
+		ctx.afterPropertiesSet();
+		
+		PersistentEntity<?, SampleProperty> person = ctx.getPersistentEntity(PersonWithChildren.class);
+		person.doWithAssociations(new AssociationHandler<MappingMetadataTests.SampleProperty>() {
+			public void doWithAssociation(Association<SampleProperty> association) {
+				assertEquals(Child.class, association.getInverse().getComponentType());
+			}
+		});
 	}
 
 	public interface SampleProperty extends PersistentProperty<SampleProperty> {

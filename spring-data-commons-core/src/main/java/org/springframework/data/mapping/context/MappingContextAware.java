@@ -16,7 +16,6 @@
 
 package org.springframework.data.mapping.context;
 
-import org.springframework.data.mapping.model.MappingContext;
 
 /**
  * An interface to make beans aware of the active MappingContext in the current ApplicationContext.

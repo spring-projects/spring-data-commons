@@ -15,7 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
-import org.springframework.data.mapping.model.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.mapping.PreferredConstructor.Parameter;
 
 /**
  * Callback interface to lookup values for a given {@link Parameter}.

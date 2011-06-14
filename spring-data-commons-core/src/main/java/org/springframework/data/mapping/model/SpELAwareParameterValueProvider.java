@@ -15,7 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
-import org.springframework.data.mapping.model.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;

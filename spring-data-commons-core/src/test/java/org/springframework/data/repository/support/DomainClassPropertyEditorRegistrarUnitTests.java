@@ -34,6 +34,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
 
 /**

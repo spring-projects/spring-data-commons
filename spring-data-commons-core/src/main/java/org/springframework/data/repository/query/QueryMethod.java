@@ -23,8 +23,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.support.EntityMetadata;
-import org.springframework.data.repository.support.RepositoryMetadata;
+import org.springframework.data.repository.core.EntityMetadata;
+import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
 
