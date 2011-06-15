@@ -37,12 +37,12 @@ public abstract class AbstractQueryCreator<T, S> {
 	private final ParameterAccessor parameters;
 	private final PartTree tree;
 
-
 	/**
-	 * Creates a new {@link AbstractQueryCreator} for the given {@link PartTree}
-	 * and {@link ParametersParameterAccessor}.
-	 *
-	 * @param tree
+	 * Creates a new {@link AbstractQueryCreator} for the given {@link PartTree} and {@link ParametersParameterAccessor}.
+	 * The latter is used to hand actual parameter values into the callback methods as well as to apply dynamic sorting
+	 * via a {@link Sort} parameter.
+	 * 
+	 * @param tree must not be {@literal null}.
 	 * @param parameters
 	 */
 	public AbstractQueryCreator(PartTree tree, ParameterAccessor parameters) {
