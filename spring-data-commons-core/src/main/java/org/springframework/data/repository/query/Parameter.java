@@ -190,6 +190,15 @@ public final class Parameter {
 	}
 
 
+	/**
+	 * Returns the type of the {@link Parameter}.
+	 * 
+	 * @return the type
+	 */
+	public Class<?> getType() {
+		return type;
+	}
+	
 	/*
 			 * (non-Javadoc)
 			 *
