@@ -144,6 +144,11 @@ public class PropertyUnitTests {
 		assertThat(property.toDotPath(), is("_foo._email"));
 	}
 	
+	@Test
+	public void supportsDotNotationAsWell() {
+		Property.from("bar.userMap.name", Sample.class);
+	}
+	
 	private class Foo {
 
 		String userName;

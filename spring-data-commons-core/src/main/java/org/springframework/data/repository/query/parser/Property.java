@@ -34,7 +34,8 @@ import org.springframework.util.StringUtils;
  */
 public class Property {
 	
-	private static final Pattern SPLITTER = Pattern.compile("(?:_?(_*?[^_]+))");
+	private static final String DELIMITERS = "_\\.";
+	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final String ERROR_TEMPLATE = "No property %s found for type %s";
 
 	private final String name;
@@ -45,7 +46,7 @@ public class Property {
 
 
 	/**
-	 * Creates a leaf property (no nested ones) with the given name inside the
+	 * Creates a leaf {@link Property} (no nested ones) with the given name inside the
 	 * given owning type.
 	 *
 	 * @param name
@@ -56,6 +57,12 @@ public class Property {
 		this(name, ClassTypeInformation.from(owningType));
 	}
 
+	/**
+	 * Creates a leaf {@link Property} (no nested ones with the given name and owning type.
+	 * 
+	 * @param name
+	 * @param owningType
+	 */
 	Property(String name, TypeInformation<?> owningType) {
 
 		Assert.hasText(name);
@@ -70,23 +77,9 @@ public class Property {
 		}
 
 		this.isCollection = type.isCollectionLike();
-		this.type = getPropertyType(type);
+		this.type = type.getActualType();
 		this.name = propertyName;
 	}
-
-	private TypeInformation<?> getPropertyType(TypeInformation<?> type) {
-
-		if (type.isCollectionLike()) {
-			return type.getComponentType();
-		}
-
-		if (type.isMap()) {
-			return type.getMapValueType();
-		}
-
-		return type;
-	}
-
 
 	/**
 	 * Creates a {@link Property} with the given name inside the given owning
@@ -110,7 +103,7 @@ public class Property {
 	/**
 	 * Returns the name of the {@link Property}.
 	 *
-	 * @return the name
+	 * @return the name will never be {@literal null}.
 	 */
 	public String getName() {
 
