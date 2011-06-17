@@ -64,4 +64,12 @@ public interface TypeInformation<S> {
 	 * @return
 	 */
 	Class<S> getType();
+
+	/**
+	 * Transparently returns the {@link Map} value type if the type is a {@link Map}, returns the component type if the
+	 * type {@link #isCollectionLike()} or the simple type if none of this applies.
+	 * 
+	 * @return
+	 */
+	TypeInformation<?> getActualType();
 }

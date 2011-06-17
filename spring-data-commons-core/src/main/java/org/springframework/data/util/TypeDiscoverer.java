@@ -219,6 +219,19 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public Class<S> getType() {
 		return resolveType(type);
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getActualType()
+	 */
+	public TypeInformation<?> getActualType() {
+		if (isMap()) {
+			return getMapValueType();
+		} else if (isCollectionLike()) {
+			return getComponentType();
+		} else {
+			return this;
+		}
+	}
 
 	/* (non-Javadoc)
 		 * @see org.springframework.data.util.TypeInformation#isMap()
