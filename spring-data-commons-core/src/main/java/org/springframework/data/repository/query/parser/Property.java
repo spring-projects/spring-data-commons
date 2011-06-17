@@ -38,6 +38,7 @@ public class Property {
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final String ERROR_TEMPLATE = "No property %s found for type %s";
 
+	private final TypeInformation<?> owningType;
 	private final String name;
 	private final TypeInformation<?> type;
 	private final boolean isCollection;
@@ -76,6 +77,7 @@ public class Property {
 					propertyName, owningType.getType()));
 		}
 
+		this.owningType = owningType;
 		this.isCollection = type.isCollectionLike();
 		this.type = type.getActualType();
 		this.name = propertyName;
@@ -99,6 +101,14 @@ public class Property {
 		}
 	}
 
+	/**
+	 * Returns the owning type of the {@link Property}.
+	 * 
+	 * @return the owningType will never be {@literal null}.
+	 */
+	public TypeInformation<?> getOwningType() {
+		return owningType;
+	}
 
 	/**
 	 * Returns the name of the {@link Property}.
