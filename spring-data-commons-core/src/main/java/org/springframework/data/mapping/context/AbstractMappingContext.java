@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,16 +48,17 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.validation.Validator;
 
-
 /**
- * Base class to build mapping metadata and thus create instances of {@link PersistentEntity} and {@link PersistentProperty}.
- *
+ * Base class to build mapping metadata and thus create instances of {@link PersistentEntity} and
+ * {@link PersistentProperty}.
+ * 
  * @param E the concrete {@link PersistentEntity} type the {@link MappingContext} implementation creates
  * @param P the concrete {@link PersistentProperty} type the {@link MappingContext} implementation creates
  * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
  */
-public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>> implements MappingContext<E, P>, InitializingBean, ApplicationEventPublisherAware {
+public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
+		implements MappingContext<E, P>, InitializingBean, ApplicationEventPublisherAware {
 
 	private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
 
@@ -78,7 +80,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Sets the {@link Set} of types to populate the context initially.
-	 *
+	 * 
 	 * @param initialEntitySet
 	 */
 	public void setInitialEntitySet(Set<? extends Class<?>> initialEntitySet) {
@@ -90,15 +92,22 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * {@link MappingException}s in case one tries to lookup a {@link PersistentEntity} not already in the context. This
 	 * defaults to {@literal false} so that unknown types will be transparently added to the MappingContext if not known
 	 * in advance.
-	 *
+	 * 
 	 * @param strict
 	 */
 	public void setStrict(boolean strict) {
 		this.strict = strict;
 	}
-	
+
+	/**
+	 * Configures the {@link SimpleTypeHolder} to be used by the {@link MappingContext}. Allows customization of what
+	 * types will be regarded as simple types and thus not recursively analysed. Setting this to {@literal null} will
+	 * reset the context to use the default {@link SimpleTypeHolder}.
+	 * 
+	 * @param simpleTypes
+	 */
 	public void setSimpleTypeHolder(SimpleTypeHolder simpleTypes) {
-		this.simpleTypeHolder = simpleTypes;
+		this.simpleTypeHolder = simpleTypes == null ? new SimpleTypeHolder() : simpleTypes;
 	}
 
 	/*
@@ -135,10 +144,43 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		return addPersistentEntity(type);
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.Class, java.lang.String)
+	 */
+	public <T> Iterable<P> getPersistentPropertyPath(Class<T> type, String path) {
+
+		Iterator<String> parts = Arrays.asList(path.split("\\.")).iterator();
+		List<P> result = new ArrayList<P>();
+		E current = getPersistentEntity(type);
+
+		while (parts.hasNext()) {
+			String name = parts.next();
+			P property = current.getPersistentProperty(name);
+
+			if (property == null) {
+				throw new IllegalArgumentException(String.format("No property %s found on %s!", name, current.getName()));
+			}
+
+			result.add(property);
+			current = getPersistentEntity(property.getTypeInformation().getActualType());
+		}
+
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.MappingContext#getEntityValidators(org.springframework.data.mapping.PersistentEntity)
+	 */
+	public List<Validator> getEntityValidators(E entity) {
+		return validators.get(entity);
+	}
 
 	/**
 	 * Adds the given type to the {@link MappingContext}.
-	 *
+	 * 
 	 * @param type
 	 * @return
 	 */
@@ -149,7 +191,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Adds the given {@link TypeInformation} to the {@link MappingContext}.
-	 *
+	 * 
 	 * @param typeInformation
 	 * @return
 	 */
@@ -165,10 +207,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		try {
 			final E entity = createPersistentEntity(typeInformation);
-			
+
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
 			persistentEntities.put(entity.getTypeInformation(), entity);
-			
+
 			BeanInfo info = Introspector.getBeanInfo(type);
 
 			final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
@@ -228,9 +270,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * {@link PersistentEntity}. Will return the property's {@link TypeInformation} directly if it is a potential entity,
 	 * a collections component type if it's a collection as well as the value type of a {@link Map} if it's a map
 	 * property.
-	 *
+	 * 
 	 * @param property
 	 * @return the TypeInformation to be added as {@link PersistentEntity} or {@literal
+
 	 */
 	private TypeInformation<?> getNestedTypeToAdd(P property, PersistentEntity<?, P> entity) {
 
@@ -258,30 +301,46 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		return null;
 	}
-	
+
 	private TypeInformation<?> getComponentTypeRecursively(TypeInformation<?> typeInformation) {
 		TypeInformation<?> componentType = typeInformation.getComponentType();
-		
+
 		if (componentType == null) {
 			return null;
 		}
-		
-		return componentType.isCollectionLike() ? getComponentTypeRecursively(componentType) : componentType; 
+
+		return componentType.isCollectionLike() ? getComponentTypeRecursively(componentType) : componentType;
 	}
 
 	private TypeInformation<?> getTypeInformationIfNotSimpleType(TypeInformation<?> information) {
 		return information == null || simpleTypeHolder.isSimpleType(information.getType()) ? null : information;
 	}
 
-	public List<Validator> getEntityValidators(E entity) {
-		return validators.get(entity);
-	}
-
+	/**
+	 * Creates the concrete {@link PersistentEntity} instance.
+	 * 
+	 * @param <T>
+	 * @param typeInformation
+	 * @return
+	 */
 	protected abstract <T> E createPersistentEntity(TypeInformation<T> typeInformation);
 
-	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner, SimpleTypeHolder simpleTypeHolder);
+	/**
+	 * Creates the concrete instance of {@link PersistentProperty}.
+	 * 
+	 * @param field
+	 * @param descriptor
+	 * @param owner
+	 * @param simpleTypeHolder
+	 * @return
+	 */
+	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner,
+			SimpleTypeHolder simpleTypeHolder);
 
-
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
 	public void afterPropertiesSet() {
 		for (Class<?> initialEntity : initialEntitySet) {
 			addPersistentEntity(initialEntity);

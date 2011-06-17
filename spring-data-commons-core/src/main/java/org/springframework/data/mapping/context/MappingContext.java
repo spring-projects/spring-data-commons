@@ -40,15 +40,38 @@ import org.springframework.validation.Validator;
 public interface MappingContext<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> {
 
 	/**
-	 * Obtains a list of PersistentEntity instances
+	 * Returns all {@link PersistentEntity}s held in the context.
 	 *
-	 * @return A list of PersistentEntity instances
+	 * @return
 	 */
 	Collection<E> getPersistentEntities();
 
+	/**
+	 * Returns a {@link PersistentEntity} for the given {@link Class}.
+	 * 
+	 * @param type
+	 * @return
+	 */
 	E getPersistentEntity(Class<?> type);
 
+	/**
+	 * Returns a {@link PersistentEntity} for the given {@link TypeInformation}.
+	 *  
+	 * @param type
+	 * @return
+	 */
 	E getPersistentEntity(TypeInformation<?> type);
+
+	/**
+	 * Returns all {@link PersistentProperty}s for the given path expression based on the given root {@link Class}. Path
+	 * expression are dot separated, e.g. {@code person.firstname}.
+	 * 
+	 * @param <T> 
+	 * @param type
+	 * @param path
+	 * @return
+	 */
+	<T> Iterable<P> getPersistentPropertyPath(Class<T> type, String path);
 
 	/**
 	 * Obtains a validator for the given entity
