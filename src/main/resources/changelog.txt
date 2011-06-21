@@ -1,6 +1,22 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.1.0.M2 (2011-06-21)
+----------------------------------------
+
+General
+* [DATACMNS-27] - Missing plugin repository
+* [DATACMNS-31] - Check for null in arguement passed to MappingBeanHelper.isSimpleType
+* [DATACMNS-42] - MappingContext does not map BigDecimal correctly
+* [DATACMNS-43] - PreferredConstructorDiscoverer - wrong exception message
+* [DATACMNS-46] - Make org.joda.time an optional import
+
+Repositories
+* [DATACMNS-44] - ParametersParameterAccessor iterator will never iterate...
+* [DATACMNS-45] - Property check for repository methods fails for properties starting with _
+* [DATACMNS-48] - Spelling errors in class names - "Executer" -> "Executor" Repositories
+
+
 Changes in version 1.1.0.M1 (2011-06-02)
 ----------------------------------------
 
