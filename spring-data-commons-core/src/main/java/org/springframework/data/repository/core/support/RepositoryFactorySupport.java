@@ -86,7 +86,7 @@ public abstract class RepositoryFactorySupport {
 	/**
 	 * Adds {@link RepositoryProxyPostProcessor}s to the factory to allow
 	 * manipulation of the {@link ProxyFactory} before the proxy gets created.
-	 * Note that the {@link QueryExecuterMethodInterceptor} will be added to the
+	 * Note that the {@link QueryExecutorMethodInterceptor} will be added to the
 	 * proxy <em>after</em> the {@link RepositoryProxyPostProcessor}s are
 	 * considered.
 	 *
@@ -144,7 +144,7 @@ public abstract class RepositoryFactorySupport {
 			processor.postProcess(result);
 		}
 
-		result.addAdvice(new QueryExecuterMethodInterceptor(information,
+		result.addAdvice(new QueryExecutorMethodInterceptor(information,
 				customImplementation, target));
 
 		return (T) result.getProxy();
@@ -251,7 +251,7 @@ public abstract class RepositoryFactorySupport {
 	 *
 	 * @author Oliver Gierke
 	 */
-	public class QueryExecuterMethodInterceptor implements MethodInterceptor {
+	public class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 		private final Map<Method, RepositoryQuery> queries =
 				new ConcurrentHashMap<Method, RepositoryQuery>();
@@ -262,11 +262,11 @@ public abstract class RepositoryFactorySupport {
 
 
 		/**
-		 * Creates a new {@link QueryExecuterMethodInterceptor}. Builds a model
+		 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model
 		 * of {@link QueryMethod}s to be invoked on execution of repository
 		 * interface methods.
 		 */
-		public QueryExecuterMethodInterceptor(
+		public QueryExecutorMethodInterceptor(
 				RepositoryInformation repositoryInformation,
 				Object customImplementation, Object target) {
 
