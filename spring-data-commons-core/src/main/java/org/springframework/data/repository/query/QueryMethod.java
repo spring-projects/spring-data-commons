@@ -104,6 +104,19 @@ public class QueryMethod {
 		};
 	}
 
+	
+  /**
+   * Returns the name of the named query this method belongs to.
+   * 
+   * @return
+   */
+  public String getNamedQueryName() {
+
+      Class<?> domainClass = getDomainClass();
+      return String.format("%s.%s", domainClass.getSimpleName(),
+              method.getName());
+  }
+	
 
 	protected Class<?> getDomainClass() {
 

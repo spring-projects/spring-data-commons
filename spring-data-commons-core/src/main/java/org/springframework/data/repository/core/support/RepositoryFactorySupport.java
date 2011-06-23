@@ -30,6 +30,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -56,7 +57,7 @@ public abstract class RepositoryFactorySupport {
 	private QueryLookupStrategy.Key queryLookupStrategyKey;
 	private List<QueryCreationListener<?>> queryPostProcessors =
 			new ArrayList<QueryCreationListener<?>>();
-
+	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
 
 	/**
 	 * Sets the strategy of how to lookup a query to execute finders.
@@ -66,6 +67,15 @@ public abstract class RepositoryFactorySupport {
 	public void setQueryLookupStrategyKey(Key key) {
 
 		this.queryLookupStrategyKey = key;
+	}
+	
+	/**
+	 * Configures a {@link NamedQueries} instance to be handed to the {@link QueryLookupStrategy} for query creation.
+	 * 
+	 * @param namedQueries the namedQueries to set
+	 */
+	public void setNamedQueries(NamedQueries namedQueries) {
+		this.namedQueries = namedQueries == null ? PropertiesBasedNamedQueries.EMPTY : namedQueries;
 	}
 
 
@@ -291,7 +301,7 @@ public abstract class RepositoryFactorySupport {
 
 			for (Method method : repositoryInformation.getQueryMethods()) {
 				RepositoryQuery query =
-						lookupStrategy.resolveQuery(method, repositoryInformation);
+						lookupStrategy.resolveQuery(method, repositoryInformation, namedQueries);
 				invokeListeners(query);
 				queries.put(method, query);
 			}

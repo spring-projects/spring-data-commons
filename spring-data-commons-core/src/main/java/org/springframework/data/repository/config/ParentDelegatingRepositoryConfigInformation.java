@@ -189,4 +189,12 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 
 		return parent.getQueryLookupStrategyKey();
 	}
+	
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.CommonRepositoryConfigInformation#getNamedQueriesLocation()
+	 */
+	public String getNamedQueriesLocation() {
+		return parent.getNamedQueriesLocation();
+	}
 }

@@ -77,4 +77,10 @@ public interface CommonRepositoryConfigInformation {
 	 */
 	Key getQueryLookupStrategyKey();
 
+	/**
+	 * Returns the location of the properties file to contain named queries.
+	 * 
+	 * @return
+	 */
+	String getNamedQueriesLocation();
 }

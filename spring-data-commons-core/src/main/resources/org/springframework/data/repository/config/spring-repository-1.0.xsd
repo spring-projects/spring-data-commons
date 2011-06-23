@@ -34,6 +34,13 @@
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="named-queries-location" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Defines the location to look for a Properties file containing externally defined queries. 
+				]]></xsd:documentation>
+			</xsd:annotation>	
+		</xsd:attribute>
 	</xsd:complexType>
 
 	<xsd:complexType name="repository">

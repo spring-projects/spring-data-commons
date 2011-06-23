@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -28,12 +28,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.core.support.QueryCreationListener;
-import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.query.QueryLookupStrategy;
-import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.repository.query.RepositoryQuery;
 
 
 /**
@@ -89,6 +88,7 @@ public class RepositoryFactorySupportUnitTests {
 		verify(backingRepo, times(0)).findOne(1);
 	}
 
+	
 	class DummyRepositoryFactory extends RepositoryFactorySupport {
 
 		/* (non-Javadoc)
@@ -123,7 +123,7 @@ public class RepositoryFactorySupportUnitTests {
 			RepositoryQuery queryTwo = mock(RepositoryQuery.class);
 
 			QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
-			when(strategy.resolveQuery(any(Method.class), any(RepositoryMetadata.class)))
+			when(strategy.resolveQuery(any(Method.class), any(RepositoryMetadata.class), any(NamedQueries.class)))
 					.thenReturn(queryOne, queryTwo);
 
 			return strategy;

@@ -22,6 +22,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
@@ -43,6 +44,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private Key queryLookupStrategyKey;
 	private Class<? extends T> repositoryInterface;
 	private Object customImplementation;
+	private NamedQueries namedQueries;
 
 
 	/**
@@ -79,6 +81,15 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.customImplementation = customImplementation;
 	}
 
+	
+	/**
+	 * Setter to inject a {@link NamedQueries} instance.
+	 * 
+	 * @param namedQueries the namedQueries to set
+	 */
+	public void setNamedQueries(NamedQueries namedQueries) {
+		this.namedQueries = namedQueries;
+	}
 
 	/* (non-Javadoc)
 			 * @see org.springframework.data.repository.support.EntityMetadataProvider#getEntityMetadata()
@@ -135,15 +146,16 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-			 */
+	 * (non-Javadoc)
+	 *
+	 * @see
+	 * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
 	public void afterPropertiesSet() {
 
 		this.factory = createRepositoryFactory();
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
+		this.factory.setNamedQueries(namedQueries);
 	}
 
 
