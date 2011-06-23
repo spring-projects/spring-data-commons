@@ -184,7 +184,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
     through each of these steps and and figure out details and various options
     that you have at each stage.</para>
 
-    <section>
+    <section id="repositories.definition">
       <title>Defining repository interfaces</title>
 
       <para>As a very first step you define a domain class specific repository
@@ -194,7 +194,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
       type, extend <interfacename>CrudRepository</interfacename> instead of
       <interfacename>Repository</interfacename>.</para>
 
-      <section>
+      <section id="repositories.definition-tuning">
         <title>Fine tuning repository definition</title>
 
         <para>Usually you will have your repository interface extend
@@ -236,7 +236,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
       </section>
     </section>
 
-    <section>
+    <section id="repositories.query-methods">
       <title>Defining query methods</title>
 
       <section id="repositories.query-methods.query-lookup-strategies">
@@ -405,13 +405,13 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
       </section>
     </section>
 
-    <section>
+    <section id="repositories.create-instances">
       <title>Creating repository instances</title>
 
       <para>So now the question is how to create instances and bean
       definitions for the repository interfaces defined.</para>
 
-      <section>
+      <section id="repositories.create-instances.spring">
         <title>Spring</title>
 
         <para>The easiest way to do so is by using the Spring namespace that
@@ -495,7 +495,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
         </simplesect>
       </section>
 
-      <section>
+      <section id="repositories.create-instances.standalone">
         <title>Standalone usage</title>
 
         <para>You can also use the repository infrastructure outside of a
