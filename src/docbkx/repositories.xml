@@ -236,7 +236,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
       </section>
     </section>
 
-    <section id="repositories.query-methods">
+    <section id="repositories.query-methods.details">
       <title>Defining query methods</title>
 
       <section id="repositories.query-methods.query-lookup-strategies">
