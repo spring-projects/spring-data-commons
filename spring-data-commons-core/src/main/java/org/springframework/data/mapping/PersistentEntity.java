@@ -1,7 +1,5 @@
 package org.springframework.data.mapping;
 
-import java.util.Collection;
-
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -56,13 +54,6 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @return
 	 */
 	TypeInformation<T> getTypeInformation();
-
-	/**
-	 * A list of property names
-	 * 
-	 * @return A List of strings
-	 */
-	Collection<String> getPersistentPropertyNames();
 
 	/**
 	 * Applies the given {@link PropertyHandler} to all {@link PersistentProperty}s contained in this
