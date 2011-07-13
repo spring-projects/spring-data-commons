@@ -5,17 +5,23 @@ import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.List;
 
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.core.support.DefaultRepositoryInformation;
-import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadataUnitTests.DummyGenericRepositorySupport;
+import org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests.ReadOnlyRepository;
 
 /**
  * @author Oliver Gierke
@@ -25,7 +31,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 	@SuppressWarnings("rawtypes")
 	static final Class<DummyGenericRepositorySupport> REPOSITORY = DummyGenericRepositorySupport.class;
-	
+
 	@Mock
 	FooRepositoryCustom customImplementation;
 
@@ -51,26 +57,53 @@ public class DefaultRepositoryInformationUnitTests {
 
 		assertThat(information.getTargetClassMethod(method), is(method));
 	}
-	
+
 	@Test
 	public void discoversCustomlyImplementedCrudMethod() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, customImplementation.getClass());
-		
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				customImplementation.getClass());
+
 		Method source = FooRepositoryCustom.class.getMethod("save", User.class);
 		Method expected = customImplementation.getClass().getMethod("save", User.class);
-		
+
 		assertThat(information.getTargetClassMethod(source), is(expected));
 	}
-	
+
 	@Test
 	public void considersIntermediateMethodsAsFinderMethods() {
-		
+
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
-		
+
 		assertThat(information.hasCustomMethod(), is(false));
+	}
+
+	@Test
+	public void discoversIntermediateMethodsAsBackingMethods() throws NoSuchMethodException, SecurityException {
+		
+		DefaultRepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
+		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata,
+				PagingAndSortingRepository.class, null);
+
+		Method method = CustomRepository.class.getMethod("findAll", Pageable.class);
+		assertThat(information.isBaseClassMethod(method), is(true));
+		
+		method = getMethodFrom(CustomRepository.class, "exists");
+		assertThat(information.isBaseClassMethod(method), is(true));
+		
+		Matcher<Iterable<Method>> empty = iterableWithSize(0);
+		assertThat(information.getQueryMethods(), is(empty));
+	}
+	
+	private Method getMethodFrom(Class<?> type, String name) {
+		for (Method method : type.getMethods()) {
+			if (method.getName().equals(name)) {
+				return method;
+			}
+		}
+		return null;
 	}
 
 	interface FooRepository extends CrudRepository<User, Integer>, FooRepositoryCustom {
@@ -81,9 +114,9 @@ public class DefaultRepositoryInformationUnitTests {
 		// Not a redeclared method
 		User findOne(Long primaryKey);
 	}
-	
+
 	interface FooRepositoryCustom {
-		
+
 		User save(User user);
 	}
 
@@ -98,14 +131,32 @@ public class DefaultRepositoryInformationUnitTests {
 		}
 	}
 
-
 	interface BaseRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
-		
+
 		T findBySomething(String something);
 	}
-	
+
 	interface ConcreteRepository extends BaseRepository<User, Integer> {
-		
+
 		User findBySomethingDifferent(String somethingDifferent);
+	}
+
+	interface ReadOnlyRepository<T, ID extends Serializable> extends Repository<T, ID> {
+
+		T findOne(ID id);
+
+		Iterable<T> findAll();
+
+		Page<T> findAll(Pageable pageable);
+
+		List<T> findAll(Sort sort);
+
+		boolean exists(ID id);
+
+		long count();
+	}
+
+	interface CustomRepository extends ReadOnlyRepository<Object, Long> {
+
 	}
 }

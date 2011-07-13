@@ -20,12 +20,17 @@ import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
@@ -46,7 +51,7 @@ public class RepositoryFactorySupportUnitTests {
 	RepositoryFactorySupport factory = new DummyRepositoryFactory();
 	
 	@Mock
-	CrudRepository<Object, Serializable> backingRepo;
+	PagingAndSortingRepository<Object, Serializable> backingRepo;
 	@Mock
 	ObjectRepositoryCustom customImplementation;
 
@@ -87,6 +92,16 @@ public class RepositoryFactorySupportUnitTests {
 		verify(customImplementation, times(1)).findOne(1);
 		verify(backingRepo, times(0)).findOne(1);
 	}
+	
+	@Test
+	public void createsRepositoryInstanceWithCustomIntermediateRepository() {
+		
+		CustomRepository repository = factory.getRepository(CustomRepository.class);
+		Pageable pageable = new PageRequest(0, 10);
+		repository.findAll(pageable);
+		
+		verify(backingRepo, times(1)).findAll(pageable);
+	}
 
 	
 	class DummyRepositoryFactory extends RepositoryFactorySupport {
@@ -112,7 +127,7 @@ public class RepositoryFactorySupportUnitTests {
 		@Override
 		protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 
-			return CrudRepository.class;
+			return backingRepo.getClass();
 		}
 
 
@@ -156,5 +171,24 @@ public class RepositoryFactorySupportUnitTests {
 
 	interface MyRepositoryQuery extends RepositoryQuery {
 
+	}
+	
+	interface ReadOnlyRepository<T, ID extends Serializable> extends Repository<T, ID> {
+
+    T findOne(ID id);
+
+    Iterable<T> findAll();
+
+    Page<T> findAll(Pageable pageable);
+
+    List<T> findAll(Sort sort);
+
+    boolean exists(ID id);
+
+    long count();
+	}
+	
+	interface CustomRepository extends ReadOnlyRepository<Object, Long> {
+		
 	}
 }

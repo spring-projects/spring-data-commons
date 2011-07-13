@@ -18,8 +18,9 @@ package org.springframework.data.querydsl;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import com.mysema.query.annotations.QueryEntity;
 import org.junit.Test;
+
+import com.mysema.query.annotations.QueryEntity;
 
 
 /**
@@ -35,15 +36,15 @@ public class SimpleEntityPathResolverUnitTests {
 	@Test
 	public void createsRepositoryFromDomainClassCorrectly() throws Exception {
 
-		assertThat(resolver.createPath(User.class), is(QUser.class));
+		assertThat((QUser) resolver.createPath(User.class), isA(QUser.class));
 	}
 
 
 	@Test
 	public void resolvesEntityPathForInnerClassCorrectly() throws Exception {
 
-		assertThat(resolver.createPath(NamedUser.class),
-				is(QSimpleEntityPathResolverUnitTests_NamedUser.class));
+		assertThat((QSimpleEntityPathResolverUnitTests_NamedUser) resolver.createPath(NamedUser.class),
+				isA(QSimpleEntityPathResolverUnitTests_NamedUser.class));
 	}
 
 

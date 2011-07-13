@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 import static org.springframework.data.repository.util.ClassUtils.*;
+import static org.springframework.core.GenericTypeResolver.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -25,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -248,23 +251,20 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 
 		Type[] genericTypes = baseClassMethod.getGenericParameterTypes();
 		Class<?>[] types = baseClassMethod.getParameterTypes();
-		Class<?>[] methodParameters = method.getParameterTypes();
 
 		for (int i = 0; i < genericTypes.length; i++) {
 
 			Type type = genericTypes[i];
+			MethodParameter parameter = new MethodParameter(method, i);
+			Class<?> parameterType = resolveParameterType(parameter, metadata.getRepositoryInterface());
 
 			if (type instanceof TypeVariable<?>) {
-
 				String name = ((TypeVariable<?>) type).getName();
-
-				if (!matchesGenericType(name, methodParameters[i])) {
+				if (!matchesGenericType(name, parameterType)) {
 					return false;
 				}
-
 			} else {
-
-				if (!types[i].equals(methodParameters[i])) {
+				if (!types[i].equals(parameterType)) {
 					return false;
 				}
 			}
