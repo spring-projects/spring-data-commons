@@ -15,6 +15,7 @@
 		<log4j.version>1.2.16</log4j.version>
 		<org.mockito.version>1.8.4</org.mockito.version>
 		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
+		<org.hamcrest.version>1.2.1</org.hamcrest.version>
 	</properties>
 	<profiles>
 		<profile>
@@ -133,24 +134,6 @@
 				<groupId>log4j</groupId>
 				<artifactId>log4j</artifactId>
 				<version>${log4j.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>javax.mail</groupId>
-						<artifactId>mail</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>javax.jms</groupId>
-						<artifactId>jms</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.sun.jdmk</groupId>
-						<artifactId>jmxtools</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.sun.jmx</groupId>
-						<artifactId>jmxri</artifactId>
-					</exclusion>
-				</exclusions>
 				<scope>runtime</scope>
 			</dependency>
 
@@ -163,14 +146,14 @@
 
 			<dependency>
 				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
+				<artifactId>mockito-core</artifactId>
 				<version>${org.mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
 
 			<dependency>
 				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
+				<artifactId>junit-dep</artifactId>
 				<version>${junit.version}</version>
 				<scope>test</scope>
 			</dependency>
@@ -194,8 +177,14 @@
 		
 		<dependency>
 			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-all</artifactId>
-			<version>1.1</version>
+			<artifactId>hamcrest-library</artifactId>
+			<version>${org.hamcrest.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-core</artifactId>
+			<version>${org.hamcrest.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
