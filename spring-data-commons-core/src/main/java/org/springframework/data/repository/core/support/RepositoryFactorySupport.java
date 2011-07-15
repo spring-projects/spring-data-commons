@@ -325,12 +325,9 @@ public abstract class RepositoryFactorySupport {
 
 
 		/*
-						 * (non-Javadoc)
-						 *
-						 * @see
-						 * org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance
-						 * .intercept.MethodInvocation)
-						 */
+		 * (non-Javadoc)
+		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
+		 */
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
