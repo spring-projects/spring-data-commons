@@ -17,7 +17,7 @@
     boilerplate code to implement repositories especially is still quite high.
     So the goal of the repository abstraction of Spring Data is to reduce the
     effort to implement data access layers for various persistence stores
-    significantly</para>
+    significantly.</para>
 
     <para>The following chapters will introduce the core concepts and
     interfaces of Spring Data repositories.</para>
@@ -53,7 +53,8 @@
           <area coords="15" id="repository.exists" />
         </areaspec>
 
-        <programlisting language="java">public interface CrudRepository&lt;T, ID extends Serializable&gt; {
+        <programlisting language="java">public interface CrudRepository&lt;T, ID extends Serializable&gt; 
+    extends Repository&lt;T, ID&gt; {
 
     T save(T entity);
 
@@ -110,7 +111,7 @@
     <example>
       <title>PagingAndSortingRepository</title>
 
-      <programlisting language="java">public interface PagingAndSortingRepository&lt;T, ID extends Serializable&gt; extends Repository&lt;T, ID&gt; {
+      <programlisting language="java">public interface PagingAndSortingRepository&lt;T, ID extends Serializable&gt; extends CrudRepository&lt;T, ID&gt; {
 
     Iterable&lt;T&gt; findAll(Sort sort);
 
@@ -171,7 +172,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
         <programlisting language="java">public class SomeClient {
 
   @Autowired
-  private PersonRepoyitory repository;
+  private PersonRepository repository;
 
   public void doSomething() {
     List&lt;Person&gt; persons = repository.findByLastname("Matthews");
@@ -264,7 +265,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
           from the query method's name. The general approach is to remove a
           given set of well-known prefixes from the method name and parse the
           rest of the method. Read more about query construction in <xref
-          linkend="query-methods.query-creation" />.</para>
+          linkend="repositories.query-methods.query-creation" />.</para>
         </simplesect>
 
         <simplesect>
@@ -502,8 +503,9 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
         Spring container usage. You will still need to have some of the Spring
         libraries on your classpath but you can generally setup repositories
         programatically as well. The Spring Data modules providing repository
-        support ship a persistence technology specific RepositoryFactory that
-        can be used as follows:</para>
+        support ship a persistence technology specific
+        <classname>RepositoryFactory</classname> that can be used as
+        follows:</para>
 
         <example>
           <title>Standalone usage of repository factory</title>
