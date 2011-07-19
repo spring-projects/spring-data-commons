@@ -183,6 +183,17 @@ public final class Parameters implements Iterable<Parameter> {
 
 		return sortIndex != -1;
 	}
+	
+	
+	/**
+	 * Returns whether we potentially find a {@link Sort} parameter in the parameters.
+	 * 
+	 * @return
+	 */
+	public boolean potentiallySortsDynamically() {
+		
+		return hasSortParameter() || hasPageableParameter();
+	}
 
 
 	/**
