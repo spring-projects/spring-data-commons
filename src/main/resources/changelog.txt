@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.1.0.RC1 (2011-07-19)
+-----------------------------------------
+
+General
+* [DATACMNS-50] - Extend mapping metadata to allow defining order of PersistentProperties
+* [DATACMNS-53] - Upgrade to Querydsl 2.2.0
+
+Repositories
+* [DATACMNS-49] - Create infrastructure to externalize queries
+* [DATACMNS-52] - Declaring an intermediate base repository does not work correctly
+
+
 Changes in version 1.1.0.M2 (2011-06-21)
 ----------------------------------------
 
