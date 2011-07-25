@@ -28,6 +28,5 @@ public abstract class PersistentEntitySpec {
 
 	public static void assertInvariants(PersistentEntity<?, ?> entity) {
 		assertThat(entity.getName(), is(notNullValue()));
-		assertThat(entity.getPreferredConstructor(), is(notNullValue()));
 	}
 }

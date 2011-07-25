@@ -21,7 +21,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	/**
 	 * Returns the {@link PreferredConstructor} to be used to instantiate objects of this {@link PersistentEntity}.
 	 * 
-	 * @return must never return {@literal null}.
+	 * @return {@literal null} in case no suitable constructor for automatic construction can be found.
 	 */
 	PreferredConstructor<T> getPreferredConstructor();
 

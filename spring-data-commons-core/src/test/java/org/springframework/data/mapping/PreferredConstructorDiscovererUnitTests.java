@@ -64,11 +64,12 @@ public class PreferredConstructorDiscovererUnitTests {
 	}
 
 
-	@Test(expected = IllegalArgumentException.class)
-	public void throwsExceptionForMultipleConstructorsAndNoNoArgConstructorWithoutAnnotation() {
+	@Test
+	public void doesNotThrowExceptionForMultipleConstructorsAndNoNoArgConstructorWithoutAnnotation() {
 
-		new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne>(
+		PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne> discoverer = new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne>(
 				ClassWithMultipleConstructorsWithoutEmptyOne.class);
+		assertThat(discoverer.getConstructor(), is(nullValue()));
 	}
 
 	@Test
