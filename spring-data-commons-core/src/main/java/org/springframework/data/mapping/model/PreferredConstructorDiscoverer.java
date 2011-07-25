@@ -50,6 +50,8 @@ public class PreferredConstructorDiscoverer<T> {
 	 */
 	protected PreferredConstructorDiscoverer(TypeInformation<T> owningType) {
 
+		boolean noArgConstructorFound = false;
+		int numberOfArgConstructors = 0;
 		Class<?> rawOwningType = owningType.getType();
 
 		for (Constructor<?> constructor : rawOwningType.getDeclaredConstructors()) {
@@ -63,9 +65,20 @@ public class PreferredConstructorDiscoverer<T> {
 				return;
 			}
 
-			if (preferredConstructor.isNoArgConstructor()) {
+			// No-arg constructor trumps custom ones
+			if (this.constructor == null || preferredConstructor.isNoArgConstructor()) {
 				this.constructor = preferredConstructor;
 			}
+
+			if (preferredConstructor.isNoArgConstructor()) {
+				noArgConstructorFound = true;
+			} else {
+				numberOfArgConstructors++;
+			}
+		}
+
+		if (!noArgConstructorFound && numberOfArgConstructors > 1) {
+			this.constructor = null;
 		}
 	}
 

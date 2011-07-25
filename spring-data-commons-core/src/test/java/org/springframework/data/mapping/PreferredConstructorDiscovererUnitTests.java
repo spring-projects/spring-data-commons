@@ -19,7 +19,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Iterator;
-import java.util.List;
 
 import org.junit.Test;
 import org.springframework.data.annotation.PersistenceConstructor;
