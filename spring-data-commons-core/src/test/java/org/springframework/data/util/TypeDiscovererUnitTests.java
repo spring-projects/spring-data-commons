@@ -15,11 +15,15 @@
  */
 package org.springframework.data.util;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,6 +88,25 @@ public class TypeDiscovererUnitTests {
 		TypeInformation<?> mapValueType = information.getProperty("map").getMapValueType();
 		assertEquals(mapValueType, information);
 	}
+	
+	@Test
+	public void returnsComponentAndValueTypesForMapExtensions() {
+		TypeDiscoverer<Properties> discoverer = new TypeDiscoverer<Properties>(CustomMap.class, null);
+		assertEquals(Locale.class, discoverer.getMapValueType().getType());
+		assertEquals(String.class, discoverer.getComponentType().getType());
+	}
+	
+ 	@Test
+ 	public void returnsComponentTypeForCollectionExtension() {
+ 		TypeDiscoverer<CustomCollection> discoverer = new TypeDiscoverer<CustomCollection>(CustomCollection.class, null);
+ 		assertEquals(String.class, discoverer.getComponentType().getType());
+ 	}
+ 	
+ 	@Test
+ 	public void returnsComponentTypeForArrays() {
+ 		TypeDiscoverer<String[]> discoverer = new TypeDiscoverer<String[]>(String[].class, null);
+ 		assertEquals(String.class, discoverer.getComponentType().getType());
+ 	}
 
 	class SelfReferencing {
 
@@ -93,4 +116,12 @@ public class TypeDiscovererUnitTests {
 	class SelfReferencingMap {
 		Map<String, SelfReferencingMap> map;
 	}
+
+  interface CustomMap extends Map<String, Locale> {
+  	
+  }
+  
+  interface CustomCollection extends Collection<String> {
+  	
+  }
 }

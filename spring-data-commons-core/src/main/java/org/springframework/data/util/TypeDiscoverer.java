@@ -246,12 +246,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		 */
 	public TypeInformation<?> getMapValueType() {
 
-		if (!Map.class.isAssignableFrom(getType())) {
+		if (!isMap()) {
 			return null;
 		}
-
-		ParameterizedType parameterizedType = (ParameterizedType) type;
-		return createInfo(parameterizedType.getActualTypeArguments()[1]);
+		
+		if (type instanceof ParameterizedType) {
+			ParameterizedType parameterizedType = (ParameterizedType) type;
+			return createInfo(parameterizedType.getActualTypeArguments()[1]);
+		} 
+		
+		return createInfo(GenericTypeResolver.resolveTypeArguments(getType(), Map.class)[1]);
 	}
 
 	/* (non-Javadoc)
@@ -268,12 +272,30 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		 */
 	public TypeInformation<?> getComponentType() {
 
-		if (!(Map.class.isAssignableFrom(getType()) || isCollectionLike())) {
+		if (!(isMap() || isCollectionLike())) {
 			return null;
 		}
 
-		ParameterizedType parameterizedType = (ParameterizedType) type;
-		return createInfo(parameterizedType.getActualTypeArguments()[0]);
+		if (type instanceof ParameterizedType) {
+			ParameterizedType parameterizedType = (ParameterizedType) type;
+			return createInfo(parameterizedType.getActualTypeArguments()[0]);
+		}
+		
+		Class<S> rawType = getType();
+		
+		if (isMap()) {
+			return createInfo(GenericTypeResolver.resolveTypeArguments(rawType, Map.class)[0]);
+		}
+		
+		if (Iterable.class.isAssignableFrom(rawType)) {
+			return createInfo(GenericTypeResolver.resolveTypeArguments(rawType, Iterable.class)[0]);
+		}
+		
+		if (rawType.isArray()) {
+			return createInfo(rawType.getComponentType());
+		}
+		
+		return null;
 	}
 
 	/*
