@@ -127,7 +127,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
 
-		for (Class<?> type : constructor.getParameterTypes()) {
+		for (Type type : constructor.getGenericParameterTypes()) {
 			result.add(createInfo(type));
 		}
 

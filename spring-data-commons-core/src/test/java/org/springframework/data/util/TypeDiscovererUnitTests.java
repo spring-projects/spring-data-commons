@@ -18,9 +18,11 @@ package org.springframework.data.util;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -37,11 +39,11 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TypeDiscovererUnitTests {
-	
+
 	@Mock
 	@SuppressWarnings("rawtypes")
 	Map<TypeVariable, Type> firstMap;
-	
+
 	@Mock
 	@SuppressWarnings("rawtypes")
 	Map<TypeVariable, Type> secondMap;
@@ -64,7 +66,7 @@ public class TypeDiscovererUnitTests {
 	public void isNotEqualIfTypeVariableMapsDiffer() {
 
 		assertFalse(firstMap.equals(secondMap));
-		
+
 		TypeDiscoverer<Object> first = new TypeDiscoverer<Object>(Object.class, firstMap);
 		TypeDiscoverer<Object> second = new TypeDiscoverer<Object>(Object.class, secondMap);
 
@@ -88,25 +90,41 @@ public class TypeDiscovererUnitTests {
 		TypeInformation<?> mapValueType = information.getProperty("map").getMapValueType();
 		assertEquals(mapValueType, information);
 	}
-	
+
 	@Test
 	public void returnsComponentAndValueTypesForMapExtensions() {
 		TypeDiscoverer<Properties> discoverer = new TypeDiscoverer<Properties>(CustomMap.class, null);
 		assertEquals(Locale.class, discoverer.getMapValueType().getType());
 		assertEquals(String.class, discoverer.getComponentType().getType());
 	}
-	
- 	@Test
- 	public void returnsComponentTypeForCollectionExtension() {
- 		TypeDiscoverer<CustomCollection> discoverer = new TypeDiscoverer<CustomCollection>(CustomCollection.class, null);
- 		assertEquals(String.class, discoverer.getComponentType().getType());
- 	}
- 	
- 	@Test
- 	public void returnsComponentTypeForArrays() {
- 		TypeDiscoverer<String[]> discoverer = new TypeDiscoverer<String[]>(String[].class, null);
- 		assertEquals(String.class, discoverer.getComponentType().getType());
- 	}
+
+	@Test
+	public void returnsComponentTypeForCollectionExtension() {
+		TypeDiscoverer<CustomCollection> discoverer = new TypeDiscoverer<CustomCollection>(CustomCollection.class, null);
+		assertEquals(String.class, discoverer.getComponentType().getType());
+	}
+
+	@Test
+	public void returnsComponentTypeForArrays() {
+		TypeDiscoverer<String[]> discoverer = new TypeDiscoverer<String[]>(String[].class, null);
+		assertEquals(String.class, discoverer.getComponentType().getType());
+	}
+
+	/**
+	 * @see DATACMNS-57
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void discoveresConstructorParameterTypesCorrectly() throws NoSuchMethodException, SecurityException {
+
+		TypeDiscoverer<GenericConstructors> discoverer = new TypeDiscoverer<GenericConstructors>(GenericConstructors.class,
+				null);
+		Constructor<GenericConstructors> constructor = GenericConstructors.class.getConstructor(List.class, Locale.class);
+		List<TypeInformation<?>> types = discoverer.getParameterTypes(constructor);
+		assertThat(types.size(), is(2));
+		assertThat(types.get(0).getType(), equalTo((Class) List.class));
+		assertThat(types.get(0).getComponentType().getType(), is(equalTo((Class) String.class)));
+	}
 
 	class SelfReferencing {
 
@@ -117,11 +135,18 @@ public class TypeDiscovererUnitTests {
 		Map<String, SelfReferencingMap> map;
 	}
 
-  interface CustomMap extends Map<String, Locale> {
-  	
-  }
-  
-  interface CustomCollection extends Collection<String> {
-  	
-  }
+	interface CustomMap extends Map<String, Locale> {
+
+	}
+
+	interface CustomCollection extends Collection<String> {
+
+	}
+
+	public static class GenericConstructors {
+
+		public GenericConstructors(List<String> first, Locale second) {
+
+		}
+	}
 }
