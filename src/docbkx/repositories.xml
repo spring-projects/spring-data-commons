@@ -136,7 +136,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
     <orderedlist>
       <listitem>
         <para>Declare an interface extending
-        <interfacename>Repository</interfacename> or one of it's
+        <interfacename>Repository</interfacename> or one of its
         sub-interfaces and type it to the domain class it shall handle.</para>
 
         <programlisting language="java">public interface PersonRepository extends Repository&lt;User, Long&gt; { … }</programlisting>
@@ -207,7 +207,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
         <interfacename>@RepositoryDefinition</interfacename>. Extending
         <interfacename>CrudRepository</interfacename> will expose a complete
         set of methods to manipulate your entities. If you would rather be
-        selective about the methods being expose simply copy the ones you want
+        selective about the methods being exposed, simply copy the ones you want
         to expose from <interfacename>CrudRepository</interfacename> into your
         domain repository.</para>
 
@@ -273,7 +273,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
 
           <para>This strategy tries to find a declared query which will be
           used for execution first. The query could be defined by an
-          annotation somwhere or declared by other means. Please consult the
+          annotation somewhere or declared by other means. Please consult the
           documentation of the specific store to find out what options are
           available for that store. If the repository infrastructure does not
           find a declared query for the method at bootstrap time it will
@@ -356,7 +356,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
 
           <para>Although this should work for most cases, there might be
           cases where the algorithm could select the wrong property. Suppose
-          our <classname>Person</classname> class has a
+          our <classname>Person</classname> class has an
           <code>addressZip</code> property as well. Then our algorithm would
           match in the first split round already and essentially choose the
           wrong property and finally fail (as the type of
@@ -599,7 +599,7 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
         <title>Manual wiring</title>
 
         <para>The approach above works perfectly well if your custom
-        implementation uses annotation based configuration and autowring
+        implementation uses annotation based configuration and autowiring
         entirely as it will be treated as any other Spring bean. If your custom
         implementation bean needs some special wiring you simply declare the bean
         and name it after the conventions just described. We will then pick up
