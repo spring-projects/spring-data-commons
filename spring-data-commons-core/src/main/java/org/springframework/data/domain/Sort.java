@@ -24,85 +24,69 @@ import java.util.Locale;
 
 import org.springframework.util.StringUtils;
 
-
 /**
- * Sort option for queries. You have to provide at least a list of properties to
- * sort for that must not include {@code null} or empty strings. The direction
- * defaults to {@value Sort#DEFAULT_DIRECTION}.
- *
+ * Sort option for queries. You have to provide at least a list of properties to sort for that must not include
+ * {@code null} or empty strings. The direction defaults to {@value Sort#DEFAULT_DIRECTION}.
+ * 
  * @author Oliver Gierke
  */
-public class Sort implements
-		Iterable<org.springframework.data.domain.Sort.Order>, Serializable {
+public class Sort implements Iterable<org.springframework.data.domain.Sort.Order>, Serializable {
 
 	private static final long serialVersionUID = 5737186511678863905L;
 	public static final Direction DEFAULT_DIRECTION = Direction.ASC;
 
 	private List<Order> orders;
 
-
 	public Sort(Order... orders) {
 
 		this(Arrays.asList(orders));
 	}
 
-
 	/**
 	 * Creates a new {@link Sort} instance.
-	 *
-	 * @param orders must not be {@literal null} or contain {@literal null} or
-	 *               empty strings
+	 * 
+	 * @param orders must not be {@literal null} or contain {@literal null} or empty strings
 	 */
 	public Sort(List<Order> orders) {
 
 		if (null == orders || orders.isEmpty()) {
-			throw new IllegalArgumentException(
-					"You have to provide at least one sort property to sort by!");
+			throw new IllegalArgumentException("You have to provide at least one sort property to sort by!");
 		}
 
 		this.orders = orders;
 	}
 
-
 	/**
-	 * Creates a new {@link Sort} instance. Order defaults to
-	 * {@value Direction#ASC}.
-	 *
-	 * @param properties must not be {@literal null} or contain {@literal null}
-	 *                   or empty strings
+	 * Creates a new {@link Sort} instance. Order defaults to {@value Direction#ASC}.
+	 * 
+	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings
 	 */
 	public Sort(String... properties) {
 
 		this(DEFAULT_DIRECTION, properties);
 	}
 
-
 	/**
 	 * Creates a new {@link Sort} instance.
-	 *
-	 * @param direction	defaults to {@value Sort#DEFAULT_DIRECTION} (for
-	 *                   {@literal null} cases, too)
-	 * @param properties must not be {@literal null} or contain {@literal null}
-	 *                   or empty strings
+	 * 
+	 * @param direction defaults to {@value Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
+	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings
 	 */
 	public Sort(Direction direction, String... properties) {
 
-		this(direction, properties == null ? new ArrayList<String>() : Arrays
-				.asList(properties));
+		this(direction, properties == null ? new ArrayList<String>() : Arrays.asList(properties));
 	}
-
 
 	/**
 	 * Creates a new {@link Sort} instance.
-	 *
+	 * 
 	 * @param direction
 	 * @param properties
 	 */
 	public Sort(Direction direction, List<String> properties) {
 
 		if (properties == null || properties.isEmpty()) {
-			throw new IllegalArgumentException(
-					"You have to provide at least one property to sort by!");
+			throw new IllegalArgumentException("You have to provide at least one property to sort by!");
 		}
 
 		this.orders = new ArrayList<Order>(properties.size());
@@ -136,7 +120,7 @@ public class Sort implements
 
 	/**
 	 * Returns the order registered for the given property.
-	 *
+	 * 
 	 * @param property
 	 * @return
 	 */
@@ -151,7 +135,6 @@ public class Sort implements
 		return null;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -161,7 +144,6 @@ public class Sort implements
 
 		return this.orders.iterator();
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -184,7 +166,6 @@ public class Sort implements
 		return this.orders.equals(that.orders);
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -197,7 +178,6 @@ public class Sort implements
 		result = 31 * result + orders.hashCode();
 		return result;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -212,7 +192,7 @@ public class Sort implements
 
 	/**
 	 * Enumeration for sort directions.
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 */
 	public static enum Direction {
@@ -220,9 +200,8 @@ public class Sort implements
 		ASC, DESC;
 
 		/**
-		 * Returns the {@link Direction} enum for the given {@link String}
-		 * value.
-		 *
+		 * Returns the {@link Direction} enum for the given {@link String} value.
+		 * 
 		 * @param value
 		 * @return
 		 */
@@ -231,18 +210,15 @@ public class Sort implements
 			try {
 				return Direction.valueOf(value.toUpperCase(Locale.US));
 			} catch (Exception e) {
-				throw new IllegalArgumentException(
-						String.format(
-								"Invalid value '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive).",
-								value), e);
+				throw new IllegalArgumentException(String.format(
+						"Invalid value '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive).", value), e);
 			}
 		}
 	}
 
 	/**
-	 * Property implements the pairing of an {@code Order} and a property. It is
-	 * used to provide input for {@link Sort}
-	 *
+	 * Property implements the pairing of an {@code Order} and a property. It is used to provide input for {@link Sort}
+	 * 
 	 * @author Oliver Gierke
 	 */
 	public static class Order {
@@ -250,40 +226,33 @@ public class Sort implements
 		private final Direction direction;
 		private final String property;
 
-
 		/**
-		 * Creates a new {@link Order} instance. if order is {@literal null}
-		 * then order defaults to {@value Sort#DEFAULT_DIRECTION}
-		 *
+		 * Creates a new {@link Order} instance. if order is {@literal null} then order defaults to
+		 * {@value Sort#DEFAULT_DIRECTION}
+		 * 
 		 * @param direction can be {@code null}
-		 * @param property	must not be {@code null} or empty
+		 * @param property must not be {@code null} or empty
 		 */
 		public Order(Direction direction, String property) {
 
 			if (property == null || "".equals(property.trim())) {
-				throw new IllegalArgumentException(
-						"Property must not null or empty!");
+				throw new IllegalArgumentException("Property must not null or empty!");
 			}
 
 			this.direction = direction == null ? DEFAULT_DIRECTION : direction;
 			this.property = property;
 		}
 
-
 		/**
-		 * Creates a new {@link Order} instance. Takes a single property. Order
-		 * defaults to {@value Sort.DEFAULT_ORDER}
-		 *
+		 * Creates a new {@link Order} instance. Takes a single property. Order defaults to {@value Sort.DEFAULT_ORDER}
+		 * 
 		 * @param property - must not be {@code null} or empty
 		 */
 		public Order(String property) {
-
 			this(DEFAULT_DIRECTION, property);
 		}
 
-
-		public static List<Order> create(Direction direction,
-																		 Iterable<String> properties) {
+		public static List<Order> create(Direction direction, Iterable<String> properties) {
 
 			List<Order> orders = new ArrayList<Sort.Order>();
 			for (String property : properties) {
@@ -292,69 +261,57 @@ public class Sort implements
 			return orders;
 		}
 
-
 		/**
 		 * Returns the order the property shall be sorted for.
-		 *
+		 * 
 		 * @return
 		 */
 		public Direction getDirection() {
-
 			return direction;
 		}
 
-
 		/**
 		 * Returns the property to order for.
-		 *
+		 * 
 		 * @return
 		 */
 		public String getProperty() {
-
 			return property;
 		}
 
-
 		/**
 		 * Returns whether sorting for this property shall be ascending.
-		 *
+		 * 
 		 * @return
 		 */
 		public boolean isAscending() {
-
 			return this.direction.equals(Direction.ASC);
 		}
 
-
 		/**
 		 * Returns a new {@link Order} with the given {@link Order}.
-		 *
+		 * 
 		 * @param order
 		 * @return
 		 */
 		public Order with(Direction order) {
-
 			return new Order(order, this.property);
 		}
 
-
 		/**
 		 * Returns a new {@link Sort} instance for the given properties.
-		 *
+		 * 
 		 * @param properties
 		 * @return
 		 */
 		public Sort withProperties(String... properties) {
-
 			return new Sort(this.direction, properties);
 		}
 
-
 		/*
-						 * (non-Javadoc)
-						 *
-						 * @see java.lang.Object#hashCode()
-						 */
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
 		@Override
 		public int hashCode() {
 
@@ -366,12 +323,10 @@ public class Sort implements
 			return result;
 		}
 
-
 		/*
-						 * (non-Javadoc)
-						 *
-						 * @see java.lang.Object#equals(java.lang.Object)
-						 */
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
 		@Override
 		public boolean equals(Object obj) {
 
@@ -385,19 +340,15 @@ public class Sort implements
 
 			Order that = (Order) obj;
 
-			return this.direction.equals(that.direction)
-					&& this.property.equals(that.property);
+			return this.direction.equals(that.direction) && this.property.equals(that.property);
 		}
-
-
+		
 		/*
-						 * (non-Javadoc)
-						 *
-						 * @see java.lang.Object#toString()
-						 */
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
 		@Override
 		public String toString() {
-
 			return String.format("%s: %s", property, direction);
 		}
 	}
