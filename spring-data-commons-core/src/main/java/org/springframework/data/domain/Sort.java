@@ -112,6 +112,27 @@ public class Sort implements
 		}
 	}
 
+	/**
+	 * Returns a new {@link Sort} consisting of the {@link Order}s of the current {@link Sort} combined with the given
+	 * ones.
+	 * 
+	 * @param sort can be {@literal null}.
+	 * @return
+	 */
+	public Sort and(Sort sort) {
+
+		if (sort == null) {
+			return this;
+		}
+
+		ArrayList<Order> these = new ArrayList<Order>(this.orders);
+
+		for (Order order : sort) {
+			these.add(order);
+		}
+
+		return new Sort(these);
+	}
 
 	/**
 	 * Returns the order registered for the given property.
