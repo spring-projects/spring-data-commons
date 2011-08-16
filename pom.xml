@@ -56,13 +56,13 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
 			<comments>
 			Copyright 2010 the original author or authors.
-			 
+
 			Licensed under the Apache License, Version 2.0 (the "License");
 			you may not use this file except in compliance with the License.
 			You may obtain a copy of the License at
-			
+
 			     http://www.apache.org/licenses/LICENSE-2.0
-			
+
 			Unless required by applicable law or agreed to in writing, software
 			distributed under the License is distributed on an "AS IS" BASIS,
 			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
@@ -226,6 +226,19 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
+					<execution>
+            			<id>zip-docbkx</id>
+            			<phase>package</phase>
+			            <configuration>
+			            	<tasks>
+			            		<zip destfile="${project.build.directory}/${project.build.finalName}.dockbkx.zip"
+			            			basedir="${basedir}/src/docbkx"/>
+			            	</tasks>
+			            </configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+          			</execution>
 				</executions>
 				<dependencies>
 					<dependency>
@@ -239,6 +252,29 @@
 						<version>0.7.2</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>attach-docbkx</id>
+						<phase>package</phase>
+						<configuration>
+							<artifacts>
+								<artifact>
+									<file>${project.build.directory}/${project.build.finalName}.dockbkx.zip</file>
+									<type>docbkx</type>
+								</artifact>
+							</artifacts>
+						</configuration>
+						<goals>
+							<goal>attach-artifact</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 	      <plugin>
@@ -261,11 +297,11 @@
 	             <group>
 	                <title>Spring Data Commons Core</title>
 	                <packages>org.springframework.data.commons.core*</packages>
-	             </group>            
+	             </group>
 	             <group>
 	                <title>Spring Data Commons Aspects</title>
 	                <packages>org.springframework.data.commons.aspects*</packages>
-	             </group>            
+	             </group>
 	           </groups>
 	           <links>
 	             <link>http://static.springframework.org/spring/docs/3.0.x/javadoc-api</link>
@@ -332,7 +368,7 @@
 				<configuration>
 					<aggregate>true</aggregate>
 				</configuration>
-			</plugin>						
+			</plugin>
 		</plugins>
 	</reporting>
 
@@ -354,7 +390,7 @@
 			<url>http://repository.springsource.com/maven/bundles/release</url>
 		</repository>
 	</repositories>
-	
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>repository.springframework.maven.release</id>
