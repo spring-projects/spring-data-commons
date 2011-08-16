@@ -80,10 +80,12 @@ public abstract class AbstractQueryCreator<T, S> {
 	 * @param sort
 	 * @return
 	 */
-	public T createQuery(Sort sort) {
-
-		Sort sortToUse = sort != null ? sort : tree.getSort();
-		return complete(createCriteria(tree), sortToUse);
+	public T createQuery(Sort dynamicSort) {
+		
+		Sort staticSort = tree.getSort();
+		Sort sort = staticSort != null ? staticSort.and(dynamicSort) : dynamicSort;
+		
+		return complete(createCriteria(tree), sort);
 	}
 
 	/**
@@ -144,8 +146,8 @@ public abstract class AbstractQueryCreator<T, S> {
 	/**
 	 * Actually creates the query object applying the given criteria object and {@link Sort} definition.
 	 * 
-	 * @param criteria
-	 * @param sort
+	 * @param criteria will never be {@literal null}.
+	 * @param sort might be {@literal null}.
 	 * @return
 	 */
 	protected abstract T complete(S criteria, Sort sort);

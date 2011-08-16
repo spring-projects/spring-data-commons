@@ -16,6 +16,7 @@
 
 package org.springframework.data.domain;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -91,5 +92,19 @@ public class SortUnitTests {
 	public void preventsNoProperties() throws Exception {
 
 		new Sort(Direction.ASC);
+	}
+	
+	@Test
+	public void allowsCombiningSorts() {
+		
+		Sort sort = new Sort("foo").and(new Sort("bar"));
+		assertThat(sort, hasItems(new Sort.Order("foo"), new Sort.Order("bar")));
+	}
+	
+	@Test
+	public void handlesAdditionalNullSort() {
+		
+		Sort sort = new Sort("foo").and(null);
+		assertThat(sort, hasItem(new Sort.Order("foo")));
 	}
 }
