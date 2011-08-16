@@ -9,7 +9,7 @@
 
     <para>Implementing a data access layer of an application has been
     cumbersome for quite a while. Too much boilerplate code had to be written.
-    Domain classes were anemic and haven't been designed in a real object
+    Domain classes were anemic and not designed in a real object
     oriented or domain driven manner.</para>
 
     <para>Using both of these technologies makes developers life a lot easier
@@ -30,7 +30,7 @@
     <interfacename>Repository</interfacename> (probably not that much of a
     surprise). It is typeable to the domain class to manage as well as the id
     type of the domain class. This interface mainly acts as marker interface
-    to capture the types to deal with and helps us when discovering interfaces
+    to capture the types to deal with and help us when discovering interfaces
     that extend this one. Beyond that there's
     <interfacename>CrudRepository</interfacename> which provides some
     sophisticated functionality around CRUD for the entity being managed.</para>
@@ -101,7 +101,7 @@
 
     <para>Usually we will have persistence technology specific sub-interfaces
     to include additional technology specific methods. We will now ship
-    implementations for a variety of Spring Data modules that implement that
+    implementations for a variety of Spring Data modules that implement this
     interface.</para>
 
     <para>On top of the <interfacename>CrudRepository</interfacename> there is
@@ -129,9 +129,9 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
   <section id="repositories.query-methods">
     <title>Query methods</title>
 
-    <para>Next to standard CRUD functionality repositories are usually query
+    <para>Next to standard CRUD functionality repositories are usually queries on
     the underlying datastore. With Spring Data declaring those queries becomes
-    a four-step process.</para>
+    a four-step process:</para>
 
     <orderedlist>
       <listitem>
@@ -189,7 +189,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
       <title>Defining repository interfaces</title>
 
       <para>As a very first step you define a domain class specific repository
-      interface to start with. It's got to extend
+      interface. It's got to extend
       <interfacename>Repository</interfacename> and be typed to the domain
       class and an ID type. If you want to expose CRUD methods for that domain
       type, extend <interfacename>CrudRepository</interfacename> instead of
@@ -245,7 +245,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
 
         <para>The next thing we have to discuss is the definition of query
         methods. There are two main ways that the repository proxy is
-        generally able to come up with the store specific query from the
+        able to come up with the store specific query from the
         method name. The first option is to derive the query from the method
         name directly, the second is using some kind of additionally created
         query. What detailed options are available pretty much depends on the
@@ -255,8 +255,8 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
         <para>There are three strategies available for the repository infrastructure to
         resolve the query. The strategy to be used can be configured at the
         namespace through the <code>query-lookup-strategy</code> attribute.
-        It might, however, be the case that some of the strategies are not
-        supported for the specific datastore. Here are your options:</para>
+        However, It might be the case that some of the strategies are not
+        supported for specific datastores. Here are your options:</para>
 
         <simplesect>
           <title>CREATE</title>
@@ -287,7 +287,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
           and <code>USE_DECLARED_QUERY</code>.
           It will try to lookup a declared query first but create a
           custom method name based query if no declared query was found. This
-          is default lookup strategy and thus will be used if you don't
+          is the default lookup strategy and thus will be used if you don't
           configure anything explicitly. It allows quick query definition by
           method names but also custom tuning of these queries by introducing
           declared queries as needed.</para>
@@ -316,7 +316,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
         </example>
 
         <para>The actual result of parsing that method will of course depend
-        on the persistence store we create the query for. However there are
+        on the persistence store we create the query for, however, there are
         some general things to notice. The expressions are usually property
         traversals combined with operators that can be concatenated. As you
         can see in the example you can combine property expressions with And
