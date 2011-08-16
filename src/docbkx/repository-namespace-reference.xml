@@ -12,7 +12,7 @@
     trigger auto detection<footnote>
         <para>see <xref linkend="config.autoconfig" /></para>
       </footnote> of repository instances. Attributes defined for
-    <code>&lt;repositories /&gt;</code> act are propagated to contained
+    <code>&lt;repositories /&gt;</code> are propagated to contained
     <code>&lt;repository /&gt;</code> elements but can be overridden of
     course.</para>
 
