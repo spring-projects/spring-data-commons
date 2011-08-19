@@ -62,10 +62,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
 
+	private final ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
+	private final ConcurrentMap<E, List<Validator>> validators = new ConcurrentHashMap<E, List<Validator>>();
+	private final List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
 	private ApplicationEventPublisher applicationEventPublisher;
-	private ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
-	private ConcurrentMap<E, List<Validator>> validators = new ConcurrentHashMap<E, List<Validator>>();
-	private List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
 	private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
 	private boolean strict = false;
 	private SimpleTypeHolder simpleTypeHolder = new SimpleTypeHolder();
