@@ -86,4 +86,10 @@ public class SimpleTypeHolderUnitTests {
 		assertThat(second.isSimpleType(SimpleTypeHolder.class), is(true));
 		assertThat(second.isSimpleType(SimpleTypeHolderUnitTests.class), is(true));
 	}
+
+	@Test
+	public void considersObjectToBeSimpleType() {
+		SimpleTypeHolder holder = new SimpleTypeHolder();
+		assertThat(holder.isSimpleType(Object.class), is(true));
+	}
 }
