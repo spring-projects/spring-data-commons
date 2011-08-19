@@ -255,7 +255,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return createInfo(parameterizedType.getActualTypeArguments()[1]);
 		} 
 		
-		return createInfo(GenericTypeResolver.resolveTypeArguments(getType(), Map.class)[1]);
+		return getTypeArgument(getType(), Map.class, 1);
+	}
+	
+	private TypeInformation<?> getTypeArgument(Class<?> type, Class<?> bound, int index) {
+		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(type, bound);
+		return arguments == null ? null : createInfo(arguments[index]);
 	}
 
 	/* (non-Javadoc)
@@ -284,11 +289,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Class<S> rawType = getType();
 		
 		if (isMap()) {
-			return createInfo(GenericTypeResolver.resolveTypeArguments(rawType, Map.class)[0]);
+			return getTypeArgument(rawType, Map.class, 0);
 		}
 		
 		if (Iterable.class.isAssignableFrom(rawType)) {
-			return createInfo(GenericTypeResolver.resolveTypeArguments(rawType, Iterable.class)[0]);
+			return getTypeArgument(rawType, Iterable.class, 0);
 		}
 		
 		if (rawType.isArray()) {

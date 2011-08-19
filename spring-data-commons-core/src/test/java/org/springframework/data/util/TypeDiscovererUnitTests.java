@@ -126,6 +126,14 @@ public class TypeDiscovererUnitTests {
 		assertThat(types.get(0).getComponentType().getType(), is(equalTo((Class) String.class)));
 	}
 
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void returnsNullForComponentAndValueTypesForRawMaps() {
+		TypeDiscoverer<Map> discoverer = new TypeDiscoverer<Map>(Map.class, null);
+		assertThat(discoverer.getComponentType(), is(nullValue()));
+		assertThat(discoverer.getMapValueType(), is(nullValue()));
+	}
+	
 	class SelfReferencing {
 
 		Map<String, SelfReferencingMap> parent;
