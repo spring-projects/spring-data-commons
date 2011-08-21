@@ -15,6 +15,7 @@
  */
 package org.springframework.data.util;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
@@ -39,6 +40,17 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 */
 	public static <S> TypeInformation<S> from(Class<S> type) {
 		return new ClassTypeInformation<S>(type);
+	}
+	
+	/**
+	 * Creates a {@link TypeInformation} from the given method's return type.
+	 * 
+	 * @param method
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static <S> TypeInformation<S> fromReturnTypeOf(Method method) {
+		return new ClassTypeInformation(method.getDeclaringClass()).createInfo(method.getGenericReturnType());
 	}
 
 	/**
