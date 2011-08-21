@@ -121,6 +121,18 @@ public class ParametersUnitTests {
 		Parameters parameters = getParametersFor("emptyParameters");
 		assertThat(parameters.hasParameterAt(0), is(false));
 	}
+	
+	@Test
+	public void detectsPageableParameter() throws Exception {
+		Parameters parameters = getParametersFor("validWithPageable", String.class, Pageable.class);
+		assertThat(parameters.getPageableIndex(), is(1));
+	}
+	
+	@Test
+	public void detectsSortParameter() throws Exception {
+		Parameters parameters = getParametersFor("validWithSort", String.class, Sort.class);
+		assertThat(parameters.getSortIndex(), is(1));
+	}
 
 
 	private Parameters getParametersFor(String methodName,

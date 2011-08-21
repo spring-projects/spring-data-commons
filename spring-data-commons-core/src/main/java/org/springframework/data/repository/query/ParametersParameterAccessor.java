@@ -83,6 +83,17 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 		return null;
 	}
+	
+	/**
+	 * Returns the value with the given index.
+	 * 
+	 * @param index
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	protected <T> T getValue(int index) {
+		return (T) values[index];
+	}
 
 
 	/*

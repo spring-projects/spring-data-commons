@@ -21,6 +21,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
@@ -32,7 +33,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  */
-public final class Parameter {
+public class Parameter {
 
 	@SuppressWarnings("unchecked")
 	static final List<Class<?>> TYPES = Arrays.asList(Pageable.class,
@@ -46,11 +47,8 @@ public final class Parameter {
 	private static final String NAMED_PARAMETER_TEMPLATE = ":%s";
 	private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
 
-	private final Class<?> type;
 	private final Parameters parameters;
-	private final int index;
-	private final String name;
-
+	private final MethodParameter parameter;
 
 	/**
 	 * Creates a new {@link Parameter} for the given type, {@link Annotation}s,
@@ -61,16 +59,13 @@ public final class Parameter {
 	 * @param index
 	 * @param name
 	 */
-	Parameter(Class<?> type, Parameters parameters, int index, String name) {
+	protected Parameter(MethodParameter parameter, Parameters parameters) {
 
-		Assert.notNull(type);
+		Assert.notNull(parameter);
 		Assert.notNull(parameters);
 
+		this.parameter = parameter;
 		this.parameters = parameters;
-		this.index = index;
-
-		this.type = type;
-		this.name = name;
 
 		if (isSpecialParameter() && isNamedParameter()) {
 			throw new IllegalArgumentException(PARAM_ON_SPECIAL);
@@ -85,7 +80,7 @@ public final class Parameter {
 	 */
 	boolean isFirst() {
 
-		return index == 0;
+		return getIndex() == 0;
 	}
 
 
@@ -98,7 +93,7 @@ public final class Parameter {
 	 */
 	public Parameter getNext() {
 
-		return parameters.getParameter(index + 1);
+		return parameters.getParameter(getIndex() + 1);
 	}
 
 
@@ -109,7 +104,7 @@ public final class Parameter {
 	 */
 	Parameter getPrevious() {
 
-		return parameters.getParameter(index - 1);
+		return parameters.getParameter(getIndex() - 1);
 	}
 
 
@@ -122,7 +117,7 @@ public final class Parameter {
 	 */
 	public boolean isSpecialParameter() {
 
-		return TYPES.contains(type);
+		return TYPES.contains(parameter.getParameterType());
 	}
 
 
@@ -162,7 +157,7 @@ public final class Parameter {
 	 */
 	public int getIndex() {
 
-		return index;
+		return parameter.getParameterIndex();
 	}
 
 
@@ -185,8 +180,8 @@ public final class Parameter {
 	 * @return
 	 */
 	public String getName() {
-
-		return name;
+		Param annotation = parameter.getParameterAnnotation(Param.class);
+		return annotation == null ? parameter.getParameterName() : annotation.value();
 	}
 
 
@@ -196,19 +191,18 @@ public final class Parameter {
 	 * @return the type
 	 */
 	public Class<?> getType() {
-		return type;
+		return parameter.getParameterType();
 	}
 	
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#toString()
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 
-		return format("%s:%s", isNamedParameter() ? getName() : "#" + index,
-				type.getName());
+		return format("%s:%s", isNamedParameter() ? getName() : "#" + getIndex(),
+				getType().getName());
 	}
 
 
@@ -219,7 +213,7 @@ public final class Parameter {
 	 */
 	boolean isPageable() {
 
-		return Pageable.class.isAssignableFrom(type);
+		return Pageable.class.isAssignableFrom(getType());
 	}
 
 
@@ -230,6 +224,6 @@ public final class Parameter {
 	 */
 	boolean isSort() {
 
-		return Sort.class.isAssignableFrom(type);
+		return Sort.class.isAssignableFrom(getType());
 	}
 }

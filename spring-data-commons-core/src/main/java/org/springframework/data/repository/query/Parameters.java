@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  */
-public final class Parameters implements Iterable<Parameter> {
+public class Parameters implements Iterable<Parameter> {
 
 	@SuppressWarnings("unchecked")
 	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class,
@@ -70,41 +70,15 @@ public final class Parameters implements Iterable<Parameter> {
 		List<Class<?>> types = Arrays.asList(method.getParameterTypes());
 
 		for (int i = 0; i < types.size(); i++) {
-			String name = getParameterName(method, i);
-			parameters.add(new Parameter(types.get(i), this, i, name));
+			MethodParameter parameter = new MethodParameter(method, i);
+			parameter.initParameterNameDiscovery(discoverer);
+			parameters.add(createParameter(parameter));
 		}
 
 		this.pageableIndex = types.indexOf(Pageable.class);
 		this.sortIndex = types.indexOf(Sort.class);
 
 		assertEitherAllParamAnnotatedOrNone();
-	}
-
-
-	/**
-	 * Returns the name of the parameter of the given {@link Method} with the
-	 * given index. Inspects {@link Param} annotation before falling back to a
-	 * {@link ParameterNameDiscoverer}.
-	 *
-	 * @param method
-	 * @param index
-	 * @return
-	 */
-	private String getParameterName(Method method, int index) {
-
-		for (Annotation annotation : method.getParameterAnnotations()[index]) {
-			if (annotation instanceof Param) {
-				return ((Param) annotation).value();
-			}
-		}
-
-		String[] parameterNames = discoverer.getParameterNames(method);
-
-		if (parameterNames != null) {
-			return parameterNames[index];
-		}
-
-		return null;
 	}
 
 
@@ -132,6 +106,10 @@ public final class Parameters implements Iterable<Parameter> {
 
 		this.pageableIndex = pageableIndexTemp;
 		this.sortIndex = sortIndexTemp;
+	}
+	
+	protected Parameter createParameter(MethodParameter parameter) {
+		return new Parameter(parameter, this);
 	}
 
 

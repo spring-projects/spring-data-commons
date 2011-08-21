@@ -53,10 +53,12 @@ public class QueryMethod {
 	 * correct query to use for following invocations of the method given.
 	 *
 	 * @param method must not be {@literal null}
+	 * @param metadata must not be {@literal null}
 	 */
 	public QueryMethod(Method method, RepositoryMetadata metadata) {
 
 		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(metadata, "Repository metadata must not be null!");
 
 		for (Class<?> type : Parameters.TYPES) {
 			if (getNumberOfOccurences(method, type) > 1) {
@@ -76,8 +78,18 @@ public class QueryMethod {
 		}
 
 		this.method = method;
-		this.parameters = new Parameters(method);
+		this.parameters = getParameters();
 		this.metadata = metadata;
+	}
+	
+	/**
+	 * Creates a {@link Parameters} instance.
+	 * 
+	 * @param method
+	 * @return
+	 */
+	protected Parameters createParameters(Method method) {
+		return new Parameters(method);
 	}
 
 
