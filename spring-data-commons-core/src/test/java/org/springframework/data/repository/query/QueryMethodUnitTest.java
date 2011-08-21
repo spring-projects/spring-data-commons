@@ -41,8 +41,16 @@ public class QueryMethodUnitTest {
 		Method method = SampleRepository.class.getMethod("pagingMethodWithInvalidReturnType", Pageable.class);
 		new QueryMethod(method, metadata);
 	}
+	
+	@Test
+	public void setsUpSimpleQueryMethodCorrectly() throws NoSuchMethodException, SecurityException {
+		Method method = SampleRepository.class.getMethod("findByUsername", String.class);
+		new QueryMethod(method, metadata);
+	}
 
 	interface SampleRepository {
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
+		
+		String findByUsername(String username);
 	}
 }
