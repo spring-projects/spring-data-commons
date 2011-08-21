@@ -38,11 +38,6 @@ import org.springframework.util.Assert;
  */
 public class QueryMethod {
 
-	public static enum Type {
-
-		SINGLE_ENTITY, PAGING, COLLECTION, MODIFYING;
-	}
-
 	private final RepositoryMetadata metadata;
 	private final Method method;
 	private final Parameters parameters;
@@ -146,7 +141,7 @@ public class QueryMethod {
 	 *
 	 * @return
 	 */
-	protected boolean isCollectionQuery() {
+	public boolean isCollectionQuery() {
 
 		Class<?> returnType = method.getReturnType();
 		return org.springframework.util.ClassUtils.isAssignable(List.class,
@@ -159,7 +154,7 @@ public class QueryMethod {
 	 *
 	 * @return
 	 */
-	protected boolean isPageQuery() {
+	public boolean isPageQuery() {
 
 		Class<?> returnType = method.getReturnType();
 		return org.springframework.util.ClassUtils.isAssignable(Page.class,
@@ -167,25 +162,7 @@ public class QueryMethod {
 	}
 
 
-	public Type getType() {
-
-		if (isModifyingQuery()) {
-			return Type.MODIFYING;
-		}
-
-		if (isPageQuery()) {
-			return Type.PAGING;
-		}
-
-		if (isCollectionQuery()) {
-			return Type.COLLECTION;
-		}
-
-		return Type.SINGLE_ENTITY;
-	}
-
-
-	protected boolean isModifyingQuery() {
+	public boolean isModifyingQuery() {
 
 		return false;
 	}
