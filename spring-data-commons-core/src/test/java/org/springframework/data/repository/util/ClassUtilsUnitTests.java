@@ -38,7 +38,7 @@ public class ClassUtilsUnitTests {
 	@Test(expected = IllegalStateException.class)
 	public void rejectsInvalidReturnType() throws Exception {
 
-		assertReturnType(SomeDao.class.getMethod("findByFirstname",
+		assertReturnTypeAssignable(SomeDao.class.getMethod("findByFirstname",
 				Pageable.class, String.class), User.class);
 	}
 

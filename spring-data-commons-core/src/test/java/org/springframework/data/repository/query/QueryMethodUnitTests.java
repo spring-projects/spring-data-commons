@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
@@ -30,7 +31,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-public class QueryMethodUnitTest {
+public class QueryMethodUnitTests {
 
 	@Mock
 	RepositoryMetadata metadata;
@@ -41,7 +42,13 @@ public class QueryMethodUnitTest {
 		Method method = SampleRepository.class.getMethod("pagingMethodWithInvalidReturnType", Pageable.class);
 		new QueryMethod(method, metadata);
 	}
-	
+
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsPagingMethodWithoutPageable() throws Exception {
+		Method method = SampleRepository.class.getMethod("pagingMethodWithoutPageable");
+		new QueryMethod(method, metadata);
+	}
+
 	@Test
 	public void setsUpSimpleQueryMethodCorrectly() throws NoSuchMethodException, SecurityException {
 		Method method = SampleRepository.class.getMethod("findByUsername", String.class);
@@ -50,7 +57,9 @@ public class QueryMethodUnitTest {
 
 	interface SampleRepository {
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
-		
+
+		Page<String> pagingMethodWithoutPageable();
+
 		String findByUsername(String username);
 	}
 }

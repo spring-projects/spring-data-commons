@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,9 @@ import org.springframework.data.repository.Repository;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
-
 /**
  * Utility class to work with classes.
- *
+ * 
  * @author Oliver Gierke
  */
 public abstract class ClassUtils {
@@ -42,12 +41,10 @@ public abstract class ClassUtils {
 
 	}
 
-
 	/**
-	 * Returns the domain class returned by the given {@link Method}. Will
-	 * extract the type from {@link Collection}s and
+	 * Returns the domain class returned by the given {@link Method}. Will extract the type from {@link Collection}s and
 	 * {@link org.springframework.data.domain.Page} as well.
-	 *
+	 * 
 	 * @param method
 	 * @return
 	 */
@@ -55,8 +52,7 @@ public abstract class ClassUtils {
 
 		Class<?> type = method.getReturnType();
 
-		if (Collection.class.isAssignableFrom(type)
-				|| Page.class.isAssignableFrom(type)) {
+		if (Collection.class.isAssignableFrom(type) || Page.class.isAssignableFrom(type)) {
 
 			ParameterizedType returnType = (ParameterizedType) method.getGenericReturnType();
 			Type componentType = returnType.getActualTypeArguments()[0];
@@ -68,10 +64,9 @@ public abstract class ClassUtils {
 		return type;
 	}
 
-
 	/**
 	 * Returns whether the given class contains a property with the given name.
-	 *
+	 * 
 	 * @param fieldName
 	 * @return
 	 */
@@ -81,14 +76,12 @@ public abstract class ClassUtils {
 			return true;
 		}
 
-		return null != ReflectionUtils.findField(type,
-				StringUtils.uncapitalize(property));
+		return null != ReflectionUtils.findField(type, StringUtils.uncapitalize(property));
 	}
-
 
 	/**
 	 * Returns wthere the given type is the {@link Repository} interface.
-	 *
+	 * 
 	 * @param interfaze
 	 * @return
 	 */
@@ -97,10 +90,9 @@ public abstract class ClassUtils {
 		return Repository.class.equals(interfaze);
 	}
 
-
 	/**
 	 * Returns whether the given type name is a repository interface name.
-	 *
+	 * 
 	 * @param interfaceName
 	 * @return
 	 */
@@ -109,11 +101,9 @@ public abstract class ClassUtils {
 		return Repository.class.getName().equals(interfaceName);
 	}
 
-
 	/**
-	 * Returns the number of occurences of the given type in the given
-	 * {@link Method}s parameters.
-	 *
+	 * Returns the number of occurences of the given type in the given {@link Method}s parameters.
+	 * 
 	 * @param method
 	 * @param type
 	 * @return
@@ -130,28 +120,26 @@ public abstract class ClassUtils {
 		return result;
 	}
 
-
 	/**
-	 * Asserts the given {@link Method}'s return type to be one of the given
-	 * types.
-	 *
+	 * Asserts the given {@link Method}'s return type to be one of the given types.
+	 * 
 	 * @param method
 	 * @param types
 	 */
-	public static void assertReturnType(Method method, Class<?>... types) {
+	public static void assertReturnTypeAssignable(Method method, Class<?>... types) {
 
-		if (!Arrays.asList(types).contains(method.getReturnType())) {
-			throw new IllegalStateException(
-					"Method has to have one of the following return types! "
-							+ Arrays.toString(types));
+		for (Class<?> type : types) {
+			if (type.isAssignableFrom(method.getReturnType())) {
+				return;
+			}
 		}
+		
+		throw new IllegalStateException("Method has to have one of the following return types! " + Arrays.toString(types));
 	}
 
-
 	/**
-	 * Returns whether the given object is of one of the given types. Will
-	 * return {@literal false} for {@literal null}.
-	 *
+	 * Returns whether the given object is of one of the given types. Will return {@literal false} for {@literal null}.
+	 * 
 	 * @param object
 	 * @param types
 	 * @return
@@ -171,11 +159,9 @@ public abstract class ClassUtils {
 		return false;
 	}
 
-
 	/**
-	 * Returns whether the given {@link Method} has a parameter of the given
-	 * type.
-	 *
+	 * Returns whether the given {@link Method} has a parameter of the given type.
+	 * 
 	 * @param method
 	 * @param type
 	 * @return
@@ -185,11 +171,9 @@ public abstract class ClassUtils {
 		return Arrays.asList(method.getParameterTypes()).contains(type);
 	}
 
-
 	/**
-	 * Helper method to extract the original exception that can possibly occur
-	 * during a reflection call.
-	 *
+	 * Helper method to extract the original exception that can possibly occur during a reflection call.
+	 * 
 	 * @param ex
 	 * @throws Throwable
 	 */

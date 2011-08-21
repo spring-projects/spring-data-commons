@@ -64,7 +64,7 @@ public class QueryMethod {
 		}
 
 		if (hasParameterOfType(method, Pageable.class)) {
-			assertReturnType(method, Page.class, List.class);
+			assertReturnTypeAssignable(method, Page.class, List.class);
 			if (hasParameterOfType(method, Sort.class)) {
 				throw new IllegalStateException(
 						"Method must not have Pageable *and* Sort parameter. "
@@ -77,6 +77,10 @@ public class QueryMethod {
 		this.metadata = metadata;
 		
 		Assert.notNull(this.parameters);
+		
+		if (isPageQuery()) {
+			Assert.isTrue(this.parameters.hasPageableParameter(), "Paging query needs to have a Pageable parameter!");
+		}
 	}
 	
 	/**
