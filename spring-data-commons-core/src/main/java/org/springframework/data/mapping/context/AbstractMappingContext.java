@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,6 +53,9 @@ import org.springframework.validation.Validator;
 /**
  * Base class to build mapping metadata and thus create instances of {@link PersistentEntity} and
  * {@link PersistentProperty}.
+ * <p>
+ * The implementation uses a {@link ReentrantReadWriteLock} to make sure {@link PersistentEntity} are completely
+ * populated before accessing them from outside.
  * 
  * @param E the concrete {@link PersistentEntity} type the {@link MappingContext} implementation creates
  * @param P the concrete {@link PersistentProperty} type the {@link MappingContext} implementation creates
@@ -69,6 +74,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
 	private boolean strict = false;
 	private SimpleTypeHolder simpleTypeHolder = new SimpleTypeHolder();
+
+	private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+	private final Lock read = lock.readLock();
+	private final Lock write = lock.writeLock();
 
 	/*
 	 * (non-Javadoc)
@@ -115,7 +124,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntities()
 	 */
 	public Collection<E> getPersistentEntities() {
-		return persistentEntities.values();
+		try {
+			read.lock();
+			return persistentEntities.values();
+		} finally {
+			read.unlock();
+		}
 	}
 
 	/*
@@ -132,10 +146,16 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	public E getPersistentEntity(TypeInformation<?> type) {
 
-		E entity = persistentEntities.get(type);
+		try {
+			read.lock();
+			E entity = persistentEntities.get(type);
 
-		if (entity != null) {
-			return entity;
+			if (entity != null) {
+				return entity;
+			}
+
+		} finally {
+			read.unlock();
 		}
 
 		if (strict) {
@@ -144,7 +164,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		return addPersistentEntity(type);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.Class, java.lang.String)
@@ -206,6 +226,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		Class<?> type = typeInformation.getType();
 
 		try {
+
+			write.lock();
+
 			final E entity = createPersistentEntity(typeInformation);
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
@@ -260,8 +283,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			}
 
 			return entity;
+
 		} catch (IntrospectionException e) {
 			throw new MappingException(e.getMessage(), e);
+		} finally {
+			write.unlock();
 		}
 	}
 

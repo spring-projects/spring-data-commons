@@ -1,0 +1,109 @@
+/*
+ * Copyright (c) 2011 by the original author(s).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.mapping.context;
+
+import static org.mockito.Mockito.*;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+
+import org.junit.Test;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.TypeInformation;
+
+/**
+ * Unit tests for {@link AbstractMappingContext}.
+ * 
+ * @author Oliver Gierke
+ */
+public class AbstractMappingContextIntegrationTest<T extends PersistentProperty<T>> {
+
+	@Test
+	public void foo() throws InterruptedException {
+
+		final DummyMappingContext context = new DummyMappingContext();
+
+		Thread a = new Thread(new Runnable() {
+			public void run() {
+				context.getPersistentEntity(Person.class);
+			}
+		});
+
+		Thread b = new Thread(new Runnable() {
+
+			public void run() {
+
+				PersistentEntity<Object, T> entity = context.getPersistentEntity(Person.class);
+				
+				entity.doWithProperties(new PropertyHandler<T>() {
+					public void doWithPersistentProperty(T persistentProperty) {
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				});
+			}
+		});
+
+		a.start();
+		Thread.sleep(2800);
+		b.start();
+		
+		a.join();
+		b.join();
+	}
+
+	class DummyMappingContext extends AbstractMappingContext<BasicPersistentEntity<Object, T>, T> {
+
+		@Override
+		@SuppressWarnings("unchecked")
+		protected <S> BasicPersistentEntity<Object, T> createPersistentEntity(TypeInformation<S> typeInformation) {
+			return (BasicPersistentEntity<Object, T>) new BasicPersistentEntity<S, T>(typeInformation);
+		}
+
+		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		protected T createPersistentProperty(final Field field, final PropertyDescriptor descriptor,
+				final BasicPersistentEntity<Object, T> owner, final SimpleTypeHolder simpleTypeHolder) {
+
+			PersistentProperty prop = mock(PersistentProperty.class);
+			
+			when(prop.getTypeInformation()).thenReturn((TypeInformation) owner.getTypeInformation());
+			when(prop.getName()).thenReturn(field.getName());
+
+			try {
+				Thread.sleep(800);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			
+			return (T) prop;
+		}
+	}
+
+	class Person {
+
+		String firstname;
+		String lastname;
+		String email;
+	}
+}
