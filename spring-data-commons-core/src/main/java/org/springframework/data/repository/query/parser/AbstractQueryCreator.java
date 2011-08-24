@@ -45,7 +45,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 */
 	public AbstractQueryCreator(PartTree tree, ParameterAccessor parameters) {
 
-		Assert.notNull(tree);
+		Assert.notNull(tree, "PartTree must not be null");
 
 		this.tree = tree;
 		this.parameters = parameters;
