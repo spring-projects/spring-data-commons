@@ -52,13 +52,16 @@ public class PartTree implements Iterable<OrPart> {
 
 	/**
 	 * Creates a new {@link PartTree} by parsing the given {@link String}.
+	 *
 	 * @param source the {@link String} to parse
 	 * @param domainClass the domain class to check individual parts against to ensure they refer to a property of the
-	 * class
+	 *          class
 	 */
 	public PartTree(String source, Class<?> domainClass) {
+
 		Assert.notNull(source, "Source must not be null");
 		Assert.notNull(domainClass, "DomainClass must not be null");
+
 		Matcher matcher = PREFIX_TEMPLATE.matcher(source);
 		if (!matcher.find()) {
 			this.subject = new Subject(null);
@@ -70,31 +73,38 @@ public class PartTree implements Iterable<OrPart> {
 	}
 
 	public Iterator<OrPart> iterator() {
+
 		return predicate.iterator();
 	}
 
 	/**
 	 * Returns the {@link Sort} specification parsed from the source or <tt>null</tt>.
+	 *
 	 * @return the sort
 	 */
 	public Sort getSort() {
+
 		OrderBySource orderBySource = predicate.getOrderBySource();
 		return orderBySource == null ? null : orderBySource.toSort();
 	}
 
 	/**
 	 * Returns whether we indicate distinct lookup of entities.
+	 *
 	 * @return <tt>true<tt> if distinct
 	 */
 	public boolean isDistinct() {
+
 		return subject.isDistinct();
 	}
 
 	/**
 	 * Returns an {@link Iterable} of all parts contained in the {@link PartTree}.
+	 *
 	 * @return the iterable {@link Part}s
 	 */
 	public Iterable<Part> getParts() {
+
 		List<Part> result = new ArrayList<Part>();
 		for (OrPart orPart : this) {
 			for (Part part : orPart) {
@@ -106,14 +116,17 @@ public class PartTree implements Iterable<OrPart> {
 
 	/**
 	 * Returns <tt>true</tt> if all String based selections should not consider sentence case.
+	 *
 	 * @return <tt>true</tt> if case is ignored
 	 */
 	public boolean shouldAlwaysIgnoreCase() {
+
 		return predicate.shouldAlwaysIgnoreCase();
 	}
 
 	@Override
 	public String toString() {
+
 		OrderBySource orderBySource = predicate.getOrderBySource();
 		return String.format("%s%s", StringUtils.collectionToDelimitedString(predicate.nodes, " or "),
 				(orderBySource == null ? "" : " " + orderBySource));
@@ -122,18 +135,20 @@ public class PartTree implements Iterable<OrPart> {
 	/**
 	 * Splits the given text at the given keywords. Expects camel-case style to only match concrete keywords and not
 	 * derivatives of it.
+	 *
 	 * @param text the text to split
 	 * @param keyword the keyword to split around
 	 * @return an arry of split items
 	 */
 	private static String[] split(String text, String keyword) {
+
 		Pattern pattern = Pattern.compile(String.format(KEYWORD_TEMPLATE, keyword));
 		return pattern.split(text);
 	}
 
 	/**
-	 * A part of the parsed source that results from splitting up the resource around {@literal Or} keywords. Consists
-	 * of {@link Part}s that have to be concatenated by {@literal And}.
+	 * A part of the parsed source that results from splitting up the resource around {@literal Or} keywords. Consists of
+	 * {@link Part}s that have to be concatenated by {@literal And}.
 	 */
 	public static class OrPart implements Iterable<Part> {
 
@@ -141,11 +156,13 @@ public class PartTree implements Iterable<OrPart> {
 
 		/**
 		 * Creates a new {@link OrPart}.
+		 *
 		 * @param source the source to split up into {@literal And} parts in turn.
 		 * @param domainClass the domain class to check the resulting {@link Part}s against.
 		 * @param alwaysIgnoreCase if always ignoring case
 		 */
 		OrPart(String source, Class<?> domainClass, boolean alwaysIgnoreCase) {
+
 			String[] split = split(source, "And");
 			for (String part : split) {
 				children.add(new Part(part, domainClass, alwaysIgnoreCase));
@@ -153,6 +170,7 @@ public class PartTree implements Iterable<OrPart> {
 		}
 
 		public Iterator<Part> iterator() {
+
 			return children.iterator();
 		}
 
@@ -173,10 +191,12 @@ public class PartTree implements Iterable<OrPart> {
 		private boolean distinct;
 
 		public Subject(String subject) {
+
 			this.distinct = (subject == null ? false : subject.contains(DISTINCT));
 		}
 
 		public boolean isDistinct() {
+
 			return distinct;
 		}
 	}
@@ -197,6 +217,7 @@ public class PartTree implements Iterable<OrPart> {
 		private boolean alwaysIgnoreCase;
 
 		public Predicate(String predicate, Class<?> domainClass) {
+
 			predicate = detectAndSetAllIgnoreCase(predicate);
 			String[] parts = split(predicate, ORDER_BY);
 			if (parts.length > 2) {
@@ -207,15 +228,17 @@ public class PartTree implements Iterable<OrPart> {
 		}
 
 		private String detectAndSetAllIgnoreCase(String predicate) {
+
 			Matcher matcher = ALL_IGNORE_CASE.matcher(predicate);
-			if(matcher.find()) {
+			if (matcher.find()) {
 				alwaysIgnoreCase = true;
-				predicate = predicate.substring(0,matcher.start())+predicate.substring(matcher.end(),predicate.length());
+				predicate = predicate.substring(0, matcher.start()) + predicate.substring(matcher.end(), predicate.length());
 			}
 			return predicate;
 		}
 
 		private void buildTree(String source, Class<?> domainClass) {
+
 			String[] split = split(source, "Or");
 			for (String part : split) {
 				nodes.add(new OrPart(part, domainClass, alwaysIgnoreCase));
@@ -223,14 +246,17 @@ public class PartTree implements Iterable<OrPart> {
 		}
 
 		public Iterator<OrPart> iterator() {
+
 			return nodes.iterator();
 		}
 
 		public OrderBySource getOrderBySource() {
+
 			return orderBySource;
 		}
 
 		public boolean shouldAlwaysIgnoreCase() {
+
 			return alwaysIgnoreCase;
 		}
 	}

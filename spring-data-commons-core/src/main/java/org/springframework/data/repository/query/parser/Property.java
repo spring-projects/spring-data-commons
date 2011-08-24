@@ -41,7 +41,6 @@ public class Property {
 	private final String name;
 	private final TypeInformation<?> type;
 	private final boolean isCollection;
-
 	private Property next;
 
 	/**
@@ -51,6 +50,7 @@ public class Property {
 	 * @param owningType
 	 */
 	Property(String name, Class<?> owningType) {
+
 		this(name, ClassTypeInformation.from(owningType));
 	}
 
@@ -61,6 +61,7 @@ public class Property {
 	 * @param owningType
 	 */
 	Property(String name, TypeInformation<?> owningType) {
+
 		Assert.hasText(name);
 		Assert.notNull(owningType);
 
@@ -86,6 +87,7 @@ public class Property {
 	 * @param toTraverse
 	 */
 	Property(String name, TypeInformation<?> owningType, String toTraverse) {
+
 		this(name, owningType);
 		if (StringUtils.hasText(toTraverse)) {
 			this.next = from(toTraverse, type);
@@ -98,6 +100,7 @@ public class Property {
 	 * @return the owningType will never be {@literal null}.
 	 */
 	public TypeInformation<?> getOwningType() {
+
 		return owningType;
 	}
 
@@ -112,12 +115,13 @@ public class Property {
 	}
 
 	/**
-	 * Returns the type of the property will return the plain resolved type for simple properties, the component type
-	 * for any {@link Iterable} or the value type of a {@link java.util.Map} if the property is one.
+	 * Returns the type of the property will return the plain resolved type for simple properties, the component type for
+	 * any {@link Iterable} or the value type of a {@link java.util.Map} if the property is one.
 	 *
 	 * @return
 	 */
 	public Class<?> getType() {
+
 		return this.type.getType();
 	}
 
@@ -128,16 +132,18 @@ public class Property {
 	 * @see #hasNext()
 	 */
 	public Property next() {
+
 		return next;
 	}
 
 	/**
-	 * Returns whether there is a nested {@link Property}. If this returns {@literal true} you can expect
-	 * {@link #next()} to return a non- {@literal null} value.
+	 * Returns whether there is a nested {@link Property}. If this returns {@literal true} you can expect {@link #next()}
+	 * to return a non- {@literal null} value.
 	 *
 	 * @return
 	 */
 	public boolean hasNext() {
+
 		return next != null;
 	}
 
@@ -147,6 +153,7 @@ public class Property {
 	 * @return
 	 */
 	public String toDotPath() {
+
 		if (hasNext()) {
 			return getName() + "." + next().toDotPath();
 		}
@@ -159,6 +166,7 @@ public class Property {
 	 * @return
 	 */
 	public boolean isCollection() {
+
 		return isCollection;
 	}
 
@@ -169,12 +177,15 @@ public class Property {
 	 */
 	@Override
 	public boolean equals(Object obj) {
+
 		if (this == obj) {
 			return true;
 		}
+
 		if (obj == null || !getClass().equals(obj.getClass())) {
 			return false;
 		}
+
 		Property that = (Property) obj;
 		return this.name.equals(that.name) && this.type.equals(type);
 	}
@@ -186,6 +197,7 @@ public class Property {
 	 */
 	@Override
 	public int hashCode() {
+
 		return name.hashCode() + type.hashCode();
 	}
 
@@ -197,10 +209,12 @@ public class Property {
 	 * @return
 	 */
 	public static Property from(String source, Class<?> type) {
+
 		return from(source, ClassTypeInformation.from(type));
 	}
 
 	private static Property from(String source, TypeInformation<?> type) {
+
 		List<String> iteratorSource = new ArrayList<String>();
 		Matcher matcher = SPLITTER.matcher("_" + source);
 
@@ -233,6 +247,7 @@ public class Property {
 	 * @return
 	 */
 	private static Property create(String source, Property base) {
+
 		Property property = create(source, base.type);
 		base.next = property;
 		return property;
@@ -240,15 +255,16 @@ public class Property {
 
 	/**
 	 * Factory method to create a new {@link Property} for the given {@link String} and owning type. It will inspect the
-	 * given source for camel-case parts and traverse the {@link String} along its parts starting with the entire one
-	 * and chewing off parts from the right side then. Whenever a valid property for the given class is found, the tail
-	 * will be traversed for subordinary properties of the just found one and so on.
+	 * given source for camel-case parts and traverse the {@link String} along its parts starting with the entire one and
+	 * chewing off parts from the right side then. Whenever a valid property for the given class is found, the tail will
+	 * be traversed for subordinary properties of the just found one and so on.
 	 *
 	 * @param source
 	 * @param type
 	 * @return
 	 */
 	private static Property create(String source, TypeInformation<?> type) {
+
 		return create(source, type, "");
 	}
 

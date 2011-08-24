@@ -36,15 +36,17 @@ public abstract class AbstractQueryCreator<T, S> {
 	private final PartTree tree;
 
 	/**
-	 * Creates a new {@link AbstractQueryCreator} for the given {@link PartTree} and {@link ParametersParameterAccessor}
-	 * . The latter is used to hand actual parameter values into the callback methods as well as to apply dynamic
-	 * sorting via a {@link Sort} parameter.
+	 * Creates a new {@link AbstractQueryCreator} for the given {@link PartTree} and {@link ParametersParameterAccessor} .
+	 * The latter is used to hand actual parameter values into the callback methods as well as to apply dynamic sorting
+	 * via a {@link Sort} parameter.
 	 *
 	 * @param tree must not be {@literal null}.
 	 * @param parameters can be {@literal null}.
 	 */
 	public AbstractQueryCreator(PartTree tree, ParameterAccessor parameters) {
-		Assert.notNull(tree,"Tree must not be null");
+
+		Assert.notNull(tree, "Tree must not be null");
+
 		this.tree = tree;
 		this.parameters = parameters;
 	}
@@ -56,6 +58,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 * @param tree must not be {@literal null}.
 	 */
 	public AbstractQueryCreator(PartTree tree) {
+
 		this(tree, null);
 	}
 
@@ -65,6 +68,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 * @return
 	 */
 	public T createQuery() {
+
 		Sort dynamicSort = parameters != null ? parameters.getSort() : null;
 		return createQuery(dynamicSort);
 	}
@@ -77,6 +81,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 * @return
 	 */
 	public T createQuery(Sort dynamicSort) {
+
 		Sort staticSort = tree.getSort();
 		Sort sort = staticSort != null ? staticSort.and(dynamicSort) : dynamicSort;
 		return complete(createCriteria(tree), sort);
@@ -90,6 +95,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 * @return
 	 */
 	private S createCriteria(PartTree tree) {
+
 		S base = null;
 		Iterator<Object> iterator = parameters == null ? null : parameters.iterator();
 		for (OrPart node : tree) {

@@ -41,45 +41,53 @@ public class Part {
 	/**
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
+	 *
 	 * @param part
 	 * @param clazz
 	 */
 	public Part(String part, Class<?> clazz) {
-		this(part,clazz,false);
+
+		this(part, clazz, false);
 	}
 
 	/**
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
+	 *
 	 * @param part
 	 * @param clazz
 	 * @param alwaysIgnoreCase
 	 */
 	public Part(String part, Class<?> clazz, boolean alwaysIgnoreCase) {
-		part =  detectAndSetIgnoreCase(part);
+
+		part = detectAndSetIgnoreCase(part);
 		this.ignoreCase = this.ignoreCase || alwaysIgnoreCase;
 		this.type = Type.fromProperty(part, clazz);
 		this.property = Property.from(type.extractProperty(part), clazz);
 	}
 
 	private String detectAndSetIgnoreCase(String part) {
+
 		Matcher matcher = IGNORE_CASE.matcher(part);
-		if(matcher.find()) {
+		if (matcher.find()) {
 			ignoreCase = true;
-			part = part.substring(0,matcher.start())+part.substring(matcher.end(),part.length());
+			part = part.substring(0, matcher.start()) + part.substring(matcher.end(), part.length());
 		}
 		return part;
 	}
 
 	public boolean getParameterRequired() {
+
 		return getNumberOfArguments() > 0;
 	}
 
 	/**
 	 * Returns how many method parameters are bound by this part.
+	 *
 	 * @return
 	 */
 	public int getNumberOfArguments() {
+
 		return type.getNumberOfArguments();
 	}
 
@@ -87,6 +95,7 @@ public class Part {
 	 * @return the property
 	 */
 	public Property getProperty() {
+
 		return property;
 	}
 
@@ -94,11 +103,13 @@ public class Part {
 	 * @return the type
 	 */
 	public Part.Type getType() {
+
 		return type;
 	}
 
 	public boolean shouldIgnoreCase() {
-		if(!String.class.equals(getProperty().getType())) {
+
+		if (!String.class.equals(getProperty().getType())) {
 			return false;
 		}
 		return ignoreCase;
@@ -106,12 +117,15 @@ public class Part {
 
 	@Override
 	public boolean equals(Object obj) {
+
 		if (obj == this) {
 			return true;
 		}
+
 		if (obj == null || !getClass().equals(obj.getClass())) {
 			return false;
 		}
+
 		Part that = (Part) obj;
 		return this.property.equals(that.property) && this.type.equals(that.type);
 	}
@@ -127,6 +141,7 @@ public class Part {
 
 	@Override
 	public String toString() {
+
 		return String.format("%s %s", property.getName(), type);
 	}
 
@@ -165,8 +180,9 @@ public class Part {
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)
-		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN,
-				GREATER_THAN, NOT_LIKE, LIKE, NOT_IN, IN, NEAR, WITHIN, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+		private static final List<Part.Type> ALL = Arrays.asList(
+				IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN, GREATER_THAN, NOT_LIKE, LIKE,
+				NOT_IN, IN, NEAR, WITHIN, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
 
 		private List<String> keywords;
 		private int numberOfArguments;
@@ -180,17 +196,19 @@ public class Part {
 		 * @param keywords
 		 */
 		private Type(int numberOfArguments, String... keywords) {
+
 			this.numberOfArguments = numberOfArguments;
 			this.keywords = Arrays.asList(keywords);
 		}
 
 		private Type(String... keywords) {
+
 			this(1, keywords);
 		}
 
 		/**
-		 * Returns the {@link Type} of the {@link Part} for the given raw property and the given {@link Class}. This
-		 * will try to detect e.g. keywords contained in the raw property that trigger special query creation. Returns
+		 * Returns the {@link Type} of the {@link Part} for the given raw property and the given {@link Class}. This will
+		 * try to detect e.g. keywords contained in the raw property that trigger special query creation. Returns
 		 * {@link #SIMPLE_PROPERTY} by default.
 		 *
 		 * @param rawProperty
@@ -198,50 +216,58 @@ public class Part {
 		 * @return
 		 */
 		public static Part.Type fromProperty(String rawProperty, Class<?> clazz) {
+
 			for (Part.Type type : ALL) {
 				if (type.supports(rawProperty, clazz)) {
 					return type;
 				}
 			}
+
 			return SIMPLE_PROPERTY;
 		}
 
 		/**
-		 * Returns whether the the type supports the given raw property. Default implementation checks whether the
-		 * property ends with the registered keyword. Does not support the keyword if the property is a valid field as
-		 * is.
+		 * Returns whether the the type supports the given raw property. Default implementation checks whether the property
+		 * ends with the registered keyword. Does not support the keyword if the property is a valid field as is.
 		 *
 		 * @param property
 		 * @param clazz
 		 * @return
 		 */
 		protected boolean supports(String property, Class<?> clazz) {
+
 			if (keywords == null) {
 				return true;
 			}
+
 			for (String keyword : keywords) {
 				if (property.endsWith(keyword)) {
 					return true;
 				}
 			}
+
 			return false;
 		}
 
 		/**
 		 * Returns the number of arguments the property binds. By default this exactly one argument.
+		 *
 		 * @return
 		 */
 		public int getNumberOfArguments() {
+
 			return numberOfArguments;
 		}
 
 		/**
 		 * Callback method to extract the actual property to be bound from the given part. Strips the keyword from the
 		 * part's end if available.
+		 *
 		 * @param part
 		 * @return
 		 */
 		public String extractProperty(String part) {
+
 			String candidate = StringUtils.uncapitalize(part);
 			for (String keyword : keywords) {
 				if (candidate.endsWith(keyword)) {

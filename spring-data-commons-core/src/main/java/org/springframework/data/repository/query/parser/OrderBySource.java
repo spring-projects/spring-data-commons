@@ -40,10 +40,12 @@ public class OrderBySource {
 	private final List<Order> orders;
 
 	public OrderBySource(String clause) {
+
 		this(clause, null);
 	}
 
 	public OrderBySource(String clause, Class<?> domainClass) {
+
 		this.orders = new ArrayList<Sort.Order>();
 		for (String part : clause.split(BLOCK_SPLIT)) {
 			Matcher matcher = DIRECTION_SPLIT.matcher(part);
@@ -66,6 +68,7 @@ public class OrderBySource {
 	 * @see Property#from(String, Class)
 	 */
 	private Order createOrder(String propertySource, Direction direction, Class<?> domainClass) {
+
 		if (null == domainClass) {
 			return new Order(direction, StringUtils.uncapitalize(propertySource));
 		}
@@ -74,11 +77,13 @@ public class OrderBySource {
 	}
 
 	public Sort toSort() {
+
 		return this.orders.isEmpty() ? null : new Sort(this.orders);
 	}
 
 	@Override
 	public String toString() {
+
 		return "Order By " + StringUtils.collectionToDelimitedString(orders, ", ");
 	}
 }
