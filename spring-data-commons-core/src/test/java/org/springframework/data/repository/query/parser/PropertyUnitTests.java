@@ -15,14 +15,14 @@
  */
 package org.springframework.data.repository.query.parser;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.typeCompatibleWith;
+import static org.junit.Assert.assertThat;
 
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-
 
 /**
  * Unit tests for {@link Property}.
@@ -40,7 +40,6 @@ public class PropertyUnitTests {
 		assertThat(reference.toDotPath(), is("userName"));
 	}
 
-
 	@Test
 	public void parsesPathPropertyCorrectly() throws Exception {
 
@@ -50,7 +49,6 @@ public class PropertyUnitTests {
 		assertThat(reference.toDotPath(), is("user.name"));
 	}
 
-
 	@Test
 	public void prefersLongerMatches() throws Exception {
 
@@ -58,7 +56,6 @@ public class PropertyUnitTests {
 		assertThat(reference.hasNext(), is(false));
 		assertThat(reference.toDotPath(), is("userName"));
 	}
-
 
 	@Test
 	public void testname() throws Exception {
@@ -69,7 +66,6 @@ public class PropertyUnitTests {
 		assertThat(reference.next(), is(new Property("name", FooBar.class)));
 	}
 
-
 	@Test
 	public void prefersExplicitPaths() throws Exception {
 
@@ -78,7 +74,6 @@ public class PropertyUnitTests {
 		assertThat(reference.hasNext(), is(true));
 		assertThat(reference.next(), is(new Property("name", FooBar.class)));
 	}
-
 
 	@Test
 	public void handlesGenericsCorrectly() throws Exception {
@@ -90,7 +85,6 @@ public class PropertyUnitTests {
 		assertThat(reference.next(), is(new Property("name", FooBar.class)));
 	}
 
-
 	@Test
 	public void handlesMapCorrectly() throws Exception {
 
@@ -100,7 +94,6 @@ public class PropertyUnitTests {
 		assertThat(reference.hasNext(), is(true));
 		assertThat(reference.next(), is(new Property("name", FooBar.class)));
 	}
-
 
 	@Test
 	public void handlesArrayCorrectly() throws Exception {
@@ -135,20 +128,20 @@ public class PropertyUnitTests {
 	 */
 	@Test
 	public void handlesEmptyUnderscoresCorrectly() {
-		
+
 		Property property = Property.from("_foo", Sample2.class);
 		assertThat(property.getName(), is("_foo"));
 		assertThat(property.getType(), is(typeCompatibleWith(Foo.class)));
-		
+
 		property = Property.from("_foo__email", Sample2.class);
 		assertThat(property.toDotPath(), is("_foo._email"));
 	}
-	
+
 	@Test
 	public void supportsDotNotationAsWell() {
 		Property.from("bar.userMap.name", Sample.class);
 	}
-	
+
 	private class Foo {
 
 		String userName;
