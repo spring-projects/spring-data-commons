@@ -13,60 +13,87 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.authentication;
+
+import org.springframework.util.ObjectUtils;
 
 /**
  * Class used to provide credentials for username/password authentication
- *
+ * 
  * @author Thomas Risberg
+ * @author Oliver Gierke
  */
 public class UserCredentials {
 
-    private String username;
+	private final String username;
+	private final String password;
 
-    private String password;
+	public UserCredentials() {
+		this(null, null);
+	}
 
-    public UserCredentials() {
-    }
+	/**
+	 * Creates a new {@link UserCredentials} instance from the given username and password.
+	 * 
+	 * @param username
+	 * @param password
+	 */
+	public UserCredentials(String username, String password) {
+		this.username = username;
+		this.password = password;
+	}
 
-    public UserCredentials(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
+	/**
+	 * Get the username to use for authentication.
+	 * 
+	 * @return the username
+	 */
+	public String getUsername() {
+		return username;
+	}
 
-    /**
-     * Get the username to use for authentication
-     * @return The username
-     */
-    public String getUsername() {
-        return username;
-    }
+	/**
+	 * Get the password to use for authentication.
+	 * 
+	 * @return the password
+	 */
+	public String getPassword() {
+		return password;
+	}
 
-    /**
-     * Set the username to use for authentication
-     *
-     * @param username
-     */
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (obj == this) {
+			return true;
+		}
 
-    /**
-     * Get the password to use for authentication
-     *
-     * @return The password
-     */
-    public String getPassword() {
-        return password;
-    }
+		if (obj == null || !getClass().equals(obj.getClass())) {
+			return false;
+		}
 
-    /**
-     * Set the password to use for authentication
-     *
-     * @param password
-     */
-    public void setPassword(String password) {
-        this.password = password;
-    }
+		UserCredentials that = (UserCredentials) obj;
+
+		return ObjectUtils.nullSafeEquals(this.username, that.username)
+				&& ObjectUtils.nullSafeEquals(this.password, that.password);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		
+		int result = 17;
+		
+		result += 31 * ObjectUtils.nullSafeHashCode(username);
+		result += 31 * ObjectUtils.nullSafeHashCode(password);
+		
+		return result;
+	}
 }
