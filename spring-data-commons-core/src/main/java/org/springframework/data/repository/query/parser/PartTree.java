@@ -116,16 +116,6 @@ public class PartTree implements Iterable<OrPart> {
 		return result;
 	}
 
-	/**
-	 * Returns <tt>true</tt> if all String based selections should not consider sentence case.
-	 * 
-	 * @return <tt>true</tt> if case is ignored
-	 */
-	public boolean shouldAlwaysIgnoreCase() {
-
-		return predicate.shouldAlwaysIgnoreCase();
-	}
-
 	@Override
 	public String toString() {
 
@@ -140,7 +130,7 @@ public class PartTree implements Iterable<OrPart> {
 	 * 
 	 * @param text the text to split
 	 * @param keyword the keyword to split around
-	 * @return an arry of split items
+	 * @return an array of split items
 	 */
 	private static String[] split(String text, String keyword) {
 
@@ -258,10 +248,6 @@ public class PartTree implements Iterable<OrPart> {
 
 		public OrderBySource getOrderBySource() {
 			return orderBySource;
-		}
-
-		public boolean shouldAlwaysIgnoreCase() {
-			return alwaysIgnoreCase;
 		}
 	}
 }

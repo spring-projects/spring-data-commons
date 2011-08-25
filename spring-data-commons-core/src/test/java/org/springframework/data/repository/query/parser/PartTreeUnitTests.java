@@ -160,7 +160,6 @@ public class PartTreeUnitTests {
 
 	private void detectsIgnoreAllCase(String source, boolean expected) throws Exception {
 		PartTree tree = partTree(source);
-		assertThat(tree.shouldAlwaysIgnoreCase(), is(expected));
 		for (Part part : tree.getParts()) {
 			assertThat(part.shouldIgnoreCase(), is(expected));
 		}
@@ -181,14 +180,6 @@ public class PartTreeUnitTests {
 		assertPart(tree, parts("firstname","lastname"));
 		Iterator<Part> parts = tree.getParts().iterator();
 		assertThat(parts.next().shouldIgnoreCase(), is(true));
-		assertThat(parts.next().shouldIgnoreCase(), is(false));
-	}
-
-	@Test
-	public void doesNotIgnoreCaseIfNotStringProperty() throws Exception {
-		PartTree tree = partTree("findByLocationIgnoringCase");
-		assertPart(tree, parts("location"));
-		Iterator<Part> parts = tree.getParts().iterator();
 		assertThat(parts.next().shouldIgnoreCase(), is(false));
 	}
 

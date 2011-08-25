@@ -114,10 +114,6 @@ public class Part {
 	 */
 	public boolean shouldIgnoreCase() {
 
-		if (!String.class.equals(getProperty().getType())) {
-			return false;
-		}
-		
 		return ignoreCase;
 	}
 
@@ -207,8 +203,7 @@ public class Part {
 		/**
 		 * Creates a new {@link Type} using the given keyword, number of arguments to be bound and operator. Keyword and
 		 * operator can be {@literal null}.
-		 * 
-		 * @param operator
+		 *
 		 * @param numberOfArguments
 		 * @param keywords
 		 */
