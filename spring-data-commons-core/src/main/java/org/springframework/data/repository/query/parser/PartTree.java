@@ -31,7 +31,7 @@ import org.springframework.util.StringUtils;
  * Takes a domain class as well to validate that each of the {@link Part}s are referring to a property of the domain
  * class. The {@link PartTree} can then be used to build queries based on its API instead of parsing the method name for
  * each query execution.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PartTree implements Iterable<OrPart> {
@@ -51,7 +51,7 @@ public class PartTree implements Iterable<OrPart> {
 
 	/**
 	 * Creates a new {@link PartTree} by parsing the given {@link String}.
-	 * 
+	 *
 	 * @param source the {@link String} to parse
 	 * @param domainClass the domain class to check individual parts against to ensure they refer to a property of the
 	 *          class
@@ -81,7 +81,7 @@ public class PartTree implements Iterable<OrPart> {
 
 	/**
 	 * Returns the {@link Sort} specification parsed from the source or <tt>null</tt>.
-	 * 
+	 *
 	 * @return the sort
 	 */
 	public Sort getSort() {
@@ -92,7 +92,7 @@ public class PartTree implements Iterable<OrPart> {
 
 	/**
 	 * Returns whether we indicate distinct lookup of entities.
-	 * 
+	 *
 	 * @return <tt>true<tt> if distinct
 	 */
 	public boolean isDistinct() {
@@ -102,7 +102,7 @@ public class PartTree implements Iterable<OrPart> {
 
 	/**
 	 * Returns an {@link Iterable} of all parts contained in the {@link PartTree}.
-	 * 
+	 *
 	 * @return the iterable {@link Part}s
 	 */
 	public Iterable<Part> getParts() {
@@ -127,7 +127,7 @@ public class PartTree implements Iterable<OrPart> {
 	/**
 	 * Splits the given text at the given keywords. Expects camel-case style to only match concrete keywords and not
 	 * derivatives of it.
-	 * 
+	 *
 	 * @param text the text to split
 	 * @param keyword the keyword to split around
 	 * @return an array of split items
@@ -148,7 +148,7 @@ public class PartTree implements Iterable<OrPart> {
 
 		/**
 		 * Creates a new {@link OrPart}.
-		 * 
+		 *
 		 * @param source the source to split up into {@literal And} parts in turn.
 		 * @param domainClass the domain class to check the resulting {@link Part}s against.
 		 * @param alwaysIgnoreCase if always ignoring case
@@ -176,7 +176,7 @@ public class PartTree implements Iterable<OrPart> {
 	/**
 	 * Represents the subject part of the query. E.g. {@code findDistinctUserByNameOrderByAge} would have the subject
 	 * {@code DistinctUser}.
-	 * 
+	 *
 	 * @author Phil Webb
 	 */
 	private static class Subject {
@@ -196,7 +196,7 @@ public class PartTree implements Iterable<OrPart> {
 
 	/**
 	 * Represents the predicate part of the query.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @author Phil Webb
 	 */
@@ -213,11 +213,11 @@ public class PartTree implements Iterable<OrPart> {
 
 			predicate = detectAndSetAllIgnoreCase(predicate);
 			String[] parts = split(predicate, ORDER_BY);
-			
+
 			if (parts.length > 2) {
 				throw new IllegalArgumentException("OrderBy must not be used more than once in a method name!");
 			}
-			
+
 			buildTree(parts[0], domainClass);
 			this.orderBySource = parts.length == 2 ? new OrderBySource(parts[1], domainClass) : null;
 		}
@@ -225,12 +225,12 @@ public class PartTree implements Iterable<OrPart> {
 		private String detectAndSetAllIgnoreCase(String predicate) {
 
 			Matcher matcher = ALL_IGNORE_CASE.matcher(predicate);
-			
+
 			if (matcher.find()) {
 				alwaysIgnoreCase = true;
 				predicate = predicate.substring(0, matcher.start()) + predicate.substring(matcher.end(), predicate.length());
 			}
-			
+
 			return predicate;
 		}
 
