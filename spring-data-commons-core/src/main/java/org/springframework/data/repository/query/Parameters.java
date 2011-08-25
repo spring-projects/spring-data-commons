@@ -109,7 +109,7 @@ public class Parameters implements Iterable<Parameter> {
 	}
 	
 	protected Parameter createParameter(MethodParameter parameter) {
-		return new Parameter(parameter, this);
+		return new Parameter(parameter);
 	}
 
 

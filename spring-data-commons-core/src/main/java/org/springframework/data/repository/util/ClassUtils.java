@@ -52,7 +52,7 @@ public abstract class ClassUtils {
 
 		Class<?> type = method.getReturnType();
 
-		if (Collection.class.isAssignableFrom(type) || Page.class.isAssignableFrom(type)) {
+		if (Iterable.class.isAssignableFrom(type)) {
 
 			ParameterizedType returnType = (ParameterizedType) method.getGenericReturnType();
 			Type componentType = returnType.getActualTypeArguments()[0];

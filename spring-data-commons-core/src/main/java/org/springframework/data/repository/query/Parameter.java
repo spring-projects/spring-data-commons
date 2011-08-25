@@ -47,7 +47,6 @@ public class Parameter {
 	private static final String NAMED_PARAMETER_TEMPLATE = ":%s";
 	private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
 
-	private final Parameters parameters;
 	private final MethodParameter parameter;
 
 	/**
@@ -59,13 +58,11 @@ public class Parameter {
 	 * @param index
 	 * @param name
 	 */
-	protected Parameter(MethodParameter parameter, Parameters parameters) {
+	protected Parameter(MethodParameter parameter) {
 
 		Assert.notNull(parameter);
-		Assert.notNull(parameters);
 
 		this.parameter = parameter;
-		this.parameters = parameters;
 
 		if (isSpecialParameter() && isNamedParameter()) {
 			throw new IllegalArgumentException(PARAM_ON_SPECIAL);
@@ -81,30 +78,6 @@ public class Parameter {
 	boolean isFirst() {
 
 		return getIndex() == 0;
-	}
-
-
-	/**
-	 * Returns the next {@link Parameter} from the surrounding
-	 * {@link Parameters}.
-	 *
-	 * @return
-	 * @throws ParameterOutOfBoundsException
-	 */
-	public Parameter getNext() {
-
-		return parameters.getParameter(getIndex() + 1);
-	}
-
-
-	/**
-	 * Returns the previous {@link Parameter}.
-	 *
-	 * @return
-	 */
-	Parameter getPrevious() {
-
-		return parameters.getParameter(getIndex() - 1);
 	}
 
 
@@ -204,7 +177,7 @@ public class Parameter {
 		return format("%s:%s", isNamedParameter() ? getName() : "#" + getIndex(),
 				getType().getName());
 	}
-
+	
 
 	/**
 	 * Returns whether the {@link Parameter} is a {@link Pageable} parameter.
