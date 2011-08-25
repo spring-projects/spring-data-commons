@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.query;
 
+import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+
 import java.lang.reflect.Method;
 
 import org.junit.Test;
@@ -37,7 +40,7 @@ public class QueryMethodUnitTests {
 	RepositoryMetadata metadata;
 
 	@Test(expected = IllegalStateException.class)
-	public void rejectsPagingMethodWithInvalidaReturnType() throws SecurityException, NoSuchMethodException {
+	public void rejectsPagingMethodWithInvalidReturnType() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("pagingMethodWithInvalidReturnType", Pageable.class);
 		new QueryMethod(method, metadata);
@@ -50,9 +53,24 @@ public class QueryMethodUnitTests {
 	}
 
 	@Test
-	public void setsUpSimpleQueryMethodCorrectly() throws NoSuchMethodException, SecurityException {
+	public void setsUpSimpleQueryMethodCorrectly() throws Exception {
 		Method method = SampleRepository.class.getMethod("findByUsername", String.class);
 		new QueryMethod(method, metadata);
+	}
+	
+	@Test
+	public void considersIterableMethodForCollectionQuery() throws Exception {
+		Method method = SampleRepository.class.getMethod("sampleMethod");
+		QueryMethod queryMethod = new QueryMethod(method, metadata);
+		assertThat(queryMethod.isCollectionQuery(), is(true));
+	}
+	
+	@Test
+	public void doesNotConsiderPageMethodCollectionQuery() throws Exception {
+		Method method = SampleRepository.class.getMethod("anotherSampleMethod", Pageable.class);
+		QueryMethod queryMethod = new QueryMethod(method, metadata);
+		assertThat(queryMethod.isPageQuery(), is(true));
+		assertThat(queryMethod.isCollectionQuery(), is(false));
 	}
 
 	interface SampleRepository {
@@ -61,5 +79,8 @@ public class QueryMethodUnitTests {
 		Page<String> pagingMethodWithoutPageable();
 
 		String findByUsername(String username);
+		
+		Iterable<String> sampleMethod();
+		Page<String> anotherSampleMethod(Pageable pageable);
 	}
 }

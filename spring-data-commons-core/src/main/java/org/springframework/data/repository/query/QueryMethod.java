@@ -150,8 +150,7 @@ public class QueryMethod {
 	public boolean isCollectionQuery() {
 
 		Class<?> returnType = method.getReturnType();
-		return org.springframework.util.ClassUtils.isAssignable(List.class,
-				returnType);
+		return !isPageQuery() && org.springframework.util.ClassUtils.isAssignable(Iterable.class, returnType);
 	}
 
 
