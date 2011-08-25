@@ -17,43 +17,69 @@ package org.springframework.data.repository.query.parser;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.util.StringUtils;
 
-
 /**
- * A single part of a method name that has to be transformed into a query part.
- * The actual transformation is defined by a {@link Type} that is determined
- * from inspecting the given part. The query part can then be looked up via
+ * A single part of a method name that has to be transformed into a query part. The actual transformation is defined by
+ * a {@link Type} that is determined from inspecting the given part. The query part can then be looked up via
  * {@link #getQueryPart()}.
  *
  * @author Oliver Gierke
  */
 public class Part {
 
+	private static final Pattern IGNORE_CASE = Pattern.compile("Ignor(ing|e)Case");
+
 	private final Property property;
 	private final Part.Type type;
 
+	private boolean ignoreCase;
 
 	/**
-	 * Creates a new {@link Part} from the given method name part, the
-	 * {@link Class} the part originates from and the start parameter index.
+	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
+	 * start parameter index.
 	 *
 	 * @param part
 	 * @param clazz
 	 */
 	public Part(String part, Class<?> clazz) {
 
+		this(part, clazz, false);
+	}
+
+	/**
+	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
+	 * start parameter index.
+	 *
+	 * @param part
+	 * @param clazz
+	 * @param alwaysIgnoreCase
+	 */
+	public Part(String part, Class<?> clazz, boolean alwaysIgnoreCase) {
+
+		part = detectAndSetIgnoreCase(part);
+		this.ignoreCase = this.ignoreCase || alwaysIgnoreCase;
 		this.type = Type.fromProperty(part, clazz);
 		this.property = Property.from(type.extractProperty(part), clazz);
 	}
 
+	private String detectAndSetIgnoreCase(String part) {
+
+		Matcher matcher = IGNORE_CASE.matcher(part);
+		if (matcher.find()) {
+			ignoreCase = true;
+			part = part.substring(0, matcher.start()) + part.substring(matcher.end(), part.length());
+		}
+		return part;
+	}
 
 	public boolean getParameterRequired() {
 
 		return getNumberOfArguments() > 0;
 	}
-
 
 	/**
 	 * Returns how many method parameters are bound by this part.
@@ -65,21 +91,30 @@ public class Part {
 		return type.getNumberOfArguments();
 	}
 
-
 	/**
-	 * @return the part
+	 * @return the property
 	 */
 	public Property getProperty() {
 
 		return property;
 	}
 
+	/**
+	 * @return the type
+	 */
+	public Part.Type getType() {
 
-	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#equals(java.lang.Object)
-			 */
+		return type;
+	}
+
+	public boolean shouldIgnoreCase() {
+
+		if (!String.class.equals(getProperty().getType())) {
+			return false;
+		}
+		return ignoreCase;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 
@@ -92,17 +127,9 @@ public class Part {
 		}
 
 		Part that = (Part) obj;
-
-		return this.property.equals(that.property)
-				&& this.type.equals(that.type);
+		return this.property.equals(that.property) && this.type.equals(that.type);
 	}
 
-
-	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#hashCode()
-			 */
 	@Override
 	public int hashCode() {
 
@@ -112,30 +139,14 @@ public class Part {
 		return result;
 	}
 
-
-	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#toString()
-			 */
 	@Override
 	public String toString() {
 
 		return String.format("%s %s", property.getName(), type);
 	}
 
-
 	/**
-	 * @return the type
-	 */
-	public Part.Type getType() {
-
-		return type;
-	}
-
-	/**
-	 * The type of a method name part. Used to create query parts in various
-	 * ways.
+	 * The type of a method name part. Used to create query parts in various ways.
 	 *
 	 * @author Oliver Gierke
 	 */
@@ -169,17 +180,16 @@ public class Part {
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)
-		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL,
-				IS_NULL, BETWEEN, LESS_THAN, GREATER_THAN, NOT_LIKE, LIKE,
+		private static final List<Part.Type> ALL = Arrays.asList(
+				IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN, GREATER_THAN, NOT_LIKE, LIKE,
 				NOT_IN, IN, NEAR, WITHIN, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+
 		private List<String> keywords;
 		private int numberOfArguments;
 
-
 		/**
-		 * Creates a new {@link Type} using the given keyword, number of
-		 * arguments to be bound and operator. Keyword and operator can be
-		 * {@literal null}.
+		 * Creates a new {@link Type} using the given keyword, number of arguments to be bound and operator. Keyword and
+		 * operator can be {@literal null}.
 		 *
 		 * @param operator
 		 * @param numberOfArguments
@@ -191,18 +201,15 @@ public class Part {
 			this.keywords = Arrays.asList(keywords);
 		}
 
-
 		private Type(String... keywords) {
 
 			this(1, keywords);
 		}
 
-
 		/**
-		 * Returns the {@link Type} of the {@link Part} for the given raw
-		 * property and the given {@link Class}. This will try to detect e.g.
-		 * keywords contained in the raw property that trigger special query
-		 * creation. Returns {@link #SIMPLE_PROPERTY} by default.
+		 * Returns the {@link Type} of the {@link Part} for the given raw property and the given {@link Class}. This will
+		 * try to detect e.g. keywords contained in the raw property that trigger special query creation. Returns
+		 * {@link #SIMPLE_PROPERTY} by default.
 		 *
 		 * @param rawProperty
 		 * @param clazz
@@ -219,12 +226,9 @@ public class Part {
 			return SIMPLE_PROPERTY;
 		}
 
-
 		/**
-		 * Returns whether the the type supports the given raw property. Default
-		 * implementation checks whether the property ends with the registered
-		 * keyword. Does not support the keyword if the property is a valid
-		 * field as is.
+		 * Returns whether the the type supports the given raw property. Default implementation checks whether the property
+		 * ends with the registered keyword. Does not support the keyword if the property is a valid field as is.
 		 *
 		 * @param property
 		 * @param clazz
@@ -245,10 +249,8 @@ public class Part {
 			return false;
 		}
 
-
 		/**
-		 * Returns the number of arguments the property binds. By default this
-		 * exactly one argument.
+		 * Returns the number of arguments the property binds. By default this exactly one argument.
 		 *
 		 * @return
 		 */
@@ -257,10 +259,9 @@ public class Part {
 			return numberOfArguments;
 		}
 
-
 		/**
-		 * Callback method to extract the actual property to be bound from the
-		 * given part. Strips the keyword from the part's end if available.
+		 * Callback method to extract the actual property to be bound from the given part. Strips the keyword from the
+		 * part's end if available.
 		 *
 		 * @param part
 		 * @return
@@ -268,13 +269,11 @@ public class Part {
 		public String extractProperty(String part) {
 
 			String candidate = StringUtils.uncapitalize(part);
-
 			for (String keyword : keywords) {
 				if (candidate.endsWith(keyword)) {
 					return candidate.substring(0, candidate.indexOf(keyword));
 				}
 			}
-
 			return candidate;
 		}
 	}

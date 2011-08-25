@@ -25,13 +25,10 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.util.StringUtils;
 
-
 /**
- * Simple helper class to create a {@link Sort} instance from a method name end.
- * It expects the last part of the method name to be given and supports lining
- * up multiple properties ending with the sorting direction. So the following
- * method ends are valid: {@code LastnameUsernameDesc},
- * {@code LastnameAscUsernameDesc}.
+ * Simple helper class to create a {@link Sort} instance from a method name end. It expects the last part of the method
+ * name to be given and supports lining up multiple properties ending with the sorting direction. So the following
+ * method ends are valid: {@code LastnameUsernameDesc}, {@code LastnameAscUsernameDesc}.
  *
  * @author Oliver Gierke
  */
@@ -42,59 +39,51 @@ public class OrderBySource {
 
 	private final List<Order> orders;
 
-
 	public OrderBySource(String clause) {
 
 		this(clause, null);
 	}
 
-
 	public OrderBySource(String clause, Class<?> domainClass) {
 
 		this.orders = new ArrayList<Sort.Order>();
-
 		for (String part : clause.split(BLOCK_SPLIT)) {
-
 			Matcher matcher = DIRECTION_SPLIT.matcher(part);
-
 			if (!matcher.find()) {
-				throw new IllegalArgumentException(String.format(
-						"Invalid order syntax for part %s!", part));
+				throw new IllegalArgumentException(String.format("Invalid order syntax for part %s!", part));
 			}
-
 			Direction direction = Direction.fromString(matcher.group(2));
-			this.orders.add(createOrder(matcher.group(1), direction,
-					domainClass));
+			this.orders.add(createOrder(matcher.group(1), direction, domainClass));
 		}
 	}
 
-
 	/**
-	 * Creates an {@link Order} instance from the given property source,
-	 * direction and domain class. If the domain class is given, we will use it
-	 * for nested property traversal checks.
+	 * Creates an {@link Order} instance from the given property source, direction and domain class. If the domain class
+	 * is given, we will use it for nested property traversal checks.
 	 *
 	 * @param propertySource
 	 * @param direction
-	 * @param domainClass		can be {@literal null}.
+	 * @param domainClass can be {@literal null}.
 	 * @return
 	 * @see Property#from(String, Class)
 	 */
-	private Order createOrder(String propertySource, Direction direction,
-														Class<?> domainClass) {
+	private Order createOrder(String propertySource, Direction direction, Class<?> domainClass) {
 
 		if (null == domainClass) {
-			return new Order(direction,
-					StringUtils.uncapitalize(propertySource));
+			return new Order(direction, StringUtils.uncapitalize(propertySource));
 		}
-
 		Property property = Property.from(propertySource, domainClass);
 		return new Order(direction, property.toDotPath());
 	}
 
-
 	public Sort toSort() {
 
 		return this.orders.isEmpty() ? null : new Sort(this.orders);
+	}
+
+	@Override
+	public String toString() {
+
+		return "Order By " + StringUtils.collectionToDelimitedString(orders, ", ");
 	}
 }
