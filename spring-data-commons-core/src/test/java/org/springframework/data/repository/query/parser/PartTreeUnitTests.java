@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 
@@ -150,15 +151,15 @@ public class PartTreeUnitTests {
 
 	@Test
 	public void detectsIgnoreAllCase() throws Exception {
-		detectsIgnoreAllCase("firstnameOrderByLastnameDescAllIgnoreCase",true);
-		detectsIgnoreAllCase("firstnameOrderByLastnameDescAllIgnoringCase",true);
-		detectsIgnoreAllCase("firstnameAllIgnoreCaseOrderByLastnameDesc",true);
-		detectsIgnoreAllCase("getByFirstnameAllIgnoreCase",true);
-		detectsIgnoreAllCase("getByFirstname",false);
-		detectsIgnoreAllCase("firstnameOrderByLastnameDesc",false);
+		detectsIgnoreAllCase("firstnameOrderByLastnameDescAllIgnoreCase", IgnoreCaseType.WHEN_POSSIBLE);
+		detectsIgnoreAllCase("firstnameOrderByLastnameDescAllIgnoringCase", IgnoreCaseType.WHEN_POSSIBLE);
+		detectsIgnoreAllCase("firstnameAllIgnoreCaseOrderByLastnameDesc", IgnoreCaseType.WHEN_POSSIBLE);
+		detectsIgnoreAllCase("getByFirstnameAllIgnoreCase", IgnoreCaseType.WHEN_POSSIBLE);
+		detectsIgnoreAllCase("getByFirstname", IgnoreCaseType.NEVER);
+		detectsIgnoreAllCase("firstnameOrderByLastnameDesc", IgnoreCaseType.NEVER);
 	}
 
-	private void detectsIgnoreAllCase(String source, boolean expected) throws Exception {
+	private void detectsIgnoreAllCase(String source, IgnoreCaseType expected) throws Exception {
 		PartTree tree = partTree(source);
 		for (Part part : tree.getParts()) {
 			assertThat(part.shouldIgnoreCase(), is(expected));
@@ -170,8 +171,8 @@ public class PartTreeUnitTests {
 		PartTree tree = partTree("findByFirstnameIgnoreCaseAndLastname");
 		assertPart(tree, parts("firstname","lastname"));
 		Iterator<Part> parts = tree.getParts().iterator();
-		assertThat(parts.next().shouldIgnoreCase(), is(true));
-		assertThat(parts.next().shouldIgnoreCase(), is(false));
+		assertThat(parts.next().shouldIgnoreCase(), is(IgnoreCaseType.ALWAYS));
+		assertThat(parts.next().shouldIgnoreCase(), is(IgnoreCaseType.NEVER));
 	}
 
 	@Test
@@ -179,8 +180,8 @@ public class PartTreeUnitTests {
 		PartTree tree = partTree("findByFirstnameIgnoringCaseAndLastname");
 		assertPart(tree, parts("firstname","lastname"));
 		Iterator<Part> parts = tree.getParts().iterator();
-		assertThat(parts.next().shouldIgnoreCase(), is(true));
-		assertThat(parts.next().shouldIgnoreCase(), is(false));
+		assertThat(parts.next().shouldIgnoreCase(), is(IgnoreCaseType.ALWAYS));
+		assertThat(parts.next().shouldIgnoreCase(), is(IgnoreCaseType.NEVER));
 	}
 
 	private PartTree partTree(String source) {
