@@ -26,7 +26,7 @@ import org.springframework.util.StringUtils;
  * A single part of a method name that has to be transformed into a query part. The actual transformation is defined by
  * a {@link Type} that is determined from inspecting the given part. The query part can then be looked up via
  * {@link #getQueryPart()}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class Part {
@@ -36,12 +36,12 @@ public class Part {
 	private final Property property;
 	private final Part.Type type;
 
-	private boolean ignoreCase;
+	private IgnoreCaseType ignoreCase = IgnoreCaseType.NEVER;
 
 	/**
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
-	 * 
+	 *
 	 * @param part
 	 * @param clazz
 	 */
@@ -53,7 +53,7 @@ public class Part {
 	/**
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
-	 * 
+	 *
 	 * @param part
 	 * @param clazz
 	 * @param alwaysIgnoreCase
@@ -61,7 +61,9 @@ public class Part {
 	public Part(String part, Class<?> clazz, boolean alwaysIgnoreCase) {
 
 		part = detectAndSetIgnoreCase(part);
-		this.ignoreCase = this.ignoreCase || alwaysIgnoreCase;
+		if(alwaysIgnoreCase && ignoreCase != IgnoreCaseType.ALWAYS) {
+			this.ignoreCase = IgnoreCaseType.WHEN_POSSIBLE;
+		}
 		this.type = Type.fromProperty(part, clazz);
 		this.property = Property.from(type.extractProperty(part), clazz);
 	}
@@ -70,7 +72,7 @@ public class Part {
 
 		Matcher matcher = IGNORE_CASE.matcher(part);
 		if (matcher.find()) {
-			ignoreCase = true;
+			ignoreCase = IgnoreCaseType.ALWAYS;
 			part = part.substring(0, matcher.start()) + part.substring(matcher.end(), part.length());
 		}
 		return part;
@@ -83,7 +85,7 @@ public class Part {
 
 	/**
 	 * Returns how many method parameters are bound by this part.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getNumberOfArguments() {
@@ -109,10 +111,10 @@ public class Part {
 
 	/**
 	 * Returns whether the {@link Property} referenced should be matched ignoring case.
-	 * 
+	 *
 	 * @return
 	 */
-	public boolean shouldIgnoreCase() {
+	public IgnoreCaseType shouldIgnoreCase() {
 
 		return ignoreCase;
 	}
@@ -161,7 +163,7 @@ public class Part {
 
 	/**
 	 * The type of a method name part. Used to create query parts in various ways.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	public static enum Type {
@@ -222,7 +224,7 @@ public class Part {
 		 * Returns the {@link Type} of the {@link Part} for the given raw property and the given {@link Class}. This will
 		 * try to detect e.g. keywords contained in the raw property that trigger special query creation. Returns
 		 * {@link #SIMPLE_PROPERTY} by default.
-		 * 
+		 *
 		 * @param rawProperty
 		 * @param clazz
 		 * @return
@@ -241,7 +243,7 @@ public class Part {
 		/**
 		 * Returns whether the the type supports the given raw property. Default implementation checks whether the property
 		 * ends with the registered keyword. Does not support the keyword if the property is a valid field as is.
-		 * 
+		 *
 		 * @param property
 		 * @param clazz
 		 * @return
@@ -263,7 +265,7 @@ public class Part {
 
 		/**
 		 * Returns the number of arguments the property binds. By default this exactly one argument.
-		 * 
+		 *
 		 * @return
 		 */
 		public int getNumberOfArguments() {
@@ -274,7 +276,7 @@ public class Part {
 		/**
 		 * Callback method to extract the actual property to be bound from the given part. Strips the keyword from the
 		 * part's end if available.
-		 * 
+		 *
 		 * @param part
 		 * @return
 		 */
@@ -289,4 +291,26 @@ public class Part {
 			return candidate;
 		}
 	}
+
+
+  	/**
+  	 * The various types of ignore case that are supported.
+  	 */
+  	public enum IgnoreCaseType {
+
+  		/**
+  	     * Should not ignore the sentence case.
+  	     */
+  	    NEVER,
+
+  	    /**
+  	     * Should ignore the sentence case, throwing an exception if this is not possible.
+  	     */
+  	    ALWAYS,
+
+  	    /**
+  	     * Should ignore the sentence case when possible to do so, silently ignoring the option when not possible.
+  	     */
+  	    WHEN_POSSIBLE
+  	};
 }
