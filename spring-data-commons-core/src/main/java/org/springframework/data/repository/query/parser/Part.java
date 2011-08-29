@@ -36,7 +36,7 @@ public class Part {
 	private final Property property;
 	private final Part.Type type;
 
-	private boolean ignoreCase;
+	private IgnoreCaseType ignoreCase = IgnoreCaseType.NEVER;
 
 	/**
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
@@ -61,7 +61,9 @@ public class Part {
 	public Part(String part, Class<?> clazz, boolean alwaysIgnoreCase) {
 
 		part = detectAndSetIgnoreCase(part);
-		this.ignoreCase = this.ignoreCase || alwaysIgnoreCase;
+		if (alwaysIgnoreCase && ignoreCase != IgnoreCaseType.ALWAYS) {
+			this.ignoreCase = IgnoreCaseType.WHEN_POSSIBLE;
+		}
 		this.type = Type.fromProperty(part, clazz);
 		this.property = Property.from(type.extractProperty(part), clazz);
 	}
@@ -70,7 +72,7 @@ public class Part {
 
 		Matcher matcher = IGNORE_CASE.matcher(part);
 		if (matcher.find()) {
-			ignoreCase = true;
+			ignoreCase = IgnoreCaseType.ALWAYS;
 			part = part.substring(0, matcher.start()) + part.substring(matcher.end(), part.length());
 		}
 		return part;
@@ -112,7 +114,7 @@ public class Part {
 	 * 
 	 * @return
 	 */
-	public boolean shouldIgnoreCase() {
+	public IgnoreCaseType shouldIgnoreCase() {
 
 		return ignoreCase;
 	}
@@ -203,7 +205,7 @@ public class Part {
 		/**
 		 * Creates a new {@link Type} using the given keyword, number of arguments to be bound and operator. Keyword and
 		 * operator can be {@literal null}.
-		 *
+		 * 
 		 * @param numberOfArguments
 		 * @param keywords
 		 */
@@ -288,5 +290,28 @@ public class Part {
 			}
 			return candidate;
 		}
+	}
+
+	/**
+	 * The various types of ignore case that are supported.
+	 * 
+	 * @author Phillip Webb
+	 */
+	public enum IgnoreCaseType {
+
+		/**
+		 * Should not ignore the sentence case.
+		 */
+		NEVER,
+
+		/**
+		 * Should ignore the sentence case, throwing an exception if this is not possible.
+		 */
+		ALWAYS,
+
+		/**
+		 * Should ignore the sentence case when possible to do so, silently ignoring the option when not possible.
+		 */
+		WHEN_POSSIBLE
 	}
 }
