@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -42,16 +45,14 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 	private static final Class<?> REPOSITORY_TYPE =
 			RepositoryFactoryBeanSupport.class;
 
+	private final Map<Class<?>, Class<?>> cache = new ConcurrentHashMap<Class<?>, Class<?>>();
 	private ConfigurableListableBeanFactory context;
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org
-			 * .springframework.beans.factory.BeanFactory)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
+	 */
 	public void setBeanFactory(BeanFactory beanFactory) {
 
 		if (beanFactory instanceof ConfigurableListableBeanFactory) {
@@ -61,12 +62,9 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.beans.factory.config.
-			 * InstantiationAwareBeanPostProcessorAdapter
-			 * #predictBeanType(java.lang.Class, java.lang.String)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter#predictBeanType(java.lang.Class, java.lang.String)
+	 */
 	@Override
 	public Class<?> predictBeanType(Class<?> beanClass, String beanName) {
 
@@ -78,8 +76,15 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 		PropertyValue value =
 				definition.getPropertyValues().getPropertyValue(
 						"repositoryInterface");
+		
+		if (cache.containsKey(beanClass)) {
+			return cache.get(beanClass);
+		}
+		
+		Class<?> resolvedBeanClass = getClassForPropertyValue(value);
+		cache.put(beanClass, resolvedBeanClass);
 
-		return getClassForPropertyValue(value);
+		return resolvedBeanClass;
 	}
 
 
