@@ -18,8 +18,10 @@ package org.springframework.data.util;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.core.GenericCollectionTypeResolver;
 import org.springframework.util.Assert;
 
 /**
@@ -79,19 +81,18 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		return type;
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
+	 */
 	@Override
-	@SuppressWarnings({"rawtypes", "unchecked"})
 	public TypeInformation<?> getComponentType() {
 
 		if (type.isArray()) {
 			return createInfo(resolveArrayType(type));
 		}
 
-		TypeVariable<?>[] typeParameters = type.getTypeParameters();
-		return typeParameters.length > 0 ? new TypeVariableTypeInformation(typeParameters[0], this.getType(), this) : null;
+		return super.getComponentType();
 	}
 
 	private static Type resolveArrayType(Class<?> type) {

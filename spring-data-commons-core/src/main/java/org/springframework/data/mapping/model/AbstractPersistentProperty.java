@@ -47,10 +47,13 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	protected final PersistentEntity<?, P> owner;
 	private final SimpleTypeHolder simpleTypeHolder;
 
-	public AbstractPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
-		
+	public AbstractPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner,
+			SimpleTypeHolder simpleTypeHolder) {
+
+		Assert.notNull(field);
 		Assert.notNull(simpleTypeHolder);
-		
+		Assert.notNull(owner);
+
 		this.name = field.getName();
 		this.rawType = field.getType();
 		this.information = owner.getTypeInformation().getProperty(this.name);
@@ -144,7 +147,13 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	}
 
 	public Class<?> getComponentType() {
-		return isMap() || isCollection() ? information.getComponentType().getType() : null;
+
+		if (!isMap() && !isCollection()) {
+			return null;
+		}
+
+		TypeInformation<?> componentType = information.getComponentType();
+		return componentType == null ? null : componentType.getType();
 	}
 
 	/* (non-Javadoc)
