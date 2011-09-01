@@ -27,27 +27,21 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
 import org.springframework.beans.factory.config.TypedStringValue;
 import org.springframework.util.ClassUtils;
 
-
 /**
- * A
- * {@link org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor}
- * implementing {@code #predictBeanType(Class, String)} to return the configured
- * repository interface from {@link RepositoryFactoryBeanSupport}s. This is done
- * as shortcut to prevent the need of instantiating
- * {@link RepositoryFactoryBeanSupport}s just to find out what repository
- * interface they actually create.
- *
+ * A {@link org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor} implementing
+ * {@code #predictBeanType(Class, String)} to return the configured repository interface from
+ * {@link RepositoryFactoryBeanSupport}s. This is done as shortcut to prevent the need of instantiating
+ * {@link RepositoryFactoryBeanSupport}s just to find out what repository interface they actually create.
+ * 
  * @author Oliver Gierke
  */
-class RepositoryInterfaceAwareBeanPostProcessor extends
-		InstantiationAwareBeanPostProcessorAdapter implements BeanFactoryAware {
+class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
+		BeanFactoryAware {
 
-	private static final Class<?> REPOSITORY_TYPE =
-			RepositoryFactoryBeanSupport.class;
+	private static final Class<?> REPOSITORY_TYPE = RepositoryFactoryBeanSupport.class;
 
-	private final Map<Class<?>, Class<?>> cache = new ConcurrentHashMap<Class<?>, Class<?>>();
+	private final Map<String, Class<?>> cache = new ConcurrentHashMap<String, Class<?>>();
 	private ConfigurableListableBeanFactory context;
-
 
 	/*
 	 * (non-Javadoc)
@@ -59,7 +53,6 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 			this.context = (ConfigurableListableBeanFactory) beanFactory;
 		}
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -73,26 +66,24 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 		}
 
 		BeanDefinition definition = context.getBeanDefinition(beanName);
-		PropertyValue value =
-				definition.getPropertyValues().getPropertyValue(
-						"repositoryInterface");
-		
-		if (cache.containsKey(beanClass)) {
-			return cache.get(beanClass);
+		PropertyValue value = definition.getPropertyValues().getPropertyValue("repositoryInterface");
+
+		Class<?> resolvedBeanClass = cache.get(beanName);
+
+		if (cache.containsKey(beanName)) {
+			return cache.get(beanName);
 		}
-		
-		Class<?> resolvedBeanClass = getClassForPropertyValue(value);
-		cache.put(beanClass, resolvedBeanClass);
+
+		resolvedBeanClass = getClassForPropertyValue(value);
+		cache.put(beanName, resolvedBeanClass);
 
 		return resolvedBeanClass;
 	}
 
-
 	/**
-	 * Returns the class which is configured in the given {@link PropertyValue}.
-	 * In case it is not a {@link TypedStringValue} or the value contained
-	 * cannot be interpreted as {@link Class} it will return null.
-	 *
+	 * Returns the class which is configured in the given {@link PropertyValue}. In case it is not a
+	 * {@link TypedStringValue} or the value contained cannot be interpreted as {@link Class} it will return null.
+	 * 
 	 * @param propertyValue
 	 * @return
 	 */
@@ -112,9 +103,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 		}
 
 		try {
-			return ClassUtils.resolveClassName(className,
-					RepositoryInterfaceAwareBeanPostProcessor.class
-							.getClassLoader());
+			return ClassUtils.resolveClassName(className, RepositoryInterfaceAwareBeanPostProcessor.class.getClassLoader());
 		} catch (IllegalArgumentException ex) {
 			return null;
 		}
