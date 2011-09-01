@@ -45,7 +45,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 	private static final Class<?> REPOSITORY_TYPE =
 			RepositoryFactoryBeanSupport.class;
 
-	private final Map<Class<?>, Class<?>> cache = new ConcurrentHashMap<Class<?>, Class<?>>();
+	private final Map<String, Class<?>> cache = new ConcurrentHashMap<String, Class<?>>();
 	private ConfigurableListableBeanFactory context;
 
 
@@ -76,13 +76,12 @@ class RepositoryInterfaceAwareBeanPostProcessor extends
 		PropertyValue value =
 				definition.getPropertyValues().getPropertyValue(
 						"repositoryInterface");
-		
-		if (cache.containsKey(beanClass)) {
-			return cache.get(beanClass);
+
+		Class<?> resolvedBeanClass = cache.get(beanName);
+		if(resolvedBeanClass == null) {
+		    resolvedBeanClass = getClassForPropertyValue(value);
+		    cache.put(beanName, resolvedBeanClass);
 		}
-		
-		Class<?> resolvedBeanClass = getClassForPropertyValue(value);
-		cache.put(beanClass, resolvedBeanClass);
 
 		return resolvedBeanClass;
 	}
