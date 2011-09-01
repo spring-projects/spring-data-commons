@@ -21,12 +21,10 @@ import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.core.EntityMetadata;
 
-
 /**
- * Implementation of {@link EntityMetadata} that assumes the entity handled
- * implements {@link Persistable} and uses {@link Persistable#isNew()} for the
- * {@link #isNew(Object)} check.
- *
+ * Implementation of {@link EntityMetadata} that assumes the entity handled implements {@link Persistable} and uses
+ * {@link Persistable#isNew()} for the {@link #isNew(Object)} check.
+ * 
  * @author Oliver Gierke
  */
 public class PersistableEntityInformation<T extends Persistable<ID>, ID extends Serializable> extends
@@ -36,7 +34,7 @@ public class PersistableEntityInformation<T extends Persistable<ID>, ID extends 
 
 	/**
 	 * Creates a new {@link PersistableEntityInformation}.
-	 *
+	 * 
 	 * @param domainClass
 	 */
 	@SuppressWarnings("unchecked")
@@ -45,7 +43,6 @@ public class PersistableEntityInformation<T extends Persistable<ID>, ID extends 
 		super(domainClass);
 		this.idClass = (Class<ID>) GenericTypeResolver.resolveTypeArgument(domainClass, Persistable.class);
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -59,7 +56,6 @@ public class PersistableEntityInformation<T extends Persistable<ID>, ID extends 
 
 		return entity.isNew();
 	}
-
 
 	/*
 			 * (non-Javadoc)

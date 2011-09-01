@@ -22,11 +22,9 @@ import java.lang.annotation.Target;
 
 import org.springframework.data.domain.Pageable;
 
-
 /**
- * Annotation to set defaults when injecting a {@link Pageable} into a
- * controller method.
- *
+ * Annotation to set defaults when injecting a {@link Pageable} into a controller method.
+ * 
  * @author Oliver Gierke
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -34,16 +32,13 @@ import org.springframework.data.domain.Pageable;
 public @interface PageableDefaults {
 
 	/**
-	 * The default-size the injected
-	 * {@link org.springframework.data.domain.Pageable} should get if no
-	 * corresponding parameter defined in request (default is 10).
+	 * The default-size the injected {@link org.springframework.data.domain.Pageable} should get if no corresponding
+	 * parameter defined in request (default is 10).
 	 */
 	int value() default 10;
 
-
 	/**
-	 * The default-pagenumber the injected
-	 * {@link org.synyx.hades.domain.Pageable} should get if no corresponding
+	 * The default-pagenumber the injected {@link org.synyx.hades.domain.Pageable} should get if no corresponding
 	 * parameter defined in request (default is 0).
 	 */
 	int pageNumber() default 0;

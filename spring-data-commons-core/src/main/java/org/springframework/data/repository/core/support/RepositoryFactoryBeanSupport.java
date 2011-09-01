@@ -28,16 +28,15 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.util.Assert;
 
-
 /**
- * Adapter for Springs {@link FactoryBean} interface to allow easy setup of
- * repository factories via Spring configuration.
- *
+ * Adapter for Springs {@link FactoryBean} interface to allow easy setup of repository factories via Spring
+ * configuration.
+ * 
  * @param <T> the type of the repository
  * @author Oliver Gierke
  */
-public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable>
-		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T> {
+public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable> implements
+		InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T> {
 
 	private RepositoryFactorySupport factory;
 
@@ -46,10 +45,9 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private Object customImplementation;
 	private NamedQueries namedQueries;
 
-
 	/**
 	 * Setter to inject the repository interface to implement.
-	 *
+	 * 
 	 * @param repositoryInterface the repository interface to set
 	 */
 	@Required
@@ -59,10 +57,9 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.repositoryInterface = repositoryInterface;
 	}
 
-
 	/**
 	 * Set the {@link QueryLookupStrategy.Key} to be used.
-	 *
+	 * 
 	 * @param queryLookupStrategyKey
 	 */
 	public void setQueryLookupStrategyKey(Key queryLookupStrategyKey) {
@@ -70,10 +67,9 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.queryLookupStrategyKey = queryLookupStrategyKey;
 	}
 
-
 	/**
 	 * Setter to inject a custom repository implementation.
-	 *
+	 * 
 	 * @param customImplementation
 	 */
 	public void setCustomImplementation(Object customImplementation) {
@@ -81,7 +77,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.customImplementation = customImplementation;
 	}
 
-	
 	/**
 	 * Setter to inject a {@link NamedQueries} instance.
 	 * 
@@ -101,7 +96,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainClass());
 	}
 
-
 	/* (non-Javadoc)
 			 * @see org.springframework.data.repository.support.RepositoryFactoryInformation#getRepositoryInterface()
 			 */
@@ -120,7 +114,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		return factory.getRepository(repositoryInterface, customImplementation);
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -129,10 +122,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@SuppressWarnings("unchecked")
 	public Class<? extends T> getObjectType() {
 
-		return (Class<? extends T>) (null == repositoryInterface ? Repository.class
-				: repositoryInterface);
+		return (Class<? extends T>) (null == repositoryInterface ? Repository.class : repositoryInterface);
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -143,7 +134,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		return true;
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -158,10 +148,9 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.factory.setNamedQueries(namedQueries);
 	}
 
-
 	/**
 	 * Create the actual {@link RepositoryFactorySupport} instance.
-	 *
+	 * 
 	 * @return
 	 */
 	protected abstract RepositoryFactorySupport createRepositoryFactory();

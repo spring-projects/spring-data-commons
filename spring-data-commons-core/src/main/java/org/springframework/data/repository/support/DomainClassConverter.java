@@ -32,34 +32,28 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
-
 /**
- * {@link org.springframework.core.convert.converter.Converter} to convert
- * arbitrary input into domain classes managed by Spring Data {@link CrudRepository}
- * s. The implementation uses a {@link ConversionService} in turn to convert the
- * source type into the domain class' id type which is then converted into a
- * domain class object by using a {@link CrudRepository}.
- *
+ * {@link org.springframework.core.convert.converter.Converter} to convert arbitrary input into domain classes managed
+ * by Spring Data {@link CrudRepository} s. The implementation uses a {@link ConversionService} in turn to convert the
+ * source type into the domain class' id type which is then converted into a domain class object by using a
+ * {@link CrudRepository}.
+ * 
  * @author Oliver Gierke
  */
-public class DomainClassConverter implements ConditionalGenericConverter,
-		ApplicationContextAware {
+public class DomainClassConverter implements ConditionalGenericConverter, ApplicationContextAware {
 
-	private final Map<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>> repositories =
-			new HashMap<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>>();
+	private final Map<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>> repositories = new HashMap<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>>();
 	private final ConversionService service;
-
 
 	/**
 	 * Creates a new {@link DomainClassConverter}.
-	 *
+	 * 
 	 * @param service
 	 */
 	public DomainClassConverter(ConversionService service) {
 
 		this.service = service;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -69,10 +63,8 @@ public class DomainClassConverter implements ConditionalGenericConverter,
 			 */
 	public Set<ConvertiblePair> getConvertibleTypes() {
 
-		return Collections.singleton(new ConvertiblePair(Object.class,
-				Object.class));
+		return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -82,17 +74,14 @@ public class DomainClassConverter implements ConditionalGenericConverter,
 			 * .lang.Object, org.springframework.core.convert.TypeDescriptor,
 			 * org.springframework.core.convert.TypeDescriptor)
 			 */
-	public Object convert(Object source, TypeDescriptor sourceType,
-												TypeDescriptor targetType) {
+	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		EntityInformation<?, Serializable> info =
-				getRepositoryForDomainType(targetType.getType());
+		EntityInformation<?, Serializable> info = getRepositoryForDomainType(targetType.getType());
 
 		CrudRepository<?, Serializable> repository = repositories.get(info);
 		Serializable id = service.convert(source, info.getIdType());
 		return repository.findOne(id);
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -104,8 +93,7 @@ public class DomainClassConverter implements ConditionalGenericConverter,
 			 */
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		EntityInformation<?, ?> info =
-				getRepositoryForDomainType(targetType.getType());
+		EntityInformation<?, ?> info = getRepositoryForDomainType(targetType.getType());
 
 		if (info == null) {
 			return false;
@@ -114,12 +102,9 @@ public class DomainClassConverter implements ConditionalGenericConverter,
 		return service.canConvert(sourceType.getType(), info.getIdType());
 	}
 
+	private EntityInformation<?, Serializable> getRepositoryForDomainType(Class<?> domainType) {
 
-	private EntityInformation<?, Serializable> getRepositoryForDomainType(
-			Class<?> domainType) {
-
-		for (EntityInformation<?, Serializable> information : repositories
-				.keySet()) {
+		for (EntityInformation<?, Serializable> information : repositories.keySet()) {
 
 			if (domainType.equals(information.getJavaType())) {
 				return information;
@@ -129,7 +114,6 @@ public class DomainClassConverter implements ConditionalGenericConverter,
 		return null;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -137,21 +121,17 @@ public class DomainClassConverter implements ConditionalGenericConverter,
 			 * org.springframework.context.ApplicationContextAware#setApplicationContext
 			 * (org.springframework.context.ApplicationContext)
 			 */
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setApplicationContext(ApplicationContext context) {
 
-		Collection<RepositoryFactoryInformation> providers =
-				BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
-						RepositoryFactoryInformation.class).values();
+		Collection<RepositoryFactoryInformation> providers = BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
+				RepositoryFactoryInformation.class).values();
 
 		for (RepositoryFactoryInformation entry : providers) {
 
-			EntityInformation<Object, Serializable> metadata =
-					entry.getEntityInformation();
-			Class<CrudRepository<Object, Serializable>> objectType =
-					entry.getRepositoryInterface();
-			CrudRepository<Object, Serializable> repository =
-					BeanFactoryUtils.beanOfType(context, objectType);
+			EntityInformation<Object, Serializable> metadata = entry.getEntityInformation();
+			Class<CrudRepository<Object, Serializable>> objectType = entry.getRepositoryInterface();
+			CrudRepository<Object, Serializable> repository = BeanFactoryUtils.beanOfType(context, objectType);
 
 			this.repositories.put(metadata, repository);
 		}

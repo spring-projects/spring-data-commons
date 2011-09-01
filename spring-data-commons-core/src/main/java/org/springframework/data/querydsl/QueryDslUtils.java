@@ -15,7 +15,6 @@
  */
 package org.springframework.data.querydsl;
 
-
 /**
  * @author Oliver Gierke
  */

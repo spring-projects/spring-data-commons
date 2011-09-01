@@ -49,25 +49,19 @@ import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
-
 /**
- * Base class to implement repository namespaces. These will typically consist
- * of a main XML element potentially having child elements. The parser will wrap
- * the XML element into a {@link GlobalRepositoryConfigInformation} object and
- * allow either manual configuration or automatic detection of repository
- * interfaces.
- *
+ * Base class to implement repository namespaces. These will typically consist of a main XML element potentially having
+ * child elements. The parser will wrap the XML element into a {@link GlobalRepositoryConfigInformation} object and
+ * allow either manual configuration or automatic detection of repository interfaces.
+ * 
  * @author Oliver Gierke
  */
 public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalRepositoryConfigInformation<T>, T extends SingleRepositoryConfigInformation<S>>
 		implements BeanDefinitionParser {
 
-	private static final Log LOG = LogFactory.getLog(
-			AbstractRepositoryConfigDefinitionParser.class);
+	private static final Log LOG = LogFactory.getLog(AbstractRepositoryConfigDefinitionParser.class);
 
-	private static final String REPOSITORY_INTERFACE_POST_PROCESSOR =
-			"org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor";
-
+	private static final String REPOSITORY_INTERFACE_POST_PROCESSOR = "org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor";
 
 	/*
 			 * (non-Javadoc)
@@ -97,11 +91,9 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 		return null;
 	}
 
-
 	/**
-	 * Executes repository auto configuration by scanning the provided base
-	 * package for repository interfaces.
-	 *
+	 * Executes repository auto configuration by scanning the provided base package for repository interfaces.
+	 * 
 	 * @param config
 	 * @param parser
 	 */
@@ -109,36 +101,27 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
 		LOG.debug("Triggering auto repository detection");
 
-		ResourceLoader resourceLoader =
-				parser.getReaderContext().getResourceLoader();
+		ResourceLoader resourceLoader = parser.getReaderContext().getResourceLoader();
 
 		// Detect available repository interfaces
-		Set<String> repositoryInterfaces =
-				getRepositoryInterfacesForAutoConfig(config, resourceLoader,
-						parser.getReaderContext());
+		Set<String> repositoryInterfaces = getRepositoryInterfacesForAutoConfig(config, resourceLoader,
+				parser.getReaderContext());
 
 		for (String repositoryInterface : repositoryInterfaces) {
-			registerGenericRepositoryFactoryBean(
-					parser,
-					config.getAutoconfigRepositoryInformation(repositoryInterface));
+			registerGenericRepositoryFactoryBean(parser, config.getAutoconfigRepositoryInformation(repositoryInterface));
 		}
 	}
 
+	private Set<String> getRepositoryInterfacesForAutoConfig(S config, ResourceLoader loader, ReaderContext reader) {
 
-	private Set<String> getRepositoryInterfacesForAutoConfig(S config,
-																													 ResourceLoader loader, ReaderContext reader) {
-
-		ClassPathScanningCandidateComponentProvider scanner =
-				new RepositoryComponentProvider(
-						config.getRepositoryBaseInterface());
+		ClassPathScanningCandidateComponentProvider scanner = new RepositoryComponentProvider(
+				config.getRepositoryBaseInterface());
 		scanner.setResourceLoader(loader);
 
-		TypeFilterParser parser =
-				new TypeFilterParser(loader.getClassLoader(), reader);
+		TypeFilterParser parser = new TypeFilterParser(loader.getClassLoader(), reader);
 		parser.parseFilters(config.getSource(), scanner);
 
-		Set<BeanDefinition> findCandidateComponents =
-				scanner.findCandidateComponents(config.getBasePackage());
+		Set<BeanDefinition> findCandidateComponents = scanner.findCandidateComponents(config.getBasePackage());
 
 		Set<String> interfaceNames = new HashSet<String>();
 		for (BeanDefinition definition : findCandidateComponents) {
@@ -148,21 +131,17 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 		return interfaceNames;
 	}
 
-
 	/**
-	 * Returns a {@link GlobalRepositoryConfigInformation} implementation for
-	 * the given element.
-	 *
+	 * Returns a {@link GlobalRepositoryConfigInformation} implementation for the given element.
+	 * 
 	 * @param element
 	 * @return
 	 */
 	protected abstract S getGlobalRepositoryConfigInformation(Element element);
 
-
 	/**
-	 * Proceeds manual configuration by traversing the context's
-	 * {@link SingleRepositoryConfigInformation}s.
-	 *
+	 * Proceeds manual configuration by traversing the context's {@link SingleRepositoryConfigInformation}s.
+	 * 
 	 * @param context
 	 * @param parser
 	 */
@@ -170,58 +149,47 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
 		LOG.debug("Triggering manual repository detection");
 
-		for (T repositoryContext : context
-				.getSingleRepositoryConfigInformations()) {
+		for (T repositoryContext : context.getSingleRepositoryConfigInformations()) {
 			registerGenericRepositoryFactoryBean(parser, repositoryContext);
 		}
 	}
-
 
 	private void handleError(Exception e, Element source, ReaderContext reader) {
 
 		reader.error(e.getMessage(), reader.extractSource(source), e.getCause());
 	}
 
-
 	/**
-	 * Registers a generic repository factory bean for a bean with the given
-	 * name and the provided configuration context.
-	 *
+	 * Registers a generic repository factory bean for a bean with the given name and the provided configuration context.
+	 * 
 	 * @param parser
 	 * @param name
 	 * @param context
 	 */
-	private void registerGenericRepositoryFactoryBean(ParserContext parser,
-																										T context) {
+	private void registerGenericRepositoryFactoryBean(ParserContext parser, T context) {
 
 		try {
 
 			Object beanSource = parser.extractSource(context.getSource());
 
-			BeanDefinitionBuilder builder =
-					BeanDefinitionBuilder.rootBeanDefinition(context
-							.getRepositoryFactoryBeanClassName());
+			BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(context
+					.getRepositoryFactoryBeanClassName());
 
-			builder.addPropertyValue("repositoryInterface",
-					context.getInterfaceName());
-			builder.addPropertyValue("queryLookupStrategyKey",
-					context.getQueryLookupStrategyKey());
+			builder.addPropertyValue("repositoryInterface", context.getInterfaceName());
+			builder.addPropertyValue("queryLookupStrategyKey", context.getQueryLookupStrategyKey());
 			builder.addPropertyValue("namedQueries",
 					new NamedQueriesBeanDefinitionParser(context.getNamedQueriesLocation()).parse(context.getSource(), parser));
 
 			String transactionManagerRef = context.getTransactionManagerRef();
 
 			if (StringUtils.hasText(transactionManagerRef)) {
-				builder.addPropertyValue("transactionManager",
-						transactionManagerRef);
+				builder.addPropertyValue("transactionManager", transactionManagerRef);
 			}
 
-			String customImplementationBeanName =
-					registerCustomImplementation(context, parser, beanSource);
+			String customImplementationBeanName = registerCustomImplementation(context, parser, beanSource);
 
 			if (customImplementationBeanName != null) {
-				builder.addPropertyReference("customImplementation",
-						customImplementationBeanName);
+				builder.addPropertyReference("customImplementation", customImplementationBeanName);
 			}
 
 			postProcessBeanDefinition(context, builder, parser.getRegistry(), beanSource);
@@ -230,50 +198,40 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 			beanDefinition.setSource(beanSource);
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(
-						"Registering repository: " + context.getBeanId() +
-								" - Interface: " + context.getInterfaceName() +
-								" - Factory: " + context.getRepositoryFactoryBeanClassName() +
-								", - Custom implementation: " + customImplementationBeanName);
+				LOG.debug("Registering repository: " + context.getBeanId() + " - Interface: " + context.getInterfaceName()
+						+ " - Factory: " + context.getRepositoryFactoryBeanClassName() + ", - Custom implementation: "
+						+ customImplementationBeanName);
 			}
 
-			BeanComponentDefinition definition =
-					new BeanComponentDefinition(beanDefinition,
-							context.getBeanId());
+			BeanComponentDefinition definition = new BeanComponentDefinition(beanDefinition, context.getBeanId());
 			parser.registerBeanComponent(definition);
 		} catch (RuntimeException e) {
 			handleError(e, context.getSource(), parser.getReaderContext());
 		}
 	}
 
-
 	/**
-	 * Callback to post process a repository bean definition prior to actual
-	 * registration.
-	 *
+	 * Callback to post process a repository bean definition prior to actual registration.
+	 * 
 	 * @param context
 	 * @param builder
 	 * @param beanSource
 	 */
-	protected void postProcessBeanDefinition(T context,
-																					 BeanDefinitionBuilder builder, BeanDefinitionRegistry registry, Object beanSource) {
+	protected void postProcessBeanDefinition(T context, BeanDefinitionBuilder builder, BeanDefinitionRegistry registry,
+			Object beanSource) {
 
 	}
 
-
 	/**
-	 * Registers a possibly available custom repository implementation on the
-	 * repository bean. Tries to find an already registered bean to reference or
-	 * tries to detect a custom implementation itself.
-	 *
+	 * Registers a possibly available custom repository implementation on the repository bean. Tries to find an already
+	 * registered bean to reference or tries to detect a custom implementation itself.
+	 * 
 	 * @param config
 	 * @param parser
 	 * @param source
-	 * @return the bean name of the custom implementation or {@code null} if
-	 *         none available
+	 * @return the bean name of the custom implementation or {@code null} if none available
 	 */
-	private String registerCustomImplementation(T config, ParserContext parser,
-																							Object source) {
+	private String registerCustomImplementation(T config, ParserContext parser, Object source) {
 
 		String beanName = config.getImplementationBeanName();
 
@@ -285,22 +243,19 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 		// Autodetect implementation
 		if (config.autodetectCustomImplementation()) {
 
-			AbstractBeanDefinition beanDefinition =
-					detectCustomImplementation(config, parser);
+			AbstractBeanDefinition beanDefinition = detectCustomImplementation(config, parser);
 
 			if (null == beanDefinition) {
 				return null;
 			}
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("Registering custom repository implementation: " +
-						config.getImplementationBeanName() + " " +
-						beanDefinition.getBeanClassName());
+				LOG.debug("Registering custom repository implementation: " + config.getImplementationBeanName() + " "
+						+ beanDefinition.getBeanClassName());
 			}
 
 			beanDefinition.setSource(source);
-			parser.registerBeanComponent(new BeanComponentDefinition(
-					beanDefinition, beanName));
+			parser.registerBeanComponent(new BeanComponentDefinition(beanDefinition, beanName));
 
 		} else {
 			beanName = config.getCustomImplementationRef();
@@ -309,89 +264,68 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 		return beanName;
 	}
 
-
 	/**
-	 * Tries to detect a custom implementation for a repository bean by
-	 * classpath scanning.
-	 *
+	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
+	 * 
 	 * @param config
 	 * @param parser
-	 * @return the {@code AbstractBeanDefinition} of the custom implementation
-	 *         or {@literal null} if none found
+	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found
 	 */
-	private AbstractBeanDefinition detectCustomImplementation(T config,
-																														ParserContext parser) {
+	private AbstractBeanDefinition detectCustomImplementation(T config, ParserContext parser) {
 
 		// Build pattern to lookup implementation class
-		Pattern pattern =
-				Pattern.compile(".*" + config.getImplementationClassName());
+		Pattern pattern = Pattern.compile(".*" + config.getImplementationClassName());
 
 		// Build classpath scanner and lookup bean definition
-		ClassPathScanningCandidateComponentProvider provider =
-				new ClassPathScanningCandidateComponentProvider(false);
-		provider.setResourceLoader(parser.getReaderContext()
-				.getResourceLoader());
+		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+		provider.setResourceLoader(parser.getReaderContext().getResourceLoader());
 		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
-		Set<BeanDefinition> definitions =
-				provider.findCandidateComponents(config.getBasePackage());
+		Set<BeanDefinition> definitions = provider.findCandidateComponents(config.getBasePackage());
 
-		return (0 == definitions.size() ? null
-				: (AbstractBeanDefinition) definitions.iterator().next());
+		return (0 == definitions.size() ? null : (AbstractBeanDefinition) definitions.iterator().next());
 	}
 
-
 	/**
-	 * Callback to register additional bean definitions for a
-	 * {@literal repositories} root node. This usually includes beans you have
-	 * to set up once independently of the number of repositories to be created.
-	 * Will be called before any repositories bean definitions have been
-	 * registered.
-	 *
+	 * Callback to register additional bean definitions for a {@literal repositories} root node. This usually includes
+	 * beans you have to set up once independently of the number of repositories to be created. Will be called before any
+	 * repositories bean definitions have been registered.
+	 * 
 	 * @param registry
 	 * @param source
 	 */
-	protected void registerBeansForRoot(BeanDefinitionRegistry registry,
-																			Object source) {
+	protected void registerBeansForRoot(BeanDefinitionRegistry registry, Object source) {
 
-		AbstractBeanDefinition definition =
-				BeanDefinitionBuilder.rootBeanDefinition(
-						REPOSITORY_INTERFACE_POST_PROCESSOR)
-						.getBeanDefinition();
+		AbstractBeanDefinition definition = BeanDefinitionBuilder.rootBeanDefinition(REPOSITORY_INTERFACE_POST_PROCESSOR)
+				.getBeanDefinition();
 
 		registerWithSourceAndGeneratedBeanName(registry, definition, source);
 	}
 
-
 	/**
-	 * Returns whether the given {@link BeanDefinitionRegistry} already contains
-	 * a bean of the given type assuming the bean name has been autogenerated.
-	 *
+	 * Returns whether the given {@link BeanDefinitionRegistry} already contains a bean of the given type assuming the
+	 * bean name has been autogenerated.
+	 * 
 	 * @param type
 	 * @param registry
 	 * @return
 	 */
-	protected static boolean hasBean(Class<?> type,
-																	 BeanDefinitionRegistry registry) {
+	protected static boolean hasBean(Class<?> type, BeanDefinitionRegistry registry) {
 
-		String name =
-				String.format("%s%s0", type.getName(),
-						GENERATED_BEAN_NAME_SEPARATOR);
+		String name = String.format("%s%s0", type.getName(), GENERATED_BEAN_NAME_SEPARATOR);
 		return registry.containsBeanDefinition(name);
 	}
 
-
 	/**
-	 * Sets the given source on the given {@link AbstractBeanDefinition} and
-	 * registers it inside the given {@link BeanDefinitionRegistry}.
-	 *
+	 * Sets the given source on the given {@link AbstractBeanDefinition} and registers it inside the given
+	 * {@link BeanDefinitionRegistry}.
+	 * 
 	 * @param registry
 	 * @param bean
 	 * @param source
 	 * @return
 	 */
-	protected static String registerWithSourceAndGeneratedBeanName(
-			BeanDefinitionRegistry registry, AbstractBeanDefinition bean,
-			Object source) {
+	protected static String registerWithSourceAndGeneratedBeanName(BeanDefinitionRegistry registry,
+			AbstractBeanDefinition bean, Object source) {
 
 		bean.setSource(source);
 
@@ -402,18 +336,16 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 	}
 
 	/**
-	 * Custom {@link ClassPathScanningCandidateComponentProvider} scanning for
-	 * interfaces extending the given base interface. Skips interfaces annotated
-	 * with {@link NoRepositoryBean}.
-	 *
+	 * Custom {@link ClassPathScanningCandidateComponentProvider} scanning for interfaces extending the given base
+	 * interface. Skips interfaces annotated with {@link NoRepositoryBean}.
+	 * 
 	 * @author Oliver Gierke
 	 */
-	static class RepositoryComponentProvider extends
-			ClassPathScanningCandidateComponentProvider {
+	static class RepositoryComponentProvider extends ClassPathScanningCandidateComponentProvider {
 
 		/**
 		 * Creates a new {@link RepositoryComponentProvider}.
-		 *
+		 * 
 		 * @param repositoryInterface the interface to scan for
 		 */
 		public RepositoryComponentProvider(Class<?> repositoryInterface) {
@@ -424,7 +356,6 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 			addExcludeFilter(new AnnotationTypeFilter(NoRepositoryBean.class));
 		}
 
-
 		/*
 						 * (non-Javadoc)
 						 *
@@ -434,37 +365,31 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 						 * .beans.factory.annotation.AnnotatedBeanDefinition)
 						 */
 		@Override
-		protected boolean isCandidateComponent(
-				AnnotatedBeanDefinition beanDefinition) {
+		protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 
-			boolean isNonRepositoryInterface =
-					!isGenericRepositoryInterface(beanDefinition
-							.getBeanClassName());
-			boolean isTopLevelType =
-					!beanDefinition.getMetadata().hasEnclosingClass();
+			boolean isNonRepositoryInterface = !isGenericRepositoryInterface(beanDefinition.getBeanClassName());
+			boolean isTopLevelType = !beanDefinition.getMetadata().hasEnclosingClass();
 
 			return isNonRepositoryInterface && isTopLevelType;
 		}
 
 		/**
-		 * {@link org.springframework.core.type.filter.TypeFilter} that only
-		 * matches interfaces. Thus setting this up makes only sense providing
-		 * an interface type as {@code targetType}.
-		 *
+		 * {@link org.springframework.core.type.filter.TypeFilter} that only matches interfaces. Thus setting this up makes
+		 * only sense providing an interface type as {@code targetType}.
+		 * 
 		 * @author Oliver Gierke
 		 */
 		private static class InterfaceTypeFilter extends AssignableTypeFilter {
 
 			/**
 			 * Creates a new {@link InterfaceTypeFilter}.
-			 *
+			 * 
 			 * @param targetType
 			 */
 			public InterfaceTypeFilter(Class<?> targetType) {
 
 				super(targetType);
 			}
-
 
 			/*
 									 * (non-Javadoc)
@@ -475,23 +400,21 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 									 * org.springframework.core.type.classreading.MetadataReaderFactory)
 									 */
 			@Override
-			public boolean match(MetadataReader metadataReader,
-													 MetadataReaderFactory metadataReaderFactory)
+			public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
 					throws IOException {
 
-				return metadataReader.getClassMetadata().isInterface()
-						&& super.match(metadataReader, metadataReaderFactory);
+				return metadataReader.getClassMetadata().isInterface() && super.match(metadataReader, metadataReaderFactory);
 			}
 		}
-		
+
 		// Copy of Spring's AnnotationTypeFilter until SPR-8336 gets resolved.
-		
+
 		/**
-		 * A simple filter which matches classes with a given annotation,
-		 * checking inherited annotations as well.
-		 *
-		 * <p>The matching logic mirrors that of <code>Class.isAnnotationPresent()</code>.
-		 *
+		 * A simple filter which matches classes with a given annotation, checking inherited annotations as well.
+		 * 
+		 * <p>
+		 * The matching logic mirrors that of <code>Class.isAnnotationPresent()</code>.
+		 * 
 		 * @author Mark Fisher
 		 * @author Ramnivas Laddad
 		 * @author Juergen Hoeller
@@ -503,13 +426,11 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
 			private final boolean considerMetaAnnotations;
 
-
 			/**
-			 * Create a new AnnotationTypeFilter for the given annotation type.
-			 * This filter will also match meta-annotations. To disable the
-			 * meta-annotation matching, use the constructor that accepts a
-			 * '<code>considerMetaAnnotations</code>' argument. The filter will
-			 * not match interfaces.
+			 * Create a new AnnotationTypeFilter for the given annotation type. This filter will also match meta-annotations.
+			 * To disable the meta-annotation matching, use the constructor that accepts a '
+			 * <code>considerMetaAnnotations</code>' argument. The filter will not match interfaces.
+			 * 
 			 * @param annotationType the annotation type to match
 			 */
 			public AnnotationTypeFilter(Class<? extends Annotation> annotationType) {
@@ -517,8 +438,8 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 			}
 
 			/**
-			 * Create a new AnnotationTypeFilter for the given annotation type.
-			 * The filter will not match interfaces.
+			 * Create a new AnnotationTypeFilter for the given annotation type. The filter will not match interfaces.
+			 * 
 			 * @param annotationType the annotation type to match
 			 * @param considerMetaAnnotations whether to also match on meta-annotations
 			 */
@@ -528,35 +449,34 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
 			/**
 			 * Create a new {@link AnnotationTypeFilter} for the given annotation type.
+			 * 
 			 * @param annotationType the annotation type to match
 			 * @param considerMetaAnnotations whether to also match on meta-annotations
 			 * @param considerInterfaces whether to also match interfaces
 			 */
-			public AnnotationTypeFilter(Class<? extends Annotation> annotationType, boolean considerMetaAnnotations, boolean considerInterfaces) {
+			public AnnotationTypeFilter(Class<? extends Annotation> annotationType, boolean considerMetaAnnotations,
+					boolean considerInterfaces) {
 				super(annotationType.isAnnotationPresent(Inherited.class), considerInterfaces);
 				this.annotationType = annotationType;
 				this.considerMetaAnnotations = considerMetaAnnotations;
 			}
 
-
 			@Override
 			protected boolean matchSelf(MetadataReader metadataReader) {
 				AnnotationMetadata metadata = metadataReader.getAnnotationMetadata();
-				return metadata.hasAnnotation(this.annotationType.getName()) || 
-						(this.considerMetaAnnotations && metadata.hasMetaAnnotation(this.annotationType.getName()));
+				return metadata.hasAnnotation(this.annotationType.getName())
+						|| (this.considerMetaAnnotations && metadata.hasMetaAnnotation(this.annotationType.getName()));
 			}
 
 			@Override
 			protected Boolean matchSuperClass(String superClassName) {
 				if (Object.class.getName().equals(superClassName)) {
 					return Boolean.FALSE;
-				}
-				else if (superClassName.startsWith("java.")) {
+				} else if (superClassName.startsWith("java.")) {
 					try {
 						Class<?> clazz = getClass().getClassLoader().loadClass(superClassName);
 						return (clazz.getAnnotation(this.annotationType) != null);
-					}
-					catch (ClassNotFoundException ex) {
+					} catch (ClassNotFoundException ex) {
 						// Class not found - can't determine a match that way.
 					}
 				}

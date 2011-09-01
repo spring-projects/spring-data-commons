@@ -44,10 +44,10 @@ public class PreferredConstructor<T> {
 	 * @param parameters
 	 */
 	public PreferredConstructor(Constructor<T> constructor, Parameter<?>... parameters) {
-		
+
 		Assert.notNull(constructor);
 		Assert.notNull(parameters);
-		
+
 		ReflectionUtils.makeAccessible(constructor);
 		this.constructor = constructor;
 		this.parameters = Arrays.asList(parameters);
@@ -70,7 +70,7 @@ public class PreferredConstructor<T> {
 	public Iterable<Parameter<?>> getParameters() {
 		return parameters;
 	}
-	
+
 	/**
 	 * Returns whether the constructor has {@link Parameter}s.
 	 * 
@@ -103,8 +103,7 @@ public class PreferredConstructor<T> {
 	/**
 	 * Value object to represent constructor parameters.
 	 * 
-	 * @param <T>
-	 *          the type of the paramter
+	 * @param <T> the type of the paramter
 	 * @author Oliver Gierke
 	 */
 	public static class Parameter<T> {

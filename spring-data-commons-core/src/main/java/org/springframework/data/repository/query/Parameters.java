@@ -28,37 +28,29 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
-
 /**
- * Abstracts method parameters that have to be bound to query parameters or
- * applied to the query independently.
- *
+ * Abstracts method parameters that have to be bound to query parameters or applied to the query independently.
+ * 
  * @author Oliver Gierke
  */
 public class Parameters implements Iterable<Parameter> {
 
 	@SuppressWarnings("unchecked")
-	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class,
-			Sort.class);
+	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
-	private static final String ALL_OR_NOTHING =
-			String.format(
-					"Either use @%s "
-							+ "on all parameters except %s and %s typed once, or none at all!",
-					Param.class.getSimpleName(),
-					Pageable.class.getSimpleName(), Sort.class.getSimpleName());
+	private static final String ALL_OR_NOTHING = String.format("Either use @%s "
+			+ "on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
+			Pageable.class.getSimpleName(), Sort.class.getSimpleName());
 
 	private final int pageableIndex;
 	private final int sortIndex;
 
 	private final List<Parameter> parameters;
-	private final ParameterNameDiscoverer discoverer =
-			new LocalVariableTableParameterNameDiscoverer();
-
+	private final ParameterNameDiscoverer discoverer = new LocalVariableTableParameterNameDiscoverer();
 
 	/**
 	 * Creates a new instance of {@link Parameters}.
-	 *
+	 * 
 	 * @param method
 	 */
 	public Parameters(Method method) {
@@ -81,11 +73,9 @@ public class Parameters implements Iterable<Parameter> {
 		assertEitherAllParamAnnotatedOrNone();
 	}
 
-
 	/**
-	 * Creates a new {@link Parameters} instance with the given
-	 * {@link Parameter}s put into new context.
-	 *
+	 * Creates a new {@link Parameters} instance with the given {@link Parameter}s put into new context.
+	 * 
 	 * @param originals
 	 */
 	private Parameters(List<Parameter> originals) {
@@ -107,16 +97,14 @@ public class Parameters implements Iterable<Parameter> {
 		this.pageableIndex = pageableIndexTemp;
 		this.sortIndex = sortIndexTemp;
 	}
-	
+
 	protected Parameter createParameter(MethodParameter parameter) {
 		return new Parameter(parameter);
 	}
 
-
 	/**
-	 * Returns whether the method the {@link Parameters} was created for
-	 * contains a {@link Pageable} argument.
-	 *
+	 * Returns whether the method the {@link Parameters} was created for contains a {@link Pageable} argument.
+	 * 
 	 * @return
 	 */
 	public boolean hasPageableParameter() {
@@ -124,12 +112,10 @@ public class Parameters implements Iterable<Parameter> {
 		return pageableIndex != -1;
 	}
 
-
 	/**
-	 * Returns the index of the {@link Pageable} {@link Method} parameter if
-	 * available. Will return {@literal -1} if there is no {@link Pageable}
-	 * argument in the {@link Method}'s parameter list.
-	 *
+	 * Returns the index of the {@link Pageable} {@link Method} parameter if available. Will return {@literal -1} if there
+	 * is no {@link Pageable} argument in the {@link Method}'s parameter list.
+	 * 
 	 * @return the pageableIndex
 	 */
 	public int getPageableIndex() {
@@ -137,12 +123,10 @@ public class Parameters implements Iterable<Parameter> {
 		return pageableIndex;
 	}
 
-
 	/**
-	 * Returns the index of the {@link Sort} {@link Method} parameter if
-	 * available. Will return {@literal -1} if there is no {@link Sort} argument
-	 * in the {@link Method}'s parameter list.
-	 *
+	 * Returns the index of the {@link Sort} {@link Method} parameter if available. Will return {@literal -1} if there is
+	 * no {@link Sort} argument in the {@link Method}'s parameter list.
+	 * 
 	 * @return
 	 */
 	public int getSortIndex() {
@@ -150,33 +134,29 @@ public class Parameters implements Iterable<Parameter> {
 		return sortIndex;
 	}
 
-
 	/**
-	 * Returns whether the method the {@link Parameters} was created for
-	 * contains a {@link Sort} argument.
-	 *
+	 * Returns whether the method the {@link Parameters} was created for contains a {@link Sort} argument.
+	 * 
 	 * @return
 	 */
 	public boolean hasSortParameter() {
 
 		return sortIndex != -1;
 	}
-	
-	
+
 	/**
 	 * Returns whether we potentially find a {@link Sort} parameter in the parameters.
 	 * 
 	 * @return
 	 */
 	public boolean potentiallySortsDynamically() {
-		
+
 		return hasSortParameter() || hasPageableParameter();
 	}
 
-
 	/**
 	 * Returns the parameter with the given index.
-	 *
+	 * 
 	 * @param index
 	 * @return
 	 */
@@ -189,10 +169,9 @@ public class Parameters implements Iterable<Parameter> {
 		}
 	}
 
-
 	/**
 	 * Returns whether we have a parameter at the given position.
-	 *
+	 * 
 	 * @param position
 	 * @return
 	 */
@@ -205,11 +184,9 @@ public class Parameters implements Iterable<Parameter> {
 		}
 	}
 
-
 	/**
-	 * Returns whether the method signature contains one of the special
-	 * parameters ({@link Pageable}, {@link Sort}).
-	 *
+	 * Returns whether the method signature contains one of the special parameters ({@link Pageable}, {@link Sort}).
+	 * 
 	 * @return
 	 */
 	public boolean hasSpecialParameter() {
@@ -217,10 +194,9 @@ public class Parameters implements Iterable<Parameter> {
 		return hasSortParameter() || hasPageableParameter();
 	}
 
-
 	/**
 	 * Returns the number of parameters.
-	 *
+	 * 
 	 * @return
 	 */
 	public int getNumberOfParameters() {
@@ -228,11 +204,9 @@ public class Parameters implements Iterable<Parameter> {
 		return parameters.size();
 	}
 
-
 	/**
-	 * Returns a {@link Parameters} instance with effectively all special
-	 * parameters removed.
-	 *
+	 * Returns a {@link Parameters} instance with effectively all special parameters removed.
+	 * 
 	 * @return
 	 * @see Parameter#TYPES
 	 * @see Parameter#isSpecialParameter()
@@ -251,13 +225,11 @@ public class Parameters implements Iterable<Parameter> {
 		return new Parameters(bindables);
 	}
 
-
 	/**
-	 * Returns a bindable parameter with the given index. So for a method with a
-	 * signature of {@code (Pageable pageable, String name)} a call to
-	 * {@code #getBindableParameter(0)} will return the {@link String}
+	 * Returns a bindable parameter with the given index. So for a method with a signature of
+	 * {@code (Pageable pageable, String name)} a call to {@code #getBindableParameter(0)} will return the {@link String}
 	 * parameter.
-	 *
+	 * 
 	 * @param bindableIndex
 	 * @return
 	 */
@@ -266,11 +238,10 @@ public class Parameters implements Iterable<Parameter> {
 		return getBindableParameters().getParameter(bindableIndex);
 	}
 
-
 	/**
-	 * Asserts that either all of the non special parameters ({@link Pageable},
-	 * {@link Sort}) are annotated with {@link Param} or none of them is.
-	 *
+	 * Asserts that either all of the non special parameters ({@link Pageable}, {@link Sort}) are annotated with
+	 * {@link Param} or none of them is.
+	 * 
 	 * @param method
 	 */
 	private void assertEitherAllParamAnnotatedOrNone() {
@@ -288,10 +259,9 @@ public class Parameters implements Iterable<Parameter> {
 		}
 	}
 
-
 	/**
 	 * Returns whether the given type is a bindable parameter.
-	 *
+	 * 
 	 * @param type
 	 * @return
 	 */
@@ -299,7 +269,6 @@ public class Parameters implements Iterable<Parameter> {
 
 		return !TYPES.contains(type);
 	}
-
 
 	/*
 			 * (non-Javadoc)

@@ -25,6 +25,6 @@ import java.lang.annotation.Target;
  * @author J. Brisbin <jbrisbin@vmware.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = {ElementType.FIELD})
+@Target(value = { ElementType.FIELD })
 public @interface Id {
 }

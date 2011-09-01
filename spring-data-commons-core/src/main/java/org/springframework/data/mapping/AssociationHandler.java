@@ -16,8 +16,6 @@
 
 package org.springframework.data.mapping;
 
-
-
 /**
  * Callback interface to implement functionality to be applied to a collection of {@link Association}s.
  * 
@@ -25,7 +23,7 @@ package org.springframework.data.mapping;
  * @author Oliver Gierke
  */
 public interface AssociationHandler<P extends PersistentProperty<P>> {
-	
+
 	/**
 	 * Processes the given {@link Association}.
 	 * 

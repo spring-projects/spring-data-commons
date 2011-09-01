@@ -1,12 +1,9 @@
 package org.springframework.data.persistence;
 
-
 /**
- * Interface to be implemented by classes that can instantiate and
- * configure entities.
- * The framework must do this when creating objects resulting from finders,
- * even when there may be no no-arg constructor supplied by the user.
- *
+ * Interface to be implemented by classes that can instantiate and configure entities. The framework must do this when
+ * creating objects resulting from finders, even when there may be no no-arg constructor supplied by the user.
+ * 
  * @author Rod Johnson
  */
 public interface EntityInstantiator<BACKING_INTERFACE, STATE> {

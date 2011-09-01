@@ -26,23 +26,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
-
 /**
- * Class to abstract a single parameter of a query method. It is held in the
- * context of a {@link Parameters} instance.
- *
+ * Class to abstract a single parameter of a query method. It is held in the context of a {@link Parameters} instance.
+ * 
  * @author Oliver Gierke
  */
 public class Parameter {
 
 	@SuppressWarnings("unchecked")
-	static final List<Class<?>> TYPES = Arrays.asList(Pageable.class,
-			Sort.class);
+	static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
-	private static final String PARAM_ON_SPECIAL = format(
-			"You must not user @%s on a parameter typed %s or %s",
-			Param.class.getSimpleName(), Pageable.class.getSimpleName(),
-			Sort.class.getSimpleName());
+	private static final String PARAM_ON_SPECIAL = format("You must not user @%s on a parameter typed %s or %s",
+			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
 
 	private static final String NAMED_PARAMETER_TEMPLATE = ":%s";
 	private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
@@ -50,9 +45,9 @@ public class Parameter {
 	private final MethodParameter parameter;
 
 	/**
-	 * Creates a new {@link Parameter} for the given type, {@link Annotation}s,
-	 * positioned at the given index inside the given {@link Parameters}.
-	 *
+	 * Creates a new {@link Parameter} for the given type, {@link Annotation}s, positioned at the given index inside the
+	 * given {@link Parameters}.
+	 * 
 	 * @param type
 	 * @param parameters
 	 * @param index
@@ -69,10 +64,9 @@ public class Parameter {
 		}
 	}
 
-
 	/**
 	 * Returns whether the {@link Parameter} is the first one.
-	 *
+	 * 
 	 * @return
 	 */
 	boolean isFirst() {
@@ -80,10 +74,9 @@ public class Parameter {
 		return getIndex() == 0;
 	}
 
-
 	/**
 	 * Returns whether the parameter is a special parameter.
-	 *
+	 * 
 	 * @param index
 	 * @return
 	 * @see #TYPES
@@ -93,10 +86,9 @@ public class Parameter {
 		return TYPES.contains(parameter.getParameterType());
 	}
 
-
 	/**
 	 * Returns whether the {@link Parameter} is to be bound to a query.
-	 *
+	 * 
 	 * @return
 	 */
 	public boolean isBindable() {
@@ -104,11 +96,9 @@ public class Parameter {
 		return !isSpecialParameter();
 	}
 
-
 	/**
-	 * Returns the placeholder to be used for the parameter. Can either be a
-	 * named one or positional.
-	 *
+	 * Returns the placeholder to be used for the parameter. Can either be a named one or positional.
+	 * 
 	 * @param index
 	 * @return
 	 */
@@ -121,11 +111,9 @@ public class Parameter {
 		}
 	}
 
-
 	/**
-	 * Returns the position index the parameter is bound to in the context of
-	 * its surrounding {@link Parameters}.
-	 *
+	 * Returns the position index the parameter is bound to in the context of its surrounding {@link Parameters}.
+	 * 
 	 * @return
 	 */
 	public int getIndex() {
@@ -133,10 +121,9 @@ public class Parameter {
 		return parameter.getParameterIndex();
 	}
 
-
 	/**
 	 * Returns whether the parameter is annotated with {@link Param}.
-	 *
+	 * 
 	 * @param index
 	 * @return
 	 */
@@ -145,18 +132,15 @@ public class Parameter {
 		return !isSpecialParameter() && getName() != null;
 	}
 
-
 	/**
-	 * Returns the name of the parameter (through {@link Param} annotation) or
-	 * null if none can be found.
-	 *
+	 * Returns the name of the parameter (through {@link Param} annotation) or null if none can be found.
+	 * 
 	 * @return
 	 */
 	public String getName() {
 		Param annotation = parameter.getParameterAnnotation(Param.class);
 		return annotation == null ? parameter.getParameterName() : annotation.value();
 	}
-
 
 	/**
 	 * Returns the type of the {@link Parameter}.
@@ -166,7 +150,7 @@ public class Parameter {
 	public Class<?> getType() {
 		return parameter.getParameterType();
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -174,14 +158,12 @@ public class Parameter {
 	@Override
 	public String toString() {
 
-		return format("%s:%s", isNamedParameter() ? getName() : "#" + getIndex(),
-				getType().getName());
+		return format("%s:%s", isNamedParameter() ? getName() : "#" + getIndex(), getType().getName());
 	}
-	
 
 	/**
 	 * Returns whether the {@link Parameter} is a {@link Pageable} parameter.
-	 *
+	 * 
 	 * @return
 	 */
 	boolean isPageable() {
@@ -189,10 +171,9 @@ public class Parameter {
 		return Pageable.class.isAssignableFrom(getType());
 	}
 
-
 	/**
 	 * Returns whether the {@link Parameter} is a {@link Sort} parameter.
-	 *
+	 * 
 	 * @return
 	 */
 	boolean isSort() {

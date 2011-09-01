@@ -22,15 +22,15 @@ import org.springframework.util.Assert;
 
 /**
  * {@link NamedQueries} implementation backed by a {@link Properties} instance.
- *
+ * 
  * @author Oliver Gierke
  */
 public class PropertiesBasedNamedQueries implements NamedQueries {
-	
-	public static NamedQueries EMPTY = new PropertiesBasedNamedQueries(new Properties()); 
+
+	public static NamedQueries EMPTY = new PropertiesBasedNamedQueries(new Properties());
 
 	private final Properties properties;
-	
+
 	/**
 	 * Creates a new {@link PropertiesBasedNamedQueries} for the given {@link Properties} instance.
 	 * 
@@ -40,14 +40,14 @@ public class PropertiesBasedNamedQueries implements NamedQueries {
 		Assert.notNull(properties);
 		this.properties = properties;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.NamedQueries#hasNamedQuery(java.lang.String)
 	 */
 	public boolean hasQuery(String queryName) {
 		return properties.containsKey(queryName);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.NamedQueries#getNamedQuery(java.lang.String)
 	 */

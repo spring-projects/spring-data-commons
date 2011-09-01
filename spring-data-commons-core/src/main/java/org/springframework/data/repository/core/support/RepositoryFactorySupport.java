@@ -40,35 +40,30 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
 
-
 /**
- * Factory bean to create instances of a given repository interface. Creates a
- * proxy implementing the configured repository interface and apply an advice
- * handing the control to the {@code QueryExecuterMethodInterceptor}. Query
- * detection strategy can be configured by setting
- * {@link QueryLookupStrategy.Key}.
- *
+ * Factory bean to create instances of a given repository interface. Creates a proxy implementing the configured
+ * repository interface and apply an advice handing the control to the {@code QueryExecuterMethodInterceptor}. Query
+ * detection strategy can be configured by setting {@link QueryLookupStrategy.Key}.
+ * 
  * @author Oliver Gierke
  */
 public abstract class RepositoryFactorySupport {
 
-	private final List<RepositoryProxyPostProcessor> postProcessors =
-			new ArrayList<RepositoryProxyPostProcessor>();
+	private final List<RepositoryProxyPostProcessor> postProcessors = new ArrayList<RepositoryProxyPostProcessor>();
 	private QueryLookupStrategy.Key queryLookupStrategyKey;
-	private List<QueryCreationListener<?>> queryPostProcessors =
-			new ArrayList<QueryCreationListener<?>>();
+	private List<QueryCreationListener<?>> queryPostProcessors = new ArrayList<QueryCreationListener<?>>();
 	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
 
 	/**
 	 * Sets the strategy of how to lookup a query to execute finders.
-	 *
+	 * 
 	 * @param queryLookupStrategy the createFinderQueries to set
 	 */
 	public void setQueryLookupStrategyKey(Key key) {
 
 		this.queryLookupStrategyKey = key;
 	}
-	
+
 	/**
 	 * Configures a {@link NamedQueries} instance to be handed to the {@link QueryLookupStrategy} for query creation.
 	 * 
@@ -78,12 +73,10 @@ public abstract class RepositoryFactorySupport {
 		this.namedQueries = namedQueries == null ? PropertiesBasedNamedQueries.EMPTY : namedQueries;
 	}
 
-
 	/**
-	 * Adds a {@link QueryCreationListener} to the factory to plug in
-	 * functionality triggered right after creation of {@link RepositoryQuery}
-	 * instances.
-	 *
+	 * Adds a {@link QueryCreationListener} to the factory to plug in functionality triggered right after creation of
+	 * {@link RepositoryQuery} instances.
+	 * 
 	 * @param listener
 	 */
 	public void addQueryCreationListener(QueryCreationListener<?> listener) {
@@ -92,50 +85,42 @@ public abstract class RepositoryFactorySupport {
 		this.queryPostProcessors.add(listener);
 	}
 
-
 	/**
-	 * Adds {@link RepositoryProxyPostProcessor}s to the factory to allow
-	 * manipulation of the {@link ProxyFactory} before the proxy gets created.
-	 * Note that the {@link QueryExecutorMethodInterceptor} will be added to the
-	 * proxy <em>after</em> the {@link RepositoryProxyPostProcessor}s are
-	 * considered.
-	 *
+	 * Adds {@link RepositoryProxyPostProcessor}s to the factory to allow manipulation of the {@link ProxyFactory} before
+	 * the proxy gets created. Note that the {@link QueryExecutorMethodInterceptor} will be added to the proxy
+	 * <em>after</em> the {@link RepositoryProxyPostProcessor}s are considered.
+	 * 
 	 * @param processor
 	 */
-	public void addRepositoryProxyPostProcessor(
-			RepositoryProxyPostProcessor processor) {
+	public void addRepositoryProxyPostProcessor(RepositoryProxyPostProcessor processor) {
 
 		Assert.notNull(processor);
 		this.postProcessors.add(processor);
 	}
 
-
 	/**
 	 * Returns a repository instance for the given interface.
-	 *
+	 * 
 	 * @param <T>
 	 * @param repositoryInterface
 	 * @return
 	 */
-	public <T extends Repository<?, ?>> T getRepository(
-			Class<T> repositoryInterface) {
+	public <T extends Repository<?, ?>> T getRepository(Class<T> repositoryInterface) {
 
 		return getRepository(repositoryInterface, null);
 	}
 
-
 	/**
-	 * Returns a repository instance for the given interface backed by an
-	 * instance providing implementation logic for custom logic.
-	 *
+	 * Returns a repository instance for the given interface backed by an instance providing implementation logic for
+	 * custom logic.
+	 * 
 	 * @param <T>
 	 * @param repositoryInterface
 	 * @param customImplementation
 	 * @return
 	 */
-	@SuppressWarnings({"unchecked"})
-	public <T> T getRepository(Class<T> repositoryInterface,
-														 Object customImplementation) {
+	@SuppressWarnings({ "unchecked" })
+	public <T> T getRepository(Class<T> repositoryInterface, Object customImplementation) {
 
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
 		Class<?> customImplementationClass = null == customImplementation ? null : customImplementation.getClass();
@@ -148,21 +133,20 @@ public abstract class RepositoryFactorySupport {
 		// Create proxy
 		ProxyFactory result = new ProxyFactory();
 		result.setTarget(target);
-		result.setInterfaces(new Class[]{repositoryInterface});
+		result.setInterfaces(new Class[] { repositoryInterface });
 
 		for (RepositoryProxyPostProcessor processor : postProcessors) {
 			processor.postProcess(result);
 		}
 
-		result.addAdvice(new QueryExecutorMethodInterceptor(information,
-				customImplementation, target));
+		result.addAdvice(new QueryExecutorMethodInterceptor(information, customImplementation, target));
 
 		return (T) result.getProxy();
 	}
 
 	/**
 	 * Returns the {@link RepositoryMetadata} for the given repository interface.
-	 *
+	 * 
 	 * @param repositoryInterface
 	 * @return
 	 */
@@ -171,10 +155,9 @@ public abstract class RepositoryFactorySupport {
 				: new AnnotationRepositoryMetadata(repositoryInterface);
 	}
 
-
 	/**
 	 * Returns the {@link RepositoryInformation} for the given repository interface.
-	 *
+	 * 
 	 * @param repositoryInterface
 	 * @param customImplementationClass
 	 * @return
@@ -183,41 +166,36 @@ public abstract class RepositoryFactorySupport {
 		return new DefaultRepositoryInformation(metadata, getRepositoryBaseClass(metadata), customImplementationClass);
 	}
 
-
 	/**
 	 * Returns the {@link EntityInformation} for the given domain class.
-	 *
-	 * @param <T>         the entity type
-	 * @param <ID>        the id type
+	 * 
+	 * @param <T> the entity type
+	 * @param <ID> the id type
 	 * @param domainClass
 	 * @return
 	 */
 	public abstract <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass);
 
-
 	/**
 	 * Create a repository instance as backing for the query proxy.
-	 *
+	 * 
 	 * @param metadata
 	 * @return
 	 */
 	protected abstract Object getTargetRepository(RepositoryMetadata metadata);
 
-
 	/**
 	 * Returns the base class backing the actual repository instance. Make sure
-	 * {@link #getTargetRepository(RepositoryMetadata)} returns an instance of
-	 * this class.
-	 *
+	 * {@link #getTargetRepository(RepositoryMetadata)} returns an instance of this class.
+	 * 
 	 * @param metadata
 	 * @return
 	 */
-	protected abstract Class<?> getRepositoryBaseClass(
-			RepositoryMetadata metadata);
+	protected abstract Class<?> getRepositoryBaseClass(RepositoryMetadata metadata);
 
 	/**
 	 * Returns the {@link QueryLookupStrategy} for the given {@link Key}.
-	 *
+	 * 
 	 * @param key can be {@literal null}
 	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
 	 */
@@ -225,24 +203,19 @@ public abstract class RepositoryFactorySupport {
 		return null;
 	}
 
-
 	/**
-	 * Validates the given repository interface as well as the given custom
-	 * implementation.
-	 *
+	 * Validates the given repository interface as well as the given custom implementation.
+	 * 
 	 * @param repositoryInformation
 	 * @param customImplementation
 	 */
-	private void validate(RepositoryInformation repositoryInformation,
-												Object customImplementation) {
+	private void validate(RepositoryInformation repositoryInformation, Object customImplementation) {
 
-		if (null == customImplementation
-				&& repositoryInformation.hasCustomMethod()) {
+		if (null == customImplementation && repositoryInformation.hasCustomMethod()) {
 
-			throw new IllegalArgumentException(
-					String.format(
-							"You have custom methods in %s but not provided a custom implementation!",
-							repositoryInformation.getRepositoryInterface()));
+			throw new IllegalArgumentException(String.format(
+					"You have custom methods in %s but not provided a custom implementation!",
+					repositoryInformation.getRepositoryInterface()));
 		}
 
 		validate(repositoryInformation);
@@ -253,76 +226,62 @@ public abstract class RepositoryFactorySupport {
 	}
 
 	/**
-	 * This {@code MethodInterceptor} intercepts calls to methods of the custom
-	 * implementation and delegates the to it if configured. Furthermore it
-	 * resolves method calls to finders and triggers execution of them. You can
-	 * rely on having a custom repository implementation instance set if this
-	 * returns true.
-	 *
+	 * This {@code MethodInterceptor} intercepts calls to methods of the custom implementation and delegates the to it if
+	 * configured. Furthermore it resolves method calls to finders and triggers execution of them. You can rely on having
+	 * a custom repository implementation instance set if this returns true.
+	 * 
 	 * @author Oliver Gierke
 	 */
 	public class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
-		private final Map<Method, RepositoryQuery> queries =
-				new ConcurrentHashMap<Method, RepositoryQuery>();
+		private final Map<Method, RepositoryQuery> queries = new ConcurrentHashMap<Method, RepositoryQuery>();
 
 		private final Object customImplementation;
 		private final RepositoryInformation repositoryInformation;
 		private final Object target;
 
-
 		/**
-		 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model
-		 * of {@link QueryMethod}s to be invoked on execution of repository
-		 * interface methods.
+		 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model of {@link QueryMethod}s to be invoked on
+		 * execution of repository interface methods.
 		 */
-		public QueryExecutorMethodInterceptor(
-				RepositoryInformation repositoryInformation,
-				Object customImplementation, Object target) {
+		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation, Object customImplementation,
+				Object target) {
 
 			this.repositoryInformation = repositoryInformation;
 			this.customImplementation = customImplementation;
 			this.target = target;
 
-			QueryLookupStrategy lookupStrategy =
-					getQueryLookupStrategy(queryLookupStrategyKey);
+			QueryLookupStrategy lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey);
 
 			if (lookupStrategy == null) {
 
 				if (repositoryInformation.hasCustomMethod()) {
-					throw new IllegalStateException(
-							"You have defined query method in the repository but " +
-									"you don't have no query lookup strategy defined. The " +
-									"infrastructure apparently does not support query methods!");
+					throw new IllegalStateException("You have defined query method in the repository but "
+							+ "you don't have no query lookup strategy defined. The "
+							+ "infrastructure apparently does not support query methods!");
 				}
 
 				return;
 			}
 
 			for (Method method : repositoryInformation.getQueryMethods()) {
-				RepositoryQuery query =
-						lookupStrategy.resolveQuery(method, repositoryInformation, namedQueries);
+				RepositoryQuery query = lookupStrategy.resolveQuery(method, repositoryInformation, namedQueries);
 				invokeListeners(query);
 				queries.put(method, query);
 			}
 		}
 
-
-		@SuppressWarnings({"rawtypes", "unchecked"})
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		private void invokeListeners(RepositoryQuery query) {
 
 			for (QueryCreationListener listener : queryPostProcessors) {
-				Class<?> typeArgument =
-						GenericTypeResolver.resolveTypeArgument(
-								listener.getClass(),
-								QueryCreationListener.class);
-				if (typeArgument != null
-						&& typeArgument.isAssignableFrom(query.getClass())) {
+				Class<?> typeArgument = GenericTypeResolver.resolveTypeArgument(listener.getClass(),
+						QueryCreationListener.class);
+				if (typeArgument != null && typeArgument.isAssignableFrom(query.getClass())) {
 					listener.onCreation(query);
 				}
 			}
 		}
-
 
 		/*
 		 * (non-Javadoc)
@@ -335,8 +294,7 @@ public abstract class RepositoryFactorySupport {
 			if (isCustomMethodInvocation(invocation)) {
 				Method actualMethod = repositoryInformation.getTargetClassMethod(method);
 				makeAccessible(actualMethod);
-				return executeMethodOn(customImplementation, actualMethod,
-						invocation.getArguments());
+				return executeMethodOn(customImplementation, actualMethod, invocation.getArguments());
 			}
 
 			if (hasQueryFor(method)) {
@@ -346,23 +304,19 @@ public abstract class RepositoryFactorySupport {
 			// Lookup actual method as it might be redeclared in the interface
 			// and we have to use the repository instance nevertheless
 			Method actualMethod = repositoryInformation.getTargetClassMethod(method);
-			return executeMethodOn(target, actualMethod,
-					invocation.getArguments());
+			return executeMethodOn(target, actualMethod, invocation.getArguments());
 		}
 
-
 		/**
-		 * Executes the given method on the given target. Correctly unwraps
-		 * exceptions not caused by the reflection magic.
-		 *
+		 * Executes the given method on the given target. Correctly unwraps exceptions not caused by the reflection magic.
+		 * 
 		 * @param target
 		 * @param method
 		 * @param parameters
 		 * @return
 		 * @throws Throwable
 		 */
-		private Object executeMethodOn(Object target, Method method,
-																	 Object[] parameters) throws Throwable {
+		private Object executeMethodOn(Object target, Method method, Object[] parameters) throws Throwable {
 
 			try {
 				return method.invoke(target, parameters);
@@ -373,11 +327,9 @@ public abstract class RepositoryFactorySupport {
 			throw new IllegalStateException("Should not occur!");
 		}
 
-
 		/**
-		 * Returns whether we know of a query to execute for the given
-		 * {@link Method};
-		 *
+		 * Returns whether we know of a query to execute for the given {@link Method};
+		 * 
 		 * @param method
 		 * @return
 		 */
@@ -386,11 +338,10 @@ public abstract class RepositoryFactorySupport {
 			return queries.containsKey(method);
 		}
 
-
 		/**
-		 * Returns whether the given {@link MethodInvocation} is considered to
-		 * be targeted as an invocation of a custom method.
-		 *
+		 * Returns whether the given {@link MethodInvocation} is considered to be targeted as an invocation of a custom
+		 * method.
+		 * 
 		 * @param method
 		 * @return
 		 */
@@ -399,8 +350,6 @@ public abstract class RepositoryFactorySupport {
 			if (null == customImplementation) {
 				return false;
 			}
-			
-			
 
 			return repositoryInformation.isCustomMethod(invocation.getMethod());
 		}

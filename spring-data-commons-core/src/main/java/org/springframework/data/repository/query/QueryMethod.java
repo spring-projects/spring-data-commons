@@ -28,12 +28,10 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
 
-
 /**
- * Abstraction of a method that is designated to execute a finder query.
- * Enriches the standard {@link Method} interface with specific information that
- * is necessary to construct {@link RepositoryQuery}s for the method.
- *
+ * Abstraction of a method that is designated to execute a finder query. Enriches the standard {@link Method} interface
+ * with specific information that is necessary to construct {@link RepositoryQuery}s for the method.
+ * 
  * @author Oliver Gierke
  */
 public class QueryMethod {
@@ -42,11 +40,10 @@ public class QueryMethod {
 	private final Method method;
 	private final Parameters parameters;
 
-
 	/**
-	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the
-	 * correct query to use for following invocations of the method given.
-	 *
+	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct query to use for following
+	 * invocations of the method given.
+	 * 
 	 * @param method must not be {@literal null}
 	 * @param metadata must not be {@literal null}
 	 */
@@ -57,53 +54,49 @@ public class QueryMethod {
 
 		for (Class<?> type : Parameters.TYPES) {
 			if (getNumberOfOccurences(method, type) > 1) {
-				throw new IllegalStateException(String.format(
-						"Method must only one argument of type %s!",
-						type.getSimpleName()));
+				throw new IllegalStateException(
+						String.format("Method must only one argument of type %s!", type.getSimpleName()));
 			}
 		}
 
 		if (hasParameterOfType(method, Pageable.class)) {
 			assertReturnTypeAssignable(method, Page.class, List.class);
 			if (hasParameterOfType(method, Sort.class)) {
-				throw new IllegalStateException(
-						"Method must not have Pageable *and* Sort parameter. "
-								+ "Use sorting capabilities on Pageble instead!");
+				throw new IllegalStateException("Method must not have Pageable *and* Sort parameter. "
+						+ "Use sorting capabilities on Pageble instead!");
 			}
 		}
 
 		this.method = method;
 		this.parameters = createParameters(method);
 		this.metadata = metadata;
-		
+
 		Assert.notNull(this.parameters);
-		
+
 		if (isPageQuery()) {
 			Assert.isTrue(this.parameters.hasPageableParameter(), "Paging query needs to have a Pageable parameter!");
 		}
 	}
-	
+
 	/**
 	 * Creates a {@link Parameters} instance.
 	 * 
 	 * @param method
-	 * @return must not return {@literal null}. 
+	 * @return must not return {@literal null}.
 	 */
 	protected Parameters createParameters(Method method) {
 		return new Parameters(method);
 	}
 
-
 	/**
 	 * Returns the method's name.
-	 *
+	 * 
 	 * @return
 	 */
 	public String getName() {
 
 		return method.getName();
 	}
-
 
 	@SuppressWarnings("rawtypes")
 	public EntityMetadata<?> getEntityInformation() {
@@ -117,19 +110,16 @@ public class QueryMethod {
 		};
 	}
 
-	
-  /**
-   * Returns the name of the named query this method belongs to.
-   * 
-   * @return
-   */
-  public String getNamedQueryName() {
+	/**
+	 * Returns the name of the named query this method belongs to.
+	 * 
+	 * @return
+	 */
+	public String getNamedQueryName() {
 
-      Class<?> domainClass = getDomainClass();
-      return String.format("%s.%s", domainClass.getSimpleName(),
-              method.getName());
-  }
-	
+		Class<?> domainClass = getDomainClass();
+		return String.format("%s.%s", domainClass.getSimpleName(), method.getName());
+	}
 
 	protected Class<?> getDomainClass() {
 
@@ -140,11 +130,9 @@ public class QueryMethod {
 				: repositoryDomainClass;
 	}
 
-
 	/**
-	 * Returns whether the finder will actually return a collection of entities
-	 * or a single one.
-	 *
+	 * Returns whether the finder will actually return a collection of entities or a single one.
+	 * 
 	 * @return
 	 */
 	public boolean isCollectionQuery() {
@@ -153,37 +141,31 @@ public class QueryMethod {
 		return !isPageQuery() && org.springframework.util.ClassUtils.isAssignable(Iterable.class, returnType);
 	}
 
-
 	/**
 	 * Returns whether the finder will return a {@link Page} of results.
-	 *
+	 * 
 	 * @return
 	 */
 	public boolean isPageQuery() {
 
 		Class<?> returnType = method.getReturnType();
-		return org.springframework.util.ClassUtils.isAssignable(Page.class,
-				returnType);
+		return org.springframework.util.ClassUtils.isAssignable(Page.class, returnType);
 	}
-
 
 	public boolean isModifyingQuery() {
 
 		return false;
 	}
 
-
 	/**
-	 * Returns the {@link Parameters} wrapper to gain additional information
-	 * about {@link Method} parameters.
-	 *
+	 * Returns the {@link Parameters} wrapper to gain additional information about {@link Method} parameters.
+	 * 
 	 * @return
 	 */
 	public Parameters getParameters() {
 
 		return parameters;
 	}
-
 
 	/*
 			 * (non-Javadoc)

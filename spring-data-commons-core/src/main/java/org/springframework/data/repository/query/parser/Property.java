@@ -26,14 +26,13 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-
 /**
  * Abstraction of a {@link Property} of a domain class.
- *
+ * 
  * @author Oliver Gierke
  */
 public class Property {
-	
+
 	private static final String DELIMITERS = "_\\.";
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final String ERROR_TEMPLATE = "No property %s found for type %s";
@@ -45,11 +44,9 @@ public class Property {
 
 	private Property next;
 
-
 	/**
-	 * Creates a leaf {@link Property} (no nested ones) with the given name inside the
-	 * given owning type.
-	 *
+	 * Creates a leaf {@link Property} (no nested ones) with the given name inside the given owning type.
+	 * 
 	 * @param name
 	 * @param owningType
 	 */
@@ -73,8 +70,7 @@ public class Property {
 		TypeInformation<?> type = owningType.getProperty(propertyName);
 
 		if (type == null) {
-			throw new IllegalArgumentException(String.format(ERROR_TEMPLATE,
-					propertyName, owningType.getType()));
+			throw new IllegalArgumentException(String.format(ERROR_TEMPLATE, propertyName, owningType.getType()));
 		}
 
 		this.owningType = owningType;
@@ -84,10 +80,9 @@ public class Property {
 	}
 
 	/**
-	 * Creates a {@link Property} with the given name inside the given owning
-	 * type and tries to resolve the other {@link String} to create nested
-	 * properties.
-	 *
+	 * Creates a {@link Property} with the given name inside the given owning type and tries to resolve the other
+	 * {@link String} to create nested properties.
+	 * 
 	 * @param name
 	 * @param owningType
 	 * @param toTraverse
@@ -112,7 +107,7 @@ public class Property {
 
 	/**
 	 * Returns the name of the {@link Property}.
-	 *
+	 * 
 	 * @return the name will never be {@literal null}.
 	 */
 	public String getName() {
@@ -121,10 +116,9 @@ public class Property {
 	}
 
 	/**
-	 * Returns the type of the property will return the plain resolved type for
-	 * simple properties, the component type for any {@link Iterable} or the
-	 * value type of a {@link java.util.Map} if the property is one.
-	 *
+	 * Returns the type of the property will return the plain resolved type for simple properties, the component type for
+	 * any {@link Iterable} or the value type of a {@link java.util.Map} if the property is one.
+	 * 
 	 * @return
 	 */
 	public Class<?> getType() {
@@ -132,12 +126,10 @@ public class Property {
 		return this.type.getType();
 	}
 
-
 	/**
 	 * Returns the next nested {@link Property}.
-	 *
-	 * @return the next nested {@link Property} or {@literal null} if no nested
-	 *         {@link Property} available.
+	 * 
+	 * @return the next nested {@link Property} or {@literal null} if no nested {@link Property} available.
 	 * @see #hasNext()
 	 */
 	public Property next() {
@@ -145,12 +137,10 @@ public class Property {
 		return next;
 	}
 
-
 	/**
-	 * Returns whether there is a nested {@link Property}. If this returns
-	 * {@literal true} you can expect {@link #next()} to return a non-
-	 * {@literal null} value.
-	 *
+	 * Returns whether there is a nested {@link Property}. If this returns {@literal true} you can expect {@link #next()}
+	 * to return a non- {@literal null} value.
+	 * 
 	 * @return
 	 */
 	public boolean hasNext() {
@@ -158,10 +148,9 @@ public class Property {
 		return next != null;
 	}
 
-
 	/**
 	 * Returns the {@link Property} path in dot notation.
-	 *
+	 * 
 	 * @return
 	 */
 	public String toDotPath() {
@@ -173,17 +162,15 @@ public class Property {
 		return getName();
 	}
 
-
 	/**
 	 * Returns whether the {@link Property} is actually a collection.
-	 *
+	 * 
 	 * @return
 	 */
 	public boolean isCollection() {
 
 		return isCollection;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -206,7 +193,6 @@ public class Property {
 		return this.name.equals(that.name) && this.type.equals(type);
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -218,11 +204,9 @@ public class Property {
 		return name.hashCode() + type.hashCode();
 	}
 
-
 	/**
-	 * Extracts the {@link Property} chain from the given source {@link String}
-	 * and type.
-	 *
+	 * Extracts the {@link Property} chain from the given source {@link String} and type.
+	 * 
 	 * @param source
 	 * @param type
 	 * @return
@@ -233,10 +217,10 @@ public class Property {
 	}
 
 	private static Property from(String source, TypeInformation<?> type) {
-		
+
 		List<String> iteratorSource = new ArrayList<String>();
 		Matcher matcher = SPLITTER.matcher("_" + source);
-		
+
 		while (matcher.find()) {
 			iteratorSource.add(matcher.group(1));
 		}
@@ -258,11 +242,9 @@ public class Property {
 		return result;
 	}
 
-
 	/**
-	 * Creates a new {@link Property} as subordinary of the given
-	 * {@link Property}.
-	 *
+	 * Creates a new {@link Property} as subordinary of the given {@link Property}.
+	 * 
 	 * @param source
 	 * @param base
 	 * @return
@@ -274,15 +256,12 @@ public class Property {
 		return property;
 	}
 
-
 	/**
-	 * Factory method to create a new {@link Property} for the given
-	 * {@link String} and owning type. It will inspect the given source for
-	 * camel-case parts and traverse the {@link String} along its parts starting
-	 * with the entire one and chewing off parts from the right side then.
-	 * Whenever a valid property for the given class is found, the tail will be
-	 * traversed for subordinary properties of the just found one and so on.
-	 *
+	 * Factory method to create a new {@link Property} for the given {@link String} and owning type. It will inspect the
+	 * given source for camel-case parts and traverse the {@link String} along its parts starting with the entire one and
+	 * chewing off parts from the right side then. Whenever a valid property for the given class is found, the tail will
+	 * be traversed for subordinary properties of the just found one and so on.
+	 * 
 	 * @param source
 	 * @param type
 	 * @return
@@ -292,13 +271,11 @@ public class Property {
 		return create(source, type, "");
 	}
 
-
 	/**
-	 * Tries to look up a chain of {@link Property}s by trying the givne source
-	 * first. If that fails it will split the source apart at camel case borders
-	 * (starting from the right side) and try to look up a {@link Property} from
-	 * the calculated head and recombined new tail and additional tail.
-	 *
+	 * Tries to look up a chain of {@link Property}s by trying the givne source first. If that fails it will split the
+	 * source apart at camel case borders (starting from the right side) and try to look up a {@link Property} from the
+	 * calculated head and recombined new tail and additional tail.
+	 * 
 	 * @param source
 	 * @param type
 	 * @param addTail

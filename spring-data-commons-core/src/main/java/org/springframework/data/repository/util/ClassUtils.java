@@ -133,7 +133,7 @@ public abstract class ClassUtils {
 				return;
 			}
 		}
-		
+
 		throw new IllegalStateException("Method has to have one of the following return types! " + Arrays.toString(types));
 	}
 

@@ -12,7 +12,8 @@ public abstract class StateProvider {
 
 	public static <STATE> void setUnderlyingState(STATE state) {
 		if (stateHolder.get() != null)
-			throw new IllegalStateException("StateHolder already contains state " + stateHolder.get() + " in thread " + Thread.currentThread());
+			throw new IllegalStateException("StateHolder already contains state " + stateHolder.get() + " in thread "
+					+ Thread.currentThread());
 		stateHolder.set(state);
 	}
 

@@ -21,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import com.mysema.query.types.OrderSpecifier;
 import com.mysema.query.types.Predicate;
 
-
 /**
  * Interface to allow execution of QueryDsl {@link Predicate} instances.
  * 
@@ -29,51 +28,45 @@ import com.mysema.query.types.Predicate;
  */
 public interface QueryDslPredicateExecutor<T> {
 
-    /**
-     * Returns a single entity matching the given {@link Predicate}.
-     * 
-     * @param spec
-     * @return
-     */
-    T findOne(Predicate predicate);
+	/**
+	 * Returns a single entity matching the given {@link Predicate}.
+	 * 
+	 * @param spec
+	 * @return
+	 */
+	T findOne(Predicate predicate);
 
+	/**
+	 * Returns all entities matching the given {@link Predicate}.
+	 * 
+	 * @param spec
+	 * @return
+	 */
+	Iterable<T> findAll(Predicate predicate);
 
-    /**
-     * Returns all entities matching the given {@link Predicate}.
-     * 
-     * @param spec
-     * @return
-     */
-    Iterable<T> findAll(Predicate predicate);
+	/**
+	 * Returns all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s.
+	 * 
+	 * @param predicate
+	 * @param orders
+	 * @return
+	 */
+	Iterable<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
 
+	/**
+	 * Returns a {@link Page} of entities matching the given {@link Predicate}.
+	 * 
+	 * @param predicate
+	 * @param pageable
+	 * @return
+	 */
+	Page<T> findAll(Predicate predicate, Pageable pageable);
 
-    /**
-     * Returns all entities matching the given {@link Predicate} applying the
-     * given {@link OrderSpecifier}s.
-     * 
-     * @param predicate
-     * @param orders
-     * @return
-     */
-    Iterable<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
-
-
-    /**
-     * Returns a {@link Page} of entities matching the given {@link Predicate}.
-     * 
-     * @param predicate
-     * @param pageable
-     * @return
-     */
-    Page<T> findAll(Predicate predicate, Pageable pageable);
-
-
-    /**
-     * Returns the number of instances that the given {@link Predicate} will
-     * return.
-     * 
-     * @param predicate the {@link Predicate} to count instances for
-     * @return the number of instances
-     */
-    long count(Predicate predicate);
+	/**
+	 * Returns the number of instances that the given {@link Predicate} will return.
+	 * 
+	 * @param predicate the {@link Predicate} to count instances for
+	 * @return the number of instances
+	 */
+	long count(Predicate predicate);
 }

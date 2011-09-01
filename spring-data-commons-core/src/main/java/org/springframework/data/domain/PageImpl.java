@@ -21,10 +21,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-
 /**
  * Basic {@code Page} implementation.
- *
+ * 
  * @param <T> the type of which the page consists.
  * @author Oliver Gierke
  */
@@ -36,13 +35,12 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	private final Pageable pageable;
 	private final long total;
 
-
 	/**
 	 * Constructor of {@code PageImpl}.
-	 *
-	 * @param content	the content of this page
+	 * 
+	 * @param content the content of this page
 	 * @param pageable the paging information
-	 * @param total		the total amount of items available
+	 * @param total the total amount of items available
 	 */
 	public PageImpl(List<T> content, Pageable pageable, long total) {
 
@@ -55,18 +53,16 @@ public class PageImpl<T> implements Page<T>, Serializable {
 		this.pageable = pageable;
 	}
 
-
 	/**
-	 * Creates a new {@link PageImpl} with the given content. This will result
-	 * in the created {@link Page} being identical to the entire {@link List}.
-	 *
+	 * Creates a new {@link PageImpl} with the given content. This will result in the created {@link Page} being identical
+	 * to the entire {@link List}.
+	 * 
 	 * @param content
 	 */
 	public PageImpl(List<T> content) {
 
 		this(content, null, (null == content) ? 0 : content.size());
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -78,7 +74,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 		return pageable == null ? 0 : pageable.getPageNumber();
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -88,7 +83,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 		return pageable == null ? 0 : pageable.getPageSize();
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -100,7 +94,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 		return getSize() == 0 ? 0 : (int) Math.ceil((double) total / (double) getSize());
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -110,7 +103,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 		return content.size();
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -122,7 +114,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 		return total;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -132,7 +123,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 		return getNumber() > 0;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -144,7 +134,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 		return !hasPreviousPage();
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -154,7 +143,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 		return ((getNumber() + 1) * getSize()) < total;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -166,7 +154,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 		return !hasNextPage();
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -176,7 +163,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 		return content.iterator();
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -198,7 +184,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 		return !content.isEmpty();
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -208,7 +193,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 		return pageable == null ? null : pageable.getSort();
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -224,10 +208,8 @@ public class PageImpl<T> implements Page<T>, Serializable {
 			contentType = content.get(0).getClass().getName();
 		}
 
-		return String.format("Page %s of %d containing %s instances",
-				getNumber(), getTotalPages(), contentType);
+		return String.format("Page %s of %d containing %s instances", getNumber(), getTotalPages(), contentType);
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -253,7 +235,6 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 		return totalEqual && contentEqual && pageableEqual;
 	}
-
 
 	/*
 			 * (non-Javadoc)

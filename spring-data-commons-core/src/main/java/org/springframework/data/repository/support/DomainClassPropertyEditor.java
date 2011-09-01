@@ -26,31 +26,27 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-
 /**
- * Generic {@link PropertyEditor} to map entities handled by a
- * {@link CrudRepository} to their id's and vice versa.
- *
+ * Generic {@link PropertyEditor} to map entities handled by a {@link CrudRepository} to their id's and vice versa.
+ * 
  * @author Oliver Gierke
  */
-public class DomainClassPropertyEditor<T, ID extends Serializable> extends
-		PropertyEditorSupport {
+public class DomainClassPropertyEditor<T, ID extends Serializable> extends PropertyEditorSupport {
 
 	private final CrudRepository<T, ID> repository;
 	private final EntityInformation<T, ID> information;
 	private final PropertyEditorRegistry registry;
 
-
 	/**
-	 * Creates a new {@link DomainClassPropertyEditor} for the given
-	 * {@link CrudRepository}, {@link EntityInformation} and {@link PropertyEditorRegistry}.
-	 *
+	 * Creates a new {@link DomainClassPropertyEditor} for the given {@link CrudRepository}, {@link EntityInformation} and
+	 * {@link PropertyEditorRegistry}.
+	 * 
 	 * @param repository
 	 * @param information
 	 * @param registry
 	 */
 	public DomainClassPropertyEditor(CrudRepository<T, ID> repository, EntityInformation<T, ID> information,
-	    PropertyEditorRegistry registry) {
+			PropertyEditorRegistry registry) {
 
 		Assert.notNull(repository);
 		Assert.notNull(registry);
@@ -59,7 +55,6 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends
 		this.information = information;
 		this.registry = registry;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -76,7 +71,6 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends
 
 		setValue(repository.findOne(getId(idAsString)));
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -97,12 +91,10 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends
 		return id == null ? null : id.toString();
 	}
 
-
 	/**
-	 * Looks up the id of the given entity using one of the
-	 * {@link org.synyx.hades.dao.orm.GenericDaoSupport.IdAware} implementations
-	 * of Hades.
-	 *
+	 * Looks up the id of the given entity using one of the {@link org.synyx.hades.dao.orm.GenericDaoSupport.IdAware}
+	 * implementations of Hades.
+	 * 
 	 * @param entity
 	 * @return
 	 */
@@ -111,13 +103,11 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends
 		return information.getId(entity);
 	}
 
-
 	/**
-	 * Returns the actual typed id. Looks up an available customly registered
-	 * {@link PropertyEditor} from the {@link PropertyEditorRegistry} before
-	 * falling back on a {@link SimpleTypeConverter} to translate the
-	 * {@link String} id into the type one.
-	 *
+	 * Returns the actual typed id. Looks up an available customly registered {@link PropertyEditor} from the
+	 * {@link PropertyEditorRegistry} before falling back on a {@link SimpleTypeConverter} to translate the {@link String}
+	 * id into the type one.
+	 * 
 	 * @param idAsString
 	 * @return
 	 */
@@ -133,10 +123,8 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends
 			return (ID) idEditor.getValue();
 		}
 
-		return new SimpleTypeConverter()
-				.convertIfNecessary(idAsString, idClass);
+		return new SimpleTypeConverter().convertIfNecessary(idAsString, idClass);
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -154,14 +142,11 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends
 			return false;
 		}
 
-		DomainClassPropertyEditor<?, ?> that =
-				(DomainClassPropertyEditor<?, ?>) obj;
+		DomainClassPropertyEditor<?, ?> that = (DomainClassPropertyEditor<?, ?>) obj;
 
-		return this.repository.equals(that.repository)
-				&& this.registry.equals(that.registry)
+		return this.repository.equals(that.repository) && this.registry.equals(that.registry)
 				&& this.information.equals(that.information);
 	}
-
 
 	/*
 			 * (non-Javadoc)

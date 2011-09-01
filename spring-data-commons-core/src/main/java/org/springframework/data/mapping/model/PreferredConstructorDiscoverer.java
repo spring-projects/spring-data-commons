@@ -26,16 +26,14 @@ import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
-
 /**
  * Helper class to find a {@link PreferredConstructor}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class PreferredConstructorDiscoverer<T> {
 
-	private final ParameterNameDiscoverer nameDiscoverer =
-			new LocalVariableTableParameterNameDiscoverer();
+	private final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
 	private PreferredConstructor<T> constructor;
 
@@ -45,7 +43,7 @@ public class PreferredConstructorDiscoverer<T> {
 
 	/**
 	 * Creates a new {@link PreferredConstructorDiscoverer} for the given type.
-	 *
+	 * 
 	 * @param owningType
 	 */
 	protected PreferredConstructorDiscoverer(TypeInformation<T> owningType) {
@@ -56,8 +54,7 @@ public class PreferredConstructorDiscoverer<T> {
 
 		for (Constructor<?> constructor : rawOwningType.getDeclaredConstructors()) {
 
-			PreferredConstructor<T> preferredConstructor =
-					buildPreferredConstructor(constructor, owningType);
+			PreferredConstructor<T> preferredConstructor = buildPreferredConstructor(constructor, owningType);
 
 			// Explicitly defined constructor trumps all
 			if (preferredConstructor.isExplicitlyAnnotated()) {
@@ -82,10 +79,9 @@ public class PreferredConstructorDiscoverer<T> {
 		}
 	}
 
-
-	@SuppressWarnings({"unchecked", "rawtypes"})
-	private PreferredConstructor<T> buildPreferredConstructor(
-			Constructor<?> constructor, TypeInformation<T> typeInformation) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private PreferredConstructor<T> buildPreferredConstructor(Constructor<?> constructor,
+			TypeInformation<T> typeInformation) {
 
 		List<TypeInformation<?>> parameterTypes = typeInformation.getParameterTypes(constructor);
 
@@ -106,10 +102,8 @@ public class PreferredConstructorDiscoverer<T> {
 			parameters[i] = new Parameter(name, type, annotations);
 		}
 
-		return new PreferredConstructor<T>((Constructor<T>) constructor,
-				parameters);
+		return new PreferredConstructor<T>((Constructor<T>) constructor, parameters);
 	}
-
 
 	public PreferredConstructor<T> getConstructor() {
 		return constructor;

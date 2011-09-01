@@ -72,7 +72,7 @@ public abstract class AbstractQueryCreator<T, S> {
 		Sort dynamicSort = parameters != null ? parameters.getSort() : null;
 		return createQuery(dynamicSort);
 	}
-	
+
 	/**
 	 * Creates the actual query object applying the given {@link Sort} parameter. Use this method in case you haven't
 	 * provided a {@link ParameterAccessor} in the first place but want to apply dynamic sorting nevertheless.
@@ -81,10 +81,10 @@ public abstract class AbstractQueryCreator<T, S> {
 	 * @return
 	 */
 	public T createQuery(Sort dynamicSort) {
-		
+
 		Sort staticSort = tree.getSort();
 		Sort sort = staticSort != null ? staticSort.and(dynamicSort) : dynamicSort;
-		
+
 		return complete(createCriteria(tree), sort);
 	}
 

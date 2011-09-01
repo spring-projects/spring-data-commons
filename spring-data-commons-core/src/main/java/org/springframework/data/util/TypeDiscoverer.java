@@ -35,9 +35,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Basic {@link TypeDiscoverer} that contains basic functionality to discover
- * property types.
- *
+ * Basic {@link TypeDiscoverer} that contains basic functionality to discover property types.
+ * 
  * @author Oliver Gierke
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
@@ -49,7 +48,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	/**
 	 * Creates a ne {@link TypeDiscoverer} for the given type, type variable map and parent.
-	 *
+	 * 
 	 * @param type must not be null.
 	 * @param typeVariableMap
 	 */
@@ -62,9 +61,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	/**
-	 * Returns the type variable map. Will traverse the parents up to the root on
-	 * and use it's map.
-	 *
+	 * Returns the type variable map. Will traverse the parents up to the root on and use it's map.
+	 * 
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
@@ -75,17 +73,17 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	/**
 	 * Creates {@link TypeInformation} for the given {@link Type}.
-	 *
+	 * 
 	 * @param fieldType
 	 * @return
 	 */
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected TypeInformation<?> createInfo(Type fieldType) {
 
 		if (fieldType.equals(this.type)) {
 			return this;
 		}
-		
+
 		if (fieldType instanceof Class) {
 			return new ClassTypeInformation((Class<?>) fieldType);
 		}
@@ -109,7 +107,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	/**
 	 * Resolves the given type into a plain {@link Class}.
-	 *
+	 * 
 	 * @param type
 	 * @return
 	 */
@@ -171,40 +169,40 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @return
 	 */
 	private TypeInformation<?> getPropertyInformation(String fieldname) {
-		
+
 		Class<?> type = getType();
 		Field field = ReflectionUtils.findField(type, fieldname);
 
 		if (field != null) {
 			return createInfo(field.getGenericType());
 		}
-		
+
 		PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(type, fieldname);
 
 		return descriptor == null ? null : createInfo(getGenericType(descriptor));
 	}
-	
+
 	/**
-	 * Returns the generic type for the given {@link PropertyDescriptor}. Will inspect its read method
-	 * followed by the first parameter of the write method.
+	 * Returns the generic type for the given {@link PropertyDescriptor}. Will inspect its read method followed by the
+	 * first parameter of the write method.
 	 * 
 	 * @param descriptor must not be {@literal null}
 	 * @return
 	 */
 	private static Type getGenericType(PropertyDescriptor descriptor) {
-		
+
 		Method method = descriptor.getReadMethod();
-		
+
 		if (method != null) {
 			return method.getGenericReturnType();
 		}
-		
+
 		method = descriptor.getWriteMethod();
-		
+
 		if (method == null) {
 			return null;
 		}
-		
+
 		Type[] parameterTypes = method.getGenericParameterTypes();
 		return parameterTypes.length == 0 ? null : parameterTypes[0];
 	}
@@ -219,7 +217,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public Class<S> getType() {
 		return resolveType(type);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getActualType()
 	 */
@@ -249,15 +247,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		if (!isMap()) {
 			return null;
 		}
-		
+
 		if (type instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) type;
 			return createInfo(parameterizedType.getActualTypeArguments()[1]);
-		} 
-		
+		}
+
 		return getTypeArgument(getType(), Map.class, 1);
 	}
-	
+
 	private TypeInformation<?> getTypeArgument(Class<?> type, Class<?> bound, int index) {
 		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(type, bound);
 		return arguments == null ? null : createInfo(arguments[index]);
@@ -285,21 +283,21 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			ParameterizedType parameterizedType = (ParameterizedType) type;
 			return createInfo(parameterizedType.getActualTypeArguments()[0]);
 		}
-		
+
 		Class<S> rawType = getType();
-		
+
 		if (isMap()) {
 			return getTypeArgument(rawType, Map.class, 0);
 		}
-		
+
 		if (Iterable.class.isAssignableFrom(rawType)) {
 			return getTypeArgument(rawType, Iterable.class, 0);
 		}
-		
+
 		if (rawType.isArray()) {
 			return createInfo(rawType.getComponentType());
 		}
-		
+
 		return null;
 	}
 
@@ -325,8 +323,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		TypeDiscoverer<?> that = (TypeDiscoverer<?>) obj;
 
 		boolean typeEqual = nullSafeEquals(this.type, that.type);
-		boolean typeVariableMapEqual = nullSafeEquals(this.typeVariableMap,
-				that.typeVariableMap);
+		boolean typeVariableMapEqual = nullSafeEquals(this.typeVariableMap, that.typeVariableMap);
 
 		return typeEqual && typeVariableMapEqual;
 	}

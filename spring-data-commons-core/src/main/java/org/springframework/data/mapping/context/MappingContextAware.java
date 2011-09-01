@@ -16,17 +16,16 @@
 
 package org.springframework.data.mapping.context;
 
-
 /**
  * An interface to make beans aware of the active MappingContext in the current ApplicationContext.
- *
+ * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public interface MappingContextAware {
 
 	/**
 	 * The active MappingContext for the environment.
-	 *
+	 * 
 	 * @param mappingContext
 	 */
 	void setMappingContext(MappingContext<?, ?> mappingContext);

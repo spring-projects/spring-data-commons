@@ -25,9 +25,6 @@ import java.lang.annotation.Target;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({
-		ElementType.ANNOTATION_TYPE,
-		ElementType.FIELD
-})
+@Target({ ElementType.ANNOTATION_TYPE, ElementType.FIELD })
 public @interface Reference {
 }

@@ -32,7 +32,7 @@ import org.springframework.util.Assert;
 
 /**
  * Simple impementation of {@link PersistentProperty}.
- *
+ * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
  */

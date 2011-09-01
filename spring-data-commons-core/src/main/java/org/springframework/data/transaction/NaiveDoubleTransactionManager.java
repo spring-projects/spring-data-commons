@@ -46,8 +46,7 @@ public class NaiveDoubleTransactionManager implements PlatformTransactionManager
 		return new DefaultTransactionStatus(t, ts.isNewTransaction(), false, false, false, null);
 	}
 
-	public TransactionStatus getTransaction(TransactionDefinition td)
-			throws TransactionException {
+	public TransactionStatus getTransaction(TransactionDefinition td) throws TransactionException {
 		TransactionStatus atx = a.getTransaction(td);
 		TransactionStatus btx = b.getTransaction(td);
 		status.put(atx, btx);

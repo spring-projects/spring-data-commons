@@ -20,7 +20,7 @@ import org.springframework.data.mapping.PreferredConstructor.Parameter;
 
 /**
  * Callback interface to lookup values for a given {@link Parameter}.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface ParameterValueProvider {

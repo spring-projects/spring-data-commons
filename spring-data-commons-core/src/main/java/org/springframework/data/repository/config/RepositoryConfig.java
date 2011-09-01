@@ -27,12 +27,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-
 /**
- * Class defining access to the repository configuration abstracting the content
- * of the {@code repositories} element in XML namespcae configuration. Defines
- * default values to populate resulting repository beans with.
- *
+ * Class defining access to the repository configuration abstracting the content of the {@code repositories} element in
+ * XML namespcae configuration. Defines default values to populate resulting repository beans with.
+ * 
  * @author Oliver Gierke
  */
 public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformation<S>, S extends CommonRepositoryConfigInformation>
@@ -41,34 +39,28 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 	public static final String DEFAULT_REPOSITORY_IMPL_POSTFIX = "Impl";
 	public static final String QUERY_LOOKUP_STRATEGY = "query-lookup-strategy";
 	public static final String BASE_PACKAGE = "base-package";
-	public static final String REPOSITORY_IMPL_POSTFIX =
-			"repository-impl-postfix";
+	public static final String REPOSITORY_IMPL_POSTFIX = "repository-impl-postfix";
 	public static final String REPOSITORY_FACTORY_CLASS_NAME = "factory-class";
-	public static final String TRANSACTION_MANAGER_REF =
-			"transaction-manager-ref";
+	public static final String TRANSACTION_MANAGER_REF = "transaction-manager-ref";
 
 	private final Element element;
 	private final String defaultRepositoryFactoryBeanClassName;
 
-
 	/**
 	 * Creates an instance of {@code RepositoryConfig}.
-	 *
+	 * 
 	 * @param repositoriesElement
 	 */
-	protected RepositoryConfig(Element repositoriesElement,
-														 String defaultRepositoryFactoryBeanClassName) {
+	protected RepositoryConfig(Element repositoriesElement, String defaultRepositoryFactoryBeanClassName) {
 
 		Assert.notNull(repositoriesElement, "Element must not be null!");
 		Assert.notNull(defaultRepositoryFactoryBeanClassName,
 				"Default repository factory bean class name must not be null!");
 
 		this.element = repositoriesElement;
-		this.defaultRepositoryFactoryBeanClassName =
-				defaultRepositoryFactoryBeanClassName;
+		this.defaultRepositoryFactoryBeanClassName = defaultRepositoryFactoryBeanClassName;
 
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -82,7 +74,6 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 		return element;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -95,7 +86,6 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 		return getRepositoryElements().size() > 0;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -105,13 +95,10 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 			 */
 	public Key getQueryLookupStrategyKey() {
 
-		String createFinderQueries =
-				element.getAttribute(QUERY_LOOKUP_STRATEGY);
+		String createFinderQueries = element.getAttribute(QUERY_LOOKUP_STRATEGY);
 
-		return StringUtils.hasText(createFinderQueries) ? Key
-				.create(createFinderQueries) : null;
+		return StringUtils.hasText(createFinderQueries) ? Key.create(createFinderQueries) : null;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -125,7 +112,6 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 		return element.getAttribute(BASE_PACKAGE);
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -135,12 +121,9 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 			 */
 	public String getRepositoryFactoryBeanClassName() {
 
-		String factoryClassName =
-				getSource().getAttribute(REPOSITORY_FACTORY_CLASS_NAME);
-		return StringUtils.hasText(factoryClassName) ? factoryClassName
-				: defaultRepositoryFactoryBeanClassName;
+		String factoryClassName = getSource().getAttribute(REPOSITORY_FACTORY_CLASS_NAME);
+		return StringUtils.hasText(factoryClassName) ? factoryClassName : defaultRepositoryFactoryBeanClassName;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -152,10 +135,8 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 	public String getRepositoryImplementationSuffix() {
 
 		String postfix = element.getAttribute(REPOSITORY_IMPL_POSTFIX);
-		return StringUtils.hasText(postfix) ? postfix
-				: DEFAULT_REPOSITORY_IMPL_POSTFIX;
+		return StringUtils.hasText(postfix) ? postfix : DEFAULT_REPOSITORY_IMPL_POSTFIX;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -169,7 +150,6 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 		String ref = element.getAttribute(TRANSACTION_MANAGER_REF);
 		return StringUtils.hasText(ref) ? ref : null;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -187,15 +167,14 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 
 		return infos;
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.GlobalRepositoryConfigInformation#getRepositoryBaseInterface()
 	 */
 	public Class<?> getRepositoryBaseInterface() {
-	  return Repository.class;
+		return Repository.class;
 	}
-
 
 	private Collection<Element> getRepositoryElements() {
 
@@ -217,14 +196,11 @@ public abstract class RepositoryConfig<T extends SingleRepositoryConfigInformati
 		return result;
 	}
 
-
 	/**
-	 * Creates a {@link SingleRepositoryConfigInformation} for the given
-	 * {@link Element}.
-	 *
+	 * Creates a {@link SingleRepositoryConfigInformation} for the given {@link Element}.
+	 * 
 	 * @param element
 	 * @return
 	 */
-	protected abstract T createSingleRepositoryConfigInformationFor(
-			Element element);
+	protected abstract T createSingleRepositoryConfigInformationFor(Element element);
 }

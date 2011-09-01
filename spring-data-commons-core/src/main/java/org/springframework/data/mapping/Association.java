@@ -16,7 +16,6 @@
 
 package org.springframework.data.mapping;
 
-
 /**
  * Value object to capture {@link Association}s.
  * 

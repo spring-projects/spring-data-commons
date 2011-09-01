@@ -21,12 +21,10 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.util.Assert;
 import org.w3c.dom.Element;
 
-
 /**
- * Base class for {@link SingleRepositoryConfigInformation} implementations. So
- * these implementations will capture information for XML elements manually
- * configuring a single repository bean.
- *
+ * Base class for {@link SingleRepositoryConfigInformation} implementations. So these implementations will capture
+ * information for XML elements manually configuring a single repository bean.
+ * 
  * @author Oliver Gierke
  */
 public abstract class ParentDelegatingRepositoryConfigInformation<T extends CommonRepositoryConfigInformation>
@@ -34,11 +32,10 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 
 	private final T parent;
 
-
 	/**
-	 * Creates a new {@link ParentDelegatingRepositoryConfigInformation} with
-	 * the given {@link CommonRepositoryConfigInformation} as parent.
-	 *
+	 * Creates a new {@link ParentDelegatingRepositoryConfigInformation} with the given
+	 * {@link CommonRepositoryConfigInformation} as parent.
+	 * 
 	 * @param parent
 	 */
 	public ParentDelegatingRepositoryConfigInformation(T parent) {
@@ -46,7 +43,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 		Assert.notNull(parent);
 		this.parent = parent;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -60,7 +56,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 		return parent;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -72,7 +67,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 
 		return parent.getBasePackage();
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -86,7 +80,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 		return capitalize(getBeanId()) + getRepositoryImplementationSuffix();
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -98,7 +91,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 
 		return getBeanId() + getRepositoryImplementationSuffix();
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -112,7 +104,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 		return true;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -124,7 +115,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 
 		return getBeanId() + getRepositoryImplementationSuffix();
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -138,7 +128,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 		return parent.getSource();
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -150,7 +139,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 
 		return parent.getRepositoryImplementationSuffix();
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -164,7 +152,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 		return parent.getRepositoryFactoryBeanClassName();
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -177,7 +164,6 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 		return parent.getTransactionManagerRef();
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -189,7 +175,7 @@ public abstract class ParentDelegatingRepositoryConfigInformation<T extends Comm
 
 		return parent.getQueryLookupStrategyKey();
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.CommonRepositoryConfigInformation#getNamedQueriesLocation()

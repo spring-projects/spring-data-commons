@@ -24,9 +24,9 @@ import java.lang.reflect.TypeVariable;
 import org.springframework.util.Assert;
 
 /**
- * Special {@link TypeDiscoverer} to determine the actual type for a {@link TypeVariable}. Will consider the
- * context the {@link TypeVariable} is being used in.
- *
+ * Special {@link TypeDiscoverer} to determine the actual type for a {@link TypeVariable}. Will consider the context the
+ * {@link TypeVariable} is being used in.
+ * 
  * @author Oliver Gierke
  */
 class TypeVariableTypeInformation<T> extends ParameterizedTypeInformation<T> {
@@ -35,10 +35,10 @@ class TypeVariableTypeInformation<T> extends ParameterizedTypeInformation<T> {
 	private final Type owningType;
 
 	/**
-	 * Creates a bew {@link TypeVariableTypeInformation} for the given {@link TypeVariable} owning {@link Type} and
-	 * parent {@link TypeDiscoverer}.
-	 *
-	 * @param variable	 must not be {@literal null}
+	 * Creates a bew {@link TypeVariableTypeInformation} for the given {@link TypeVariable} owning {@link Type} and parent
+	 * {@link TypeDiscoverer}.
+	 * 
+	 * @param variable must not be {@literal null}
 	 * @param owningType must not be {@literal null}
 	 * @param parent
 	 */
@@ -70,7 +70,7 @@ class TypeVariableTypeInformation<T> extends ParameterizedTypeInformation<T> {
 
 	/**
 	 * Returns the index of the type parameter binding the given {@link TypeVariable}.
-	 *
+	 * 
 	 * @param variable
 	 * @return
 	 */
@@ -100,8 +100,7 @@ class TypeVariableTypeInformation<T> extends ParameterizedTypeInformation<T> {
 		}
 
 		TypeVariableTypeInformation<?> that = (TypeVariableTypeInformation<?>) obj;
-		return nullSafeEquals(this.owningType, that.owningType)
-				&& nullSafeEquals(this.variable, that.variable);
+		return nullSafeEquals(this.owningType, that.owningType) && nullSafeEquals(this.variable, that.variable);
 	}
 
 	/*

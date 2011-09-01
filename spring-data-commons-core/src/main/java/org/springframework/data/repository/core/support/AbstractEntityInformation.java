@@ -20,23 +20,19 @@ import java.io.Serializable;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
 
-
 /**
- * Base class for implementations of {@link EntityInformation}. Considers an
- * entity to be new whenever {@link #getId(Object)} returns {@literal null}.
- *
+ * Base class for implementations of {@link EntityInformation}. Considers an entity to be new whenever
+ * {@link #getId(Object)} returns {@literal null}.
+ * 
  * @author Oliver Gierke
  */
-public abstract class AbstractEntityInformation<T, ID extends Serializable> implements
-		EntityInformation<T, ID> {
+public abstract class AbstractEntityInformation<T, ID extends Serializable> implements EntityInformation<T, ID> {
 
 	private final Class<T> domainClass;
 
-
 	/**
-	 * Creates a new {@link AbstractEntityInformation} from the given domain
-	 * class.
-	 *
+	 * Creates a new {@link AbstractEntityInformation} from the given domain class.
+	 * 
 	 * @param domainClass
 	 */
 	public AbstractEntityInformation(Class<T> domainClass) {
@@ -44,7 +40,6 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 		Assert.notNull(domainClass);
 		this.domainClass = domainClass;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -57,7 +52,6 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 
 		return getId(entity) == null;
 	}
-
 
 	/*
 			 * (non-Javadoc)

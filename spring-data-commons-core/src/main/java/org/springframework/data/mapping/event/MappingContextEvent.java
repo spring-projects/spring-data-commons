@@ -24,7 +24,8 @@ import org.springframework.data.util.TypeInformation;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> extends ApplicationEvent {
+public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> extends
+		ApplicationEvent {
 
 	private static final long serialVersionUID = 1336466833846092490L;
 	private TypeInformation<?> typeInformation;

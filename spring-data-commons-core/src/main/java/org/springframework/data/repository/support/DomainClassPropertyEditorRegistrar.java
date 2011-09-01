@@ -30,15 +30,11 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
-
 /**
- * Simple helper class to use Hades DAOs to provide
- * {@link java.beans.PropertyEditor}s for domain classes. To get this working
- * configure a
- * {@link org.springframework.web.bind.support.ConfigurableWebBindingInitializer}
- * for your
- * {@link org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter}
- * and register the {@link DomainClassPropertyEditorRegistrar} there: <code>
+ * Simple helper class to use Hades DAOs to provide {@link java.beans.PropertyEditor}s for domain classes. To get this
+ * working configure a {@link org.springframework.web.bind.support.ConfigurableWebBindingInitializer} for your
+ * {@link org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter} and register the
+ * {@link DomainClassPropertyEditorRegistrar} there: <code>
  * &lt;bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"&gt;
  * &lt;property name="webBindingInitializer"&gt;
  * &lt;bean class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer"&gt;
@@ -48,19 +44,15 @@ import org.springframework.data.repository.core.support.RepositoryFactoryInforma
  * &lt;/bean&gt;
  * &lt;/property&gt;
  * &lt;/bean&gt;
- * </code> Make sure this bean declaration is in the {@link ApplicationContext}
- * created by the {@link DispatcherServlet} whereas the repositories need to be
- * declared in the root
+ * </code> Make sure this bean declaration is in the {@link ApplicationContext} created by the {@link DispatcherServlet}
+ * whereas the repositories need to be declared in the root
  * {@link org.springframework.web.context.WebApplicationContext}.
- *
+ * 
  * @author Oliver Gierke
  */
-public class DomainClassPropertyEditorRegistrar implements
-		PropertyEditorRegistrar, ApplicationContextAware {
+public class DomainClassPropertyEditorRegistrar implements PropertyEditorRegistrar, ApplicationContextAware {
 
-	private final Map<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>> repositories =
-			new HashMap<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>>();
-
+	private final Map<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>> repositories = new HashMap<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>>();
 
 	/*
 			 * (non-Javadoc)
@@ -77,14 +69,12 @@ public class DomainClassPropertyEditorRegistrar implements
 			EntityInformation<Object, Serializable> metadata = entry.getKey();
 			CrudRepository<Object, Serializable> repository = entry.getValue();
 
-			DomainClassPropertyEditor<Object, Serializable> editor =
-					new DomainClassPropertyEditor<Object, Serializable>(
-							repository, metadata, registry);
+			DomainClassPropertyEditor<Object, Serializable> editor = new DomainClassPropertyEditor<Object, Serializable>(
+					repository, metadata, registry);
 
 			registry.registerCustomEditor(metadata.getJavaType(), editor);
 		}
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -93,21 +83,17 @@ public class DomainClassPropertyEditorRegistrar implements
 			 * org.springframework.context.ApplicationContextAware#setApplicationContext
 			 * (org.springframework.context.ApplicationContext)
 			 */
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setApplicationContext(ApplicationContext context) {
 
-		Collection<RepositoryFactoryInformation> providers =
-				BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
-						RepositoryFactoryInformation.class).values();
+		Collection<RepositoryFactoryInformation> providers = BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
+				RepositoryFactoryInformation.class).values();
 
 		for (RepositoryFactoryInformation information : providers) {
 
-			EntityInformation<Object, Serializable> metadata =
-					information.getEntityInformation();
-			Class<CrudRepository<Object, Serializable>> objectType =
-					information.getRepositoryInterface();
-			CrudRepository<Object, Serializable> repository =
-					BeanFactoryUtils.beanOfType(context, objectType);
+			EntityInformation<Object, Serializable> metadata = information.getEntityInformation();
+			Class<CrudRepository<Object, Serializable>> objectType = information.getRepositoryInterface();
+			CrudRepository<Object, Serializable> repository = BeanFactoryUtils.beanOfType(context, objectType);
 
 			this.repositories.put(metadata, repository);
 		}

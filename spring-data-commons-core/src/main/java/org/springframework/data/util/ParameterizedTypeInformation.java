@@ -29,13 +29,12 @@ import org.springframework.util.ObjectUtils;
  * @author Oliver Gierke
  */
 class ParameterizedTypeInformation<T> extends TypeDiscoverer<T> {
-	
+
 	private final TypeDiscoverer<?> parent;
 
-	
 	/**
 	 * Creates a new {@link ParameterizedTypeInformation} for the given {@link Type} and parent {@link TypeDiscoverer}.
-	 *  
+	 * 
 	 * @param type must not be {@literal null}
 	 * @param parent must not be {@literal null}
 	 */
@@ -44,10 +43,10 @@ class ParameterizedTypeInformation<T> extends TypeDiscoverer<T> {
 		Assert.notNull(parent);
 		this.parent = parent;
 	}
-	
+
 	/**
 	 * Considers the parent's type variable map before invoking the super class method.
-	 *
+	 * 
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
@@ -55,7 +54,7 @@ class ParameterizedTypeInformation<T> extends TypeDiscoverer<T> {
 
 		return parent != null ? parent.getTypeVariableMap() : super.getTypeVariableMap();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#createInfo(java.lang.reflect.Type)
 	 */
@@ -64,10 +63,10 @@ class ParameterizedTypeInformation<T> extends TypeDiscoverer<T> {
 		if (parent.getType().equals(fieldType)) {
 			return parent;
 		}
-		
+
 		return super.createInfo(fieldType);
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#equals(java.lang.Object)
@@ -78,15 +77,15 @@ class ParameterizedTypeInformation<T> extends TypeDiscoverer<T> {
 		if (!super.equals(obj)) {
 			return false;
 		}
-		
+
 		if (!this.getClass().equals(obj.getClass())) {
 			return false;
 		}
-		
+
 		ParameterizedTypeInformation<?> that = (ParameterizedTypeInformation<?>) obj;
 		return this.parent == null ? that.parent == null : this.parent.equals(that.parent);
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#hashCode()

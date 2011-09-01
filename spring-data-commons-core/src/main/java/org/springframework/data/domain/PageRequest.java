@@ -19,10 +19,9 @@ import java.io.Serializable;
 
 import org.springframework.data.domain.Sort.Direction;
 
-
 /**
  * Basic Java Bean implementation of {@code Pageable}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class PageRequest implements Pageable, Serializable {
@@ -33,11 +32,10 @@ public class PageRequest implements Pageable, Serializable {
 	private final int size;
 	private final Sort sort;
 
-
 	/**
-	 * Creates a new {@link PageRequest}. Pages are zero indexed, thus providing
-	 * 0 for {@code page} will return the first page.
-	 *
+	 * Creates a new {@link PageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return the first
+	 * page.
+	 * 
 	 * @param size
 	 * @param page
 	 */
@@ -46,25 +44,22 @@ public class PageRequest implements Pageable, Serializable {
 		this(page, size, null);
 	}
 
-
 	/**
 	 * Creates a new {@link PageRequest} with sort parameters applied.
-	 *
+	 * 
 	 * @param page
 	 * @param size
 	 * @param direction
 	 * @param properties
 	 */
-	public PageRequest(int page, int size, Direction direction,
-										 String... properties) {
+	public PageRequest(int page, int size, Direction direction, String... properties) {
 
 		this(page, size, new Sort(direction, properties));
 	}
 
-
 	/**
 	 * Creates a new {@link PageRequest} with sort parameters applied.
-	 *
+	 * 
 	 * @param page
 	 * @param size
 	 * @param sort
@@ -72,20 +67,17 @@ public class PageRequest implements Pageable, Serializable {
 	public PageRequest(int page, int size, Sort sort) {
 
 		if (0 > page) {
-			throw new IllegalArgumentException(
-					"Page index must not be less than zero!");
+			throw new IllegalArgumentException("Page index must not be less than zero!");
 		}
 
 		if (0 >= size) {
-			throw new IllegalArgumentException(
-					"Page size must not be less than or equal to zero!");
+			throw new IllegalArgumentException("Page size must not be less than or equal to zero!");
 		}
 
 		this.page = page;
 		this.size = size;
 		this.sort = sort;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -97,7 +89,6 @@ public class PageRequest implements Pageable, Serializable {
 		return size;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -107,7 +98,6 @@ public class PageRequest implements Pageable, Serializable {
 
 		return page;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -119,7 +109,6 @@ public class PageRequest implements Pageable, Serializable {
 		return page * size;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -129,7 +118,6 @@ public class PageRequest implements Pageable, Serializable {
 
 		return sort;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -152,13 +140,10 @@ public class PageRequest implements Pageable, Serializable {
 		boolean pageEqual = this.page == that.page;
 		boolean sizeEqual = this.size == that.size;
 
-		boolean sortEqual =
-				this.sort == null ? that.sort == null : this.sort
-						.equals(that.sort);
+		boolean sortEqual = this.sort == null ? that.sort == null : this.sort.equals(that.sort);
 
 		return pageEqual && sizeEqual && sortEqual;
 	}
-
 
 	/*
 			 * (non-Javadoc)

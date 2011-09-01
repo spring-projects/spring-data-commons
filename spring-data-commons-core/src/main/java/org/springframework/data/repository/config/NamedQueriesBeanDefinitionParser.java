@@ -36,14 +36,14 @@ import org.w3c.dom.Element;
  * @author Oliver Gierke
  */
 public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
-	
+
 	private static final String ATTRIBUTE = "named-queries-location";
 	private final String defaultLocation;
-	
+
 	/**
 	 * Creates a new {@link NamedQueriesBeanDefinitionParser} using the given default location.
 	 * 
-	 * @param defaultLocation must be non-empty 
+	 * @param defaultLocation must be non-empty
 	 */
 	public NamedQueriesBeanDefinitionParser(String defaultLocation) {
 		Assert.hasText(defaultLocation);
@@ -55,26 +55,26 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 	 * @see org.springframework.beans.factory.xml.BeanDefinitionParser#parse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)
 	 */
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		
+
 		BeanDefinitionBuilder properties = BeanDefinitionBuilder.rootBeanDefinition(PropertiesFactoryBean.class);
 		properties.addPropertyValue("locations", getDefaultedLocation(element));
-		
+
 		if (isDefaultLocation(element)) {
 			properties.addPropertyValue("ignoreResourceNotFound", true);
 		}
-		
+
 		AbstractBeanDefinition propertiesDefinition = properties.getBeanDefinition();
 		propertiesDefinition.setSource(parserContext.extractSource(element));
-		
+
 		BeanDefinitionBuilder namedQueries = BeanDefinitionBuilder.rootBeanDefinition(PropertiesBasedNamedQueries.class);
 		namedQueries.addConstructorArgValue(propertiesDefinition);
-		
+
 		AbstractBeanDefinition namedQueriesDefinition = namedQueries.getBeanDefinition();
 		namedQueriesDefinition.setSource(parserContext.extractSource(element));
-		
+
 		return namedQueriesDefinition;
 	}
-	
+
 	/**
 	 * Returns whether we should use the default location.
 	 * 
@@ -84,15 +84,15 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 	private boolean isDefaultLocation(Element element) {
 		return !StringUtils.hasText(element.getAttribute(ATTRIBUTE));
 	}
-	
+
 	/**
 	 * Returns the location to look for {@link Properties} if configured or the default one if not.
-	 *  
+	 * 
 	 * @param element
 	 * @return
 	 */
 	private String getDefaultedLocation(Element element) {
-		
+
 		String locations = element.getAttribute(ATTRIBUTE);
 		return StringUtils.hasText(locations) ? locations : defaultLocation;
 	}

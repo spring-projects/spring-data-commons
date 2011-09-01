@@ -50,11 +50,13 @@ public class ChangeSetBackedTransactionSynchronization implements TransactionSyn
 	}
 
 	public void resume() {
-		throw new IllegalStateException("ChangedSetBackedTransactionSynchronization does not support transaction suspension currently.");
+		throw new IllegalStateException(
+				"ChangedSetBackedTransactionSynchronization does not support transaction suspension currently.");
 	}
 
 	public void suspend() {
-		throw new IllegalStateException("ChangedSetBackedTransactionSynchronization does not support transaction suspension currently.");
+		throw new IllegalStateException(
+				"ChangedSetBackedTransactionSynchronization does not support transaction suspension currently.");
 	}
 
 }

@@ -342,7 +342,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 
 			return this.direction.equals(that.direction) && this.property.equals(that.property);
 		}
-		
+
 		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()

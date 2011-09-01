@@ -67,7 +67,7 @@ public class UserCredentials {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		
+
 		if (obj == this) {
 			return true;
 		}
@@ -88,12 +88,12 @@ public class UserCredentials {
 	 */
 	@Override
 	public int hashCode() {
-		
+
 		int result = 17;
-		
+
 		result += 31 * ObjectUtils.nullSafeHashCode(username);
 		result += 31 * ObjectUtils.nullSafeHashCode(password);
-		
+
 		return result;
 	}
 }

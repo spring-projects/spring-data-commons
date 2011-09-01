@@ -20,24 +20,21 @@ import static org.springframework.util.StringUtils.*;
 
 import org.springframework.util.Assert;
 
-
 /**
- * A {@link SingleRepositoryConfigInformation} implementation that is not backed
- * by an XML element but by a scanned interface. As this is derived from the
- * parent, most of the lookup logic is delegated to the parent as well.
- *
+ * A {@link SingleRepositoryConfigInformation} implementation that is not backed by an XML element but by a scanned
+ * interface. As this is derived from the parent, most of the lookup logic is delegated to the parent as well.
+ * 
  * @author Oliver Gierke
  */
-public class AutomaticRepositoryConfigInformation<S extends CommonRepositoryConfigInformation>
-		extends ParentDelegatingRepositoryConfigInformation<S> {
+public class AutomaticRepositoryConfigInformation<S extends CommonRepositoryConfigInformation> extends
+		ParentDelegatingRepositoryConfigInformation<S> {
 
 	private final String interfaceName;
 
-
 	/**
-	 * Creates a new {@link AutomaticRepositoryConfigInformation} for the given
-	 * interface name and {@link CommonRepositoryConfigInformation} parent.
-	 *
+	 * Creates a new {@link AutomaticRepositoryConfigInformation} for the given interface name and
+	 * {@link CommonRepositoryConfigInformation} parent.
+	 * 
 	 * @param interfaceName
 	 * @param parent
 	 */
@@ -47,7 +44,6 @@ public class AutomaticRepositoryConfigInformation<S extends CommonRepositoryConf
 		Assert.notNull(interfaceName);
 		this.interfaceName = interfaceName;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -60,7 +56,6 @@ public class AutomaticRepositoryConfigInformation<S extends CommonRepositoryConf
 
 		return uncapitalize(getShortName(interfaceName));
 	}
-
 
 	/*
 			 * (non-Javadoc)

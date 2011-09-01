@@ -213,11 +213,11 @@ public class PartTree implements Iterable<OrPart> {
 
 			predicate = detectAndSetAllIgnoreCase(predicate);
 			String[] parts = split(predicate, ORDER_BY);
-			
+
 			if (parts.length > 2) {
 				throw new IllegalArgumentException("OrderBy must not be used more than once in a method name!");
 			}
-			
+
 			buildTree(parts[0], domainClass);
 			this.orderBySource = parts.length == 2 ? new OrderBySource(parts[1], domainClass) : null;
 		}
@@ -225,12 +225,12 @@ public class PartTree implements Iterable<OrPart> {
 		private String detectAndSetAllIgnoreCase(String predicate) {
 
 			Matcher matcher = ALL_IGNORE_CASE.matcher(predicate);
-			
+
 			if (matcher.find()) {
 				alwaysIgnoreCase = true;
 				predicate = predicate.substring(0, matcher.start()) + predicate.substring(matcher.end(), predicate.length());
 			}
-			
+
 			return predicate;
 		}
 

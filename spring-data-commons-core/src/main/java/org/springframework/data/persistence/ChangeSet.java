@@ -6,7 +6,7 @@ import org.springframework.core.convert.ConversionService;
 
 /**
  * Interface representing the set of changes in an entity.
- *
+ * 
  * @author Rod Johnson
  * @author Thomas Risberg
  */

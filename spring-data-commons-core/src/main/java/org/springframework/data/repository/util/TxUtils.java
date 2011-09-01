@@ -17,7 +17,7 @@ package org.springframework.data.repository.util;
 
 /**
  * Simple constants holder.
- *
+ * 
  * @author Oliver Gierke
  */
 public abstract class TxUtils {
@@ -26,6 +26,5 @@ public abstract class TxUtils {
 
 	}
 
-	public static final String DEFAULT_TRANSACTION_MANAGER =
-			"transactionManager";
+	public static final String DEFAULT_TRANSACTION_MANAGER = "transactionManager";
 }

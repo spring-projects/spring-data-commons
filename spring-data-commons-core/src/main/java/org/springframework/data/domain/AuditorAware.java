@@ -16,9 +16,8 @@
 package org.springframework.data.domain;
 
 /**
- * Interface for components that are aware of the application's current auditor.
- * This will be some kind of user mostly.
- *
+ * Interface for components that are aware of the application's current auditor. This will be some kind of user mostly.
+ * 
  * @param <T> the type of the auditing instance
  * @author Oliver Gierke
  */
@@ -26,7 +25,7 @@ public interface AuditorAware<T> {
 
 	/**
 	 * Returns the current auditor of the application.
-	 *
+	 * 
 	 * @return the current auditor
 	 */
 	T getCurrentAuditor();

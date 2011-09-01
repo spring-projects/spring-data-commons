@@ -28,12 +28,13 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  */
 public class SpELAwareParameterValueProvider implements ParameterValueProvider {
-	
+
 	private final SpelExpressionParser parser;
 	private final EvaluationContext context;
-	
+
 	/**
-	 * Creates a new {@link SpELAwareParameterValueProvider} from the given {@link SpelExpressionParser} and {@link EvaluationContext}.
+	 * Creates a new {@link SpELAwareParameterValueProvider} from the given {@link SpelExpressionParser} and
+	 * {@link EvaluationContext}.
 	 * 
 	 * @param parser must not be {@literal null}
 	 * @param context must not be {@literal null}

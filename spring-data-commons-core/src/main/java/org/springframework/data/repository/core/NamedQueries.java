@@ -17,7 +17,7 @@ package org.springframework.data.repository.core;
 
 /**
  * Abstraction of a map of {@link NamedQueries} that can be looked up by their names.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface NamedQueries {

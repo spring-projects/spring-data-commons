@@ -20,19 +20,17 @@ import static org.springframework.util.StringUtils.*;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.w3c.dom.Element;
 
-
 /**
  * Configuration information for manual repository configuration.
- *
+ * 
  * @author Oliver Gierke
  */
-public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigInformation>
-		extends ParentDelegatingRepositoryConfigInformation<T> {
+public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigInformation> extends
+		ParentDelegatingRepositoryConfigInformation<T> {
 
 	private static final String CUSTOM_IMPL_REF = "custom-impl-ref";
 
 	private Element element;
-
 
 	/**
 	 * @param parent
@@ -42,7 +40,6 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 		super(parent);
 		this.element = element;
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -56,7 +53,6 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 		return element.getAttribute("id");
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -68,7 +64,6 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 
 		return getBasePackage() + "." + capitalize(getBeanId());
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -83,10 +78,9 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 		return element.getAttribute(CUSTOM_IMPL_REF);
 	}
 
-
 	/**
 	 * Returns if a custom implementation shall be autodetected.
-	 *
+	 * 
 	 * @return
 	 */
 	@Override
@@ -94,7 +88,6 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 
 		return !hasText(getCustomImplementationRef());
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -106,19 +99,15 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 	@Override
 	public String getRepositoryImplementationSuffix() {
 
-		String value =
-				element.getAttribute(RepositoryConfig.REPOSITORY_IMPL_POSTFIX);
-		return hasText(value) ? value : getParent()
-				.getRepositoryImplementationSuffix();
+		String value = element.getAttribute(RepositoryConfig.REPOSITORY_IMPL_POSTFIX);
+		return hasText(value) ? value : getParent().getRepositoryImplementationSuffix();
 	}
-
 
 	@Override
 	public String getTransactionManagerRef() {
 
 		return getAttribute(RepositoryConfig.TRANSACTION_MANAGER_REF);
 	}
-
 
 	/*
 			 * (non-Javadoc)
@@ -133,11 +122,9 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 		return element;
 	}
 
-
 	/**
-	 * Returns the attribute of the current context. If it's not set the method
-	 * will fall back to the parent's source.
-	 *
+	 * Returns the attribute of the current context. If it's not set the method will fall back to the parent's source.
+	 * 
 	 * @param attribute
 	 * @return
 	 */
@@ -154,7 +141,6 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 		return hasText(value) ? value : null;
 	}
 
-
 	/*
 			 * (non-Javadoc)
 			 *
@@ -165,12 +151,9 @@ public class ManualRepositoryConfigInformation<T extends CommonRepositoryConfigI
 	@Override
 	public String getRepositoryFactoryBeanClassName() {
 
-		String value =
-				element.getAttribute(RepositoryConfig.REPOSITORY_FACTORY_CLASS_NAME);
-		return hasText(value) ? value : getParent()
-				.getRepositoryFactoryBeanClassName();
+		String value = element.getAttribute(RepositoryConfig.REPOSITORY_FACTORY_CLASS_NAME);
+		return hasText(value) ? value : getParent().getRepositoryFactoryBeanClassName();
 	}
-
 
 	/*
 			 * (non-Javadoc)

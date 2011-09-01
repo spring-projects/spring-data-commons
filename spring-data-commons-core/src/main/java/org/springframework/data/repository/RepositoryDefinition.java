@@ -43,7 +43,7 @@ public @interface RepositoryDefinition {
 	 * @return
 	 */
 	Class<?> domainClass();
-	
+
 	/**
 	 * The id class of the entity the repository manages. Equivalent to the ID type parameter in {@link Repository}.
 	 * 

@@ -21,11 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
-
 /**
- * {@link ParameterAccessor} implementation using a {@link Parameters} instance
- * to find special parameters.
- *
+ * {@link ParameterAccessor} implementation using a {@link Parameters} instance to find special parameters.
+ * 
  * @author Oliver Gierke
  */
 public class ParametersParameterAccessor implements ParameterAccessor {
@@ -33,10 +31,9 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	private final Parameters parameters;
 	private final Object[] values;
 
-
 	/**
 	 * Creates a new {@link ParametersParameterAccessor}.
-	 *
+	 * 
 	 * @param parameters
 	 * @param values
 	 */
@@ -45,13 +42,11 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		Assert.notNull(parameters);
 		Assert.notNull(values);
 
-		Assert.isTrue(parameters.getNumberOfParameters() == values.length,
-				"Invalid number of parameters given!");
+		Assert.isTrue(parameters.getNumberOfParameters() == values.length, "Invalid number of parameters given!");
 
 		this.parameters = parameters;
 		this.values = values.clone();
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -65,7 +60,6 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 		return (Pageable) values[parameters.getPageableIndex()];
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -83,7 +77,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 		return null;
 	}
-	
+
 	/**
 	 * Returns the value with the given index.
 	 * 
@@ -95,7 +89,6 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		return (T) values[index];
 	}
 
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ParameterAccessor#getBindableValue(int)
@@ -104,7 +97,6 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 		return values[parameters.getBindableParameter(index).getIndex()];
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -116,26 +108,23 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	}
 
 	/**
-	 * Iterator class to allow traversing all bindable parameters inside the
-	 * accessor.
-	 *
+	 * Iterator class to allow traversing all bindable parameters inside the accessor.
+	 * 
 	 * @author Oliver Gierke
 	 */
 	private class BindableParameterIterator implements Iterator<Object> {
 
 		private int currentIndex = 0;
 
-
 		/**
 		 * Returns the next bindable parameter.
-		 *
+		 * 
 		 * @return
 		 */
 		public Object next() {
 
 			return getBindableValue(currentIndex++);
 		}
-
 
 		/*
 		 * (non-Javadoc)
@@ -145,7 +134,6 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 			return values.length > currentIndex;
 		}
-
 
 		/*
 		 * (non-Javadoc)

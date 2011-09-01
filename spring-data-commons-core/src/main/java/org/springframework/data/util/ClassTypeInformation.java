@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
 
 /**
  * Property information for a plain {@link Class}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
@@ -35,7 +35,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	/**
 	 * Simple factory method to easily create new instances of {@link ClassTypeInformation}.
-	 *  
+	 * 
 	 * @param <S>
 	 * @param type
 	 * @return
@@ -43,7 +43,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	public static <S> TypeInformation<S> from(Class<S> type) {
 		return new ClassTypeInformation<S>(type);
 	}
-	
+
 	/**
 	 * Creates a {@link TypeInformation} from the given method's return type.
 	 * 
@@ -57,15 +57,14 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	/**
 	 * Creates {@link ClassTypeInformation} for the given type.
-	 *
+	 * 
 	 * @param type
 	 */
 	public ClassTypeInformation(Class<S> type) {
 		this(type, GenericTypeResolver.getTypeVariableMap(type));
 	}
 
-
-	@SuppressWarnings("rawtypes") 
+	@SuppressWarnings("rawtypes")
 	ClassTypeInformation(Class<S> type, Map<TypeVariable, Type> typeVariableMap) {
 		super(type, typeVariableMap);
 		this.type = type;

@@ -27,7 +27,7 @@ import org.springframework.context.ApplicationContextAware;
  * BeanPostProcessor to make Spring beans aware of the current MappingContext. If a MappingContext exists with the
  * default bean name ("mappingContext"), then that bean is used. If there is no MappingContext registered under the
  * default bean name, then the first MappingContext it finds is the one it chooses.
- *
+ * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class MappingContextAwareBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware {

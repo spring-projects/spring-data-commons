@@ -20,26 +20,23 @@ import java.io.Serializable;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
 
-
 /**
- * Interface for components that can provide {@link EntityInformation} this
- * interface
- *
+ * Interface for components that can provide {@link EntityInformation} this interface
+ * 
  * @author Oliver Gierke
  */
 public interface RepositoryFactoryInformation<T, ID extends Serializable> {
 
 	/**
 	 * Returns {@link EntityInformation} the repository factory is using.
-	 *
+	 * 
 	 * @return
 	 */
 	EntityInformation<T, ID> getEntityInformation();
 
-
 	/**
 	 * Returns the interface of the {@link Repository} the factory will create.
-	 *
+	 * 
 	 * @return
 	 */
 	Class<? extends Repository<T, ID>> getRepositoryInterface();

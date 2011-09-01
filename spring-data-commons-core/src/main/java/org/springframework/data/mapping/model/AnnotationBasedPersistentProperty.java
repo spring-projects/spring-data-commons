@@ -28,24 +28,25 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 
-
 /**
  * Special {@link PersistentProperty} that takes annotations at a property into account.
- *
+ * 
  * @author Oliver Gierke
  */
-public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>> extends AbstractPersistentProperty<P> {
+public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>> extends
+		AbstractPersistentProperty<P> {
 
 	private final Value value;
 
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
-	 *
+	 * 
 	 * @param field
 	 * @param propertyDescriptor
 	 * @param owner
 	 */
-	public AnnotationBasedPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
+	public AnnotationBasedPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
+			PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
 
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
 		this.value = field.getAnnotation(Value.class);
@@ -55,7 +56,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	/**
 	 * Inspects a potentially available {@link Value} annotation at the property and returns the {@link String} value of
 	 * it.
-	 *
+	 * 
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getSpelExpression()
 	 */
 	public String getSpelExpression() {
@@ -65,7 +66,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	/**
 	 * Considers plain transient fields, fields annotated with {@link Transient}, {@link Value} or {@link Autowired} as
 	 * transien.
-	 *
+	 * 
 	 * @see org.springframework.data.mapping.BasicPersistentProperty#isTransient()
 	 */
 	public boolean isTransient() {

@@ -23,16 +23,22 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.validation.Validator;
 
 /**
- * <p>This interface defines the overall context including all known
- * PersistentEntity instances and methods to obtain instances on demand</p>
+ * <p>
+ * This interface defines the overall context including all known PersistentEntity instances and methods to obtain
+ * instances on demand
+ * </p>
  * <p/>
- * <p>This interface is used internally to establish associations
- * between entities and also at runtime to obtain entities by name</p>
+ * <p>
+ * This interface is used internally to establish associations between entities and also at runtime to obtain entities
+ * by name
+ * </p>
  * <p/>
- * <p>The generic type parameters T & R are used to specify the
- * mapped form of a class (example Table) and property (example Column) respectively.</p>
+ * <p>
+ * The generic type parameters T & R are used to specify the mapped form of a class (example Table) and property
+ * (example Column) respectively.
+ * </p>
  * <p/>
- *
+ * 
  * @author Graeme Rocher
  * @author Jon Brisbin
  * @author Oliver Gierke
@@ -41,7 +47,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 
 	/**
 	 * Returns all {@link PersistentEntity}s held in the context.
-	 *
+	 * 
 	 * @return
 	 */
 	Collection<E> getPersistentEntities();
@@ -56,7 +62,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 
 	/**
 	 * Returns a {@link PersistentEntity} for the given {@link TypeInformation}.
-	 *  
+	 * 
 	 * @param type
 	 * @return
 	 */
@@ -66,7 +72,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * Returns all {@link PersistentProperty}s for the given path expression based on the given root {@link Class}. Path
 	 * expression are dot separated, e.g. {@code person.firstname}.
 	 * 
-	 * @param <T> 
+	 * @param <T>
 	 * @param type
 	 * @param path
 	 * @return
@@ -74,9 +80,8 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	<T> Iterable<P> getPersistentPropertyPath(Class<T> type, String path);
 
 	/**
-	 * Obtains a validator for the given entity
-	 * TODO: Why do we need validators at the {@link MappingContext}?
-	 *
+	 * Obtains a validator for the given entity TODO: Why do we need validators at the {@link MappingContext}?
+	 * 
 	 * @param entity The entity
 	 * @return A validator or null if none exists for the given entity
 	 */

@@ -18,14 +18,14 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	/**
 	 * The name of the property
-	 *
+	 * 
 	 * @return The property name
 	 */
 	String getName();
 
 	/**
 	 * The type of the property
-	 *
+	 * 
 	 * @return The property type
 	 */
 	Class<?> getType();
@@ -55,7 +55,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	/**
 	 * Returns whether the property has to be regarded as entity which means its type will be also be considered to be a
 	 * {@link PersistentEntity}.
-	 *
+	 * 
 	 * @return
 	 */
 	boolean isEntity();
@@ -63,21 +63,21 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	/**
 	 * Returns the component type of the type if it is a {@link Collection}. Will return the type of the key if the
 	 * property is a {@link Map}.
-	 *
+	 * 
 	 * @return the component type, the map's key type or {@literal null} if neither {@link Collection} nor {@link Map}.
 	 */
 	Class<?> getComponentType();
 
 	/**
 	 * Returns the raw type as it's pulled from from the reflected property.
-	 *
+	 * 
 	 * @return the raw type of the property.
 	 */
 	Class<?> getRawType();
 
 	/**
 	 * Returns the type of the values if the property is a {@link Map}.
-	 *
+	 * 
 	 * @return the map's value type or {@literal null} if no {@link Map}
 	 */
 	Class<?> getMapValueType();

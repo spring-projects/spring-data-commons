@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 
 /**
  * Simple value object to capture information of {@link PersistentEntity}s.
- *
+ * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
  */
@@ -41,19 +41,18 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private final TypeInformation<T> information;
 	private final Set<P> properties;
 	private final Set<Association<P>> associations;
-	
-	private P idProperty;
 
+	private P idProperty;
 
 	/**
 	 * Creates a new {@link BasicPersistentEntity} from the given {@link TypeInformation}.
-	 *
+	 * 
 	 * @param information must not be {@literal null}.
 	 */
 	public BasicPersistentEntity(TypeInformation<T> information) {
 		this(information, null);
 	}
-	
+
 	/**
 	 * Creates a new {@link BasicPersistentEntity} for the given {@link TypeInformation} and {@link Comparator}. The given
 	 * {@link Comparator} will be used to define the order of the {@link PersistentProperty} instances added to the
@@ -124,13 +123,13 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperty(java.lang.String)
 	 */
 	public P getPersistentProperty(String name) {
-		
+
 		for (P property : properties) {
 			if (property.getName().equals(name)) {
 				return property;
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -180,16 +179,17 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public void verify() {
 
 	}
-	
+
 	/**
 	 * Simple {@link Comparator} adaptor to delegate ordering to the inverse properties of the association.
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static final class AssociationComparator<P extends PersistentProperty<P>> implements Comparator<Association<P>> {
-		
+	private static final class AssociationComparator<P extends PersistentProperty<P>> implements
+			Comparator<Association<P>> {
+
 		private final Comparator<P> delegate;
-		
+
 		public AssociationComparator(Comparator<P> delegate) {
 			Assert.notNull(delegate);
 			this.delegate = delegate;

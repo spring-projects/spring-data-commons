@@ -23,27 +23,23 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Simple implementation of {@link EntityPathResolver} to lookup a query
- * class by reflection and using the static field of the same type.
- *
+ * Simple implementation of {@link EntityPathResolver} to lookup a query class by reflection and using the static field
+ * of the same type.
+ * 
  * @author Oliver Gierke
  */
 public enum SimpleEntityPathResolver implements EntityPathResolver {
 
 	INSTANCE;
 
-	private static final String NO_CLASS_FOUND_TEMPLATE =
-			"Did not find a query class %s for domain class %s!";
-	private static final String NO_FIELD_FOUND_TEMPLATE =
-			"Did not find a static field of the same type in %s!";
-
+	private static final String NO_CLASS_FOUND_TEMPLATE = "Did not find a query class %s for domain class %s!";
+	private static final String NO_FIELD_FOUND_TEMPLATE = "Did not find a static field of the same type in %s!";
 
 	/**
-	 * Creates an {@link EntityPath} instance for the given domain class.
-	 * Tries to lookup a class matching the naming convention (prepend Q to
-	 * the simple name of the class, same package) and find a static field
-	 * of the same type in it.
-	 *
+	 * Creates an {@link EntityPath} instance for the given domain class. Tries to lookup a class matching the naming
+	 * convention (prepend Q to the simple name of the class, same package) and find a static field of the same type in
+	 * it.
+	 * 
 	 * @param domainClass
 	 * @return
 	 */
@@ -53,31 +49,24 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 		String pathClassName = getQueryClassName(domainClass);
 
 		try {
-			Class<?> pathClass =
-					ClassUtils.forName(pathClassName,
-							SimpleEntityPathResolver.class.getClassLoader());
+			Class<?> pathClass = ClassUtils.forName(pathClassName, SimpleEntityPathResolver.class.getClassLoader());
 			Field field = getStaticFieldOfType(pathClass);
 
 			if (field == null) {
-				throw new IllegalStateException(String.format(
-						NO_FIELD_FOUND_TEMPLATE, pathClass));
+				throw new IllegalStateException(String.format(NO_FIELD_FOUND_TEMPLATE, pathClass));
 			} else {
-				return (EntityPath<T>) ReflectionUtils
-						.getField(field, null);
+				return (EntityPath<T>) ReflectionUtils.getField(field, null);
 			}
 
 		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException(String.format(
-					NO_CLASS_FOUND_TEMPLATE, pathClassName,
-					domainClass.getName()), e);
+			throw new IllegalArgumentException(String.format(NO_CLASS_FOUND_TEMPLATE, pathClassName, domainClass.getName()),
+					e);
 		}
 	}
 
-
 	/**
-	 * Returns the first static field of the given type inside the given
-	 * type.
-	 *
+	 * Returns the first static field of the given type inside the given type.
+	 * 
 	 * @param type
 	 * @return
 	 */
@@ -94,30 +83,25 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 		}
 
 		Class<?> superclass = type.getSuperclass();
-		return Object.class.equals(superclass) ? null
-				: getStaticFieldOfType(superclass);
+		return Object.class.equals(superclass) ? null : getStaticFieldOfType(superclass);
 	}
-
 
 	/**
 	 * Returns the name of the query class for the given domain class.
-	 *
+	 * 
 	 * @param domainClass
 	 * @return
 	 */
 	private String getQueryClassName(Class<?> domainClass) {
 
 		String simpleClassName = ClassUtils.getShortName(domainClass);
-		return String.format("%s.Q%s%s",
-				domainClass.getPackage().getName(),
-				getClassBase(simpleClassName), domainClass.getSimpleName());
+		return String.format("%s.Q%s%s", domainClass.getPackage().getName(), getClassBase(simpleClassName),
+				domainClass.getSimpleName());
 	}
 
-
 	/**
-	 * Analyzes the short class name and potentially returns the outer
-	 * class.
-	 *
+	 * Analyzes the short class name and potentially returns the outer class.
+	 * 
 	 * @param shortName
 	 * @return
 	 */

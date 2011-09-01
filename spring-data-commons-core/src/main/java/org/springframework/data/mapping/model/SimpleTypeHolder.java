@@ -25,11 +25,11 @@ import org.springframework.util.Assert;
 
 /**
  * Simple container to hold a set of types to be considered simple types.
- *
+ * 
  * @author Oliver Gierke
  */
 public class SimpleTypeHolder {
-	
+
 	private static final Set<Class<?>> DEFAULTS = new HashSet<Class<?>>();
 
 	static {
@@ -63,11 +63,11 @@ public class SimpleTypeHolder {
 		DEFAULTS.add(Class.class);
 		DEFAULTS.add(Number.class);
 	}
-	
+
 	private final Set<Class<?>> simpleTypes;
-	
+
 	/**
-	 * Creates a new  {@link SimpleTypeHolder} containing the default types.
+	 * Creates a new {@link SimpleTypeHolder} containing the default types.
 	 * 
 	 * @see #SimpleTypeHolder(Set, boolean)
 	 */
@@ -84,10 +84,10 @@ public class SimpleTypeHolder {
 	 * @param registerDefaults
 	 */
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, boolean registerDefaults) {
-		
+
 		Assert.notNull(customSimpleTypes);
 		this.simpleTypes = new HashSet<Class<?>>(customSimpleTypes);
-		
+
 		if (registerDefaults) {
 			this.simpleTypes.addAll(DEFAULTS);
 		}
@@ -100,14 +100,14 @@ public class SimpleTypeHolder {
 	 * @param source must not be {@literal null}
 	 */
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, SimpleTypeHolder source) {
-		
+
 		Assert.notNull(customSimpleTypes);
 		Assert.notNull(source);
-		
+
 		this.simpleTypes = new HashSet<Class<?>>(customSimpleTypes);
 		this.simpleTypes.addAll(source.simpleTypes);
 	}
-	
+
 	/**
 	 * Returns whether the given type is considered a simple one.
 	 * 
@@ -118,7 +118,7 @@ public class SimpleTypeHolder {
 		Assert.notNull(type);
 		if (Object.class.equals(type)) {
 			return true;
-		}		
+		}
 		for (Class<?> clazz : simpleTypes) {
 			if (type == clazz || clazz.isAssignableFrom(type)) {
 				return true;

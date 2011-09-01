@@ -22,8 +22,8 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.Assert;
 
 /**
- * Default implementation of {@link RepositoryMetadata}. Will inspect generic types of
- * {@link Repository} to find out about domain and id class.
+ * Default implementation of {@link RepositoryMetadata}. Will inspect generic types of {@link Repository} to find out
+ * about domain and id class.
  * 
  * @author Oliver Gierke
  */
@@ -31,11 +31,9 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
 
 	private final Class<?> repositoryInterface;
 
-
 	/**
-	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository
-	 * interface.
-	 *
+	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository interface.
+	 * 
 	 * @param repositoryInterface
 	 */
 	public DefaultRepositoryMetadata(Class<?> repositoryInterface) {
@@ -44,7 +42,6 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
 		Assert.isTrue(Repository.class.isAssignableFrom(repositoryInterface));
 		this.repositoryInterface = repositoryInterface;
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -55,18 +52,15 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
 		return repositoryInterface;
 	}
 
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
 	 */
 	public Class<?> getDomainClass() {
-		
-		Class<?>[] arguments =
-				resolveTypeArguments(repositoryInterface, Repository.class);
+
+		Class<?>[] arguments = resolveTypeArguments(repositoryInterface, Repository.class);
 		return arguments == null ? null : arguments[0];
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -74,8 +68,7 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
 	 */
 	public Class<?> getIdClass() {
 
-		Class<?>[] arguments =
-				resolveTypeArguments(repositoryInterface, Repository.class);
+		Class<?>[] arguments = resolveTypeArguments(repositoryInterface, Repository.class);
 		return arguments == null ? null : arguments[1];
 	}
 }

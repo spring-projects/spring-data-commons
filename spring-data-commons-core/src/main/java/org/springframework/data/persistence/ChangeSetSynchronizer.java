@@ -5,9 +5,8 @@ import java.util.Map;
 import org.springframework.dao.DataAccessException;
 
 /**
- * Interface to be implemented by classes that can synchronize
- * between entities and ChangeSets.
- *
+ * Interface to be implemented by classes that can synchronize between entities and ChangeSets.
+ * 
  * @param <E>
  * @author Rod Johnson
  */
@@ -17,7 +16,7 @@ public interface ChangeSetSynchronizer<E extends ChangeSetBacked> {
 
 	/**
 	 * Take all entity fields into a changeSet.
-	 *
+	 * 
 	 * @param entity
 	 * @return
 	 * @throws DataAccessException

@@ -17,19 +17,17 @@ package org.springframework.data.repository.core.support;
 
 import org.springframework.aop.framework.ProxyFactory;
 
-
 /**
- * Callback interface used during repository proxy creation. Allows manipulating
- * the {@link ProxyFactory} creating the repository.
- *
+ * Callback interface used during repository proxy creation. Allows manipulating the {@link ProxyFactory} creating the
+ * repository.
+ * 
  * @author Oliver Gierke
  */
 public interface RepositoryProxyPostProcessor {
 
 	/**
-	 * Manipulates the {@link ProxyFactory}, e.g. add further interceptors to
-	 * it.
-	 *
+	 * Manipulates the {@link ProxyFactory}, e.g. add further interceptors to it.
+	 * 
 	 * @param factory
 	 */
 	void postProcess(ProxyFactory factory);

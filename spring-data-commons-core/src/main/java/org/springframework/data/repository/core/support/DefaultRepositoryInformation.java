@@ -34,7 +34,7 @@ import org.springframework.util.Assert;
 
 /**
  * Default implementation of {@link RepositoryInformation}.
- *
+ * 
  * @author Oliver Gierke
  */
 class DefaultRepositoryInformation implements RepositoryInformation {
@@ -52,12 +52,13 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 
 	/**
 	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository interface and repository base class.
-	 *
+	 * 
 	 * @param metadata
 	 * @param repositoryBaseClass
 	 * @param customImplementationClass
 	 */
-	public DefaultRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass, Class<?> customImplementationClass) {
+	public DefaultRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass,
+			Class<?> customImplementationClass) {
 
 		Assert.notNull(metadata);
 		Assert.notNull(repositoryBaseClass);
@@ -104,18 +105,18 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 * @see org.springframework.data.repository.support.RepositoryInformation#getTargetClassMethod(java.lang.reflect.Method)
 	 */
 	public Method getTargetClassMethod(Method method) {
-		
+
 		if (methodCache.containsKey(method)) {
 			return methodCache.get(method);
 		}
-		
+
 		Method result = getTargetClassMethod(method, customImplementationClass);
-		
+
 		if (!result.equals(method)) {
 			methodCache.put(method, result);
 			return result;
 		}
-		
+
 		result = getTargetClassMethod(method, repositoryBaseClass);
 		methodCache.put(method, result);
 		return result;
@@ -123,14 +124,14 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 
 	/**
 	 * Returns whether the given method is considered to be a repository base class method.
-	 *
+	 * 
 	 * @param method
 	 * @return
 	 */
 	private boolean isTargetClassMethod(Method method, Class<?> targetType) {
 
 		Assert.notNull(method);
-		
+
 		if (targetType == null) {
 			return false;
 		}
@@ -141,7 +142,6 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 
 		return !method.equals(getTargetClassMethod(method, targetType));
 	}
-		
 
 	/*
 	 * (non-Javadoc)
@@ -167,10 +167,10 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	public boolean isCustomMethod(Method method) {
 		return isTargetClassMethod(method, customImplementationClass);
 	}
-	
+
 	/**
 	 * Returns whether the given method is a method covered by the base implementation.
-	 *  
+	 * 
 	 * @param method
 	 * @return
 	 */
@@ -180,15 +180,15 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 
 	/**
 	 * Returns the given target class' method if the given method (declared in the repository interface) was also declared
-	 * at the target class. Returns the given method if the given base class does not declare the method given.
-	 * Takes generics into account.
-	 *
+	 * at the target class. Returns the given method if the given base class does not declare the method given. Takes
+	 * generics into account.
+	 * 
 	 * @param method must not be {@literal null}
 	 * @param baseClass
 	 * @return
 	 */
 	Method getTargetClassMethod(Method method, Class<?> baseClass) {
-		
+
 		if (baseClass == null) {
 			return method;
 		}
@@ -241,7 +241,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	/**
 	 * Checks the given method's parameters to match the ones of the given base class method. Matches generic arguments
 	 * agains the ones bound in the given repository interface.
-	 *
+	 * 
 	 * @param method
 	 * @param baseClassMethod
 	 * @return
@@ -276,7 +276,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 * Checks whether the given parameter type matches the generic type of the given parameter. Thus when {@literal PK} is
 	 * declared, the method ensures that given method parameter is the primary key type declared in the given repository
 	 * interface e.g.
-	 *
+	 * 
 	 * @param name
 	 * @param parameterType
 	 * @return

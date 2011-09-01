@@ -18,10 +18,8 @@ public class ChangeSetConfiguration<T> {
 		return changeSetManager;
 	}
 
-	public void setChangeSetManager(
-			ChangeSetSynchronizer<ChangeSetBacked> changeSetManager) {
+	public void setChangeSetManager(ChangeSetSynchronizer<ChangeSetBacked> changeSetManager) {
 		this.changeSetManager = changeSetManager;
 	}
-
 
 }

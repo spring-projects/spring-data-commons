@@ -173,8 +173,7 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
-	public Object getProperty(PersistentProperty<?> property)
-		throws IllegalAccessException, InvocationTargetException {
+	public Object getProperty(PersistentProperty<?> property) throws IllegalAccessException, InvocationTargetException {
 		return getProperty(property, property.getType(), false);
 	}
 
@@ -201,7 +200,7 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 			ReflectionUtils.makeAccessible(getter);
 			obj = ReflectionUtils.invokeMethod(getter, bean);
 		}
-		
+
 		return getPotentiallyConvertedValue(obj, type);
 	}
 

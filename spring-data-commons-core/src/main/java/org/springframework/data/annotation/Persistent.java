@@ -25,11 +25,6 @@ import java.lang.annotation.Target;
  * @author J. Brisbin <jbrisbin@vmware.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = {
-		ElementType.TYPE,
-		ElementType.ANNOTATION_TYPE,
-		ElementType.FIELD,
-		ElementType.PARAMETER
-})
+@Target(value = { ElementType.TYPE, ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.PARAMETER })
 public @interface Persistent {
 }

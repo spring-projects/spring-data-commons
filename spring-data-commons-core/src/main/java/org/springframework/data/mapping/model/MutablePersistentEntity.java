@@ -19,41 +19,37 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 
-
-
 /**
  * Interface capturing mutator methods for {@link PersistentEntity}s.
- *
+ * 
  * @author Oliver Gierke
  */
-public interface MutablePersistentEntity<T, P extends PersistentProperty<P>>
-		extends PersistentEntity<T, P> {
+public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> extends PersistentEntity<T, P> {
 
 	/**
 	 * Sets the id property for the entity.
-	 *
+	 * 
 	 * @param property
 	 */
 	void setIdProperty(P property);
 
 	/**
 	 * Adds a {@link PersistentProperty} to the entity.
-	 *
+	 * 
 	 * @param property
 	 */
 	void addPersistentProperty(P property);
 
 	/**
 	 * Adds an {@link Association} to the entity.
-	 *
+	 * 
 	 * @param association
 	 */
 	void addAssociation(Association<P> association);
 
 	/**
-	 * Callback method to trigger validation of the {@link PersistentEntity}. As
-	 * {@link MutablePersistentEntity} is not immutable there might be some
-	 * verification steps necessary after the object has reached is final state.
+	 * Callback method to trigger validation of the {@link PersistentEntity}. As {@link MutablePersistentEntity} is not
+	 * immutable there might be some verification steps necessary after the object has reached is final state.
 	 */
 	void verify();
 }

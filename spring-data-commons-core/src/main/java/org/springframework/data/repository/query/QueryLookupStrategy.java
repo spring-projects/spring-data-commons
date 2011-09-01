@@ -22,10 +22,9 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.StringUtils;
 
-
 /**
  * Strategy interface for which way to lookup {@link RepositoryQuery}s.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface QueryLookupStrategy {
@@ -36,7 +35,7 @@ public interface QueryLookupStrategy {
 
 		/**
 		 * Returns a strategy key from the given XML value.
-		 *
+		 * 
 		 * @param xml
 		 * @return a strategy key from the given XML value
 		 */
@@ -50,11 +49,9 @@ public interface QueryLookupStrategy {
 		}
 	}
 
-
 	/**
-	 * Resolves a {@link RepositoryQuery} from the given {@link QueryMethod}
-	 * that can be executed afterwards.
-	 *
+	 * Resolves a {@link RepositoryQuery} from the given {@link QueryMethod} that can be executed afterwards.
+	 * 
 	 * @param method
 	 * @param metadata
 	 * @param namedQueries
