@@ -1,6 +1,31 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.2.0.M1 (2011-09-01)
+----------------------------------------
+
+** Bug
+    * [DATACMNS-55] - java.util.Properties cannot be stored to mongodb
+    * [DATACMNS-57] - Use of parameterized type in constructor arguments is not supported
+    * [DATACMNS-65] - BasicPersistentEntity potentially suffers from ConcurrentModificationException
+    * [DATACMNS-68] - NullPointerException in AbstractPersistentProperty::getComponentType()
+
+** Improvement
+    * [DATACMNS-56] - PreferredConstructorDiscoverer shouldn't throw an exception in case not finding a constructor
+    * [DATACMNS-59] - AbstractQueryCreator should honor both static and dynamic sorting
+    * [DATACMNS-60] - Polish reference documentation for repositories
+    * [DATACMNS-63] - Add possibility to detect TypeInformation for a class' method's return type
+    * [DATACMNS-64] - QueryMethod should reject paging methods without a Pageable argument
+    * [DATACMNS-67] - QueryMethod should consider plain Iterable return types as collection query
+
+** New Feature
+    * [DATACMNS-66] - Provide infrastructure to parse IgnoreCase from query methods
+
+** Refactoring
+    * [DATACMNS-61] - Add ability to add new special parameter types to query methods
+    * [DATACMNS-62] - Make accessor methods for QueryMethod type public and drop type enum
+
+
 Changes in version 1.1.0.RELEASE (2011-07-21)
 ---------------------------------------------
 
