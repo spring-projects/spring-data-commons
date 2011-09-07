@@ -202,17 +202,16 @@ public class PartTree implements Iterable<OrPart> {
 	 */
 	private static class Predicate {
 
-		private static Pattern ALL_IGNORE_CASE = Pattern.compile("AllIgnor(ing|e)Case");
+		private static final Pattern ALL_IGNORE_CASE = Pattern.compile("AllIgnor(ing|e)Case");
 		private static final String ORDER_BY = "OrderBy";
 
 		private final List<OrPart> nodes = new ArrayList<OrPart>();
-		private OrderBySource orderBySource;
+		private final OrderBySource orderBySource;
 		private boolean alwaysIgnoreCase;
 
 		public Predicate(String predicate, Class<?> domainClass) {
 
-			predicate = detectAndSetAllIgnoreCase(predicate);
-			String[] parts = split(predicate, ORDER_BY);
+			String[] parts = split(detectAndSetAllIgnoreCase(predicate), ORDER_BY);
 
 			if (parts.length > 2) {
 				throw new IllegalArgumentException("OrderBy must not be used more than once in a method name!");

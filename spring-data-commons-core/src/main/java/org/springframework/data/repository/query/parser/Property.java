@@ -190,7 +190,7 @@ public class Property {
 
 		Property that = (Property) obj;
 
-		return this.name.equals(that.name) && this.type.equals(type);
+		return this.name.equals(that.name) && this.type.equals(that.type);
 	}
 
 	/*

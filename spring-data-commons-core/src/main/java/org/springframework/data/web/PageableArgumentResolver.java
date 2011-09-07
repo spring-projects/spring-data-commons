@@ -261,12 +261,11 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 		}
 
 		/*
-						 * (non-Javadoc)
-						 *
-						 * @see java.beans.PropertyEditorSupport#setAsText(java.lang.String)
-						 */
+		 * (non-Javadoc)
+		 * @see java.beans.PropertyEditorSupport#setAsText(java.lang.String)
+		 */
 		@Override
-		public void setAsText(String text) throws IllegalArgumentException {
+		public void setAsText(String text) {
 
 			PropertyValue rawOrder = values.getPropertyValue(orderProperty);
 			Direction order = null == rawOrder ? Direction.ASC : Direction.fromString(rawOrder.getValue().toString());

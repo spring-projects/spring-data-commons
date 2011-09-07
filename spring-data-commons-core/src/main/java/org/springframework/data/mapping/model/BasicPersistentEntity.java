@@ -15,6 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -186,8 +187,9 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @author Oliver Gierke
 	 */
 	private static final class AssociationComparator<P extends PersistentProperty<P>> implements
-			Comparator<Association<P>> {
+			Comparator<Association<P>>, Serializable {
 
+		private static final long serialVersionUID = 4508054194886854513L;
 		private final Comparator<P> delegate;
 
 		public AssociationComparator(Comparator<P> delegate) {

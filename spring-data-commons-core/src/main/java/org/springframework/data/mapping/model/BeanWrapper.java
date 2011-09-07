@@ -104,6 +104,9 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 			} catch (BeanInstantiationException e) {
 				throw new MappingInstantiationException(e.getMessage(), e);
 			}
+			
+			this.bean = bean;
+			return;
 		}
 
 		List<Object> params = new LinkedList<Object>();

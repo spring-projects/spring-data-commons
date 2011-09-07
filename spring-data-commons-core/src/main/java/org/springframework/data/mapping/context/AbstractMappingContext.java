@@ -241,35 +241,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				descriptors.put(descriptor.getName(), descriptor);
 			}
 
-			ReflectionUtils.doWithFields(type, new FieldCallback() {
-
-				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-
-					PropertyDescriptor descriptor = descriptors.get(field.getName());
-
-					ReflectionUtils.makeAccessible(field);
-					P property = createPersistentProperty(field, descriptor, entity, simpleTypeHolder);
-
-					if (property.isTransient()) {
-						return;
-					}
-
-					entity.addPersistentProperty(property);
-
-					if (property.isAssociation()) {
-						entity.addAssociation(property.getAssociation());
-					}
-
-					if (property.isIdProperty()) {
-						entity.setIdProperty(property);
-					}
-
-					TypeInformation<?> nestedType = getNestedTypeToAdd(property, entity);
-					if (nestedType != null) {
-						addPersistentEntity(nestedType);
-					}
-				}
-			}, new ReflectionUtils.FieldFilter() {
+			ReflectionUtils.doWithFields(type, new PersistentPropertyCreator(entity, descriptors), new ReflectionUtils.FieldFilter() {
 				public boolean matches(Field field) {
 					return !Modifier.isStatic(field.getModifiers()) && !UNMAPPED_FIELDS.contains(field.getName());
 				}
@@ -370,6 +342,56 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	public void afterPropertiesSet() {
 		for (Class<?> initialEntity : initialEntitySet) {
 			addPersistentEntity(initialEntity);
+		}
+	}
+	
+	/**
+	 * {@link FieldCallback} to create {@link PersistentProperty} instances.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private final class PersistentPropertyCreator implements FieldCallback {
+		
+		private final E entity;
+		private final Map<String, PropertyDescriptor> descriptors;
+
+		/**
+		 * Creates a new {@link PersistentPropertyCreator} for the given {@link PersistentEntity} and
+		 * {@link PropertyDescriptor}s.
+		 * 
+		 * @param entity
+		 * @param descriptors
+		 */
+		private PersistentPropertyCreator(E entity, Map<String, PropertyDescriptor> descriptors) {
+			this.entity = entity;
+			this.descriptors = descriptors;
+		}
+
+		public void doWith(Field field) {
+
+			PropertyDescriptor descriptor = descriptors.get(field.getName());
+
+			ReflectionUtils.makeAccessible(field);
+			P property = createPersistentProperty(field, descriptor, entity, simpleTypeHolder);
+
+			if (property.isTransient()) {
+				return;
+			}
+
+			entity.addPersistentProperty(property);
+
+			if (property.isAssociation()) {
+				entity.addAssociation(property.getAssociation());
+			}
+
+			if (property.isIdProperty()) {
+				entity.setIdProperty(property);
+			}
+
+			TypeInformation<?> nestedType = getNestedTypeToAdd(property, entity);
+			if (nestedType != null) {
+				addPersistentEntity(nestedType);
+			}
 		}
 	}
 }

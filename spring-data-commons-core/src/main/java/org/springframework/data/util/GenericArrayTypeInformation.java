@@ -40,9 +40,10 @@ class GenericArrayTypeInformation<S> extends ParameterizedTypeInformation<S> {
 		this.type = type;
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.util.TypeDiscoverer#getType()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#getType()
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public Class<S> getType() {
@@ -50,9 +51,10 @@ class GenericArrayTypeInformation<S> extends ParameterizedTypeInformation<S> {
 		return (Class<S>) Array.newInstance(resolveType(type.getGenericComponentType()), 0).getClass();
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
+	 */
 	@Override
 	public TypeInformation<?> getComponentType() {
 

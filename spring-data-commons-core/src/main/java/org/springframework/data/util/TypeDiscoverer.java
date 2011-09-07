@@ -141,7 +141,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		 */
 	public TypeInformation<?> getProperty(String fieldname) {
 
-		int separatorIndex = fieldname.indexOf(".");
+		int separatorIndex = fieldname.indexOf('.');
 
 		if (separatorIndex == -1) {
 			if (fieldTypes.containsKey(fieldname)) {
@@ -235,8 +235,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		 * @see org.springframework.data.util.TypeInformation#isMap()
 		 */
 	public boolean isMap() {
-		Class<?> rawType = getType();
-		return rawType == null ? false : Map.class.isAssignableFrom(rawType);
+		return Map.class.isAssignableFrom(getType());
 	}
 
 	/* (non-Javadoc)
@@ -267,7 +266,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public boolean isCollectionLike() {
 
 		Class<?> rawType = getType();
-		return rawType == null ? null : rawType.isArray() || Iterable.class.isAssignableFrom(rawType);
+		return rawType.isArray() || Iterable.class.isAssignableFrom(rawType);
 	}
 
 	/* (non-Javadoc)

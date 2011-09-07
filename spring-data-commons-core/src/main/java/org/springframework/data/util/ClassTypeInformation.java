@@ -18,10 +18,8 @@ package org.springframework.data.util;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Collection;
 import java.util.Map;
 
-import org.springframework.core.GenericCollectionTypeResolver;
 import org.springframework.util.Assert;
 
 /**

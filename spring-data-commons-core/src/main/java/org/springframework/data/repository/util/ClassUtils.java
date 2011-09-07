@@ -22,7 +22,6 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.repository.Repository;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;

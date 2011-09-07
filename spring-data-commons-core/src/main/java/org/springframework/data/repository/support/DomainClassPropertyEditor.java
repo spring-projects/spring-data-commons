@@ -41,14 +41,15 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 	 * Creates a new {@link DomainClassPropertyEditor} for the given {@link CrudRepository}, {@link EntityInformation} and
 	 * {@link PropertyEditorRegistry}.
 	 * 
-	 * @param repository
-	 * @param information
-	 * @param registry
+	 * @param repository must not be {@literal null}.
+	 * @param information must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
 	 */
 	public DomainClassPropertyEditor(CrudRepository<T, ID> repository, EntityInformation<T, ID> information,
 			PropertyEditorRegistry registry) {
 
 		Assert.notNull(repository);
+		Assert.notNull(information);
 		Assert.notNull(registry);
 
 		this.repository = repository;
@@ -57,12 +58,11 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.beans.PropertyEditorSupport#setAsText(java.lang.String)
-			 */
+	 * (non-Javadoc)
+	 * @see java.beans.PropertyEditorSupport#setAsText(java.lang.String)
+	 */
 	@Override
-	public void setAsText(String idAsString) throws IllegalArgumentException {
+	public void setAsText(String idAsString) {
 
 		if (!StringUtils.hasText(idAsString)) {
 			setValue(null);
@@ -73,10 +73,9 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.beans.PropertyEditorSupport#getAsText()
-			 */
+	 * (non-Javadoc)
+	 * @see java.beans.PropertyEditorSupport#getAsText()
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public String getAsText() {
@@ -127,10 +126,9 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#equals(java.lang.Object)
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -149,10 +147,9 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#hashCode()
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 

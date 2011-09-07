@@ -42,8 +42,8 @@ public class Part {
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
 	 * 
-	 * @param part
-	 * @param clazz
+	 * @param part must not be {@literal null}.
+	 * @param clazz must not be {@l
 	 */
 	public Part(String part, Class<?> clazz) {
 
@@ -54,28 +54,31 @@ public class Part {
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
 	 * 
-	 * @param part
-	 * @param clazz
+	 * @param part must not be {@literal null}.
+	 * @param clazz must not be {@literal null}.
 	 * @param alwaysIgnoreCase
 	 */
 	public Part(String part, Class<?> clazz, boolean alwaysIgnoreCase) {
 
-		part = detectAndSetIgnoreCase(part);
+		String partToUse = detectAndSetIgnoreCase(part);
 		if (alwaysIgnoreCase && ignoreCase != IgnoreCaseType.ALWAYS) {
 			this.ignoreCase = IgnoreCaseType.WHEN_POSSIBLE;
 		}
-		this.type = Type.fromProperty(part, clazz);
-		this.property = Property.from(type.extractProperty(part), clazz);
+		this.type = Type.fromProperty(partToUse);
+		this.property = Property.from(type.extractProperty(partToUse), clazz);
 	}
 
 	private String detectAndSetIgnoreCase(String part) {
 
 		Matcher matcher = IGNORE_CASE.matcher(part);
+		String result = part;
+		
 		if (matcher.find()) {
 			ignoreCase = IgnoreCaseType.ALWAYS;
-			part = part.substring(0, matcher.start()) + part.substring(matcher.end(), part.length());
+			result = part.substring(0, matcher.start()) + part.substring(matcher.end(), part.length());
 		}
-		return part;
+		
+		return result;
 	}
 
 	public boolean getParameterRequired() {
@@ -221,18 +224,17 @@ public class Part {
 		}
 
 		/**
-		 * Returns the {@link Type} of the {@link Part} for the given raw property and the given {@link Class}. This will
+		 * Returns the {@link Type} of the {@link Part} for the given raw property. This will
 		 * try to detect e.g. keywords contained in the raw property that trigger special query creation. Returns
 		 * {@link #SIMPLE_PROPERTY} by default.
 		 * 
 		 * @param rawProperty
-		 * @param clazz
 		 * @return
 		 */
-		public static Part.Type fromProperty(String rawProperty, Class<?> clazz) {
+		public static Part.Type fromProperty(String rawProperty) {
 
 			for (Part.Type type : ALL) {
-				if (type.supports(rawProperty, clazz)) {
+				if (type.supports(rawProperty)) {
 					return type;
 				}
 			}
@@ -245,10 +247,9 @@ public class Part {
 		 * ends with the registered keyword. Does not support the keyword if the property is a valid field as is.
 		 * 
 		 * @param property
-		 * @param clazz
 		 * @return
 		 */
-		protected boolean supports(String property, Class<?> clazz) {
+		protected boolean supports(String property) {
 
 			if (keywords == null) {
 				return true;

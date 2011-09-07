@@ -2,8 +2,6 @@ package org.springframework.data.mapping;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Map;
 
 import org.springframework.data.util.TypeInformation;
 
@@ -61,10 +59,10 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	boolean isEntity();
 
 	/**
-	 * Returns the component type of the type if it is a {@link Collection}. Will return the type of the key if the
-	 * property is a {@link Map}.
+	 * Returns the component type of the type if it is a {@link java.util.Collection}. Will return the type of the key if the
+	 * property is a {@link java.util.Map}.
 	 * 
-	 * @return the component type, the map's key type or {@literal null} if neither {@link Collection} nor {@link Map}.
+	 * @return the component type, the map's key type or {@literal null} if neither {@link java.util.Collection} nor {@link java.util.Map}.
 	 */
 	Class<?> getComponentType();
 
@@ -76,9 +74,9 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	Class<?> getRawType();
 
 	/**
-	 * Returns the type of the values if the property is a {@link Map}.
+	 * Returns the type of the values if the property is a {@link java.util.Map}.
 	 * 
-	 * @return the map's value type or {@literal null} if no {@link Map}
+	 * @return the map's value type or {@literal null} if no {@link java.util.Map}
 	 */
 	Class<?> getMapValueType();
 

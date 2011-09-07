@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
  */
 public class PropertiesBasedNamedQueries implements NamedQueries {
 
-	public static NamedQueries EMPTY = new PropertiesBasedNamedQueries(new Properties());
+	public static final NamedQueries EMPTY = new PropertiesBasedNamedQueries(new Properties());
 
 	private final Properties properties;
 
