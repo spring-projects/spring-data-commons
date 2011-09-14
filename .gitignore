@@ -6,6 +6,7 @@ target/
 .springBeans
 .ant-targets-build.xml
 src/ant/.ant-targets-upload-dist.xml
+*.sonar4clipse*
 .DS_Store
 *.iml
 *.ipr
