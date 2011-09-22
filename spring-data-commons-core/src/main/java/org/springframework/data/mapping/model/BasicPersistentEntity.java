@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentEntity;
@@ -29,6 +30,7 @@ import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Simple value object to capture information of {@link PersistentEntity}s.
@@ -140,6 +142,16 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public Class<T> getType() {
 		return information.getType();
+	}
+	
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getTypeAlias()
+	 */
+	public Object getTypeAlias() {
+		
+		TypeAlias alias = getType().getAnnotation(TypeAlias.class);
+		return alias == null ? null : StringUtils.hasText(alias.value()) ? alias.value() : null;
 	}
 
 	/*

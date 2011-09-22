@@ -47,6 +47,14 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @return The underlying Java class for this entity
 	 */
 	Class<T> getType();
+	
+	/**
+	 * Returns the alias to be used when storing type information. Might be {@literal null} to indicate that there was no
+	 * alias defined through the mapping metadata.
+	 * 
+	 * @return
+	 */
+	Object getTypeAlias();
 
 	/**
 	 * Returns the {@link TypeInformation} backing this {@link PersistentEntity}.
