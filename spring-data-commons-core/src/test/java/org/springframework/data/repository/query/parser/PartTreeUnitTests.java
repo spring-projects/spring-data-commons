@@ -184,6 +184,32 @@ public class PartTreeUnitTests {
 		assertThat(parts.next().shouldIgnoreCase(), is(IgnoreCaseType.NEVER));
 	}
 
+	/**
+	 * @see DATACMNS-78
+	 */
+	@Test
+	public void parsesLessThanEqualCorrectly() {
+		
+		PartTree tree = partTree("findByLastnameLessThanEqual");
+		for (Part part : tree.getParts()) {
+			assertThat(part.getType(), is(Type.LESS_THAN_EQUAL));
+			assertThat(part.getProperty(), is(newProperty("lastname")));
+		}
+	}
+	
+	/**
+	 * @see DATACMNS-78
+	 */
+	@Test
+	public void parsesGreaterThanEqualCorrectly() {
+		
+		PartTree tree = partTree("findByLastnameGreaterThanEqual");
+		for (Part part : tree.getParts()) {
+			assertThat(part.getType(), is(Type.GREATER_THAN_EQUAL));
+			assertThat(part.getProperty(), is(newProperty("lastname")));
+		}
+	}
+	
 	private PartTree partTree(String source) {
 		return new PartTree(source, User.class);
 	}
