@@ -16,6 +16,7 @@
 package org.springframework.data.authentication;
 
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Class used to provide credentials for username/password authentication
@@ -33,14 +34,15 @@ public class UserCredentials {
 	}
 
 	/**
-	 * Creates a new {@link UserCredentials} instance from the given username and password.
+	 * Creates a new {@link UserCredentials} instance from the given username and password. Empty {@link String}s provided
+	 * will be treated like no username or password set.
 	 * 
 	 * @param username
 	 * @param password
 	 */
 	public UserCredentials(String username, String password) {
-		this.username = username;
-		this.password = password;
+		this.username = StringUtils.hasText(username) ? username : null;
+		this.password = StringUtils.hasText(password) ? password : null;
 	}
 
 	/**
