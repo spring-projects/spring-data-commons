@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 		resolvedBeanClass = getClassForPropertyValue(value);
 		cache.put(beanName, resolvedBeanClass);
 
-		return resolvedBeanClass;
+		return resolvedBeanClass == Void.class ? null : resolvedBeanClass;
 	}
 
 	/**
@@ -99,13 +99,13 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 		} else if (value instanceof Class<?>) {
 			return (Class<?>) value;
 		} else {
-			return null;
+			return Void.class;
 		}
 
 		try {
 			return ClassUtils.resolveClassName(className, RepositoryInterfaceAwareBeanPostProcessor.class.getClassLoader());
 		} catch (IllegalArgumentException ex) {
-			return null;
+			return Void.class;
 		}
 	}
 }
