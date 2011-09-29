@@ -62,6 +62,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 	private static final Log LOG = LogFactory.getLog(AbstractRepositoryConfigDefinitionParser.class);
 
 	private static final String REPOSITORY_INTERFACE_POST_PROCESSOR = "org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor";
+	private static final String DEFAULT_TRANSACTION_MANAGER_BEAN_NAME = "transactionManager"; 
 
 	/*
 			 * (non-Javadoc)
@@ -180,11 +181,9 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 			builder.addPropertyValue("namedQueries",
 					new NamedQueriesBeanDefinitionParser(context.getNamedQueriesLocation()).parse(context.getSource(), parser));
 
-			String transactionManagerRef = context.getTransactionManagerRef();
-
-			if (StringUtils.hasText(transactionManagerRef)) {
-				builder.addPropertyValue("transactionManager", transactionManagerRef);
-			}
+			String transactionManagerRef = StringUtils.hasText(context.getTransactionManagerRef()) ? context
+					.getTransactionManagerRef() : DEFAULT_TRANSACTION_MANAGER_BEAN_NAME;
+			builder.addPropertyValue("transactionManager", transactionManagerRef);
 
 			String customImplementationBeanName = registerCustomImplementation(context, parser, beanSource);
 
