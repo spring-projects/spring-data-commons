@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -37,7 +39,8 @@ import org.springframework.util.ClassUtils;
  */
 class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
 		BeanFactoryAware {
-
+  
+	private static final Log LOG = LogFactory.getLog(RepositoryInterfaceAwareBeanPostProcessor.class);
 	private static final Class<?> REPOSITORY_TYPE = RepositoryFactoryBeanSupport.class;
 
 	private final Map<String, Class<?>> cache = new ConcurrentHashMap<String, Class<?>>();
@@ -74,7 +77,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 			return cache.get(beanName);
 		}
 
-		resolvedBeanClass = getClassForPropertyValue(value);
+		resolvedBeanClass = getClassForPropertyValue(value, beanName);
 		cache.put(beanName, resolvedBeanClass);
 
 		return resolvedBeanClass == Void.class ? null : resolvedBeanClass;
@@ -85,9 +88,10 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 	 * {@link TypedStringValue} or the value contained cannot be interpreted as {@link Class} it will return null.
 	 * 
 	 * @param propertyValue
+	 * @param beanName
 	 * @return
 	 */
-	private Class<?> getClassForPropertyValue(PropertyValue propertyValue) {
+	private Class<?> getClassForPropertyValue(PropertyValue propertyValue, String beanName) {
 
 		Object value = propertyValue.getValue();
 		String className = null;
@@ -105,6 +109,8 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 		try {
 			return ClassUtils.resolveClassName(className, RepositoryInterfaceAwareBeanPostProcessor.class.getClassLoader());
 		} catch (IllegalArgumentException ex) {
+			LOG.warn(String.format("Couldn't load class %s referenced as repository interface in bean %s!", className,
+					beanName));
 			return Void.class;
 		}
 	}
