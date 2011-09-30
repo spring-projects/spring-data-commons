@@ -46,7 +46,6 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.RepositoryDefinition;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -61,16 +60,12 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
 	private static final Log LOG = LogFactory.getLog(AbstractRepositoryConfigDefinitionParser.class);
 
-	private static final String REPOSITORY_INTERFACE_POST_PROCESSOR = "org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor";
-	private static final String DEFAULT_TRANSACTION_MANAGER_BEAN_NAME = "transactionManager"; 
+	private static final String REPOSITORY_INTERFACE_POST_PROCESSOR = "org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor"; 
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.beans.factory.xml.BeanDefinitionParser#parse(org.
-			 * w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.BeanDefinitionParser#parse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)
+	 */
 	public BeanDefinition parse(Element element, ParserContext parser) {
 
 		try {
@@ -180,10 +175,6 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 			builder.addPropertyValue("queryLookupStrategyKey", context.getQueryLookupStrategyKey());
 			builder.addPropertyValue("namedQueries",
 					new NamedQueriesBeanDefinitionParser(context.getNamedQueriesLocation()).parse(context.getSource(), parser));
-
-			String transactionManagerRef = StringUtils.hasText(context.getTransactionManagerRef()) ? context
-					.getTransactionManagerRef() : DEFAULT_TRANSACTION_MANAGER_BEAN_NAME;
-			builder.addPropertyValue("transactionManager", transactionManagerRef);
 
 			String customImplementationBeanName = registerCustomImplementation(context, parser, beanSource);
 
