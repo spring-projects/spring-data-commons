@@ -217,7 +217,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	}
 
 	/**
-	 * Property implements the pairing of an {@code Order} and a property. It is used to provide input for {@link Sort}
+	 * PropertyPath implements the pairing of an {@code Order} and a property. It is used to provide input for {@link Sort}
 	 * 
 	 * @author Oliver Gierke
 	 */
@@ -236,7 +236,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		public Order(Direction direction, String property) {
 
 			if (property == null || "".equals(property.trim())) {
-				throw new IllegalArgumentException("Property must not null or empty!");
+				throw new IllegalArgumentException("PropertyPath must not null or empty!");
 			}
 
 			this.direction = direction == null ? DEFAULT_DIRECTION : direction;

@@ -17,6 +17,7 @@ package org.springframework.data.mapping.context;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
@@ -69,15 +70,14 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	E getPersistentEntity(TypeInformation<?> type);
 
 	/**
-	 * Returns all {@link PersistentProperty}s for the given path expression based on the given root {@link Class}. Path
-	 * expression are dot separated, e.g. {@code person.firstname}.
+	 * Returns all {@link PersistentProperty}s for the given path expression based on the given {@link PropertyPath}.
 	 * 
 	 * @param <T>
 	 * @param type
 	 * @param path
 	 * @return
 	 */
-	<T> Iterable<P> getPersistentPropertyPath(Class<T> type, String path);
+	PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath);
 
 	/**
 	 * Obtains a validator for the given entity TODO: Why do we need validators at the {@link MappingContext}?

@@ -59,7 +59,7 @@ public class PartTree implements Iterable<OrPart> {
 	public PartTree(String source, Class<?> domainClass) {
 
 		Assert.notNull(source, "Source must not be null");
-		Assert.notNull(domainClass, "DomainClass must not be null");
+		Assert.notNull(domainClass, "Domain class must not be null");
 
 		Matcher matcher = PREFIX_TEMPLATE.matcher(source);
 		if (!matcher.find()) {
@@ -99,7 +99,7 @@ public class PartTree implements Iterable<OrPart> {
 
 		return subject.isDistinct();
 	}
-
+	
 	/**
 	 * Returns an {@link Iterable} of all parts contained in the {@link PartTree}.
 	 * 

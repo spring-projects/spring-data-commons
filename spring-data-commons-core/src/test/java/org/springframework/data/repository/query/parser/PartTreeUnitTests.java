@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
@@ -226,8 +227,8 @@ public class PartTreeUnitTests {
 		return parts;
 	}
 
-	private Property newProperty(String name) {
-		return new Property(name, User.class);
+	private PropertyPath newProperty(String name) {
+		return PropertyPath.from(name, User.class);
 	}
 
 	private void assertPart(PartTree tree, Part[]... parts) {

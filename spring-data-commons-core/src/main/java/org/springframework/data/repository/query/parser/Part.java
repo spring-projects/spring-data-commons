@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.util.StringUtils;
 
 /**
@@ -33,7 +34,7 @@ public class Part {
 
 	private static final Pattern IGNORE_CASE = Pattern.compile("Ignor(ing|e)Case");
 
-	private final Property property;
+	private final PropertyPath propertyPath;
 	private final Part.Type type;
 
 	private IgnoreCaseType ignoreCase = IgnoreCaseType.NEVER;
@@ -65,7 +66,7 @@ public class Part {
 			this.ignoreCase = IgnoreCaseType.WHEN_POSSIBLE;
 		}
 		this.type = Type.fromProperty(partToUse);
-		this.property = Property.from(type.extractProperty(partToUse), clazz);
+		this.propertyPath = PropertyPath.from(type.extractProperty(partToUse), clazz);
 	}
 
 	private String detectAndSetIgnoreCase(String part) {
@@ -97,11 +98,11 @@ public class Part {
 	}
 
 	/**
-	 * @return the property
+	 * @return the propertyPath
 	 */
-	public Property getProperty() {
+	public PropertyPath getProperty() {
 
-		return property;
+		return propertyPath;
 	}
 
 	/**
@@ -113,7 +114,7 @@ public class Part {
 	}
 
 	/**
-	 * Returns whether the {@link Property} referenced should be matched ignoring case.
+	 * Returns whether the {@link PropertyPath} referenced should be matched ignoring case.
 	 * 
 	 * @return
 	 */
@@ -138,7 +139,7 @@ public class Part {
 		}
 
 		Part that = (Part) obj;
-		return this.property.equals(that.property) && this.type.equals(that.type);
+		return this.propertyPath.equals(that.propertyPath) && this.type.equals(that.type);
 	}
 
 	/*
@@ -149,7 +150,7 @@ public class Part {
 	public int hashCode() {
 
 		int result = 37;
-		result += 17 * property.hashCode();
+		result += 17 * propertyPath.hashCode();
 		result += 17 * type.hashCode();
 		return result;
 	}
@@ -161,7 +162,7 @@ public class Part {
 	@Override
 	public String toString() {
 
-		return String.format("%s %s", property.getName(), type);
+		return String.format("%s %s", propertyPath.getSegment(), type);
 	}
 
 	/**
@@ -228,8 +229,8 @@ public class Part {
 		}
 
 		/**
-		 * Returns the {@link Type} of the {@link Part} for the given raw property. This will
-		 * try to detect e.g. keywords contained in the raw property that trigger special query creation. Returns
+		 * Returns the {@link Type} of the {@link Part} for the given raw propertyPath. This will
+		 * try to detect e.g. keywords contained in the raw propertyPath that trigger special query creation. Returns
 		 * {@link #SIMPLE_PROPERTY} by default.
 		 * 
 		 * @param rawProperty
@@ -247,10 +248,10 @@ public class Part {
 		}
 
 		/**
-		 * Returns whether the the type supports the given raw property. Default implementation checks whether the property
-		 * ends with the registered keyword. Does not support the keyword if the property is a valid field as is.
+		 * Returns whether the the type supports the given raw propertyPath. Default implementation checks whether the propertyPath
+		 * ends with the registered keyword. Does not support the keyword if the propertyPath is a valid field as is.
 		 * 
-		 * @param property
+		 * @param propertyPath
 		 * @return
 		 */
 		protected boolean supports(String property) {
@@ -269,7 +270,7 @@ public class Part {
 		}
 
 		/**
-		 * Returns the number of arguments the property binds. By default this exactly one argument.
+		 * Returns the number of arguments the propertyPath binds. By default this exactly one argument.
 		 * 
 		 * @return
 		 */
@@ -279,7 +280,7 @@ public class Part {
 		}
 
 		/**
-		 * Callback method to extract the actual property to be bound from the given part. Strips the keyword from the
+		 * Callback method to extract the actual propertyPath to be bound from the given part. Strips the keyword from the
 		 * part's end if available.
 		 * 
 		 * @param part

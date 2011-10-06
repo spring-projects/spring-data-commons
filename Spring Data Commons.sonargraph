@@ -65,6 +65,7 @@
                 </element>
                 <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Application"/>
                 <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Core"/>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Mapping"/>
             </element>
             <element name="Application" type="Layer">
                 <element name="Assignment" type="TypeFilter"/>

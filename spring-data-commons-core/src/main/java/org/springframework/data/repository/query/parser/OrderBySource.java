@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.util.StringUtils;
 
 /**
@@ -78,15 +79,15 @@ public class OrderBySource {
 	 * @param direction
 	 * @param domainClass can be {@literal null}.
 	 * @return
-	 * @see Property#from(String, Class)
+	 * @see PropertyPath#from(String, Class)
 	 */
 	private Order createOrder(String propertySource, Direction direction, Class<?> domainClass) {
 
 		if (null == domainClass) {
 			return new Order(direction, StringUtils.uncapitalize(propertySource));
 		}
-		Property property = Property.from(propertySource, domainClass);
-		return new Order(direction, property.toDotPath());
+		PropertyPath propertyPath = PropertyPath.from(propertySource, domainClass);
+		return new Order(direction, propertyPath.toDotPath());
 	}
 
 	/**

@@ -40,6 +40,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.event.MappingContextEvent;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
@@ -169,25 +170,24 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.Class, java.lang.String)
 	 */
-	public <T> Iterable<P> getPersistentPropertyPath(Class<T> type, String path) {
+	public PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath) {
 
-		Iterator<String> parts = Arrays.asList(path.split("\\.")).iterator();
 		List<P> result = new ArrayList<P>();
-		E current = getPersistentEntity(type);
+		E current = getPersistentEntity(propertyPath.getOwningType());
+		
+		for (PropertyPath segment : propertyPath) {
+			
+			P persistentProperty = current.getPersistentProperty(segment.getSegment());
 
-		while (parts.hasNext()) {
-			String name = parts.next();
-			P property = current.getPersistentProperty(name);
-
-			if (property == null) {
-				throw new IllegalArgumentException(String.format("No property %s found on %s!", name, current.getName()));
+			if (persistentProperty == null) {
+				throw new IllegalArgumentException(String.format("No property %s found on %s!", segment.getSegment(), current.getName()));
 			}
-
-			result.add(property);
-			current = getPersistentEntity(property.getTypeInformation().getActualType());
+			
+			result.add(persistentProperty);
+			current = getPersistentEntity(segment.getType());
 		}
-
-		return result;
+		
+		return new DefaultPersistentPropertyPath<P>(result);
 	}
 
 	/*
@@ -334,7 +334,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner,
 			SimpleTypeHolder simpleTypeHolder);
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()

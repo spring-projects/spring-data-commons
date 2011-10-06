@@ -23,7 +23,7 @@ import java.util.Map;
 import org.springframework.util.Assert;
 
 /**
- * Property information for a plain {@link Class}.
+ * PropertyPath information for a plain {@link Class}.
  * 
  * @author Oliver Gierke
  */
