@@ -15,20 +15,18 @@
  */
 package org.springframework.data.mapping.context;
 
-import java.util.Iterator;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * Abstraction of a path of {@link PersistentProperty}s.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends Iterable<T> {
 
 	/**
-	 * Returns the dot based path notation using the {@link PersistentProperty}'s name attribute.
+	 * Returns the dot based path notation using {@link PersistentProperty#getName()}.
 	 * 
 	 * @return
 	 */
@@ -43,9 +41,58 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 */
 	String toDotPath(Converter<? super T, String> converter);
 
-	/* 
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
+	/**
+	 * Returns a {@link String} path with the given delimiter based on the {@link PersistentProperty#getName()}.
+	 * 
+	 * @param delimiter will default to {@code .} if {@literal null} is given.
+	 * @return
 	 */
-	Iterator<T> iterator();
+	String toPath(String delimiter);
+
+	/**
+	 * Returns a {@link String} path with the given delimiter using the given {@link Converter} for
+	 * {@link PersistentProperty} to String conversion.
+	 * 
+	 * @param delimiter will default to {@code .} if {@literal null} is given.
+	 * @param converter will default to use {@link PersistentProperty#getName()}.
+	 * @return
+	 */
+	String toPath(String delimiter, Converter<? super T, String> converter);
+
+	/**
+	 * Returns the last property in the {@link PersistentPropertyPath}. So for {@code foo.bar} it will return the
+	 * {@link PersistentProperty} for {@code bar}. For a simple {@code foo} it returns {@link PersistentProperty} for
+	 * {@code foo}.
+	 * 
+	 * @return
+	 */
+	T getLeafProperty();
+
+	/**
+	 * Returns the first property in the {@link PersistentPropertyPath}. So for {@code foo.bar} it will return the
+	 * {@link PersistentProperty} for {@code foo}. For a simple {@code foo} it returns {@link PersistentProperty} for
+	 * {@code foo}.
+	 * 
+	 * @return
+	 */
+	T getBaseProperty();
+
+	/**
+	 * Returns whether the given {@link PersistentPropertyPath} is a base path of the current one. This means that the
+	 * current {@link PersistentPropertyPath} is basically an extension of the given one.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	boolean isBasePathOf(PersistentPropertyPath<T> path);
+
+	/**
+	 * Returns the sub-path of the current one as if it was based on the given base path. So for a current path
+	 * {@code foo.bar} and a given base {@code foo} it would return {@code bar}. If the given path is not a base of the
+	 * the current one the current {@link PersistentPropertyPath} will be returned as is.
+	 * 
+	 * @param base
+	 * @return
+	 */
+	PersistentPropertyPath<T> getExtensionForBaseOf(PersistentPropertyPath<T> base);
 }

@@ -26,50 +26,144 @@ import org.springframework.util.StringUtils;
 
 /**
  * Abstraction of a path of {@link PersistentProperty}s.
- *
+ * 
  * @author Oliver Gierke
  */
 class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements PersistentPropertyPath<T> {
-	
-	private final Iterable<T> properties;
+
+	private enum PropertyNameConverter implements Converter<PersistentProperty<?>, String> {
+
+		INSTANCE;
+
+		public String convert(PersistentProperty<?> source) {
+			return source.getName();
+		}
+	}
+
+	private final List<T> properties;
 
 	/**
 	 * Creates a new {@link DefaultPersistentPropertyPath} for the given {@link PersistentProperty}s.
 	 * 
 	 * @param properties must not be {@literal null}.
 	 */
-	public DefaultPersistentPropertyPath(Iterable<T> properties) {
+	public DefaultPersistentPropertyPath(List<T> properties) {
 		Assert.notNull(properties);
+		Assert.isTrue(!properties.isEmpty());
 		this.properties = properties;
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toDotPath()
 	 */
 	public String toDotPath() {
-		return toDotPath(new Converter<T, String>() {
-			public String convert(T source) {
-				return source.getName();
-			}
-		});
+		return toPath(null, null);
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toDotPath(org.springframework.core.convert.converter.Converter)
 	 */
 	public String toDotPath(Converter<? super T, String> converter) {
-		
-		List<String> result = new ArrayList<String>();
-		
-		for (T property : properties) {
-			result.add(converter.convert(property));
-		}
-		
-		return StringUtils.collectionToDelimitedString(result, ".");
+		return toPath(null, converter);
 	}
-	
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toPath(java.lang.String)
+	 */
+	public String toPath(String delimiter) {
+		return toPath(delimiter, null);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toPath(java.lang.String, org.springframework.core.convert.converter.Converter)
+	 */
+	public String toPath(String delimiter, Converter<? super T, String> converter) {
+
+		@SuppressWarnings("unchecked")
+		Converter<? super T, String> converterToUse = (Converter<? super T, String>) (converter == null ? PropertyNameConverter.INSTANCE
+				: converter);
+		String delimiterToUse = delimiter == null ? "." : delimiter;
+
+		List<String> result = new ArrayList<String>();
+
+		for (T property : properties) {
+			result.add(converterToUse.convert(property));
+		}
+
+		return StringUtils.collectionToDelimitedString(result, delimiterToUse);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getLeafProperty()
+	 */
+	public T getLeafProperty() {
+		return properties.get(properties.size() - 1);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getBaseProperty()
+	 */
+	public T getBaseProperty() {
+		return properties.get(0);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#isBasePathOf(org.springframework.data.mapping.context.PersistentPropertyPath)
+	 */
+	public boolean isBasePathOf(PersistentPropertyPath<T> path) {
+
+		if (path == null) {
+			return false;
+		}
+
+		Iterator<T> iterator = path.iterator();
+
+		for (T property : this) {
+
+			if (!iterator.hasNext()) {
+				return false;
+			}
+
+			T reference = iterator.next();
+
+			if (!property.equals(reference)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getExtensionForBaseOf(org.springframework.data.mapping.context.PersistentPropertyPath)
+	 */
+	public PersistentPropertyPath<T> getExtensionForBaseOf(PersistentPropertyPath<T> base) {
+
+		if (!base.isBasePathOf(this)) {
+			return this;
+		}
+
+		List<T> properties = new ArrayList<T>();
+		Iterator<T> iterator = iterator();
+
+		for (@SuppressWarnings("unused") T candidate : base) {
+			iterator.next();
+		}
+
+		while (iterator.hasNext()) {
+			properties.add(iterator.next());
+		}
+
+		return new DefaultPersistentPropertyPath<T>(properties);
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
@@ -77,27 +171,27 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	public Iterator<T> iterator() {
 		return properties.iterator();
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		
+
 		if (this == obj) {
 			return true;
 		}
-		
+
 		if (obj == null || !getClass().equals(obj.getClass())) {
 			return false;
 		}
-		
+
 		DefaultPersistentPropertyPath<?> that = (DefaultPersistentPropertyPath<?>) obj;
-		
+
 		return this.properties.equals(that.properties);
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

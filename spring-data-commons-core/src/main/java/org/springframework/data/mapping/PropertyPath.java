@@ -149,7 +149,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	}
 
 	/**
-	 * Returns the {@link PropertyPath} path in dot notation.
+	 * Returns the {@link PropertyPath} in dot notation.
 	 * 
 	 * @return
 	 */

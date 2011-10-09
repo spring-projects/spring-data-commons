@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -43,6 +44,16 @@ public class DefaultPersistenPropertyPathUnitTest<T extends PersistentProperty<T
 
 	@Mock
 	Converter<T, String> converter;
+	
+	PersistentPropertyPath<T> oneLeg;
+	PersistentPropertyPath<T> twoLegs;
+	
+	@Before
+	@SuppressWarnings("unchecked")
+	public void setUp() {
+		oneLeg = new DefaultPersistentPropertyPath<T>(Arrays.asList(first));
+		twoLegs = new DefaultPersistentPropertyPath<T>(Arrays.asList(first, second));
+	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullProperties() {
@@ -50,14 +61,12 @@ public class DefaultPersistenPropertyPathUnitTest<T extends PersistentProperty<T
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void usesPropertyNameForSimpleDotPath() {
 
 		when(first.getName()).thenReturn("foo");
 		when(second.getName()).thenReturn("bar");
 
-		PersistentPropertyPath<T> path = new DefaultPersistentPropertyPath<T>(Arrays.asList(first, second));
-		assertThat(path.toDotPath(), is("foo.bar"));
+		assertThat(twoLegs.toDotPath(), is("foo.bar"));
 	}
 
 	@Test
@@ -66,7 +75,35 @@ public class DefaultPersistenPropertyPathUnitTest<T extends PersistentProperty<T
 
 		when(converter.convert((T) any())).thenReturn("foo");
 
-		PersistentPropertyPath<T> path = new DefaultPersistentPropertyPath<T>(Arrays.asList(first, second));
-		assertThat(path.toDotPath(converter), is("foo.foo"));
+		assertThat(twoLegs.toDotPath(converter), is("foo.foo"));
+	}
+
+	@Test
+	public void returnsCorrectLeafProperty() {
+
+		assertThat(twoLegs.getLeafProperty(), is(second));
+		assertThat(oneLeg.getLeafProperty(), is(first));
+	}
+	
+	@Test
+	public void returnsCorrectBaseProperty() {
+
+		assertThat(twoLegs.getBaseProperty(), is(first));
+		assertThat(oneLeg.getBaseProperty(), is(first));
+	}
+
+	@Test
+	public void detectsBasePathCorrectly() {
+
+		assertThat(oneLeg.isBasePathOf(twoLegs), is(true));
+		assertThat(twoLegs.isBasePathOf(oneLeg), is(false));
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void calculatesExtensionCorrectly() {
+		
+		PersistentPropertyPath<T> extension = twoLegs.getExtensionForBaseOf(oneLeg);
+		assertThat(extension, is((PersistentPropertyPath<T>) new DefaultPersistentPropertyPath<T>(Arrays.asList(second))));
 	}
 }
