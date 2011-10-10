@@ -164,6 +164,13 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		return new DefaultPersistentPropertyPath<T>(properties);
 	}
 
+    public PersistentPropertyPath<T> getParentPath() {
+        int size = properties.size();
+        if (size <= 1) {
+            return this;
+        }
+        return new DefaultPersistentPropertyPath<T>(properties.subList(0,size-1));
+    }
 	/* 
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
@@ -200,4 +207,13 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	public int hashCode() {
 		return properties.hashCode();
 	}
+
+    @Override
+    public String toString() {
+        return toDotPath();
+    }
+
+    public int getLength() {
+        return properties.size();
+    }
 }

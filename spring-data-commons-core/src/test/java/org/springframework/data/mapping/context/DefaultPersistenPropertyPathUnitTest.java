@@ -21,6 +21,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +30,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.context.PersistentPropertyPath;
 
 /**
  * Unit tests for {@link DefaultPersistentPropertyPath}.
@@ -44,13 +44,15 @@ public class DefaultPersistenPropertyPathUnitTest<T extends PersistentProperty<T
 
 	@Mock
 	Converter<T, String> converter;
-	
+
+	PersistentPropertyPath<T> noLeg;
 	PersistentPropertyPath<T> oneLeg;
 	PersistentPropertyPath<T> twoLegs;
-	
+
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setUp() {
+		noLeg = new DefaultPersistentPropertyPath<T>(Collections.<T> emptyList());
 		oneLeg = new DefaultPersistentPropertyPath<T>(Arrays.asList(first));
 		twoLegs = new DefaultPersistentPropertyPath<T>(Arrays.asList(first, second));
 	}
@@ -84,7 +86,7 @@ public class DefaultPersistenPropertyPathUnitTest<T extends PersistentProperty<T
 		assertThat(twoLegs.getLeafProperty(), is(second));
 		assertThat(oneLeg.getLeafProperty(), is(first));
 	}
-	
+
 	@Test
 	public void returnsCorrectBaseProperty() {
 
@@ -98,12 +100,29 @@ public class DefaultPersistenPropertyPathUnitTest<T extends PersistentProperty<T
 		assertThat(oneLeg.isBasePathOf(twoLegs), is(true));
 		assertThat(twoLegs.isBasePathOf(oneLeg), is(false));
 	}
-	
+
 	@Test
 	@SuppressWarnings("unchecked")
 	public void calculatesExtensionCorrectly() {
-		
+
 		PersistentPropertyPath<T> extension = twoLegs.getExtensionForBaseOf(oneLeg);
 		assertThat(extension, is((PersistentPropertyPath<T>) new DefaultPersistentPropertyPath<T>(Arrays.asList(second))));
+	}
+
+	@Test
+	public void returnsTheCorrectParentPath() {
+		assertThat(twoLegs.getParentPath(), is(oneLeg));
+	}
+
+	@Test
+	public void returnsItselfAsParentPathIfSizeOne() {
+		assertThat(oneLeg.getParentPath(), is(oneLeg));
+	}
+
+	@Test
+	public void pathReturnsCorrectSize() {
+		assertThat(noLeg.getLength(), is(0));
+		assertThat(oneLeg.getLength(), is(1));
+		assertThat(twoLegs.getLength(), is(2));
 	}
 }
