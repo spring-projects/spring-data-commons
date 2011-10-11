@@ -153,7 +153,8 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		List<T> properties = new ArrayList<T>();
 		Iterator<T> iterator = iterator();
 
-		for (@SuppressWarnings("unused") T candidate : base) {
+		for (@SuppressWarnings("unused")
+		T candidate : base) {
 			iterator.next();
 		}
 
@@ -164,13 +165,26 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		return new DefaultPersistentPropertyPath<T>(properties);
 	}
 
-    public PersistentPropertyPath<T> getParentPath() {
-        int size = properties.size();
-        if (size <= 1) {
-            return this;
-        }
-        return new DefaultPersistentPropertyPath<T>(properties.subList(0,size-1));
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getParentPath()
+	 */
+	public PersistentPropertyPath<T> getParentPath() {
+		int size = properties.size();
+		if (size <= 1) {
+			return this;
+		}
+		return new DefaultPersistentPropertyPath<T>(properties.subList(0, size - 1));
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getLength()
+	 */
+	public int getLength() {
+		return properties.size();
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
@@ -208,12 +222,8 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		return properties.hashCode();
 	}
 
-    @Override
-    public String toString() {
-        return toDotPath();
-    }
-
-    public int getLength() {
-        return properties.size();
-    }
+	@Override
+	public String toString() {
+		return toDotPath();
+	}
 }
