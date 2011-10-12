@@ -1,4 +1,4 @@
-package org.springframework.data.transaction;
+package org.springframework.data.persistence;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
