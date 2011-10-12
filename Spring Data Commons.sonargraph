@@ -82,9 +82,16 @@
                 </element>
                 <element name="Cross store" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
-                        <element name="**.persistence.**" type="IncludeTypePattern"/>
+                        <element name="**.crossstore.**" type="IncludeTypePattern"/>
                     </element>
                 </element>
+            </element>
+            <element name="Conversion" type="Layer">
+                <element name="Assignment" type="TypeFilter">
+                    <element name="**.convert.**" type="IncludeTypePattern"/>
+                </element>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Core"/>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Mapping"/>
             </element>
             <element name="Mapping" type="Layer">
                 <element name="Assignment" type="TypeFilter">
@@ -122,6 +129,12 @@
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.annotation.**" type="IncludeTypePattern"/>
                     </element>
+                </element>
+                <element name="Authentication" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.authentication.**" type="IncludeTypePattern"/>
+                    </element>
+                    <stereotype name="Unrestricted"/>
                 </element>
             </element>
         </architecture>
