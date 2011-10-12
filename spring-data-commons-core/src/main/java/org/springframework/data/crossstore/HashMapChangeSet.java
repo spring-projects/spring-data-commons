@@ -1,11 +1,10 @@
-package org.springframework.data.persistence;
+package org.springframework.data.crossstore;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.crossstore.ChangeSet;
 
 /**
  * Simple ChangeSet implementation backed by a HashMap.
