@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,7 +183,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			}
 			
 			result.add(persistentProperty);
-			current = getPersistentEntity(segment.getType());
+			
+			if (segment.hasNext()) {
+				current = getPersistentEntity(segment.getType());
+			}
 		}
 		
 		return new DefaultPersistentPropertyPath<P>(result);
