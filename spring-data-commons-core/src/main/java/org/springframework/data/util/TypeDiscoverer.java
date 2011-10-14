@@ -88,6 +88,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		if (fieldType instanceof Class) {
 			return new ClassTypeInformation((Class<?>) fieldType);
 		}
+		
+		Map<TypeVariable, Type> variableMap = GenericTypeResolver.getTypeVariableMap(resolveType(fieldType));
 
 		if (fieldType instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) fieldType;
@@ -96,7 +98,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		if (fieldType instanceof TypeVariable) {
 			TypeVariable<?> variable = (TypeVariable<?>) fieldType;
-			return new TypeVariableTypeInformation(variable, type, this);
+			return new TypeVariableTypeInformation(variable, type, this, variableMap);
 		}
 
 		if (fieldType instanceof GenericArrayType) {
@@ -263,12 +265,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		if (!isMap()) {
 			return null;
 		}
-
-		if (type instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType) type;
-			return createInfo(parameterizedType.getActualTypeArguments()[1]);
-		}
-
+		
 		return getTypeArgument(getType(), Map.class, 1);
 	}
 

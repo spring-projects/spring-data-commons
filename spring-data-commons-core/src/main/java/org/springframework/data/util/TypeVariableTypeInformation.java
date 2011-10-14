@@ -20,6 +20,7 @@ import static org.springframework.util.ObjectUtils.*;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Map;
 
 import org.springframework.util.Assert;
 
@@ -29,7 +30,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-class TypeVariableTypeInformation<T> extends ParameterizedTypeInformation<T> {
+class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
 	private final TypeVariable<?> variable;
 	private final Type owningType;
@@ -42,9 +43,9 @@ class TypeVariableTypeInformation<T> extends ParameterizedTypeInformation<T> {
 	 * @param owningType must not be {@literal null}
 	 * @param parent
 	 */
-	public TypeVariableTypeInformation(TypeVariable<?> variable, Type owningType, TypeDiscoverer<?> parent) {
+	public TypeVariableTypeInformation(TypeVariable<?> variable, Type owningType, TypeDiscoverer<?> parent, Map<TypeVariable, Type> map) {
 
-		super(variable, parent);
+		super(variable, parent, map);
 		Assert.notNull(variable);
 		this.variable = variable;
 		this.owningType = owningType;

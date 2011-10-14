@@ -15,12 +15,12 @@
  */
 package org.springframework.data.util;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
-
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
+import java.util.Set;
 
 /**
  * Base class for all types that include parameterization of some kind. Crucial as we have to take note of the parent
@@ -28,9 +28,9 @@ import org.springframework.util.ObjectUtils;
  * 
  * @author Oliver Gierke
  */
-class ParameterizedTypeInformation<T> extends TypeDiscoverer<T> {
+class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
-	private final TypeDiscoverer<?> parent;
+	private final ParameterizedType type;
 
 	/**
 	 * Creates a new {@link ParameterizedTypeInformation} for the given {@link Type} and parent {@link TypeDiscoverer}.
@@ -38,60 +38,40 @@ class ParameterizedTypeInformation<T> extends TypeDiscoverer<T> {
 	 * @param type must not be {@literal null}
 	 * @param parent must not be {@literal null}
 	 */
-	public ParameterizedTypeInformation(Type type, TypeDiscoverer<?> parent) {
-		super(type, null);
-		Assert.notNull(parent);
-		this.parent = parent;
+	public ParameterizedTypeInformation(ParameterizedType type, TypeDiscoverer<?> parent) {
+		super(type, parent, null);
+		this.type = type;
 	}
 
-	/**
-	 * Considers the parent's type variable map before invoking the super class method.
-	 * 
-	 * @return
-	 */
-	@SuppressWarnings("rawtypes")
-	protected Map<TypeVariable, Type> getTypeVariableMap() {
-
-		return parent != null ? parent.getTypeVariableMap() : super.getTypeVariableMap();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#createInfo(java.lang.reflect.Type)
-	 */
-	@Override
-	protected TypeInformation<?> createInfo(Type fieldType) {
-		if (parent.getType().equals(fieldType)) {
-			return parent;
-		}
-
-		return super.createInfo(fieldType);
-	}
-
+	
+	
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#equals(java.lang.Object)
+	 * @see org.springframework.data.util.TypeDiscoverer#getMapValueType()
 	 */
 	@Override
-	public boolean equals(Object obj) {
-
-		if (!super.equals(obj)) {
-			return false;
+	public TypeInformation<?> getMapValueType() {
+		
+		if (Map.class.equals(getType())) {
+			Type[] arguments = type.getActualTypeArguments();
+			return createInfo(arguments[1]);
 		}
-
-		if (!this.getClass().equals(obj.getClass())) {
-			return false;
+		
+		Class<?> rawType = getType();
+		
+		Set<Type> supertypes = new HashSet<Type>();
+		supertypes.add(rawType.getGenericSuperclass());
+		supertypes.addAll(Arrays.asList(rawType.getGenericInterfaces()));
+		
+		for (Type supertype : supertypes) {
+			Class<?> rawSuperType = GenericTypeResolver.resolveType(supertype, getTypeVariableMap());
+			if (Map.class.isAssignableFrom(rawSuperType)) {
+				ParameterizedType parameterizedSupertype = (ParameterizedType) supertype;
+				Type[] arguments = parameterizedSupertype.getActualTypeArguments();
+				return createInfo(arguments[1]);
+			}
 		}
-
-		ParameterizedTypeInformation<?> that = (ParameterizedTypeInformation<?>) obj;
-		return this.parent == null ? that.parent == null : this.parent.equals(that.parent);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return super.hashCode() + 31 * ObjectUtils.nullSafeHashCode(parent);
+		
+		return super.getMapValueType();
 	}
 }

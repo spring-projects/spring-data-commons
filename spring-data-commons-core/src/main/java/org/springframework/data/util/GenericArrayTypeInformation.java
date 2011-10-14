@@ -24,7 +24,7 @@ import java.lang.reflect.Type;
  * 
  * @author Oliver Gierke
  */
-class GenericArrayTypeInformation<S> extends ParameterizedTypeInformation<S> {
+class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 
 	private GenericArrayType type;
 
@@ -36,7 +36,7 @@ class GenericArrayTypeInformation<S> extends ParameterizedTypeInformation<S> {
 	 * @param parent
 	 */
 	protected GenericArrayTypeInformation(GenericArrayType type, TypeDiscoverer<?> parent) {
-		super(type, parent);
+		super(type, parent, parent.getTypeVariableMap());
 		this.type = type;
 	}
 

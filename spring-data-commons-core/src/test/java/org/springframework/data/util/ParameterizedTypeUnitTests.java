@@ -15,25 +15,36 @@
  */
 package org.springframework.data.util;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.ParameterizedType;
+import java.util.HashMap;
+import java.util.Locale;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Unit tests for {@link ParameterizedTypeInformation}.
  *
  * @author Oliver Gierke
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ParameterizedTypeUnitTests {
 
+	@Mock ParameterizedType one, two;
+	
 	@Test
 	public void considersTypeInformationsWithDifferingParentsNotEqual() {
 		
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, null);
 		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<Object>(Object.class, null);
 		
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(Object.class, stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(Object.class, objectParent);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, objectParent);
 		
 		assertFalse(first.equals(second));
 	}
@@ -43,9 +54,40 @@ public class ParameterizedTypeUnitTests {
 		
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, null);
 		
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(Object.class, stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(Object.class, stringParent);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, stringParent);
 		
 		assertTrue(first.equals(second));
+	}
+	
+	/**
+	 * @see DATACMNS-88
+	 */
+	@Test
+	public void resolvesMapValueTypeCorrectly() {
+		
+		TypeInformation<Foo> type = ClassTypeInformation.from(Foo.class);
+		TypeInformation<?> propertyType = type.getProperty("param");
+		assertThat(propertyType.getProperty("value").getType(), is(typeCompatibleWith(String.class)));
+		assertThat(propertyType.getMapValueType().getType(), is(typeCompatibleWith(String.class)));
+		
+		propertyType = type.getProperty("param2");
+		assertThat(propertyType.getProperty("value").getType(), is(typeCompatibleWith(String.class)));
+		assertThat(propertyType.getMapValueType().getType(), is(typeCompatibleWith(Locale.class)));
+	}
+	
+	@SuppressWarnings("serial")
+	class Localized<S> extends HashMap<Locale, S> {
+		S value;
+	}
+	
+	@SuppressWarnings("serial")
+	class Localized2<S> extends HashMap<S, Locale> {
+		S value;
+	}
+	
+	class Foo {
+	    Localized<String> param;
+	    Localized2<String> param2;
 	}
 }
