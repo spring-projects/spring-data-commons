@@ -1,6 +1,33 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.2.0.M2 (2011-10-21)
+----------------------------------------
+
+** Bug
+    * [DATACMNS-81] - RepositoryInterfaceAwareBeanPostProcessor potentially suffers from NullPointerException
+
+** Improvement
+    * [DATACMNS-79] - Treat empty strings as null for username and password for UserCredentials
+    * [DATACMNS-82] - Increase performance by defaulting PlatformTransactionManager bean name
+    * [DATACMNS-83] - RepositoryInterfaceAwareBeanPostProcessor should log not being able to load the repo interface
+    * [DATACMNS-84] - Improve access to property paths
+    * [DATACMNS-85] - Extend PersistentPropertyPath
+    * [DATACMNS-87] - AbstractMappingContext.getPropertyPath(...) must not access the leaf property's PersistentEntity
+
+** New Feature
+    * [DATACMNS-76] - Extract core converter infrastructure from MongoDB module
+    * [DATACMNS-78] - Add LessThanEquals and GreaterThanEquals as supported query keywords
+
+** Refactoring
+    * [DATACMNS-73] - Create dedicated crossstore package
+    * [DATACMNS-75] - Consolidate entity instantiation strategies
+    * [DATACMNS-86] - Remove o.s.d.transaction package, move ChangeSetBackedTransactionSynchronization to o.s.d.persistence
+
+** Task
+    * [DATACMNS-80] - Upgrade to Spring 3.0.6
+
+
 Changes in version 1.2.0.M1 (2011-09-01)
 ----------------------------------------
 
