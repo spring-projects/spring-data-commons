@@ -44,20 +44,20 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	Iterable<T> save(Iterable<? extends T> entities);
 
 	/**
-	 * Retrives an entity by its primary key.
+	 * Retrives an entity by its id.
 	 * 
-	 * @param id
-	 * @return the entity with the given primary key or {@code null} if none found
-	 * @throws IllegalArgumentException if primaryKey is {@code null}
+	 * @param id must not be {@literal null}.
+	 * @return the entity with the given id or {@literal null} if none found
+	 * @throws IllegalArgumentException if {@code id} is {@literal null}
 	 */
 	T findOne(ID id);
 
 	/**
 	 * Returns whether an entity with the given id exists.
 	 * 
-	 * @param id
+	 * @param id must not be {@literal null}.
 	 * @return true if an entity with the given id exists, alse otherwise
-	 * @throws IllegalArgumentException if primaryKey is {@code null}
+	 * @throws IllegalArgumentException if {@code id} is {@literal null}
 	 */
 	boolean exists(ID id);
 
@@ -78,7 +78,8 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	/**
 	 * Deletes the entity with the given id.
 	 * 
-	 * @param id
+	 * @param id must not be {@literal null}.
+	 * @throws IllegalArgumentException in case the given {@code id} is {@literal null}
 	 */
 	void delete(ID id);
 
