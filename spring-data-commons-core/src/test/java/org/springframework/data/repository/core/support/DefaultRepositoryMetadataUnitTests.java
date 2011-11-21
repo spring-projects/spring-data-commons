@@ -18,13 +18,13 @@ package org.springframework.data.repository.core.support;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.util.ClassUtils;
 
 
@@ -35,6 +35,22 @@ import org.springframework.data.repository.util.ClassUtils;
  */
 public class DefaultRepositoryMetadataUnitTests {
 
+	@Test(expected = IllegalArgumentException.class)
+	public void preventsNullRepositoryInterface() {
+		
+		new DefaultRepositoryMetadata(null);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNonInterface() {
+		new DefaultRepositoryMetadata(Object.class);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNonRepositoryInterface() {
+		new DefaultRepositoryMetadata(Collection.class);
+	}
+	
 	@Test
 	public void looksUpDomainClassCorrectly() throws Exception {
 

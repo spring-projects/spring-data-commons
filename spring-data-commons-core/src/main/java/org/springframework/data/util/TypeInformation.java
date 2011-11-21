@@ -16,7 +16,7 @@
 package org.springframework.data.util;
 
 import java.lang.reflect.Constructor;
-
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -83,4 +83,13 @@ public interface TypeInformation<S> {
 	 * @return
 	 */
 	TypeInformation<?> getActualType();
+	
+	/**
+	 * Returns a {@link TypeInformation} for the return type of the given {@link Method}. Will potentially resolve
+	 * generics information against the current types type parameter bindings.
+	 * 
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	TypeInformation<?> getReturnType(Method method);
 }

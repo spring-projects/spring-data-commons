@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-class DefaultRepositoryInformation implements RepositoryInformation {
+class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements RepositoryInformation {
 
 	@SuppressWarnings("rawtypes")
 	private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class.getTypeParameters();
@@ -60,8 +60,11 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	public DefaultRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass,
 			Class<?> customImplementationClass) {
 
+		super(metadata.getRepositoryInterface());
+		
 		Assert.notNull(metadata);
 		Assert.notNull(repositoryBaseClass);
+		
 		this.metadata = metadata;
 		this.repositoryBaseClass = repositoryBaseClass;
 		this.customImplementationClass = customImplementationClass;

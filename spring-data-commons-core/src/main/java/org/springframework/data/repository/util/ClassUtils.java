@@ -17,8 +17,6 @@ package org.springframework.data.repository.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -38,29 +36,6 @@ public abstract class ClassUtils {
 	 */
 	private ClassUtils() {
 
-	}
-
-	/**
-	 * Returns the domain class returned by the given {@link Method}. Will extract the type from {@link Collection}s and
-	 * {@link org.springframework.data.domain.Page} as well.
-	 * 
-	 * @param method
-	 * @return
-	 */
-	public static Class<?> getReturnedDomainClass(Method method) {
-
-		Class<?> type = method.getReturnType();
-
-		if (Iterable.class.isAssignableFrom(type)) {
-
-			ParameterizedType returnType = (ParameterizedType) method.getGenericReturnType();
-			Type componentType = returnType.getActualTypeArguments()[0];
-
-			return componentType instanceof ParameterizedType ? (Class<?>) ((ParameterizedType) componentType).getRawType()
-					: (Class<?>) componentType;
-		}
-
-		return type;
 	}
 
 	/**

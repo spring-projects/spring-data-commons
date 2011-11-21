@@ -300,6 +300,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return null;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getReturnType(java.lang.reflect.Method)
+	 */
+	public TypeInformation<?> getReturnType(Method method) {
+		
+		Assert.notNull(method);
+		return createInfo(method.getGenericReturnType());
+	}
+	
 	/*
 		 * (non-Javadoc)
 		 *

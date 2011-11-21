@@ -25,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -124,7 +123,7 @@ public class QueryMethod {
 	protected Class<?> getDomainClass() {
 
 		Class<?> repositoryDomainClass = metadata.getDomainClass();
-		Class<?> methodDomainClass = ClassUtils.getReturnedDomainClass(method);
+		Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
 
 		return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass) ? methodDomainClass
 				: repositoryDomainClass;

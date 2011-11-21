@@ -42,29 +42,12 @@ public class ClassUtilsUnitTests {
 				Pageable.class, String.class), User.class);
 	}
 
-
-	@Test
-	public void determinesReturnType() throws Exception {
-
-		assertEquals(User.class,
-				getReturnedDomainClass(SomeDao.class.getMethod(
-						"findByFirstname", Pageable.class, String.class)));
-		assertEquals(GenericType.class,
-				getReturnedDomainClass(SomeDao.class.getMethod("someMethod")));
-	}
-
-
 	@Test
 	public void determinesValidFieldsCorrectly() {
 
 		assertTrue(hasProperty(User.class, "firstname"));
 		assertTrue(hasProperty(User.class, "Firstname"));
 		assertFalse(hasProperty(User.class, "address"));
-	}
-
-	@Test
-	public void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
-		assertEquals(Map.class, getReturnedDomainClass(SomeDao.class.getMethod("anotherMethod")));
 	}
 
 	@SuppressWarnings("unused")
@@ -83,29 +66,16 @@ public class ClassUtilsUnitTests {
 
 	}
 
-	/**
-	 * Sample interface to serve two purposes:
-	 * <ol>
-	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} skips non
-	 * {@link GenericDao} interfaces</li>
-	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} traverses
-	 * interface hierarchy</li>
-	 * </ol>
-	 *
-	 * @author Oliver Gierke
-	 */
-	private interface SomeDao extends Serializable, UserRepository {
+	interface SomeDao extends Serializable, UserRepository {
 
 		Page<User> findByFirstname(Pageable pageable, String firstname);
 
-
 		GenericType<User> someMethod();
-
 
 		List<Map<String, Object>> anotherMethod();
 	}
 
-	private class GenericType<T> {
+	class GenericType<T> {
 
 	}
 }

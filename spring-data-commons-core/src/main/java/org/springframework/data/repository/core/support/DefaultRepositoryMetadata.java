@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class DefaultRepositoryMetadata implements RepositoryMetadata {
+public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 
 	private final Class<?> repositoryInterface;
 
@@ -38,7 +38,8 @@ public class DefaultRepositoryMetadata implements RepositoryMetadata {
 	 */
 	public DefaultRepositoryMetadata(Class<?> repositoryInterface) {
 
-		Assert.notNull(repositoryInterface);
+		super(repositoryInterface);
+		Assert.isTrue(repositoryInterface.isInterface());
 		Assert.isTrue(Repository.class.isAssignableFrom(repositoryInterface));
 		this.repositoryInterface = repositoryInterface;
 	}

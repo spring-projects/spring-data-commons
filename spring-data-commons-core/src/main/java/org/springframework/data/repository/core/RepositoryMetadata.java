@@ -15,6 +15,11 @@
  */
 package org.springframework.data.repository.core;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
+
 /**
  * Metadata for repository interfaces.
  * 
@@ -44,4 +49,13 @@ public interface RepositoryMetadata {
 	 * @return
 	 */
 	Class<?> getRepositoryInterface();
+	
+	/**
+	 * Returns the domain class returned by the given {@link Method}. Will extract the type from {@link Collection}s and
+	 * {@link org.springframework.data.domain.Page} as well.
+	 * 
+	 * @param method
+	 * @return
+	 */
+	Class<?> getReturnedDomainClass(Method method);
 }

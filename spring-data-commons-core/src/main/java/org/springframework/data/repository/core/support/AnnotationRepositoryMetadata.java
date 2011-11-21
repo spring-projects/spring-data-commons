@@ -25,15 +25,21 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class AnnotationRepositoryMetadata implements RepositoryMetadata {
+public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 
 	private static final String NO_ANNOTATION_FOUND = String.format("Interface must be annotated with @%s!",
 			RepositoryDefinition.class.getName());
 
 	private final Class<?> repositoryInterface;
 
+	/**
+	 * Creates a new {@link AnnotationRepositoryMetadata} instance looking up repository types from a
+	 * {@link RepositoryDefinition} annotation.
+	 * 
+	 * @param repositoryInterface must not be {@literal null}.
+	 */
 	public AnnotationRepositoryMetadata(Class<?> repositoryInterface) {
-		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
+		super(repositoryInterface);
 		Assert.isTrue(repositoryInterface.isAnnotationPresent(RepositoryDefinition.class), NO_ANNOTATION_FOUND);
 		this.repositoryInterface = repositoryInterface;
 	}
