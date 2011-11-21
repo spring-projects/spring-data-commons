@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -113,6 +114,25 @@ public class PartTree implements Iterable<OrPart> {
 				result.add(part);
 			}
 		}
+		return result;
+	}
+	
+	/**
+	 * Returns all {@link Part}s of the {@link PartTree} of the given {@link Type}.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public Iterable<Part> getParts(Type type) {
+		
+		List<Part> result = new ArrayList<Part>();
+		
+		for (Part part : getParts()) {
+			if (part.getType().equals(type)) {
+				result.add(part);
+			}
+		}
+		
 		return result;
 	}
 

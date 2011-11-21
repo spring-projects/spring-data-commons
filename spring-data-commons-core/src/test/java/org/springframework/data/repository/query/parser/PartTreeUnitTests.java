@@ -15,12 +15,13 @@
  */
 package org.springframework.data.repository.query.parser;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
@@ -211,6 +212,27 @@ public class PartTreeUnitTests {
 		}
 	}
 	
+	@Test
+	public void returnsAllParts() {
+		
+		PartTree tree = partTree("findByLastnameAndFirstname");
+		assertPart(tree, parts("lastname", "firstname"));
+	}
+	
+	@Test
+	public void returnsAllPartsOfType() {
+		
+		PartTree tree = partTree("findByLastnameAndFirstnameGreaterThan");
+		
+		Collection<Part> parts = toCollection(tree.getParts(Type.SIMPLE_PROPERTY));
+		assertThat(parts, hasItem(part("lastname")));
+		assertThat(parts, is(hasSize(1)));
+		
+		parts = toCollection(tree.getParts(Type.GREATER_THAN));
+		assertThat(parts, hasItem(new Part("FirstnameGreaterThan", User.class)));
+		assertThat(parts, is(hasSize(1)));
+	}
+	
 	private PartTree partTree(String source) {
 		return new PartTree(source, User.class);
 	}
@@ -246,6 +268,15 @@ public class PartTreeUnitTests {
 		assertThat("Too many or parts!", iterator.hasNext(), is(false));
 	}
 
+	private static <T> Collection<T> toCollection(Iterable<T> iterable) {
+		
+		List<T> result = new ArrayList<T>(); 
+		for (T element : iterable) {
+			result.add(element);
+		}
+		return result;
+	}
+	
 	class User {
 		String firstname;
 		String lastname;
