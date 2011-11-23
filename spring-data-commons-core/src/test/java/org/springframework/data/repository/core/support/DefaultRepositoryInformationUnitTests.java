@@ -21,7 +21,6 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadataUnitTests.DummyGenericRepositorySupport;
-import org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests.ReadOnlyRepository;
 
 /**
  * @author Oliver Gierke
