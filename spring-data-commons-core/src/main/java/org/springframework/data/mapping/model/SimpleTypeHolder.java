@@ -62,6 +62,7 @@ public class SimpleTypeHolder {
 		DEFAULTS.add(Locale.class);
 		DEFAULTS.add(Class.class);
 		DEFAULTS.add(Number.class);
+		DEFAULTS.add(Enum.class);
 	}
 
 	private final Set<Class<?>> simpleTypes;
@@ -124,6 +125,6 @@ public class SimpleTypeHolder {
 				return true;
 			}
 		}
-		return type.isEnum();
+		return false;
 	}
 }

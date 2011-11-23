@@ -92,4 +92,35 @@ public class SimpleTypeHolderUnitTests {
 		SimpleTypeHolder holder = new SimpleTypeHolder();
 		assertThat(holder.isSimpleType(Object.class), is(true));
 	}
+
+	@Test
+  public void considersSimpleEnumAsSimple() {
+  	
+  	SimpleTypeHolder holder = new SimpleTypeHolder();
+  	assertThat(holder.isSimpleType(SimpleEnum.FOO.getClass()), is(true));
+  }
+	
+	@Test
+	public void considersComplexEnumAsSimple() {
+		
+		SimpleTypeHolder holder = new SimpleTypeHolder();
+  	assertThat(holder.isSimpleType(ComplexEnum.FOO.getClass()), is(true));
+	}
+  
+  enum SimpleEnum {
+  	
+  	FOO;
+  }
+  
+  enum ComplexEnum {
+  	
+  	FOO {
+			@Override
+			boolean method() {
+				return false;
+			}
+		};
+  	
+  	abstract boolean method();
+  }
 }
