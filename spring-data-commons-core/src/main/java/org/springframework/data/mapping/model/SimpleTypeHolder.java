@@ -61,7 +61,6 @@ public class SimpleTypeHolder {
 		DEFAULTS.add(Date.class);
 		DEFAULTS.add(Locale.class);
 		DEFAULTS.add(Class.class);
-		DEFAULTS.add(Number.class);
 		DEFAULTS.add(Enum.class);
 	}
 
