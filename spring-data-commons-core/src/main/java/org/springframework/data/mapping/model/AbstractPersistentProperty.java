@@ -20,7 +20,8 @@ import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.annotation.Reference;
@@ -86,6 +87,34 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return information;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getPersistentEntityType()
+	 */
+	public Iterable<? extends TypeInformation<?>> getPersistentEntityType() {
+
+		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
+
+		TypeInformation<?> type = getTypeInformation();
+
+		if (isEntity()) {
+			result.add(type);
+		}
+
+		if (type.isCollectionLike() || isMap()) {
+			TypeInformation<?> nestedType = getTypeInformationIfNotSimpleType(getTypeInformation().getActualType());
+			if (nestedType != null) {
+				result.add(nestedType);
+			}
+		}
+
+		return result;
+	}
+
+	private TypeInformation<?> getTypeInformationIfNotSimpleType(TypeInformation<?> information) {
+		return information == null || simpleTypeHolder.isSimpleType(information.getType()) ? null : information;
+	}
+
 	public PropertyDescriptor getPropertyDescriptor() {
 		return propertyDescriptor;
 	}
@@ -100,6 +129,14 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	public boolean isTransient() {
 		return Modifier.isTransient(field.getModifiers());
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#shallBePersisted()
+	 */
+	public boolean shallBePersisted() {
+		return !isTransient();
 	}
 
 	public boolean isAssociation() {
@@ -119,8 +156,12 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return association;
 	}
 
-	public boolean isCollection() {
-		return Collection.class.isAssignableFrom(getType()) || isArray();
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isCollectionLike()
+	 */
+	public boolean isCollectionLike() {
+		return information.isCollectionLike();
 	}
 
 	public boolean isMap() {
@@ -134,21 +175,19 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return getType().isArray();
 	}
 
-	public boolean isComplexType() {
-		if (isCollection() || isArray()) {
-			return !simpleTypeHolder.isSimpleType(getComponentType());
-		} else {
-			return !simpleTypeHolder.isSimpleType(getType());
-		}
+	protected boolean isEntity() {
+		
+		boolean isComplexType = !simpleTypeHolder.isSimpleType(information.getActualType().getType());
+		return isComplexType && !isTransient() && !isCollectionLike() && !isMap();
 	}
 
-	public boolean isEntity() {
-		return isComplexType() && !isTransient() && !isCollection() && !isMap();
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getComponentType()
+	 */
 	public Class<?> getComponentType() {
 
-		if (!isMap() && !isCollection()) {
+		if (!isMap() && !isCollectionLike()) {
 			return null;
 		}
 

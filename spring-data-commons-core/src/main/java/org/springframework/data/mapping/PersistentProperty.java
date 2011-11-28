@@ -2,6 +2,8 @@ package org.springframework.data.mapping;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Map;
 
 import org.springframework.data.util.TypeInformation;
 
@@ -30,39 +32,79 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	TypeInformation<?> getTypeInformation();
 
+	/**
+	 * Returns the {@link TypeInformation} if the property references a {@link PersistentEntity}. Will return
+	 * {@literal null} in case it refers to a simple type. Will return {@link Collection}'s component type or the
+	 * {@link Map}'s value type transparently.
+	 * 
+	 * @return
+	 */
+	Iterable<? extends TypeInformation<?>> getPersistentEntityType();
+
+	/**
+	 * Returns the {@link PropertyDescriptor} backing the {@link PersistentProperty}.
+	 *  
+	 * @return
+	 */
 	PropertyDescriptor getPropertyDescriptor();
 
 	Field getField();
 
 	String getSpelExpression();
 
-	boolean isTransient();
-
-	boolean isAssociation();
-
 	Association<P> getAssociation();
 
-	boolean isCollection();
-
-	boolean isMap();
-
-	boolean isArray();
-
-	boolean isComplexType();
-
 	/**
-	 * Returns whether the property has to be regarded as entity which means its type will be also be considered to be a
-	 * {@link PersistentEntity}.
+	 * Returns whether the property is the ID property of the owning {@link PersistentEntity}.
 	 * 
 	 * @return
 	 */
-	boolean isEntity();
+	boolean isIdProperty();
+	
+	/**
+	 * Returns whether the property is a {@link Collection}, {@link Iterable} or an array.
+	 * 
+	 * @return
+	 */
+	boolean isCollectionLike();
 
 	/**
-	 * Returns the component type of the type if it is a {@link java.util.Collection}. Will return the type of the key if the
-	 * property is a {@link java.util.Map}.
+	 * Returns whether the property is a {@link Map}.
 	 * 
-	 * @return the component type, the map's key type or {@literal null} if neither {@link java.util.Collection} nor {@link java.util.Map}.
+	 * @return
+	 */
+	boolean isMap();
+
+	/**
+	 * Returns whether the property is an array.
+	 * 
+	 * @return
+	 */
+	boolean isArray();
+
+	/**
+	 * Returns whether the property is transient.
+	 * 
+	 * @return
+	 */
+	boolean isTransient();
+	
+	
+	boolean shallBePersisted();
+
+	/**
+	 * Returns whether the property is an {@link Association}.
+	 * 
+	 * @return
+	 */
+	boolean isAssociation();
+	
+	/**
+	 * Returns the component type of the type if it is a {@link java.util.Collection}. Will return the type of the key if
+	 * the property is a {@link java.util.Map}.
+	 * 
+	 * @return the component type, the map's key type or {@literal null} if neither {@link java.util.Collection} nor
+	 *         {@link java.util.Map}.
 	 */
 	Class<?> getComponentType();
 
@@ -80,5 +122,4 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 */
 	Class<?> getMapValueType();
 
-	boolean isIdProperty();
 }

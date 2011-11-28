@@ -69,7 +69,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	private final ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
 	private final ConcurrentMap<E, List<Validator>> validators = new ConcurrentHashMap<E, List<Validator>>();
-	private final List<Class<?>> customSimpleTypes = new ArrayList<Class<?>>();
+
 	private ApplicationEventPublisher applicationEventPublisher;
 	private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
 	private boolean strict = false;
@@ -173,22 +173,23 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		List<P> result = new ArrayList<P>();
 		E current = getPersistentEntity(propertyPath.getOwningType());
-		
+
 		for (PropertyPath segment : propertyPath) {
-			
+
 			P persistentProperty = current.getPersistentProperty(segment.getSegment());
 
 			if (persistentProperty == null) {
-				throw new IllegalArgumentException(String.format("No property %s found on %s!", segment.getSegment(), current.getName()));
+				throw new IllegalArgumentException(String.format("No property %s found on %s!", segment.getSegment(),
+						current.getName()));
 			}
-			
+
 			result.add(persistentProperty);
-			
+
 			if (segment.hasNext()) {
 				current = getPersistentEntity(segment.getType());
 			}
 		}
-		
+
 		return new DefaultPersistentPropertyPath<P>(result);
 	}
 
@@ -243,11 +244,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				descriptors.put(descriptor.getName(), descriptor);
 			}
 
-			ReflectionUtils.doWithFields(type, new PersistentPropertyCreator(entity, descriptors), new ReflectionUtils.FieldFilter() {
-				public boolean matches(Field field) {
-					return !Modifier.isStatic(field.getModifiers()) && !UNMAPPED_FIELDS.contains(field.getName());
-				}
-			});
+			ReflectionUtils.doWithFields(type, new PersistentPropertyCreator(entity, descriptors),
+					new ReflectionUtils.FieldFilter() {
+						public boolean matches(Field field) {
+							return !Modifier.isStatic(field.getModifiers()) && !UNMAPPED_FIELDS.contains(field.getName());
+						}
+					});
 
 			entity.verify();
 
@@ -265,43 +267,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 	}
 
-	/**
-	 * Returns a potential nested type tha needs to be added when adding the given property in the course of adding a
-	 * {@link PersistentEntity}. Will return the property's {@link TypeInformation} directly if it is a potential entity,
-	 * a collections component type if it's a collection as well as the value type of a {@link Map} if it's a map
-	 * property.
-	 * 
-	 * @param property
-	 * @return the TypeInformation to be added as {@link PersistentEntity} or {@literal
-
-	 */
-	private TypeInformation<?> getNestedTypeToAdd(P property, PersistentEntity<?, P> entity) {
-
-		if (entity.getType().equals(property.getRawType())) {
-			return null;
-		}
-
-		TypeInformation<?> typeInformation = property.getTypeInformation();
-
-		if (customSimpleTypes.contains(typeInformation.getType())) {
-			return null;
-		}
-
-		if (property.isEntity()) {
-			return typeInformation;
-		}
-
-		if (property.isCollection()) {
-			return getTypeInformationIfNotSimpleType(getComponentTypeRecursively(typeInformation));
-		}
-
-		if (property.isMap()) {
-			return getTypeInformationIfNotSimpleType(typeInformation.getMapValueType());
-		}
-
-		return null;
-	}
-
 	private TypeInformation<?> getComponentTypeRecursively(TypeInformation<?> typeInformation) {
 		TypeInformation<?> componentType = typeInformation.getComponentType();
 
@@ -310,10 +275,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 
 		return componentType.isCollectionLike() ? getComponentTypeRecursively(componentType) : componentType;
-	}
-
-	private TypeInformation<?> getTypeInformationIfNotSimpleType(TypeInformation<?> information) {
-		return information == null || simpleTypeHolder.isSimpleType(information.getType()) ? null : information;
 	}
 
 	/**
@@ -336,7 +297,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner,
 			SimpleTypeHolder simpleTypeHolder);
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -346,14 +307,14 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			addPersistentEntity(initialEntity);
 		}
 	}
-	
+
 	/**
 	 * {@link FieldCallback} to create {@link PersistentProperty} instances.
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 */
 	private final class PersistentPropertyCreator implements FieldCallback {
-		
+
 		private final E entity;
 		private final Map<String, PropertyDescriptor> descriptors;
 
@@ -390,9 +351,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				entity.setIdProperty(property);
 			}
 
-			TypeInformation<?> nestedType = getNestedTypeToAdd(property, entity);
-			if (nestedType != null) {
-				addPersistentEntity(nestedType);
+			if (entity.getType().equals(property.getRawType())) {
+				return;
+			}
+
+			for (TypeInformation<?> candidate : property.getPersistentEntityType()) {
+				addPersistentEntity(candidate);
 			}
 		}
 	}

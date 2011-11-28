@@ -1,13 +1,18 @@
 package org.springframework.data.mapping.model;
 
+import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.*;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.TreeSet;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -16,23 +21,40 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  */
 public class AbstractPersistentPropertyUnitTests {
+	
+	TypeInformation<TestClassComplex> typeInfo;
+	PersistentEntity<TestClassComplex, SamplePersistentProperty> entity;
+	SimpleTypeHolder typeHolder;
+	
+	@Before
+	public void setUp() {
+		typeInfo = ClassTypeInformation.from(TestClassComplex.class);
+		entity = new BasicPersistentEntity<TestClassComplex, SamplePersistentProperty>(typeInfo);
+		typeHolder = new SimpleTypeHolder();
+	}
+	
 
 	/**
 	 * @see DATACMNS-68
-	 * @throws Exception
 	 */
 	@Test
 	public void discoversComponentTypeCorrectly() throws Exception {
 
-		BasicPersistentEntity<TestClassComplex, SamplePersistentProperty> entity = new BasicPersistentEntity<TestClassComplex, SamplePersistentProperty>(
-				ClassTypeInformation.from(TestClassComplex.class));
-		
 		Field field = ReflectionUtils.findField(TestClassComplex.class, "testClassSet");
 		
-		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, new SimpleTypeHolder());
+		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
 		property.getComponentType();
 	}
 
+	@Test
+	public void returnsNestedEntityTypeCorrectly() {
+		
+		Field field = ReflectionUtils.findField(TestClassComplex.class, "testClassSet");
+		
+		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
+		assertThat(property.getPersistentEntityType().iterator().hasNext(), is(false));
+	}
+	
 	@SuppressWarnings("serial")
 	class TestClassSet extends TreeSet<Object> {
 	}
