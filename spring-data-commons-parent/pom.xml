@@ -15,7 +15,7 @@
 		<log4j.version>1.2.16</log4j.version>
 		<org.mockito.version>1.8.4</org.mockito.version>
 		<org.springframework.version.30>3.0.6.RELEASE</org.springframework.version.30>
-		<org.springframework.version>[${org.springframework.version.30}, 3.1.0.RC1]</org.springframework.version>
+		<org.springframework.version>[${org.springframework.version.30}, 3.1.0.RC2]</org.springframework.version>
 		<org.hamcrest.version>1.2.1</org.hamcrest.version>
 	</properties>
 	<profiles>
