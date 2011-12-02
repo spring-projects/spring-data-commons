@@ -39,7 +39,8 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	 * Saves all given entities.
 	 * 
 	 * @param entities
-	 * @return
+	 * @return the saved entities
+	 * @throws IllegalArgumentException in case the given entity is (@literal null}.
 	 */
 	Iterable<T> save(Iterable<? extends T> entities);
 
@@ -87,6 +88,7 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	 * Deletes a given entity.
 	 * 
 	 * @param entity
+	 * @throws IllegalArgumentException in case the given entity is (@literal null}.
 	 */
 	void delete(T entity);
 
@@ -94,6 +96,7 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	 * Deletes the given entities.
 	 * 
 	 * @param entities
+	 * @throws IllegalArgumentException in case the given {@link Iterable} is (@literal null}.
 	 */
 	void delete(Iterable<? extends T> entities);
 
