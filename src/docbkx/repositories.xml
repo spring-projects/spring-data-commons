@@ -156,7 +156,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
         <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://www.springframework.org/schema/data/jpa
+  xmlns="http://www.springframework.org/schema/data/jpa"
   xsi:schemaLocation="http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/data/jpa
@@ -731,6 +731,249 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
         <programlisting language="xml">&lt;repositories base-package="com.acme.repository"
   factory-class="com.acme.MyRepositoryFactoryBean" /&gt;</programlisting>
       </example>
+    </section>
+  </section>
+
+  <section>
+    <title>Extensions</title>
+
+    <para>This chapter documents a set of Spring Data extensions that enable
+    Spring Data usage in a variety of contexts. Currently most of the
+    integration is targeted towards Spring MVC.</para>
+
+    <section id="web-domain-class-binding">
+      <title>Domain class web binding for Spring MVC</title>
+
+      <para>Given you are developing a Spring MVC web applications you
+      typically have to resolve domain class ids from URLs. By default it's
+      your task to transform that request parameter or URL part into the
+      domain class to hand it layers below then or execute business logic on
+      the entities directly. This should look something like this:</para>
+
+      <programlisting language="java">@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  private final UserRepository userRepository;
+
+  public UserController(UserRepository userRepository) {
+    userRepository = userRepository;
+  }
+
+  @RequestMapping("/{id}")
+  public String showUserForm(@PathVariable("id") Long id, Model model) {
+    
+    // Do null check for id
+    User user = userRepository.findOne(id);
+    // Do null check for user
+    // Populate model
+    return "user";
+  }
+}</programlisting>
+
+      <para>First you pretty much have to declare a repository dependency for
+      each controller to lookup the entity managed by the controller or
+      repository respectively. Beyond that looking up the entity is
+      boilerplate as well as it's always a <methodname>findOne(…)</methodname>
+      call. Fortunately Spring provides means to register custom converting
+      components that allow conversion between a <classname>String</classname>
+      value to an arbitrary type.</para>
+
+      <simplesect>
+        <title>PropertyEditors</title>
+
+        <para>For versions up to Spring 3.0 simple Java
+        <interfacename>PropertyEditor</interfacename>s had to be used. Thus,
+        we offer a <classname>DomainClassPropertyEditorRegistrar</classname>,
+        that will look up all Spring Data repositories registered in the
+        <interfacename>ApplicationContext</interfacename> and register a
+        custom <interfacename>PropertyEditor</interfacename> for the managed
+        domain class</para>
+
+        <programlisting language="xml">&lt;bean class="….web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"&gt;
+  &lt;property name="webBindingInitializer"&gt;
+    &lt;bean class="….web.bind.support.ConfigurableWebBindingInitializer"&gt;
+      &lt;property name="propertyEditorRegistrars"&gt;
+        &lt;bean class="org.springframework.data.repository.support.DomainClassPropertyEditorRegistrar" /&gt;
+      &lt;/property&gt;
+    &lt;/bean&gt;
+  &lt;/property&gt;
+&lt;/bean&gt;</programlisting>
+
+        <para>If you have configured Spring MVC like this you can turn your
+        controller into the following that reduces a lot of the clutter and
+        boilerplate.</para>
+
+        <programlisting lang="" language="java">@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  @RequestMapping("/{id}")
+  public String showUserForm(@PathVariable("id") User user, Model model) {
+
+    // Do null check for user
+    // Populate model
+    return "userForm";
+  }
+}</programlisting>
+      </simplesect>
+
+      <simplesect>
+        <title>ConversionService</title>
+
+        <para>As of Spring 3.0 the
+        <interfacename>PropertyEditor</interfacename> support is superseeded
+        by a new conversion infrstructure that leaves all the drawbacks of
+        <interfacename>PropertyEditor</interfacename>s behind and uses a
+        stateless X to Y conversion approach. We now ship with a
+        <classname>DomainClassConverter</classname> that pretty much mimics
+        the behaviour of
+        <classname>DomainClassPropertyEditorRegistrar</classname>. To register
+        the converter you have to declare
+        <classname>ConversionServiceFactoryBean</classname>, register the
+        converter and tell the Spring MVC namespace to use the configured
+        conversion service:</para>
+
+        <programlisting language="xml">&lt;mvc:annotation-driven conversion-service="conversionService" /&gt;
+
+&lt;bean id="conversionService" class="….context.support.ConversionServiceFactoryBean"&gt;
+  &lt;property name="converters"&gt;
+    &lt;list&gt;
+      &lt;bean class="org.springframework.data.repository.support.DomainClassConverter"&gt;
+        &lt;constructor-arg ref="conversionService" /&gt;
+      &lt;/bean&gt;
+    &lt;/list&gt;
+  &lt;/property&gt;
+&lt;/bean&gt;</programlisting>
+      </simplesect>
+    </section>
+
+    <section id="web-pagination">
+      <title>Web pagination</title>
+
+      <programlisting lang="" language="java">@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  // DI code omitted
+
+  @RequestMapping
+  public String showUsers(Model model, HttpServletRequest request) {
+
+    int page = Integer.parseInt(request.getParameter("page"));
+    int pageSize = Integer.parseInt(request.getParameter("pageSize"));
+    model.addAttribute("users", userService.getUsers(pageable));
+    return "users";
+  }
+}</programlisting>
+
+      <para>As you can see the naive approach requires the method to contain
+      an <interfacename>HttpServletRequest</interfacename> parameter that has
+      to be parsed manually. We even omitted an appropriate failure handling
+      which would make the code even more verbose. The bottom line is that the
+      controller actually shouldn't have to handle the functionality of
+      extracting pagination information from the request. So we include a
+      <classname>PageableArgumentResolver</classname> that will do the work
+      for you.</para>
+
+      <programlisting language="xml">&lt;bean class="….web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"&gt;
+  &lt;property name="customArgumentResolvers"&gt;
+    &lt;list&gt;
+      &lt;bean class="org.springframework.data.web.PageableArgumentResolver" /&gt;
+    &lt;/list&gt;
+  &lt;/property&gt;
+&lt;/bean&gt;</programlisting>
+
+      <para>This configuration allows you to simplify controllers down to
+      something like this:</para>
+
+      <programlisting lang="" language="java">@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  @RequestMapping
+  public String showUsers(Model model, Pageable pageable) {
+
+    model.addAttribute("users", userDao.readAll(pageable));
+    return "users";
+  }
+}</programlisting>
+
+      <para>The <classname>PageableArgumentResolver</classname> will
+      automatically resolve request parameters to build a
+      <classname>PageRequest</classname> instance. By default it will expect
+      the following structure for the request parameters:</para>
+
+      <table>
+        <title>Request parameters evaluated by
+        <classname>PageableArgumentResolver</classname></title>
+
+        <tgroup cols="2">
+          <colspec colwidth="1*" />
+
+          <colspec colwidth="2*" />
+
+          <tbody>
+            <row>
+              <entry><code>page</code></entry>
+
+              <entry>The page you want to retrieve</entry>
+            </row>
+
+            <row>
+              <entry><code>page.size</code></entry>
+
+              <entry>The size of the page you want to retrieve</entry>
+            </row>
+
+            <row>
+              <entry><code>page.sort</code></entry>
+
+              <entry>The property that should be sorted by</entry>
+            </row>
+
+            <row>
+              <entry><code>page.sort.dir</code></entry>
+
+              <entry>The direction that should be used for sorting</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>In case you need multiple <interfacename>Pageable</interfacename>s
+      to be resolved from the request (for multiple tables e.g.) you can use
+      Spring's <interfacename>@Qualifier</interfacename> annotation to
+      distinguish one from another. The request parameters then have to be
+      prefixed with <code>${qualifier}_</code>. So a method signature like
+      this:</para>
+
+      <programlisting lang="" language="java">public String showUsers(Model model, 
+      @Qualifier("foo") Pageable first,
+      @Qualifier("bar") Pageable second) { … }
+</programlisting>
+
+      <para>you'd have to populate <code>foo_page</code> and
+      <code>bar_page</code> and the according subproperties.</para>
+
+      <simplesect>
+        <title>Defaulting</title>
+
+        <para>The <classname>PageableArgumentResolver</classname> will use a
+        <classname>PageRequest</classname> with the first page and a page size
+        of 10 by default and will use that in case it can't resolve a
+        <classname>PageRequest</classname> from the request (because of
+        missing parameters e.g.). You can configure a global default on the
+        bean declaration directly. In case you might need controller method
+        specific defaults for the <interfacename>Pageable</interfacename>
+        simply annotate the method parameter with
+        <interfacename>@PageableDefaults</interfacename> and specify page and
+        page size as annotation attributes:</para>
+
+        <programlisting lang="" language="java">public String showUsers(Model model, 
+  @PageableDefaults(pageNumber = 0, value = 30) Pageable pageable) { … }
+</programlisting>
+      </simplesect>
     </section>
   </section>
 </chapter>
