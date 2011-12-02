@@ -336,7 +336,7 @@
 		<pluginRepository>
 			<id>repository.springframework.maven.release</id>
 			<name>Spring Framework Maven Release Repository</name>
-			<url>http://maven.springframework.org/release</url>
+			<url>http://repo.springsource.org/release</url>
 		</pluginRepository>
 		<pluginRepository>
 			<id>querydsl</id>
@@ -348,12 +348,12 @@
 		<repository>
 			<id>repository.springframework.maven.release</id>
 			<name>Spring Framework Maven Release Repository</name>
-			<url>http://repo.springframework.org/release</url>
+			<url>http://repo.springsource.org/release</url>
 		</repository>
 		<repository>
 			<id>repository.springframework.maven.milestone</id>
 			<name>Spring Framework Maven Milestone Repository</name>
-			<url>http://repo.springframework.org/milestone</url>
+			<url>http://repo.springsource.org/milestone</url>
 		</repository>
 		<repository>
 			<id>querydsl</id>
