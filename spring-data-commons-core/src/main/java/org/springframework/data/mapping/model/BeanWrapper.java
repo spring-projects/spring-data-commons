@@ -149,22 +149,25 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
-	public void setProperty(PersistentProperty<?> property, Object value, boolean fieldAccessOnly)
-			throws IllegalAccessException, InvocationTargetException {
+	public void setProperty(PersistentProperty<?> property, Object value, boolean fieldAccessOnly) {
 
 		Method setter = property.getPropertyDescriptor() != null ? property.getPropertyDescriptor().getWriteMethod() : null;
 
-		if (fieldAccessOnly || null == setter) {
-			Object valueToSet = getPotentiallyConvertedValue(value, property.getType());
-			ReflectionUtils.makeAccessible(property.getField());
-			ReflectionUtils.setField(property.getField(), bean, valueToSet);
-			return;
-		}
+		try {
+			if (fieldAccessOnly || null == setter) {
+				Object valueToSet = getPotentiallyConvertedValue(value, property.getType());
+				ReflectionUtils.makeAccessible(property.getField());
+				ReflectionUtils.setField(property.getField(), bean, valueToSet);
+				return;
+			}
 
-		Class<?>[] paramTypes = setter.getParameterTypes();
-		Object valueToSet = getPotentiallyConvertedValue(value, paramTypes[0]);
-		ReflectionUtils.makeAccessible(setter);
-		ReflectionUtils.invokeMethod(setter, bean, valueToSet);
+			Class<?>[] paramTypes = setter.getParameterTypes();
+			Object valueToSet = getPotentiallyConvertedValue(value, paramTypes[0]);
+			ReflectionUtils.makeAccessible(setter);
+			ReflectionUtils.invokeMethod(setter, bean, valueToSet);
+		} catch (IllegalStateException e) {
+			throw new MappingException("Could not set object property!", e);
+		}
 	}
 
 	/**
@@ -191,20 +194,26 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
-	public <S> S getProperty(PersistentProperty<?> property, Class<? extends S> type, boolean fieldAccessOnly)
-			throws IllegalAccessException, InvocationTargetException {
-		Object obj;
-		Field field = property.getField();
-		Method getter = (null != property.getPropertyDescriptor() ? property.getPropertyDescriptor().getReadMethod() : null);
-		if (fieldAccessOnly || null == getter) {
-			ReflectionUtils.makeAccessible(field);
-			obj = ReflectionUtils.getField(field, bean);
-		} else {
-			ReflectionUtils.makeAccessible(getter);
-			obj = ReflectionUtils.invokeMethod(getter, bean);
-		}
+	public <S> S getProperty(PersistentProperty<?> property, Class<? extends S> type, boolean fieldAccessOnly) {
+		try {
+			Object obj;
+			Field field = property.getField();
+			Method getter = (null != property.getPropertyDescriptor() ? property.getPropertyDescriptor().getReadMethod()
+					: null);
+			
+			if (fieldAccessOnly || null == getter) {
+				ReflectionUtils.makeAccessible(field);
+				obj = ReflectionUtils.getField(field, bean);
+			} else {
+				ReflectionUtils.makeAccessible(getter);
+				obj = ReflectionUtils.invokeMethod(getter, bean);
+			}
 
-		return getPotentiallyConvertedValue(obj, type);
+			return getPotentiallyConvertedValue(obj, type);
+		} catch (IllegalStateException e) {
+			throw new MappingException(String.format("Could not read property %s of %s!", property.toString(),
+					bean.toString()), e);
+		}
 	}
 
 	/**
