@@ -50,6 +50,8 @@ public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> ext
 	/**
 	 * Callback method to trigger validation of the {@link PersistentEntity}. As {@link MutablePersistentEntity} is not
 	 * immutable there might be some verification steps necessary after the object has reached is final state.
+	 * 
+	 * @throws MappingException in case the entity is invalid
 	 */
-	void verify();
+	void verify() throws MappingException;
 }

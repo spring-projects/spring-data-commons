@@ -13,7 +13,7 @@
 		<!-- versions for commonly-used dependencies -->
 		<junit.version>4.8.1</junit.version>
 		<log4j.version>1.2.16</log4j.version>
-		<org.mockito.version>1.8.4</org.mockito.version>
+		<org.mockito.version>1.8.5</org.mockito.version>
 		<org.springframework.version.30>3.0.6.RELEASE</org.springframework.version.30>
 		<org.springframework.version.40>4.0.0.RELEASE</org.springframework.version.40>
 		<org.springframework.version>[${org.springframework.version.30}, ${org.springframework.version.40}]</org.springframework.version>
@@ -271,10 +271,6 @@
 					<includes>
 						<include>**/*Tests.java</include>
 					</includes>
-					<excludes>
-						<exclude>**/Abstract*.java</exclude>
-						<exclude>**/*IntegrationTests.java</exclude>
-					</excludes>
 					<junitArtifactName>junit:junit</junitArtifactName>
 				</configuration>
 			</plugin>

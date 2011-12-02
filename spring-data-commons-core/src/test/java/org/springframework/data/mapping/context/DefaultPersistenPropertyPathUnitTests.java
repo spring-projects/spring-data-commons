@@ -21,7 +21,6 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +36,7 @@ import org.springframework.data.mapping.PersistentProperty;
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultPersistenPropertyPathUnitTest<T extends PersistentProperty<T>> {
+public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<T>> {
 
 	@Mock
 	T first, second;
@@ -45,14 +44,12 @@ public class DefaultPersistenPropertyPathUnitTest<T extends PersistentProperty<T
 	@Mock
 	Converter<T, String> converter;
 
-	PersistentPropertyPath<T> noLeg;
 	PersistentPropertyPath<T> oneLeg;
 	PersistentPropertyPath<T> twoLegs;
 
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setUp() {
-		noLeg = new DefaultPersistentPropertyPath<T>(Collections.<T> emptyList());
 		oneLeg = new DefaultPersistentPropertyPath<T>(Arrays.asList(first));
 		twoLegs = new DefaultPersistentPropertyPath<T>(Arrays.asList(first, second));
 	}
@@ -121,7 +118,6 @@ public class DefaultPersistenPropertyPathUnitTest<T extends PersistentProperty<T
 
 	@Test
 	public void pathReturnsCorrectSize() {
-		assertThat(noLeg.getLength(), is(0));
 		assertThat(oneLeg.getLength(), is(1));
 		assertThat(twoLegs.getLength(), is(2));
 	}

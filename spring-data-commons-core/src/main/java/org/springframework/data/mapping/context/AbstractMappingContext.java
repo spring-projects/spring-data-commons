@@ -235,7 +235,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			final E entity = createPersistentEntity(typeInformation);
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
-			persistentEntities.put(entity.getTypeInformation(), entity);
+			persistentEntities.put(typeInformation, entity);
 
 			BeanInfo info = Introspector.getBeanInfo(type);
 
@@ -251,7 +251,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 						}
 					});
 
-			entity.verify();
+			try {
+				entity.verify();
+			} catch (MappingException e) {
+				persistentEntities.remove(typeInformation);
+				throw e;
+			}
 
 			// Inform listeners
 			if (null != applicationEventPublisher) {

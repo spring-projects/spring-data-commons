@@ -35,7 +35,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * 
  * @author Oliver Gierke
  */
-public class AbstractRepositoryMetadataUnitTest {
+public class AbstractRepositoryMetadataUnitTests {
 
 	@Test
 	public void discoversSimpleReturnTypeCorrectly() throws Exception {

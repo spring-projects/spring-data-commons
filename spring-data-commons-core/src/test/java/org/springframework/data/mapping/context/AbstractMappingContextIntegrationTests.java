@@ -19,6 +19,7 @@ import static org.mockito.Mockito.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Collections;
 
 import org.junit.Test;
 import org.springframework.data.mapping.PersistentEntity;
@@ -29,11 +30,11 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * Unit tests for {@link AbstractMappingContext}.
+ * Integration tests for {@link AbstractMappingContext}.
  * 
  * @author Oliver Gierke
  */
-public class AbstractMappingContextIntegrationTest<T extends PersistentProperty<T>> {
+public class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 
 	@Test
 	public void foo() throws InterruptedException {
@@ -89,6 +90,7 @@ public class AbstractMappingContextIntegrationTest<T extends PersistentProperty<
 			
 			when(prop.getTypeInformation()).thenReturn((TypeInformation) owner.getTypeInformation());
 			when(prop.getName()).thenReturn(field.getName());
+			when(prop.getPersistentEntityType()).thenReturn(Collections.EMPTY_SET);
 
 			try {
 				Thread.sleep(800);
