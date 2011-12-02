@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ import org.springframework.data.mapping.Person;
 
 /**
  * Unit tests for {@link ClassTypeInformation}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class ClassTypeInformationUnitTests {
@@ -54,40 +55,33 @@ public class ClassTypeInformationUnitTests {
 		TypeInformation<?> content = wrapper.getProperty("content");
 
 		assertEquals(String.class, content.getType());
-		assertEquals(String.class,
-				discoverer.getProperty("wrapped").getProperty("content").getType());
-		assertEquals(String.class, discoverer.getProperty("wrapped.content")
-				.getType());
+		assertEquals(String.class, discoverer.getProperty("wrapped").getProperty("content").getType());
+		assertEquals(String.class, discoverer.getProperty("wrapped.content").getType());
 	}
 
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void discoversBoundType() {
 
-		TypeInformation<GenericTypeWithBound> information = ClassTypeInformation.from(
-				GenericTypeWithBound.class);
+		TypeInformation<GenericTypeWithBound> information = ClassTypeInformation.from(GenericTypeWithBound.class);
 		assertEquals(Person.class, information.getProperty("person").getType());
 	}
 
 	@Test
 	public void discoversBoundTypeForSpecialization() {
 
-		TypeInformation<SpecialGenericTypeWithBound> information = ClassTypeInformation.from(
-				SpecialGenericTypeWithBound.class);
-		assertEquals(SpecialPerson.class, information.getProperty("person")
-				.getType());
+		TypeInformation<SpecialGenericTypeWithBound> information = ClassTypeInformation
+				.from(SpecialGenericTypeWithBound.class);
+		assertEquals(SpecialPerson.class, information.getProperty("person").getType());
 	}
 
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void discoversBoundTypeForNested() {
 
-		TypeInformation<AnotherGenericType> information = ClassTypeInformation.from(
-				AnotherGenericType.class);
-		assertEquals(GenericTypeWithBound.class, information.getProperty("nested")
-				.getType());
-		assertEquals(Person.class, information.getProperty("nested.person")
-				.getType());
+		TypeInformation<AnotherGenericType> information = ClassTypeInformation.from(AnotherGenericType.class);
+		assertEquals(GenericTypeWithBound.class, information.getProperty("nested").getType());
+		assertEquals(Person.class, information.getProperty("nested.person").getType());
 	}
 
 	@Test
@@ -124,36 +118,36 @@ public class ClassTypeInformationUnitTests {
 		assertEquals(Map.class, map.getType());
 		assertEquals(Calendar.class, map.getMapValueType().getType());
 	}
-	
+
 	@Test
 	public void typeInfoDoesNotEqualForGenericTypesWithDifferentParent() {
-		
+
 		TypeInformation<ConcreteWrapper> first = ClassTypeInformation.from(ConcreteWrapper.class);
 		TypeInformation<AnotherConcreteWrapper> second = ClassTypeInformation.from(AnotherConcreteWrapper.class);
-		
+
 		assertFalse(first.getProperty("wrapped").equals(second.getProperty("wrapped")));
 	}
 
 	@Test
 	public void handlesPropertyFieldMismatchCorrectly() {
-		
+
 		TypeInformation<PropertyGetter> from = ClassTypeInformation.from(PropertyGetter.class);
-		
+
 		TypeInformation<?> property = from.getProperty("_name");
 		assertThat(property, is(notNullValue()));
 		assertThat(property.getType(), is(typeCompatibleWith(String.class)));
-		
+
 		property = from.getProperty("name");
 		assertThat(property, is(notNullValue()));
 		assertThat(property.getType(), is(typeCompatibleWith(byte[].class)));
 	}
-	
+
 	/**
 	 * @see DATACMNS-77
 	 */
 	@Test
 	public void returnsSameInstanceForCachedClass() {
-		
+
 		TypeInformation<PropertyGetter> info = ClassTypeInformation.from(PropertyGetter.class);
 		assertThat(ClassTypeInformation.from(PropertyGetter.class), is(sameInstance(info)));
 	}
@@ -209,8 +203,7 @@ public class ClassTypeInformationUnitTests {
 		S nested;
 	}
 
-	static class SpecialGenericTypeWithBound extends
-			GenericTypeWithBound<SpecialPerson> {
+	static class SpecialGenericTypeWithBound extends GenericTypeWithBound<SpecialPerson> {
 
 	}
 
@@ -226,7 +219,6 @@ public class ClassTypeInformationUnitTests {
 		T content;
 	}
 
-
 	static class ConcreteType extends GenericType<String, Object> {
 
 	}
@@ -239,14 +231,14 @@ public class ClassTypeInformationUnitTests {
 	static class ConcreteWrapper extends GenericWrapper<String> {
 
 	}
-	
+
 	static class AnotherConcreteWrapper extends GenericWrapper<Long> {
-		
+
 	}
 
 	static class PropertyGetter {
 		private String _name;
-		
+
 		public byte[] getName() {
 			return _name.getBytes();
 		}
