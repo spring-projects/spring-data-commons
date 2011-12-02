@@ -9,8 +9,8 @@
 
     <para>Implementing a data access layer of an application has been
     cumbersome for quite a while. Too much boilerplate code had to be written.
-    Domain classes were anemic and not designed in a real object
-    oriented or domain driven manner.</para>
+    Domain classes were anemic and not designed in a real object oriented or
+    domain driven manner.</para>
 
     <para>Using both of these technologies makes developers life a lot easier
     regarding rich domain model's persistence. Nevertheless the amount of
@@ -33,7 +33,8 @@
     to capture the types to deal with and help us when discovering interfaces
     that extend this one. Beyond that there's
     <interfacename>CrudRepository</interfacename> which provides some
-    sophisticated functionality around CRUD for the entity being managed.</para>
+    sophisticated functionality around CRUD for the entity being
+    managed.</para>
 
     <example id="repositories.repository">
       <title>Repository interface</title>
@@ -129,15 +130,15 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
   <section id="repositories.query-methods">
     <title>Query methods</title>
 
-    <para>Next to standard CRUD functionality repositories are usually queries on
-    the underlying datastore. With Spring Data declaring those queries becomes
-    a four-step process:</para>
+    <para>Next to standard CRUD functionality repositories are usually queries
+    on the underlying datastore. With Spring Data declaring those queries
+    becomes a four-step process:</para>
 
     <orderedlist>
       <listitem>
         <para>Declare an interface extending
-        <interfacename>Repository</interfacename> or one of its
-        sub-interfaces and type it to the domain class it shall handle.</para>
+        <interfacename>Repository</interfacename> or one of its sub-interfaces
+        and type it to the domain class it shall handle.</para>
 
         <programlisting language="java">public interface PersonRepository extends Repository&lt;User, Long&gt; { … }</programlisting>
       </listitem>
@@ -189,10 +190,10 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
       <title>Defining repository interfaces</title>
 
       <para>As a very first step you define a domain class specific repository
-      interface. It's got to extend
-      <interfacename>Repository</interfacename> and be typed to the domain
-      class and an ID type. If you want to expose CRUD methods for that domain
-      type, extend <interfacename>CrudRepository</interfacename> instead of
+      interface. It's got to extend <interfacename>Repository</interfacename>
+      and be typed to the domain class and an ID type. If you want to expose
+      CRUD methods for that domain type, extend
+      <interfacename>CrudRepository</interfacename> instead of
       <interfacename>Repository</interfacename>.</para>
 
       <section id="repositories.definition-tuning">
@@ -207,9 +208,9 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
         <interfacename>@RepositoryDefinition</interfacename>. Extending
         <interfacename>CrudRepository</interfacename> will expose a complete
         set of methods to manipulate your entities. If you would rather be
-        selective about the methods being exposed, simply copy the ones you want
-        to expose from <interfacename>CrudRepository</interfacename> into your
-        domain repository.</para>
+        selective about the methods being exposed, simply copy the ones you
+        want to expose from <interfacename>CrudRepository</interfacename> into
+        your domain repository.</para>
 
         <example>
           <title>Selectively exposing CRUD methods</title>
@@ -244,19 +245,20 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
         <title>Query lookup strategies</title>
 
         <para>The next thing we have to discuss is the definition of query
-        methods. There are two main ways that the repository proxy is
-        able to come up with the store specific query from the
-        method name. The first option is to derive the query from the method
-        name directly, the second is using some kind of additionally created
-        query. What detailed options are available pretty much depends on the
-        actual store, however, there's got to be some algorithm that decides
-        what actual query is created.</para>
+        methods. There are two main ways that the repository proxy is able to
+        come up with the store specific query from the method name. The first
+        option is to derive the query from the method name directly, the
+        second is using some kind of additionally created query. What detailed
+        options are available pretty much depends on the actual store,
+        however, there's got to be some algorithm that decides what actual
+        query is created.</para>
 
-        <para>There are three strategies available for the repository infrastructure to
-        resolve the query. The strategy to be used can be configured at the
-        namespace through the <code>query-lookup-strategy</code> attribute.
-        However, It might be the case that some of the strategies are not
-        supported for specific datastores. Here are your options:</para>
+        <para>There are three strategies available for the repository
+        infrastructure to resolve the query. The strategy to be used can be
+        configured at the namespace through the
+        <code>query-lookup-strategy</code> attribute. However, It might be the
+        case that some of the strategies are not supported for specific
+        datastores. Here are your options:</para>
 
         <simplesect>
           <title>CREATE</title>
@@ -284,13 +286,12 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
           <title>CREATE_IF_NOT_FOUND (default)</title>
 
           <para>This strategy is actually a combination of <code>CREATE</code>
-          and <code>USE_DECLARED_QUERY</code>.
-          It will try to lookup a declared query first but create a
-          custom method name based query if no declared query was found. This
-          is the default lookup strategy and thus will be used if you don't
-          configure anything explicitly. It allows quick query definition by
-          method names but also custom tuning of these queries by introducing
-          declared queries as needed.</para>
+          and <code>USE_DECLARED_QUERY</code>. It will try to lookup a
+          declared query first but create a custom method name based query if
+          no declared query was found. This is the default lookup strategy and
+          thus will be used if you don't configure anything explicitly. It
+          allows quick query definition by method names but also custom tuning
+          of these queries by introducing declared queries as needed.</para>
         </simplesect>
       </section>
 
@@ -298,8 +299,8 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
         <title>Query creation</title>
 
         <para>The query builder mechanism built into Spring Data repository
-        infrastructure is useful to build constraining queries over entities of
-        the repository. We will strip the prefixes <code>findBy</code>,
+        infrastructure is useful to build constraining queries over entities
+        of the repository. We will strip the prefixes <code>findBy</code>,
         <code>find</code>, <code>readBy</code>, <code>read</code>,
         <code>getBy</code> as well as <code>get</code> from the method and
         start parsing the rest of it. At a very basic level you can define
@@ -354,16 +355,15 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
           does not match we move the split point to the left
           (<literal>Address</literal>, <literal>ZipCode</literal>).</para>
 
-          <para>Although this should work for most cases, there might be
-          cases where the algorithm could select the wrong property. Suppose
-          our <classname>Person</classname> class has an
-          <code>addressZip</code> property as well. Then our algorithm would
-          match in the first split round already and essentially choose the
-          wrong property and finally fail (as the type of
-          <classname>addressZip</classname> probably has no code property). To
-          resolve this ambiguity you can use <literal>_</literal> inside your
-          method name to manually define traversal points. So our method name
-          would end up like so:</para>
+          <para>Although this should work for most cases, there might be cases
+          where the algorithm could select the wrong property. Suppose our
+          <classname>Person</classname> class has an <code>addressZip</code>
+          property as well. Then our algorithm would match in the first split
+          round already and essentially choose the wrong property and finally
+          fail (as the type of <classname>addressZip</classname> probably has
+          no code property). To resolve this ambiguity you can use
+          <literal>_</literal> inside your method name to manually define
+          traversal points. So our method name would end up like so:</para>
 
           <programlisting language="java">List&lt;Person&gt; findByAddress_ZipCode(ZipCode zipCode);
 </programlisting>
@@ -419,7 +419,8 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
         <para>The easiest way to do so is by using the Spring namespace that
         is shipped with each Spring Data module that supports the repository
         mechanism. Each of those includes a repositories element that allows
-        you to simply define a base package that Spring will scan for you.</para>
+        you to simply define a base package that Spring will scan for
+        you.</para>
 
         <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
@@ -445,8 +446,8 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
         interface name, so an interface of
         <interfacename>UserRepository</interfacename> would be registered
         under <code>userRepository</code>. The <code>base-package</code>
-        attribute allows the use of wildcards, so that you can have a pattern of
-        scanned packages.</para>
+        attribute allows the use of wildcards, so that you can have a pattern
+        of scanned packages.</para>
 
         <simplesect>
           <title>Using filters</title>
@@ -455,9 +456,9 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
           persistence technology specific
           <interfacename>Repository</interfacename> sub-interface located
           underneath the configured base package and create a bean instance
-          for it. However, you might want finer grained control over
-          which interfaces bean instances get created for. To do this we
-          support the use of <code>&lt;include-filter /&gt;</code> and
+          for it. However, you might want finer grained control over which
+          interfaces bean instances get created for. To do this we support the
+          use of <code>&lt;include-filter /&gt;</code> and
           <code>&lt;exclude-filter /&gt;</code> elements inside
           <code>&lt;repositories /&gt;</code>. The semantics are exactly
           equivalent to the elements in Spring's context namespace. For
@@ -525,12 +526,12 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
       <title>Adding behaviour to single repositories</title>
 
       <para>Often it is necessary to provide a custom implementation for a few
-      repository methods. Spring Data repositories easily allow you to provide custom
-      repository code and integrate it with generic CRUD abstraction and query
-      method functionality. To enrich a repository with custom functionality
-      you have to define an interface and an implementation for that
-      functionality first and let the repository interface you provided so far
-      extend that custom interface.</para>
+      repository methods. Spring Data repositories easily allow you to provide
+      custom repository code and integrate it with generic CRUD abstraction
+      and query method functionality. To enrich a repository with custom
+      functionality you have to define an interface and an implementation for
+      that functionality first and let the repository interface you provided
+      so far extend that custom interface.</para>
 
       <example>
         <title>Interface for custom repository functionality</title>
@@ -550,9 +551,9 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
     // Your custom implementation
   }
 }</programlisting>Note that the implementation itself does not depend on
-        Spring Data and can be a regular Spring bean. So you can use
-        standard dependency injection behaviour to inject references to other
-        beans, take part in aspects and so on.</para>
+        Spring Data and can be a regular Spring bean. So you can use standard
+        dependency injection behaviour to inject references to other beans,
+        take part in aspects and so on.</para>
       </example>
 
       <example>
@@ -600,10 +601,11 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
 
         <para>The approach above works perfectly well if your custom
         implementation uses annotation based configuration and autowiring
-        entirely as it will be treated as any other Spring bean. If your custom
-        implementation bean needs some special wiring you simply declare the bean
-        and name it after the conventions just described. We will then pick up
-        the custom bean by name rather than creating an instance.</para>
+        entirely as it will be treated as any other Spring bean. If your
+        custom implementation bean needs some special wiring you simply
+        declare the bean and name it after the conventions just described. We
+        will then pick up the custom bean by name rather than creating an
+        instance.</para>
 
         <example>
           <title>Manual wiring of custom implementations (I)</title>
@@ -668,9 +670,8 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
       <note>
         <para>If you're using automatic repository interface detection using
         the Spring namespace using the interface just as is will cause Spring
-        to create an instance of
-        <interfacename>MyRepository</interfacename>. This is of course not
-        desired as it just acts as intermediary between
+        to create an instance of <interfacename>MyRepository</interfacename>.
+        This is of course not desired as it just acts as intermediary between
         <interfacename>Repository</interfacename> and the actual repository
         interfaces you want to define for each entity. To exclude an interface
         extending <interfacename>Repository</interfacename> from being
