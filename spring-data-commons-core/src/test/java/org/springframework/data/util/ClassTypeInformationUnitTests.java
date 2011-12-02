@@ -157,7 +157,27 @@ public class ClassTypeInformationUnitTests {
 		TypeInformation<PropertyGetter> info = ClassTypeInformation.from(PropertyGetter.class);
 		assertThat(ClassTypeInformation.from(PropertyGetter.class), is(sameInstance(info)));
 	}
-	
+
+	/**
+	 * @see DATACMNS-39
+	 */
+	@Test
+	public void resolvesWildCardTypeCorrectly() {
+
+		TypeInformation<ClassWithWildCardBound> information = ClassTypeInformation.from(ClassWithWildCardBound.class);
+		
+		TypeInformation<?> property = information.getProperty("wildcard");
+		assertThat(property.isCollectionLike(), is(true));
+		assertThat(property.getComponentType().getType(), is(typeCompatibleWith(String.class)));
+		
+		property = information.getProperty("complexWildcard");
+		assertThat(property.isCollectionLike(), is(true));
+		
+		TypeInformation<?> component = property.getComponentType();
+		assertThat(component.isCollectionLike(), is(true));
+		assertThat(component.getComponentType().getType(), is(typeCompatibleWith(String.class)));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -230,5 +250,10 @@ public class ClassTypeInformationUnitTests {
 		public byte[] getName() {
 			return _name.getBytes();
 		}
+	}
+
+	static class ClassWithWildCardBound {
+		List<? extends String> wildcard;
+		List<? extends Collection<? extends String>> complexWildcard;
 	}
 }

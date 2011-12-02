@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +101,22 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		if (fieldType instanceof GenericArrayType) {
 			return new GenericArrayTypeInformation((GenericArrayType) fieldType, this);
+		}
+		
+		if (fieldType instanceof WildcardType) {
+			
+			WildcardType wildcardType = (WildcardType) fieldType;
+			Type[] bounds = wildcardType.getLowerBounds();
+			
+			if (bounds.length > 0) {
+				return createInfo(bounds[0]);
+			} 
+			
+			bounds = wildcardType.getUpperBounds();
+			
+			if (bounds.length > 0) {
+				return createInfo(bounds[0]);
+			}
 		}
 
 		throw new IllegalArgumentException();
