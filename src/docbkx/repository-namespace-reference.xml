@@ -58,8 +58,9 @@
             <entry><code>query-lookup-strategy</code></entry>
 
             <entry>Determines the strategy to be used to create finder
-            queries. See <xref linkend="sample-app.finders.strategies" /> for
-            details. Defaults to <code>create-if-not-found</code>.</entry>
+            queries. See <xref
+            linkend="repositories.query-methods.query-lookup-strategies" />
+            for details. Defaults to <code>create-if-not-found</code>.</entry>
           </row>
         </tbody>
       </tgroup>

@@ -43,6 +43,5 @@
             </para>
         </partintro>
 	<xi:include href="repositories.xml" />
-        <!-- <xi:include href="data-commons.xml"/> -->
     </part>
 </book>
