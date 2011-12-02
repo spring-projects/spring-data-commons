@@ -15,19 +15,43 @@
  */
 package org.springframework.data.util;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.springframework.util.Assert;
 
 /**
- * PropertyPath information for a plain {@link Class}.
+ * {@link TypeInformation} for a plain {@link Class}.
  * 
  * @author Oliver Gierke
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
+
+	public static final TypeInformation<Collection> COLLECTION = new ClassTypeInformation(Collection.class);
+	public static final TypeInformation<List> LIST = new ClassTypeInformation(List.class);
+	public static final TypeInformation<Set> SET = new ClassTypeInformation(Set.class);
+	public static final TypeInformation<Map> MAP = new ClassTypeInformation(Map.class);
+	public static final TypeInformation<Object> OBJECT = new ClassTypeInformation(Object.class);
+
+	private static final Map<Class<?>, Reference<TypeInformation<?>>> CACHE = Collections
+			.synchronizedMap(new WeakHashMap<Class<?>, Reference<TypeInformation<?>>>());
+
+	static {
+		for (TypeInformation<?> info : Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT)) {
+			CACHE.put(info.getType(), new WeakReference<TypeInformation<?>>(info));
+		}
+	}
 
 	private final Class<S> type;
 
@@ -39,7 +63,17 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @return
 	 */
 	public static <S> TypeInformation<S> from(Class<S> type) {
-		return new ClassTypeInformation<S>(type);
+
+		Reference<TypeInformation<?>> cachedReference = CACHE.get(type);
+		TypeInformation<?> cachedTypeInfo = cachedReference == null ? null : cachedReference.get();
+
+		if (cachedTypeInfo != null) {
+			return (TypeInformation<S>) cachedTypeInfo;
+		}
+
+		TypeInformation<S> result = new ClassTypeInformation<S>(type);
+		CACHE.put(type, new WeakReference<TypeInformation<?>>(result));
+		return result;
 	}
 
 	/**
@@ -48,7 +82,6 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @param method
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <S> TypeInformation<S> fromReturnTypeOf(Method method) {
 		return new ClassTypeInformation(method.getDeclaringClass()).createInfo(method.getGenericReturnType());
 	}
@@ -62,7 +95,6 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		this(type, GenericTypeResolver.getTypeVariableMap(type));
 	}
 
-	@SuppressWarnings("rawtypes")
 	ClassTypeInformation(Class<S> type, Map<TypeVariable, Type> typeVariableMap) {
 		super(type, typeVariableMap);
 		this.type = type;

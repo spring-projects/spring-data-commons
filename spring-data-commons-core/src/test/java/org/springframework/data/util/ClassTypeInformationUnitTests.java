@@ -148,6 +148,16 @@ public class ClassTypeInformationUnitTests {
 		assertThat(property.getType(), is(typeCompatibleWith(byte[].class)));
 	}
 	
+	/**
+	 * @see DATACMNS-77
+	 */
+	@Test
+	public void returnsSameInstanceForCachedClass() {
+		
+		TypeInformation<PropertyGetter> info = ClassTypeInformation.from(PropertyGetter.class);
+		assertThat(ClassTypeInformation.from(PropertyGetter.class), is(sameInstance(info)));
+	}
+	
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
