@@ -120,6 +120,11 @@ public class QueryMethod {
 		return String.format("%s.%s", domainClass.getSimpleName(), method.getName());
 	}
 
+	/**
+	 * Returns the domain class the query method is targeted at.
+	 * 
+	 * @return
+	 */
 	protected Class<?> getDomainClass() {
 
 		Class<?> repositoryDomainClass = metadata.getDomainClass();
@@ -127,6 +132,15 @@ public class QueryMethod {
 
 		return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass) ? methodDomainClass
 				: repositoryDomainClass;
+	}
+	
+	/**
+	 * Returns the type of the object that will be returned.
+	 * 
+	 * @return
+	 */
+	public Class<?> getReturnedObjectType() {
+		return metadata.getReturnedDomainClass(method);
 	}
 
 	/**
