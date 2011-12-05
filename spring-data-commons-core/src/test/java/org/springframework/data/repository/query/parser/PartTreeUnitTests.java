@@ -259,6 +259,32 @@ public class PartTreeUnitTests {
 		assertThat(part.getParameterRequired(), is(true));
 	}
 	
+	/**
+	 * @see DATACMNS-107
+	 */
+	@Test
+	public void parsesTrueKeywordCorrectly() {
+		
+		Part part = part("activeTrue");
+		assertThat(part.getType(), is(Type.TRUE));
+		assertThat(part.getProperty().toDotPath(), is("active"));
+		assertThat(part.getNumberOfArguments(), is(0));
+		assertThat(part.getParameterRequired(), is(false));
+	}
+	
+	/**
+	 * @see DATACMNS-107
+	 */
+	@Test
+	public void parsesFalseKeywordCorrectly() {
+		
+		Part part = part("activeTrue");
+		assertThat(part.getType(), is(Type.TRUE));
+		assertThat(part.getProperty().toDotPath(), is("active"));
+		assertThat(part.getNumberOfArguments(), is(0));
+		assertThat(part.getParameterRequired(), is(false));
+	}
+	
 	private PartTree partTree(String source) {
 		return new PartTree(source, User.class);
 	}
@@ -307,5 +333,6 @@ public class PartTreeUnitTests {
 		String firstname;
 		String lastname;
 		double[] location;
+		boolean active;
 	}
 }

@@ -187,13 +187,15 @@ public class Part {
 		WITHIN("Within"),
 		REGEX("Regex"),
 		EXISTS(0, "Exists"),
+		TRUE(0, "True"),
+		FALSE(0, "False"),
 		NEGATING_SIMPLE_PROPERTY("Not"),
 		SIMPLE_PROPERTY;
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)
 		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN, LESS_THAN_EQUAL, GREATER_THAN, GREATER_THAN_EQUAL,
-				NOT_LIKE, LIKE, NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+				NOT_LIKE, LIKE, NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, TRUE, FALSE, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
 
 		private final List<String> keywords;
 		private final int numberOfArguments;
