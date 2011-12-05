@@ -173,42 +173,30 @@ public class Part {
 	public static enum Type {
 
 		BETWEEN(2, "Between"),
-
 		IS_NOT_NULL(0, "IsNotNull", "NotNull"),
-
 		IS_NULL(0, "IsNull", "Null"),
-
 		LESS_THAN("LessThan"),
-		
 		LESS_THAN_EQUAL("LessThanEqual"),
-
 		GREATER_THAN("GreaterThan"),
-		
 		GREATER_THAN_EQUAL("GreaterThanEqual"),
-
 		NOT_LIKE("NotLike"),
-
 		LIKE("Like"),
-
 		NOT_IN("NotIn"),
-
 		IN("In"),
-
 		NEAR("Near"),
-
 		WITHIN("Within"),
-
+		REGEX("Regex"),
+		EXISTS(0, "Exists"),
 		NEGATING_SIMPLE_PROPERTY("Not"),
-
 		SIMPLE_PROPERTY;
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)
 		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN, LESS_THAN_EQUAL, GREATER_THAN, GREATER_THAN_EQUAL,
-				NOT_LIKE, LIKE, NOT_IN, IN, NEAR, WITHIN, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+				NOT_LIKE, LIKE, NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
 
-		private List<String> keywords;
-		private int numberOfArguments;
+		private final List<String> keywords;
+		private final int numberOfArguments;
 
 		/**
 		 * Creates a new {@link Type} using the given keyword, number of arguments to be bound and operator. Keyword and

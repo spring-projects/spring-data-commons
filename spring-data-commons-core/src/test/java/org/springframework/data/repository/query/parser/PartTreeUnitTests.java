@@ -233,6 +233,32 @@ public class PartTreeUnitTests {
 		assertThat(parts, is(hasSize(1)));
 	}
 	
+	/**
+	 * @see DATACMNS-94
+	 */
+	@Test
+	public void parsesExistsKeywordCorrectly() {
+		
+		Part part = part("lastnameExists");
+		assertThat(part.getType(), is(Type.EXISTS));
+		assertThat(part.getProperty().toDotPath(), is("lastname"));
+		assertThat(part.getNumberOfArguments(), is(0));
+		assertThat(part.getParameterRequired(), is(false));
+	}
+	
+	/**
+	 * @see DATACMNS-94
+	 */
+	@Test
+	public void parsesRegexKeywordCorrectly() {
+		
+		Part part = part("lastnameRegex");
+		assertThat(part.getType(), is(Type.REGEX));
+		assertThat(part.getProperty().toDotPath(), is("lastname"));
+		assertThat(part.getNumberOfArguments(), is(1));
+		assertThat(part.getParameterRequired(), is(true));
+	}
+	
 	private PartTree partTree(String source) {
 		return new PartTree(source, User.class);
 	}
