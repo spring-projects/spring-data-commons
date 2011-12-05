@@ -133,7 +133,7 @@ public abstract class RepositoryFactorySupport {
 		// Create proxy
 		ProxyFactory result = new ProxyFactory();
 		result.setTarget(target);
-		result.setInterfaces(new Class[] { repositoryInterface });
+		result.setInterfaces(new Class[] { repositoryInterface, Repository.class });
 
 		for (RepositoryProxyPostProcessor processor : postProcessors) {
 			processor.postProcess(result);
