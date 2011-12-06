@@ -1,6 +1,37 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.2.0.RC1 (2011-12-6)
+----------------------------------------
+
+** Bug
+    * [DATACMNS-71] - Reference documentation contains invalid cross reference
+    * [DATACMNS-88] - TypeDiscoverer.getMapValueType causes ArrayIndexOutOfBoundsException in some cases
+    * [DATACMNS-92] - Invalid Entities are placed in the MappingContext - Cache
+    * [DATACMNS-98] - ClassCastException on getReturnedDomainClass for variable types
+    * [DATACMNS-99] - SimpleTypeHolder does not consider complex enum values as simple
+    * [DATACMNS-108] - RepositoryFactorySupport throws ClassCastException for annotation based repositories
+
+** Improvement
+    * [DATACMNS-39] - TypeInformation should support WildcardType
+    * [DATACMNS-77] - Limit memory consumption with cache - ClassTypeInformation
+    * [DATACMNS-91] - CrudRepository exceptions
+    * [DATACMNS-93] - OSGi manifest should have dynamic import package directive added
+    * [DATACMNS-94] - Add more comparison operators to Type
+    * [DATACMNS-95] - Document usage of DomainClassConverter, DomainClassPropertyEditor as well as PageableArgumentResolver
+    * [DATACMNS-97] - PartTree should allow iterating over all parts of a given type
+    * [DATACMNS-101] - Allow Subclasses of AbstractMappingContext to control the execution of getNestedTypesToAdd()
+    * [DATACMNS-105] - BeanWrapper should handle exceptions itself
+    * [DATACMNS-106] - Introduce getReturnedObjectType() on QueryMethod
+    * [DATACMNS-107] - Allow usage of True/False for Query
+
+** Refactoring
+    * [DATACMNS-100] - SimpleTypHolder should not consider Number as simple type in general
+
+** Task
+    * [DATACMNS-103] - Setup hybrid Spring 3.0.6 / 3.1 build
+
+
 Changes in version 1.2.0.M2 (2011-10-21)
 ----------------------------------------
 
