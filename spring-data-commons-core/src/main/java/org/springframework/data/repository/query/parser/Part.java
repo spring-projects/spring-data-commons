@@ -187,8 +187,8 @@ public class Part {
 		WITHIN("Within"),
 		REGEX("Regex"),
 		EXISTS(0, "Exists"),
-		TRUE(0, "True"),
-		FALSE(0, "False"),
+		TRUE(0, "IsTrue", "True"),
+		FALSE(0, "IsFalse", "False"),
 		NEGATING_SIMPLE_PROPERTY("Not"),
 		SIMPLE_PROPERTY;
 

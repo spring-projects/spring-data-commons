@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -191,100 +192,104 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesLessThanEqualCorrectly() {
-		
+
 		PartTree tree = partTree("findByLastnameLessThanEqual");
 		for (Part part : tree.getParts()) {
 			assertThat(part.getType(), is(Type.LESS_THAN_EQUAL));
 			assertThat(part.getProperty(), is(newProperty("lastname")));
 		}
 	}
-	
+
 	/**
 	 * @see DATACMNS-78
 	 */
 	@Test
 	public void parsesGreaterThanEqualCorrectly() {
-		
+
 		PartTree tree = partTree("findByLastnameGreaterThanEqual");
 		for (Part part : tree.getParts()) {
 			assertThat(part.getType(), is(Type.GREATER_THAN_EQUAL));
 			assertThat(part.getProperty(), is(newProperty("lastname")));
 		}
 	}
-	
+
 	@Test
 	public void returnsAllParts() {
-		
+
 		PartTree tree = partTree("findByLastnameAndFirstname");
 		assertPart(tree, parts("lastname", "firstname"));
 	}
-	
+
 	@Test
 	public void returnsAllPartsOfType() {
-		
+
 		PartTree tree = partTree("findByLastnameAndFirstnameGreaterThan");
-		
+
 		Collection<Part> parts = toCollection(tree.getParts(Type.SIMPLE_PROPERTY));
 		assertThat(parts, hasItem(part("lastname")));
 		assertThat(parts, is(hasSize(1)));
-		
+
 		parts = toCollection(tree.getParts(Type.GREATER_THAN));
 		assertThat(parts, hasItem(new Part("FirstnameGreaterThan", User.class)));
 		assertThat(parts, is(hasSize(1)));
 	}
-	
+
 	/**
 	 * @see DATACMNS-94
 	 */
 	@Test
 	public void parsesExistsKeywordCorrectly() {
-		
+
 		Part part = part("lastnameExists");
 		assertThat(part.getType(), is(Type.EXISTS));
 		assertThat(part.getProperty().toDotPath(), is("lastname"));
 		assertThat(part.getNumberOfArguments(), is(0));
 		assertThat(part.getParameterRequired(), is(false));
 	}
-	
+
 	/**
 	 * @see DATACMNS-94
 	 */
 	@Test
 	public void parsesRegexKeywordCorrectly() {
-		
+
 		Part part = part("lastnameRegex");
 		assertThat(part.getType(), is(Type.REGEX));
 		assertThat(part.getProperty().toDotPath(), is("lastname"));
 		assertThat(part.getNumberOfArguments(), is(1));
 		assertThat(part.getParameterRequired(), is(true));
 	}
-	
+
 	/**
 	 * @see DATACMNS-107
 	 */
 	@Test
 	public void parsesTrueKeywordCorrectly() {
-		
-		Part part = part("activeTrue");
-		assertThat(part.getType(), is(Type.TRUE));
-		assertThat(part.getProperty().toDotPath(), is("active"));
-		assertThat(part.getNumberOfArguments(), is(0));
-		assertThat(part.getParameterRequired(), is(false));
+
+		for (String source : Arrays.asList("activeTrue", "activeIsTrue")) {
+			Part part = part(source);
+			assertThat(part.getType(), is(Type.TRUE));
+			assertThat(part.getProperty().toDotPath(), is("active"));
+			assertThat(part.getNumberOfArguments(), is(0));
+			assertThat(part.getParameterRequired(), is(false));
+		}
 	}
-	
+
 	/**
 	 * @see DATACMNS-107
 	 */
 	@Test
 	public void parsesFalseKeywordCorrectly() {
-		
-		Part part = part("activeTrue");
-		assertThat(part.getType(), is(Type.TRUE));
-		assertThat(part.getProperty().toDotPath(), is("active"));
-		assertThat(part.getNumberOfArguments(), is(0));
-		assertThat(part.getParameterRequired(), is(false));
+
+		for (String source : Arrays.asList("activeFalse", "activeIsFalse")) {
+			Part part = part(source);
+			assertThat(part.getType(), is(Type.FALSE));
+			assertThat(part.getProperty().toDotPath(), is("active"));
+			assertThat(part.getNumberOfArguments(), is(0));
+			assertThat(part.getParameterRequired(), is(false));
+		}
 	}
-	
+
 	private PartTree partTree(String source) {
 		return new PartTree(source, User.class);
 	}
@@ -321,14 +326,14 @@ public class PartTreeUnitTests {
 	}
 
 	private static <T> Collection<T> toCollection(Iterable<T> iterable) {
-		
-		List<T> result = new ArrayList<T>(); 
+
+		List<T> result = new ArrayList<T>();
 		for (T element : iterable) {
 			result.add(element);
 		}
 		return result;
 	}
-	
+
 	class User {
 		String firstname;
 		String lastname;
