@@ -13,6 +13,8 @@
 
 	<properties>
 		<querydsl.version>2.2.0</querydsl.version>
+		<cdi.version>1.0</cdi.version>
+		<webbeans.version>1.1.3</webbeans.version>
 	</properties>
 
 	<dependencies>
@@ -95,6 +97,29 @@
 			<artifactId>ejb-api</artifactId>
 			<version>3.0</version>
 			<optional>true</optional>
+		</dependency>
+		
+		<!-- CDI -->
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<version>${cdi.version}</version>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
+		
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>el-api</artifactId>
+			<version>${cdi.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.openwebbeans.test</groupId>
+			<artifactId>cditest-owb</artifactId>
+			<version>${webbeans.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

@@ -6,6 +6,8 @@ Import-Package:
  sun.reflect;version="0";resolution:=optional
 Import-Template:
  com.mysema.query.*;version="[2.2.0,3.0.0)";resolution:=optional,
+ javax.enterprise.*;version="${cdi.version:[=.=.=,+1.0.0)}";resolution:=optional,
+ javax.inject.*;version="[1.0.0,2.0.0)";resolution:=optional,
  org.springframework.aop.*;version="${org.springframework.version.30:[=.=.=,+1.0.0)}", 
  org.springframework.beans.*;version="${org.springframework.version.30:[=.=.=,+1.0.0)}",
  org.springframework.core.*;version="${org.springframework.version.30:[=.=.=,+1.0.0)}",

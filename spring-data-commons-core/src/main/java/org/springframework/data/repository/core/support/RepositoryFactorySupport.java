@@ -105,7 +105,7 @@ public abstract class RepositoryFactorySupport {
 	 * @param repositoryInterface
 	 * @return
 	 */
-	public <T extends Repository<?, ?>> T getRepository(Class<T> repositoryInterface) {
+	public <T> T getRepository(Class<T> repositoryInterface) {
 
 		return getRepository(repositoryInterface, null);
 	}
