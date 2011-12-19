@@ -43,6 +43,7 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 	 * @param owningType must not be {@literal null}
 	 * @param parent
 	 */
+	@SuppressWarnings("rawtypes")
 	public TypeVariableTypeInformation(TypeVariable<?> variable, Type owningType, TypeDiscoverer<?> parent, Map<TypeVariable, Type> map) {
 
 		super(variable, parent, map);
