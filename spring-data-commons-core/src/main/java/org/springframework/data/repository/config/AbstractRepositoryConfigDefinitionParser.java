@@ -21,7 +21,9 @@ import static org.springframework.data.repository.util.ClassUtils.*;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -46,6 +48,7 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.RepositoryDefinition;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -264,15 +267,30 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 	private AbstractBeanDefinition detectCustomImplementation(T config, ParserContext parser) {
 
 		// Build pattern to lookup implementation class
-		Pattern pattern = Pattern.compile(".*" + config.getImplementationClassName());
+		Pattern pattern = Pattern.compile(".*\\." + config.getImplementationClassName());
 
 		// Build classpath scanner and lookup bean definition
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
 		provider.setResourceLoader(parser.getReaderContext().getResourceLoader());
 		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
 		Set<BeanDefinition> definitions = provider.findCandidateComponents(config.getBasePackage());
+		
+		if (definitions.size() == 0) {
+			return null;
+		}
+		
+		if (definitions.size() == 1) {
+			return (AbstractBeanDefinition) definitions.iterator().next();
+		}
 
-		return (0 == definitions.size() ? null : (AbstractBeanDefinition) definitions.iterator().next());
+		List<String> implementationClassNames = new ArrayList<String>();
+		for (BeanDefinition bean : definitions) {
+			implementationClassNames.add(bean.getBeanClassName());
+		}
+		
+		throw new IllegalStateException(String.format(
+				"Ambiguous custom implementations detected! Found %s but expected a single implementation!",
+				StringUtils.collectionToCommaDelimitedString(implementationClassNames)));
 	}
 
 	/**
