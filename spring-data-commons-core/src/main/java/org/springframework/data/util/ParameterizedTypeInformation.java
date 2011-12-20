@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.core.GenericTypeResolver;
+
 /**
  * Base class for all types that include parameterization of some kind. Crucial as we have to take note of the parent
  * class we will have to resolve generic parameters against.

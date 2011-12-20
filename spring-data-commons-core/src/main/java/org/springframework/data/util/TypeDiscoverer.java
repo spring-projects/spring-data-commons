@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -133,7 +134,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@SuppressWarnings("unchecked")
 	protected Class<S> resolveType(Type type) {
 
-		return GenericTypeResolver.resolveType(type, getTypeVariableMap());
+		return (Class<S>) GenericTypeResolver.resolveType(type, getTypeVariableMap());
 	}
 
 	/*

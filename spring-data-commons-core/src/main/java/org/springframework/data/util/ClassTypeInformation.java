@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
 
 /**
