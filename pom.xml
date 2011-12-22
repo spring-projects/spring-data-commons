@@ -5,7 +5,7 @@
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons-dist</artifactId>
 	<name>Spring Data Commons Distribution</name>
-	<version>1.2.0.BUILD-SNAPSHOT</version>
+	<version>1.2.0.RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -344,12 +344,7 @@
 		<repository>
 			<id>repository.springframework.maven.release</id>
 			<name>Spring Framework Maven Release Repository</name>
-			<url>http://maven.springframework.org/release</url>
-		</repository>
-		<repository>
-			<id>repository.springframework.maven.milestone</id>
-			<name>Spring Framework Maven Milestone Repository</name>
-			<url>http://maven.springframework.org/milestone</url>
+			<url>http://repo.springsource.org/release</url>
 		</repository>
 		<repository>
 			<!-- necessary for org.springframework.build.aws.maven dependency -->
@@ -363,7 +358,7 @@
 		<pluginRepository>
 			<id>repository.springframework.maven.release</id>
 			<name>Spring Framework Maven Release Repository</name>
-			<url>http://maven.springframework.org/release</url>
+			<url>http://repo.springsource.org/release</url>
 		</pluginRepository>
 	</pluginRepositories>
 
@@ -372,13 +367,12 @@
 		<downloadUrl>http://www.springsource.com/spring-data</downloadUrl>
 		<site>
 		        <id>static.springframework.org</id>
-			<url>
-        scp://static.springframework.org/var/www/domains/springframework.org/static/htdocs/spring-data/data-commons/snapshot-site</url>
+			<url>scp://static.springframework.org/var/www/domains/springframework.org/static/htdocs/spring-data/data-commons/docs/${project.version}</url>
 		</site>
 		<repository>
 			<id>spring-milestone</id>
-			<name>Spring Milestone Repository</name>
-			<url>s3://maven.springframework.org/milestone</url>
+			<name>Spring Release Repository</name>
+			<url>s3://maven.springframework.org/release</url>
 		</repository>
 		<snapshotRepository>
 			<id>spring-snapshot</id>

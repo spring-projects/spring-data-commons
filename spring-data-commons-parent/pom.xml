@@ -6,7 +6,7 @@
 	<artifactId>spring-data-commons-parent</artifactId>
 	<name>Spring Data Commons Parent</name>
 	<url>http://www.springsource.org/spring-data</url>
-	<version>1.2.0.BUILD-SNAPSHOT</version>
+	<version>1.2.0.RELEASE</version>
 	<packaging>pom</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -65,9 +65,9 @@
 			</url>
 		</site>
 		<repository>
-			<id>spring-milestone</id>
-			<name>Spring Milestone Repository</name>
-			<url>s3://maven.springframework.org/milestone</url>
+			<id>spring-release</id>
+			<name>Spring Release Repository</name>
+			<url>s3://maven.springframework.org/release</url>
 		</repository>
 		<snapshotRepository>
 			<id>spring-snapshot</id>
@@ -345,11 +345,6 @@
 			<id>repository.springframework.maven.release</id>
 			<name>Spring Framework Maven Release Repository</name>
 			<url>http://repo.springsource.org/release</url>
-		</repository>
-		<repository>
-			<id>repository.springframework.maven.milestone</id>
-			<name>Spring Framework Maven Milestone Repository</name>
-			<url>http://repo.springsource.org/milestone</url>
 		</repository>
 		<repository>
 			<id>querydsl</id>

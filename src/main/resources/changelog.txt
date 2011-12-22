@@ -1,6 +1,26 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.2.0.RELEASE (2011-12-22)
+---------------------------------------------
+
+** Bug
+    * [DATACMNS-109] - Upgrade to latest Querydsl
+    * [DATACMNS-114] - Wrong custom implementation automatically detected
+
+** Improvement
+    * [DATACMNS-112] - Upgrade to latest Querydsl
+    * [DATACMNS-116] - Synchronisation during performance tests - GenericTypeResolver
+
+** New Feature
+    * [DATACMNS-110] - Provide infrastructure for CDI integration for repositories
+    * [DATACMNS-113] - Add @ReadingConverter and @WritingConverter to resolve conversion disambiguities
+
+** Task
+    * [DATACMNS-104] - Upgrade to Spring 3.0.7.
+    * [DATACMNS-118] - Releases 1.2 GA
+
+
 Changes in version 1.2.0.RC1 (2011-12-6)
 ----------------------------------------
 
