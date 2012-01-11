@@ -221,8 +221,10 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 * 
 	 * @author Oliver Gierke
 	 */
-	public static class Order {
+	public static class Order implements Serializable {
 
+		private static final long serialVersionUID = 1522511010900108987L;
+		
 		private final Direction direction;
 		private final String property;
 
