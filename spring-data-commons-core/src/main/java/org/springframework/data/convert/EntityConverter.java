@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,8 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
 
 /**
+ * Combined {@link EntityReader} and {@link EntityWriter} and add the ability to access a {@link MappingContext} and
+ * {@link ConversionService}.
  * 
  * @param <E> the concrete {@link PersistentEntity} implementation the converter is based on.
  * @param <P> the concrete {@link PersistentProperty} implementation the converter is based on.
@@ -44,5 +46,4 @@ public interface EntityConverter<E extends PersistentEntity<?, P>, P extends Per
 	 * @return never {@literal null}.
 	 */
 	ConversionService getConversionService();
-
 }
