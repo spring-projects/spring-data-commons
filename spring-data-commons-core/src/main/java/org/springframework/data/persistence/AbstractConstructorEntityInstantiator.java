@@ -8,13 +8,16 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ClassUtils;
+
 import sun.reflect.ReflectionFactory;
 
 /**
  * Try for a constructor taking state: failing that, try a no-arg constructor and then setUnderlyingNode().
  * 
+ * @deprecated use {@link org.springframework.data.convert.EntityInstantiator} abstraction instead.
  * @author Rod Johnson
  */
+@Deprecated
 public abstract class AbstractConstructorEntityInstantiator<BACKING_INTERFACE, STATE> implements
 		EntityInstantiator<BACKING_INTERFACE, STATE> {
 

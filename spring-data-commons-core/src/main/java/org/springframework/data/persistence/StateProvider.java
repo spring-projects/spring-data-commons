@@ -1,9 +1,13 @@
 package org.springframework.data.persistence;
 
+import org.springframework.data.convert.EntityInstantiator;
+
 /**
  * @author Michael Hunger
  * @since 24.09.2010
+ * @deprecated use {@link EntityInstantiator} abstraction instead
  */
+@Deprecated
 public abstract class StateProvider {
 	private final static ThreadLocal stateHolder = new ThreadLocal();
 
