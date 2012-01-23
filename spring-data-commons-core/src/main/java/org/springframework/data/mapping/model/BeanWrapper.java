@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011-2012 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,13 @@
  */
 package org.springframework.data.mapping.model;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.LinkedList;
-import java.util.List;
 
-import org.springframework.beans.BeanInstantiationException;
-import org.springframework.beans.BeanUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -57,72 +50,10 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 		return new BeanWrapper<E, T>(bean, conversionService);
 	}
 
-	/**
-	 * Creates a new {@link BeanWrapper} using the given {@link PersistentEntity} and {@link ParameterValueProvider}. Will
-	 * instantly create a bean instance using the {@link PreferredConstructor} of the {@link PersistentEntity}.
-	 * 
-	 * @param <E>
-	 * @param <T>
-	 * @param entity
-	 * @param provider
-	 * @param conversionService
-	 * @return
-	 */
-	public static <E extends PersistentEntity<T, ?>, T> BeanWrapper<E, T> create(E entity,
-			ParameterValueProvider provider, ConversionService conversionService) {
-		return new BeanWrapper<E, T>(entity, provider, conversionService);
-	}
-
 	private BeanWrapper(T bean, ConversionService conversionService) {
 		Assert.notNull(bean);
 		this.bean = bean;
 		this.conversionService = conversionService;
-	}
-
-	@SuppressWarnings("unchecked")
-	private BeanWrapper(E entity, ParameterValueProvider provider, ConversionService conversionService) {
-
-		this.conversionService = conversionService;
-
-		T bean = null;
-
-		PreferredConstructor<T> constructor = entity.getPreferredConstructor();
-		if (null == constructor) {
-			try {
-				Class<T> clazz = entity.getType();
-				if (clazz.isArray()) {
-					Class<?> ctype = clazz;
-					int dims = 0;
-					while (ctype.isArray()) {
-						ctype = ctype.getComponentType();
-						dims++;
-					}
-					bean = (T) Array.newInstance(clazz, dims);
-				} else {
-					bean = BeanUtils.instantiateClass(entity.getType());
-				}
-			} catch (BeanInstantiationException e) {
-				throw new MappingInstantiationException(e.getMessage(), e);
-			}
-			
-			this.bean = bean;
-			return;
-		}
-
-		List<Object> params = new LinkedList<Object>();
-		if (null != provider && constructor.hasParameters()) {
-			for (Parameter<?> parameter : constructor.getParameters()) {
-				params.add(provider.getParameterValue(parameter));
-			}
-		}
-
-		try {
-			bean = BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());
-		} catch (BeanInstantiationException e) {
-			throw new MappingInstantiationException(e.getMessage(), e);
-		}
-
-		this.bean = bean;
 	}
 
 	/**

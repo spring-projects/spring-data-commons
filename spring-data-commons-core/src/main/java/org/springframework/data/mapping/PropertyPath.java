@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	/**
 	 * Creates a leaf {@link PropertyPath} (no nested ones) with the given name inside the given owning type.
 	 * 
-	 * @param name
-	 * @param owningType
+	 * @param name must not be {@literal null} or empty.
+	 * @param owningType must not be {@literal null}.
 	 */
 	PropertyPath(String name, Class<?> owningType) {
 
@@ -58,8 +58,8 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	/**
 	 * Creates a leaf {@link PropertyPath} (no nested ones with the given name and owning type.
 	 * 
-	 * @param name
-	 * @param owningType
+	 * @param name must not be {@literal null} or empty.
+	 * @param owningType must not be {@literal null}.
 	 */
 	PropertyPath(String name, TypeInformation<?> owningType) {
 
@@ -83,8 +83,8 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * Creates a {@link PropertyPath} with the given name inside the given owning type and tries to resolve the other
 	 * {@link String} to create nested properties.
 	 * 
-	 * @param name
-	 * @param owningType
+	 * @param name must not be {@literal null} or empty.
+	 * @param owningType must not be {@literal null}.
 	 * @param toTraverse
 	 */
 	PropertyPath(String name, TypeInformation<?> owningType, String toTraverse) {
@@ -239,7 +239,14 @@ public class PropertyPath implements Iterable<PropertyPath> {
 		return from(source, ClassTypeInformation.from(type));
 	}
 
-	private static PropertyPath from(String source, TypeInformation<?> type) {
+	/**
+	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @param type 
+	 * @return
+	 */
+	public static PropertyPath from(String source, TypeInformation<?> type) {
 
 		List<String> iteratorSource = new ArrayList<String>();
 		Matcher matcher = SPLITTER.matcher("_" + source);

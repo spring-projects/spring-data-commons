@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011-2012 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,18 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Value object to encapsulate the constructor to be used when mapping persistent data to objects.
  * 
- * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class PreferredConstructor<T> {
+public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 	private final Constructor<T> constructor;
-	private final List<Parameter<?>> parameters;
+	private final List<Parameter<?, P>> parameters;
 
 	/**
 	 * Creates a new {@link PreferredConstructor} from the given {@link Constructor} and {@link Parameter}s.
@@ -43,7 +44,7 @@ public class PreferredConstructor<T> {
 	 * @param constructor
 	 * @param parameters
 	 */
-	public PreferredConstructor(Constructor<T> constructor, Parameter<?>... parameters) {
+	public PreferredConstructor(Constructor<T> constructor, Parameter<?, P>... parameters) {
 
 		Assert.notNull(constructor);
 		Assert.notNull(parameters);
@@ -67,7 +68,7 @@ public class PreferredConstructor<T> {
 	 * 
 	 * @return
 	 */
-	public Iterable<Parameter<?>> getParameters() {
+	public Iterable<Parameter<?, P>> getParameters() {
 		return parameters;
 	}
 
@@ -99,18 +100,39 @@ public class PreferredConstructor<T> {
 	public boolean isExplicitlyAnnotated() {
 		return constructor.isAnnotationPresent(PersistenceConstructor.class);
 	}
+	
+	/**
+	 * Returns whether the given {@link PersistentProperty} is referenced in a constructor argument of the
+	 * {@link PersistentEntity} backing this {@link MappedConstructor}.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @return
+	 */
+	public boolean isConstructorParameter(P property) {
+
+		Assert.notNull(property);
+
+		for (Parameter<?, P> parameter : parameters) {
+			if (parameter.maps(property)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**
 	 * Value object to represent constructor parameters.
 	 * 
-	 * @param <T> the type of the paramter
+	 * @param <T> the type of the parameter
 	 * @author Oliver Gierke
 	 */
-	public static class Parameter<T> {
+	public static class Parameter<T, P extends PersistentProperty<P>> {
 
 		private final String name;
 		private final TypeInformation<T> type;
 		private final String key;
+		private final PersistentEntity<T, P> entity;
 
 		/**
 		 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
@@ -120,8 +142,9 @@ public class PreferredConstructor<T> {
 		 * @param name the name of the parameter, can be {@literal null}
 		 * @param type must not be {@literal null}
 		 * @param annotations must not be {@literal null} but can be empty
+		 * @param entity can be {@literal null}.
 		 */
-		public Parameter(String name, TypeInformation<T> type, Annotation[] annotations) {
+		public Parameter(String name, TypeInformation<T> type, Annotation[] annotations, PersistentEntity<T, P> entity) {
 
 			Assert.notNull(type);
 			Assert.notNull(annotations);
@@ -129,6 +152,7 @@ public class PreferredConstructor<T> {
 			this.name = name;
 			this.type = type;
 			this.key = getValue(annotations);
+			this.entity = entity;
 		}
 
 		private String getValue(Annotation[] annotations) {
@@ -172,8 +196,29 @@ public class PreferredConstructor<T> {
 		 * 
 		 * @return
 		 */
-		public String getKey() {
+		public String getSpelExpression() {
 			return key;
+		}
+		
+		/**
+		 * Returns whether the constructor parameter is equipped with a SpEL expression.
+		 * 
+		 * @return
+		 */
+		public boolean hasSpelExpression() {
+			return StringUtils.hasText(getSpelExpression());
+		}
+		
+		/**
+		 * Returns whether the {@link Parameter} maps the given {@link PersistentProperty}.
+		 * 
+		 * @param property
+		 * @return
+		 */
+		boolean maps(P property) {
+			
+			P referencedProperty = entity == null ? null : entity.getPersistentProperty(name);
+			return property == null ? false : property.equals(referencedProperty);
 		}
 	}
 }

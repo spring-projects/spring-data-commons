@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 by the original author(s).
+ * Copyright 2011-2012 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import org.springframework.util.StringUtils;
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
-	private final PreferredConstructor<T> preferredConstructor;
+	private final PreferredConstructor<T, P>  constructor;
 	private final TypeInformation<T> information;
 	private final Set<P> properties;
 	private final Set<Association<P>> associations;
@@ -65,20 +65,30 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @param comparator
 	 */
 	public BasicPersistentEntity(TypeInformation<T> information, Comparator<P> comparator) {
+		
 		Assert.notNull(information);
+		
 		this.information = information;
-		this.preferredConstructor = new PreferredConstructorDiscoverer<T>(information).getConstructor();
 		this.properties = comparator == null ? new HashSet<P>() : new TreeSet<P>(comparator);
+		this.constructor = new PreferredConstructorDiscoverer<T, P>(information, this).getConstructor();
 		this.associations = comparator == null ? new HashSet<Association<P>>() : new TreeSet<Association<P>>(
 				new AssociationComparator<P>(comparator));
 	}
-
+	
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getPersistenceConstructor()
+	 */
+	public PreferredConstructor<T, P> getPersistenceConstructor() {
+		return constructor;
+	}
+	
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentEntity#getPreferredConstructor()
+	 * @see org.springframework.data.mapping.PersistentEntity#isConstructorArgument(org.springframework.data.mapping.PersistentProperty)
 	 */
-	public PreferredConstructor<T> getPreferredConstructor() {
-		return preferredConstructor;
+	public boolean isConstructorArgument(P property) {
+		return constructor == null ? false : constructor.isConstructorParameter(property);
 	}
 
 	/*

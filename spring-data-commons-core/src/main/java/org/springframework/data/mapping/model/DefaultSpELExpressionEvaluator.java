@@ -19,7 +19,6 @@ import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.util.Assert;
 
 /**
  * {@link ParameterValueProvider} implementation that evaluates the {@link Parameter}s key against
@@ -27,31 +26,27 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class SpELAwareParameterValueProvider implements ParameterValueProvider {
+public class DefaultSpELExpressionEvaluator implements SpELExpressionEvaluator {
 
-	private final SpelExpressionParser parser;
-	private final EvaluationContext context;
+	private final Object source;
+	private final SpELContext factory;
 
 	/**
-	 * Creates a new {@link SpELAwareParameterValueProvider} from the given {@link SpelExpressionParser} and
-	 * {@link EvaluationContext}.
-	 * 
-	 * @param parser must not be {@literal null}
-	 * @param context must not be {@literal null}
+	 * @param parser
+	 * @param factory
 	 */
-	public SpELAwareParameterValueProvider(SpelExpressionParser parser, EvaluationContext context) {
-		Assert.notNull(parser);
-		Assert.notNull(context);
-		this.parser = parser;
-		this.context = context;
+	public DefaultSpELExpressionEvaluator(Object source, SpELContext factory) {
+		this.source = source;
+		this.factory = factory;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.PreferredConstructor.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.model.PreferredConstructor.Parameter)
+	 * @see org.springframework.data.mapping.model.SpELExpressionEvaluator#evaluate(java.lang.String)
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getParameterValue(Parameter<T> parameter) {
-		Expression expression = parser.parseExpression(parameter.getKey());
-		return (T) expression.getValue(context);
+	public <T> T evaluate(String expression) {
+
+		Expression parseExpression = factory.getParser().parseExpression(expression);
+		return (T) parseExpression.getValue(factory.getEvaluationContext(source));
 	}
 }

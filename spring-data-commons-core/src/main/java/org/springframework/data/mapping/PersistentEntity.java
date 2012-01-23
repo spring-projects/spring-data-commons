@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2011-2012 by the original author(s).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.mapping;
 
 import org.springframework.data.util.TypeInformation;
@@ -5,9 +20,9 @@ import org.springframework.data.util.TypeInformation;
 /**
  * Represents a persistent entity
  * 
+ * @author Oliver Gierke
  * @author Graeme Rocher
  * @author Jon Brisbin
- * @author Oliver Gierke
  */
 public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
@@ -23,7 +38,17 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * 
 	 * @return {@literal null} in case no suitable constructor for automatic construction can be found.
 	 */
-	PreferredConstructor<T> getPreferredConstructor();
+	PreferredConstructor<T, P> getPersistenceConstructor();
+
+	/**
+	 * Returns whether the given {@link PersistentProperty} is referred to by a constructor argument of the
+	 * {@link PersistentEntity}.
+	 * 
+	 * @param property
+	 * @return true if the given {@link PersistentProperty} is referred to by a constructor argument or {@literal false} if
+	 *         not or {@literal null}.
+	 */
+	boolean isConstructorArgument(P property);
 
 	/**
 	 * Returns the id property of the {@link PersistentEntity}. Must never return {@literal null} as a
@@ -47,7 +72,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @return The underlying Java class for this entity
 	 */
 	Class<T> getType();
-	
+
 	/**
 	 * Returns the alias to be used when storing type information. Might be {@literal null} to indicate that there was no
 	 * alias defined through the mapping metadata.

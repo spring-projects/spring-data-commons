@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011-2012 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.util.List;
 
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
@@ -31,30 +33,45 @@ import org.springframework.data.util.TypeInformation;
  * 
  * @author Oliver Gierke
  */
-public class PreferredConstructorDiscoverer<T> {
+public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
 
 	private final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-	private PreferredConstructor<T> constructor;
+	private PreferredConstructor<T, P> constructor;
 
+	/**
+	 * Creates a new {@link PreferredConstructorDiscoverer} for the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 */
 	public PreferredConstructorDiscoverer(Class<T> type) {
-		this(ClassTypeInformation.from(type));
+		this(ClassTypeInformation.from(type), null);
+	}
+
+	/**
+	 * Creates a new {@link PreferredConstructorDiscoverer} for the given {@link PersistentEntity}.
+	 * 
+	 * @param entity must not be {@literal null}.
+	 */
+	public PreferredConstructorDiscoverer(PersistentEntity<T, P> entity) {
+		this(entity.getTypeInformation(), entity);
 	}
 
 	/**
 	 * Creates a new {@link PreferredConstructorDiscoverer} for the given type.
 	 * 
-	 * @param owningType
+	 * @param type must not be {@literal null}.
+	 * @param entity
 	 */
-	protected PreferredConstructorDiscoverer(TypeInformation<T> owningType) {
+	protected PreferredConstructorDiscoverer(TypeInformation<T> type, PersistentEntity<T, P> entity) {
 
 		boolean noArgConstructorFound = false;
 		int numberOfArgConstructors = 0;
-		Class<?> rawOwningType = owningType.getType();
+		Class<?> rawOwningType = type.getType();
 
 		for (Constructor<?> constructor : rawOwningType.getDeclaredConstructors()) {
 
-			PreferredConstructor<T> preferredConstructor = buildPreferredConstructor(constructor, owningType);
+			PreferredConstructor<T, P> preferredConstructor = buildPreferredConstructor(constructor, type, entity);
 
 			// Explicitly defined constructor trumps all
 			if (preferredConstructor.isExplicitlyAnnotated()) {
@@ -80,17 +97,17 @@ public class PreferredConstructorDiscoverer<T> {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private PreferredConstructor<T> buildPreferredConstructor(Constructor<?> constructor,
-			TypeInformation<T> typeInformation) {
+	private PreferredConstructor<T, P> buildPreferredConstructor(Constructor<?> constructor,
+			TypeInformation<T> typeInformation, PersistentEntity<T, P> entity) {
 
 		List<TypeInformation<?>> parameterTypes = typeInformation.getParameterTypes(constructor);
 
 		if (parameterTypes.isEmpty()) {
-			return new PreferredConstructor<T>((Constructor<T>) constructor);
+			return new PreferredConstructor<T, P>((Constructor<T>) constructor);
 		}
 
 		String[] parameterNames = nameDiscoverer.getParameterNames(constructor);
-		Parameter<?>[] parameters = new Parameter[parameterTypes.size()];
+		Parameter<?, P>[] parameters = new Parameter[parameterTypes.size()];
 		Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
 
 		for (int i = 0; i < parameterTypes.size(); i++) {
@@ -99,13 +116,18 @@ public class PreferredConstructorDiscoverer<T> {
 			TypeInformation<?> type = parameterTypes.get(i);
 			Annotation[] annotations = parameterAnnotations[i];
 
-			parameters[i] = new Parameter(name, type, annotations);
+			parameters[i] = new Parameter(name, type, annotations, entity);
 		}
 
-		return new PreferredConstructor<T>((Constructor<T>) constructor, parameters);
+		return new PreferredConstructor<T, P>((Constructor<T>) constructor, parameters);
 	}
 
-	public PreferredConstructor<T> getConstructor() {
+	/**
+	 * Returns the discovered {@link PreferredConstructor}.
+	 * 
+	 * @return
+	 */
+	public PreferredConstructor<T, P> getConstructor() {
 		return constructor;
 	}
 }

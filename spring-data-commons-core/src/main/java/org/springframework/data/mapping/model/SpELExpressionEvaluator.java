@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2011-2012 by the original author(s).
+ * Copyright 2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,21 +15,18 @@
  */
 package org.springframework.data.mapping.model;
 
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
-
 /**
- * Callback interface to lookup values for a given {@link Parameter}.
- * 
+ * SPI for components that can evaluate Spring EL expressions.
+ *
  * @author Oliver Gierke
  */
-public interface ParameterValueProvider<P extends PersistentProperty<P>> {
-	
+public interface SpELExpressionEvaluator {
+
 	/**
-	 * Returns the value to be used for the given {@link Parameter} (usually when entity instances are created).
+	 * Evaluates the given expression.
 	 * 
-	 * @param parameter must not be {@literal null}.
+	 * @param expression
 	 * @return
 	 */
-	<T> T getParameterValue(Parameter<T, P> parameter);
+	<T> T evaluate(String expression);
 }

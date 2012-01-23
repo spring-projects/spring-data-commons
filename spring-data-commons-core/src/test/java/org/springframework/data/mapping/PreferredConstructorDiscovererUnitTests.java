@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011-2012 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,48 +25,41 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 
-
 /**
  * Unit tests for {@link PreferredConstructorDiscoverer}.
- *
+ * 
  * @author Oliver Gierke
  */
-public class PreferredConstructorDiscovererUnitTests {
+public class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 	@Test
 	public void findsNoArgConstructorForClassWithoutExplicitConstructor() {
 
-		PreferredConstructorDiscoverer<EntityWithoutConstructor> discoverer =
-				new PreferredConstructorDiscoverer<EntityWithoutConstructor>(
-						EntityWithoutConstructor.class);
-		PreferredConstructor<EntityWithoutConstructor> constructor =
-				discoverer.getConstructor();
+		PreferredConstructorDiscoverer<EntityWithoutConstructor, P> discoverer = new PreferredConstructorDiscoverer<EntityWithoutConstructor, P>(
+				EntityWithoutConstructor.class);
+		PreferredConstructor<EntityWithoutConstructor, P> constructor = discoverer.getConstructor();
 
 		assertThat(constructor, is(notNullValue()));
 		assertThat(constructor.isNoArgConstructor(), is(true));
 		assertThat(constructor.isExplicitlyAnnotated(), is(false));
 	}
-
 
 	@Test
 	public void findsNoArgConstructorForClassWithMultipleConstructorsAndNoArgOne() {
 
-		PreferredConstructorDiscoverer<ClassWithEmptyConstructor> discoverer =
-				new PreferredConstructorDiscoverer<ClassWithEmptyConstructor>(
-						ClassWithEmptyConstructor.class);
-		PreferredConstructor<ClassWithEmptyConstructor> constructor =
-				discoverer.getConstructor();
+		PreferredConstructorDiscoverer<ClassWithEmptyConstructor, P> discoverer = new PreferredConstructorDiscoverer<ClassWithEmptyConstructor, P>(
+				ClassWithEmptyConstructor.class);
+		PreferredConstructor<ClassWithEmptyConstructor, P> constructor = discoverer.getConstructor();
 
 		assertThat(constructor, is(notNullValue()));
 		assertThat(constructor.isNoArgConstructor(), is(true));
 		assertThat(constructor.isExplicitlyAnnotated(), is(false));
 	}
 
-
 	@Test
 	public void doesNotThrowExceptionForMultipleConstructorsAndNoNoArgConstructorWithoutAnnotation() {
 
-		PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne> discoverer = new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne>(
+		PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne, P> discoverer = new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne, P>(
 				ClassWithMultipleConstructorsWithoutEmptyOne.class);
 		assertThat(discoverer.getConstructor(), is(nullValue()));
 	}
@@ -74,20 +67,18 @@ public class PreferredConstructorDiscovererUnitTests {
 	@Test
 	public void usesConstructorWithAnnotationOverEveryOther() {
 
-		PreferredConstructorDiscoverer<ClassWithMultipleConstructorsAndAnnotation> discoverer =
-				new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsAndAnnotation>(
-						ClassWithMultipleConstructorsAndAnnotation.class);
-		PreferredConstructor<ClassWithMultipleConstructorsAndAnnotation> constructor =
-				discoverer.getConstructor();
+		PreferredConstructorDiscoverer<ClassWithMultipleConstructorsAndAnnotation, P> discoverer = new PreferredConstructorDiscoverer<ClassWithMultipleConstructorsAndAnnotation, P>(
+				ClassWithMultipleConstructorsAndAnnotation.class);
+		PreferredConstructor<ClassWithMultipleConstructorsAndAnnotation, P> constructor = discoverer.getConstructor();
 
 		assertThat(constructor, is(notNullValue()));
 		assertThat(constructor.isNoArgConstructor(), is(false));
 		assertThat(constructor.isExplicitlyAnnotated(), is(true));
 
 		assertThat(constructor.hasParameters(), is(true));
-		Iterator<Parameter<?>> parameters = constructor.getParameters().iterator();
+		Iterator<Parameter<?, P>> parameters = constructor.getParameters().iterator();
 
-		Parameter<?> parameter = parameters.next();
+		Parameter<?, P> parameter = parameters.next();
 		assertThat(parameter.getType().getType(), typeCompatibleWith(Long.class));
 		assertThat(parameters.hasNext(), is(false));
 	}
@@ -106,7 +97,6 @@ public class PreferredConstructorDiscovererUnitTests {
 
 		public ClassWithMultipleConstructorsAndEmptyOne(String value) {
 		}
-
 
 		public ClassWithMultipleConstructorsAndEmptyOne() {
 		}

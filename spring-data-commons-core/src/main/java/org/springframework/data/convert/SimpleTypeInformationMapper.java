@@ -68,6 +68,6 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 	 */
 	public String createAliasFor(TypeInformation<?> type) {
 
-		return type == null ? null : type.getType().getName();
+		return type.getType().getName();
 	}
 }
