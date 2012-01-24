@@ -18,16 +18,23 @@ package org.springframework.data.repository.core.support;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
 /**
  * Unit test for {@link QueryExecuterMethodInterceptor}.
- *
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -37,11 +44,13 @@ public class QueryExecutorMethodInterceptorUnitTests {
 	RepositoryFactorySupport factory;
 	@Mock
 	RepositoryInformation information;
+	@Mock
+	QueryLookupStrategy strategy;
 
 	@Test(expected = IllegalStateException.class)
-	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() {
+	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() throws Exception {
 
-		when(information.hasCustomMethod()).thenReturn(true);
+		when(information.getQueryMethods()).thenReturn(Arrays.asList(Object.class.getMethod("toString")));
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(null);
 
 		factory.new QueryExecutorMethodInterceptor(information, null, new Object());
@@ -50,10 +59,10 @@ public class QueryExecutorMethodInterceptorUnitTests {
 	@Test
 	public void skipsQueryLookupsIfQueryLookupStrategyIsNull() {
 
-		when(information.hasCustomMethod()).thenReturn(false);
-		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(null);
+		when(information.getQueryMethods()).thenReturn(Collections.<Method> emptySet());
+		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(strategy);
 
 		factory.new QueryExecutorMethodInterceptor(information, null, new Object());
-		verify(information, times(0)).getQueryMethods();
+		verify(strategy, times(0)).resolveQuery(any(Method.class), any(RepositoryMetadata.class), any(NamedQueries.class));
 	}
 }

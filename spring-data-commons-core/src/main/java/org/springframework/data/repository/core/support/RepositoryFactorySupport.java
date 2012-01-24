@@ -252,10 +252,11 @@ public abstract class RepositoryFactorySupport {
 			this.target = target;
 
 			QueryLookupStrategy lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey);
+			Iterable<Method> queryMethods = repositoryInformation.getQueryMethods();
 
 			if (lookupStrategy == null) {
 
-				if (repositoryInformation.hasCustomMethod()) {
+				if (queryMethods.iterator().hasNext()) {
 					throw new IllegalStateException("You have defined query method in the repository but "
 							+ "you don't have no query lookup strategy defined. The "
 							+ "infrastructure apparently does not support query methods!");
@@ -264,7 +265,7 @@ public abstract class RepositoryFactorySupport {
 				return;
 			}
 
-			for (Method method : repositoryInformation.getQueryMethods()) {
+			for (Method method : queryMethods) {
 				RepositoryQuery query = lookupStrategy.resolveQuery(method, repositoryInformation, namedQueries);
 				invokeListeners(query);
 				queries.put(method, query);
