@@ -48,6 +48,15 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		this.values = values.clone();
 	}
 
+	/**
+	 * Returns the {@link Parameters} instance backing the accessor.
+	 * 
+	 * @return the parameters will never be {@literal null}.
+	 */
+	public Parameters getParameters() {
+		return parameters;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ParameterAccessor#getPageable()
@@ -96,6 +105,21 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	public Object getBindableValue(int index) {
 
 		return values[parameters.getBindableParameter(index).getIndex()];
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.ParameterAccessor#hasBindableNullValue()
+	 */
+	public boolean hasBindableNullValue() {
+
+		for (Parameter parameter : parameters.getBindableParameters()) {
+			if (values[parameter.getIndex()] == null) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/*

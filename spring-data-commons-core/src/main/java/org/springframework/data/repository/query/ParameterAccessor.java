@@ -53,6 +53,13 @@ public interface ParameterAccessor extends Iterable<Object> {
 	Object getBindableValue(int index);
 
 	/**
+	 * Returns whether one of the bindable parameter values is {@literal null}.
+	 * 
+	 * @return
+	 */
+	boolean hasBindableNullValue();
+
+	/**
 	 * Returns an iterator over all <em>bindable</em> parameters. This means parameters implementing {@link Pageable} or
 	 * {@link Sort} will not be included in this {@link Iterator}.
 	 * 

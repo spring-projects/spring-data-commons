@@ -18,24 +18,32 @@ package org.springframework.data.repository.query;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Unit tests for {@link ParametersParameterAccessor}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class ParametersParameterAccessorUnitTests {
 
-	
+	Parameters parameters;
+
+	@Before
+	public void setUp() throws Exception {
+		parameters = new Parameters(Sample.class.getMethod("method", String.class, int.class));
+	}
+
 	@Test
 	public void accessorIteratorHasNext() throws SecurityException, NoSuchMethodException {
-		
-		Parameters parameters = new Parameters(Sample.class.getMethod("method", String.class, int.class));
-		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { "Foo", 2});
-		
+
+		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { "Foo", 2 });
+
 		Iterator<Object> iterator = accessor.iterator();
 		assertThat(iterator.hasNext(), is(true));
 		assertThat(iterator.next(), is((Object) "Foo"));
@@ -43,10 +51,24 @@ public class ParametersParameterAccessorUnitTests {
 		assertThat(iterator.next(), is((Object) 2));
 		assertThat(iterator.hasNext(), is(false));
 	}
-	
-	
+
+	@Test
+	public void detectsNullValue() throws Exception {
+
+		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { null, 5 });
+		assertThat(accessor.hasBindableNullValue(), is(true));
+
+		Method method = Sample.class.getMethod("method", Pageable.class, String.class);
+		Parameters parameters = new Parameters(method);
+
+		accessor = new ParametersParameterAccessor(parameters, new Object[] { null, "Foo" });
+		assertThat(accessor.hasBindableNullValue(), is(false));
+	}
+
 	interface Sample {
-		
+
 		void method(String string, int integer);
+
+		void method(Pageable pageable, String string);
 	}
 }
