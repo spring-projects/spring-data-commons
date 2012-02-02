@@ -70,6 +70,14 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	Iterable<T> findAll();
 
 	/**
+	 * Returns all instances of the type with the given IDs.
+	 * 
+	 * @param ids
+	 * @return
+	 */
+	Iterable<T> findAll(Iterable<ID> ids);
+
+	/**
 	 * Returns the number of entities available.
 	 * 
 	 * @return the number of entities
