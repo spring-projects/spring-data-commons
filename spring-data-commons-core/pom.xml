@@ -7,9 +7,11 @@
 		<version>1.2.1.BUILD-SNAPSHOT</version>
 		<relativePath>../spring-data-commons-parent/pom.xml</relativePath>
 	</parent>
+	
 	<artifactId>spring-data-commons-core</artifactId>
 	<packaging>jar</packaging>
 	<name>Spring Data Commons Core</name>
+	<description>Spring Data Commons Core Library</description>
 
 	<properties>
 		<querydsl.version>2.3.0</querydsl.version>

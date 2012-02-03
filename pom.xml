@@ -5,6 +5,8 @@
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons-dist</artifactId>
 	<name>Spring Data Commons Distribution</name>
+	<description>Spring Data Commons Distribution project</description>
+	<url>http://www.springframework.org/spring-data</url>
 	<version>1.2.1.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
@@ -245,7 +247,6 @@
 	        <artifactId>maven-javadoc-plugin</artifactId>
 	        <version>2.7</version>
 	         <configuration>
-	           <javadoc:aggregate>true</javadoc:aggregate>
 	           <aggregate>true</aggregate>
 	           <breakiterator>true</breakiterator>
 	           <header>Spring Data Commons</header>
@@ -380,4 +381,8 @@
 			<url>s3://maven.springframework.org/snapshot</url>
 		</snapshotRepository>
 	</distributionManagement>
+
+	<scm>
+		<url>https://github.com/SpringSource/spring-data-commons</url>
+	</scm>
 </project>
