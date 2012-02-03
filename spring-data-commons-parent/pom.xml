@@ -19,49 +19,13 @@
 		<org.springframework.version>[${org.springframework.version.30}, ${org.springframework.version.40})</org.springframework.version>
 		<org.hamcrest.version>1.2.1</org.hamcrest.version>
 	</properties>
-	<profiles>
-		<profile>
-			<id>strict</id>
-			<properties>
-				<maven.test.failure.ignore>false</maven.test.failure.ignore>
-			</properties>
-		</profile>
-		<profile>
-			<id>fast</id>
-			<properties>
-				<maven.test.skip>true</maven.test.skip>
-				<maven.javadoc.skip>true</maven.javadoc.skip>
-			</properties>
-		</profile>
-		<profile>
-			<id>staging</id>
-			<distributionManagement>
-				<site>
-					<id>spring-site-staging</id>
-					<url>file:///${java.io.tmpdir}/spring-data/data-commons/docs</url>
-				</site>
-				<repository>
-					<id>spring-milestone-staging</id>
-					<url>file:///${java.io.tmpdir}/spring-data/data-commons/milestone</url>
-				</repository>
-				<snapshotRepository>
-					<id>spring-snapshot-staging</id>
-					<url>file:///${java.io.tmpdir}/spring-data/data-commons/snapshot</url>
-				</snapshotRepository>
-			</distributionManagement>
-		</profile>
-		<profile>
-			<id>bootstrap</id>
-			<!-- TODO: move the repositories in here before release -->
-		</profile>
-	</profiles>
+
 	<distributionManagement>
-		<!-- see 'staging' profile for dry-run deployment settings -->
-		<downloadUrl>http://www.springsource.com/download/community
-		</downloadUrl>
+		<downloadUrl>http://www.springsource.com/download/community</downloadUrl>
 		<site>
 			<id>spring-docs</id>
-			<url>scp://static.springframework.org/var/www/domains/springframework.org/static/htdocs/spring-data/data-commons/snapshot-site
+			<url>
+				scp://static.springframework.org/var/www/domains/springframework.org/static/htdocs/spring-data/data-commons/snapshot-site
 			</url>
 		</site>
 		<repository>
@@ -75,93 +39,7 @@
 			<url>s3://maven.springframework.org/snapshot</url>
 		</snapshotRepository>
 	</distributionManagement>
-	<dependencyManagement>
-		<!--
-			inheritable <dependency> declarations for child poms. children still
-			must explicitly declare the groupId/artifactId of these dependencies
-			in order for them to show up on the classpath, but metadata like
-			<version> and <scope> are inherited, which cuts down on verbosity.
-			see
-			http://www.sonatype.com/books/mvnref-book/reference/pom-relationships-sect-dep-manage.html
-		-->
-		<dependencies>
-
-			<!--  Spring -->
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-aop</artifactId>
-				<version>${org.springframework.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-beans</artifactId>
-				<version>${org.springframework.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-core</artifactId>
-				<version>${org.springframework.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-tx</artifactId>
-				<version>${org.springframework.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-context</artifactId>
-				<version>${org.springframework.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-web</artifactId>
-				<version>${org.springframework.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-test</artifactId>
-				<version>${org.springframework.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-			<!--  Spring Data -->
-			<dependency>
-				<groupId>org.springframework.data</groupId>
-				<artifactId>spring-data-commons-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-
-			<!-- Logging -->
-			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<version>${log4j.version}</version>
-				<scope>runtime</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>javax.annotation</groupId>
-				<artifactId>jsr250-api</artifactId>
-				<version>1.0</version>
-				<optional>true</optional>
-			</dependency>
-
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-core</artifactId>
-				<version>${org.mockito.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit-dep</artifactId>
-				<version>${junit.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-		</dependencies>
-	</dependencyManagement>
+	
 	<dependencies>
 		<!--
 			dependency definitions to be inherited by child poms. any
@@ -179,16 +57,18 @@
 		
 		<dependency>
 			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-library</artifactId>
-			<version>${org.hamcrest.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-core</artifactId>
 			<version>${org.hamcrest.version}</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<version>${org.hamcrest.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
