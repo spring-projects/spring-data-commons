@@ -21,7 +21,7 @@ import org.springframework.data.repository.RepositoryDefinition;
 
 /**
  * Sample interface for annotation based repository declaration.
- *
+ * 
  * @author Oliver Gierke
  */
 @RepositoryDefinition(domainClass = Object.class, idClass = Serializable.class)

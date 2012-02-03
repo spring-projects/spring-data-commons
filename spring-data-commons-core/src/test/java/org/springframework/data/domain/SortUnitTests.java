@@ -22,33 +22,28 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.springframework.data.domain.Sort.Direction;
 
-
 /**
  * Unit test for {@link Sort}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class SortUnitTests {
 
 	/**
-	 * Asserts that the class applies the default sort order if no order or
-	 * {@code null} was provided.
-	 *
+	 * Asserts that the class applies the default sort order if no order or {@code null} was provided.
+	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void appliesDefaultForOrder() throws Exception {
 
-		assertEquals(Sort.DEFAULT_DIRECTION, new Sort("foo").iterator().next()
-				.getDirection());
-		assertEquals(Sort.DEFAULT_DIRECTION, new Sort((Direction) null, "foo")
-				.iterator().next().getDirection());
+		assertEquals(Sort.DEFAULT_DIRECTION, new Sort("foo").iterator().next().getDirection());
+		assertEquals(Sort.DEFAULT_DIRECTION, new Sort((Direction) null, "foo").iterator().next().getDirection());
 	}
-
 
 	/**
 	 * Asserts that the class rejects {@code null} as properties array.
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	@Test(expected = IllegalArgumentException.class)
@@ -57,11 +52,9 @@ public class SortUnitTests {
 		new Sort(Direction.ASC, (String[]) null);
 	}
 
-
 	/**
-	 * Asserts that the class rejects {@code null} values in the properties
-	 * array.
-	 *
+	 * Asserts that the class rejects {@code null} values in the properties array.
+	 * 
 	 * @throws Exception
 	 */
 	@Test(expected = IllegalArgumentException.class)
@@ -70,10 +63,9 @@ public class SortUnitTests {
 		new Sort(Direction.ASC, (String) null);
 	}
 
-
 	/**
 	 * Asserts that the class rejects empty strings in the properties array.
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	@Test(expected = IllegalArgumentException.class)
@@ -82,10 +74,9 @@ public class SortUnitTests {
 		new Sort(Direction.ASC, "");
 	}
 
-
 	/**
 	 * Asserts that the class rejects no properties given at all.
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	@Test(expected = IllegalArgumentException.class)
@@ -93,17 +84,17 @@ public class SortUnitTests {
 
 		new Sort(Direction.ASC);
 	}
-	
+
 	@Test
 	public void allowsCombiningSorts() {
-		
+
 		Sort sort = new Sort("foo").and(new Sort("bar"));
 		assertThat(sort, hasItems(new Sort.Order("foo"), new Sort.Order("bar")));
 	}
-	
+
 	@Test
 	public void handlesAdditionalNullSort() {
-		
+
 		Sort sort = new Sort("foo").and(null);
 		assertThat(sort, hasItem(new Sort.Order("foo")));
 	}

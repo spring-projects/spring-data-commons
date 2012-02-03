@@ -21,10 +21,9 @@ import static org.springframework.data.domain.UnitTestUtils.*;
 import org.junit.Test;
 import org.springframework.data.domain.Sort.Direction;
 
-
 /**
  * Unit test for {@link PageRequest}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class PageRequestUnitTests {
@@ -35,20 +34,17 @@ public class PageRequestUnitTests {
 		new PageRequest(-1, 10);
 	}
 
-
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNegativeSize() {
 
 		new PageRequest(0, -1);
 	}
 
-
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsZeroSize() {
 
 		new PageRequest(0, 0);
 	}
-
 
 	@Test
 	public void equalsRegardsSortCorrectly() {
@@ -69,10 +65,8 @@ public class PageRequestUnitTests {
 		assertNotEqualsAndHashcode(request, new PageRequest(0, 10));
 
 		// Is not equal to instance with another sort
-		assertNotEqualsAndHashcode(request, new PageRequest(0, 10,
-				Direction.ASC, "foo"));
+		assertNotEqualsAndHashcode(request, new PageRequest(0, 10, Direction.ASC, "foo"));
 	}
-
 
 	@Test
 	public void equalsHonoursPageAndSize() {

@@ -17,7 +17,7 @@ package org.springframework.data.mapping.model;
 
 /**
  * SPI for components that can evaluate Spring EL expressions.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface SpELExpressionEvaluator {

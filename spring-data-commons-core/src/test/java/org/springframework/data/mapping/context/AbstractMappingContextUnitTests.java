@@ -18,23 +18,24 @@ import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit test for {@link AbstractMappingContext}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class AbstractMappingContextUnitTests {
-	
+
 	final SimpleTypeHolder holder = new SimpleTypeHolder();
 	DummyMappingContext context;
-	
+
 	@Before
 	public void setUp() {
-		 context = new DummyMappingContext();
-		 context.setSimpleTypeHolder(holder);
+		context = new DummyMappingContext();
+		context.setSimpleTypeHolder(holder);
 	}
-	
+
 	@Test
 	public void doesNotTryToLookupPersistentEntityForLeafProperty() {
-		PersistentPropertyPath<DummyPersistenProperty> path = context.getPersistentPropertyPath(PropertyPath.from("name", Person.class));
+		PersistentPropertyPath<DummyPersistenProperty> path = context.getPersistentPropertyPath(PropertyPath.from("name",
+				Person.class));
 		assertThat(path, is(notNullValue()));
 	}
 
@@ -49,26 +50,27 @@ public class AbstractMappingContextUnitTests {
 		} catch (MappingException e) {
 			// expected
 		}
-		
+
 		context.getPersistentEntity(Unsupported.class);
 	}
-	
+
 	class Person {
 		String name;
 	}
-	
+
 	class Unsupported {
-		
+
 	}
-	
-	
-	class DummyMappingContext extends AbstractMappingContext<BasicPersistentEntity<Object, DummyPersistenProperty>, DummyPersistenProperty> {
+
+	class DummyMappingContext extends
+			AbstractMappingContext<BasicPersistentEntity<Object, DummyPersistenProperty>, DummyPersistenProperty> {
 
 		@Override
 		@SuppressWarnings("unchecked")
-		protected <S> BasicPersistentEntity<Object, DummyPersistenProperty> createPersistentEntity(TypeInformation<S> typeInformation) {
+		protected <S> BasicPersistentEntity<Object, DummyPersistenProperty> createPersistentEntity(
+				TypeInformation<S> typeInformation) {
 			return new BasicPersistentEntity<Object, DummyPersistenProperty>((TypeInformation<Object>) typeInformation) {
-				
+
 				@Override
 				public void verify() {
 					if (holder.isSimpleType(getType()) || Unsupported.class.equals(getType())) {
@@ -81,11 +83,11 @@ public class AbstractMappingContextUnitTests {
 		@Override
 		protected DummyPersistenProperty createPersistentProperty(final Field field, final PropertyDescriptor descriptor,
 				final BasicPersistentEntity<Object, DummyPersistenProperty> owner, final SimpleTypeHolder simpleTypeHolder) {
-			
+
 			return new DummyPersistenProperty(field, descriptor, owner, simpleTypeHolder);
 		}
 	}
-	
+
 	class DummyPersistenProperty extends AbstractPersistentProperty<DummyPersistenProperty> {
 
 		public DummyPersistenProperty(Field field, PropertyDescriptor propertyDescriptor,

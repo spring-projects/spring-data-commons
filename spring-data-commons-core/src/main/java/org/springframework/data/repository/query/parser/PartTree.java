@@ -100,7 +100,7 @@ public class PartTree implements Iterable<OrPart> {
 
 		return subject.isDistinct();
 	}
-	
+
 	/**
 	 * Returns an {@link Iterable} of all parts contained in the {@link PartTree}.
 	 * 
@@ -116,7 +116,7 @@ public class PartTree implements Iterable<OrPart> {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Returns all {@link Part}s of the {@link PartTree} of the given {@link Type}.
 	 * 
@@ -124,15 +124,15 @@ public class PartTree implements Iterable<OrPart> {
 	 * @return
 	 */
 	public Iterable<Part> getParts(Type type) {
-		
+
 		List<Part> result = new ArrayList<Part>();
-		
+
 		for (Part part : getParts()) {
 			if (part.getType().equals(type)) {
 				result.add(part);
 			}
 		}
-		
+
 		return result;
 	}
 

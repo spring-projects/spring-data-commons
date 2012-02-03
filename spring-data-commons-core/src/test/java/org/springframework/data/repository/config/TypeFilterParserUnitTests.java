@@ -36,10 +36,9 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-
 /**
  * Unit test for {@link TypeFilterParser}.
- *
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -57,51 +56,36 @@ public class TypeFilterParserUnitTests {
 	@Mock
 	private ClassPathScanningCandidateComponentProvider scanner;
 
-
 	@Before
-	public void setUp() throws SAXException, IOException,
-			ParserConfigurationException {
+	public void setUp() throws SAXException, IOException, ParserConfigurationException {
 
 		parser = new TypeFilterParser(classLoader, context);
 
-		Resource sampleXmlFile =
-				new ClassPathResource("type-filter-test.xml",
-						TypeFilterParserUnitTests.class);
+		Resource sampleXmlFile = new ClassPathResource("type-filter-test.xml", TypeFilterParserUnitTests.class);
 
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 
-		documentElement =
-				factory.newDocumentBuilder()
-						.parse(sampleXmlFile.getInputStream())
-						.getDocumentElement();
+		documentElement = factory.newDocumentBuilder().parse(sampleXmlFile.getInputStream()).getDocumentElement();
 	}
-
 
 	@Test
 	public void parsesIncludesCorrectly() throws Exception {
 
-		Element element =
-				DomUtils.getChildElementByTagName(documentElement,
-						"firstSample");
+		Element element = DomUtils.getChildElementByTagName(documentElement, "firstSample");
 
 		parser.parseFilters(element, scanner);
 
-		verify(scanner, atLeastOnce()).addIncludeFilter(
-				isA(AssignableTypeFilter.class));
+		verify(scanner, atLeastOnce()).addIncludeFilter(isA(AssignableTypeFilter.class));
 	}
-
 
 	@Test
 	public void parsesExcludesCorrectly() throws Exception {
 
-		Element element =
-				DomUtils.getChildElementByTagName(documentElement,
-						"secondSample");
+		Element element = DomUtils.getChildElementByTagName(documentElement, "secondSample");
 
 		parser.parseFilters(element, scanner);
 
-		verify(scanner, atLeastOnce()).addExcludeFilter(
-				isA(AssignableTypeFilter.class));
+		verify(scanner, atLeastOnce()).addExcludeFilter(isA(AssignableTypeFilter.class));
 	}
 }

@@ -68,20 +68,20 @@ public class ReflectionEntityInstantiatorUnitTest<P extends PersistentProperty<P
 	public void instantiatesTypeWithPreferredConstructorUsingParameterValueProvider() {
 
 		PreferredConstructor constructor = new PreferredConstructorDiscoverer<Foo, P>(Foo.class).getConstructor();
-		
+
 		when(entity.getType()).thenReturn((Class) Foo.class);
 		when(entity.getPersistenceConstructor()).thenReturn(constructor);
-		
+
 		Object instance = INSTANCE.createInstance(entity, provider);
-		
+
 		assertTrue(instance instanceof Foo);
 		verify(provider, times(1)).getParameterValue((Parameter) constructor.getParameters().iterator().next());
 	}
-	
+
 	static class Foo {
-		
+
 		Foo(String foo) {
-			
+
 		}
 	}
 }

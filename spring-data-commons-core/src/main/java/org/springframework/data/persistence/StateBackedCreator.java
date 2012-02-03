@@ -7,6 +7,7 @@ import org.springframework.data.convert.EntityInstantiator;
  * <p/>
  * Can be implemented and registered with the concrete AbstractConstructorEntityInstantiator to provide non reflection
  * bases instantiaton for domain classes
+ * 
  * @deprecated use {@link EntityInstantiator} abstraction instead.
  */
 @Deprecated

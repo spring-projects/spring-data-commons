@@ -25,16 +25,14 @@ import org.junit.Test;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-
 /**
  * Unit test for {@link Parameters}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class ParametersUnitTests {
 
 	private Method valid;
-
 
 	@Before
 	public void setUp() throws SecurityException, NoSuchMethodException {
@@ -42,32 +40,23 @@ public class ParametersUnitTests {
 		valid = SampleDao.class.getMethod("valid", String.class);
 	}
 
-
 	@Test
 	public void checksValidMethodCorrectly() throws Exception {
 
-		Method validWithPageable =
-				SampleDao.class.getMethod("validWithPageable", String.class,
-						Pageable.class);
-		Method validWithSort =
-				SampleDao.class.getMethod("validWithSort", String.class,
-						Sort.class);
+		Method validWithPageable = SampleDao.class.getMethod("validWithPageable", String.class, Pageable.class);
+		Method validWithSort = SampleDao.class.getMethod("validWithSort", String.class, Sort.class);
 
 		new Parameters(valid);
 		new Parameters(validWithPageable);
 		new Parameters(validWithSort);
 	}
 
-
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsInvalidMethodWithParamMissing() throws Exception {
 
-		Method method =
-				SampleDao.class.getMethod("invalidParamMissing", String.class,
-						String.class);
+		Method method = SampleDao.class.getMethod("invalidParamMissing", String.class, String.class);
 		new Parameters(method);
 	}
-
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullMethod() throws Exception {
@@ -75,12 +64,10 @@ public class ParametersUnitTests {
 		new Parameters(null);
 	}
 
-
 	@Test
 	public void detectsNamedParameterCorrectly() throws Exception {
 
-		Parameters parameters =
-				getParametersFor("validWithSort", String.class, Sort.class);
+		Parameters parameters = getParametersFor("validWithSort", String.class, Sort.class);
 
 		Parameter parameter = parameters.getParameter(0);
 
@@ -93,20 +80,15 @@ public class ParametersUnitTests {
 		assertThat(parameter.isSpecialParameter(), is(true));
 	}
 
-
 	@Test
 	public void calculatesPlaceholderPositionCorrectly() throws Exception {
 
-		Method method =
-				SampleDao.class.getMethod("validWithSortFirst", Sort.class,
-						String.class);
+		Method method = SampleDao.class.getMethod("validWithSortFirst", Sort.class, String.class);
 
 		Parameters parameters = new Parameters(method);
 		assertThat(parameters.getBindableParameter(0).getIndex(), is(1));
 
-		method =
-				SampleDao.class.getMethod("validWithSortInBetween",
-						String.class, Sort.class, String.class);
+		method = SampleDao.class.getMethod("validWithSortInBetween", String.class, Sort.class, String.class);
 
 		parameters = new Parameters(method);
 
@@ -114,29 +96,26 @@ public class ParametersUnitTests {
 		assertThat(parameters.getBindableParameter(1).getIndex(), is(2));
 	}
 
-
 	@Test
 	public void detectsEmptyParameterListCorrectly() throws Exception {
 
 		Parameters parameters = getParametersFor("emptyParameters");
 		assertThat(parameters.hasParameterAt(0), is(false));
 	}
-	
+
 	@Test
 	public void detectsPageableParameter() throws Exception {
 		Parameters parameters = getParametersFor("validWithPageable", String.class, Pageable.class);
 		assertThat(parameters.getPageableIndex(), is(1));
 	}
-	
+
 	@Test
 	public void detectsSortParameter() throws Exception {
 		Parameters parameters = getParametersFor("validWithSort", String.class, Sort.class);
 		assertThat(parameters.getSortIndex(), is(1));
 	}
 
-
-	private Parameters getParametersFor(String methodName,
-																			Class<?>... parameterTypes) throws SecurityException,
+	private Parameters getParametersFor(String methodName, Class<?>... parameterTypes) throws SecurityException,
 			NoSuchMethodException {
 
 		Method method = SampleDao.class.getMethod(methodName, parameterTypes);
@@ -152,23 +131,15 @@ public class ParametersUnitTests {
 
 		User valid(@Param("username") String username);
 
+		User invalidParamMissing(@Param("username") String username, String lastname);
 
-		User invalidParamMissing(@Param("username") String username,
-														 String lastname);
-
-
-		User validWithPageable(@Param("username") String username,
-													 Pageable pageable);
-
+		User validWithPageable(@Param("username") String username, Pageable pageable);
 
 		User validWithSort(@Param("username") String username, Sort sort);
 
-
 		User validWithSortFirst(Sort sort, String username);
 
-
 		User validWithSortInBetween(String firstname, Sort sort, String lastname);
-
 
 		User emptyParameters();
 

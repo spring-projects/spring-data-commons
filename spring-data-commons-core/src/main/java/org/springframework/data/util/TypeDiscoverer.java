@@ -89,7 +89,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		if (fieldType instanceof Class) {
 			return new ClassTypeInformation((Class<?>) fieldType);
 		}
-		
+
 		Map<TypeVariable, Type> variableMap = GenericTypeResolver.getTypeVariableMap(resolveType(fieldType));
 
 		if (fieldType instanceof ParameterizedType) {
@@ -105,18 +105,18 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		if (fieldType instanceof GenericArrayType) {
 			return new GenericArrayTypeInformation((GenericArrayType) fieldType, this);
 		}
-		
+
 		if (fieldType instanceof WildcardType) {
-			
+
 			WildcardType wildcardType = (WildcardType) fieldType;
 			Type[] bounds = wildcardType.getLowerBounds();
-			
+
 			if (bounds.length > 0) {
 				return createInfo(bounds[0]);
-			} 
-			
+			}
+
 			bounds = wildcardType.getUpperBounds();
-			
+
 			if (bounds.length > 0) {
 				return createInfo(bounds[0]);
 			}
@@ -266,7 +266,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		if (!isMap()) {
 			return null;
 		}
-		
+
 		return getTypeArgument(getType(), Map.class, 1);
 	}
 
@@ -320,11 +320,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#getReturnType(java.lang.reflect.Method)
 	 */
 	public TypeInformation<?> getReturnType(Method method) {
-		
+
 		Assert.notNull(method);
 		return createInfo(method.getGenericReturnType());
 	}
-	
+
 	/*
 		 * (non-Javadoc)
 		 *

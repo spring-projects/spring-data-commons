@@ -45,26 +45,24 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		this.type = type;
 	}
 
-	
-	
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#getMapValueType()
 	 */
 	@Override
 	public TypeInformation<?> getMapValueType() {
-		
+
 		if (Map.class.equals(getType())) {
 			Type[] arguments = type.getActualTypeArguments();
 			return createInfo(arguments[1]);
 		}
-		
+
 		Class<?> rawType = getType();
-		
+
 		Set<Type> supertypes = new HashSet<Type>();
 		supertypes.add(rawType.getGenericSuperclass());
 		supertypes.addAll(Arrays.asList(rawType.getGenericInterfaces()));
-		
+
 		for (Type supertype : supertypes) {
 			Class<?> rawSuperType = GenericTypeResolver.resolveType(supertype, getTypeVariableMap());
 			if (Map.class.isAssignableFrom(rawSuperType)) {
@@ -73,7 +71,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 				return createInfo(arguments[1]);
 			}
 		}
-		
+
 		return super.getMapValueType();
 	}
 }

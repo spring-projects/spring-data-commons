@@ -30,10 +30,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 
-
 /**
  * Unit test for {@link PageableArgumentResolver}.
- *
+ * 
  * @author Oliver Gierke - gierke@synyx.de
  */
 public class PageableArgumentResolverUnitTests {
@@ -45,23 +44,14 @@ public class PageableArgumentResolverUnitTests {
 
 	MockHttpServletRequest request;
 
-
 	@Before
 	public void setUp() throws SecurityException, NoSuchMethodException {
 
-		correctMethod =
-				SampleController.class.getMethod("correctMethod",
-						Pageable.class, Pageable.class);
-		failedMethod =
-				SampleController.class.getMethod("failedMethod",
-						Pageable.class, Pageable.class);
-		invalidQualifiers =
-				SampleController.class.getMethod("invalidQualifiers",
-						Pageable.class, Pageable.class);
+		correctMethod = SampleController.class.getMethod("correctMethod", Pageable.class, Pageable.class);
+		failedMethod = SampleController.class.getMethod("failedMethod", Pageable.class, Pageable.class);
+		invalidQualifiers = SampleController.class.getMethod("invalidQualifiers", Pageable.class, Pageable.class);
 
-		defaultsMethod =
-				SampleController.class.getMethod("defaultsMethod",
-						Pageable.class);
+		defaultsMethod = SampleController.class.getMethod("defaultsMethod", Pageable.class);
 
 		request = new MockHttpServletRequest();
 
@@ -74,14 +64,12 @@ public class PageableArgumentResolverUnitTests {
 		request.addParameter("bar_page.size", "60");
 	}
 
-
 	@Test
 	public void testname() throws Exception {
 
 		assertSizeForPrefix(50, new Sort(Direction.ASC, "foo"), 0);
 		assertSizeForPrefix(60, null, 1);
 	}
-
 
 	@Test(expected = IllegalStateException.class)
 	public void rejectsInvalidlyMappedPageables() throws Exception {
@@ -92,7 +80,6 @@ public class PageableArgumentResolverUnitTests {
 		new PageableArgumentResolver().resolveArgument(parameter, webRequest);
 	}
 
-
 	@Test(expected = IllegalStateException.class)
 	public void rejectsInvalidQualifiers() throws Exception {
 
@@ -102,13 +89,11 @@ public class PageableArgumentResolverUnitTests {
 		new PageableArgumentResolver().resolveArgument(parameter, webRequest);
 	}
 
-
 	@Test
 	public void assertDefaults() throws Exception {
 
 		MethodParameter parameter = new MethodParameter(defaultsMethod, 0);
-		NativeWebRequest webRequest =
-				new ServletWebRequest(new MockHttpServletRequest());
+		NativeWebRequest webRequest = new ServletWebRequest(new MockHttpServletRequest());
 		PageableArgumentResolver resolver = new PageableArgumentResolver();
 		Object argument = resolver.resolveArgument(parameter, webRequest);
 
@@ -116,10 +101,8 @@ public class PageableArgumentResolverUnitTests {
 
 		Pageable pageable = (Pageable) argument;
 		assertEquals(SampleController.DEFAULT_PAGESIZE, pageable.getPageSize());
-		assertEquals(SampleController.DEFAULT_PAGENUMBER,
-				pageable.getPageNumber());
+		assertEquals(SampleController.DEFAULT_PAGENUMBER, pageable.getPageNumber());
 	}
-
 
 	@Test
 	public void assertOverridesDefaults() throws Exception {
@@ -141,9 +124,7 @@ public class PageableArgumentResolverUnitTests {
 		assertEquals(sizeParam - 1, pageable.getPageNumber());
 	}
 
-
-	private void assertSizeForPrefix(int size, Sort sort, int index)
-			throws Exception {
+	private void assertSizeForPrefix(int size, Sort sort, int index) throws Exception {
 
 		MethodParameter parameter = new MethodParameter(correctMethod, index);
 		NativeWebRequest webRequest = new ServletWebRequest(request);
@@ -167,26 +148,20 @@ public class PageableArgumentResolverUnitTests {
 		static final int DEFAULT_PAGESIZE = 198;
 		static final int DEFAULT_PAGENUMBER = 42;
 
-
 		public void defaultsMethod(
 				@PageableDefaults(value = DEFAULT_PAGESIZE, pageNumber = DEFAULT_PAGENUMBER) Pageable pageable) {
 
 		}
 
-
-		public void correctMethod(@Qualifier("foo") Pageable first,
-															@Qualifier("bar") Pageable second) {
+		public void correctMethod(@Qualifier("foo") Pageable first, @Qualifier("bar") Pageable second) {
 
 		}
-
 
 		public void failedMethod(Pageable first, Pageable second) {
 
 		}
 
-
-		public void invalidQualifiers(@Qualifier("foo") Pageable first,
-																	@Qualifier("foo") Pageable second) {
+		public void invalidQualifiers(@Qualifier("foo") Pageable first, @Qualifier("foo") Pageable second) {
 
 		}
 	}

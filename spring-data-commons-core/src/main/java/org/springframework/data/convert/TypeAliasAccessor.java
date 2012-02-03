@@ -17,22 +17,22 @@ package org.springframework.data.convert;
 
 /**
  * Interface to abstract implementations of how to access a type alias from a given source or sink.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface TypeAliasAccessor<S> {
 
 	/**
 	 * Reads the type alias to be used from the given source.
-	 *  
+	 * 
 	 * @param source
 	 * @return
 	 */
 	Object readAliasFrom(S source);
-	
+
 	/**
 	 * Writes the given type alias to the given sink.
-	 *  
+	 * 
 	 * @param sink
 	 * @param alias
 	 */

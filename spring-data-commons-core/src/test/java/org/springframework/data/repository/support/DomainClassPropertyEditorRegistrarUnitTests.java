@@ -37,17 +37,15 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
-
 /**
  * Unit test for {@link DomainClassPropertyEditorRegistrar}.
- *
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainClassPropertyEditorRegistrarUnitTests {
 
-	DomainClassPropertyEditorRegistrar registrar =
-			new DomainClassPropertyEditorRegistrar();
+	DomainClassPropertyEditorRegistrar registrar = new DomainClassPropertyEditorRegistrar();
 	@Mock
 	ApplicationContext context;
 	@Mock
@@ -61,27 +59,21 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 
 	DomainClassPropertyEditor<Entity, Long> reference;
 
-
 	@Before
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setup() {
 
 		when(information.getJavaType()).thenReturn(Entity.class);
 		when(provider.getEntityInformation()).thenReturn(information);
-		when(provider.getRepositoryInterface()).thenReturn(
-				(Class) EntityRepository.class);
+		when(provider.getRepositoryInterface()).thenReturn((Class) EntityRepository.class);
 		Map<String, EntityRepository> map = getBeanAsMap(repository);
 		when(context.getBeansOfType(EntityRepository.class)).thenReturn(map);
 
-		reference =
-				new DomainClassPropertyEditor<Entity, Long>(repository,
-						information, registry);
+		reference = new DomainClassPropertyEditor<Entity, Long>(repository, information, registry);
 	}
 
-
 	@Test
-	public void addsRepositoryForEntityIfAvailableInAppContext()
-			throws Exception {
+	public void addsRepositoryForEntityIfAvailableInAppContext() throws Exception {
 
 		letContextContain(provider);
 		registrar.setApplicationContext(context);
@@ -90,26 +82,21 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 		verify(registry).registerCustomEditor(eq(Entity.class), eq(reference));
 	}
 
-
 	@Test
 	public void doesNotAddDaoAtAllIfNoDaosFound() throws Exception {
 
 		letContextContain(provider);
 		registrar.registerCustomEditors(registry);
 
-		verify(registry, never()).registerCustomEditor(eq(Entity.class),
-				eq(reference));
+		verify(registry, never()).registerCustomEditor(eq(Entity.class), eq(reference));
 	}
-
 
 	private void letContextContain(Object bean) {
 
 		Map<String, Object> beanMap = getBeanAsMap(bean);
 
-		when(context.getBeansOfType(argThat(is(subtypeOf(bean.getClass())))))
-				.thenReturn(beanMap);
+		when(context.getBeansOfType(argThat(is(subtypeOf(bean.getClass()))))).thenReturn(beanMap);
 	}
-
 
 	private <T> Map<String, T> getBeanAsMap(T bean) {
 
@@ -127,9 +114,7 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 
 	}
 
-
-	private static <T> TypeSafeMatcher<Class<T>> subtypeOf(
-			final Class<? extends T> type) {
+	private static <T> TypeSafeMatcher<Class<T>> subtypeOf(final Class<? extends T> type) {
 
 		return new TypeSafeMatcher<Class<T>>() {
 
@@ -137,7 +122,6 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 
 				arg0.appendText("not a subtype of");
 			}
-
 
 			@Override
 			public boolean matchesSafely(Class<T> arg0) {

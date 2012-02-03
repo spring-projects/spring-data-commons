@@ -176,7 +176,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		}
 		return new DefaultPersistentPropertyPath<T>(properties.subList(0, size - 1));
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getLength()

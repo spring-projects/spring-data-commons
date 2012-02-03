@@ -97,8 +97,9 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	PersistentPropertyPath<T> getExtensionForBaseOf(PersistentPropertyPath<T> base);
 
 	/**
-	 * Returns the parent path of the current {@link PersistentPropertyPath}, i.e. the path without the leaf property. This happens up to the base
-	 * property. So for a direct property reference calling this method will result in returning the property.
+	 * Returns the parent path of the current {@link PersistentPropertyPath}, i.e. the path without the leaf property.
+	 * This happens up to the base property. So for a direct property reference calling this method will result in
+	 * returning the property.
 	 * 
 	 * @return
 	 */

@@ -22,23 +22,20 @@ import org.junit.Test;
 
 import com.mysema.query.annotations.QueryEntity;
 
-
 /**
  * Unit test for {@link SimpleEntityPathResolver}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class SimpleEntityPathResolverUnitTests {
 
 	EntityPathResolver resolver = SimpleEntityPathResolver.INSTANCE;
 
-
 	@Test
 	public void createsRepositoryFromDomainClassCorrectly() throws Exception {
 
 		assertThat((QUser) resolver.createPath(User.class), isA(QUser.class));
 	}
-
 
 	@Test
 	public void resolvesEntityPathForInnerClassCorrectly() throws Exception {
@@ -47,10 +44,8 @@ public class SimpleEntityPathResolverUnitTests {
 				isA(QSimpleEntityPathResolverUnitTests_NamedUser.class));
 	}
 
-
 	@Test(expected = IllegalArgumentException.class)
-	public void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme()
-			throws Exception {
+	public void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme() throws Exception {
 
 		resolver.createPath(QSimpleEntityPathResolverUnitTests_Sample.class);
 	}

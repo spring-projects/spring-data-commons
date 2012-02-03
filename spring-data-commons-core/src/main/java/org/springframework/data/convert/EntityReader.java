@@ -17,7 +17,7 @@ package org.springframework.data.convert;
 
 /**
  * Interface to read object from store specific sources.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface EntityReader<T, S> {

@@ -8,13 +8,13 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * Base class for {@link TypeInformation} implementations that need parent type awareness.
- *
+ * 
  * @author Oliver Gierke
  */
 public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S> {
 
-	private final TypeDiscoverer<?> parent; 
-	
+	private final TypeDiscoverer<?> parent;
+
 	/**
 	 * Creates a new {@link ParentTypeAwareTypeInformation}.
 	 * 
@@ -26,7 +26,7 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 		super(type, map);
 		this.parent = parent;
 	}
-	
+
 	/**
 	 * Considers the parent's type variable map before invoking the super class method.
 	 * 
@@ -36,14 +36,14 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 	protected Map<TypeVariable, Type> getTypeVariableMap() {
 		return parent == null ? super.getTypeVariableMap() : parent.getTypeVariableMap();
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#createInfo(java.lang.reflect.Type)
 	 */
 	@Override
 	protected TypeInformation<?> createInfo(Type fieldType) {
-		
+
 		if (parent.getType().equals(fieldType)) {
 			return parent;
 		}

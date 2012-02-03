@@ -47,7 +47,7 @@ public interface RepositoryMetadata {
 	 * @return
 	 */
 	Class<?> getRepositoryInterface();
-	
+
 	/**
 	 * Returns the domain class returned by the given {@link Method}. Will extract the type from {@link Collection}s and
 	 * {@link org.springframework.data.domain.Page} as well.

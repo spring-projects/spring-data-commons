@@ -28,17 +28,17 @@ import org.springframework.data.repository.sample.SampleAnnotatedRepository;
 
 /**
  * Unit tests for {@link RepositoryComponentProvider}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class RepositoryComponentProviderUnitTests {
 
 	@Test
 	public void findsAnnotatedRepositoryInterface() {
-		
+
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(Repository.class);
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.sample");
-		
+
 		assertThat(components.size(), is(1));
 		assertThat(components.iterator().next().getBeanClassName(), is(SampleAnnotatedRepository.class.getName()));
 	}

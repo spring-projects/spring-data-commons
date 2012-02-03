@@ -43,7 +43,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	/**
 	 * Returns the {@link PropertyDescriptor} backing the {@link PersistentProperty}.
-	 *  
+	 * 
 	 * @return
 	 */
 	PropertyDescriptor getPropertyDescriptor();
@@ -60,7 +60,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return
 	 */
 	boolean isIdProperty();
-	
+
 	/**
 	 * Returns whether the property is a {@link Collection}, {@link Iterable} or an array.
 	 * 
@@ -88,8 +88,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return
 	 */
 	boolean isTransient();
-	
-	
+
 	boolean shallBePersisted();
 
 	/**
@@ -98,7 +97,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return
 	 */
 	boolean isAssociation();
-	
+
 	/**
 	 * Returns the component type of the type if it is a {@link java.util.Collection}. Will return the type of the key if
 	 * the property is a {@link java.util.Map}.

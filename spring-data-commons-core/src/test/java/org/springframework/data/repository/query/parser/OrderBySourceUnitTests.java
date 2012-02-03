@@ -23,10 +23,9 @@ import org.junit.Test;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 
-
 /**
  * Unit test for {@link OrderBySource}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class OrderBySourceUnitTests {
@@ -34,35 +33,27 @@ public class OrderBySourceUnitTests {
 	@Test
 	public void handlesSingleDirectionAndPropertyCorrectly() throws Exception {
 
-		assertThat(new OrderBySource("UsernameDesc").toSort(), is(new Sort(
-				DESC, "username")));
+		assertThat(new OrderBySource("UsernameDesc").toSort(), is(new Sort(DESC, "username")));
 	}
-
 
 	@Test
 	public void handlesCamelCasePropertyCorrecty() throws Exception {
 
-		assertThat(new OrderBySource("LastnameUsernameDesc").toSort(),
-				is(new Sort(DESC, "lastnameUsername")));
+		assertThat(new OrderBySource("LastnameUsernameDesc").toSort(), is(new Sort(DESC, "lastnameUsername")));
 	}
-
 
 	@Test
 	public void handlesMultipleDirectionsCorrectly() throws Exception {
 
-		OrderBySource orderBySource =
-				new OrderBySource("LastnameAscUsernameDesc");
-		assertThat(orderBySource.toSort(), is(new Sort(new Order(ASC,
-				"lastname"), new Order(DESC, "username"))));
+		OrderBySource orderBySource = new OrderBySource("LastnameAscUsernameDesc");
+		assertThat(orderBySource.toSort(), is(new Sort(new Order(ASC, "lastname"), new Order(DESC, "username"))));
 	}
-
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsMissingProperty() throws Exception {
 
 		new OrderBySource("Desc");
 	}
-
 
 	@Test
 	public void usesNestedPropertyCorrectly() throws Exception {

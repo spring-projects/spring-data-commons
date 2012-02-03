@@ -167,10 +167,9 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#hashCode()
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 
@@ -180,10 +179,9 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#toString()
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 
@@ -217,14 +215,15 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	}
 
 	/**
-	 * PropertyPath implements the pairing of an {@code Order} and a property. It is used to provide input for {@link Sort}
+	 * PropertyPath implements the pairing of an {@code Order} and a property. It is used to provide input for
+	 * {@link Sort}
 	 * 
 	 * @author Oliver Gierke
 	 */
 	public static class Order implements Serializable {
 
 		private static final long serialVersionUID = 1522511010900108987L;
-		
+
 		private final Direction direction;
 		private final String property;
 

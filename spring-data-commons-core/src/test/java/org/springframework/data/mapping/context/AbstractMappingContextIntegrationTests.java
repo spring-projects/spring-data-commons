@@ -52,7 +52,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 			public void run() {
 
 				PersistentEntity<Object, T> entity = context.getPersistentEntity(Person.class);
-				
+
 				entity.doWithProperties(new PropertyHandler<T>() {
 					public void doWithPersistentProperty(T persistentProperty) {
 						try {
@@ -68,7 +68,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		a.start();
 		Thread.sleep(2800);
 		b.start();
-		
+
 		a.join();
 		b.join();
 	}
@@ -87,7 +87,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 				final BasicPersistentEntity<Object, T> owner, final SimpleTypeHolder simpleTypeHolder) {
 
 			PersistentProperty prop = mock(PersistentProperty.class);
-			
+
 			when(prop.getTypeInformation()).thenReturn((TypeInformation) owner.getTypeInformation());
 			when(prop.getName()).thenReturn(field.getName());
 			when(prop.getPersistentEntityType()).thenReturn(Collections.EMPTY_SET);
@@ -97,7 +97,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
-			
+
 			return (T) prop;
 		}
 	}

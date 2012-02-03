@@ -24,7 +24,7 @@ import org.springframework.data.mapping.PreferredConstructor.Parameter;
  * @author Oliver Gierke
  */
 public interface ParameterValueProvider<P extends PersistentProperty<P>> {
-	
+
 	/**
 	 * Returns the value to be used for the given {@link Parameter} (usually when entity instances are created).
 	 * 

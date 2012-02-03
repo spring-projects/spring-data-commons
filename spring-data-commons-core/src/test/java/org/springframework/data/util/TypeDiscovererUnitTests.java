@@ -133,7 +133,7 @@ public class TypeDiscovererUnitTests {
 		assertThat(discoverer.getComponentType(), is(nullValue()));
 		assertThat(discoverer.getMapValueType(), is(nullValue()));
 	}
-	
+
 	class SelfReferencing {
 
 		Map<String, SelfReferencingMap> parent;

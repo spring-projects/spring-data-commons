@@ -100,7 +100,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	public boolean isExplicitlyAnnotated() {
 		return constructor.isAnnotationPresent(PersistenceConstructor.class);
 	}
-	
+
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referenced in a constructor argument of the
 	 * {@link PersistentEntity} backing this {@link MappedConstructor}.
@@ -199,7 +199,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		public String getSpelExpression() {
 			return key;
 		}
-		
+
 		/**
 		 * Returns whether the constructor parameter is equipped with a SpEL expression.
 		 * 
@@ -208,7 +208,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		public boolean hasSpelExpression() {
 			return StringUtils.hasText(getSpelExpression());
 		}
-		
+
 		/**
 		 * Returns whether the {@link Parameter} maps the given {@link PersistentProperty}.
 		 * 
@@ -216,7 +216,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 * @return
 		 */
 		boolean maps(P property) {
-			
+
 			P referencedProperty = entity == null ? null : entity.getPersistentProperty(name);
 			return property == null ? false : property.equals(referencedProperty);
 		}

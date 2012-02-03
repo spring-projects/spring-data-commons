@@ -39,7 +39,7 @@ import org.springframework.util.ClassUtils;
  */
 class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
 		BeanFactoryAware {
-  
+
 	private static final Log LOG = LogFactory.getLog(RepositoryInterfaceAwareBeanPostProcessor.class);
 	private static final Class<?> REPOSITORY_TYPE = RepositoryFactoryBeanSupport.class;
 

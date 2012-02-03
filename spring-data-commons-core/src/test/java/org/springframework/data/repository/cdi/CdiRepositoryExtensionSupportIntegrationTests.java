@@ -29,7 +29,7 @@ public abstract class CdiRepositoryExtensionSupportIntegrationTests {
 
 	@Test
 	public void createsSpringDataRepositoryBean() {
-		
+
 		assertThat(getBean(SampleRepository.class), is(notNullValue()));
 
 		RepositoryClient client = getBean(RepositoryClient.class);

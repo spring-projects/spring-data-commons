@@ -72,7 +72,7 @@ public class AbstractRepositoryMetadataUnitTests {
 
 	@Test
 	public void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
-		
+
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("anotherMethod");
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(Map.class)));

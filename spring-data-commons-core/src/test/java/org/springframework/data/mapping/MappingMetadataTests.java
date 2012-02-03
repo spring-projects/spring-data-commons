@@ -43,13 +43,12 @@ public class MappingMetadataTests {
 		ctx = new SampleMappingContext();
 	}
 
-
 	@Test
 	public void testPojoWithId() {
-		
+
 		ctx.setInitialEntitySet(Collections.singleton(PersonWithId.class));
 		ctx.afterPropertiesSet();
-		
+
 		PersistentEntity<?, SampleProperty> person = ctx.getPersistentEntity(PersonWithId.class);
 		assertNotNull(person.getIdProperty());
 		assertEquals(String.class, person.getIdProperty().getType());
@@ -57,10 +56,10 @@ public class MappingMetadataTests {
 
 	@Test
 	public void testAssociations() {
-		
+
 		ctx.setInitialEntitySet(Collections.singleton(PersonWithChildren.class));
 		ctx.afterPropertiesSet();
-		
+
 		PersistentEntity<?, SampleProperty> person = ctx.getPersistentEntity(PersonWithChildren.class);
 		person.doWithAssociations(new AssociationHandler<MappingMetadataTests.SampleProperty>() {
 			public void doWithAssociation(Association<SampleProperty> association) {
@@ -72,30 +71,26 @@ public class MappingMetadataTests {
 	public interface SampleProperty extends PersistentProperty<SampleProperty> {
 	}
 
-	public class SampleMappingContext extends AbstractMappingContext<MutablePersistentEntity<?, SampleProperty>, SampleProperty> {
+	public class SampleMappingContext extends
+			AbstractMappingContext<MutablePersistentEntity<?, SampleProperty>, SampleProperty> {
 
 		@Override
-		protected <T> MutablePersistentEntity<?, SampleProperty> createPersistentEntity(
-				TypeInformation<T> typeInformation) {
+		protected <T> MutablePersistentEntity<?, SampleProperty> createPersistentEntity(TypeInformation<T> typeInformation) {
 
 			return new BasicPersistentEntity<T, MappingMetadataTests.SampleProperty>(typeInformation);
 		}
 
 		@Override
-		protected SampleProperty createPersistentProperty(Field field,
-																											PropertyDescriptor descriptor,
-																											MutablePersistentEntity<?, SampleProperty> owner,
-																											SimpleTypeHolder simpleTypeHolder) {
+		protected SampleProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
+				MutablePersistentEntity<?, SampleProperty> owner, SimpleTypeHolder simpleTypeHolder) {
 			return new SamplePropertyImpl(field, descriptor, owner, simpleTypeHolder);
 		}
 	}
 
 	public class SamplePropertyImpl extends AnnotationBasedPersistentProperty<SampleProperty> implements SampleProperty {
 
-		public SamplePropertyImpl(Field field,
-															PropertyDescriptor propertyDescriptor,
-															PersistentEntity<?, SampleProperty> owner,
-															SimpleTypeHolder simpleTypeHolder) {
+		public SamplePropertyImpl(Field field, PropertyDescriptor propertyDescriptor,
+				PersistentEntity<?, SampleProperty> owner, SimpleTypeHolder simpleTypeHolder) {
 
 			super(field, propertyDescriptor, owner, simpleTypeHolder);
 		}

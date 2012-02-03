@@ -27,10 +27,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
 
-
 /**
  * Unit test for {@link ClassUtils}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class ClassUtilsUnitTests {
@@ -38,8 +37,7 @@ public class ClassUtilsUnitTests {
 	@Test(expected = IllegalStateException.class)
 	public void rejectsInvalidReturnType() throws Exception {
 
-		assertReturnTypeAssignable(SomeDao.class.getMethod("findByFirstname",
-				Pageable.class, String.class), User.class);
+		assertReturnTypeAssignable(SomeDao.class.getMethod("findByFirstname", Pageable.class, String.class), User.class);
 	}
 
 	@Test
@@ -54,7 +52,6 @@ public class ClassUtilsUnitTests {
 	private class User {
 
 		private String firstname;
-
 
 		public String getAddress() {
 

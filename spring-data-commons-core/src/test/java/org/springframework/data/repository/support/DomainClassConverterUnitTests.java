@@ -39,10 +39,9 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
-
 /**
  * Unit test for {@link DomainClassConverter}.
- *
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -69,9 +68,8 @@ public class DomainClassConverterUnitTests {
 	@Mock
 	RepositoryFactoryInformation<User, Long> provider;
 
-
 	@Before
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setUp() {
 
 		converter = new DomainClassConverter(service);
@@ -82,15 +80,12 @@ public class DomainClassConverterUnitTests {
 
 		Map<String, UserRepository> map = getBeanAsMap(repository);
 		when(context.getBeansOfType(UserRepository.class)).thenReturn(map);
-		when(context.getBeansOfType(RepositoryFactoryInformation.class))
-				.thenReturn(providers);
+		when(context.getBeansOfType(RepositoryFactoryInformation.class)).thenReturn(providers);
 		when(provider.getEntityInformation()).thenReturn(information);
-		when(provider.getRepositoryInterface()).thenReturn(
-				(Class) UserRepository.class);
+		when(provider.getRepositoryInterface()).thenReturn((Class) UserRepository.class);
 		when(information.getJavaType()).thenReturn(User.class);
 		when(information.getIdType()).thenReturn(Long.class);
 	}
-
 
 	@Test
 	public void matchFailsIfNoDaoAvailable() throws Exception {
@@ -98,7 +93,6 @@ public class DomainClassConverterUnitTests {
 		converter.setApplicationContext(context);
 		assertMatches(false);
 	}
-
 
 	@Test
 	public void matchesIfConversionInBetweenIsPossible() throws Exception {
@@ -111,10 +105,8 @@ public class DomainClassConverterUnitTests {
 		assertMatches(true);
 	}
 
-
 	@Test
-	public void matchFailsIfNoIntermediateConversionIsPossible()
-			throws Exception {
+	public void matchFailsIfNoIntermediateConversionIsPossible() throws Exception {
 
 		letContextContain(provider);
 		converter.setApplicationContext(context);
@@ -124,13 +116,10 @@ public class DomainClassConverterUnitTests {
 		assertMatches(false);
 	}
 
-
 	private void assertMatches(boolean matchExpected) {
 
-		assertThat(converter.matches(sourceDescriptor, targetDescriptor),
-				is(matchExpected));
+		assertThat(converter.matches(sourceDescriptor, targetDescriptor), is(matchExpected));
 	}
-
 
 	@Test
 	public void convertsStringToUserCorrectly() throws Exception {
@@ -142,20 +131,16 @@ public class DomainClassConverterUnitTests {
 		when(service.convert(anyString(), eq(Long.class))).thenReturn(1L);
 		when(repository.findOne(1L)).thenReturn(USER);
 
-		Object user =
-				converter.convert("1", sourceDescriptor, targetDescriptor);
+		Object user = converter.convert("1", sourceDescriptor, targetDescriptor);
 		assertThat(user, is(instanceOf(User.class)));
 		assertThat(user, is((Object) USER));
 	}
 
-
 	private void letContextContain(Object bean) {
 
 		Map<String, Object> beanMap = getBeanAsMap(bean);
-		when(context.getBeansOfType(argThat(is(subtypeOf(bean.getClass())))))
-				.thenReturn(beanMap);
+		when(context.getBeansOfType(argThat(is(subtypeOf(bean.getClass()))))).thenReturn(beanMap);
 	}
-
 
 	private <T> Map<String, T> getBeanAsMap(T bean) {
 
@@ -164,9 +149,7 @@ public class DomainClassConverterUnitTests {
 		return beanMap;
 	}
 
-
-	private static <T> TypeSafeMatcher<Class<T>> subtypeOf(
-			final Class<? extends T> type) {
+	private static <T> TypeSafeMatcher<Class<T>> subtypeOf(final Class<? extends T> type) {
 
 		return new TypeSafeMatcher<Class<T>>() {
 
@@ -174,7 +157,6 @@ public class DomainClassConverterUnitTests {
 
 				arg0.appendText("not a subtype of");
 			}
-
 
 			@Override
 			public boolean matchesSafely(Class<T> arg0) {

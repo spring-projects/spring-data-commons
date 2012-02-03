@@ -131,7 +131,7 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 			Field field = property.getField();
 			Method getter = (null != property.getPropertyDescriptor() ? property.getPropertyDescriptor().getReadMethod()
 					: null);
-			
+
 			if (fieldAccessOnly || null == getter) {
 				ReflectionUtils.makeAccessible(field);
 				obj = ReflectionUtils.getField(field, bean);

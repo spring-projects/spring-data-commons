@@ -35,7 +35,7 @@ public class SimpleTypeHolderUnitTests {
 	public void rejectsNullCustomTypes() {
 		new SimpleTypeHolder(null, false);
 	}
-	
+
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullOriginal() {
 		new SimpleTypeHolder(new HashSet<Class<?>>(), null);
@@ -49,38 +49,38 @@ public class SimpleTypeHolderUnitTests {
 		SimpleTypeHolder holder = new SimpleTypeHolder();
 		holder.isSimpleType(null);
 	}
-	
+
 	@Test
 	public void addsDefaultTypes() {
-		
+
 		SimpleTypeHolder holder = new SimpleTypeHolder();
-		
+
 		assertThat(holder.isSimpleType(String.class), is(true));
 	}
-	
+
 	@Test
 	public void doesNotAddDefaultConvertersIfConfigured() {
-		
+
 		SimpleTypeHolder holder = new SimpleTypeHolder(new HashSet<Class<?>>(), false);
-		
+
 		assertThat(holder.isSimpleType(String.class), is(false));
 	}
-	
+
 	@Test
 	public void addsCustomTypesToSimpleOnes() {
-		
+
 		SimpleTypeHolder holder = new SimpleTypeHolder(Collections.singleton(SimpleTypeHolder.class), true);
-		
+
 		assertThat(holder.isSimpleType(SimpleTypeHolder.class), is(true));
 		assertThat(holder.isSimpleType(SimpleTypeHolderUnitTests.class), is(false));
 	}
-	
+
 	@Test
 	public void createsHolderFromAnotherOneCorrectly() {
-		
+
 		SimpleTypeHolder holder = new SimpleTypeHolder(Collections.singleton(SimpleTypeHolder.class), true);
 		SimpleTypeHolder second = new SimpleTypeHolder(Collections.singleton(SimpleTypeHolderUnitTests.class), holder);
-		
+
 		assertThat(holder.isSimpleType(SimpleTypeHolder.class), is(true));
 		assertThat(holder.isSimpleType(SimpleTypeHolderUnitTests.class), is(false));
 		assertThat(second.isSimpleType(SimpleTypeHolder.class), is(true));
@@ -94,33 +94,33 @@ public class SimpleTypeHolderUnitTests {
 	}
 
 	@Test
-  public void considersSimpleEnumAsSimple() {
-  	
-  	SimpleTypeHolder holder = new SimpleTypeHolder();
-  	assertThat(holder.isSimpleType(SimpleEnum.FOO.getClass()), is(true));
-  }
-	
+	public void considersSimpleEnumAsSimple() {
+
+		SimpleTypeHolder holder = new SimpleTypeHolder();
+		assertThat(holder.isSimpleType(SimpleEnum.FOO.getClass()), is(true));
+	}
+
 	@Test
 	public void considersComplexEnumAsSimple() {
-		
+
 		SimpleTypeHolder holder = new SimpleTypeHolder();
-  	assertThat(holder.isSimpleType(ComplexEnum.FOO.getClass()), is(true));
+		assertThat(holder.isSimpleType(ComplexEnum.FOO.getClass()), is(true));
 	}
-  
-  enum SimpleEnum {
-  	
-  	FOO;
-  }
-  
-  enum ComplexEnum {
-  	
-  	FOO {
+
+	enum SimpleEnum {
+
+		FOO;
+	}
+
+	enum ComplexEnum {
+
+		FOO {
 			@Override
 			boolean method() {
 				return false;
 			}
 		};
-  	
-  	abstract boolean method();
-  }
+
+		abstract boolean method();
+	}
 }

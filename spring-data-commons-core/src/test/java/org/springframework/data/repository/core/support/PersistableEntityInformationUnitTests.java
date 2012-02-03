@@ -26,22 +26,19 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.core.support.PersistableEntityInformation;
 
-
 /**
  * Unit tests for {@link PersistableEntityMetadata}.
- *
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PersistableEntityInformationUnitTests {
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	static final PersistableEntityInformation metadata =
-			new PersistableEntityInformation(Persistable.class);
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	static final PersistableEntityInformation metadata = new PersistableEntityInformation(Persistable.class);
 
 	@Mock
 	Persistable<Long> persistable;
-
 
 	@Test
 	@SuppressWarnings("unchecked")
@@ -53,7 +50,6 @@ public class PersistableEntityInformationUnitTests {
 		assertEquals(3L, metadata.getId(persistable));
 	}
 
-
 	@Test
 	@SuppressWarnings("unchecked")
 	public void usesPersistablesIsNew() throws Exception {
@@ -63,13 +59,11 @@ public class PersistableEntityInformationUnitTests {
 		assertThat(metadata.isNew(persistable), is(false));
 	}
 
-
 	@Test
 	public void returnsGivenClassAsEntityType() throws Exception {
 
-		PersistableEntityInformation<PersistableEntity, Long> info =
-				new PersistableEntityInformation<PersistableEntity, Long>(
-						PersistableEntity.class);
+		PersistableEntityInformation<PersistableEntity, Long> info = new PersistableEntityInformation<PersistableEntity, Long>(
+				PersistableEntity.class);
 
 		assertEquals(PersistableEntity.class, info.getJavaType());
 	}
@@ -81,7 +75,6 @@ public class PersistableEntityInformationUnitTests {
 
 			return null;
 		}
-
 
 		public boolean isNew() {
 

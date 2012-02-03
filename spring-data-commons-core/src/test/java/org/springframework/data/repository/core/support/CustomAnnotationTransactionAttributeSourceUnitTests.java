@@ -37,7 +37,7 @@ public class CustomAnnotationTransactionAttributeSourceUnitTests {
 		CustomAnnotationTransactionAttributeSource source = new TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource();
 
 		TransactionAttribute attribute = source.getTransactionAttribute(Bar.class.getMethod("bar", Object.class),
-		    FooImpl.class);
+				FooImpl.class);
 		assertThat(attribute.isReadOnly(), is(false));
 
 		attribute = source.getTransactionAttribute(Bar.class.getMethod("foo"), FooImpl.class);
@@ -76,7 +76,7 @@ public class CustomAnnotationTransactionAttributeSourceUnitTests {
 
 	/**
 	 * Interface reconfiguring transactions.
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 */
 	interface Bar extends Foo<Object> {

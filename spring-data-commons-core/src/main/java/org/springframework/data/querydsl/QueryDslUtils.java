@@ -24,8 +24,8 @@ public abstract class QueryDslUtils {
 
 	public static final boolean QUERY_DSL_PRESENT = org.springframework.util.ClassUtils.isPresent(
 			"com.mysema.query.types.Predicate", QueryDslUtils.class.getClassLoader());
-	
+
 	private QueryDslUtils() {
-		
+
 	}
 }

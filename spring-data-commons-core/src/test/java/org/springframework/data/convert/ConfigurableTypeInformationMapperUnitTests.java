@@ -39,42 +39,42 @@ import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link ConfigurableTypeMapper}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProperty<T>> {
-	
+
 	ConfigurableTypeInformationMapper mapper;
-	
+
 	@Before
 	public void setUp() {
 		mapper = new ConfigurableTypeInformationMapper(Collections.singletonMap(String.class, "1"));
 	}
-	
+
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullTypeMap() {
 		new ConfigurableTypeInformationMapper((Map<? extends Class<?>, String>) null);
 	}
-	
+
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullMappingContext() {
 		new ConfigurableTypeInformationMapper((MappingContext<?, ?>) null);
 	}
-	
+
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNonBijectionalMap() {
 		Map<Class<?>, String> map = new HashMap<Class<?>, String>();
 		map.put(String.class, "1");
 		map.put(Object.class, "1");
-		
+
 		new ConfigurableTypeInformationMapper(map);
 	}
-	
+
 	@Test
 	@SuppressWarnings("unchecked")
 	public void extractsAliasInfoFromMappingContext() {
-		
-		AbstractMappingContext<BasicPersistentEntity<Object,T>,T> mappingContext = new AbstractMappingContext<BasicPersistentEntity<Object, T>, T>() {
+
+		AbstractMappingContext<BasicPersistentEntity<Object, T>, T> mappingContext = new AbstractMappingContext<BasicPersistentEntity<Object, T>, T>() {
 
 			@Override
 			protected <S> BasicPersistentEntity<Object, T> createPersistentEntity(TypeInformation<S> typeInformation) {
@@ -92,32 +92,32 @@ public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProp
 				};
 			}
 		};
-		
+
 		mappingContext.setInitialEntitySet(Collections.singleton(Entity.class));
 		mappingContext.afterPropertiesSet();
-		
+
 		mapper = new ConfigurableTypeInformationMapper(mappingContext);
-		
+
 		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Entity.class)), is((Object) "foo"));
 	}
-	
+
 	@Test
 	public void writesMapKeyForType() {
-		
+
 		assertThat(mapper.createAliasFor(ClassTypeInformation.from(String.class)), is((Object) "1"));
 		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Object.class)), is(nullValue()));
 	}
-	
+
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void readsTypeForMapKey() {
-		
+
 		assertThat(mapper.resolveTypeFrom("1"), is((TypeInformation) ClassTypeInformation.from(String.class)));
 		assertThat(mapper.resolveTypeFrom("unmapped"), is(nullValue()));
 	}
-	
+
 	@TypeAlias("foo")
 	class Entity {
-		
+
 	}
 }

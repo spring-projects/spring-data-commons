@@ -2,7 +2,6 @@ package org.springframework.data.domain;
 
 import static org.junit.Assert.*;
 
-
 /**
  * @author Oliver Gierke
  */
@@ -12,11 +11,9 @@ public abstract class UnitTestUtils {
 
 	}
 
-
 	/**
-	 * Asserts that delivered objects both equal each other as well as return
-	 * the same hash code.
-	 *
+	 * Asserts that delivered objects both equal each other as well as return the same hash code.
+	 * 
 	 * @param first
 	 * @param second
 	 */
@@ -27,11 +24,9 @@ public abstract class UnitTestUtils {
 		assertEquals(first.hashCode(), second.hashCode());
 	}
 
-
 	/**
-	 * Asserts that both objects are not equal to each other and differ in hash
-	 * code, too.
-	 *
+	 * Asserts that both objects are not equal to each other and differ in hash code, too.
+	 * 
 	 * @param first
 	 * @param second
 	 */

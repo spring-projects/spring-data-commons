@@ -133,7 +133,7 @@ public class QueryMethod {
 		return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass) ? methodDomainClass
 				: repositoryDomainClass;
 	}
-	
+
 	/**
 	 * Returns the type of the object that will be returned.
 	 * 

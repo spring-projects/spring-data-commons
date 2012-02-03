@@ -27,10 +27,7 @@ import org.springframework.data.annotation.Persistent;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({
-		ElementType.TYPE,
-		ElementType.FIELD
-})
+@Target({ ElementType.TYPE, ElementType.FIELD })
 @Persistent
 public @interface Document {
 }

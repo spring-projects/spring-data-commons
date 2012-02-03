@@ -24,10 +24,9 @@ import org.junit.Test;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
 
-
 /**
  * Unit tests for {@link AbstractEntityInformation}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class AbstractEntityInformationUnitTests {
@@ -38,24 +37,20 @@ public class AbstractEntityInformationUnitTests {
 		new DummyAbstractEntityInformation(null);
 	}
 
-
 	@Test
 	public void considersEntityNewIfGetIdReturnsNull() throws Exception {
 
-		EntityInformation<Object, Serializable> metadata =
-				new DummyAbstractEntityInformation(Object.class);
+		EntityInformation<Object, Serializable> metadata = new DummyAbstractEntityInformation(Object.class);
 		assertThat(metadata.isNew(null), is(true));
 		assertThat(metadata.isNew(new Object()), is(false));
 	}
 
-	private static class DummyAbstractEntityInformation extends
-			AbstractEntityInformation<Object, Serializable> {
+	private static class DummyAbstractEntityInformation extends AbstractEntityInformation<Object, Serializable> {
 
 		public DummyAbstractEntityInformation(Class<Object> domainClass) {
 
 			super(domainClass);
 		}
-
 
 		/*
 						 * (non-Javadoc)

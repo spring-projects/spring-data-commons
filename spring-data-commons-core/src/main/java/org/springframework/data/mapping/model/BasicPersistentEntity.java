@@ -40,7 +40,7 @@ import org.springframework.util.StringUtils;
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
-	private final PreferredConstructor<T, P>  constructor;
+	private final PreferredConstructor<T, P> constructor;
 	private final TypeInformation<T> information;
 	private final Set<P> properties;
 	private final Set<Association<P>> associations;
@@ -65,16 +65,16 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @param comparator
 	 */
 	public BasicPersistentEntity(TypeInformation<T> information, Comparator<P> comparator) {
-		
+
 		Assert.notNull(information);
-		
+
 		this.information = information;
 		this.properties = comparator == null ? new HashSet<P>() : new TreeSet<P>(comparator);
 		this.constructor = new PreferredConstructorDiscoverer<T, P>(information, this).getConstructor();
 		this.associations = comparator == null ? new HashSet<Association<P>>() : new TreeSet<Association<P>>(
 				new AssociationComparator<P>(comparator));
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistenceConstructor()
@@ -82,7 +82,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public PreferredConstructor<T, P> getPersistenceConstructor() {
 		return constructor;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#isConstructorArgument(org.springframework.data.mapping.PersistentProperty)
@@ -153,13 +153,13 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public Class<T> getType() {
 		return information.getType();
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getTypeAlias()
 	 */
 	public Object getTypeAlias() {
-		
+
 		TypeAlias alias = getType().getAnnotation(TypeAlias.class);
 		return alias == null ? null : StringUtils.hasText(alias.value()) ? alias.value() : null;
 	}

@@ -30,19 +30,19 @@ import org.springframework.util.Assert;
 public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 	private final TypeInformation<?> typeInformation;
-	
+
 	/**
 	 * Creates a new {@link AbstractRepositoryMetadata}.
 	 * 
 	 * @param repositoryInterface must not be {@literal null} and must be an interface.
 	 */
 	public AbstractRepositoryMetadata(Class<?> repositoryInterface) {
-		
+
 		Assert.notNull(repositoryInterface, "Given type must not be null!");
 		Assert.isTrue(repositoryInterface.isInterface(), "Given type must be an interface!");
 		this.typeInformation = ClassTypeInformation.from(repositoryInterface);
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)

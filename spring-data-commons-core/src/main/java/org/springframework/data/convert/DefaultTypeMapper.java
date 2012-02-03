@@ -44,20 +44,22 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	}
 
 	public DefaultTypeMapper(TypeAliasAccessor<S> accessor, List<? extends TypeInformationMapper> mappers) {
-		
+
 		this(accessor, null, mappers);
 	}
-	
-	public DefaultTypeMapper(TypeAliasAccessor<S> accessor, MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext, List<? extends TypeInformationMapper> additionalMappers) {
-		
+
+	public DefaultTypeMapper(TypeAliasAccessor<S> accessor,
+			MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext,
+			List<? extends TypeInformationMapper> additionalMappers) {
+
 		Assert.notNull(accessor);
-				
+
 		List<TypeInformationMapper> mappers = new ArrayList<TypeInformationMapper>(additionalMappers.size() + 1);
 		if (mappingContext != null) {
-			mappers.add(new ConfigurableTypeInformationMapper(mappingContext));			
+			mappers.add(new ConfigurableTypeInformationMapper(mappingContext));
 		}
 		mappers.addAll(additionalMappers);
-		
+
 		this.mappers = Collections.unmodifiableList(mappers);
 		this.accessor = accessor;
 	}
@@ -91,11 +93,11 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		Assert.notNull(source);
 		Class<?> documentsTargetType = getDefaultedTypeToBeUsed(source);
-		
+
 		if (documentsTargetType == null) {
 			return basicType;
 		}
-		
+
 		Class<T> rawType = basicType == null ? null : basicType.getType();
 
 		boolean isMoreConcreteCustomType = rawType == null ? true : rawType.isAssignableFrom(documentsTargetType)
@@ -114,10 +116,11 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	private Class<?> getDefaultedTypeToBeUsed(S source) {
 
 		TypeInformation<?> documentsTargetTypeInformation = readType(source);
-		documentsTargetTypeInformation = documentsTargetTypeInformation == null ? getFallbackTypeFor(source) : documentsTargetTypeInformation;
+		documentsTargetTypeInformation = documentsTargetTypeInformation == null ? getFallbackTypeFor(source)
+				: documentsTargetTypeInformation;
 		return documentsTargetTypeInformation == null ? null : documentsTargetTypeInformation.getType();
 	}
-	
+
 	/**
 	 * Returns the type fallback {@link TypeInformation} in case none could be extracted from the given source.
 	 * 

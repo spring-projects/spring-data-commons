@@ -44,7 +44,8 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 	 * @param parent
 	 */
 	@SuppressWarnings("rawtypes")
-	public TypeVariableTypeInformation(TypeVariable<?> variable, Type owningType, TypeDiscoverer<?> parent, Map<TypeVariable, Type> map) {
+	public TypeVariableTypeInformation(TypeVariable<?> variable, Type owningType, TypeDiscoverer<?> parent,
+			Map<TypeVariable, Type> map) {
 
 		super(variable, parent, map);
 		Assert.notNull(variable);

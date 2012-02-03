@@ -83,7 +83,7 @@ public interface TypeInformation<S> {
 	 * @return
 	 */
 	TypeInformation<?> getActualType();
-	
+
 	/**
 	 * Returns a {@link TypeInformation} for the return type of the given {@link Method}. Will potentially resolve
 	 * generics information against the current types type parameter bindings.

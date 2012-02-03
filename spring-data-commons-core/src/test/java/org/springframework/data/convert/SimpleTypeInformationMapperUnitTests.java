@@ -36,37 +36,37 @@ public class SimpleTypeInformationMapperUnitTests {
 		TypeInformation type = mapper.resolveTypeFrom("java.lang.String");
 
 		TypeInformation expected = ClassTypeInformation.from(String.class);
-		
+
 		assertThat(type, is(expected));
 	}
-	
+
 	@Test
 	public void returnsNullForNonStringKey() {
-		
+
 		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
 		assertThat(mapper.resolveTypeFrom(new Object()), is(nullValue()));
 	}
-	
+
 	@Test
 	public void returnsNullForEmptyTypeKey() {
-		
+
 		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
 		assertThat(mapper.resolveTypeFrom(""), is(nullValue()));
 	}
-	
+
 	@Test
 	public void returnsNullForUnloadableClass() {
-		
+
 		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
 		assertThat(mapper.resolveTypeFrom("Foo"), is(nullValue()));
 	}
-	
+
 	@Test
 	public void usesFullyQualifiedClassNameAsTypeKey() {
-		
+
 		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
 		Object alias = mapper.createAliasFor(ClassTypeInformation.from(String.class));
-		
+
 		assertTrue(alias instanceof String);
 		assertThat(alias, is((Object) String.class.getName()));
 	}

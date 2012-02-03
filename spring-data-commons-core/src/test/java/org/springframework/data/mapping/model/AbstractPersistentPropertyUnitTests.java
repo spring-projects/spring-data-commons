@@ -21,18 +21,17 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  */
 public class AbstractPersistentPropertyUnitTests {
-	
+
 	TypeInformation<TestClassComplex> typeInfo;
 	PersistentEntity<TestClassComplex, SamplePersistentProperty> entity;
 	SimpleTypeHolder typeHolder;
-	
+
 	@Before
 	public void setUp() {
 		typeInfo = ClassTypeInformation.from(TestClassComplex.class);
 		entity = new BasicPersistentEntity<TestClassComplex, SamplePersistentProperty>(typeInfo);
 		typeHolder = new SimpleTypeHolder();
 	}
-	
 
 	/**
 	 * @see DATACMNS-68
@@ -41,20 +40,20 @@ public class AbstractPersistentPropertyUnitTests {
 	public void discoversComponentTypeCorrectly() throws Exception {
 
 		Field field = ReflectionUtils.findField(TestClassComplex.class, "testClassSet");
-		
+
 		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
 		property.getComponentType();
 	}
 
 	@Test
 	public void returnsNestedEntityTypeCorrectly() {
-		
+
 		Field field = ReflectionUtils.findField(TestClassComplex.class, "testClassSet");
-		
+
 		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
 		assertThat(property.getPersistentEntityType().iterator().hasNext(), is(false));
 	}
-	
+
 	@SuppressWarnings("serial")
 	class TestClassSet extends TreeSet<Object> {
 	}

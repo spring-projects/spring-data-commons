@@ -27,66 +27,57 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ClassUtils;
 
-
 /**
  * Unit tests for {@link DefaultRepositoryMetadata}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class DefaultRepositoryMetadataUnitTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNullRepositoryInterface() {
-		
+
 		new DefaultRepositoryMetadata(null);
 	}
-	
+
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNonInterface() {
 		new DefaultRepositoryMetadata(Object.class);
 	}
-	
+
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNonRepositoryInterface() {
 		new DefaultRepositoryMetadata(Collection.class);
 	}
-	
+
 	@Test
 	public void looksUpDomainClassCorrectly() throws Exception {
 
-		RepositoryMetadata metadata =
-				new DefaultRepositoryMetadata(UserRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
 		assertEquals(User.class, metadata.getDomainClass());
 
 		metadata = new DefaultRepositoryMetadata(SomeDao.class);
 		assertEquals(User.class, metadata.getDomainClass());
 	}
 
-
 	@Test
 	public void findsDomainClassOnExtensionOfDaoInterface() throws Exception {
 
-		RepositoryMetadata metadata =
-				new DefaultRepositoryMetadata(
-						ExtensionOfUserCustomExtendedDao.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtensionOfUserCustomExtendedDao.class);
 		assertEquals(User.class, metadata.getDomainClass());
 	}
-
 
 	@Test
 	public void detectsParameterizedEntitiesCorrectly() {
 
-		RepositoryMetadata metadata =
-				new DefaultRepositoryMetadata(GenericEntityRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericEntityRepository.class);
 		assertEquals(GenericEntity.class, metadata.getDomainClass());
 	}
-
 
 	@Test
 	public void looksUpIdClassCorrectly() throws Exception {
 
-		RepositoryMetadata metadata =
-				new DefaultRepositoryMetadata(UserRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
 
 		assertEquals(Integer.class, metadata.getIdClass());
 	}
@@ -95,7 +86,6 @@ public class DefaultRepositoryMetadataUnitTests {
 	private class User {
 
 		private String firstname;
-
 
 		public String getAddress() {
 
@@ -110,12 +100,10 @@ public class DefaultRepositoryMetadataUnitTests {
 	/**
 	 * Sample interface to serve two purposes:
 	 * <ol>
-	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} skips non
-	 * {@link GenericDao} interfaces</li>
-	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} traverses
-	 * interface hierarchy</li>
+	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} skips non {@link GenericDao} interfaces</li>
+	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} traverses interface hierarchy</li>
 	 * </ol>
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 */
 	private interface SomeDao extends Serializable, UserRepository {
@@ -125,21 +113,18 @@ public class DefaultRepositoryMetadataUnitTests {
 
 	/**
 	 * Sample interface to test recursive lookup of domain class.
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 */
-	static interface ExtensionOfUserCustomExtendedDao extends
-			UserCustomExtendedRepository {
+	static interface ExtensionOfUserCustomExtendedDao extends UserCustomExtendedRepository {
 
 	}
 
-	static interface UserCustomExtendedRepository extends
-			CrudRepository<User, Integer> {
+	static interface UserCustomExtendedRepository extends CrudRepository<User, Integer> {
 
 	}
 
-	static abstract class DummyGenericRepositorySupport<T, ID extends Serializable>
-			implements CrudRepository<T, ID> {
+	static abstract class DummyGenericRepositorySupport<T, ID extends Serializable> implements CrudRepository<T, ID> {
 
 		public T findOne(ID id) {
 
@@ -149,14 +134,13 @@ public class DefaultRepositoryMetadataUnitTests {
 
 	/**
 	 * Helper class to reproduce #256.
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 */
 	static class GenericEntity<T> {
 	}
 
-	static interface GenericEntityRepository extends
-			CrudRepository<GenericEntity<String>, Long> {
+	static interface GenericEntityRepository extends CrudRepository<GenericEntity<String>, Long> {
 
 	}
 }

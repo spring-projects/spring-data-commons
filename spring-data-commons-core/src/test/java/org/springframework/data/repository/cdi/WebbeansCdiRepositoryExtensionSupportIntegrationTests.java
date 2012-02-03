@@ -25,7 +25,8 @@ import org.junit.BeforeClass;
  * 
  * @author Oliver Gierke
  */
-public class WebbeansCdiRepositoryExtensionSupportIntegrationTests extends CdiRepositoryExtensionSupportIntegrationTests {
+public class WebbeansCdiRepositoryExtensionSupportIntegrationTests extends
+		CdiRepositoryExtensionSupportIntegrationTests {
 
 	static CdiTestContainer container;
 

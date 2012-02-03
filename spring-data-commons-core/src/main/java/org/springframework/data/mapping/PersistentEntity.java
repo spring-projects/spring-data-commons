@@ -45,8 +45,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * {@link PersistentEntity}.
 	 * 
 	 * @param property
-	 * @return true if the given {@link PersistentProperty} is referred to by a constructor argument or {@literal false} if
-	 *         not or {@literal null}.
+	 * @return true if the given {@link PersistentProperty} is referred to by a constructor argument or {@literal false}
+	 *         if not or {@literal null}.
 	 */
 	boolean isConstructorArgument(P property);
 

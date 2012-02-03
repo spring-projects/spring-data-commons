@@ -61,10 +61,10 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 			Class<?> customImplementationClass) {
 
 		super(metadata.getRepositoryInterface());
-		
+
 		Assert.notNull(metadata);
 		Assert.notNull(repositoryBaseClass);
-		
+
 		this.metadata = metadata;
 		this.repositoryBaseClass = repositoryBaseClass;
 		this.customImplementationClass = customImplementationClass;

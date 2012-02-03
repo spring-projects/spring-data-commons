@@ -32,12 +32,13 @@ import org.springframework.data.mapping.PersistentEntity;
  */
 @Documented
 @Inherited
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TypeAlias {
 
 	/**
 	 * The type alias to be used when persisting
+	 * 
 	 * @return
 	 */
 	String value();

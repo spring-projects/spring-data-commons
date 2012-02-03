@@ -15,7 +15,6 @@
  */
 package org.springframework.data.convert;
 
-
 /**
  * Interface to write objects into store specific sinks.
  * 

@@ -61,13 +61,13 @@ public class CdiRepositoryBeanUnitTests {
 	public void voidRejectsNullBeanManager() {
 		new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS, SampleRepository.class, null);
 	}
-	
+
 	@Test
 	public void returnsBasicMetadata() {
-		
-		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(
-				NO_ANNOTATIONS, SampleRepository.class, beanManager);
-		
+
+		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
+				SampleRepository.class, beanManager);
+
 		assertThat(bean.getBeanClass(), is(typeCompatibleWith(SampleRepository.class)));
 		assertThat(bean.getName(), is(SampleRepository.class.getName()));
 		assertThat(bean.isNullable(), is(false));
@@ -77,20 +77,20 @@ public class CdiRepositoryBeanUnitTests {
 	@SuppressWarnings("unchecked")
 	public void returnsAllImplementedTypes() {
 
-		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(
-				NO_ANNOTATIONS, SampleRepository.class, beanManager);
-		
+		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
+				SampleRepository.class, beanManager);
+
 		Set<Type> types = bean.getTypes();
 		assertThat(types.size(), is(2));
 		assertThat(types.containsAll(Arrays.asList(SampleRepository.class, Repository.class)), is(true));
 	}
-	
+
 	@Test
 	public void detectsStereotypes() {
-		
+
 		DummyCdiRepositoryBean<StereotypedSampleRepository> bean = new DummyCdiRepositoryBean<StereotypedSampleRepository>(
 				NO_ANNOTATIONS, StereotypedSampleRepository.class, beanManager);
-		
+
 		Set<Class<? extends Annotation>> stereotypes = bean.getStereotypes();
 		assertThat(stereotypes.size(), is(1));
 		assertThat(stereotypes, hasItem(StereotypeAnnotation.class));
@@ -115,9 +115,9 @@ public class CdiRepositoryBeanUnitTests {
 	static interface SampleRepository extends Repository<Object, Serializable> {
 
 	}
-	
+
 	@StereotypeAnnotation
 	static interface StereotypedSampleRepository {
-		
+
 	}
 }

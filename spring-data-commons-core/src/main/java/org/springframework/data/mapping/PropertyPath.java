@@ -138,8 +138,8 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	}
 
 	/**
-	 * Returns whether there is a nested {@link PropertyPath}. If this returns {@literal true} you can expect {@link #next()}
-	 * to return a non- {@literal null} value.
+	 * Returns whether there is a nested {@link PropertyPath}. If this returns {@literal true} you can expect
+	 * {@link #next()} to return a non- {@literal null} value.
 	 * 
 	 * @return
 	 */
@@ -208,7 +208,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 */
 	public Iterator<PropertyPath> iterator() {
 		return new Iterator<PropertyPath>() {
-			
+
 			private PropertyPath current = PropertyPath.this;
 
 			public boolean hasNext() {
@@ -226,7 +226,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 			}
 		};
 	}
-	
+
 	/**
 	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and type.
 	 * 
@@ -243,7 +243,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}.
 	 * 
 	 * @param source must not be {@literal null}.
-	 * @param type 
+	 * @param type
 	 * @return
 	 */
 	public static PropertyPath from(String source, TypeInformation<?> type) {
@@ -287,10 +287,10 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	}
 
 	/**
-	 * Factory method to create a new {@link PropertyPath} for the given {@link String} and owning type. It will inspect the
-	 * given source for camel-case parts and traverse the {@link String} along its parts starting with the entire one and
-	 * chewing off parts from the right side then. Whenever a valid property for the given class is found, the tail will
-	 * be traversed for subordinary properties of the just found one and so on.
+	 * Factory method to create a new {@link PropertyPath} for the given {@link String} and owning type. It will inspect
+	 * the given source for camel-case parts and traverse the {@link String} along its parts starting with the entire one
+	 * and chewing off parts from the right side then. Whenever a valid property for the given class is found, the tail
+	 * will be traversed for subordinary properties of the just found one and so on.
 	 * 
 	 * @param source
 	 * @param type
@@ -303,8 +303,8 @@ public class PropertyPath implements Iterable<PropertyPath> {
 
 	/**
 	 * Tries to look up a chain of {@link PropertyPath}s by trying the givne source first. If that fails it will split the
-	 * source apart at camel case borders (starting from the right side) and try to look up a {@link PropertyPath} from the
-	 * calculated head and recombined new tail and additional tail.
+	 * source apart at camel case borders (starting from the right side) and try to look up a {@link PropertyPath} from
+	 * the calculated head and recombined new tail and additional tail.
 	 * 
 	 * @param source
 	 * @param type

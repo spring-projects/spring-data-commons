@@ -83,7 +83,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 
 		return new HashSet<Type>(interfaces);
 	}
-	
+
 	/**
 	 * Returns an instance of an {@link EntityManager}.
 	 * 

@@ -81,21 +81,21 @@ public class DefaultRepositoryInformationUnitTests {
 
 	@Test
 	public void discoversIntermediateMethodsAsBackingMethods() throws NoSuchMethodException, SecurityException {
-		
+
 		DefaultRepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
 		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata,
 				PagingAndSortingRepository.class, null);
 
 		Method method = CustomRepository.class.getMethod("findAll", Pageable.class);
 		assertThat(information.isBaseClassMethod(method), is(true));
-		
+
 		method = getMethodFrom(CustomRepository.class, "exists");
 		assertThat(information.isBaseClassMethod(method), is(true));
-		
+
 		Matcher<Iterable<Method>> empty = iterableWithSize(0);
 		assertThat(information.getQueryMethods(), is(empty));
 	}
-	
+
 	private Method getMethodFrom(Class<?> type, String name) {
 		for (Method method : type.getMethods()) {
 			if (method.getName().equals(name)) {

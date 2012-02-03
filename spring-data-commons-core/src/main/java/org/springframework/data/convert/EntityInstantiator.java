@@ -33,5 +33,6 @@ public interface EntityInstantiator {
 	 * @param provider will not be {@literal null}.
 	 * @return
 	 */
-	<T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity, ParameterValueProvider<P> provider);
+	<T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
+			ParameterValueProvider<P> provider);
 }

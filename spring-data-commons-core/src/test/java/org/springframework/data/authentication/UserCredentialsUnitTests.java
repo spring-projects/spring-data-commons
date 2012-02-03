@@ -22,14 +22,14 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link UserCredentials}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class UserCredentialsUnitTests {
 
 	@Test
 	public void treatsEmptyStringAsNull() {
-		
+
 		UserCredentials credentials = new UserCredentials("", "");
 		assertThat(credentials.getUsername(), is(nullValue()));
 		assertThat(credentials.getPassword(), is(nullValue()));

@@ -63,7 +63,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 
 	private static final Log LOG = LogFactory.getLog(AbstractRepositoryConfigDefinitionParser.class);
 
-	private static final String REPOSITORY_INTERFACE_POST_PROCESSOR = "org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor"; 
+	private static final String REPOSITORY_INTERFACE_POST_PROCESSOR = "org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor";
 
 	/*
 	 * (non-Javadoc)
@@ -274,11 +274,11 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 		provider.setResourceLoader(parser.getReaderContext().getResourceLoader());
 		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
 		Set<BeanDefinition> definitions = provider.findCandidateComponents(config.getBasePackage());
-		
+
 		if (definitions.size() == 0) {
 			return null;
 		}
-		
+
 		if (definitions.size() == 1) {
 			return (AbstractBeanDefinition) definitions.iterator().next();
 		}
@@ -287,7 +287,7 @@ public abstract class AbstractRepositoryConfigDefinitionParser<S extends GlobalR
 		for (BeanDefinition bean : definitions) {
 			implementationClassNames.add(bean.getBeanClassName());
 		}
-		
+
 		throw new IllegalStateException(String.format(
 				"Ambiguous custom implementations detected! Found %s but expected a single implementation!",
 				StringUtils.collectionToCommaDelimitedString(implementationClassNames)));

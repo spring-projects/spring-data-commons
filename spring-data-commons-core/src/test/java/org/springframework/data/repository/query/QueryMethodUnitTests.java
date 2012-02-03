@@ -57,14 +57,14 @@ public class QueryMethodUnitTests {
 		Method method = SampleRepository.class.getMethod("findByUsername", String.class);
 		new QueryMethod(method, metadata);
 	}
-	
+
 	@Test
 	public void considersIterableMethodForCollectionQuery() throws Exception {
 		Method method = SampleRepository.class.getMethod("sampleMethod");
 		QueryMethod queryMethod = new QueryMethod(method, metadata);
 		assertThat(queryMethod.isCollectionQuery(), is(true));
 	}
-	
+
 	@Test
 	public void doesNotConsiderPageMethodCollectionQuery() throws Exception {
 		Method method = SampleRepository.class.getMethod("anotherSampleMethod", Pageable.class);
@@ -79,8 +79,9 @@ public class QueryMethodUnitTests {
 		Page<String> pagingMethodWithoutPageable();
 
 		String findByUsername(String username);
-		
+
 		Iterable<String> sampleMethod();
+
 		Page<String> anotherSampleMethod(Pageable pageable);
 	}
 }

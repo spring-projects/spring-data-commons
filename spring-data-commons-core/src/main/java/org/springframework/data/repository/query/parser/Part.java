@@ -45,6 +45,7 @@ public class Part {
 	 * 
 	 * @param part must not be {@literal null}.
 	 * @param clazz must not be {@l
+
 	 */
 	public Part(String part, Class<?> clazz) {
 
@@ -73,12 +74,12 @@ public class Part {
 
 		Matcher matcher = IGNORE_CASE.matcher(part);
 		String result = part;
-		
+
 		if (matcher.find()) {
 			ignoreCase = IgnoreCaseType.ALWAYS;
 			result = part.substring(0, matcher.start()) + part.substring(matcher.end(), part.length());
 		}
-		
+
 		return result;
 	}
 
@@ -172,30 +173,16 @@ public class Part {
 	 */
 	public static enum Type {
 
-		BETWEEN(2, "Between"),
-		IS_NOT_NULL(0, "IsNotNull", "NotNull"),
-		IS_NULL(0, "IsNull", "Null"),
-		LESS_THAN("LessThan"),
-		LESS_THAN_EQUAL("LessThanEqual"),
-		GREATER_THAN("GreaterThan"),
-		GREATER_THAN_EQUAL("GreaterThanEqual"),
-		NOT_LIKE("NotLike"),
-		LIKE("Like"),
-		NOT_IN("NotIn"),
-		IN("In"),
-		NEAR("Near"),
-		WITHIN("Within"),
-		REGEX("Regex"),
-		EXISTS(0, "Exists"),
-		TRUE(0, "IsTrue", "True"),
-		FALSE(0, "IsFalse", "False"),
-		NEGATING_SIMPLE_PROPERTY("Not"),
-		SIMPLE_PROPERTY;
+		BETWEEN(2, "Between"), IS_NOT_NULL(0, "IsNotNull", "NotNull"), IS_NULL(0, "IsNull", "Null"), LESS_THAN("LessThan"), LESS_THAN_EQUAL(
+				"LessThanEqual"), GREATER_THAN("GreaterThan"), GREATER_THAN_EQUAL("GreaterThanEqual"), NOT_LIKE("NotLike"), LIKE(
+				"Like"), NOT_IN("NotIn"), IN("In"), NEAR("Near"), WITHIN("Within"), REGEX("Regex"), EXISTS(0, "Exists"), TRUE(
+				0, "IsTrue", "True"), FALSE(0, "IsFalse", "False"), NEGATING_SIMPLE_PROPERTY("Not"), SIMPLE_PROPERTY;
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)
-		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN, LESS_THAN_EQUAL, GREATER_THAN, GREATER_THAN_EQUAL,
-				NOT_LIKE, LIKE, NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, TRUE, FALSE, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN, LESS_THAN_EQUAL,
+				GREATER_THAN, GREATER_THAN_EQUAL, NOT_LIKE, LIKE, NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, TRUE, FALSE,
+				NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
 
 		private final List<String> keywords;
 		private final int numberOfArguments;
@@ -219,9 +206,9 @@ public class Part {
 		}
 
 		/**
-		 * Returns the {@link Type} of the {@link Part} for the given raw propertyPath. This will
-		 * try to detect e.g. keywords contained in the raw propertyPath that trigger special query creation. Returns
-		 * {@link #SIMPLE_PROPERTY} by default.
+		 * Returns the {@link Type} of the {@link Part} for the given raw propertyPath. This will try to detect e.g.
+		 * keywords contained in the raw propertyPath that trigger special query creation. Returns {@link #SIMPLE_PROPERTY}
+		 * by default.
 		 * 
 		 * @param rawProperty
 		 * @return
@@ -238,8 +225,9 @@ public class Part {
 		}
 
 		/**
-		 * Returns whether the the type supports the given raw propertyPath. Default implementation checks whether the propertyPath
-		 * ends with the registered keyword. Does not support the keyword if the propertyPath is a valid field as is.
+		 * Returns whether the the type supports the given raw propertyPath. Default implementation checks whether the
+		 * propertyPath ends with the registered keyword. Does not support the keyword if the propertyPath is a valid field
+		 * as is.
 		 * 
 		 * @param propertyPath
 		 * @return

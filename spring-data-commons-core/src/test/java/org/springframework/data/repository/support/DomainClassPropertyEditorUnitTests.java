@@ -31,10 +31,9 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 
-
 /**
  * Unit test for {@link DomainClassPropertyEditor}.
- *
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -49,16 +48,12 @@ public class DomainClassPropertyEditorUnitTests {
 	@Mock
 	EntityInformation<User, Integer> information;
 
-
 	@Before
 	public void setUp() {
 
 		when(information.getIdType()).thenReturn(Integer.class);
-		editor =
-				new DomainClassPropertyEditor<User, Integer>(userRepository,
-						information, registry);
+		editor = new DomainClassPropertyEditor<User, Integer>(userRepository, information, registry);
 	}
-
 
 	@Test
 	public void convertsPlainIdTypeCorrectly() throws Exception {
@@ -72,7 +67,6 @@ public class DomainClassPropertyEditorUnitTests {
 		verify(userRepository, times(1)).findOne(1);
 	}
 
-
 	@Test
 	public void convertsEntityToIdCorrectly() throws Exception {
 
@@ -82,21 +76,18 @@ public class DomainClassPropertyEditorUnitTests {
 		assertThat(editor.getAsText(), is("1"));
 	}
 
-
 	@Test
 	public void usesCustomEditorIfConfigured() throws Exception {
 
 		PropertyEditor customEditor = mock(PropertyEditor.class);
 		when(customEditor.getValue()).thenReturn(1);
 
-		when(registry.findCustomEditor(Integer.class, null)).thenReturn(
-				customEditor);
+		when(registry.findCustomEditor(Integer.class, null)).thenReturn(customEditor);
 
 		convertsPlainIdTypeCorrectly();
 
 		verify(customEditor, times(1)).setAsText("1");
 	}
-
 
 	@Test
 	public void returnsNullIdIfNoEntitySet() throws Exception {
@@ -105,13 +96,11 @@ public class DomainClassPropertyEditorUnitTests {
 		assertThat(editor.getAsText(), is(nullValue()));
 	}
 
-
 	@Test
 	public void resetsValueToNullAfterEmptyStringConversion() throws Exception {
 
 		assertValueResetToNullAfterConverting("");
 	}
-
 
 	@Test
 	public void resetsValueToNullAfterNullStringConversion() throws Exception {
@@ -119,9 +108,7 @@ public class DomainClassPropertyEditorUnitTests {
 		assertValueResetToNullAfterConverting(null);
 	}
 
-
-	private void assertValueResetToNullAfterConverting(String source)
-			throws Exception {
+	private void assertValueResetToNullAfterConverting(String source) throws Exception {
 
 		convertsPlainIdTypeCorrectly();
 		assertThat(editor.getValue(), is(notNullValue()));
@@ -132,7 +119,7 @@ public class DomainClassPropertyEditorUnitTests {
 
 	/**
 	 * Sample entity.
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 */
 	@SuppressWarnings("serial")
@@ -140,12 +127,10 @@ public class DomainClassPropertyEditorUnitTests {
 
 		private Integer id;
 
-
 		public User(Integer id) {
 
 			this.id = id;
 		}
-
 
 		/*
 						 * (non-Javadoc)
@@ -156,7 +141,6 @@ public class DomainClassPropertyEditorUnitTests {
 
 			return id;
 		}
-
 
 		/*
 						 * (non-Javadoc)
@@ -171,7 +155,7 @@ public class DomainClassPropertyEditorUnitTests {
 
 	/**
 	 * Sample generic DAO interface.
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 */
 	private static interface UserRepository extends CrudRepository<User, Integer> {

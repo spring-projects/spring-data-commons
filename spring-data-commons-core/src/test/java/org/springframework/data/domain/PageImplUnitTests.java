@@ -26,10 +26,9 @@ import java.util.List;
 
 import org.junit.Test;
 
-
 /**
  * Unit test for {@link PageImpl}.
- *
+ * 
  * @author Oliver Gierke
  */
 public class PageImplUnitTests {
@@ -40,10 +39,8 @@ public class PageImplUnitTests {
 		PageImpl<String> page = new PageImpl<String>(Arrays.asList("Foo"));
 
 		assertEqualsAndHashcode(page, page);
-		assertEqualsAndHashcode(page,
-				new PageImpl<String>(Arrays.asList("Foo")));
+		assertEqualsAndHashcode(page, new PageImpl<String>(Arrays.asList("Foo")));
 	}
-
 
 	@Test
 	public void assertEqualsForComplexSetup() throws Exception {
@@ -55,26 +52,20 @@ public class PageImplUnitTests {
 
 		assertEqualsAndHashcode(page, page);
 
-		assertEqualsAndHashcode(page, new PageImpl<String>(content, pageable,
-				100));
+		assertEqualsAndHashcode(page, new PageImpl<String>(content, pageable, 100));
 
-		assertNotEqualsAndHashcode(page, new PageImpl<String>(content,
-				pageable, 90));
+		assertNotEqualsAndHashcode(page, new PageImpl<String>(content, pageable, 90));
 
-		assertNotEqualsAndHashcode(page, new PageImpl<String>(content,
-				new PageRequest(1, 10), 100));
+		assertNotEqualsAndHashcode(page, new PageImpl<String>(content, new PageRequest(1, 10), 100));
 
-		assertNotEqualsAndHashcode(page, new PageImpl<String>(content,
-				new PageRequest(0, 15), 100));
+		assertNotEqualsAndHashcode(page, new PageImpl<String>(content, new PageRequest(0, 15), 100));
 	}
-
 
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNullContentForSimpleSetup() throws Exception {
 
 		new PageImpl<Object>(null);
 	}
-
 
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNullContentForAdvancedSetup() throws Exception {

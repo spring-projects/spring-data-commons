@@ -23,25 +23,24 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AnnotationRepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 
-
 /**
  * Unit tests for {@link DefaultRepositoryMetadata}.
- *
+ * 
  * @author Oliver Gierke
  */
-public class AnnotationRepositoryMetadataUnitTests {	
-	
+public class AnnotationRepositoryMetadataUnitTests {
+
 	@Test
 	public void handlesRepositoryProxyAnnotationCorrectly() {
-		
+
 		RepositoryMetadata metadata = new AnnotationRepositoryMetadata(AnnotatedRepository.class);
 		assertEquals(User.class, metadata.getDomainClass());
 		assertEquals(Integer.class, metadata.getIdClass());
 	}
-	
+
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsUnannotatedInterface() {
-		
+
 		new AnnotationRepositoryMetadata(UnannotatedRepository.class);
 	}
 
@@ -49,7 +48,6 @@ public class AnnotationRepositoryMetadataUnitTests {
 	private class User {
 
 		private String firstname;
-
 
 		public String getAddress() {
 
@@ -59,10 +57,10 @@ public class AnnotationRepositoryMetadataUnitTests {
 
 	@RepositoryDefinition(domainClass = User.class, idClass = Integer.class)
 	interface AnnotatedRepository {
-		
+
 	}
-	
+
 	interface UnannotatedRepository {
-		
+
 	}
 }

@@ -32,17 +32,15 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor;
 
-
 /**
  * Unit tests for {@link RepositoryInterfaceAwareBeanPostProcessor}.
- *
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryInterfaceAwareBeanPostProcessorUnitTests {
 
-	private static final Class<?> FACTORY_CLASS =
-			RepositoryFactoryBeanSupport.class;
+	private static final Class<?> FACTORY_CLASS = RepositoryFactoryBeanSupport.class;
 	private static final String BEAN_NAME = "foo";
 	private static final String DAO_INTERFACE_PROPERTY = "repositoryInterface";
 
@@ -52,32 +50,25 @@ public class RepositoryInterfaceAwareBeanPostProcessorUnitTests {
 	private ConfigurableListableBeanFactory beanFactory;
 	private BeanDefinition beanDefinition;
 
-
 	@Before
 	public void setUp() {
 
-		BeanDefinitionBuilder builder =
-				BeanDefinitionBuilder
-						.rootBeanDefinition(FACTORY_CLASS)
-						.addPropertyValue(DAO_INTERFACE_PROPERTY, UserDao.class);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(FACTORY_CLASS).addPropertyValue(
+				DAO_INTERFACE_PROPERTY, UserDao.class);
 		this.beanDefinition = builder.getBeanDefinition();
 
-		when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(
-				beanDefinition);
+		when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(beanDefinition);
 
 		processor = new RepositoryInterfaceAwareBeanPostProcessor();
 
 	}
 
-
 	@Test
 	public void returnsDaoInterfaceClassForFactoryBean() throws Exception {
 
 		processor.setBeanFactory(beanFactory);
-		assertEquals(UserDao.class,
-				processor.predictBeanType(FACTORY_CLASS, BEAN_NAME));
+		assertEquals(UserDao.class, processor.predictBeanType(FACTORY_CLASS, BEAN_NAME));
 	}
-
 
 	@Test
 	public void doesNotResolveInterfaceForNonFactoryClasses() throws Exception {
@@ -86,21 +77,16 @@ public class RepositoryInterfaceAwareBeanPostProcessorUnitTests {
 		assertNotTypeDetected(BeanFactory.class);
 	}
 
-
 	@Test
 	public void doesNotResolveInterfaceForUnloadableClass() throws Exception {
 
-		BeanDefinitionBuilder builder =
-				BeanDefinitionBuilder.rootBeanDefinition(FACTORY_CLASS)
-						.addPropertyValue(DAO_INTERFACE_PROPERTY,
-								"com.acme.Foo");
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(FACTORY_CLASS).addPropertyValue(
+				DAO_INTERFACE_PROPERTY, "com.acme.Foo");
 
-		when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(
-				builder.getBeanDefinition());
+		when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(builder.getBeanDefinition());
 
 		assertNotTypeDetected(FACTORY_CLASS);
 	}
-
 
 	@Test
 	public void doesNotResolveTypeForPlainBeanFactory() throws Exception {
@@ -111,11 +97,9 @@ public class RepositoryInterfaceAwareBeanPostProcessorUnitTests {
 		assertNotTypeDetected(FACTORY_CLASS);
 	}
 
-
 	private void assertNotTypeDetected(Class<?> beanClass) {
 
-		assertThat(processor.predictBeanType(beanClass, BEAN_NAME),
-				is(nullValue()));
+		assertThat(processor.predictBeanType(beanClass, BEAN_NAME), is(nullValue()));
 	}
 
 	private class User {

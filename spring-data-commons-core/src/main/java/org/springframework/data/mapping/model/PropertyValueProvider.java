@@ -19,7 +19,7 @@ import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * SPI for components to provide values for as {@link PersistentProperty}.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface PropertyValueProvider<P extends PersistentProperty<P>> {
