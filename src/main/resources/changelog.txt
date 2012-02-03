@@ -1,6 +1,30 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.3.0.M1 (2012-02-03)
+----------------------------------------
+** Bug
+    * [DATACMNS-125] - QueryExecutorMethodInterceptor does not reject interfaces with query methods if no QueryLookupStrategy defined
+
+** Improvement
+    * [DATACMNS-119] - Make org.springframework.data.domain.Sort$Order implement Serializable
+    * [DATACMNS-122] - Improve entity instantiation API
+    * [DATACMNS-123] - Deprecate types in persistence package
+    * [DATACMNS-128] - ParameterAccessor should allow to determine if parameter values contain null value
+    * [DATACMNS-129] - Add CrudRepository.findAll(Iterable<ID> ids)
+
+** New Feature
+    * [DATACMNS-127] - Add helper to ease implementation of delegating EntityInformations
+
+** Refactoring
+    * [DATACMNS-74] - Consolidate entity instantiation strategies
+
+
+Changes in version 1.2.1 (2012-02-03)
+-------------------------------------
+* [DATACMNS-125] - QueryExecutorMethodInterceptor does not reject interfaces with query methods if no QueryLookupStrategy defined
+* [DATACMNS-119] - Make org.springframework.data.domain.Sort$Order implement Serializable
+
 Changes in version 1.2.0.RELEASE (2011-12-22)
 ---------------------------------------------
 
