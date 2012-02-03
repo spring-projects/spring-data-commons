@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.2.1 (2012-02-03)
+-------------------------------------
+* [DATACMNS-125] - QueryExecutorMethodInterceptor does not reject interfaces with query methods if no QueryLookupStrategy defined
+* [DATACMNS-119] - Make org.springframework.data.domain.Sort$Order implement Serializable
+
 Changes in version 1.2.0.RELEASE (2011-12-22)
 ---------------------------------------------
 
