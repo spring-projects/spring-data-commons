@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons-dist</artifactId>
 	<name>Spring Data Commons Distribution</name>
 	<description>Spring Data Commons Distribution project</description>
 	<url>http://www.springframework.org/spring-data</url>
-	<version>1.2.1.BUILD-SNAPSHOT</version>
+	<version>1.2.1.RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -179,9 +178,7 @@
 								<include name="**/*.jpg" />
 							</fileset>
 						</copy>
-						<move file="${project.basedir}/target/site/reference/pdf/index.pdf"
-							tofile="${project.basedir}/target/site/reference/pdf/spring-data-commons-reference.pdf"
-							failonerror="false" />
+						<move file="${project.basedir}/target/site/reference/pdf/index.pdf" tofile="${project.basedir}/target/site/reference/pdf/spring-data-commons-reference.pdf" failonerror="false" />
 					</postProcess>
 				</configuration>
 			</plugin>
@@ -220,7 +217,7 @@
 						<configuration>
 							<tasks>
 								<ant antfile="${basedir}/src/ant/upload-dist.xml">
-									<target name="upload-dist"/>
+									<target name="upload-dist" />
 								</ant>
 							</tasks>
 						</configuration>
