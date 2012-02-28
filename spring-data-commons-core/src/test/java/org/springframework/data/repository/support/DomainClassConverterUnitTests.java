@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@ package org.springframework.data.repository.support;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
@@ -33,8 +31,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
@@ -49,6 +47,7 @@ public class DomainClassConverterUnitTests {
 
 	static final User USER = new User();
 
+	@SuppressWarnings("rawtypes")
 	DomainClassConverter converter;
 
 	TypeDescriptor sourceDescriptor;
@@ -62,7 +61,7 @@ public class DomainClassConverterUnitTests {
 	@Mock
 	UserRepository repository;
 	@Mock
-	ConversionService service;
+	DefaultConversionService service;
 	@Mock
 	EntityInformation<User, Long> information;
 	@Mock

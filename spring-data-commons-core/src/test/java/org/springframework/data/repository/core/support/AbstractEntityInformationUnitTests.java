@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import org.junit.Test;
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.support.AbstractEntityInformation;
 
 /**
  * Unit tests for {@link AbstractEntityInformation}.
@@ -43,33 +42,5 @@ public class AbstractEntityInformationUnitTests {
 		EntityInformation<Object, Serializable> metadata = new DummyAbstractEntityInformation(Object.class);
 		assertThat(metadata.isNew(null), is(true));
 		assertThat(metadata.isNew(new Object()), is(false));
-	}
-
-	private static class DummyAbstractEntityInformation extends AbstractEntityInformation<Object, Serializable> {
-
-		public DummyAbstractEntityInformation(Class<Object> domainClass) {
-
-			super(domainClass);
-		}
-
-		/*
-						 * (non-Javadoc)
-						 *
-						 * @see
-						 * org.springframework.data.repository.support.EntityMetadata#getId(
-						 * java.lang.Object)
-						 */
-		public Serializable getId(Object entity) {
-
-			return entity == null ? null : entity.toString();
-		}
-
-		/* (non-Javadoc)
-						 * @see org.springframework.data.repository.support.EntityInformation#getIdType()
-						 */
-		public Class<Serializable> getIdType() {
-
-			return Serializable.class;
-		}
 	}
 }

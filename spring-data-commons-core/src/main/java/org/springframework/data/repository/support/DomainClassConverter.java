@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
+import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
@@ -40,57 +41,41 @@ import org.springframework.data.repository.core.support.RepositoryFactoryInforma
  * 
  * @author Oliver Gierke
  */
-public class DomainClassConverter implements ConditionalGenericConverter, ApplicationContextAware {
+public class DomainClassConverter<T extends ConversionService & ConverterRegistry> implements
+		ConditionalGenericConverter, ApplicationContextAware {
 
 	private final Map<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>> repositories = new HashMap<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>>();
-	private final ConversionService service;
+	private final T conversionService;
 
-	/**
-	 * Creates a new {@link DomainClassConverter}.
-	 * 
-	 * @param service
-	 */
-	public DomainClassConverter(ConversionService service) {
-
-		this.service = service;
+	public DomainClassConverter(T conversionService) {
+		this.conversionService = conversionService;
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.core.convert.converter.GenericConverter#
-			 * getConvertibleTypes()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
+	 */
 	public Set<ConvertiblePair> getConvertibleTypes() {
-
 		return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.core.convert.converter.GenericConverter#convert(java
-			 * .lang.Object, org.springframework.core.convert.TypeDescriptor,
-			 * org.springframework.core.convert.TypeDescriptor)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+	 */
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 		EntityInformation<?, Serializable> info = getRepositoryForDomainType(targetType.getType());
 
 		CrudRepository<?, Serializable> repository = repositories.get(info);
-		Serializable id = service.convert(source, info.getIdType());
+		Serializable id = conversionService.convert(source, info.getIdType());
 		return repository.findOne(id);
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.core.convert.converter.ConditionalGenericConverter
-			 * #matches(org.springframework.core.convert.TypeDescriptor,
-			 * org.springframework.core.convert.TypeDescriptor)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.core.convert.converter.ConditionalGenericConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+	 */
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 		EntityInformation<?, ?> info = getRepositoryForDomainType(targetType.getType());
@@ -99,7 +84,7 @@ public class DomainClassConverter implements ConditionalGenericConverter, Applic
 			return false;
 		}
 
-		return service.canConvert(sourceType.getType(), info.getIdType());
+		return conversionService.canConvert(sourceType.getType(), info.getIdType());
 	}
 
 	private EntityInformation<?, Serializable> getRepositoryForDomainType(Class<?> domainType) {
@@ -115,12 +100,9 @@ public class DomainClassConverter implements ConditionalGenericConverter, Applic
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.context.ApplicationContextAware#setApplicationContext
-			 * (org.springframework.context.ApplicationContext)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setApplicationContext(ApplicationContext context) {
 
@@ -135,5 +117,7 @@ public class DomainClassConverter implements ConditionalGenericConverter, Applic
 
 			this.repositories.put(metadata, repository);
 		}
+
+		this.conversionService.addConverter(this);
 	}
 }
