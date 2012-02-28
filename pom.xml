@@ -352,9 +352,8 @@
 	
 	<pluginRepositories>
 		<pluginRepository>
-			<id>repository.springframework.maven.release</id>
-			<name>Spring Framework Maven Release Repository</name>
-			<url>http://repo.springsource.org/release</url>
+			<id>spring-plugins</id>
+			<url>http://repo.springsource.org/plugins-release</url>
 		</pluginRepository>
 	</pluginRepositories>
 
