@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
 public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 	private final Constructor<T> constructor;
-	private final List<Parameter<?, P>> parameters;
+	private final List<Parameter<Object, P>> parameters;
 
 	/**
 	 * Creates a new {@link PreferredConstructor} from the given {@link Constructor} and {@link Parameter}s.
@@ -44,7 +44,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 * @param constructor
 	 * @param parameters
 	 */
-	public PreferredConstructor(Constructor<T> constructor, Parameter<?, P>... parameters) {
+	public PreferredConstructor(Constructor<T> constructor, Parameter<Object, P>... parameters) {
 
 		Assert.notNull(constructor);
 		Assert.notNull(parameters);
@@ -68,7 +68,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 * 
 	 * @return
 	 */
-	public Iterable<Parameter<?, P>> getParameters() {
+	public Iterable<Parameter<Object, P>> getParameters() {
 		return parameters;
 	}
 
@@ -119,6 +119,25 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns whether the given {@link Parameter} is one referring to an enclosing class. That is in case the class this
+	 * {@link PreferredConstructor} belongs to is a member class actually. If that's the case the compiler creates a first
+	 * constructor argument of the enclosing class type.
+	 * 
+	 * @param parameter must not be {@literal null}.
+	 * @return
+	 */
+	public boolean isEnclosingClassParameter(Parameter<?, P> parameter) {
+
+		Assert.notNull(parameter);
+
+		if (parameters.isEmpty()) {
+			return false;
+		}
+
+		return parameters.get(0).equals(parameter) && parameter.isEnclosingClassParameter();
 	}
 
 	/**
@@ -219,6 +238,12 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 			P referencedProperty = entity == null ? null : entity.getPersistentProperty(name);
 			return property == null ? false : property.equals(referencedProperty);
+		}
+
+		private boolean isEnclosingClassParameter() {
+
+			Class<T> owningType = entity.getType();
+			return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
 		}
 	}
 }

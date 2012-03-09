@@ -15,6 +15,7 @@
  */
 package org.springframework.data.convert;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.convert.ReflectionEntityInstantiator.*;
@@ -23,12 +24,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.convert.ReflectionEntityInstantiatorUnitTest.Outer.Inner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link ReflectionEntityInstantiator}.
@@ -78,9 +83,35 @@ public class ReflectionEntityInstantiatorUnitTest<P extends PersistentProperty<P
 		verify(provider, times(1)).getParameterValue((Parameter) constructor.getParameters().iterator().next());
 	}
 
+	/**
+	 * @see DATACMNS-134
+	 */
+	@Test
+	public void createsInnerClassInstanceCorrectly() {
+
+		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class));
+		PreferredConstructor<Inner, P> constructor = entity.getPersistenceConstructor();
+		Parameter<Object, P> parameter = constructor.getParameters().iterator().next();
+
+		Object outer = new Outer();
+
+		when(provider.getParameterValue(parameter)).thenReturn(outer);
+		Inner instance = INSTANCE.createInstance(entity, provider);
+
+		assertThat(instance, is(notNullValue()));
+		assertThat(ReflectionTestUtils.getField(instance, "this$1"), is(outer));
+	}
+
 	static class Foo {
 
 		Foo(String foo) {
+
+		}
+	}
+
+	static class Outer {
+
+		class Inner {
 
 		}
 	}

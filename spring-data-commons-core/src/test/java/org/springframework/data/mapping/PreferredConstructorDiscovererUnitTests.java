@@ -23,7 +23,10 @@ import java.util.Iterator;
 import org.junit.Test;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.PreferredConstructorDiscovererUnitTests.Outer.Inner;
+import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
+import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link PreferredConstructorDiscoverer}.
@@ -76,11 +79,25 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		assertThat(constructor.isExplicitlyAnnotated(), is(true));
 
 		assertThat(constructor.hasParameters(), is(true));
-		Iterator<Parameter<?, P>> parameters = constructor.getParameters().iterator();
+		Iterator<Parameter<Object, P>> parameters = constructor.getParameters().iterator();
 
 		Parameter<?, P> parameter = parameters.next();
 		assertThat(parameter.getType().getType(), typeCompatibleWith(Long.class));
 		assertThat(parameters.hasNext(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-134
+	 */
+	@Test
+	public void discoversInnerClassConstructorCorrectly() {
+
+		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class));
+		PreferredConstructorDiscoverer<Inner, P> discoverer = new PreferredConstructorDiscoverer<Inner, P>(entity);
+		PreferredConstructor<Inner, P> constructor = discoverer.getConstructor();
+
+		Parameter<?, P> parameter = constructor.getParameters().iterator().next();
+		assertThat(constructor.isEnclosingClassParameter(parameter), is(true));
 	}
 
 	static class EntityWithoutConstructor {
@@ -121,6 +138,13 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 
 		@PersistenceConstructor
 		public ClassWithMultipleConstructorsAndAnnotation(Long value) {
+		}
+	}
+
+	static class Outer {
+
+		class Inner {
+
 		}
 	}
 }

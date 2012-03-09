@@ -17,6 +17,7 @@ package org.springframework.data.mapping.model;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.util.Assert;
 
@@ -33,6 +34,7 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 
 	private final PersistentEntity<?, P> entity;
 	private final PropertyValueProvider<P> provider;
+	private final Object parent;
 
 	private SpELExpressionEvaluator spELEvaluator;
 
@@ -42,14 +44,17 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	 * 
 	 * @param entity must not be {@literal null}.
 	 * @param provider must not be {@literal null}.
+	 * @param parent the parent object being created currently, can be {@literal null}.
 	 */
-	public PersistentEntityParameterValueProvider(PersistentEntity<?, P> entity, PropertyValueProvider<P> provider) {
+	public PersistentEntityParameterValueProvider(PersistentEntity<?, P> entity, PropertyValueProvider<P> provider,
+			Object parent) {
 
 		Assert.notNull(entity);
 		Assert.notNull(provider);
 
 		this.entity = entity;
 		this.provider = provider;
+		this.parent = parent;
 	}
 
 	/**
@@ -66,10 +71,17 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.PreferredConstructor.Parameter)
 	 */
+	@SuppressWarnings("unchecked")
 	public <T> T getParameterValue(Parameter<T, P> parameter) {
 
 		if (spELEvaluator != null && parameter.hasSpelExpression()) {
 			return spELEvaluator.evaluate(parameter.getSpelExpression());
+		}
+
+		PreferredConstructor<?, P> constructor = entity.getPersistenceConstructor();
+
+		if (constructor.isEnclosingClassParameter(parameter)) {
+			return (T) parent;
 		}
 
 		P property = entity.getPersistentProperty(parameter.getName());

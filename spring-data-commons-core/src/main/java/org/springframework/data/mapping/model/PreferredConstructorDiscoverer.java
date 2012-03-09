@@ -107,7 +107,7 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 		}
 
 		String[] parameterNames = nameDiscoverer.getParameterNames(constructor);
-		Parameter<?, P>[] parameters = new Parameter[parameterTypes.size()];
+		Parameter<Object, P>[] parameters = new Parameter[parameterTypes.size()];
 		Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
 
 		for (int i = 0; i < parameterTypes.size(); i++) {
