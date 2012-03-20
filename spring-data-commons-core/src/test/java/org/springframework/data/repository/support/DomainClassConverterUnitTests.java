@@ -57,7 +57,7 @@ public class DomainClassConverterUnitTests {
 	Map<String, RepositoryFactoryInformation> providers;
 
 	@Mock
-	ApplicationContext context;
+	ApplicationContext context, parent;
 	@Mock
 	UserRepository repository;
 	@Mock
@@ -77,9 +77,6 @@ public class DomainClassConverterUnitTests {
 		sourceDescriptor = TypeDescriptor.valueOf(String.class);
 		targetDescriptor = TypeDescriptor.valueOf(User.class);
 
-		Map<String, UserRepository> map = getBeanAsMap(repository);
-		when(context.getBeansOfType(UserRepository.class)).thenReturn(map);
-		when(context.getBeansOfType(RepositoryFactoryInformation.class)).thenReturn(providers);
 		when(provider.getEntityInformation()).thenReturn(information);
 		when(provider.getRepositoryInterface()).thenReturn((Class) UserRepository.class);
 		when(information.getJavaType()).thenReturn(User.class);
@@ -96,7 +93,7 @@ public class DomainClassConverterUnitTests {
 	@Test
 	public void matchesIfConversionInBetweenIsPossible() throws Exception {
 
-		letContextContain(provider);
+		letContextContain(context, provider);
 		converter.setApplicationContext(context);
 
 		when(service.canConvert(String.class, Long.class)).thenReturn(true);
@@ -107,7 +104,7 @@ public class DomainClassConverterUnitTests {
 	@Test
 	public void matchFailsIfNoIntermediateConversionIsPossible() throws Exception {
 
-		letContextContain(provider);
+		letContextContain(context, provider);
 		converter.setApplicationContext(context);
 
 		when(service.canConvert(String.class, Long.class)).thenReturn(false);
@@ -123,7 +120,7 @@ public class DomainClassConverterUnitTests {
 	@Test
 	public void convertsStringToUserCorrectly() throws Exception {
 
-		letContextContain(provider);
+		letContextContain(context, provider);
 		converter.setApplicationContext(context);
 
 		when(service.canConvert(String.class, Long.class)).thenReturn(true);
@@ -135,10 +132,36 @@ public class DomainClassConverterUnitTests {
 		assertThat(user, is((Object) USER));
 	}
 
-	private void letContextContain(Object bean) {
+	/**
+	 * @see DATACMNS-133
+	 */
+	@Test
+	public void discoversFactoryAndRepoFromParentApplicationContext() {
+
+		letContextContain(parent, provider);
+		when(context.getParentBeanFactory()).thenReturn(parent);
+		when(service.canConvert(String.class, Long.class)).thenReturn(true);
+
+		converter.setApplicationContext(context);
+		assertThat(converter.matches(sourceDescriptor, targetDescriptor), is(true));
+	}
+
+	private void letContextContain(ApplicationContext context, Object bean) {
+
+		configureContextToReturnBeans(context, repository, provider);
 
 		Map<String, Object> beanMap = getBeanAsMap(bean);
 		when(context.getBeansOfType(argThat(is(subtypeOf(bean.getClass()))))).thenReturn(beanMap);
+	}
+
+	private void configureContextToReturnBeans(ApplicationContext context, UserRepository repository,
+			RepositoryFactoryInformation<User, Long> provider) {
+
+		Map<String, UserRepository> map = getBeanAsMap(repository);
+		when(context.getBeansOfType(UserRepository.class)).thenReturn(map);
+
+		providers.put("provider", provider);
+		when(context.getBeansOfType(RepositoryFactoryInformation.class)).thenReturn(providers);
 	}
 
 	private <T> Map<String, T> getBeanAsMap(T bean) {

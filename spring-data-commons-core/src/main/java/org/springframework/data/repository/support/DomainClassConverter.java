@@ -113,7 +113,8 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 			EntityInformation<Object, Serializable> metadata = entry.getEntityInformation();
 			Class<CrudRepository<Object, Serializable>> objectType = entry.getRepositoryInterface();
-			CrudRepository<Object, Serializable> repository = BeanFactoryUtils.beanOfType(context, objectType);
+			CrudRepository<Object, Serializable> repository = BeanFactoryUtils.beanOfTypeIncludingAncestors(context,
+					objectType);
 
 			this.repositories.put(metadata, repository);
 		}
