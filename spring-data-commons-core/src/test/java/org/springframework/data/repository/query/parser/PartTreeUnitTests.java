@@ -290,6 +290,51 @@ public class PartTreeUnitTests {
 		}
 	}
 
+	/**
+	 * @see DATACMNS-111
+	 */
+	@Test
+	public void parsesStartingWithKeywordCorrectly() {
+
+		for (String source : Arrays.asList("firstnameStartsWith", "firstnameStartingWith")) {
+			Part part = part(source);
+			assertThat(part.getType(), is(Type.STARTING_WITH));
+			assertThat(part.getProperty().toDotPath(), is("firstname"));
+			assertThat(part.getNumberOfArguments(), is(1));
+			assertThat(part.getParameterRequired(), is(true));
+		}
+	}
+
+	/**
+	 * @see DATACMNS-111
+	 */
+	@Test
+	public void parsesEndingWithKeywordCorrectly() {
+
+		for (String source : Arrays.asList("firstnameEndsWith", "firstnameEndingWith")) {
+			Part part = part(source);
+			assertThat(part.getType(), is(Type.ENDING_WITH));
+			assertThat(part.getProperty().toDotPath(), is("firstname"));
+			assertThat(part.getNumberOfArguments(), is(1));
+			assertThat(part.getParameterRequired(), is(true));
+		}
+	}
+
+	/**
+	 * @see DATACMNS-111
+	 */
+	@Test
+	public void parsesContainingKeywordCorrectly() {
+
+		for (String source : Arrays.asList("firstnameContains", "firstnameContaining")) {
+			Part part = part(source);
+			assertThat(part.getType(), is(Type.CONTAINING));
+			assertThat(part.getProperty().toDotPath(), is("firstname"));
+			assertThat(part.getNumberOfArguments(), is(1));
+			assertThat(part.getParameterRequired(), is(true));
+		}
+	}
+
 	private PartTree partTree(String source) {
 		return new PartTree(source, User.class);
 	}
