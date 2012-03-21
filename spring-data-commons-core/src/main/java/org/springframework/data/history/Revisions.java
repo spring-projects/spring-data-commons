@@ -90,4 +90,13 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<
 	public Iterator<Revision<N, T>> iterator() {
 		return revisions.iterator();
 	}
+
+	/**
+	 * Returns the content of the {@link Revisions} instance.
+	 * 
+	 * @return
+	 */
+	public List<Revision<N, T>> getContent() {
+		return Collections.unmodifiableList(revisions);
+	}
 }
