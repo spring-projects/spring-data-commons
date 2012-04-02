@@ -32,6 +32,46 @@ public class UserCredentialsUnitTests {
 
 		UserCredentials credentials = new UserCredentials("", "");
 		assertThat(credentials.getUsername(), is(nullValue()));
+		assertThat(credentials.hasUsername(), is(false));
 		assertThat(credentials.getPassword(), is(nullValue()));
+		assertThat(credentials.hasPassword(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-142
+	 */
+	@Test
+	public void noCredentialsNullsUsernameAndPassword() {
+
+		assertThat(UserCredentials.NO_CREDENTIALS.getUsername(), is(nullValue()));
+		assertThat(UserCredentials.NO_CREDENTIALS.getPassword(), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-142
+	 */
+	@Test
+	public void configuresUsernameCorrectly() {
+
+		UserCredentials credentials = new UserCredentials("username", null);
+
+		assertThat(credentials.hasUsername(), is(true));
+		assertThat(credentials.getUsername(), is("username"));
+		assertThat(credentials.hasPassword(), is(false));
+		assertThat(credentials.getPassword(), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-142
+	 */
+	@Test
+	public void configuresPasswordCorrectly() {
+
+		UserCredentials credentials = new UserCredentials(null, "password");
+
+		assertThat(credentials.hasUsername(), is(false));
+		assertThat(credentials.getUsername(), is(nullValue()));
+		assertThat(credentials.hasPassword(), is(true));
+		assertThat(credentials.getPassword(), is("password"));
 	}
 }

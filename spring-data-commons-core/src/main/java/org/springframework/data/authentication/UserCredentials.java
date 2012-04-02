@@ -26,12 +26,10 @@ import org.springframework.util.StringUtils;
  */
 public class UserCredentials {
 
+	public static final UserCredentials NO_CREDENTIALS = new UserCredentials(null, null);
+
 	private final String username;
 	private final String password;
-
-	public UserCredentials() {
-		this(null, null);
-	}
 
 	/**
 	 * Creates a new {@link UserCredentials} instance from the given username and password. Empty {@link String}s provided
@@ -61,6 +59,24 @@ public class UserCredentials {
 	 */
 	public String getPassword() {
 		return password;
+	}
+
+	/**
+	 * Returns whether the credentials contain a username.
+	 * 
+	 * @return
+	 */
+	public boolean hasUsername() {
+		return this.username != null;
+	}
+
+	/**
+	 * Returns whether the credentials contain a password.
+	 * 
+	 * @return
+	 */
+	public boolean hasPassword() {
+		return this.password != null;
 	}
 
 	/*
