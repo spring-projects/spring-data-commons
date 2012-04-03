@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping;
 
+import static org.springframework.util.ObjectUtils.*;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -244,6 +246,48 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 			Class<T> owningType = entity.getType();
 			return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+
+			if (this == obj) {
+				return true;
+			}
+
+			if (!(obj instanceof Parameter)) {
+				return false;
+			}
+
+			Parameter<?, ?> that = (Parameter<?, ?>) obj;
+
+			boolean nameEquals = this.name == null ? that.name == null : this.name.equals(that.name);
+			boolean keyEquals = this.key == null ? that.key == null : this.key.equals(that.key);
+			boolean typeEquals = nullSafeEquals(this.type, that.type);
+			boolean entityEquals = this.entity == null ? that.entity == null : this.entity.equals(that.entity);
+
+			return nameEquals && keyEquals && typeEquals && entityEquals;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+
+			int result = 17;
+
+			result += 31 * nullSafeHashCode(this.name);
+			result += 31 * nullSafeHashCode(this.key);
+			result += 31 * nullSafeHashCode(this.type);
+			result += 31 * nullSafeHashCode(this.entity);
+
+			return result;
 		}
 	}
 }
