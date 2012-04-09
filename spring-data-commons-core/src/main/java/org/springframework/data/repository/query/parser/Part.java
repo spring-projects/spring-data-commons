@@ -173,17 +173,20 @@ public class Part {
 	 */
 	public static enum Type {
 
-		BETWEEN(2, "Between"), IS_NOT_NULL(0, "IsNotNull", "NotNull"), IS_NULL(0, "IsNull", "Null"), LESS_THAN("LessThan"), LESS_THAN_EQUAL(
-				"LessThanEqual"), GREATER_THAN("GreaterThan"), GREATER_THAN_EQUAL("GreaterThanEqual"), NOT_LIKE("NotLike"), LIKE(
-				"Like"), STARTING_WITH("StartingWith", "StartsWith"), ENDING_WITH("EndingWith", "EndsWith"), CONTAINING(
-				"Containing", "Contains"), NOT_IN("NotIn"), IN("In"), NEAR("Near"), WITHIN("Within"), REGEX("Regex"), EXISTS(0,
-				"Exists"), TRUE(0, "IsTrue", "True"), FALSE(0, "IsFalse", "False"), NEGATING_SIMPLE_PROPERTY("Not"), SIMPLE_PROPERTY;
+		BETWEEN(2, "IsBetween", "Between"), IS_NOT_NULL(0, "IsNotNull", "NotNull"), IS_NULL(0, "IsNull", "Null"), LESS_THAN(
+				"IsLessThan", "LessThan"), LESS_THAN_EQUAL("IsLessThanEqual", "LessThanEqual"), GREATER_THAN("IsGreaterThan",
+				"GreaterThan"), GREATER_THAN_EQUAL("IsGreaterThanEqual", "GreaterThanEqual"), BEFORE("IsBefore", "Before"), AFTER(
+				"IsAfter", "After"), NOT_LIKE("NotLike"), LIKE("Like"), STARTING_WITH("IsStartingWith", "StartingWith",
+				"StartsWith"), ENDING_WITH("IsEndingWith", "EndingWith", "EndsWith"), CONTAINING("IsContaining", "Containing",
+				"Contains"), NOT_IN("IsNotIn", "NotIn"), IN("IsIn", "In"), NEAR("IsNear", "Near"), WITHIN("IsWithin", "Within"), REGEX(
+				"MatchesRegex", "Matches", "Regex"), EXISTS(0, "Exists"), TRUE(0, "IsTrue", "True"), FALSE(0, "IsFalse",
+				"False"), NEGATING_SIMPLE_PROPERTY("IsNot", "Not"), SIMPLE_PROPERTY("Is", "Equals");
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)
 		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN, LESS_THAN_EQUAL,
-				GREATER_THAN, GREATER_THAN_EQUAL, NOT_LIKE, LIKE, STARTING_WITH, ENDING_WITH, CONTAINING, NOT_IN, IN, NEAR,
-				WITHIN, REGEX, EXISTS, TRUE, FALSE, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+				GREATER_THAN, GREATER_THAN_EQUAL, BEFORE, AFTER, NOT_LIKE, LIKE, STARTING_WITH, ENDING_WITH, CONTAINING,
+				NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, TRUE, FALSE, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
 
 		private final List<String> keywords;
 		private final int numberOfArguments;

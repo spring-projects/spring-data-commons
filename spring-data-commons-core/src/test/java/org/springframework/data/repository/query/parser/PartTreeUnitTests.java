@@ -15,12 +15,15 @@
  */
 package org.springframework.data.repository.query.parser;
 
+import static java.util.Arrays.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
+import static org.springframework.data.repository.query.parser.Part.Type.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -133,17 +136,12 @@ public class PartTreeUnitTests {
 
 	@Test
 	public void parsesNearCorrectly() {
-		PartTree tree = partTree("findByLocationNear");
-		for (Part part : tree.getParts()) {
-			assertThat(part.getType(), is(Type.NEAR));
-			assertThat(part.getProperty(), is(newProperty("location")));
-		}
+		assertType(asList("locationNear"), NEAR, "location");
 	}
 
 	@Test
 	public void supportToStringWithoutSortOrder() throws Exception {
-		PartTree tree = partTree("firstname");
-		assertThat(tree.toString(), is(equalTo("firstname SIMPLE_PROPERTY")));
+		assertType(asList("firstname"), SIMPLE_PROPERTY, "firstname");
 	}
 
 	@Test
@@ -192,12 +190,7 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesLessThanEqualCorrectly() {
-
-		PartTree tree = partTree("findByLastnameLessThanEqual");
-		for (Part part : tree.getParts()) {
-			assertThat(part.getType(), is(Type.LESS_THAN_EQUAL));
-			assertThat(part.getProperty(), is(newProperty("lastname")));
-		}
+		assertType(Arrays.asList("lastnameLessThanEqual", "lastnameIsLessThanEqual"), LESS_THAN_EQUAL, "lastname");
 	}
 
 	/**
@@ -205,12 +198,7 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesGreaterThanEqualCorrectly() {
-
-		PartTree tree = partTree("findByLastnameGreaterThanEqual");
-		for (Part part : tree.getParts()) {
-			assertThat(part.getType(), is(Type.GREATER_THAN_EQUAL));
-			assertThat(part.getProperty(), is(newProperty("lastname")));
-		}
+		assertType(Arrays.asList("lastnameGreaterThanEqual", "lastnameIsGreaterThanEqual"), GREATER_THAN_EQUAL, "lastname");
 	}
 
 	@Test
@@ -239,12 +227,7 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesExistsKeywordCorrectly() {
-
-		Part part = part("lastnameExists");
-		assertThat(part.getType(), is(Type.EXISTS));
-		assertThat(part.getProperty().toDotPath(), is("lastname"));
-		assertThat(part.getNumberOfArguments(), is(0));
-		assertThat(part.getParameterRequired(), is(false));
+		assertType(asList("lastnameExists"), EXISTS, "lastname", 0, false);
 	}
 
 	/**
@@ -252,12 +235,7 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesRegexKeywordCorrectly() {
-
-		Part part = part("lastnameRegex");
-		assertThat(part.getType(), is(Type.REGEX));
-		assertThat(part.getProperty().toDotPath(), is("lastname"));
-		assertThat(part.getNumberOfArguments(), is(1));
-		assertThat(part.getParameterRequired(), is(true));
+		assertType(asList("lastnameRegex", "lastnameMatchesRegex", "lastnameMatches"), REGEX, "lastname");
 	}
 
 	/**
@@ -265,14 +243,7 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesTrueKeywordCorrectly() {
-
-		for (String source : Arrays.asList("activeTrue", "activeIsTrue")) {
-			Part part = part(source);
-			assertThat(part.getType(), is(Type.TRUE));
-			assertThat(part.getProperty().toDotPath(), is("active"));
-			assertThat(part.getNumberOfArguments(), is(0));
-			assertThat(part.getParameterRequired(), is(false));
-		}
+		assertType(asList("activeTrue", "activeIsTrue"), TRUE, "active", 0, false);
 	}
 
 	/**
@@ -280,14 +251,7 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesFalseKeywordCorrectly() {
-
-		for (String source : Arrays.asList("activeFalse", "activeIsFalse")) {
-			Part part = part(source);
-			assertThat(part.getType(), is(Type.FALSE));
-			assertThat(part.getProperty().toDotPath(), is("active"));
-			assertThat(part.getNumberOfArguments(), is(0));
-			assertThat(part.getParameterRequired(), is(false));
-		}
+		assertType(asList("activeFalse", "activeIsFalse"), FALSE, "active", 0, false);
 	}
 
 	/**
@@ -295,14 +259,8 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesStartingWithKeywordCorrectly() {
-
-		for (String source : Arrays.asList("firstnameStartsWith", "firstnameStartingWith")) {
-			Part part = part(source);
-			assertThat(part.getType(), is(Type.STARTING_WITH));
-			assertThat(part.getProperty().toDotPath(), is("firstname"));
-			assertThat(part.getNumberOfArguments(), is(1));
-			assertThat(part.getParameterRequired(), is(true));
-		}
+		assertType(asList("firstnameStartsWith", "firstnameStartingWith", "firstnameIsStartingWith"), STARTING_WITH,
+				"firstname");
 	}
 
 	/**
@@ -310,14 +268,7 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesEndingWithKeywordCorrectly() {
-
-		for (String source : Arrays.asList("firstnameEndsWith", "firstnameEndingWith")) {
-			Part part = part(source);
-			assertThat(part.getType(), is(Type.ENDING_WITH));
-			assertThat(part.getProperty().toDotPath(), is("firstname"));
-			assertThat(part.getNumberOfArguments(), is(1));
-			assertThat(part.getParameterRequired(), is(true));
-		}
+		assertType(asList("firstnameEndsWith", "firstnameEndingWith", "firstnameIsEndingWith"), ENDING_WITH, "firstname");
 	}
 
 	/**
@@ -325,25 +276,50 @@ public class PartTreeUnitTests {
 	 */
 	@Test
 	public void parsesContainingKeywordCorrectly() {
+		assertType(asList("firstnameIsContaining", "firstnameContains", "firstnameContaining"), CONTAINING, "firstname");
+	}
 
-		for (String source : Arrays.asList("firstnameContains", "firstnameContaining")) {
+	/**
+	 * @see DATACMNS-141
+	 */
+	@Test
+	public void parsesAfterKeywordCorrectly() {
+		assertType(asList("birthdayAfter", "birthdayIsAfter"), Type.AFTER, "birthday");
+	}
+
+	/**
+	 * @see DATACMNS-141
+	 */
+	@Test
+	public void parsesBeforeKeywordCorrectly() {
+		assertType(Arrays.asList("birthdayBefore", "birthdayIsBefore"), Type.BEFORE, "birthday");
+	}
+
+	private static void assertType(Iterable<String> sources, Type type, String property) {
+		assertType(sources, type, property, 1, true);
+	}
+
+	private static void assertType(Iterable<String> sources, Type type, String property, int numberOfArguments,
+			boolean parameterRequired) {
+
+		for (String source : sources) {
 			Part part = part(source);
-			assertThat(part.getType(), is(Type.CONTAINING));
-			assertThat(part.getProperty().toDotPath(), is("firstname"));
-			assertThat(part.getNumberOfArguments(), is(1));
-			assertThat(part.getParameterRequired(), is(true));
+			assertThat(part.getType(), is(type));
+			assertThat(part.getProperty(), is(newProperty(property)));
+			assertThat(part.getNumberOfArguments(), is(numberOfArguments));
+			assertThat(part.getParameterRequired(), is(parameterRequired));
 		}
 	}
 
-	private PartTree partTree(String source) {
+	private static PartTree partTree(String source) {
 		return new PartTree(source, User.class);
 	}
 
-	private Part part(String part) {
+	private static Part part(String part) {
 		return new Part(part, User.class);
 	}
 
-	private Part[] parts(String... part) {
+	private static Part[] parts(String... part) {
 		Part[] parts = new Part[part.length];
 		for (int i = 0; i < parts.length; i++) {
 			parts[i] = part(part[i]);
@@ -351,7 +327,7 @@ public class PartTreeUnitTests {
 		return parts;
 	}
 
-	private PropertyPath newProperty(String name) {
+	private static PropertyPath newProperty(String name) {
 		return PropertyPath.from(name, User.class);
 	}
 
@@ -384,5 +360,6 @@ public class PartTreeUnitTests {
 		String lastname;
 		double[] location;
 		boolean active;
+		Date birthday;
 	}
 }
