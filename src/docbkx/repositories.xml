@@ -20,7 +20,9 @@
     significantly.</para>
 
     <para>The following chapters will introduce the core concepts and
-    interfaces of Spring Data repositories.</para>
+    interfaces of Spring Data repositories in general for detailled
+    information on the specific features of a particular store consult the
+    later chapters of this document.</para>
   </section>
 
   <section id="repositories.core-concepts">
@@ -123,7 +125,7 @@
     <para>Accessing the second page of <classname>User</classname> by a page
     size of 20 you could simply do something like this:</para>
 
-    <programlisting>PagingAndSortingRepository&lt;User, Long&gt; repository = // … get access to a bean
+    <programlisting language="java">PagingAndSortingRepository&lt;User, Long&gt; repository = // … get access to a bean
 Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlisting>
   </section>
 
@@ -165,6 +167,14 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
   &lt;repositories base-package="com.acme.repositories" /&gt;
 
 &lt;/beans&gt;</programlisting>
+
+        <note>
+          <para>Note that we use the JPA namespace here just by example. If
+          you're using the repository abstraction for any other store you need
+          to change this to the appropriate namespace declaration of your
+          store module which should be exchanging <code>jpa</code> in favor of
+          e.g. <code>mongodb</code>.</para>
+        </note>
       </listitem>
 
       <listitem>
@@ -215,7 +225,7 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20);</programlist
         <example>
           <title>Selectively exposing CRUD methods</title>
 
-          <programlisting>interface MyBaseRepository&lt;T, ID extends Serializable&gt; extends Repository&lt;T, ID&gt; {
+          <programlisting language="java">interface MyBaseRepository&lt;T, ID extends Serializable&gt; extends Repository&lt;T, ID&gt; {
   T findOne(ID id);
   T save(T entity);
 }
@@ -512,7 +522,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
         <example>
           <title>Standalone usage of repository factory</title>
 
-          <programlisting>RepositoryFactorySupport factory = … // Instantiate factory here
+          <programlisting language="java">RepositoryFactorySupport factory = … // Instantiate factory here
 UserRepository repository = factory.getRepository(UserRepository.class);</programlisting>
         </example>
       </section>
