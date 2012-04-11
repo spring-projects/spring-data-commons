@@ -54,30 +54,6 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getPersistentEntityType().iterator().hasNext(), is(false));
 	}
 
-	@Test
-	public void foo() {
-
-		Field field1 = ReflectionUtils.findField(Bar1.class, "field");
-		Field field2 = ReflectionUtils.findField(Bar2.class, "field");
-		assertThat(field1, is(field2));
-		System.out.println(field1.getType());
-
-		System.out.println(ClassTypeInformation.from(Bar1.class).getProperty("field").getType());
-		System.out.println(ClassTypeInformation.from(Bar2.class).getProperty("field").getType());
-	}
-
-	class Foo<T> {
-		T field;
-	}
-
-	class Bar1 extends Foo<String> {
-
-	}
-
-	class Bar2 extends Foo<Object> {
-
-	}
-
 	@SuppressWarnings("serial")
 	class TestClassSet extends TreeSet<Object> {
 	}
