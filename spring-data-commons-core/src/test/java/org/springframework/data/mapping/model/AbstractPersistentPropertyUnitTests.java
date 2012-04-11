@@ -78,6 +78,34 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.isEntity(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-121
+	 */
+	@Test
+	public void considersPropertiesEqualIfFieldEquals() {
+
+		Field first = ReflectionUtils.findField(FirstConcrete.class, "genericField");
+		Field second = ReflectionUtils.findField(SecondConcrete.class, "genericField");
+
+		SamplePersistentProperty firstProperty = new SamplePersistentProperty(first, null, entity, typeHolder);
+		SamplePersistentProperty secondProperty = new SamplePersistentProperty(second, null, entity, typeHolder);
+
+		assertThat(firstProperty, is(secondProperty));
+		assertThat(firstProperty.hashCode(), is(secondProperty.hashCode()));
+	}
+
+	class Generic<T> {
+		T genericField;
+	}
+
+	class FirstConcrete extends Generic<String> {
+
+	}
+
+	class SecondConcrete extends Generic<Integer> {
+
+	}
+
 	@SuppressWarnings("serial")
 	class TestClassSet extends TreeSet<Object> {
 	}

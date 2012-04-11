@@ -202,4 +202,32 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	public Class<?> getMapValueType() {
 		return isMap() ? information.getMapValueType().getType() : null;
 	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+
+		if (this == obj) {
+			return true;
+		}
+
+		if (!(obj instanceof AbstractPersistentProperty)) {
+			return false;
+		}
+
+		AbstractPersistentProperty<?> that = (AbstractPersistentProperty<?>) obj;
+		return this.field.equals(that.field);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return this.field.hashCode();
+	}
 }
