@@ -321,7 +321,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 			exception = e;
 		}
 
-		Pattern pattern = Pattern.compile("[A-Z]?[a-z]*$");
+		Pattern pattern = Pattern.compile("[A-Z]+[a-z]*$");
 		Matcher matcher = pattern.matcher(source);
 
 		if (matcher.find() && matcher.start() != 0) {

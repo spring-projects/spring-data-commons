@@ -18,14 +18,11 @@ package org.springframework.data.mapping;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.springframework.data.mapping.PropertyPath;
 
 /**
  * Unit tests for {@link PropertyPath}.
@@ -167,6 +164,45 @@ public class PropertyUnitTests {
 		assertThat(iterator.hasNext(), is(true));
 		assertThat(iterator.next(), is(propertyPath.next()));
 		assertThat(iterator.hasNext(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-139
+	 */
+	@Test
+	public void rejectsInvalidPropertyWithLeadingUnderscore() {
+		try {
+			PropertyPath.from("_id", Foo.class);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage(), containsString("property _id"));
+		}
+	}
+
+	/**
+	 * @see DATACMNS-139
+	 */
+	@Test
+	public void rejectsNestedInvalidPropertyWithLeadingUnderscore() {
+		try {
+			PropertyPath.from("_foo_id", Sample2.class);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage(), containsString("property id"));
+		}
+	}
+
+	/**
+	 * @see DATACMNS-139
+	 */
+	@Test
+	public void rejectsNestedInvalidPropertyExplictlySplitWithLeadingUnderscore() {
+		try {
+			PropertyPath.from("_foo__id", Sample2.class);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage(), containsString("property _id"));
+		}
 	}
 
 	private class Foo {
