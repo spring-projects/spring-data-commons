@@ -177,7 +177,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	protected boolean isEntity() {
 
-		boolean isComplexType = !simpleTypeHolder.isSimpleType(information.getActualType().getType());
+		TypeInformation<?> actualType = information.getActualType();
+		boolean isComplexType = actualType == null ? false : !simpleTypeHolder.isSimpleType(actualType.getType());
 		return isComplexType && !isTransient() && !isCollectionLike() && !isMap();
 	}
 

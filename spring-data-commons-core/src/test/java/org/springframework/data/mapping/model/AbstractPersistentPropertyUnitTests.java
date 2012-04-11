@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.junit.Before;
@@ -54,14 +56,39 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getPersistentEntityType().iterator().hasNext(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-132
+	 */
+	@Test
+	public void isEntityWorksForUntypedMaps() throws Exception {
+
+		Field field = ReflectionUtils.findField(TestClassComplex.class, "map");
+		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
+		assertThat(property.isEntity(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-132
+	 */
+	@Test
+	public void isEntityWorksForUntypedCollection() throws Exception {
+
+		Field field = ReflectionUtils.findField(TestClassComplex.class, "collection");
+		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
+		assertThat(property.isEntity(), is(false));
+	}
+
 	@SuppressWarnings("serial")
 	class TestClassSet extends TreeSet<Object> {
 	}
 
+	@SuppressWarnings("rawtypes")
 	class TestClassComplex {
 
 		String id;
 		TestClassSet testClassSet;
+		Map map;
+		Collection collection;
 	}
 
 	class SamplePersistentProperty extends AbstractPersistentProperty<SamplePersistentProperty> {
