@@ -8,6 +8,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsEmptyIterable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -96,6 +98,33 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getQueryMethods(), is(empty));
 	}
 
+	/**
+	 * @see DATACMNS-151
+	 */
+	@Test
+	public void doesNotConsiderManuallyDefinedSaveMethodAQueryMethod() {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, PagingAndSortingRepository.class,
+				null);
+		assertThat(information.getQueryMethods(), is(IsEmptyIterable.<Method> emptyIterable()));
+	}
+
+	/**
+	 * @see DATACMNS-151
+	 */
+	@Test
+	public void doesNotConsiderRedeclaredSaveMethodAQueryMethod() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+
+		Method saveMethod = BaseRepository.class.getMethod("save", Object.class);
+
+		assertThat(information.getQueryMethods(), is(Matchers.<Method> iterableWithSize(2)));
+		assertThat(information.getQueryMethods(), not(hasItem(saveMethod)));
+	}
+
 	private Method getMethodFrom(Class<?> type, String name) {
 		for (Method method : type.getMethods()) {
 			if (method.getName().equals(name)) {
@@ -133,6 +162,8 @@ public class DefaultRepositoryInformationUnitTests {
 	interface BaseRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
 
 		T findBySomething(String something);
+
+		<K extends T> K save(K entity);
 	}
 
 	interface ConcreteRepository extends BaseRepository<User, Integer> {
@@ -157,5 +188,6 @@ public class DefaultRepositoryInformationUnitTests {
 
 	interface CustomRepository extends ReadOnlyRepository<Object, Long> {
 
+		Object save(Object object);
 	}
 }

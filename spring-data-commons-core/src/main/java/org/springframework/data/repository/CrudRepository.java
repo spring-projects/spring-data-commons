@@ -33,7 +33,7 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	 * @param entity
 	 * @return the saved entity
 	 */
-	T save(T entity);
+	<S extends T> S save(S entity);
 
 	/**
 	 * Saves all given entities.
@@ -42,7 +42,7 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	 * @return the saved entities
 	 * @throws IllegalArgumentException in case the given entity is (@literal null}.
 	 */
-	Iterable<T> save(Iterable<? extends T> entities);
+	<S extends T> Iterable<S> save(Iterable<S> entities);
 
 	/**
 	 * Retrives an entity by its id.
