@@ -16,13 +16,9 @@
 package org.springframework.data.repository.support;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
@@ -31,7 +27,6 @@ import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
 /**
  * {@link org.springframework.core.convert.converter.Converter} to convert arbitrary input into domain classes managed
@@ -44,8 +39,8 @@ import org.springframework.data.repository.core.support.RepositoryFactoryInforma
 public class DomainClassConverter<T extends ConversionService & ConverterRegistry> implements
 		ConditionalGenericConverter, ApplicationContextAware {
 
-	private final Map<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>> repositories = new HashMap<EntityInformation<?, Serializable>, CrudRepository<?, Serializable>>();
 	private final T conversionService;
+	private Repositories repositories = Repositories.NONE;
 
 	public DomainClassConverter(T conversionService) {
 		this.conversionService = conversionService;
@@ -65,9 +60,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 */
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		EntityInformation<?, Serializable> info = getRepositoryForDomainType(targetType.getType());
+		EntityInformation<?, Serializable> info = repositories.getEntityInformationFor(targetType.getType());
 
-		CrudRepository<?, Serializable> repository = repositories.get(info);
+		CrudRepository<?, Serializable> repository = repositories.getRepositoryFor(info);
 		Serializable id = conversionService.convert(source, info.getIdType());
 		return repository.findOne(id);
 	}
@@ -78,47 +73,21 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 */
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		EntityInformation<?, ?> info = getRepositoryForDomainType(targetType.getType());
-
-		if (info == null) {
+		if (!repositories.hasRepositoryFor(targetType.getType())) {
 			return false;
 		}
 
-		return conversionService.canConvert(sourceType.getType(), info.getIdType());
-	}
-
-	private EntityInformation<?, Serializable> getRepositoryForDomainType(Class<?> domainType) {
-
-		for (EntityInformation<?, Serializable> information : repositories.keySet()) {
-
-			if (domainType.equals(information.getJavaType())) {
-				return information;
-			}
-		}
-
-		return null;
+		return conversionService.canConvert(sourceType.getType(), repositories
+				.getEntityInformationFor(targetType.getType()).getIdType());
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setApplicationContext(ApplicationContext context) {
 
-		Collection<RepositoryFactoryInformation> providers = BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
-				RepositoryFactoryInformation.class).values();
-
-		for (RepositoryFactoryInformation entry : providers) {
-
-			EntityInformation<Object, Serializable> metadata = entry.getEntityInformation();
-			Class<CrudRepository<Object, Serializable>> objectType = entry.getRepositoryInterface();
-			CrudRepository<Object, Serializable> repository = BeanFactoryUtils.beanOfTypeIncludingAncestors(context,
-					objectType);
-
-			this.repositories.put(metadata, repository);
-		}
-
+		this.repositories = new Repositories(context);
 		this.conversionService.addConverter(this);
 	}
 }

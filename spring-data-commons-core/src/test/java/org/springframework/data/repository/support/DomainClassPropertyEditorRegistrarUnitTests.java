@@ -16,8 +16,7 @@
 package org.springframework.data.repository.support;
 
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -101,7 +100,7 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 	private <T> Map<String, T> getBeanAsMap(T bean) {
 
 		Map<String, T> beanMap = new HashMap<String, T>();
-		beanMap.put(bean.getClass().getName(), bean);
+		beanMap.put(bean.toString(), bean);
 		return beanMap;
 	}
 

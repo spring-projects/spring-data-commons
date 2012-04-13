@@ -16,19 +16,14 @@
 package org.springframework.data.repository.support;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.PropertyEditorRegistry;
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
 /**
  * Simple helper class to use Hades DAOs to provide {@link java.beans.PropertyEditor}s for domain classes. To get this
@@ -52,50 +47,31 @@ import org.springframework.data.repository.core.support.RepositoryFactoryInforma
  */
 public class DomainClassPropertyEditorRegistrar implements PropertyEditorRegistrar, ApplicationContextAware {
 
-	private final Map<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>> repositories = new HashMap<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>>();
+	private Repositories repositories = Repositories.NONE;
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.beans.PropertyEditorRegistrar#registerCustomEditors
-			 * (org.springframework.beans.PropertyEditorRegistry)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.PropertyEditorRegistrar#registerCustomEditors(org.springframework.beans.PropertyEditorRegistry)
+	 */
 	public void registerCustomEditors(PropertyEditorRegistry registry) {
 
-		for (Entry<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>> entry : repositories
-				.entrySet()) {
+		for (Entry<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>> entry : repositories) {
 
-			EntityInformation<Object, Serializable> metadata = entry.getKey();
+			EntityInformation<Object, Serializable> entityInformation = entry.getKey();
 			CrudRepository<Object, Serializable> repository = entry.getValue();
 
 			DomainClassPropertyEditor<Object, Serializable> editor = new DomainClassPropertyEditor<Object, Serializable>(
-					repository, metadata, registry);
+					repository, entityInformation, registry);
 
-			registry.registerCustomEditor(metadata.getJavaType(), editor);
+			registry.registerCustomEditor(entityInformation.getJavaType(), editor);
 		}
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.context.ApplicationContextAware#setApplicationContext
-			 * (org.springframework.context.ApplicationContext)
-			 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 */
 	public void setApplicationContext(ApplicationContext context) {
-
-		Collection<RepositoryFactoryInformation> providers = BeanFactoryUtils.beansOfTypeIncludingAncestors(context,
-				RepositoryFactoryInformation.class).values();
-
-		for (RepositoryFactoryInformation information : providers) {
-
-			EntityInformation<Object, Serializable> metadata = information.getEntityInformation();
-			Class<CrudRepository<Object, Serializable>> objectType = information.getRepositoryInterface();
-			CrudRepository<Object, Serializable> repository = BeanFactoryUtils.beanOfType(context, objectType);
-
-			this.repositories.put(metadata, repository);
-		}
+		this.repositories = new Repositories(context);
 	}
 }
