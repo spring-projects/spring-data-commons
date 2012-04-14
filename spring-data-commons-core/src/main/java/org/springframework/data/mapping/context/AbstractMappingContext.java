@@ -167,6 +167,24 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentEntity(org.springframework.data.mapping.PersistentProperty)
+	 */
+	public E getPersistentEntity(P persistentProperty) {
+
+		if (persistentProperty == null) {
+			return null;
+		}
+
+		try {
+			read.lock();
+			return persistentEntities.get(persistentProperty.getTypeInformation());
+		} finally {
+			read.unlock();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.Class, java.lang.String)
 	 */
 	public PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath) {
@@ -260,7 +278,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			// Inform listeners
 			if (null != applicationEventPublisher) {
-				applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(entity, typeInformation));
+				applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(entity));
 			}
 
 			return entity;

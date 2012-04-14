@@ -175,7 +175,11 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return getType().isArray();
 	}
 
-	protected boolean isEntity() {
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isEntity()
+	 */
+	public boolean isEntity() {
 
 		TypeInformation<?> actualType = information.getActualType();
 		boolean isComplexType = actualType == null ? false : !simpleTypeHolder.isSimpleType(actualType.getType());

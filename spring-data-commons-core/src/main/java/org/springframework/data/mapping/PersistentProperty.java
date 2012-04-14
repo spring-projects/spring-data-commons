@@ -55,6 +55,14 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	Association<P> getAssociation();
 
 	/**
+	 * Returns whether the type of the {@link PersistentProperty} is actually to be regarded as {@link PersistentEntity}
+	 * in turn.
+	 * 
+	 * @return
+	 */
+	boolean isEntity();
+
+	/**
 	 * Returns whether the property is the ID property of the owning {@link PersistentEntity}.
 	 * 
 	 * @return
