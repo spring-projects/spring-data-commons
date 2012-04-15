@@ -10,7 +10,8 @@
     <para>The <code>&lt;repositories /&gt;</code> element acts as container
     for <code>&lt;repository /&gt;</code> elements or can be left empty to
     trigger auto detection<footnote>
-        <para>see <xref linkend="config.autoconfig" /></para>
+        <para>see <xref
+        linkend="repositories.create-instances.spring" /></para>
       </footnote> of repository instances. Attributes defined for
     <code>&lt;repositories /&gt;</code> are propagated to contained
     <code>&lt;repository /&gt;</code> elements but can be overridden of
