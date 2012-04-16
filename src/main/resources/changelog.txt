@@ -1,6 +1,32 @@
 Spring Data Commons Changelog
 =============================================
 
+Changes in version 1.3.0.RC1 (2012-04-16)
+-----------------------------------------
+
+** Bug
+    * [DATACMNS-120] - PreferredConstructor.Parameter does not have equals(...) and hashCode() methods
+    * [DATACMNS-132] - NullPointerException AbstractPersistentProperty inside isEntity
+    * [DATACMNS-133] - Documented Configuration of Conversion Service with DomainClassConverter Does Not Work
+    * [DATACMNS-139] - StackOverflowError from infinite recursion in PropertyPath.create:326
+    * [DATACMNS-150] - Repository lookup in DomainClassConverter and DomainClassPropertyEditorRegistrar throws ClassCastException if not all repositories implement CrudRepository
+
+** Improvement
+    * [DATACMNS-111] - Add dynamic finder keywords StartingWith, EndingWith & Containing
+    * [DATACMNS-134] - EntityInstantiator should be capable of instantiating member classes
+    * [DATACMNS-141] - Add Before and After as keywords for query derivation
+    * [DATACMNS-142] - Improve API of UserCredentials
+    * [DATACMNS-151] - Improve generics in CrudRepository.save(…)
+    * [DATACMNS-152] - Improve API in mapping subsystem
+
+** New Feature
+    * [DATACMNS-135] - Add basic infrastructure for versioning stores
+
+** Task
+    * [DATACMNS-144] - Polish reference documentation for repositories
+    * [DATACMNS-145] - Add general list of supported keywords to reference documentation
+    * [DATACMNS-148] - Release 1.3.0.RC1
+
 Changes in version 1.3.0.M1 (2012-02-03)
 ----------------------------------------
 ** Bug
