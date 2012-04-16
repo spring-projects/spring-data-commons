@@ -4,7 +4,7 @@
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons-dist</artifactId>
 	<name>Spring Data Commons Distribution</name>
-	<version>1.3.0.BUILD-SNAPSHOT</version>
+	<version>1.3.0.RC1</version>
 	<packaging>pom</packaging>
 
 	<modules>
