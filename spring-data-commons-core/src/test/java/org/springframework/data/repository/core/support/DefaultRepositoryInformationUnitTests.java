@@ -120,9 +120,13 @@ public class DefaultRepositoryInformationUnitTests {
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
 
 		Method saveMethod = BaseRepository.class.getMethod("save", Object.class);
+		Method deleteMethod = BaseRepository.class.getMethod("delete", Object.class);
 
-		assertThat(information.getQueryMethods(), is(Matchers.<Method> iterableWithSize(2)));
-		assertThat(information.getQueryMethods(), not(hasItem(saveMethod)));
+		Iterable<Method> queryMethods = information.getQueryMethods();
+
+		assertThat(queryMethods, not(hasItem(saveMethod)));
+		assertThat(queryMethods, not(hasItem(deleteMethod)));
+		assertThat(queryMethods, is(Matchers.<Method> iterableWithSize(2)));
 	}
 
 	private Method getMethodFrom(Class<?> type, String name) {
@@ -159,11 +163,13 @@ public class DefaultRepositoryInformationUnitTests {
 		}
 	}
 
-	interface BaseRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
+	interface BaseRepository<S, ID extends Serializable> extends CrudRepository<S, ID> {
 
-		T findBySomething(String something);
+		S findBySomething(String something);
 
-		<K extends T> K save(K entity);
+		<K extends S> K save(K entity);
+
+		void delete(S entity);
 	}
 
 	interface ConcreteRepository extends BaseRepository<User, Integer> {

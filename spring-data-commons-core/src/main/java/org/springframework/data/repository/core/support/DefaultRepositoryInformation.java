@@ -292,7 +292,10 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 			return true;
 		}
 
-		if (DOMAIN_TYPE_NAME.equals(variable.getBounds()[0].toString()) && parameterType.isAssignableFrom(entityType)) {
+		Type boundType = variable.getBounds()[0];
+		String referenceName = boundType instanceof TypeVariable ? boundType.toString() : variable.toString();
+
+		if (DOMAIN_TYPE_NAME.equals(referenceName) && parameterType.isAssignableFrom(entityType)) {
 			return true;
 		}
 
