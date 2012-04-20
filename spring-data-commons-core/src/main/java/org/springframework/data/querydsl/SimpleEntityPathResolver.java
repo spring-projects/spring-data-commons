@@ -18,9 +18,10 @@ package org.springframework.data.querydsl;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import com.mysema.query.types.EntityPath;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
+
+import com.mysema.query.types.EntityPath;
 
 /**
  * Simple implementation of {@link EntityPathResolver} to lookup a query class by reflection and using the static field
@@ -49,7 +50,7 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 		String pathClassName = getQueryClassName(domainClass);
 
 		try {
-			Class<?> pathClass = ClassUtils.forName(pathClassName, SimpleEntityPathResolver.class.getClassLoader());
+			Class<?> pathClass = ClassUtils.forName(pathClassName, domainClass.getClassLoader());
 			Field field = getStaticFieldOfType(pathClass);
 
 			if (field == null) {
