@@ -8,7 +8,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsEmptyIterable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -126,7 +125,21 @@ public class DefaultRepositoryInformationUnitTests {
 
 		assertThat(queryMethods, not(hasItem(saveMethod)));
 		assertThat(queryMethods, not(hasItem(deleteMethod)));
-		assertThat(queryMethods, is(Matchers.<Method> iterableWithSize(2)));
+	}
+
+	@Test
+	public void onlyReturnsMostConcreteQueryMethod() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+
+		Method intermediateMethod = BaseRepository.class.getMethod("genericMethodToOverride", String.class);
+		Method concreteMethod = ConcreteRepository.class.getMethod("genericMethodToOverride", String.class);
+
+		Iterable<Method> queryMethods = information.getQueryMethods();
+
+		assertThat(queryMethods, hasItem(concreteMethod));
+		assertThat(queryMethods, not(hasItem(intermediateMethod)));
 	}
 
 	private Method getMethodFrom(Class<?> type, String name) {
@@ -167,6 +180,8 @@ public class DefaultRepositoryInformationUnitTests {
 
 		S findBySomething(String something);
 
+		S genericMethodToOverride(String something);
+
 		<K extends S> K save(K entity);
 
 		void delete(S entity);
@@ -175,6 +190,8 @@ public class DefaultRepositoryInformationUnitTests {
 	interface ConcreteRepository extends BaseRepository<User, Integer> {
 
 		User findBySomethingDifferent(String somethingDifferent);
+
+		User genericMethodToOverride(String something);
 	}
 
 	interface ReadOnlyRepository<T, ID extends Serializable> extends Repository<T, ID> {

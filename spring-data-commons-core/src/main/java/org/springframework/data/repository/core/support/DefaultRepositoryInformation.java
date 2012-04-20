@@ -31,6 +31,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Default implementation of {@link RepositoryInformation}.
@@ -155,6 +156,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 		Set<Method> result = new HashSet<Method>();
 
 		for (Method method : getRepositoryInterface().getMethods()) {
+			method = ClassUtils.getMostSpecificMethod(method, getRepositoryInterface());
 			if (!isCustomMethod(method) && !isBaseClassMethod(method)) {
 				result.add(method);
 			}
