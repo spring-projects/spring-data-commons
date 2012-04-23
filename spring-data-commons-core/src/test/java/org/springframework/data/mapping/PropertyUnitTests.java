@@ -205,6 +205,14 @@ public class PropertyUnitTests {
 		}
 	}
 
+	/**
+	 * @see DATACMNS 158
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsInvalidPathsContainingDigits() {
+		PropertyPath.from("PropertyThatWillFail4Sure", Foo.class);
+	}
+
 	private class Foo {
 
 		String userName;
