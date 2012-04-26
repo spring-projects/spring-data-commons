@@ -664,7 +664,9 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
       <example>
         <title>An interface declaring custom shared behaviour</title>
 
-        <para><programlisting language="java">public interface MyRepository&lt;T, ID extends Serializable&gt;
+        <para>
+<programlisting language="java">
+public interface MyRepository&lt;T, ID extends Serializable&gt;
   extends JpaRepository&lt;T, ID&gt; {
 
   void sharedCustomMethod(ID id);
@@ -672,28 +674,45 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
       </example>
 
       <para>Now your individual repository interfaces will extend this
-      intermediate interface to include the functionality declared. The second
-      step is to create an implementation of this interface that extends the
-      persistence technology specific repository base class which will act as
-      custom base class for the repository proxies then.</para>
+      intermediate interface instead of the
+      <interfacename>Repository</interfacename> interface to include the
+      functionality declared. The second step is to create an implementation
+      of this interface that extends the persistence technology specific
+      repository base class which will then act as a custom base class for
+      the repository proxies.</para>
 
       <note>
-        <para>If you're using automatic repository interface detection using
-        the Spring namespace using the interface just as is will cause Spring
-        to create an instance of <interfacename>MyRepository</interfacename>.
-        This is of course not desired as it just acts as intermediary between
-        <interfacename>Repository</interfacename> and the actual repository
-        interfaces you want to define for each entity. To exclude an interface
-        extending <interfacename>Repository</interfacename> from being
-        instantiated as repository instance annotate it with
-        <interfacename>@NoRepositoryBean</interfacename>.</para>
+        <para>
+        The default behaviour of the Spring <code>&lt;repositories /&gt;</code>
+        namespace is to provide an implementation for all interfaces that fall
+        under the <code>base-package</code>. This means that if left in it's
+        current state, an implementation instance of
+        <interfacename>MyRepository</interfacename> will be created by Spring.
+        This is of course not desired as it is just supposed to act as an
+        intermediary between <interfacename>Repository</interfacename> and the
+        actual repository interfaces you want to define for each entity. To
+        exclude an interface extending <interfacename>Repository</interfacename>
+        from being instantiated as a repository instance it can either be annotate
+        it with <interfacename>@NoRepositoryBean</interfacename> or moved out
+        side of the configured <code>base-package</code>.</para>
       </note>
 
       <example>
         <title>Custom repository base class</title>
 
-        <programlisting language="java">public class MyRepositoryImpl&lt;T, ID extends Serializable&gt;
+<programlisting language="java">
+public class MyRepositoryImpl&lt;T, ID extends Serializable&gt;
   extends SimpleJpaRepository&lt;T, ID&gt; implements MyRepository&lt;T, ID&gt; {
+
+  private EntityManager entityManager;
+
+  // There are two constructors to choose from, either can be used.
+  public MyRepositoryImpl(Class&lt;T&gt; domainClass, EntityManager entityManager) {
+    super(domainClass, entityManager);
+
+    // This is the recommended method for accessing inherited class dependencies.
+    this.entityManager = entityManager;
+  }
 
   public void sharedCustomMethod(ID id) {
     // implementation goes here
@@ -701,30 +720,47 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
 }</programlisting>
       </example>
 
-      <para>The last step to get this implementation used as base class for
-      Spring Data repositories is replacing the standard
-      <classname>RepositoryFactoryBean</classname> with a custom one using a
-      custom <classname>RepositoryFactory</classname> that in turn creates
-      instances of your <classname>MyRepositoryImpl</classname> class.</para>
+      <para>The last step is to create a custom repository factory to replace
+      the default <classname>RepositoryFactoryBean</classname> that will in
+      turn produce a custom <classname>RepositoryFactory</classname>. The
+      new repository factory will then provide your
+      <classname>MyRepositoryImpl</classname> as the implementation of any
+      interfaces that extend the <interfacename>Repository</interfacename>
+      interface, replacing the <classname>SimpleJpaRepository</classname>
+      implementation you just extended.
 
       <example>
         <title>Custom repository factory bean</title>
 
-        <programlisting language="java">public class MyRepositoryFactoryBean&lt;T extends JpaRepository&lt;?, ?&gt;
-  extends JpaRepositoryFactoryBean&lt;T&gt; {
+<programlisting language="java">
+public class MyRepositoryFactoryBean&lt;R extends JpaRepository&lt;T, I&gt;, T, I extends Serializable&gt;
+  extends JpaRepositoryFactoryBean&lt;R, T, I&gt; {
 
-  protected RepositoryFactorySupport getRepositoryFactory(…) {
-    return new MyRepositoryFactory(…);
+  protected RepositoryFactorySupport createRepositoryFactory(EntityManager entityManager) {
+
+    return new MyRepositoryFactory(entityManager);
   }
 
-  private static class MyRepositoryFactory extends JpaRepositoryFactory{
+  private static class MyRepositoryFactory&lt;T, I extends Serializable&gt; extends JpaRepositoryFactory {
 
-    public MyRepositoryImpl getTargetRepository(…) {
-      return new MyRepositoryImpl(…);
+    private EntityManager entityManager;
+
+    public MyRepositoryFactory(EntityManager entityManager) {
+      super(entityManager);
+
+      this.entityManager = entityManager;
     }
 
-    public Class&lt;? extends RepositorySupport&gt; getRepositoryClass() {
-      return MyRepositoryImpl.class;
+    protected Object getTargetRepository(RepositoryMetadata metadata) {
+
+      return new MyRepositoryImpl&lt;T, I&gt;((Class&lt;T&gt;) metadata.getDomainClass(), entityManager);
+    }
+
+    protected Class&lt;?&gt; getRepositoryBaseClass(RepositoryMetadata metadata) {
+
+      // The RepositoryMetadata can be safely ignored, it is used by the JpaRepositoryFactory
+      //to check for QueryDslJpaRepository's which is out of scope.
+      return MyRepository.class;
     }
   }
 }</programlisting>
