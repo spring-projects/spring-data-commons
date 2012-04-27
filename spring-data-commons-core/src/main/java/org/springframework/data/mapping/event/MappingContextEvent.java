@@ -18,7 +18,6 @@ package org.springframework.data.mapping.event;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
@@ -34,7 +33,6 @@ public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends Per
 
 	private static final long serialVersionUID = 1336466833846092490L;
 
-	private final TypeInformation<?> typeInformation;
 	private final E source;
 
 	/**
@@ -42,40 +40,12 @@ public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends Per
 	 * 
 	 * @param source must not be {@literal null}.
 	 */
-	@SuppressWarnings("deprecation")
 	public MappingContextEvent(E source) {
-		this(source, source.getTypeInformation());
-	}
 
-	/**
-	 * Creates a new {@link MappingContextEvent} for the given {@link PersistentEntity} and {@link TypeInformation}.
-	 * 
-	 * @deprecated use {@link #MappingContextEvent(PersistentEntity)} instead. Will be removed for 1.3.GA.
-	 * @param source must not be {@literal null}.
-	 * @param typeInformation must not be {@literal null}.
-	 */
-	@Deprecated
-	public MappingContextEvent(E source, TypeInformation<?> typeInformation) {
 		super(source);
 
 		Assert.notNull(source);
-		Assert.notNull(typeInformation);
-
 		this.source = source;
-		this.typeInformation = typeInformation;
-	}
-
-	/**
-	 * The {@link TypeInformation} the event was created for (usually the one derived from the underlying
-	 * {@link PersistentEntity}).
-	 * 
-	 * @deprecated use the {@link TypeInformation} available from {@link #getPersistentEntity()} instead. Will be removed
-	 *             for 1.3.GA.
-	 * @return
-	 */
-	@Deprecated
-	public TypeInformation<?> getTypeInformation() {
-		return typeInformation;
 	}
 
 	/**
