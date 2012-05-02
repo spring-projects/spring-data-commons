@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,6 +132,39 @@ public class TypeDiscovererUnitTests {
 		TypeDiscoverer<Map> discoverer = new TypeDiscoverer<Map>(Map.class, null);
 		assertThat(discoverer.getComponentType(), is(nullValue()));
 		assertThat(discoverer.getMapValueType(), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-167
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void doesNotConsiderTypeImplementingIterableACollection() {
+
+		TypeDiscoverer<Person> discoverer = new TypeDiscoverer<Person>(Person.class, null);
+		TypeInformation reference = ClassTypeInformation.from(Address.class);
+
+		TypeInformation<?> addresses = discoverer.getProperty("addresses");
+		assertThat(addresses.isCollectionLike(), is(false));
+		assertThat(addresses.getComponentType(), is(reference));
+
+		TypeInformation<?> adressIterable = discoverer.getProperty("addressIterable");
+		assertThat(adressIterable.isCollectionLike(), is(true));
+		assertThat(adressIterable.getComponentType(), is(reference));
+	}
+
+	class Person {
+
+		Addresses addresses;
+		Iterable<Address> addressIterable;
+	}
+
+	abstract class Addresses implements Iterable<Address> {
+
+	}
+
+	class Address {
+
 	}
 
 	class SelfReferencing {

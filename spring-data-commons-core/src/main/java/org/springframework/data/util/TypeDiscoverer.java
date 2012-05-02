@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -138,9 +139,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.TypeInformation#getParameterTypes(java.lang.reflect.Constructor)
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getParameterTypes(java.lang.reflect.Constructor)
+	 */
 	public List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor) {
 
 		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
@@ -153,12 +154,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see
-		 * org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation
-		 * #getField(java.lang.String)
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getProperty(java.lang.String)
+	 */
 	public TypeInformation<?> getProperty(String fieldname) {
 
 		int separatorIndex = fieldname.indexOf('.');
@@ -228,17 +226,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see
-		 * org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation
-		 * #getType()
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getType()
+	 */
 	public Class<S> getType() {
 		return resolveType(type);
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getActualType()
 	 */
 	public TypeInformation<?> getActualType() {
@@ -251,16 +247,18 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.util.TypeInformation#isMap()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#isMap()
+	 */
 	public boolean isMap() {
 		return Map.class.isAssignableFrom(getType());
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.util.TypeInformation#getMapValueType()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getMapValueType()
+	 */
 	public TypeInformation<?> getMapValueType() {
 
 		if (!isMap()) {
@@ -275,21 +273,30 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return arguments == null ? null : createInfo(arguments[index]);
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.util.TypeInformation#isCollectionLike()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#isCollectionLike()
+	 */
 	public boolean isCollectionLike() {
 
 		Class<?> rawType = getType();
-		return rawType.isArray() || Iterable.class.isAssignableFrom(rawType);
+
+		if (rawType.isArray() || Iterable.class.equals(rawType)) {
+			return true;
+		}
+
+		return Collection.class.isAssignableFrom(rawType);
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.util.TypeInformation#getComponentType()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getComponentType()
+	 */
 	public TypeInformation<?> getComponentType() {
 
-		if (!(isMap() || isCollectionLike())) {
+		Class<S> rawType = getType();
+
+		if (!(isMap() || isCollectionLike() || Iterable.class.isAssignableFrom(rawType))) {
 			return null;
 		}
 
@@ -297,8 +304,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			ParameterizedType parameterizedType = (ParameterizedType) type;
 			return createInfo(parameterizedType.getActualTypeArguments()[0]);
 		}
-
-		Class<S> rawType = getType();
 
 		if (isMap()) {
 			return getTypeArgument(rawType, Map.class, 0);
@@ -326,10 +331,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -353,10 +357,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see java.lang.Object#hashCode()
-		 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 
