@@ -1,5 +1,28 @@
 Spring Data Commons Changelog
-=============================================
+=============================
+
+Changes in version 1.3.0.RC2 (2012-05-02)
+-----------------------------------------
+
+** Bug
+    * [DATACMNS-153] - OSGi issue when using a Repository that extends QueryDslPredicateExecutor (Spring Data + QueryDsl
+    * [DATACMNS-154] - Overwriting of delete(T entity) saveAndFlush(T entity); does not work anymore
+    * [DATACMNS-157] - @Query in extending interface is not picked up correctly
+    * [DATACMNS-160] - Regression of Repository instances with only delete* methods
+
+** Improvement
+    * [DATACMNS-159] - Example 1.16. Custom repository factory bean is outdated
+    * [DATACMNS-167] - TypeDiscoverer should not consider types implementing Iterable<…> collection like
+
+** Refactoring
+    * [DATACMNS-143] - Remove deprecations in MappingContextEvent
+    * [DATACMNS-166] - Improve API of Repositories / RepositoryFactoryInformation
+
+** Task
+    * [DATACMNS-156] - Remove deprecated persistence package
+    * [DATACMNS-161] - Upgrade to Querydsl 2.5.0
+    * [DATACMNS-165] - Release 1.3.0.RC2
+
 
 Changes in version 1.3.0.RC1 (2012-04-16)
 -----------------------------------------
