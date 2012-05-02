@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
 
 /**
  * {@link org.springframework.core.convert.converter.Converter} to convert arbitrary input into domain classes managed
@@ -60,9 +60,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 */
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		EntityInformation<?, Serializable> info = repositories.getEntityInformationFor(targetType.getType());
+		RepositoryInformation info = repositories.getRepositoryInformationFor(targetType.getType());
 
-		CrudRepository<?, Serializable> repository = repositories.getRepositoryFor(info);
+		CrudRepository<?, Serializable> repository = repositories.getRepositoryFor(targetType.getType());
 		Serializable id = conversionService.convert(source, info.getIdType());
 		return repository.findOne(id);
 	}
@@ -77,8 +77,8 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			return false;
 		}
 
-		return conversionService.canConvert(sourceType.getType(), repositories
-				.getEntityInformationFor(targetType.getType()).getIdType());
+		return conversionService.canConvert(sourceType.getType(),
+				repositories.getRepositoryInformationFor(targetType.getType()).getIdType());
 	}
 
 	/*

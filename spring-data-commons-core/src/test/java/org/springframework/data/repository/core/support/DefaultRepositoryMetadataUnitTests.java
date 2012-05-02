@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,24 +54,24 @@ public class DefaultRepositoryMetadataUnitTests {
 	public void looksUpDomainClassCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
-		assertEquals(User.class, metadata.getDomainClass());
+		assertEquals(User.class, metadata.getDomainType());
 
 		metadata = new DefaultRepositoryMetadata(SomeDao.class);
-		assertEquals(User.class, metadata.getDomainClass());
+		assertEquals(User.class, metadata.getDomainType());
 	}
 
 	@Test
 	public void findsDomainClassOnExtensionOfDaoInterface() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtensionOfUserCustomExtendedDao.class);
-		assertEquals(User.class, metadata.getDomainClass());
+		assertEquals(User.class, metadata.getDomainType());
 	}
 
 	@Test
 	public void detectsParameterizedEntitiesCorrectly() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericEntityRepository.class);
-		assertEquals(GenericEntity.class, metadata.getDomainClass());
+		assertEquals(GenericEntity.class, metadata.getDomainType());
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class DefaultRepositoryMetadataUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
 
-		assertEquals(Integer.class, metadata.getIdClass());
+		assertEquals(Integer.class, metadata.getIdType());
 	}
 
 	@SuppressWarnings("unused")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -23,9 +24,11 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.util.Assert;
 
 /**
@@ -86,60 +89,62 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.namedQueries = namedQueries;
 	}
 
-	/* (non-Javadoc)
-			 * @see org.springframework.data.repository.support.EntityMetadataProvider#getEntityMetadata()
-			 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getEntityInformation()
+	 */
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
 
 		RepositoryMetadata repositoryMetadata = factory.getRepositoryMetadata(repositoryInterface);
-		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainClass());
+		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainType());
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getRepositoryInformation()
+	 */
+	public RepositoryInformation getRepositoryInformation() {
+		RepositoryMetadata metadata = factory.getRepositoryMetadata(repositoryInterface);
+		return this.factory.getRepositoryInformation(metadata,
+				customImplementation == null ? null : customImplementation.getClass());
 	}
 
 	/* (non-Javadoc)
-			 * @see org.springframework.data.repository.support.RepositoryFactoryInformation#getRepositoryInterface()
-			 */
-	public Class<? extends T> getRepositoryInterface() {
-
-		return repositoryInterface;
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getQueryMethods()
+	 */
+	public List<QueryMethod> getQueryMethods() {
+		return factory.getQueryMethods();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.beans.factory.FactoryBean#getObject()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
 	public T getObject() {
-
 		return factory.getRepository(repositoryInterface, customImplementation);
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
 	@SuppressWarnings("unchecked")
 	public Class<? extends T> getObjectType() {
-
 		return (Class<? extends T>) (null == repositoryInterface ? Repository.class : repositoryInterface);
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+	 */
 	public boolean isSingleton() {
-
 		return true;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
-	 * @see
-	 * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	public void afterPropertiesSet() {
 

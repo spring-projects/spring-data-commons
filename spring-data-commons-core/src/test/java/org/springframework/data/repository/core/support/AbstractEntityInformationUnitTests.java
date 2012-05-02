@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,13 +33,13 @@ public class AbstractEntityInformationUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullDomainClass() throws Exception {
 
-		new DummyAbstractEntityInformation(null);
+		new DummyEntityInformation<Object>(null);
 	}
 
 	@Test
 	public void considersEntityNewIfGetIdReturnsNull() throws Exception {
 
-		EntityInformation<Object, Serializable> metadata = new DummyAbstractEntityInformation(Object.class);
+		EntityInformation<Object, Serializable> metadata = new DummyEntityInformation<Object>(Object.class);
 		assertThat(metadata.isNew(null), is(true));
 		assertThat(metadata.isNew(new Object()), is(false));
 	}

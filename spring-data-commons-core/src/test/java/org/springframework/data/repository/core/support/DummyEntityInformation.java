@@ -22,14 +22,14 @@ import java.io.Serializable;
  * 
  * @author Oliver Gierke
  */
-public class DummyAbstractEntityInformation<T> extends AbstractEntityInformation<T, Serializable> {
+public class DummyEntityInformation<T> extends AbstractEntityInformation<T, Serializable> {
 
 	/**
-	 * Creates a new {@link DummyAbstractEntityInformation} for the given domain class.
+	 * Creates a new {@link DummyEntityInformation} for the given domain class.
 	 * 
 	 * @param domainClass
 	 */
-	public DummyAbstractEntityInformation(Class<T> domainClass) {
+	public DummyEntityInformation(Class<T> domainClass) {
 		super(domainClass);
 	}
 

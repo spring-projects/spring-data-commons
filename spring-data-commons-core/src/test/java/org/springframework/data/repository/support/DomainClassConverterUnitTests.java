@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,8 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.support.DummyEntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
 /**
@@ -63,13 +66,14 @@ public class DomainClassConverterUnitTests {
 	@Mock
 	DefaultConversionService service;
 	@Mock
-	EntityInformation<User, Long> information;
-	@Mock
-	RepositoryFactoryInformation<User, Long> provider;
+	RepositoryFactoryInformation<User, Serializable> provider;
 
 	@Before
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setUp() {
+
+		EntityInformation<User, Serializable> information = new DummyEntityInformation<User>(User.class);
+		RepositoryInformation repositoryInformation = new DummyRepositoryInformation(UserRepository.class);
 
 		converter = new DomainClassConverter(service);
 		providers = new HashMap<String, RepositoryFactoryInformation>();
@@ -78,9 +82,7 @@ public class DomainClassConverterUnitTests {
 		targetDescriptor = TypeDescriptor.valueOf(User.class);
 
 		when(provider.getEntityInformation()).thenReturn(information);
-		when(provider.getRepositoryInterface()).thenReturn((Class) UserRepository.class);
-		when(information.getJavaType()).thenReturn(User.class);
-		when(information.getIdType()).thenReturn(Long.class);
+		when(provider.getRepositoryInformation()).thenReturn(repositoryInformation);
 	}
 
 	@Test
@@ -155,7 +157,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	private void configureContextToReturnBeans(ApplicationContext context, UserRepository repository,
-			RepositoryFactoryInformation<User, Long> provider) {
+			RepositoryFactoryInformation<User, Serializable> provider) {
 
 		Map<String, UserRepository> map = getBeanAsMap(repository);
 		when(context.getBeansOfType(UserRepository.class)).thenReturn(map);

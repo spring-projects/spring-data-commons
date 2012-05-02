@@ -34,8 +34,8 @@ public class AnnotationRepositoryMetadataUnitTests {
 	public void handlesRepositoryProxyAnnotationCorrectly() {
 
 		RepositoryMetadata metadata = new AnnotationRepositoryMetadata(AnnotatedRepository.class);
-		assertEquals(User.class, metadata.getDomainClass());
-		assertEquals(Integer.class, metadata.getIdClass());
+		assertEquals(User.class, metadata.getDomainType());
+		assertEquals(Integer.class, metadata.getIdType());
 	}
 
 	@Test(expected = IllegalArgumentException.class)

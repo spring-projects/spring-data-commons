@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.repository.core.support;
+
+import java.io.Serializable;
 
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -48,7 +50,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
 	 */
-	public Class<?> getIdClass() {
+	public Class<? extends Serializable> getIdType() {
 		RepositoryDefinition annotation = repositoryInterface.getAnnotation(RepositoryDefinition.class);
 		return annotation == null ? null : annotation.idClass();
 	}
@@ -57,7 +59,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
 	 */
-	public Class<?> getDomainClass() {
+	public Class<?> getDomainType() {
 		RepositoryDefinition annotation = repositoryInterface.getAnnotation(RepositoryDefinition.class);
 		return annotation == null ? null : annotation.domainClass();
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import static org.springframework.core.GenericTypeResolver.*;
 import static org.springframework.data.repository.util.ClassUtils.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -83,16 +84,16 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
 	 */
-	public Class<?> getDomainClass() {
-		return metadata.getDomainClass();
+	public Class<?> getDomainType() {
+		return metadata.getDomainType();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
 	 */
-	public Class<?> getIdClass() {
-		return metadata.getIdClass();
+	public Class<? extends Serializable> getIdType() {
+		return metadata.getIdType();
 	}
 
 	/*
@@ -287,8 +288,8 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 */
 	private boolean matchesGenericType(TypeVariable<?> variable, Class<?> parameterType) {
 
-		Class<?> entityType = getDomainClass();
-		Class<?> idClass = getIdClass();
+		Class<?> entityType = getDomainType();
+		Class<?> idClass = getIdType();
 
 		if (ID_TYPE_NAME.equals(variable.getName()) && parameterType.isAssignableFrom(idClass)) {
 			return true;

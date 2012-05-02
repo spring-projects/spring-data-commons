@@ -34,7 +34,9 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.support.DummyAbstractEntityInformation;
+import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.support.DummyEntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
@@ -48,9 +50,11 @@ public class DomainClassConverterIntegrationTests {
 
 	@Mock
 	@SuppressWarnings("rawtypes")
-	static RepositoryFactoryBeanSupport factory;
+	RepositoryFactoryBeanSupport factory;
 	@Mock
-	static PersonRepository repository;
+	PersonRepository repository;
+	@Mock
+	RepositoryInformation information;
 
 	@Test
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -66,11 +70,16 @@ public class DomainClassConverterIntegrationTests {
 		beanFactory.registerBeanDefinition("postProcessor", new RootBeanDefinition(PredictingProcessor.class));
 		beanFactory.registerBeanDefinition("repoFactory", new RootBeanDefinition(RepositoryFactoryBeanSupport.class));
 
-		DummyAbstractEntityInformation<Person> entityInformation = new DummyAbstractEntityInformation<Person>(Person.class);
+		when(information.getRepositoryInterface()).thenReturn((Class) PersonRepository.class);
+		when(information.getDomainType()).thenReturn((Class) Person.class);
+		when(information.getIdType()).thenReturn((Class) Serializable.class);
+
+		EntityInformation<Person, Serializable> entityInformation = new DummyEntityInformation<Person>(Person.class);
+
 		when(factory.getObject()).thenReturn(repository);
 		when(factory.getObjectType()).thenReturn(PersonRepository.class);
 		when(factory.getEntityInformation()).thenReturn(entityInformation);
-		when(factory.getRepositoryInterface()).thenReturn(PersonRepository.class);
+		when(factory.getRepositoryInformation()).thenReturn(information);
 
 		GenericApplicationContext context = new GenericApplicationContext(beanFactory);
 		assertThat(context.getBeansOfType(RepositoryFactoryInformation.class).values().size(), is(1));

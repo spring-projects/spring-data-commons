@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,16 @@
 package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
+import java.util.List;
 
-import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.QueryMethod;
 
 /**
- * Interface for components that can provide {@link EntityInformation} this interface
+ * Interface for components that can provide meta-information about a repository factory, the backing
+ * {@link EntityInformation} and {@link RepositoryInformation} as well as the {@link QueryMethod}s exposed by the
+ * repository.
  * 
  * @author Oliver Gierke
  */
@@ -35,9 +39,16 @@ public interface RepositoryFactoryInformation<T, ID extends Serializable> {
 	EntityInformation<T, ID> getEntityInformation();
 
 	/**
-	 * Returns the interface of the {@link Repository} the factory will create.
+	 * Returns the {@link RepositoryInformation} to determine meta-information about the repository being used.
 	 * 
 	 * @return
 	 */
-	Class<? extends Repository<T, ID>> getRepositoryInterface();
+	RepositoryInformation getRepositoryInformation();
+
+	/**
+	 * Returns all {@link QueryMethod}s declared for that repository.
+	 * 
+	 * @return
+	 */
+	List<QueryMethod> getQueryMethods();
 }

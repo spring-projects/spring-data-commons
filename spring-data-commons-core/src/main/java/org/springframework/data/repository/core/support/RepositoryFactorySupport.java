@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,12 @@ public abstract class RepositoryFactorySupport {
 	private QueryLookupStrategy.Key queryLookupStrategyKey;
 	private List<QueryCreationListener<?>> queryPostProcessors = new ArrayList<QueryCreationListener<?>>();
 	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
+
+	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
+
+	public RepositoryFactorySupport() {
+		this.queryPostProcessors.add(collectingListener);
+	}
 
 	/**
 	 * Sets the strategy of how to lookup a query to execute finders.
@@ -162,8 +168,13 @@ public abstract class RepositoryFactorySupport {
 	 * @param customImplementationClass
 	 * @return
 	 */
-	private RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata, Class<?> customImplementationClass) {
+	protected RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata,
+			Class<?> customImplementationClass) {
 		return new DefaultRepositoryInformation(metadata, getRepositoryBaseClass(metadata), customImplementationClass);
+	}
+
+	protected List<QueryMethod> getQueryMethods() {
+		return collectingListener.getQueryMethods();
 	}
 
 	/**
@@ -353,6 +364,33 @@ public abstract class RepositoryFactorySupport {
 			}
 
 			return repositoryInformation.isCustomMethod(invocation.getMethod());
+		}
+	}
+
+	/**
+	 * {@link QueryCreationListener} collecting the {@link QueryMethod}s created for all query methods of the repository
+	 * interface.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	private static class QueryCollectingQueryCreationListener implements QueryCreationListener<RepositoryQuery> {
+
+		private List<QueryMethod> queryMethods = new ArrayList<QueryMethod>();
+
+		/**
+		 * Returns all {@link QueryMethod}s.
+		 * 
+		 * @return
+		 */
+		public List<QueryMethod> getQueryMethods() {
+			return queryMethods;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.QueryCreationListener#onCreation(org.springframework.data.repository.query.RepositoryQuery)
+		 */
+		public void onCreation(RepositoryQuery query) {
+			this.queryMethods.add(query.getQueryMethod());
 		}
 	}
 }

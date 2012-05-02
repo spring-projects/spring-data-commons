@@ -17,16 +17,19 @@ package org.springframework.data.repository.support;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
+import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.util.Assert;
 
 /**
@@ -34,12 +37,12 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class Repositories implements
-		Iterable<Entry<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>>> {
+public class Repositories implements Iterable<Class<?>> {
 
 	static final Repositories NONE = new Repositories();
 
-	private final Map<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>> repositories = new HashMap<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>>();
+	private final Map<Class<?>, RepositoryFactoryInformation<Object, Serializable>> domainClassToBeanName = new HashMap<Class<?>, RepositoryFactoryInformation<Object, Serializable>>();
+	private final Map<RepositoryFactoryInformation<Object, Serializable>, CrudRepository<Object, Serializable>> repositories = new HashMap<RepositoryFactoryInformation<Object, Serializable>, CrudRepository<Object, Serializable>>();
 
 	/**
 	 * Constructor to create the {@link #NONE} instance.
@@ -62,17 +65,18 @@ public class Repositories implements
 		Collection<RepositoryFactoryInformation> providers = BeanFactoryUtils.beansOfTypeIncludingAncestors(factory,
 				RepositoryFactoryInformation.class).values();
 
-		for (RepositoryFactoryInformation entry : providers) {
+		for (RepositoryFactoryInformation<Object, Serializable> info : providers) {
 
-			EntityInformation<Object, Serializable> metadata = entry.getEntityInformation();
-			Class repositoryInterface = entry.getRepositoryInterface();
+			RepositoryInformation information = info.getRepositoryInformation();
+			Class repositoryInterface = information.getRepositoryInterface();
 
 			if (CrudRepository.class.isAssignableFrom(repositoryInterface)) {
 				Class<CrudRepository<Object, Serializable>> objectType = repositoryInterface;
 				CrudRepository<Object, Serializable> repository = BeanFactoryUtils.beanOfTypeIncludingAncestors(factory,
 						objectType);
 
-				this.repositories.put(metadata, repository);
+				this.domainClassToBeanName.put(information.getDomainType(), info);
+				this.repositories.put(info, repository);
 			}
 		}
 	}
@@ -84,29 +88,31 @@ public class Repositories implements
 	 * @return
 	 */
 	public boolean hasRepositoryFor(Class<?> domainClass) {
-		return repositories.containsKey(getEntityInformationFor(domainClass));
+		return domainClassToBeanName.containsKey(domainClass);
 	}
 
 	/**
 	 * Returns the repository managing the given domain class.
 	 * 
-	 * @param domainClass
+	 * @param domainClass must not be {@literal null}.
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public <T, S extends Serializable> CrudRepository<T, S> getRepositoryFor(Class<?> domainClass) {
-		return (CrudRepository<T, S>) repositories.get(getEntityInformationFor(domainClass));
+		return (CrudRepository<T, S>) repositories.get(domainClassToBeanName.get(domainClass));
 	}
 
 	/**
-	 * Returns the repository for the given {@link EntityInformation}.
+	 * Returns the {@link EntityInformation} for the given domain class.
 	 * 
-	 * @param entityInformation
-	 * @return the repository for the given {@link EntityInformation}.
+	 * @param domainClass must not be {@literal null}.
+	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T, S extends Serializable> CrudRepository<T, S> getRepositoryFor(EntityInformation<T, S> entityInformation) {
-		return (CrudRepository<T, S>) repositories.get(entityInformation);
+	public <T, S extends Serializable> EntityInformation<T, S> getEntityInformationFor(Class<?> domainClass) {
+
+		RepositoryFactoryInformation<Object, Serializable> information = getRepoInfoFor(domainClass);
+		return information == null ? null : (EntityInformation<T, S>) information.getEntityInformation();
 	}
 
 	/**
@@ -116,12 +122,31 @@ public class Repositories implements
 	 * @return the {@link EntityInformation} for the given domain class or {@literal null} if no repository registered for
 	 *         this domain class.
 	 */
-	@SuppressWarnings("unchecked")
-	public <T, S extends Serializable> EntityInformation<T, S> getEntityInformationFor(Class<?> domainClass) {
+	public RepositoryInformation getRepositoryInformationFor(Class<?> domainClass) {
 
-		for (EntityInformation<?, Serializable> information : repositories.keySet()) {
-			if (domainClass.equals(information.getJavaType())) {
-				return (EntityInformation<T, S>) information;
+		RepositoryFactoryInformation<Object, Serializable> information = getRepoInfoFor(domainClass);
+		return information == null ? null : information.getRepositoryInformation();
+	}
+
+	/**
+	 * Returns the {@link QueryMethod}s contained in the repository managing the given domain class.
+	 * 
+	 * @param domainClass must not be {@literal null}.
+	 * @return
+	 */
+	public List<QueryMethod> getQueryMethodsFor(Class<?> domainClass) {
+
+		RepositoryFactoryInformation<Object, Serializable> information = getRepoInfoFor(domainClass);
+		return information == null ? Collections.<QueryMethod> emptyList() : information.getQueryMethods();
+	}
+
+	private RepositoryFactoryInformation<Object, Serializable> getRepoInfoFor(Class<?> domainClass) {
+
+		Assert.notNull(domainClass);
+
+		for (RepositoryFactoryInformation<Object, Serializable> information : repositories.keySet()) {
+			if (domainClass.equals(information.getEntityInformation().getJavaType())) {
+				return information;
 			}
 		}
 
@@ -132,7 +157,7 @@ public class Repositories implements
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
-	public Iterator<Entry<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>>> iterator() {
-		return repositories.entrySet().iterator();
+	public Iterator<Class<?>> iterator() {
+		return domainClassToBeanName.keySet().iterator();
 	}
 }

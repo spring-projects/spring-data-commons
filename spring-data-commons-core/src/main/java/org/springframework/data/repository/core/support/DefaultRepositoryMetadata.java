@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.springframework.data.repository.core.support;
 
 import static org.springframework.core.GenericTypeResolver.*;
+
+import java.io.Serializable;
 
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -57,7 +59,7 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
 	 */
-	public Class<?> getDomainClass() {
+	public Class<?> getDomainType() {
 
 		Class<?>[] arguments = resolveTypeArguments(repositoryInterface, Repository.class);
 		return arguments == null ? null : arguments[0];
@@ -67,9 +69,10 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
 	 */
-	public Class<?> getIdClass() {
+	@SuppressWarnings("unchecked")
+	public Class<? extends Serializable> getIdType() {
 
 		Class<?>[] arguments = resolveTypeArguments(repositoryInterface, Repository.class);
-		return arguments == null ? null : arguments[1];
+		return (Class<? extends Serializable>) (arguments == null ? null : arguments[1]);
 	}
 }

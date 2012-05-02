@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -28,18 +29,16 @@ public interface RepositoryMetadata {
 	/**
 	 * Returns the id class the given class is declared for.
 	 * 
-	 * @param clazz
 	 * @return the id class of the entity managed by the repository for or {@code null} if none found.
 	 */
-	Class<?> getIdClass();
+	Class<? extends Serializable> getIdType();
 
 	/**
 	 * Returns the domain class the repository is declared for.
 	 * 
-	 * @param clazz
 	 * @return the domain class the repository is handling or {@code null} if none found.
 	 */
-	Class<?> getDomainClass();
+	Class<?> getDomainType();
 
 	/**
 	 * Returns the repository interface.

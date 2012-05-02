@@ -22,7 +22,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -34,9 +36,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+import org.springframework.data.repository.core.support.DummyEntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
+import org.springframework.data.repository.query.QueryMethod;
 
 /**
  * Unit tests for {@link Repositories}.
@@ -112,32 +117,17 @@ public class RepositoriesUnitTests {
 			this.repositoryMetadata = new DefaultRepositoryMetadata(repositoryInterface);
 		}
 
-		@SuppressWarnings({ "unchecked" })
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public EntityInformation<T, S> getEntityInformation() {
-
-			return new EntityInformation<T, S>() {
-
-				public Class<T> getJavaType() {
-					return (Class<T>) repositoryMetadata.getDomainClass();
-				}
-
-				public boolean isNew(T entity) {
-					return false;
-				}
-
-				public S getId(T entity) {
-					return null;
-				}
-
-				public Class<S> getIdType() {
-					return (Class<S>) repositoryMetadata.getIdClass();
-				}
-			};
+			return (EntityInformation) new DummyEntityInformation(repositoryMetadata.getDomainType());
 		}
 
-		@SuppressWarnings("unchecked")
-		public Class<? extends Repository<T, S>> getRepositoryInterface() {
-			return (Class<? extends Repository<T, S>>) repositoryMetadata.getRepositoryInterface();
+		public RepositoryInformation getRepositoryInformation() {
+			return new DummyRepositoryInformation(repositoryMetadata.getRepositoryInterface());
+		}
+
+		public List<QueryMethod> getQueryMethods() {
+			return Collections.emptyList();
 		}
 	}
 

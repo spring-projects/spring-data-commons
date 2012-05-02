@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.support.DummyEntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
 /**
@@ -52,23 +54,23 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 	@Mock
 	EntityRepository repository;
 	@Mock
-	EntityInformation<Entity, Long> information;
-	@Mock
-	RepositoryFactoryInformation<Entity, Long> provider;
+	RepositoryFactoryInformation<Entity, Serializable> provider;
 
-	DomainClassPropertyEditor<Entity, Long> reference;
+	DomainClassPropertyEditor<Entity, Serializable> reference;
 
 	@Before
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setup() {
 
-		when(information.getJavaType()).thenReturn(Entity.class);
-		when(provider.getEntityInformation()).thenReturn(information);
-		when(provider.getRepositoryInterface()).thenReturn((Class) EntityRepository.class);
+		EntityInformation<Entity, Serializable> entityInformation = new DummyEntityInformation<Entity>(Entity.class);
+		RepositoryInformation repositoryInformation = new DummyRepositoryInformation(EntityRepository.class);
+
+		when(provider.getEntityInformation()).thenReturn(entityInformation);
+		when(provider.getRepositoryInformation()).thenReturn(repositoryInformation);
+
 		Map<String, EntityRepository> map = getBeanAsMap(repository);
 		when(context.getBeansOfType(EntityRepository.class)).thenReturn(map);
 
-		reference = new DomainClassPropertyEditor<Entity, Long>(repository, information, registry);
+		reference = new DomainClassPropertyEditor<Entity, Serializable>(repository, entityInformation, registry);
 	}
 
 	@Test
@@ -109,7 +111,7 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 
 	}
 
-	private static interface EntityRepository extends CrudRepository<Entity, Long> {
+	private static interface EntityRepository extends CrudRepository<Entity, Serializable> {
 
 	}
 

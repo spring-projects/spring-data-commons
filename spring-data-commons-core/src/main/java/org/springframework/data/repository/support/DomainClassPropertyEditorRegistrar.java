@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,12 @@
 package org.springframework.data.repository.support;
 
 import java.io.Serializable;
-import java.util.Map.Entry;
-
 import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
 
 /**
  * Simple helper class to use Hades DAOs to provide {@link java.beans.PropertyEditor}s for domain classes. To get this
@@ -55,15 +53,15 @@ public class DomainClassPropertyEditorRegistrar implements PropertyEditorRegistr
 	 */
 	public void registerCustomEditors(PropertyEditorRegistry registry) {
 
-		for (Entry<EntityInformation<Object, Serializable>, CrudRepository<Object, Serializable>> entry : repositories) {
+		for (Class<?> domainClass : repositories) {
 
-			EntityInformation<Object, Serializable> entityInformation = entry.getKey();
-			CrudRepository<Object, Serializable> repository = entry.getValue();
+			RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(domainClass);
+			CrudRepository<Object, Serializable> repository = repositories.getRepositoryFor(domainClass);
 
 			DomainClassPropertyEditor<Object, Serializable> editor = new DomainClassPropertyEditor<Object, Serializable>(
-					repository, entityInformation, registry);
+					repository, repositories.getEntityInformationFor(repositoryInformation.getDomainType()), registry);
 
-			registry.registerCustomEditor(entityInformation.getJavaType(), editor);
+			registry.registerCustomEditor(repositoryInformation.getDomainType(), editor);
 		}
 	}
 
