@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.springframework.org/schema/data/jaxb"
+	xmlns="http://www.springframework.org/schema/data/jaxb"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	elementFormDefault="qualified">
+	
+	<xs:import namespace="http://www.w3.org/2005/Atom" schemaLocation="atom.xsd" />
+	
+	<xs:element name="page-request" type="pageRequest" />
+	<xs:element name="page" type="page" />
+	<xs:element name="sort" type="sort" />
+	<xs:element name="order" type="order" />
+
+	<xs:complexType name="pageRequest">
+		<xs:sequence>
+			<xs:element name="order" type="order" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="page" type="xs:integer" use="required" />
+		<xs:attribute name="size" type="xs:integer" use="required" />
+	</xs:complexType>
+	
+	<xs:complexType name="page">
+		<xs:sequence>
+			<xs:element name="content" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:all />
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="link" type="atom:linkType" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="sort">
+		<xs:sequence>
+			<xs:element name="order" type="order" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="order">
+		<xs:attribute name="property" type="xs:string" />
+		<xs:attribute name="direction" type="direction" />
+	</xs:complexType>
+	
+	<xs:simpleType name="direction">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ASC" />
+			<xs:enumeration value="DESC" />
+		</xs:restriction>
+	</xs:simpleType>
+
+</xs:schema>

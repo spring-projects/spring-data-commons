@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<wrapper xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sd="http://www.springframework.org/schema/data/jaxb">
+    <sd:page-request page="2" size="15">
+        <sd:order property="firstname" direction="ASC"/>
+        <sd:order property="lastname" direction="ASC"/>
+    </sd:page-request>
+    <sd:page-request-without-sort page="10" size="20"/>
+    <sd:sort>
+        <sd:order property="firstname" direction="ASC"/>
+        <sd:order property="lastname" direction="ASC"/>
+    </sd:sort>
+</wrapper>
+
