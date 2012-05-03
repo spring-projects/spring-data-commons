@@ -41,6 +41,8 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 
 	@Mock
 	PropertyValueProvider<P> propertyValueProvider;
+	@Mock
+	P property;
 
 	/**
 	 * @see DATACMNS-134
@@ -50,7 +52,11 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 
 		Object outer = new Outer();
 
-		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class));
+		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class)) {
+			public P getPersistentProperty(String name) {
+				return property;
+			}
+		};
 		PreferredConstructor<Inner, P> constructor = entity.getPersistenceConstructor();
 		Iterator<Parameter<Object, P>> iterator = constructor.getParameters().iterator();
 
@@ -64,6 +70,8 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 	static class Outer {
 
 		class Inner {
+
+			Object myObject;
 
 			Inner(Object myObject) {
 

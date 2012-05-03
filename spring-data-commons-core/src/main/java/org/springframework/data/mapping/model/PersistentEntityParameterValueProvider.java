@@ -86,6 +86,11 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 
 		P property = entity.getPersistentProperty(parameter.getName());
 
+		if (property == null) {
+			throw new MappingException(String.format("No property %s found on entity %s to bind constructor parameter to!",
+					parameter.getName(), entity.getType()));
+		}
+
 		return provider.getPropertyValue(property);
 	}
 }

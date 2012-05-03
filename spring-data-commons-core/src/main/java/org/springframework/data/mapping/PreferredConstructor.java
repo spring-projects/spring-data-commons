@@ -155,6 +155,8 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		private final String key;
 		private final PersistentEntity<T, P> entity;
 
+		private Boolean enclosingClassCache;
+
 		/**
 		 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
 		 * {@link Annotation}s. Will insprect the annotations for an {@link Value} annotation to lookup a key or an SpEL
@@ -244,8 +246,12 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 		private boolean isEnclosingClassParameter() {
 
-			Class<T> owningType = entity.getType();
-			return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
+			if (enclosingClassCache == null) {
+				Class<T> owningType = entity.getType();
+				this.enclosingClassCache = owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
+			}
+
+			return enclosingClassCache;
 		}
 
 		/* 
