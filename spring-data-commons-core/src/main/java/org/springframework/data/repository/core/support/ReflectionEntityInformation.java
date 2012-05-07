@@ -69,9 +69,8 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 			}
 		});
 
-		ReflectionUtils.makeAccessible(field);
-
 		Assert.notNull(this.field, String.format("No field annotated with %s found!", annotation.toString()));
+		ReflectionUtils.makeAccessible(field);
 	}
 
 	/* 
