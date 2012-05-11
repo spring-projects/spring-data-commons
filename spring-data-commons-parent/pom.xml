@@ -17,6 +17,7 @@
 		<org.springframework.version.40>4.0.0.RELEASE</org.springframework.version.40>
 		<org.springframework.version>[${org.springframework.version.30}, ${org.springframework.version.40})</org.springframework.version>
 		<org.hamcrest.version>1.2.1</org.hamcrest.version>
+		<bundlor.failOnWarnings>true</bundlor.failOnWarnings>
 	</properties>
 
 	<distributionManagement>
@@ -103,7 +104,7 @@
 				<artifactId>com.springsource.bundlor.maven</artifactId>
 				<version>1.0.0.RELEASE</version>
 				<configuration>
-					<failOnWarnings>true</failOnWarnings>
+					<failOnWarnings>${bundlor.failOnWarnings}</failOnWarnings>
 				</configuration>
 				<executions>
 					<execution>
