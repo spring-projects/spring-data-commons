@@ -48,21 +48,21 @@
     managed.</para>
 
     <example id="repositories.repository">
-      <title>Repository interface</title>
+      <title><interfacename>CrudRepository</interfacename> interface</title>
 
       <programlistingco>
         <areaspec>
-          <area coords="3" id="repository.save" />
+          <area coords="3" id="repository.save"/>
 
-          <area coords="5" id="repository.find-by-id" />
+          <area coords="5" id="repository.find-by-id"/>
 
-          <area coords="7" id="repository.find-all" />
+          <area coords="7" id="repository.find-all"/>
 
-          <area coords="11" id="repository.count" />
+          <area coords="11" id="repository.count"/>
 
-          <area coords="13" id="repository.delete" />
+          <area coords="13" id="repository.delete"/>
 
-          <area coords="15" id="repository.exists" />
+          <area coords="15" id="repository.exists"/>
         </areaspec>
 
         <programlisting language="java">public interface CrudRepository&lt;T, ID extends Serializable&gt;
@@ -286,7 +286,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
           from the query method's name. The general approach is to remove a
           given set of well-known prefixes from the method name and parse the
           rest of the method. Read more about query construction in <xref
-          linkend="repositories.query-methods.query-creation" />.</para>
+          linkend="repositories.query-methods.query-creation"/>.</para>
         </simplesect>
 
         <simplesect>
@@ -494,8 +494,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
 
             <programlisting language="xml">&lt;repositories base-package="com.acme.repositories"&gt;
   &lt;context:exclude-filter type="regex" expression=".*SomeRepository" /&gt;
-&lt;/repositories&gt;
-</programlisting>
+&lt;/repositories&gt;</programlisting>
 
             <para>This would exclude all interfaces ending in
             <interfacename>SomeRepository</interfacename> from being
@@ -963,9 +962,9 @@ public class UserController {
         <classname>PageableArgumentResolver</classname></title>
 
         <tgroup cols="2">
-          <colspec colwidth="1*" />
+          <colspec colwidth="1*"/>
 
-          <colspec colwidth="2*" />
+          <colspec colwidth="2*"/>
 
           <tbody>
             <row>
