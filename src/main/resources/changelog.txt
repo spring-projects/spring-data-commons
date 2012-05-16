@@ -1,6 +1,19 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.3.0.RELEASE (2012-05-16)
+---------------------------------------------
+** Bug
+    * [DATACMNS-170] - Potential NullPointerException in ReflectionEntityInformation
+
+** Improvement
+    * [DATACMNS-171] - QueryMethod should expose whether the method will be returning an entity
+
+** Task
+    * [DATACMNS-149] - Release 1.3.0 Final
+    * [DATACMNS-162] - Briefly document CDI integration for repositories
+
+
 Changes in version 1.3.0.RC2 (2012-05-02)
 -----------------------------------------
 
