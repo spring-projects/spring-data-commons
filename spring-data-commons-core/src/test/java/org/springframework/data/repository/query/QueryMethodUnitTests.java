@@ -16,6 +16,7 @@
 package org.springframework.data.repository.query;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 import static org.hamcrest.CoreMatchers.*;
 
 import java.lang.reflect.Method;
@@ -23,6 +24,7 @@ import java.lang.reflect.Method;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,6 +75,32 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isCollectionQuery(), is(false));
 	}
 
+	@Test
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void detectsAnEntityBeingReturned() throws Exception {
+
+		when(metadata.getDomainType()).thenReturn((Class) User.class);
+		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) SpecialUser.class);
+
+		Method method = SampleRepository.class.getMethod("returnsEntitySubclass");
+		QueryMethod queryMethod = new QueryMethod(method, metadata);
+
+		assertThat(queryMethod.isQueryForEntity(), is(true));
+	}
+
+	@Test
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void detectsNonEntityBeingReturned() throws Exception {
+
+		when(metadata.getDomainType()).thenReturn((Class) User.class);
+		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) Integer.class);
+
+		Method method = SampleRepository.class.getMethod("returnsProjection");
+		QueryMethod queryMethod = new QueryMethod(method, metadata);
+
+		assertThat(queryMethod.isQueryForEntity(), is(false));
+	}
+
 	interface SampleRepository {
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
 
@@ -83,5 +111,17 @@ public class QueryMethodUnitTests {
 		Iterable<String> sampleMethod();
 
 		Page<String> anotherSampleMethod(Pageable pageable);
+
+		SpecialUser returnsEntitySubclass();
+
+		Integer returnsProjection();
+	}
+
+	class User {
+
+	}
+
+	class SpecialUser extends User {
+
 	}
 }

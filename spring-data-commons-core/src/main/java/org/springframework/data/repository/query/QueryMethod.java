@@ -123,7 +123,7 @@ public class QueryMethod {
 	/**
 	 * Returns the domain class the query method is targeted at.
 	 * 
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
 	protected Class<?> getDomainClass() {
 
@@ -165,9 +165,22 @@ public class QueryMethod {
 		return org.springframework.util.ClassUtils.isAssignable(Page.class, returnType);
 	}
 
+	/**
+	 * Returns whether the query method is a modifying one.
+	 * 
+	 * @return
+	 */
 	public boolean isModifyingQuery() {
-
 		return false;
+	}
+
+	/**
+	 * Returns whether the query for theis method actually returns entities.
+	 * 
+	 * @return
+	 */
+	public boolean isQueryForEntity() {
+		return getDomainClass().isAssignableFrom(getReturnedObjectType());
 	}
 
 	/**
@@ -176,18 +189,15 @@ public class QueryMethod {
 	 * @return
 	 */
 	public Parameters getParameters() {
-
 		return parameters;
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#toString()
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
-
 		return method.toString();
 	}
 }
