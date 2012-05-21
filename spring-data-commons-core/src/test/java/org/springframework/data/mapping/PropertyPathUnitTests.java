@@ -22,7 +22,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link PropertyPath}.
@@ -30,14 +34,19 @@ import org.junit.Test;
  * @author Oliver Gierke
  */
 @SuppressWarnings("unused")
-public class PropertyUnitTests {
+public class PropertyPathUnitTests {
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void parsesSimplePropertyCorrectly() throws Exception {
 
 		PropertyPath reference = PropertyPath.from("userName", Foo.class);
 		assertThat(reference.hasNext(), is(false));
 		assertThat(reference.toDotPath(), is("userName"));
+		assertThat(reference.getOwningType(), is((TypeInformation) ClassTypeInformation.from(Foo.class)));
 	}
 
 	@Test
@@ -105,22 +114,37 @@ public class PropertyUnitTests {
 		assertThat(reference.next(), is(new PropertyPath("name", FooBar.class)));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void handlesInvalidCollectionCompountTypeProperl() {
 
-		PropertyPath.from("usersMame", Bar.class);
+		try {
+			PropertyPath.from("usersMame", Bar.class);
+			fail("Expected PropertyReferenceException!");
+		} catch (PropertyReferenceException e) {
+			assertThat(e.getPropertyName(), is("mame"));
+			assertThat(e.getBaseProperty(), is(PropertyPath.from("users", Bar.class)));
+		}
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void handlesInvalidMapValueTypeProperl() {
+	@Test
+	public void handlesInvalidMapValueTypeProperly() {
 
-		PropertyPath.from("userMapMame", Bar.class);
+		try {
+			PropertyPath.from("userMapMame", Bar.class);
+			fail();
+		} catch (PropertyReferenceException e) {
+			assertThat(e.getPropertyName(), is("mame"));
+			assertThat(e.getBaseProperty(), is(PropertyPath.from("userMap", Bar.class)));
+		}
 	}
 
 	@Test
 	public void findsNested() {
 
 		PropertyPath from = PropertyPath.from("barUserName", Sample.class);
+
+		assertThat(from, is(notNullValue()));
+		assertThat(from.getLeafProperty(), is(PropertyPath.from("name", FooBar.class)));
 	}
 
 	/**
@@ -139,7 +163,12 @@ public class PropertyUnitTests {
 
 	@Test
 	public void supportsDotNotationAsWell() {
-		PropertyPath.from("bar.userMap.name", Sample.class);
+
+		PropertyPath propertyPath = PropertyPath.from("bar.userMap.name", Sample.class);
+
+		assertThat(propertyPath, is(notNullValue()));
+		assertThat(propertyPath.getSegment(), is("bar"));
+		assertThat(propertyPath.getLeafProperty(), is(PropertyPath.from("name", FooBar.class)));
 	}
 
 	@Test
@@ -174,7 +203,7 @@ public class PropertyUnitTests {
 		try {
 			PropertyPath.from("_id", Foo.class);
 			fail();
-		} catch (IllegalArgumentException e) {
+		} catch (PropertyReferenceException e) {
 			assertThat(e.getMessage(), containsString("property _id"));
 		}
 	}
@@ -187,7 +216,7 @@ public class PropertyUnitTests {
 		try {
 			PropertyPath.from("_foo_id", Sample2.class);
 			fail();
-		} catch (IllegalArgumentException e) {
+		} catch (PropertyReferenceException e) {
 			assertThat(e.getMessage(), containsString("property id"));
 		}
 	}
@@ -200,7 +229,7 @@ public class PropertyUnitTests {
 		try {
 			PropertyPath.from("_foo__id", Sample2.class);
 			fail();
-		} catch (IllegalArgumentException e) {
+		} catch (PropertyReferenceException e) {
 			assertThat(e.getMessage(), containsString("property _id"));
 		}
 	}
@@ -208,9 +237,48 @@ public class PropertyUnitTests {
 	/**
 	 * @see DATACMNS 158
 	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = PropertyReferenceException.class)
 	public void rejectsInvalidPathsContainingDigits() {
 		PropertyPath.from("PropertyThatWillFail4Sure", Foo.class);
+	}
+
+	@Test
+	public void rejectsInvalidProperty() {
+
+		try {
+			PropertyPath.from("bar", Foo.class);
+			fail();
+		} catch (PropertyReferenceException e) {
+			assertThat(e.getBaseProperty(), is(nullValue()));
+		}
+	}
+
+	@Test
+	public void samePathsEqual() {
+
+		PropertyPath left = PropertyPath.from("user.name", Bar.class);
+		PropertyPath right = PropertyPath.from("user.name", Bar.class);
+
+		PropertyPath shortPath = PropertyPath.from("user", Bar.class);
+
+		assertThat(left, is(right));
+		assertThat(right, is(left));
+		assertThat(left, is(not(shortPath)));
+		assertThat(shortPath, is(not(left)));
+
+		assertThat(left, is(not(new Object())));
+	}
+
+	@Test
+	public void hashCodeTests() {
+
+		PropertyPath left = PropertyPath.from("user.name", Bar.class);
+		PropertyPath right = PropertyPath.from("user.name", Bar.class);
+
+		PropertyPath shortPath = PropertyPath.from("user", Bar.class);
+
+		assertThat(left.hashCode(), is(right.hashCode()));
+		assertThat(left.hashCode(), is(not(shortPath.hashCode())));
 	}
 
 	private class Foo {

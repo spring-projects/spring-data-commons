@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -35,7 +36,6 @@ public class PropertyPath implements Iterable<PropertyPath> {
 
 	private static final String DELIMITERS = "_\\.";
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
-	private static final String ERROR_TEMPLATE = "No property %s found for type %s";
 
 	private final TypeInformation<?> owningType;
 	private final String name;
@@ -52,7 +52,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 */
 	PropertyPath(String name, Class<?> owningType) {
 
-		this(name, ClassTypeInformation.from(owningType));
+		this(name, ClassTypeInformation.from(owningType), null);
 	}
 
 	/**
@@ -60,8 +60,9 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * 
 	 * @param name must not be {@literal null} or empty.
 	 * @param owningType must not be {@literal null}.
+	 * @param base the {@link PropertyPath} previously found.
 	 */
-	PropertyPath(String name, TypeInformation<?> owningType) {
+	PropertyPath(String name, TypeInformation<?> owningType, PropertyPath base) {
 
 		Assert.hasText(name);
 		Assert.notNull(owningType);
@@ -70,30 +71,13 @@ public class PropertyPath implements Iterable<PropertyPath> {
 		TypeInformation<?> type = owningType.getProperty(propertyName);
 
 		if (type == null) {
-			throw new IllegalArgumentException(String.format(ERROR_TEMPLATE, propertyName, owningType.getType()));
+			throw new PropertyReferenceException(propertyName, owningType, base);
 		}
 
 		this.owningType = owningType;
 		this.isCollection = type.isCollectionLike();
 		this.type = type.getActualType();
 		this.name = propertyName;
-	}
-
-	/**
-	 * Creates a {@link PropertyPath} with the given name inside the given owning type and tries to resolve the other
-	 * {@link String} to create nested properties.
-	 * 
-	 * @param name must not be {@literal null} or empty.
-	 * @param owningType must not be {@literal null}.
-	 * @param toTraverse
-	 */
-	PropertyPath(String name, TypeInformation<?> owningType, String toTraverse) {
-
-		this(name, owningType);
-
-		if (StringUtils.hasText(toTraverse)) {
-			this.next = from(toTraverse, type);
-		}
 	}
 
 	/**
@@ -111,8 +95,23 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @return the name will never be {@literal null}.
 	 */
 	public String getSegment() {
-
 		return name;
+	}
+
+	/**
+	 * Returns the leaf property of the {@link PropertyPath}.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
+	public PropertyPath getLeafProperty() {
+
+		PropertyPath result = this;
+
+		while (result.hasNext()) {
+			result = result.next();
+		}
+
+		return result;
 	}
 
 	/**
@@ -122,7 +121,6 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @return
 	 */
 	public Class<?> getType() {
-
 		return this.type.getType();
 	}
 
@@ -189,7 +187,8 @@ public class PropertyPath implements Iterable<PropertyPath> {
 
 		PropertyPath that = (PropertyPath) obj;
 
-		return this.name.equals(that.name) && this.type.equals(that.type);
+		return this.name.equals(that.name) && this.type.equals(that.type)
+				&& ObjectUtils.nullSafeEquals(this.next, that.next);
 	}
 
 	/*
@@ -199,7 +198,13 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	@Override
 	public int hashCode() {
 
-		return name.hashCode() + type.hashCode();
+		int result = 17;
+
+		result += 31 * name.hashCode();
+		result += 31 * type.hashCode();
+		result += 31 * (next == null ? 0 : next.hashCode());
+
+		return result;
 	}
 
 	/* 
@@ -262,7 +267,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 
 		while (parts.hasNext()) {
 			if (result == null) {
-				result = create(parts.next(), type);
+				result = create(parts.next(), type, null);
 				current = result;
 			} else {
 				current = create(parts.next(), current);
@@ -281,7 +286,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 */
 	private static PropertyPath create(String source, PropertyPath base) {
 
-		PropertyPath propertyPath = create(source, base.type);
+		PropertyPath propertyPath = create(source, base.type, base);
 		base.next = propertyPath;
 		return propertyPath;
 	}
@@ -296,9 +301,9 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param type
 	 * @return
 	 */
-	private static PropertyPath create(String source, TypeInformation<?> type) {
+	private static PropertyPath create(String source, TypeInformation<?> type, PropertyPath base) {
 
-		return create(source, type, "");
+		return create(source, type, "", base);
 	}
 
 	/**
@@ -311,13 +316,27 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param addTail
 	 * @return
 	 */
-	private static PropertyPath create(String source, TypeInformation<?> type, String addTail) {
+	private static PropertyPath create(String source, TypeInformation<?> type, String addTail, PropertyPath base) {
 
-		IllegalArgumentException exception = null;
+		PropertyReferenceException exception = null;
+		PropertyPath current = null;
 
 		try {
-			return new PropertyPath(source, type, addTail);
-		} catch (IllegalArgumentException e) {
+
+			current = new PropertyPath(source, type, base);
+
+			if (StringUtils.hasText(addTail)) {
+				current.next = create(addTail, current.type, current);
+			}
+
+			return current;
+
+		} catch (PropertyReferenceException e) {
+
+			if (current != null) {
+				throw e;
+			}
+
 			exception = e;
 		}
 
@@ -330,7 +349,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 			String head = source.substring(0, position);
 			String tail = source.substring(position);
 
-			return create(head, type, tail + addTail);
+			return create(head, type, tail + addTail, base);
 		}
 
 		throw exception;
