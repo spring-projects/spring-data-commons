@@ -15,7 +15,10 @@
  */
 package org.springframework.data.repository.query.parser;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -188,6 +191,16 @@ public class Part {
 				GREATER_THAN, GREATER_THAN_EQUAL, BEFORE, AFTER, NOT_LIKE, LIKE, STARTING_WITH, ENDING_WITH, CONTAINING,
 				NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, TRUE, FALSE, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
 
+		public static final Collection<String> ALL_KEYWORDS;
+
+		static {
+			List<String> allKeywords = new ArrayList<String>();
+			for (Type type : ALL) {
+				allKeywords.addAll(type.keywords);
+			}
+			ALL_KEYWORDS = Collections.unmodifiableList(allKeywords);
+		}
+
 		private final List<String> keywords;
 		private final int numberOfArguments;
 
@@ -226,6 +239,15 @@ public class Part {
 			}
 
 			return SIMPLE_PROPERTY;
+		}
+
+		/**
+		 * Returns all keywords supported by the current {@link Type}.
+		 * 
+		 * @return
+		 */
+		public Collection<String> getKeywords() {
+			return Collections.unmodifiableList(keywords);
 		}
 
 		/**
