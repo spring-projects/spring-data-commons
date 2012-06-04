@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,11 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentProperty;
@@ -42,9 +47,12 @@ import org.springframework.data.util.TypeInformation;
  * 
  * @author Oliver Gierke
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProperty<T>> {
 
 	ConfigurableTypeInformationMapper mapper;
+	@Mock
+	ApplicationContext context;
 
 	@Before
 	public void setUp() {
@@ -93,8 +101,11 @@ public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProp
 			}
 		};
 
+		ContextRefreshedEvent event = new ContextRefreshedEvent(context);
+
 		mappingContext.setInitialEntitySet(Collections.singleton(Entity.class));
-		mappingContext.afterPropertiesSet();
+		mappingContext.setApplicationContext(context);
+		mappingContext.onApplicationEvent(event);
 
 		mapper = new ConfigurableTypeInformationMapper(mappingContext);
 

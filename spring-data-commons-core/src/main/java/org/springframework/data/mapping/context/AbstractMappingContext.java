@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 by the original author(s).
+ * Copyright 2011-2012 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
@@ -63,7 +68,8 @@ import org.springframework.validation.Validator;
  * @author Oliver Gierke
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
-		implements MappingContext<E, P>, InitializingBean, ApplicationEventPublisherAware {
+		implements MappingContext<E, P>, InitializingBean, ApplicationEventPublisherAware, ApplicationContextAware,
+		ApplicationListener<ContextRefreshedEvent> {
 
 	private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
 
@@ -71,6 +77,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private final ConcurrentMap<E, List<Validator>> validators = new ConcurrentHashMap<E, List<Validator>>();
 
 	private ApplicationEventPublisher applicationEventPublisher;
+	private ApplicationContext applicationContext;
 	private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
 	private boolean strict = false;
 	private SimpleTypeHolder simpleTypeHolder = new SimpleTypeHolder();
@@ -79,12 +86,23 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private final Lock read = lock.readLock();
 	private final Lock write = lock.writeLock();
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Use {@link #setApplicationContext(ApplicationContext)} instead.
+	 * 
+	 * @see #setApplicationContext(ApplicationContext)
 	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
 	 */
+	@Deprecated
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.applicationEventPublisher = applicationEventPublisher;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 */
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 
 	/**
@@ -321,11 +339,29 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner,
 			SimpleTypeHolder simpleTypeHolder);
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Initial entity population is now done on receiving the {@link ContextRefreshedEvent}. If implementations still need
+	 * the {@link InitializingBean} hook implement the interface yourself. Assume not entities being added at invocation
+	 * time yet.
+	 * 
+	 * @see #onApplicationEvent(ContextRefreshedEvent)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
+	@Deprecated
 	public void afterPropertiesSet() {
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+	 */
+	public void onApplicationEvent(ContextRefreshedEvent event) {
+
+		if (!event.getApplicationContext().equals(applicationContext)) {
+			return;
+		}
+
 		for (Class<?> initialEntity : initialEntitySet) {
 			addPersistentEntity(initialEntity);
 		}

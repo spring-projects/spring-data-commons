@@ -1,13 +1,19 @@
 package org.springframework.data.mapping.context;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.AbstractPersistentProperty;
@@ -52,6 +58,24 @@ public class AbstractMappingContextUnitTests {
 		}
 
 		context.getPersistentEntity(Unsupported.class);
+	}
+
+	@Test
+	@SuppressWarnings("deprecation")
+	public void registersEntitiesOnContextRefreshedEvent() {
+
+		ApplicationContext context = mock(ApplicationContext.class);
+
+		DummyMappingContext mappingContext = new DummyMappingContext();
+		mappingContext.setInitialEntitySet(Collections.singleton(Person.class));
+		mappingContext.setApplicationContext(context);
+		mappingContext.setApplicationEventPublisher(context);
+
+		mappingContext.afterPropertiesSet();
+		verify(context, times(0)).publishEvent(Mockito.any(ApplicationEvent.class));
+
+		mappingContext.onApplicationEvent(new ContextRefreshedEvent(context));
+		verify(context, times(1)).publishEvent(Mockito.any(ApplicationEvent.class));
 	}
 
 	class Person {

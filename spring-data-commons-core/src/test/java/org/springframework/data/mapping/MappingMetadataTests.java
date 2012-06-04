@@ -44,6 +44,7 @@ public class MappingMetadataTests {
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void testPojoWithId() {
 
 		ctx.setInitialEntitySet(Collections.singleton(PersonWithId.class));
@@ -55,6 +56,7 @@ public class MappingMetadataTests {
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void testAssociations() {
 
 		ctx.setInitialEntitySet(Collections.singleton(PersonWithChildren.class));
