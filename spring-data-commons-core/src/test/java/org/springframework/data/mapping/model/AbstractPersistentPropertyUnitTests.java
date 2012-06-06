@@ -1,3 +1,18 @@
+/*
+ * Copyright 2011-2012 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.mapping.model;
 
 import static org.hamcrest.Matchers.*;
@@ -13,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
@@ -94,8 +110,21 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(firstProperty.hashCode(), is(secondProperty.hashCode()));
 	}
 
+	/**
+	 * @see DATACMNS-180
+	 */
+	@Test
+	public void doesNotConsiderJavaTransientFieldsTransient() {
+
+		Field transientField = ReflectionUtils.findField(TestClassComplex.class, "transientField");
+
+		PersistentProperty<?> property = new SamplePersistentProperty(transientField, null, entity, typeHolder);
+		assertThat(property.isTransient(), is(false));
+	}
+
 	class Generic<T> {
 		T genericField;
+
 	}
 
 	class FirstConcrete extends Generic<String> {
@@ -117,6 +146,7 @@ public class AbstractPersistentPropertyUnitTests {
 		TestClassSet testClassSet;
 		Map map;
 		Collection collection;
+		transient Object transientField;
 	}
 
 	class SamplePersistentProperty extends AbstractPersistentProperty<SamplePersistentProperty> {
