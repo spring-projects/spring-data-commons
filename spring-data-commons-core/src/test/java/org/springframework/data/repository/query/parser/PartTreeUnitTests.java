@@ -295,6 +295,18 @@ public class PartTreeUnitTests {
 		assertType(Arrays.asList("birthdayBefore", "birthdayIsBefore"), Type.BEFORE, "birthday");
 	}
 
+	/**
+	 * @see DATACMNS-182
+	 */
+	@Test
+	public void parsesContainingCorrectly() {
+
+		PartTree tree = new PartTree("findAllByLegalNameContainingOrCommonNameContainingAllIgnoringCase",
+				Organization.class);
+		assertPart(tree, new Part[] { new Part("legalNameContaining", Organization.class) }, new Part[] { new Part(
+				"commonNameContaining", Organization.class) });
+	}
+
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
 	}
@@ -361,5 +373,11 @@ public class PartTreeUnitTests {
 		double[] location;
 		boolean active;
 		Date birthday;
+	}
+
+	class Organization {
+
+		String commonName;
+		String legalName;
 	}
 }
