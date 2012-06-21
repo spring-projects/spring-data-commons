@@ -1028,5 +1028,88 @@ public class UserController {
 </programlisting>
       </simplesect>
     </section>
+
+    <section>
+      <title>Repository populators</title>
+
+      <para>If you have been working with the JDBC module of Spring you're
+      probably familiar with the support to populate a DataSource using SQL
+      scripts. A similar abstraction is available on the repositories level
+      although we don't use SQL as data definition language as we need to be
+      store independent of course. Thus the populators support XML (through
+      Spring's OXM abstraction) and JSON (through Jackson) to define data for
+      the repositories to be populated with.</para>
+
+      <para>Assume you have a file <filename>data.json</filename> with the
+      following content:</para>
+
+      <example>
+        <title>Data defined in JSON</title>
+
+        <programlisting language="javascript">[ { "_class" : "com.acme.Person",
+ "firstname" : "Dave",
+  "lastname" : "Matthews" },
+  { "_class" : "com.acme.Person",
+ "firstname" : "Carter",
+  "lastname" : "Beauford" } ]</programlisting>
+      </example>
+
+      <para>You can easily populate you repositories by using the populator
+      elements of the repository namespace provided in Spring Data Commons. To
+      get the just shown data be populated to your
+      <interfacename>PersonRepository</interfacename> all you need to do is
+      the following:</para>
+
+      <example>
+        <title>Declaring a Jackson repository populator</title>
+
+        <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:repository="http://www.springframework.org/schema/data/repository"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/data/repository
+    http://www.springframework.org/schema/data/repository/spring-repository.xsd"&gt;
+
+  &lt;repository:jackson-populator location="classpath:data.json" /&gt;
+
+&lt;/beans&gt;</programlisting>
+      </example>
+
+      <para>This declaration causes the data.json file being read,
+      deserialized by a Jackson <classname>ObjectMapper</classname>. The type
+      the JSON object will be unmarshalled to will be determined by inspecting
+      the <code>_class</code> attribute of the JSON document. We will
+      eventually select the appropriate repository being able to handle the
+      object just deserialized.</para>
+
+      <para>To rather use XML to define the repositories shall be populated
+      with you can use the unmarshaller-populator you hand one of the
+      marshaller options Spring OXM provides you with.</para>
+
+      <example>
+        <title>Declaring an unmarshalling repository populator (using
+        JAXB)</title>
+
+        <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:repository="http://www.springframework.org/schema/data/repository"
+  xmlns:oxm="http://www.springframework.org/schema/oxm"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/data/repository
+    http://www.springframework.org/schema/data/repository/spring-repository.xsd
+    http://www.springframework.org/schema/oxm
+    http://www.springframework.org/schema/oxm/spring-oxm.xsd"&gt;
+
+  &lt;repository:unmarshaller-populator location="classpath:data.json" unmarshaller-ref="unmarshaller" /&gt;
+
+  &lt;oxm:jaxb2-marshaller contextPath="com.acme" /&gt;
+
+&lt;/beans&gt;</programlisting>
+      </example>
+    </section>
   </section>
 </chapter>

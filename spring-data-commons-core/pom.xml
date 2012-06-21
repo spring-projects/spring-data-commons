@@ -16,6 +16,7 @@
 		<querydsl.version>2.5.0</querydsl.version>
 		<cdi.version>1.0</cdi.version>
 		<webbeans.version>1.1.3</webbeans.version>
+		<jackson.version>1.9.7</jackson.version>
 	</properties>
 
 	<dependencies>
@@ -30,6 +31,18 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
 			<version>${org.springframework.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-oxm</artifactId>
+			<version>${org.springframework.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>${jackson.version}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
