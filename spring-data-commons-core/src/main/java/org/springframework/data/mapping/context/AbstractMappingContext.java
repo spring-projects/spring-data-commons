@@ -362,6 +362,15 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			return;
 		}
 
+		initialize();
+	}
+
+	/**
+	 * Initializes the mapping context. Will add the types configured through {@link #setInitialEntitySet(Set)} to the
+	 * context.
+	 */
+	public void initialize() {
+
 		for (Class<?> initialEntity : initialEntitySet) {
 			addPersistentEntity(initialEntity);
 		}
