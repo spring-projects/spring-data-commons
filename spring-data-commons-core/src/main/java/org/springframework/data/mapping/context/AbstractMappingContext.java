@@ -415,10 +415,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				entity.addAssociation(property.getAssociation());
 			}
 
-			if (property.isIdProperty()) {
-				entity.setIdProperty(property);
-			}
-
 			if (entity.getType().equals(property.getRawType())) {
 				return;
 			}

@@ -27,13 +27,6 @@ import org.springframework.data.mapping.PersistentProperty;
 public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> extends PersistentEntity<T, P> {
 
 	/**
-	 * Sets the id property for the entity.
-	 * 
-	 * @param property
-	 */
-	void setIdProperty(P property);
-
-	/**
 	 * Adds a {@link PersistentProperty} to the entity.
 	 * 
 	 * @param property

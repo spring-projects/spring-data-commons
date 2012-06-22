@@ -35,8 +35,8 @@ import org.springframework.util.StringUtils;
 /**
  * Simple value object to capture information of {@link PersistentEntity}s.
  * 
- * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
+ * @author Jon Brisbin
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
@@ -93,6 +93,14 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#isIdProperty(org.springframework.data.mapping.PersistentProperty)
+	 */
+	public boolean isIdProperty(P property) {
+		return this.idProperty == null ? false : this.idProperty.equals(property);
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getName()
 	 */
 	public String getName() {
@@ -109,19 +117,23 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.MutablePersistentEntity#setIdProperty(P)
-	 */
-	public void setIdProperty(P property) {
-		idProperty = property;
-	}
-
-	/* 
-	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.MutablePersistentEntity#addPersistentProperty(P)
 	 */
 	public void addPersistentProperty(P property) {
+
 		Assert.notNull(property);
 		properties.add(property);
+
+		if (property.isIdProperty()) {
+
+			if (this.idProperty != null) {
+				throw new MappingException(String.format(
+						"Attempt to add id property %s but already have property %s registered "
+								+ "as id. Check your mapping configuration!", property.getField(), idProperty.getField()));
+			}
+
+			this.idProperty = property;
+		}
 	}
 
 	/* (non-Javadoc)
