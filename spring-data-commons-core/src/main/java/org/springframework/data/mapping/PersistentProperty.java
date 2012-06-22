@@ -63,7 +63,10 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	boolean isEntity();
 
 	/**
-	 * Returns whether the property is the ID property of the owning {@link PersistentEntity}.
+	 * Returns whether the property is a <em>potential</em> identifier property of the owning {@link PersistentEntity}.
+	 * This method is mainly used by {@link PersistentEntity} implementation to discover id property candidates on
+	 * {@link PersistentEntity} creation you should rather call {@link PersistentEntity#isIdProperty(PersistentProperty)}
+	 * to determine whether the current property is the id property of that {@link PersistentEntity} under consideration.
 	 * 
 	 * @return
 	 */
@@ -128,5 +131,4 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return the map's value type or {@literal null} if no {@link java.util.Map}
 	 */
 	Class<?> getMapValueType();
-
 }

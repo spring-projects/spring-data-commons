@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2011-2012 by the original author(s).
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,10 +15,11 @@
  */
 package org.springframework.data.mapping;
 
+import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * Represents a persistent entity
+ * Represents a persistent entity.
  * 
  * @author Oliver Gierke
  * @author Graeme Rocher
@@ -27,7 +28,7 @@ import org.springframework.data.util.TypeInformation;
 public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
 	/**
-	 * The entity name including any package prefix
+	 * The entity name including any package prefix.
 	 * 
 	 * @return must never return {@literal null}
 	 */
@@ -36,7 +37,9 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	/**
 	 * Returns the {@link PreferredConstructor} to be used to instantiate objects of this {@link PersistentEntity}.
 	 * 
-	 * @return {@literal null} in case no suitable constructor for automatic construction can be found.
+	 * @return {@literal null} in case no suitable constructor for automatic construction can be found. This usually
+	 *         indicates that the instantiation of the object of tthat persistent entity is done through either a customer
+	 *         {@link EntityInstantiator} or handled by custom conversion mechanisms entirely.
 	 */
 	PreferredConstructor<T, P> getPersistenceConstructor();
 
@@ -51,18 +54,26 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	boolean isConstructorArgument(P property);
 
 	/**
-	 * Returns the id property of the {@link PersistentEntity}. Must never return {@literal null} as a
-	 * {@link PersistentEntity} instance must not be created if there is no id property.
+	 * Returns whether the given {@link PersistentProperty} is the id property of the entity.
+	 * 
+	 * @param property
+	 * @return
+	 */
+	boolean isIdProperty(P property);
+
+	/**
+	 * Returns the id property of the {@link PersistentEntity}. Can be {@literal null} in case this is an entity
+	 * completely handled by a custom conversion.
 	 * 
 	 * @return the id property of the {@link PersistentEntity}.
 	 */
 	P getIdProperty();
 
 	/**
-	 * Obtains a PersistentProperty instance by name.
+	 * Obtains a {@link PersistentProperty} instance by name.
 	 * 
 	 * @param name The name of the property
-	 * @return The {@link PersistentProperty} or {@literal null} if it doesn't exist
+	 * @return the {@link PersistentProperty} or {@literal null} if it doesn't exist.
 	 */
 	P getPersistentProperty(String name);
 

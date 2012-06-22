@@ -9,7 +9,10 @@ import java.util.Iterator;
 import java.util.SortedSet;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentEntitySpec;
@@ -23,7 +26,11 @@ import org.springframework.test.util.ReflectionTestUtils;
  * 
  * @author Oliver Gierke
  */
+@RunWith(MockitoJUnitRunner.class)
 public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
+
+	@Mock
+	T property;
 
 	@Test
 	public void assertInvariants() {
@@ -88,6 +95,40 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(iterator.next(), is(entity.getPersistentProperty("firstName")));
 		assertThat(iterator.next(), is(entity.getPersistentProperty("lastName")));
 		assertThat(iterator.next(), is(entity.getPersistentProperty("ssn")));
+	}
+
+	/**
+	 * @see DATACMNS-186
+	 */
+	@Test
+	public void addingAndIdPropertySetsIdPropertyInternally() {
+
+		MutablePersistentEntity<Person, T> entity = createEntity(null);
+		assertThat(entity.getIdProperty(), is(nullValue()));
+
+		when(property.isIdProperty()).thenReturn(true);
+		entity.addPersistentProperty(property);
+		assertThat(entity.getIdProperty(), is(property));
+	}
+
+	/**
+	 * @see DATACMNS-186
+	 */
+	@Test
+	public void rejectsIdPropertyIfAlreadySet() {
+
+		MutablePersistentEntity<Person, T> entity = createEntity(null);
+
+		when(property.isIdProperty()).thenReturn(true);
+
+		entity.addPersistentProperty(property);
+
+		try {
+			entity.addPersistentProperty(property);
+			fail("Expected MappingException!");
+		} catch (MappingException e) {
+			// expected
+		}
 	}
 
 	private BasicPersistentEntity<Person, T> createEntity(Comparator<T> comparator) {
