@@ -7,23 +7,21 @@
   <section id="namespace-dao-config">
     <title>The <code>&lt;repositories /&gt;</code> element</title>
 
-    <para>The <code>&lt;repositories /&gt;</code> element acts as container
-    for <code>&lt;repository /&gt;</code> elements or can be left empty to
-    trigger auto detection<footnote>
+    <para>The <code>&lt;repositories /&gt;</code> triggers the setup of the
+    Spring Data repository infrastructure. The most important attribute is
+    <code>base-package</code> which defines the package to scan for Spring
+    Data repository interfaces.<footnote>
         <para>see <xref
-        linkend="repositories.create-instances.spring" /></para>
-      </footnote> of repository instances. Attributes defined for
-    <code>&lt;repositories /&gt;</code> are propagated to contained
-    <code>&lt;repository /&gt;</code> elements but can be overridden of
-    course.</para>
+        linkend="repositories.create-instances.spring"/></para>
+      </footnote></para>
 
     <table>
       <title>Attributes</title>
 
       <tgroup cols="2">
-        <colspec colwidth="1*" />
+        <colspec colwidth="1*"/>
 
-        <colspec colwidth="2*" />
+        <colspec colwidth="2*"/>
 
         <thead>
           <row>
@@ -41,9 +39,7 @@
             interfaces extending <interfacename>*Repository</interfacename>
             (actual interface is determined by specific Spring Data module) in
             auto detection mode. All packages below the configured package
-            will be scanned, too. In auto configuration mode (no nested
-            <code>&lt;repository /&gt;</code> elements) wildcards are also
-            allowed.</entry>
+            will be scanned, too. Wildcards are also allowed.</entry>
           </row>
 
           <row>
@@ -60,44 +56,8 @@
 
             <entry>Determines the strategy to be used to create finder
             queries. See <xref
-            linkend="repositories.query-methods.query-lookup-strategies" />
-            for details. Defaults to <code>create-if-not-found</code>.</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-  </section>
-
-  <section id="namespace-dao">
-    <title>The <code>&lt;repository /&gt;</code> element</title>
-
-    <para>The <code>&lt;repository /&gt;</code> element can contain all
-    attributes of <code>&lt;repositories /&gt;</code> except
-    <code>base-package</code>. This will result in overriding the values
-    configured in the surrounding <code>&lt;repositories /&gt;</code> element.
-    Thus here we will only document extended attributes.</para>
-
-    <table>
-      <title>Attributes</title>
-
-      <tgroup cols="2">
-        <colspec colwidth="1*" />
-
-        <colspec colwidth="2*" />
-
-        <tbody>
-          <row>
-            <entry><code>id</code></entry>
-
-            <entry>Defines the id of the bean the repository instance will be
-            registered under as well as the repository interface name.</entry>
-          </row>
-
-          <row>
-            <entry><code>custom-impl-ref</code></entry>
-
-            <entry>Defines a reference to a custom repository implementation
-            bean.</entry>
+            linkend="repositories.query-methods.query-lookup-strategies"/> for
+            details. Defaults to <code>create-if-not-found</code>.</entry>
           </row>
         </tbody>
       </tgroup>

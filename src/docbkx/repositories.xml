@@ -433,7 +433,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
       definitions for the repository interfaces defined.</para>
 
       <section id="repositories.create-instances.spring">
-        <title>Spring</title>
+        <title>XML Configuration</title>
 
         <para>The easiest way to do so is by using the Spring namespace that
         is shipped with each Spring Data module that supports the repository
@@ -501,19 +501,43 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
             instantiated.</para>
           </example>
         </simplesect>
+      </section>
 
-        <simplesect>
-          <title>Manual configuration</title>
+      <section id="repositories.create-instances.java-config">
+        <title>JavaConfig</title>
 
-          <para>If you'd rather like to manually define which repository
-          instances to create you can do this with nested <code>&lt;repository
-          /&gt;</code> elements.</para>
+        <para>The repository infrastructure can also be triggered using a
+        store-specific
+        <interfacename>@Enable${store}Repositories</interfacename> annotation
+        on a JavaConfig class. For an introduction into Java based
+        configuration of the Spring container please have a look at the
+        reference documentation.<footnote>
+            <para>JavaConfig in the Spring reference documentation - <ulink
+            url="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/beans.html#beans-java"/></para>
+          </footnote></para>
 
-          <programlisting language="xml">&lt;repositories base-package="com.acme.repositories"&gt;
-  &lt;repository id="userRepository" /&gt;
-&lt;/repositories&gt;
-</programlisting>
-        </simplesect>
+        <para>A sample configuration to enable Spring Data repositories would
+        look something like this.</para>
+
+        <example>
+          <title>Sample annotation based repository configuration</title>
+
+          <programlisting>@Configuration
+@EnableJpaRepositories("com.acme.repositories")
+class ApplicationConfiguration {
+
+  @Bean
+  public EntityManagerFactory entityManagerFactory() {
+    // …
+  }
+}</programlisting>
+        </example>
+
+        <para>Note that the sample uses the JPA specific annotation which
+        would have to be exchanged dependingon which store module you actually
+        use. The same applies to the definition of the
+        <interfacename>EntityManagerFactory</interfacename> bean. Please
+        consult the sections covering the store-specific configuration.</para>
       </section>
 
       <section id="repositories.create-instances.standalone">

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +35,8 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.repository.config.TypeFilterParser.Type;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -44,22 +49,24 @@ import org.xml.sax.SAXException;
 @RunWith(MockitoJUnitRunner.class)
 public class TypeFilterParserUnitTests {
 
-	private TypeFilterParser parser;
-	private Element documentElement;
+	static final Matcher<Iterable<? super AssignableTypeFilter>> IS_ASSIGNABLE_TYPE_FILTER = hasItem(Matchers
+			.isA(AssignableTypeFilter.class));
+
+	TypeFilterParser parser;
+	Element documentElement;
 
 	@Mock
-	private ClassLoader classLoader;
+	ReaderContext context;
+	@Mock
+	ClassLoader classLoader;
 
 	@Mock
-	private ReaderContext context;
-
-	@Mock
-	private ClassPathScanningCandidateComponentProvider scanner;
+	ClassPathScanningCandidateComponentProvider scanner;
 
 	@Before
 	public void setUp() throws SAXException, IOException, ParserConfigurationException {
 
-		parser = new TypeFilterParser(classLoader, context);
+		parser = new TypeFilterParser(context, classLoader);
 
 		Resource sampleXmlFile = new ClassPathResource("type-filter-test.xml", TypeFilterParserUnitTests.class);
 
@@ -74,9 +81,8 @@ public class TypeFilterParserUnitTests {
 
 		Element element = DomUtils.getChildElementByTagName(documentElement, "firstSample");
 
-		parser.parseFilters(element, scanner);
-
-		verify(scanner, atLeastOnce()).addIncludeFilter(isA(AssignableTypeFilter.class));
+		Iterable<TypeFilter> filters = parser.parseTypeFilters(element, Type.INCLUDE);
+		assertThat(filters, IS_ASSIGNABLE_TYPE_FILTER);
 	}
 
 	@Test
@@ -84,8 +90,7 @@ public class TypeFilterParserUnitTests {
 
 		Element element = DomUtils.getChildElementByTagName(documentElement, "secondSample");
 
-		parser.parseFilters(element, scanner);
-
-		verify(scanner, atLeastOnce()).addExcludeFilter(isA(AssignableTypeFilter.class));
+		Iterable<TypeFilter> filters = parser.parseTypeFilters(element, Type.EXCLUDE);
+		assertThat(filters, IS_ASSIGNABLE_TYPE_FILTER);
 	}
 }

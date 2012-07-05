@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,21 @@
 package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.parsing.ReaderContext;
+import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AspectJTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.util.Assert;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -42,53 +46,55 @@ class TypeFilterParser {
 	private static final String FILTER_TYPE_ATTRIBUTE = "type";
 	private static final String FILTER_EXPRESSION_ATTRIBUTE = "expression";
 
-	private final ClassLoader classLoader;
 	private final ReaderContext readerContext;
+	private final ClassLoader classLoader;
 
 	/**
-	 * Creates a new {@link TypeFilterParser} with the given {@link ClassLoader} and {@link ReaderContext}.
+	 * Creates a new {@link TypeFilterParser} with the given {@link ReaderContext}.
 	 * 
-	 * @param classLoader
-	 * @param readerContext
+	 * @param readerContext must not be {@literal null}.
 	 */
-	public TypeFilterParser(ClassLoader classLoader, ReaderContext readerContext) {
+	public TypeFilterParser(XmlReaderContext readerContext) {
+		this(readerContext, readerContext.getResourceLoader().getClassLoader());
+	}
 
-		this.classLoader = classLoader;
+	/**
+	 * Constructor to ease testing as {@link XmlReaderContext#getBeanClassLoader()} is final and thus cannot be mocked
+	 * easily.
+	 * 
+	 * @param readerContext must not be {@literal null}.
+	 * @param classLoader must not be {@literal null}.
+	 */
+	TypeFilterParser(ReaderContext readerContext, ClassLoader classLoader) {
+
+		Assert.notNull(readerContext, "ReaderContext must not be null!");
+		Assert.notNull(classLoader, "ClassLoader must not be null!");
+
 		this.readerContext = readerContext;
+		this.classLoader = classLoader;
 	}
 
-	/**
-	 * Parses include and exclude filters form the given {@link Element}'s child elements and populates the given
-	 * {@link ClassPathScanningCandidateComponentProvider} with the according {@link TypeFilter}s.
-	 * 
-	 * @param element
-	 * @param scanner
-	 */
-	public void parseFilters(Element element, ClassPathScanningCandidateComponentProvider scanner) {
-
-		parseTypeFilters(element, scanner, Type.INCLUDE);
-		parseTypeFilters(element, scanner, Type.EXCLUDE);
-	}
-
-	private void parseTypeFilters(Element element, ClassPathScanningCandidateComponentProvider scanner, Type type) {
+	public Iterable<TypeFilter> parseTypeFilters(Element element, Type type) {
 
 		NodeList nodeList = element.getChildNodes();
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node node = nodeList.item(i);
+		Collection<TypeFilter> filters = new HashSet<TypeFilter>();
 
+		for (int i = 0; i < nodeList.getLength(); i++) {
+
+			Node node = nodeList.item(i);
 			Element childElement = type.getElement(node);
 
 			if (childElement != null) {
 
 				try {
-
-					type.addFilter(createTypeFilter((Element) node, classLoader), scanner);
-
+					filters.add(createTypeFilter(childElement, classLoader));
 				} catch (RuntimeException e) {
 					readerContext.error(e.getMessage(), readerContext.extractSource(element), e.getCause());
 				}
 			}
 		}
+
+		return filters;
 	}
 
 	protected TypeFilter createTypeFilter(Element element, ClassLoader classLoader) {
@@ -193,23 +199,9 @@ class TypeFilterParser {
 		}
 	}
 
-	private static enum Type {
+	static enum Type {
 
-		INCLUDE("include-filter") {
-			@Override
-			public void addFilter(TypeFilter filter, ClassPathScanningCandidateComponentProvider scanner) {
-
-				scanner.addIncludeFilter(filter);
-			}
-
-		},
-		EXCLUDE("exclude-filter") {
-			@Override
-			public void addFilter(TypeFilter filter, ClassPathScanningCandidateComponentProvider scanner) {
-
-				scanner.addExcludeFilter(filter);
-			}
-		};
+		INCLUDE("include-filter"), EXCLUDE("exclude-filter");
 
 		private String elementName;
 
@@ -236,7 +228,5 @@ class TypeFilterParser {
 
 			return null;
 		}
-
-		abstract void addFilter(TypeFilter filter, ClassPathScanningCandidateComponentProvider scanner);
 	}
 }

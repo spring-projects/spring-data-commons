@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,15 @@ package org.springframework.data.repository.config;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.config.AbstractRepositoryConfigDefinitionParser.RepositoryComponentProvider;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.sample.SampleAnnotatedRepository;
 
 /**
@@ -36,10 +39,22 @@ public class RepositoryComponentProviderUnitTests {
 	@Test
 	public void findsAnnotatedRepositoryInterface() {
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(Repository.class);
+		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.<TypeFilter> emptyList());
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.sample");
 
 		assertThat(components.size(), is(1));
 		assertThat(components.iterator().next().getBeanClassName(), is(SampleAnnotatedRepository.class.getName()));
+	}
+
+	@Test
+	public void limitsFoundRepositoriesToIncludeFiltersOnly() {
+
+		List<? extends TypeFilter> filters = Arrays.asList(new AssignableTypeFilter(MyOtherRepository.class));
+
+		RepositoryComponentProvider provider = new RepositoryComponentProvider(filters);
+		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository");
+
+		assertThat(components.size(), is(1));
+		assertThat(components.iterator().next().getBeanClassName(), is(MyOtherRepository.class.getName()));
 	}
 }
