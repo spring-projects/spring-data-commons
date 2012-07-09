@@ -308,16 +308,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 	}
 
-	private TypeInformation<?> getComponentTypeRecursively(TypeInformation<?> typeInformation) {
-		TypeInformation<?> componentType = typeInformation.getComponentType();
-
-		if (componentType == null) {
-			return null;
-		}
-
-		return componentType.isCollectionLike() ? getComponentTypeRecursively(componentType) : componentType;
-	}
-
 	/**
 	 * Creates the concrete {@link PersistentEntity} instance.
 	 * 
