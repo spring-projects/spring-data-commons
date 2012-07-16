@@ -15,6 +15,7 @@
  */
 package org.springframework.data.history;
 
+import org.joda.time.DateTime;
 import org.springframework.util.Assert;
 
 /**
@@ -50,6 +51,15 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	 */
 	public N getRevisionNumber() {
 		return metadata.getRevisionNumber();
+	}
+
+	/**
+	 * Returns the revision date of the revision.
+	 * 
+	 * @return
+	 */
+	public DateTime getRevisionDate() {
+		return metadata.getRevisionDate();
 	}
 
 	/**
