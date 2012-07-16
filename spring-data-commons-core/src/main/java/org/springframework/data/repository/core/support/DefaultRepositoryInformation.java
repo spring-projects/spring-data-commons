@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -101,7 +102,6 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * @see org.springframework.data.repository.support.RepositoryInformation#getRepositoryBaseClass()
 	 */
 	public Class<?> getRepositoryBaseClass() {
-
 		return this.repositoryBaseClass;
 	}
 
@@ -152,7 +152,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryInformation#getQueryMethods()
 	 */
-	public Iterable<Method> getQueryMethods() {
+	public Set<Method> getQueryMethods() {
 
 		Set<Method> result = new HashSet<Method>();
 
@@ -163,7 +163,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 			}
 		}
 
-		return result;
+		return Collections.unmodifiableSet(result);
 	}
 
 	/*
@@ -172,6 +172,14 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 */
 	public boolean isCustomMethod(Method method) {
 		return isTargetClassMethod(method, customImplementationClass);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryInformation#isQueryMethod(java.lang.reflect.Method)
+	 */
+	public boolean isQueryMethod(Method method) {
+		return getQueryMethods().contains(method);
 	}
 
 	/**

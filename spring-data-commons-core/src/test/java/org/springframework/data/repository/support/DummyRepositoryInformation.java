@@ -18,6 +18,7 @@ package org.springframework.data.repository.support;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.Set;
 
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -59,7 +60,11 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 		return false;
 	}
 
-	public Iterable<Method> getQueryMethods() {
+	public boolean isQueryMethod(Method method) {
+		return false;
+	}
+
+	public Set<Method> getQueryMethods() {
 		return Collections.emptySet();
 	}
 

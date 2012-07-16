@@ -43,10 +43,17 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	 * Returns whether the given method is a custom repository method.
 	 * 
 	 * @param method
-	 * @param baseClass
 	 * @return
 	 */
 	boolean isCustomMethod(Method method);
+
+	/**
+	 * Returns whether the given method is a query method.
+	 * 
+	 * @param method
+	 * @return
+	 */
+	boolean isQueryMethod(Method method);
 
 	/**
 	 * Returns all methods considered to be query methods.

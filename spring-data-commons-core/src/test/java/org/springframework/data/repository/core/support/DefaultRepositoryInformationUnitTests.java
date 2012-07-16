@@ -142,6 +142,21 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(queryMethods, not(hasItem(intermediateMethod)));
 	}
 
+	/**
+	 * @see DATACMNS-193
+	 */
+	@Test
+	public void detectsQueryMethodCorrectly() {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+
+		Method queryMethod = getMethodFrom(ConcreteRepository.class, "findBySomethingDifferent");
+
+		assertThat(information.getQueryMethods(), hasItem(queryMethod));
+		assertThat(information.isQueryMethod(queryMethod), is(true));
+	}
+
 	private Method getMethodFrom(Class<?> type, String name) {
 		for (Method method : type.getMethods()) {
 			if (method.getName().equals(name)) {
