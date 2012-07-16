@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -54,5 +55,32 @@ public class RevisionUnitTests {
 
 		assertThat(revisions.get(0), is(first));
 		assertThat(revisions.get(1), is(second));
+	}
+
+	/**
+	 * @see DATACMNS-187
+	 */
+	@Test
+	public void returnsRevisionNumber() {
+
+		when(firstMetadata.getRevisionNumber()).thenReturn(4711);
+
+		Revision<Integer, Object> revision = new Revision<Integer, Object>(firstMetadata, new Object());
+
+		assertThat(revision.getRevisionNumber(), is(4711));
+	}
+
+	/**
+	 * @see DATACMNS-187
+	 */
+	@Test
+	public void returnsRevisionDate() {
+
+		DateTime reference = new DateTime();
+		when(firstMetadata.getRevisionDate()).thenReturn(reference);
+
+		Revision<Integer, Object> revision = new Revision<Integer, Object>(firstMetadata, new Object());
+
+		assertThat(revision.getRevisionDate(), is(reference));
 	}
 }
