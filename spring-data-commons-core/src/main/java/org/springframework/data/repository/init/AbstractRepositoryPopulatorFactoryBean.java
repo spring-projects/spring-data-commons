@@ -39,7 +39,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean extends
 	 * @param resources the resources to set
 	 */
 	public void setResources(Resource[] resources) {
-		this.resources = resources;
+		this.resources = resources.clone();
 	}
 
 	/* 
@@ -72,7 +72,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean extends
 	 */
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
-		if (event.equals(getBeanFactory())) {
+		if (event.getApplicationContext().equals(getBeanFactory())) {
 			Repositories repositories = new Repositories(event.getApplicationContext());
 			populator.populate(repositories);
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,10 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * @param properties must not be {@literal null}.
 	 */
 	public DefaultPersistentPropertyPath(List<T> properties) {
+
 		Assert.notNull(properties);
 		Assert.isTrue(!properties.isEmpty());
+
 		this.properties = properties;
 	}
 
@@ -141,7 +143,8 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		return true;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getExtensionForBaseOf(org.springframework.data.mapping.context.PersistentPropertyPath)
 	 */
 	public PersistentPropertyPath<T> getExtensionForBaseOf(PersistentPropertyPath<T> base) {
@@ -153,8 +156,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		List<T> properties = new ArrayList<T>();
 		Iterator<T> iterator = iterator();
 
-		for (@SuppressWarnings("unused")
-		T candidate : base) {
+		for (int i = 0; i < base.getLength(); i++) {
 			iterator.next();
 		}
 
@@ -222,6 +224,10 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		return properties.hashCode();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return toDotPath();
