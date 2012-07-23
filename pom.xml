@@ -6,7 +6,7 @@
 	<name>Spring Data Commons Distribution</name>
 	<description>Spring Data Commons</description>
 	<url>http://www.springsource.org/spring-data</url>
-	<version>1.4.0.BUILD-SNAPSHOT</version>
+	<version>1.4.0.M1</version>
 	<packaging>pom</packaging>
 
 	<modules>
