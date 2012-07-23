@@ -6,7 +6,7 @@
 	<name>Spring Data Commons Parent</name>
 	<description>Spring Data Commons Parent</description>
 	<url>http://www.springsource.org/spring-data</url>
-	<version>1.3.2.RELEASE</version>
+	<version>1.3.3.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	
 	<properties>
