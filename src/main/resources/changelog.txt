@@ -1,6 +1,39 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.4.0.M1 (2012-07-23)
+----------------------------------------
+** Bug
+    * [DATACMNS-178] - Invalid compile time dependency on JUnit
+    * [DATACMNS-180] - Java transient fields should not be considered transient for persistence
+
+** Defect
+    * [DATACMNS-189] - Typo in section 1.2
+
+** Improvement
+    * [DATACMNS-72] - Approach Sonar results to improve code quality
+    * [DATACMNS-164] - Allow pagination value objects to be used by marshaling infrastructure like JAXB or JSON 
+    * [DATACMNS-172] - PropertyPath should throw more meaningful exception if properties cannot be found
+    * [DATACMNS-174] - Part.Type should expose keywords supported
+    * [DATACMNS-177] - Fix OSGi bundle identifier
+    * [DATACMNS-179] - MappingContext initialEntitySet should get added after the ApplicationContext is completely set up
+    * [DATACMNS-185] - Expose initialization of AbstractMappingContext through method
+    * [DATACMNS-186] - BasicPersistentEntity should reject multiple id properties
+    * [DATACMNS-187] - Let the Revision class in the history package also expose the revision date
+    * [DATACMNS-193] - Would rather not use Iterable on query methods metadata
+
+** New Feature
+    * [DATACMNS-47] - Support Java-based Configuration of Repositories
+    * [DATACMNS-58] - As a developer I want to be able to initialize a repository with data (<repository:initialize ... />)
+
+** Task
+    * [DATACMNS-173] - Upgrade Maven compiler and surefire plugins
+    * [DATACMNS-175] - JavaDoc should be built before assembly
+    * [DATACMNS-188] - AbstractMappingContext.getComponentTypeRecursively(…) is obsolete and should be removed
+    * [DATACMNS-191] - Release 1.4.0 M1
+    * [DATACMNS-201] - Fix critical warnings in Sonar
+    * [DATACMNS-202] - Move common helpers for BeanDefinitionParsers from Mongo module into Commons
+    * [DATACMNS-203] - Re-enable accidentally disabled unit tests
 
 Changes in version 1.3.2.RELEASE (2012-07-23)
 ---------------------------------------------
