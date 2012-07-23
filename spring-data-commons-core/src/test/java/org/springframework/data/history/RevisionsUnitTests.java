@@ -34,7 +34,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-public class RevisionsUnitTest {
+public class RevisionsUnitTests {
 
 	@Mock
 	RevisionMetadata<Integer> first, second;

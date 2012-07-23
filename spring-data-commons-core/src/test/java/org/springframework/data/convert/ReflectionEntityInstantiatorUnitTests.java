@@ -20,11 +20,13 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.convert.ReflectionEntityInstantiator.*;
 
+import java.lang.reflect.Field;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.data.convert.ReflectionEntityInstantiatorUnitTest.Outer.Inner;
+import org.springframework.data.convert.ReflectionEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -33,7 +35,8 @@ import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.FieldCallback;
 
 /**
  * Unit tests for {@link ReflectionEntityInstantiator}.
@@ -41,7 +44,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ReflectionEntityInstantiatorUnitTest<P extends PersistentProperty<P>> {
+public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
 	@Mock
 	PersistentEntity<?, P> entity;
@@ -93,13 +96,22 @@ public class ReflectionEntityInstantiatorUnitTest<P extends PersistentProperty<P
 		PreferredConstructor<Inner, P> constructor = entity.getPersistenceConstructor();
 		Parameter<Object, P> parameter = constructor.getParameters().iterator().next();
 
-		Object outer = new Outer();
+		final Object outer = new Outer();
 
 		when(provider.getParameterValue(parameter)).thenReturn(outer);
-		Inner instance = INSTANCE.createInstance(entity, provider);
+		final Inner instance = INSTANCE.createInstance(entity, provider);
 
 		assertThat(instance, is(notNullValue()));
-		assertThat(ReflectionTestUtils.getField(instance, "this$1"), is(outer));
+
+		// Hack to check syntheic field as compiles create different field names (e.g. this$0, this$1)
+		ReflectionUtils.doWithFields(Inner.class, new FieldCallback() {
+			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+				if (field.isSynthetic() && field.getName().startsWith("this$")) {
+					ReflectionUtils.makeAccessible(field);
+					assertThat(ReflectionUtils.getField(field, instance), is(outer));
+				}
+			}
+		});
 	}
 
 	static class Foo {
