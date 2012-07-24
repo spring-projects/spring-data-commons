@@ -18,6 +18,9 @@ package org.springframework.data.mapping.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -122,6 +125,69 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.isTransient(), is(false));
 	}
 
+	@Test
+	public void findsSimpleGettersAndASetters() {
+
+		Field field = ReflectionUtils.findField(AccessorTestClass.class, "id");
+		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, getPropertyDescriptor(
+				AccessorTestClass.class, "id"), entity, typeHolder);
+
+		assertThat(property.getGetter(), is(notNullValue()));
+		assertThat(property.getSetter(), is(notNullValue()));
+	}
+
+	@Test
+	public void doesNotUseInvalidGettersAndASetters() {
+
+		Field field = ReflectionUtils.findField(AccessorTestClass.class, "anotherId");
+		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, getPropertyDescriptor(
+				AccessorTestClass.class, "anotherId"), entity, typeHolder);
+
+		assertThat(property.getGetter(), is(nullValue()));
+		assertThat(property.getSetter(), is(nullValue()));
+	}
+
+	@Test
+	public void usesCustomGetter() {
+
+		Field field = ReflectionUtils.findField(AccessorTestClass.class, "yetAnotherId");
+		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, getPropertyDescriptor(
+				AccessorTestClass.class, "yetAnotherId"), entity, typeHolder);
+
+		assertThat(property.getGetter(), is(notNullValue()));
+		assertThat(property.getSetter(), is(nullValue()));
+	}
+
+	@Test
+	public void usesCustomSetter() {
+
+		Field field = ReflectionUtils.findField(AccessorTestClass.class, "yetYetAnotherId");
+		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, getPropertyDescriptor(
+				AccessorTestClass.class, "yetYetAnotherId"), entity, typeHolder);
+
+		assertThat(property.getGetter(), is(nullValue()));
+		assertThat(property.getSetter(), is(notNullValue()));
+	}
+
+	private static PropertyDescriptor getPropertyDescriptor(Class<?> type, String propertyName) {
+
+		try {
+
+			BeanInfo info = Introspector.getBeanInfo(type);
+
+			for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
+				if (descriptor.getName().equals(propertyName)) {
+					return descriptor;
+				}
+			}
+
+			return null;
+
+		} catch (IntrospectionException e) {
+			return null;
+		}
+	}
+
 	class Generic<T> {
 		T genericField;
 
@@ -147,6 +213,44 @@ public class AbstractPersistentPropertyUnitTests {
 		Map map;
 		Collection collection;
 		transient Object transientField;
+	}
+
+	class AccessorTestClass {
+
+		// Valid getters and setters
+		Long id;
+		// Invalid getters and setters
+		Long anotherId;
+
+		// Customized getter
+		Number yetAnotherId;
+
+		// Customized setter
+		Number yetYetAnotherId;
+
+		public Long getId() {
+			return id;
+		}
+
+		public void setId(Long id) {
+			this.id = id;
+		}
+
+		public String getAnotherId() {
+			return anotherId.toString();
+		}
+
+		public void setAnotherId(String anotherId) {
+			this.anotherId = Long.parseLong(anotherId);
+		}
+
+		public Long getYetAnotherId() {
+			return null;
+		}
+
+		public void setYetYetAnotherId(Object yetYetAnotherId) {
+			this.yetYetAnotherId = null;
+		}
 	}
 
 	class SamplePersistentProperty extends AbstractPersistentProperty<SamplePersistentProperty> {

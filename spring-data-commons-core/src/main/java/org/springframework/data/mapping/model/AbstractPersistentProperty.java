@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,22 +66,42 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	protected abstract Association<P> createAssociation();
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getOwner()
+	 */
 	public PersistentEntity<?, P> getOwner() {
 		return owner;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getName()
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getType()
+	 */
 	public Class<?> getType() {
 		return information.getType();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getRawType()
+	 */
 	public Class<?> getRawType() {
 		return this.rawType;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getTypeInformation()
+	 */
 	public TypeInformation<?> getTypeInformation() {
 		return information;
 	}
@@ -113,14 +134,56 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return information == null || simpleTypeHolder.isSimpleType(information.getType()) ? null : information;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getPropertyDescriptor()
+	 */
 	public PropertyDescriptor getPropertyDescriptor() {
 		return propertyDescriptor;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getGetter()
+	 */
+	public Method getGetter() {
+
+		Method getter = propertyDescriptor.getReadMethod();
+
+		if (getter == null) {
+			return null;
+		}
+
+		return rawType.isAssignableFrom(getter.getReturnType()) ? getter : null;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getSetter()
+	 */
+	public Method getSetter() {
+
+		Method setter = propertyDescriptor.getWriteMethod();
+
+		if (setter == null) {
+			return null;
+		}
+
+		return setter.getParameterTypes()[0].isAssignableFrom(rawType) ? setter : null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getField()
+	 */
 	public Field getField() {
 		return field;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getSpelExpression()
+	 */
 	public String getSpelExpression() {
 		return null;
 	}
@@ -141,6 +204,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return !isTransient();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isAssociation()
+	 */
 	public boolean isAssociation() {
 		if (field.isAnnotationPresent(Reference.class)) {
 			return true;
@@ -166,13 +233,18 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return information.isCollectionLike();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isMap()
+	 */
 	public boolean isMap() {
 		return Map.class.isAssignableFrom(getType());
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.mapping.model.PersistentProperty#isArray()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isArray()
+	 */
 	public boolean isArray() {
 		return getType().isArray();
 	}
@@ -202,9 +274,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return componentType == null ? null : componentType.getType();
 	}
 
-	/* (non-Javadoc)
-		 * @see org.springframework.data.mapping.model.PersistentProperty#getMapValueType()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getMapValueType()
+	 */
 	public Class<?> getMapValueType() {
 		return isMap() ? information.getMapValueType().getType() : null;
 	}

@@ -61,13 +61,10 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * {@link ConversionService} is configured. Will use the accessor method of the given {@link PersistentProperty} if it
 	 * has one or field access otherwise.
 	 * 
-	 * @param property
+	 * @param property must not be {@literal null}.
 	 * @param value
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
 	 */
-	public void setProperty(PersistentProperty<?> property, Object value) throws IllegalAccessException,
-			InvocationTargetException {
+	public void setProperty(PersistentProperty<?> property, Object value) {
 		setProperty(property, value, false);
 	}
 
@@ -75,16 +72,18 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * Sets the given {@link PersistentProperty} to the given value. Will do type conversion if a
 	 * {@link ConversionService} is configured.
 	 * 
-	 * @param property
+	 * @param property must not be {@literal null}.
 	 * @param value
+	 * @param fieldAccessOnly whether to only try accessing the field ({@literal true}) or try using the getter first.
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
 	public void setProperty(PersistentProperty<?> property, Object value, boolean fieldAccessOnly) {
 
-		Method setter = property.getPropertyDescriptor() != null ? property.getPropertyDescriptor().getWriteMethod() : null;
+		Method setter = property.getSetter();
 
 		try {
+
 			if (fieldAccessOnly || null == setter) {
 				Object valueToSet = getPotentiallyConvertedValue(value, property.getType());
 				ReflectionUtils.makeAccessible(property.getField());
@@ -96,6 +95,7 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 			Object valueToSet = getPotentiallyConvertedValue(value, paramTypes[0]);
 			ReflectionUtils.makeAccessible(setter);
 			ReflectionUtils.invokeMethod(setter, bean, valueToSet);
+
 		} catch (IllegalStateException e) {
 			throw new MappingException("Could not set object property!", e);
 		}
@@ -107,10 +107,8 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * @param <S>
 	 * @param property
 	 * @return
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
 	 */
-	public Object getProperty(PersistentProperty<?> property) throws IllegalAccessException, InvocationTargetException {
+	public Object getProperty(PersistentProperty<?> property) {
 		return getProperty(property, property.getType(), false);
 	}
 
@@ -118,19 +116,17 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * Returns the value of the given {@link PersistentProperty} potentially converted to the given type.
 	 * 
 	 * @param <S>
-	 * @param property
+	 * @param property must not be {@literal null}.
 	 * @param type
 	 * @param fieldAccessOnly
 	 * @return
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
 	 */
 	public <S> S getProperty(PersistentProperty<?> property, Class<? extends S> type, boolean fieldAccessOnly) {
+
 		try {
 			Object obj;
 			Field field = property.getField();
-			Method getter = (null != property.getPropertyDescriptor() ? property.getPropertyDescriptor().getReadMethod()
-					: null);
+			Method getter = property.getGetter();
 
 			if (fieldAccessOnly || null == getter) {
 				ReflectionUtils.makeAccessible(field);
@@ -141,6 +137,7 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 			}
 
 			return getPotentiallyConvertedValue(obj, type);
+
 		} catch (IllegalStateException e) {
 			throw new MappingException(String.format("Could not read property %s of %s!", property.toString(),
 					bean.toString()), e);

@@ -2,6 +2,7 @@ package org.springframework.data.mapping;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
@@ -44,9 +45,27 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	/**
 	 * Returns the {@link PropertyDescriptor} backing the {@link PersistentProperty}.
 	 * 
+	 * @deprecated use {@link #getGetter()} or {@link #getSetter()} directly, will be removed for 1.4.0.GA.
 	 * @return
 	 */
+	@Deprecated
 	PropertyDescriptor getPropertyDescriptor();
+
+	/**
+	 * Returns the getter method to access the property value if available. Might return {@literal null} in case there is
+	 * no getter method with a return type assignable to the actual property's type.
+	 * 
+	 * @return the getter method to access the property value if available, otherwise {@literal null}.
+	 */
+	Method getGetter();
+
+	/**
+	 * Returns the setter method to set a property value. Might return {@literal null} in case there is no setter
+	 * available.
+	 * 
+	 * @returnthe setter method to set a property value if available, otherwise {@literal null}.
+	 */
+	Method getSetter();
 
 	Field getField();
 
