@@ -1070,7 +1070,7 @@ public class UserController {
       <example>
         <title>Data defined in JSON</title>
 
-        <programlisting language="javascript">[ { "_class" : "com.acme.Person",
+        <programlisting>[ { "_class" : "com.acme.Person",
  "firstname" : "Dave",
   "lastname" : "Matthews" },
   { "_class" : "com.acme.Person",
