@@ -18,6 +18,7 @@ package org.springframework.data.mapping.event;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 
 /**
@@ -33,19 +34,24 @@ public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends Per
 
 	private static final long serialVersionUID = 1336466833846092490L;
 
-	private final E source;
+	private final MappingContext<?, ?> source;
+	private final E entity;
 
 	/**
-	 * Creates a new {@link MappingContextEvent} for the given {@link PersistentEntity}.
+	 * Creates a new {@link MappingContextEvent} for the given {@link MappingContext} and {@link PersistentEntity}.
 	 * 
 	 * @param source must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
 	 */
-	public MappingContextEvent(E source) {
+	public MappingContextEvent(MappingContext<?, ?> source, E entity) {
 
 		super(source);
 
 		Assert.notNull(source);
+		Assert.notNull(entity);
+
 		this.source = source;
+		this.entity = entity;
 	}
 
 	/**
@@ -54,6 +60,16 @@ public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends Per
 	 * @return
 	 */
 	public E getPersistentEntity() {
-		return source;
+		return entity;
+	}
+
+	/**
+	 * Returns whether the {@link MappingContextEvent} was triggered by the given {@link MappingContext}.
+	 * 
+	 * @param context the {@link MappingContext} that potentially created the event.
+	 * @return
+	 */
+	public boolean wasEmittedBy(MappingContext<?, ?> context) {
+		return this.source.equals(context);
 	}
 }

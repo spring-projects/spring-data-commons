@@ -296,7 +296,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			// Inform listeners
 			if (null != applicationEventPublisher) {
-				applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(entity));
+				applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(this, entity));
 			}
 
 			return entity;
