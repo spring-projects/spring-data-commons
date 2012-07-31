@@ -148,6 +148,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	public Method getGetter() {
 
+		if (propertyDescriptor == null) {
+			return null;
+		}
+
 		Method getter = propertyDescriptor.getReadMethod();
 
 		if (getter == null) {
@@ -162,6 +166,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#getSetter()
 	 */
 	public Method getSetter() {
+
+		if (propertyDescriptor == null) {
+			return null;
+		}
 
 		Method setter = propertyDescriptor.getWriteMethod();
 

@@ -125,6 +125,9 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.isTransient(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-206
+	 */
 	@Test
 	public void findsSimpleGettersAndASetters() {
 
@@ -136,6 +139,9 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getSetter(), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-206
+	 */
 	@Test
 	public void doesNotUseInvalidGettersAndASetters() {
 
@@ -147,6 +153,9 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getSetter(), is(nullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-206
+	 */
 	@Test
 	public void usesCustomGetter() {
 
@@ -158,6 +167,9 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getSetter(), is(nullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-206
+	 */
 	@Test
 	public void usesCustomSetter() {
 
@@ -167,6 +179,20 @@ public class AbstractPersistentPropertyUnitTests {
 
 		assertThat(property.getGetter(), is(nullValue()));
 		assertThat(property.getSetter(), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-206
+	 */
+	@Test
+	public void returnsNullGetterAndSetterIfNoPropertyDescriptorGiven() {
+
+		Field field = ReflectionUtils.findField(AccessorTestClass.class, "id");
+		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, null, entity,
+				typeHolder);
+
+		assertThat(property.getGetter(), is(nullValue()));
+		assertThat(property.getSetter(), is(nullValue()));
 	}
 
 	private static PropertyDescriptor getPropertyDescriptor(Class<?> type, String propertyName) {
