@@ -17,11 +17,14 @@ package org.springframework.data.util;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Locale;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -36,7 +39,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ParameterizedTypeUnitTests {
 
 	@Mock
-	ParameterizedType one, two;
+	ParameterizedType one;
+
+	@Before
+	public void setUp() {
+		when(one.getActualTypeArguments()).thenReturn(new Type[0]);
+	}
 
 	@Test
 	public void considersTypeInformationsWithDifferingParentsNotEqual() {

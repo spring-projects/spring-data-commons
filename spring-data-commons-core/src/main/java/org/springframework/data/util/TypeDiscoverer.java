@@ -27,7 +27,9 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -144,6 +146,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor) {
 
+		Assert.notNull(constructor);
 		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
 
 		for (Type type : constructor.getGenericParameterTypes()) {
@@ -238,13 +241,22 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#getActualType()
 	 */
 	public TypeInformation<?> getActualType() {
+
 		if (isMap()) {
 			return getMapValueType();
-		} else if (isCollectionLike()) {
+		}
+
+		if (isCollectionLike()) {
 			return getComponentType();
-		} else {
+		}
+
+		List<TypeInformation<?>> arguments = getTypeArguments();
+
+		if (arguments.isEmpty()) {
 			return this;
 		}
+
+		return arguments.get(arguments.size() - 1);
 	}
 
 	/*
@@ -261,16 +273,17 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public TypeInformation<?> getMapValueType() {
 
-		if (!isMap()) {
-			return null;
+		if (isMap()) {
+			return getTypeArgument(getType(), Map.class, 1);
 		}
 
-		return getTypeArgument(getType(), Map.class, 1);
-	}
+		List<TypeInformation<?>> arguments = getTypeArguments();
 
-	private TypeInformation<?> getTypeArgument(Class<?> type, Class<?> bound, int index) {
-		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(type, bound);
-		return arguments == null ? null : createInfo(arguments[index]);
+		if (arguments.size() > 1) {
+			return arguments.get(1);
+		}
+
+		return null;
 	}
 
 	/*
@@ -296,13 +309,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Class<S> rawType = getType();
 
-		if (!(isMap() || isCollectionLike() || Iterable.class.isAssignableFrom(rawType))) {
-			return null;
-		}
-
-		if (type instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType) type;
-			return createInfo(parameterizedType.getActualTypeArguments()[0]);
+		if (rawType.isArray()) {
+			return createInfo(rawType.getComponentType());
 		}
 
 		if (isMap()) {
@@ -313,8 +321,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getTypeArgument(rawType, Iterable.class, 0);
 		}
 
-		if (rawType.isArray()) {
-			return createInfo(rawType.getComponentType());
+		List<TypeInformation<?>> arguments = getTypeArguments();
+
+		if (arguments.size() > 0) {
+			return arguments.get(0);
 		}
 
 		return null;
@@ -328,6 +338,85 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Assert.notNull(method);
 		return createInfo(method.getGenericReturnType());
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getMethodParameterTypes(java.lang.reflect.Method)
+	 */
+	public List<TypeInformation<?>> getParameterTypes(Method method) {
+
+		Assert.notNull(method);
+
+		Type[] parameterTypes = method.getGenericParameterTypes();
+		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>(parameterTypes.length);
+
+		for (Type type : parameterTypes) {
+			result.add(createInfo(type));
+		}
+
+		return result;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getSuperTypeInformation(java.lang.Class)
+	 */
+	public TypeInformation<?> getSuperTypeInformation(Class<?> superType) {
+
+		Class<?> type = getType();
+
+		if (!superType.isAssignableFrom(type)) {
+			return null;
+		}
+
+		if (getType().equals(superType)) {
+			return this;
+		}
+
+		List<Type> candidates = new ArrayList<Type>();
+
+		Type genericSuperclass = type.getGenericSuperclass();
+		if (genericSuperclass != null) {
+			candidates.add(genericSuperclass);
+		}
+		candidates.addAll(Arrays.asList(type.getGenericInterfaces()));
+
+		for (Type candidate : candidates) {
+
+			TypeInformation<?> candidateInfo = createInfo(candidate);
+
+			if (superType.equals(candidateInfo.getType())) {
+				return candidateInfo;
+			} else {
+				TypeInformation<?> nestedSuperType = candidateInfo.getSuperTypeInformation(superType);
+				if (nestedSuperType != null) {
+					return nestedSuperType;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getTypeParameters()
+	 */
+	public List<TypeInformation<?>> getTypeArguments() {
+		return Collections.emptyList();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#isAssignableFrom(org.springframework.data.util.TypeInformation)
+	 */
+	public boolean isAssignableFrom(TypeInformation<?> target) {
+		return target.getSuperTypeInformation(getType()).equals(this);
+	}
+
+	private TypeInformation<?> getTypeArgument(Class<?> type, Class<?> bound, int index) {
+		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(type, bound);
+		return arguments == null ? null : createInfo(arguments[index]);
 	}
 
 	/*

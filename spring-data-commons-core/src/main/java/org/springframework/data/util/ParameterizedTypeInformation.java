@@ -17,8 +17,10 @@ package org.springframework.data.util;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,5 +75,117 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		}
 
 		return super.getMapValueType();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#getTypeParameters()
+	 */
+	@Override
+	public List<TypeInformation<?>> getTypeArguments() {
+
+		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
+
+		for (Type argument : type.getActualTypeArguments()) {
+			result.add(createInfo(argument));
+		}
+
+		return result;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#isAssignableFrom(org.springframework.data.util.TypeInformation)
+	 */
+	@Override
+	public boolean isAssignableFrom(TypeInformation<?> target) {
+
+		if (this.equals(target)) {
+			return true;
+		}
+
+		Class<T> rawType = getType();
+		Class<?> rawTargetType = target.getType();
+
+		if (!rawType.isAssignableFrom(rawTargetType)) {
+			return false;
+		}
+
+		TypeInformation<?> otherTypeInformation = rawType.equals(rawTargetType) ? target : target
+				.getSuperTypeInformation(rawType);
+
+		List<TypeInformation<?>> myParameters = getTypeArguments();
+		List<TypeInformation<?>> typeParameters = otherTypeInformation.getTypeArguments();
+
+		if (myParameters.size() != typeParameters.size()) {
+			return false;
+		}
+
+		for (int i = 0; i < myParameters.size(); i++) {
+			if (!myParameters.get(i).isAssignableFrom(typeParameters.get(i))) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
+	 */
+	@Override
+	public TypeInformation<?> getComponentType() {
+		return createInfo(type.getActualTypeArguments()[0]);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+
+		if (obj == this) {
+			return true;
+		}
+
+		if (!(obj instanceof ParameterizedTypeInformation)) {
+			return false;
+		}
+
+		ParameterizedTypeInformation<?> that = (ParameterizedTypeInformation<?>) obj;
+
+		if (this.isResolvedCompletely() && that.isResolvedCompletely()) {
+			return this.type.equals(that.type);
+		}
+
+		return super.equals(obj);
+	}
+
+	private boolean isResolvedCompletely() {
+
+		Type[] types = type.getActualTypeArguments();
+
+		if (types.length == 0) {
+			return false;
+		}
+
+		for (Type type : types) {
+
+			TypeInformation<?> info = createInfo(type);
+
+			if (info instanceof ParameterizedTypeInformation) {
+				if (!((ParameterizedTypeInformation<?>) info).isResolvedCompletely()) {
+					return false;
+				}
+			}
+
+			if (!(info instanceof ClassTypeInformation)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

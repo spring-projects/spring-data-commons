@@ -17,7 +17,9 @@ package org.springframework.data.util;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.util.ClassTypeInformation.*;
 
+import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
@@ -172,6 +174,86 @@ public class ClassTypeInformationUnitTests {
 		assertThat(component.getComponentType().getType(), is(typeCompatibleWith(String.class)));
 	}
 
+	@Test
+	public void resolvesTypeParametersCorrectly() {
+
+		TypeInformation<ConcreteType> information = ClassTypeInformation.from(ConcreteType.class);
+		TypeInformation<?> superTypeInformation = information.getSuperTypeInformation(GenericType.class);
+
+		List<TypeInformation<?>> parameters = superTypeInformation.getTypeArguments();
+		assertThat(parameters, hasSize(2));
+		assertThat(parameters.get(0).getType(), is((Object) String.class));
+		assertThat(parameters.get(1).getType(), is((Object) Object.class));
+	}
+
+	@Test
+	public void resolvesNestedInheritedTypeParameters() {
+
+		TypeInformation<SecondExtension> information = ClassTypeInformation.from(SecondExtension.class);
+		TypeInformation<?> superTypeInformation = information.getSuperTypeInformation(Base.class);
+
+		List<TypeInformation<?>> parameters = superTypeInformation.getTypeArguments();
+		assertThat(parameters, hasSize(1));
+		assertThat(parameters.get(0).getType(), is((Object) String.class));
+	}
+
+	@Test
+	public void discoveresMethodParameterTypesCorrectly() throws Exception {
+
+		TypeInformation<SecondExtension> information = ClassTypeInformation.from(SecondExtension.class);
+		Method method = SecondExtension.class.getMethod("foo", Base.class);
+		List<TypeInformation<?>> informations = information.getParameterTypes(method);
+		TypeInformation<?> returnTypeInformation = information.getReturnType(method);
+
+		assertThat(informations, hasSize(1));
+		assertThat(informations.get(0).getType(), is((Object) Base.class));
+		assertThat(informations.get(0), is((Object) returnTypeInformation));
+	}
+
+	@Test
+	public void discoversImplementationBindingCorrectlyForString() throws Exception {
+
+		TypeInformation<TypedClient> information = from(TypedClient.class);
+		Method method = TypedClient.class.getMethod("stringMethod", GenericInterface.class);
+
+		TypeInformation<?> parameterType = information.getParameterTypes(method).get(0);
+
+		TypeInformation<StringImplementation> stringInfo = from(StringImplementation.class);
+		assertThat(parameterType.isAssignableFrom(stringInfo), is(true));
+		assertThat(stringInfo.getSuperTypeInformation(GenericInterface.class), is((Object) parameterType));
+		assertThat(parameterType.isAssignableFrom(from(LongImplementation.class)), is(false));
+		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class).getSuperTypeInformation(
+				GenericInterface.class)), is(true));
+	}
+
+	@Test
+	public void discoversImplementationBindingCorrectlyForLong() throws Exception {
+
+		TypeInformation<TypedClient> information = from(TypedClient.class);
+		Method method = TypedClient.class.getMethod("longMethod", GenericInterface.class);
+
+		TypeInformation<?> parameterType = information.getParameterTypes(method).get(0);
+
+		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class)), is(false));
+		assertThat(parameterType.isAssignableFrom(from(LongImplementation.class)), is(true));
+		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class).getSuperTypeInformation(
+				GenericInterface.class)), is(false));
+	}
+
+	@Test
+	public void discoversImplementationBindingCorrectlyForNumber() throws Exception {
+
+		TypeInformation<TypedClient> information = from(TypedClient.class);
+		Method method = TypedClient.class.getMethod("boundToNumberMethod", GenericInterface.class);
+
+		TypeInformation<?> parameterType = information.getParameterTypes(method).get(0);
+
+		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class)), is(false));
+		assertThat(parameterType.isAssignableFrom(from(LongImplementation.class)), is(true));
+		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class).getSuperTypeInformation(
+				GenericInterface.class)), is(false));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -247,5 +329,41 @@ public class ClassTypeInformationUnitTests {
 	static class ClassWithWildCardBound {
 		List<? extends String> wildcard;
 		List<? extends Collection<? extends String>> complexWildcard;
+	}
+
+	static class Base<T> {
+
+	}
+
+	static class FirstExtension<T> extends Base<String> {
+
+		public Base<GenericWrapper<T>> foo(Base<GenericWrapper<T>> param) {
+			return null;
+		}
+	}
+
+	static class SecondExtension extends FirstExtension<Long> {
+
+	}
+
+	interface GenericInterface<T> {
+
+	}
+
+	interface TypedClient {
+
+		void stringMethod(GenericInterface<String> param);
+
+		void longMethod(GenericInterface<Long> param);
+
+		void boundToNumberMethod(GenericInterface<? extends Number> param);
+	}
+
+	class StringImplementation implements GenericInterface<String> {
+
+	}
+
+	class LongImplementation implements GenericInterface<Long> {
+
 	}
 }

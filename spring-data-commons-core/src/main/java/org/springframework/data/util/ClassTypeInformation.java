@@ -102,10 +102,9 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see org.springframework.data.document.mongodb.TypeDiscovererTest.FieldInformation#getType()
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#getType()
+	 */
 	@Override
 	public Class<S> getType() {
 		return type;
@@ -123,6 +122,15 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		}
 
 		return super.getComponentType();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#isAssignableFrom(org.springframework.data.util.TypeInformation)
+	 */
+	@Override
+	public boolean isAssignableFrom(TypeInformation<?> target) {
+		return getType().isAssignableFrom(target.getType());
 	}
 
 	private static Type resolveArrayType(Class<?> type) {

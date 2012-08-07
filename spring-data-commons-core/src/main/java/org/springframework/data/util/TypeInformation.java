@@ -27,6 +27,12 @@ import java.util.List;
  */
 public interface TypeInformation<S> {
 
+	/**
+	 * Returns the {@link TypeInformation}s for the parameters of the given {@link Constructor}.
+	 * 
+	 * @param constructor must not be {@literal null}.
+	 * @return
+	 */
 	List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor);
 
 	/**
@@ -92,4 +98,38 @@ public interface TypeInformation<S> {
 	 * @return
 	 */
 	TypeInformation<?> getReturnType(Method method);
+
+	/**
+	 * Returns the {@link TypeInformation}s for the parameters of the given {@link Method}.
+	 * 
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	List<TypeInformation<?>> getParameterTypes(Method method);
+
+	/**
+	 * Returns the {@link TypeInformation} for the given raw super type.
+	 * 
+	 * @param superType must not be {@literal null}.
+	 * @return the {@link TypeInformation} for the given raw super type or {@literal null} in case the current
+	 *         {@link TypeInformation} does not implement the given type.
+	 */
+	TypeInformation<?> getSuperTypeInformation(Class<?> superType);
+
+	/**
+	 * Returns if the current {@link TypeInformation} can be safely assigned to the given one. Mimics semantics of
+	 * {@link Class#isAssignableFrom(Class)} but takes generics into account. Thus it will allow to detect that a
+	 * {@code List<Long>} is assignable to {@code List<? extends Number>}.
+	 * 
+	 * @param target
+	 * @return
+	 */
+	boolean isAssignableFrom(TypeInformation<?> target);
+
+	/**
+	 * Returns the {@link TypeInformation} for the type arguments of the current {@link TypeInformation}.
+	 * 
+	 * @return
+	 */
+	List<TypeInformation<?>> getTypeArguments();
 }

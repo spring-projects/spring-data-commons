@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -93,7 +92,7 @@ public class TypeDiscovererUnitTests {
 
 	@Test
 	public void returnsComponentAndValueTypesForMapExtensions() {
-		TypeDiscoverer<Properties> discoverer = new TypeDiscoverer<Properties>(CustomMap.class, null);
+		TypeInformation<?> discoverer = new TypeDiscoverer<Object>(CustomMap.class, null);
 		assertEquals(Locale.class, discoverer.getMapValueType().getType());
 		assertEquals(String.class, discoverer.getComponentType().getType());
 	}
