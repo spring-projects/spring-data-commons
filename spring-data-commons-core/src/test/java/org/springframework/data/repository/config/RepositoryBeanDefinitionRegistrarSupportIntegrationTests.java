@@ -15,70 +15,35 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.lang.annotation.Annotation;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.StandardAnnotationMetadata;
-import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * Integration test for {@link RepositoryBeanDefinitionRegistrarSupport}.
- * 
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
 public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 
-	@Mock
-	BeanDefinitionRegistry registry;
+	@Configuration
+	@EnableRepositories
+	static class SampleConfig {
 
-	@Test
-	public void registersBeanDefinitionForFoundBean() {
-
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
-		DummyRegistrar registrar = new DummyRegistrar();
-		registrar.registerBeanDefinitions(metadata, registry);
-
-		verify(registry, times(1)).registerBeanDefinition(eq("myRepository"), any(BeanDefinition.class));
 	}
 
-	private static class DummyRegistrar extends RepositoryBeanDefinitionRegistrarSupport {
+	@Configuration
+	static class TestConfig extends SampleConfig {
 
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getAnnotation()
-		 */
-		@Override
-		protected Class<? extends Annotation> getAnnotation() {
-			return EnableRepositories.class;
-		}
+	}
 
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getExtension()
-		 */
-		@Override
-		protected RepositoryConfigurationExtension getExtension() {
-			return new RepositoryConfigurationExtensionSupport() {
+	@Test
+	public void testBootstrappingWithInheritedConfigClasses() {
 
-				public String getRepositoryFactoryClassName() {
-					return RepositoryFactoryBeanSupport.class.getName();
-				}
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfig.class);
 
-				@Override
-				protected String getModulePrefix() {
-					return "commons";
-				}
-			};
-		}
+		assertThat(context.getBean(MyRepository.class), is(notNullValue()));
+		assertThat(context.getBean(MyOtherRepository.class), is(notNullValue()));
 	}
 }

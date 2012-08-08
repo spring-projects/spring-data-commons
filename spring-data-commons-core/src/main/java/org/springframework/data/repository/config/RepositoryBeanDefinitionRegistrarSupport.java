@@ -42,6 +42,11 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 		Assert.notNull(annotationMetadata);
 		Assert.notNull(registry);
 
+		// Guard against calls for sub-classes
+		if (annotationMetadata.getAnnotationAttributes(getAnnotation().getName()) == null) {
+			return;
+		}
+
 		ResourceLoader resourceLoader = new DefaultResourceLoader();
 		AnnotationRepositoryConfigurationSource configuration = new AnnotationRepositoryConfigurationSource(
 				annotationMetadata, getAnnotation());

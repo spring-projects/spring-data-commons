@@ -20,9 +20,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -35,11 +35,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
-import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.NamedQueries;
-import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.query.QueryLookupStrategy;
-import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
@@ -50,7 +45,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryFactorySupportUnitTests {
 
-	RepositoryFactorySupport factory = new DummyRepositoryFactory();
+	RepositoryFactorySupport factory;
 
 	@Mock
 	PagingAndSortingRepository<Object, Serializable> backingRepo;
@@ -61,6 +56,11 @@ public class RepositoryFactorySupportUnitTests {
 	MyQueryCreationListener listener;
 	@Mock
 	PlainQueryCreationListener otherListener;
+
+	@Before
+	public void setUp() {
+		factory = new DummyRepositoryFactory(backingRepo);
+	}
 
 	@Test
 	public void invokesCustomQueryCreationListenerForSpecialRepositoryQueryOnly() throws Exception {
@@ -111,45 +111,6 @@ public class RepositoryFactorySupportUnitTests {
 		Class<? extends Repository<?, ?>> foo = (Class<? extends Repository<?, ?>>) repositoryInterface;
 
 		assertThat(factory.getRepository(foo), is(notNullValue()));
-	}
-
-	class DummyRepositoryFactory extends RepositoryFactorySupport {
-
-		/* (non-Javadoc)
-						 * @see org.springframework.data.repository.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
-						 */
-		@Override
-		@SuppressWarnings("unchecked")
-		public <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-
-			return mock(EntityInformation.class);
-		}
-
-		@Override
-		protected Object getTargetRepository(RepositoryMetadata metadata) {
-
-			return backingRepo;
-		}
-
-		@Override
-		protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
-
-			return backingRepo.getClass();
-		}
-
-		@Override
-		protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
-
-			MyRepositoryQuery queryOne = mock(MyRepositoryQuery.class);
-			RepositoryQuery queryTwo = mock(RepositoryQuery.class);
-
-			QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
-			when(
-					strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
-							Mockito.any(NamedQueries.class))).thenReturn(queryOne, queryTwo);
-
-			return strategy;
-		}
 	}
 
 	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {

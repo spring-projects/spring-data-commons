@@ -15,13 +15,18 @@
  */
 package org.springframework.data.repository.config;
 
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import org.springframework.context.annotation.ComponentScan.Filter;
-import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupportUnitTests.DummyRegistrar;
+import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 
 @Retention(RetentionPolicy.RUNTIME)
+@Import(DummyRegistrar.class)
+@Inherited
 public @interface EnableRepositories {
 
 	String[] value() default {};
@@ -34,7 +39,7 @@ public @interface EnableRepositories {
 
 	Filter[] excludeFilters() default {};
 
-	Class<?> repositoryFactoryBeanClass() default RepositoryFactoryBeanSupport.class;
+	Class<?> repositoryFactoryBeanClass() default DummyRepositoryFactoryBean.class;
 
 	String namedQueriesLocation() default "";
 
