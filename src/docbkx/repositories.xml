@@ -622,13 +622,9 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
         <example>
           <title>Configuration example</title>
 
-          <para><programlisting language="xml">&lt;repositories base-package="com.acme.repository"&gt;
-  &lt;repository id="userRepository" /&gt;
-&lt;/repositories&gt;
+          <para><programlisting language="xml">&lt;repositories base-package="com.acme.repository" /&gt;
 
-&lt;repositories base-package="com.acme.repository" repository-impl-postfix="FooBar"&gt;
-  &lt;repository id="userRepository" /&gt;
-&lt;/repositories&gt;</programlisting></para>
+&lt;repositories base-package="com.acme.repository" repository-impl-postfix="FooBar" /&gt;</programlisting></para>
         </example>
 
         <para>The first configuration example will try to lookup a class
@@ -652,35 +648,11 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
         <example>
           <title>Manual wiring of custom implementations (I)</title>
 
-          <programlisting language="xml">&lt;repositories base-package="com.acme.repository"&gt;
-  &lt;repository id="userRepository" /&gt;
-&lt;/repositories&gt;
+          <programlisting language="xml">&lt;repositories base-package="com.acme.repository" /&gt;
 
 &lt;beans:bean id="userRepositoryImpl" class="…"&gt;
   &lt;!-- further configuration --&gt;
 &lt;/beans:bean&gt;</programlisting>
-
-          <para>This also works if you use automatic repository lookup without
-          defining single <code>&lt;repository /&gt;</code> elements.</para>
-        </example>
-
-        <para>In case you are not in control of the implementation bean name
-        (e.g. if you wrap a generic repository facade around an existing
-        repository implementation) you can explicitly tell the
-        <code>&lt;repository /&gt;</code> element which bean to use as custom
-        implementation by using the <code>repository-impl-ref</code>
-        attribute.</para>
-
-        <example>
-          <title>Manual wiring of custom implementations (II)</title>
-
-          <para><programlisting language="xml">&lt;repositories base-package="com.acme.repository"&gt;
-  &lt;repository id="userRepository" repository-impl-ref="customRepositoryImplementation" /&gt;
-&lt;/repositories&gt;
-
-&lt;bean id="customRepositoryImplementation" class="…"&gt;
-  &lt;!-- further configuration --&gt;
-&lt;/bean&gt;</programlisting></para>
         </example>
       </simplesect>
     </section>
