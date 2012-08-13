@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping.event;
+package org.springframework.data.mapping.context;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 
 /**

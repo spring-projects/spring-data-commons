@@ -45,7 +45,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.event.MappingContextEvent;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 import org.springframework.data.mapping.model.SimpleTypeHolder;

@@ -46,6 +46,15 @@
                     <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Core"/>
                     <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Query"/>
                 </element>
+                <element name="Support" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.support.**" type="WeakTypePattern"/>
+                    </element>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|API"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Core"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Implementation"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Query"/>
+                </element>
                 <element name="Configuration" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.config.**" type="IncludeTypePattern"/>
@@ -54,14 +63,6 @@
                     <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Core"/>
                     <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Implementation"/>
                     <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Query"/>
-                </element>
-                <element name="Support" type="Subsystem">
-                    <element name="Assignment" type="TypeFilter">
-                        <element name="**.support.**" type="WeakTypePattern"/>
-                    </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|API"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Core"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Implementation"/>
                 </element>
                 <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Application"/>
                 <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Core"/>
@@ -103,17 +104,10 @@
                         <element name="**.mapping.*" type="IncludeTypePattern"/>
                     </element>
                 </element>
-                <element name="Events" type="Subsystem">
-                    <element name="Assignment" type="TypeFilter">
-                        <element name="**.event.**" type="IncludeTypePattern"/>
-                    </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Mapping::Subsystem|Model"/>
-                </element>
                 <element name="Context" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.context.**" type="IncludeTypePattern"/>
                     </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Mapping::Subsystem|Events"/>
                     <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Mapping::Subsystem|Model"/>
                 </element>
                 <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Core"/>
@@ -122,7 +116,7 @@
                 <element name="Assignment" type="TypeFilter"/>
                 <element name="Types" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
-                        <element name="**.util.**" type="IncludeTypePattern"/>
+                        <element name="**.util.**" type="WeakTypePattern"/>
                     </element>
                 </element>
                 <element name="Annotations" type="Subsystem">
@@ -133,6 +127,18 @@
                 <element name="Authentication" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.authentication.**" type="IncludeTypePattern"/>
+                    </element>
+                    <stereotype name="Unrestricted"/>
+                </element>
+                <element name="Configuration" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.config.**" type="WeakTypePattern"/>
+                    </element>
+                    <stereotype name="Unrestricted"/>
+                </element>
+                <element name="History" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.history.**" type="WeakTypePattern"/>
                     </element>
                     <stereotype name="Unrestricted"/>
                 </element>
