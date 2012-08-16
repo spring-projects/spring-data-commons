@@ -134,14 +134,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return information == null || simpleTypeHolder.isSimpleType(information.getType()) ? null : information;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#getPropertyDescriptor()
-	 */
-	public PropertyDescriptor getPropertyDescriptor() {
-		return propertyDescriptor;
-	}
-
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getGetter()
