@@ -41,17 +41,21 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	Collection<E> getPersistentEntities();
 
 	/**
-	 * Returns a {@link PersistentEntity} for the given {@link Class}.
+	 * Returns a {@link PersistentEntity} for the given {@link Class}. Will return {@literal null} for types that are
+	 * considered simple ones.
 	 * 
-	 * @param type
+	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	E getPersistentEntity(Class<?> type);
 
 	/**
-	 * Returns a {@link PersistentEntity} for the given {@link TypeInformation}.
+	 * Returns a {@link PersistentEntity} for the given {@link TypeInformation}. Will return {@literal null} for types
+	 * that are considered simple ones.
 	 * 
-	 * @param type
+	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	E getPersistentEntity(TypeInformation<?> type);
@@ -61,7 +65,9 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * 
 	 * @param persistentProperty
 	 * @return the {@link PersistentEntity} mapped by the given {@link PersistentProperty} or null if no
-	 *         {@link PersistentEntity} exists for it or the {@link PersistentProperty} does not refer to an entity.
+	 *         {@link PersistentEntity} exists for it or the {@link PersistentProperty} does not refer to an entity (the
+	 *         type of the property is considered simple see
+	 *         {@link org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)}).
 	 */
 	E getPersistentEntity(P persistentProperty);
 

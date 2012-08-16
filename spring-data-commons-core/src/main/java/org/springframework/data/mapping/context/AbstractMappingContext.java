@@ -49,6 +49,7 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
@@ -155,6 +156,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
 	 */
 	public E getPersistentEntity(Class<?> type) {
+		Assert.notNull(type);
 		return getPersistentEntity(ClassTypeInformation.from(type));
 	}
 
@@ -163,6 +165,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
 	 */
 	public E getPersistentEntity(TypeInformation<?> type) {
+
+		Assert.notNull(type);
 
 		try {
 			read.lock();
@@ -178,6 +182,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		if (strict) {
 			throw new MappingException("Unknown persistent entity " + type);
+		}
+
+		if (!shouldCreatePersistentEntityFor(type)) {
+			return null;
 		}
 
 		return addPersistentEntity(type);
@@ -236,7 +244,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @return
 	 */
 	protected E addPersistentEntity(Class<?> type) {
-
 		return addPersistentEntity(ClassTypeInformation.from(type));
 	}
 
@@ -343,6 +350,19 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		for (Class<?> initialEntity : initialEntitySet) {
 			addPersistentEntity(initialEntity);
 		}
+	}
+
+	/**
+	 * Returns whether a {@link PersistentEntity} instance should be created for the given {@link TypeInformation}. By
+	 * default this will reject this for all types considered simple, but it might be necessary to tweak that in case you
+	 * have registered custom converters for top level types (which renders them to be considered simple) but still need
+	 * meta-information about them.
+	 * 
+	 * @param type will never be {@literal null}.
+	 * @return
+	 */
+	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> type) {
+		return !simpleTypeHolder.isSimpleType(type.getType());
 	}
 
 	/**

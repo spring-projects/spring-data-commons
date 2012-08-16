@@ -90,6 +90,32 @@ public class AbstractMappingContextUnitTests {
 		verify(context, times(1)).publishEvent(Mockito.any(ApplicationEvent.class));
 	}
 
+	/**
+	 * @see DATACMNS-214
+	 */
+	@Test
+	public void returnsNullPersistentEntityForSimpleTypes() {
+
+		DummyMappingContext context = new DummyMappingContext();
+		assertThat(context.getPersistentEntity(String.class), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-214
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullValueForGetPersistentEntityOfClass() {
+		context.getPersistentEntity((Class<?>) null);
+	}
+
+	/**
+	 * @see DATACMNS-214
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullValueForGetPersistentEntityOfTypeInformation() {
+		context.getPersistentEntity((TypeInformation<?>) null);
+	}
+
 	class Person {
 		String name;
 	}
@@ -135,6 +161,7 @@ public class AbstractMappingContextUnitTests {
 			return false;
 		}
 
+		@Override
 		protected Association<DummyPersistenProperty> createAssociation() {
 			return new Association<DummyPersistenProperty>(this, null);
 		}
