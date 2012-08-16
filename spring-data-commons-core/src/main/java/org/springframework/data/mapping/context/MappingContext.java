@@ -16,13 +16,11 @@
 package org.springframework.data.mapping.context;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.validation.Validator;
 
 /**
  * This interface defines the overall context including all known PersistentEntity instances and methods to obtain
@@ -76,12 +74,4 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @return
 	 */
 	PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath);
-
-	/**
-	 * Obtains a validator for the given entity TODO: Why do we need validators at the {@link MappingContext}?
-	 * 
-	 * @param entity The entity
-	 * @return A validator or null if none exists for the given entity
-	 */
-	List<Validator> getEntityValidators(E entity);
 }

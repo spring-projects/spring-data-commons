@@ -52,7 +52,6 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
-import org.springframework.validation.Validator;
 
 /**
  * Base class to build mapping metadata and thus create instances of {@link PersistentEntity} and
@@ -73,7 +72,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
 
 	private final ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
-	private final ConcurrentMap<E, List<Validator>> validators = new ConcurrentHashMap<E, List<Validator>>();
 
 	private ApplicationEventPublisher applicationEventPublisher;
 	private ApplicationContext applicationContext;
@@ -226,14 +224,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 
 		return new DefaultPersistentPropertyPath<P>(result);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.MappingContext#getEntityValidators(org.springframework.data.mapping.PersistentEntity)
-	 */
-	public List<Validator> getEntityValidators(E entity) {
-		return validators.get(entity);
 	}
 
 	/**
