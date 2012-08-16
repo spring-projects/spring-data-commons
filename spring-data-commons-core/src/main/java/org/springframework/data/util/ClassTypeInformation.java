@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.springframework.core.GenericTypeResolver;
-import org.springframework.util.Assert;
 
 /**
  * {@link TypeInformation} for a plain {@link Class}.
@@ -110,20 +109,6 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		return type;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
-	 */
-	@Override
-	public TypeInformation<?> getComponentType() {
-
-		if (type.isArray()) {
-			return createInfo(resolveArrayType(type));
-		}
-
-		return super.getComponentType();
-	}
-
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#isAssignableFrom(org.springframework.data.util.TypeInformation)
@@ -131,11 +116,5 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	@Override
 	public boolean isAssignableFrom(TypeInformation<?> target) {
 		return getType().isAssignableFrom(target.getType());
-	}
-
-	private static Type resolveArrayType(Class<?> type) {
-		Assert.isTrue(type.isArray());
-		Class<?> componentType = type.getComponentType();
-		return componentType.isArray() ? resolveArrayType(componentType) : componentType;
 	}
 }

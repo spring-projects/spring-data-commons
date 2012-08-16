@@ -254,6 +254,15 @@ public class ClassTypeInformationUnitTests {
 				GenericInterface.class)), is(false));
 	}
 
+	@Test
+	public void returnsComponentTypeForMultiDimensionalArrayCorrectly() {
+
+		TypeInformation<?> information = from(String[][].class);
+		assertThat(information.getType(), is((Object) String[][].class));
+		assertThat(information.getComponentType().getType(), is((Object) String[].class));
+		assertThat(information.getActualType().getActualType().getType(), is((Object) String.class));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
