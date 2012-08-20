@@ -15,8 +15,7 @@
 		<log4j.version>1.2.16</log4j.version>
 		<org.mockito.version>1.8.5</org.mockito.version>
 		<org.springframework.version.30>3.0.7.RELEASE</org.springframework.version.30>
-		<org.springframework.version.40>4.0.0.RELEASE</org.springframework.version.40>
-		<org.springframework.version>[${org.springframework.version.30}, ${org.springframework.version.40})</org.springframework.version>
+		<org.springframework.version>3.1.2.RELEASE</org.springframework.version>
 		<org.springframework.hateoas.version>0.1.0.RELEASE</org.springframework.hateoas.version>
 		<org.hamcrest.version>1.2.1</org.hamcrest.version>
 		<bundlor.failOnWarnings>true</bundlor.failOnWarnings>
