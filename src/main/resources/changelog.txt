@@ -1,6 +1,27 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.4.0.RC1 (2012-08-23)
+----------------------------------------
+** Bug
+    * [DATACMNS-205] - Reference docs build broken
+
+** Improvement
+    * [DATACMNS-209] - MappingContextEvent should provide info about which MappingContext it originated from.
+    * [DATACMNS-210] - Documentation references repository element which is no longer valid
+    * [DATACMNS-211] - Extend TypeInformation abstraction
+    * [DATACMNS-212] - Sonargraph checks
+    * [DATACMNS-214] - AbstractMappingContext.getPersistentEntity(…) should return null for simple types
+    * [DATACMNS-215] - Remove EntityValidators from MappingContext API
+    * [DATACMNS-218] - Make metadata access possible in org.springframework.data.history.Revision
+    * [DATACMNS-219] - Make Spring 3.1.2.RELEASE default Spring dependency version
+    
+** Task
+    * [DATACMNS-213] - List all compile time dependencies explicitly
+    * [DATACMNS-216] - Remove deprecations from AbstractMappingContext
+    * [DATACMNS-217] - Release 1.4 RC1
+
+
 Changes in version 1.4.0.M1 (2012-07-23)
 ----------------------------------------
 ** Bug
