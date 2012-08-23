@@ -83,4 +83,14 @@ public class RevisionUnitTests {
 
 		assertThat(revision.getRevisionDate(), is(reference));
 	}
+
+	/**
+	 * @see DATACMNS-218
+	 */
+	@Test
+	public void returnsRevisionMetadata() {
+
+		Revision<Integer, Object> revision = new Revision<Integer, Object>(firstMetadata, new Object());
+		assertThat(revision.getMetadata(), is(firstMetadata));
+	}
 }

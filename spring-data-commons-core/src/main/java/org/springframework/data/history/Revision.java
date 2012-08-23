@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
  */
 public final class Revision<N extends Number & Comparable<N>, T> implements Comparable<Revision<N, ?>> {
 
-	private final RevisionMetadata<? extends N> metadata;
+	private final RevisionMetadata<N> metadata;
 	private final T entity;
 
 	/**
@@ -35,7 +35,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	 * @param metadata must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 */
-	public Revision(RevisionMetadata<? extends N> metadata, T entity) {
+	public Revision(RevisionMetadata<N> metadata, T entity) {
 
 		Assert.notNull(metadata);
 		Assert.notNull(entity);
@@ -69,6 +69,15 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	 */
 	public T getEntity() {
 		return entity;
+	}
+
+	/**
+	 * Returns the {@link RevisionMetadata} for the current {@link Revision}.
+	 * 
+	 * @return the metadata
+	 */
+	public RevisionMetadata<N> getMetadata() {
+		return metadata;
 	}
 
 	/*
