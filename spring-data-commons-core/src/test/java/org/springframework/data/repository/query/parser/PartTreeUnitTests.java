@@ -306,6 +306,17 @@ public class PartTreeUnitTests {
 		assertPart(tree, new Part[] { new Part("legalNameContaining", Organization.class) }, new Part[] { new Part(
 				"commonNameContaining", Organization.class) });
 	}
+	
+	/**
+	 * @see DATACMNS-221
+	 */
+	
+	@Test
+	public void parsesSpecialCharactersCorrectly() {
+	PartTree tree = new PartTree("findByØreAndÅrOrderByÅrAsc", DomainObjectWithSpecialChars.class);
+		assertPart(tree, new Part[] {new Part("øre", DomainObjectWithSpecialChars.class), new Part("år", DomainObjectWithSpecialChars.class)});
+		assertTrue(tree.getSort().getOrderFor("år").isAscending());
+	}
 
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
@@ -380,4 +391,10 @@ public class PartTreeUnitTests {
 		String commonName;
 		String legalName;
 	}
+
+	class DomainObjectWithSpecialChars {
+		String øre;
+		String år;
+	}
+
 }

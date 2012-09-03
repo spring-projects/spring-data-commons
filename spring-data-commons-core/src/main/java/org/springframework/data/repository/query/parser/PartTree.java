@@ -37,8 +37,8 @@ import org.springframework.util.StringUtils;
  */
 public class PartTree implements Iterable<OrPart> {
 
-	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get)(\\p{Upper}.*?)??By");
-	private static final String KEYWORD_TEMPLATE = "(%s)(?=[A-Z])";
+	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get)(\\p{Lu}.*?)??By");
+	private static final String KEYWORD_TEMPLATE = "(%s)(?=\\p{Lu})";
 
 	/**
 	 * The subject, for example "findDistinctUserByNameOrderByAge" would have the subject "DistinctUser".

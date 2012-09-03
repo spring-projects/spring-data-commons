@@ -35,7 +35,7 @@ import org.springframework.util.StringUtils;
  */
 public class OrderBySource {
 
-	private static final String BLOCK_SPLIT = "(?<=Asc|Desc)(?=[A-Z])";
+	private static final String BLOCK_SPLIT = "(?<=Asc|Desc)(?=\\p{Lu})";
 	private static final Pattern DIRECTION_SPLIT = Pattern.compile("(.+)(Asc|Desc)$");
 
 	private final List<Order> orders;
