@@ -27,7 +27,7 @@ public interface TypeInformationMapper {
 	/**
 	 * Returns the actual {@link TypeInformation} to be used for the given alias.
 	 * 
-	 * @param alias
+	 * @param alias can be {@literal null}.
 	 * @return
 	 */
 	TypeInformation<?> resolveTypeFrom(Object alias);

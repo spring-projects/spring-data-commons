@@ -26,7 +26,7 @@ public interface TypeAliasAccessor<S> {
 	 * Reads the type alias to be used from the given source.
 	 * 
 	 * @param source
-	 * @return
+	 * @return can be {@literal null} in case no alias was found.
 	 */
 	Object readAliasFrom(S source);
 

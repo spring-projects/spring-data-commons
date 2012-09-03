@@ -73,7 +73,7 @@ public class MappingMetadataTests {
 	public interface SampleProperty extends PersistentProperty<SampleProperty> {
 	}
 
-	public class SampleMappingContext extends
+	public static class SampleMappingContext extends
 			AbstractMappingContext<MutablePersistentEntity<?, SampleProperty>, SampleProperty> {
 
 		@Override
@@ -89,7 +89,8 @@ public class MappingMetadataTests {
 		}
 	}
 
-	public class SamplePropertyImpl extends AnnotationBasedPersistentProperty<SampleProperty> implements SampleProperty {
+	public static class SamplePropertyImpl extends AnnotationBasedPersistentProperty<SampleProperty> implements
+			SampleProperty {
 
 		public SamplePropertyImpl(Field field, PropertyDescriptor propertyDescriptor,
 				PersistentEntity<?, SampleProperty> owner, SimpleTypeHolder simpleTypeHolder) {

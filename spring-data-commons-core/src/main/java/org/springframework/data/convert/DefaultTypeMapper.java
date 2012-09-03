@@ -39,24 +39,46 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	private final TypeAliasAccessor<S> accessor;
 	private final List<? extends TypeInformationMapper> mappers;
 
+	/**
+	 * Creates a new {@link DefaultTypeMapper} using the given {@link TypeAliasAccessor}. It will use a
+	 * {@link SimpleTypeInformationMapper} to calculate type aliases.
+	 * 
+	 * @param accessor must not be {@literal null}.
+	 */
 	public DefaultTypeMapper(TypeAliasAccessor<S> accessor) {
 		this(accessor, Arrays.asList(SimpleTypeInformationMapper.INSTANCE));
 	}
 
+	/**
+	 * Creates a new {@link DefaultTypeMapper} using the given {@link TypeAliasAccessor} and {@link TypeInformationMapper}
+	 * s.
+	 * 
+	 * @param accessor must not be {@literal null}.
+	 * @param mappers must not be {@literal null}.
+	 */
 	public DefaultTypeMapper(TypeAliasAccessor<S> accessor, List<? extends TypeInformationMapper> mappers) {
-
 		this(accessor, null, mappers);
 	}
 
+	/**
+	 * Creates a new {@link DefaultTypeMapper} using the given {@link TypeAliasAccessor}, {@link MappingContext} and
+	 * additional {@link TypeInformationMapper}s. Will register a {@link MappingContextTypeInformationMapper} before the
+	 * given additional mappers.
+	 * 
+	 * @param accessor must not be {@literal null}.
+	 * @param mappingContext
+	 * @param additionalMappers must not be {@literal null}.
+	 */
 	public DefaultTypeMapper(TypeAliasAccessor<S> accessor,
 			MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext,
 			List<? extends TypeInformationMapper> additionalMappers) {
 
 		Assert.notNull(accessor);
+		Assert.notNull(additionalMappers);
 
 		List<TypeInformationMapper> mappers = new ArrayList<TypeInformationMapper>(additionalMappers.size() + 1);
 		if (mappingContext != null) {
-			mappers.add(new ConfigurableTypeInformationMapper(mappingContext));
+			mappers.add(new MappingContextTypeInformationMapper(mappingContext));
 		}
 		mappers.addAll(additionalMappers);
 
@@ -72,6 +94,10 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		Assert.notNull(source);
 		Object alias = accessor.readAliasFrom(source);
+
+		if (alias == null) {
+			return null;
+		}
 
 		for (TypeInformationMapper mapper : mappers) {
 			TypeInformation<?> type = mapper.resolveTypeFrom(alias);

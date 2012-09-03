@@ -40,13 +40,13 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 	 * @return the type to be used for the given {@link String} representation or {@literal null} if nothing found or the
 	 *         class cannot be loaded.
 	 */
-	public TypeInformation<?> resolveTypeFrom(Object source) {
+	public TypeInformation<?> resolveTypeFrom(Object alias) {
 
-		if (!(source instanceof String)) {
+		if (!(alias instanceof String)) {
 			return null;
 		}
 
-		String value = (String) source;
+		String value = (String) alias;
 
 		if (!StringUtils.hasText(value)) {
 			return null;
