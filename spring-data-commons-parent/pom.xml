@@ -204,6 +204,13 @@
 			<id>spring-plugins-release</id>
 			<url>http://repo.springsource.org/plugins-release</url>
 		</pluginRepository>
+		<pluginRepository>
+			<id>querydsl</id>
+			<url>http://source.mysema.com/maven2/releases</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
 	</pluginRepositories>
 	<repositories>
 		<repository>
