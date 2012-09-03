@@ -409,6 +409,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
+			if (!property.isEntity()) {
+				return;
+			}
+
 			for (TypeInformation<?> candidate : property.getPersistentEntityType()) {
 				addPersistentEntity(candidate);
 			}

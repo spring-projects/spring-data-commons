@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-12 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Map.Entry;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -32,30 +31,26 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class ConfigurableTypeInformationMapper implements TypeInformationMapper {
+public class MappingContextTypeInformationMapper implements TypeInformationMapper {
 
 	private final Map<TypeInformation<?>, Object> typeMap;
+	private final MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext;
 
 	/**
-	 * Creates a new {@link ConfigurableTypeMapper} for the given type map.
+	 * Creates a {@link MappingContextTypeInformationMapper} from the given {@link MappingContext}. Inspects all
+	 * {@link PersistentEntity} instances for alias information and builds a {@link Map} of aliases to types from it.
 	 * 
-	 * @param sourceTypeMap must not be {@literal null}.
+	 * @param mappingContext must not be {@literal null}.
 	 */
-	public ConfigurableTypeInformationMapper(Map<? extends Class<?>, String> sourceTypeMap) {
+	public MappingContextTypeInformationMapper(MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext) {
 
-		Assert.notNull(sourceTypeMap);
-		this.typeMap = new HashMap<TypeInformation<?>, Object>(sourceTypeMap.size());
+		Assert.notNull(mappingContext);
 
-		for (Entry<? extends Class<?>, String> entry : sourceTypeMap.entrySet()) {
-			TypeInformation<?> key = ClassTypeInformation.from(entry.getKey());
-			String value = entry.getValue();
+		this.typeMap = new HashMap<TypeInformation<?>, Object>();
+		this.mappingContext = mappingContext;
 
-			if (typeMap.containsValue(value)) {
-				throw new IllegalArgumentException(String.format(
-						"Detected mapping ambiguity! String %s cannot be mapped to more than one type!", value));
-			}
-
-			this.typeMap.put(key, value);
+		for (PersistentEntity<?, ?> entity : mappingContext.getPersistentEntities()) {
+			safelyAddToCache(entity.getTypeInformation(), entity.getTypeAlias());
 		}
 	}
 
@@ -64,7 +59,43 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 	 * @see org.springframework.data.convert.TypeInformationMapper#createAliasFor(org.springframework.data.util.TypeInformation)
 	 */
 	public Object createAliasFor(TypeInformation<?> type) {
-		return typeMap.get(type);
+
+		Object key = typeMap.get(type);
+
+		if (key != null) {
+			return key;
+		}
+
+		PersistentEntity<?, ?> entity = mappingContext.getPersistentEntity(type);
+
+		if (entity == null) {
+			return null;
+		}
+
+		Object alias = entity.getTypeAlias();
+		safelyAddToCache(type, alias);
+
+		return alias;
+	}
+
+	/**
+	 * Adds the given alias to the cache in a {@literal null}-safe manner.
+	 * 
+	 * @param key must not be {@literal null}.
+	 * @param alias can be {@literal null}.
+	 */
+	private void safelyAddToCache(TypeInformation<?> key, Object alias) {
+
+		if (alias == null) {
+			return;
+		}
+
+		if (typeMap.containsValue(alias)) {
+			throw new IllegalArgumentException(String.format(
+					"Detected mapping ambiguity! String %s cannot be mapped to more than one type!", alias));
+		}
+
+		typeMap.put(key, alias);
 	}
 
 	/*
@@ -80,6 +111,12 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 		for (Entry<TypeInformation<?>, Object> entry : typeMap.entrySet()) {
 			if (entry.getValue().equals(alias)) {
 				return entry.getKey();
+			}
+		}
+
+		for (PersistentEntity<?, ?> entity : mappingContext.getPersistentEntities()) {
+			if (alias.equals(entity.getTypeAlias())) {
+				return entity.getTypeInformation();
 			}
 		}
 
