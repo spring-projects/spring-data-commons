@@ -22,6 +22,8 @@ import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -35,7 +37,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.4
  */
-public class ResourceReaderRepositoryPopulator implements RepositoryPopulator {
+public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, ApplicationEventPublisherAware {
 
 	private static final Log LOG = LogFactory.getLog(ResourceReaderRepositoryPopulator.class);
 
@@ -43,6 +45,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator {
 	private final ResourceReader reader;
 	private final ClassLoader classLoader;
 
+	private ApplicationEventPublisher publisher;
 	private Collection<Resource> resources;
 
 	/**
@@ -93,6 +96,14 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator {
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
+	 */
+	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+		this.publisher = publisher;
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.init.RepositoryPopulator#initialize()
 	 */
 	public void populate(Repositories repositories) {
@@ -114,6 +125,10 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator {
 			} else {
 				persist(result, repositories);
 			}
+		}
+
+		if (publisher != null) {
+			publisher.publishEvent(new RepositoriesPopulatedEvent(this, repositories));
 		}
 	}
 

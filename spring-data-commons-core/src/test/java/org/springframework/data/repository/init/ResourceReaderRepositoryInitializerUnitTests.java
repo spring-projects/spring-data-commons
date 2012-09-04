@@ -26,6 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.support.Repositories;
@@ -46,6 +48,9 @@ public class ResourceReaderRepositoryInitializerUnitTests {
 	Resource resource;
 	@Mock
 	CrudRepository<Object, Serializable> repo;
+
+	@Mock
+	ApplicationEventPublisher publisher;
 
 	@Test
 	public void storesSingleObjectCorrectly() throws Exception {
@@ -68,13 +73,33 @@ public class ResourceReaderRepositoryInitializerUnitTests {
 		verify(repo, times(1)).save(object);
 	}
 
-	private void setUpReferenceAndInititalize(Object reference) throws Exception {
+	/**
+	 * @see DATACMNS-224
+	 */
+	@Test
+	public void emitsRepositoriesPopulatedEventIfPublisherConfigured() throws Exception {
+
+		RepositoryPopulator populator = setUpReferenceAndInititalize(new Object(), publisher);
+
+		ApplicationEvent event = new RepositoriesPopulatedEvent(populator, repositories);
+		verify(publisher, times(1)).publishEvent(event);
+	}
+
+	private RepositoryPopulator setUpReferenceAndInititalize(Object reference, ApplicationEventPublisher publish)
+			throws Exception {
 
 		when(reader.readFrom(any(Resource.class), any(ClassLoader.class))).thenReturn(reference);
 		when(repositories.getRepositoryFor(Object.class)).thenReturn(repo);
 
-		ResourceReaderRepositoryPopulator initializer = new ResourceReaderRepositoryPopulator(reader);
-		initializer.setResources(resource);
-		initializer.populate(repositories);
+		ResourceReaderRepositoryPopulator populator = new ResourceReaderRepositoryPopulator(reader);
+		populator.setResources(resource);
+		populator.setApplicationEventPublisher(publisher);
+		populator.populate(repositories);
+
+		return populator;
+	}
+
+	private RepositoryPopulator setUpReferenceAndInititalize(Object reference) throws Exception {
+		return setUpReferenceAndInititalize(reference, null);
 	}
 }

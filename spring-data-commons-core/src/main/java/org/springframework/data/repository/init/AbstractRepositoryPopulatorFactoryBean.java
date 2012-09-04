@@ -17,10 +17,13 @@ package org.springframework.data.repository.init;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.Resource;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.util.Assert;
 
 /**
  * Base class for {@link FactoryBean}s creating {@link ResourceReaderRepositoryPopulator}s. Sub-classes have to provide
@@ -29,18 +32,29 @@ import org.springframework.data.repository.support.Repositories;
  * @author Oliver Gierke
  */
 public abstract class AbstractRepositoryPopulatorFactoryBean extends
-		AbstractFactoryBean<ResourceReaderRepositoryPopulator> implements ApplicationListener<ContextRefreshedEvent> {
+		AbstractFactoryBean<ResourceReaderRepositoryPopulator> implements ApplicationListener<ContextRefreshedEvent>,
+		ApplicationEventPublisherAware {
 
 	private Resource[] resources;
 	private RepositoryPopulator populator;
+	private ApplicationEventPublisher publisher;
 
 	/**
 	 * Configures the {@link Resource}s to be used to load objects from and initialize the repositories eventually.
 	 * 
-	 * @param resources the resources to set
+	 * @param resources must not be {@literal null}.
 	 */
 	public void setResources(Resource[] resources) {
+		Assert.notNull(resources, "Resources must not be null!");
 		this.resources = resources.clone();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
+	 */
+	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+		this.publisher = publisher;
 	}
 
 	/* 
@@ -61,6 +75,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean extends
 
 		ResourceReaderRepositoryPopulator initializer = new ResourceReaderRepositoryPopulator(getResourceReader());
 		initializer.setResources(resources);
+		initializer.setApplicationEventPublisher(publisher);
 
 		this.populator = initializer;
 
