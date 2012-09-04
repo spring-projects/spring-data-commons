@@ -24,6 +24,8 @@ import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
 /**
+ * Integration tests for {@link JacksonResourceReader}.
+ * 
  * @author Oliver Gierke
  */
 public class JacksonResourceReaderIntegrationTests {

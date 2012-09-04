@@ -30,8 +30,7 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.util.Assert;
 
 /**
- * A {@link RepositoryPopulator} using a {@link ResourceReader} to read objects from the configured {@link Resource}
- * s.
+ * A {@link RepositoryPopulator} using a {@link ResourceReader} to read objects from the configured {@link Resource}s.
  * 
  * @author Oliver Gierke
  * @since 1.4
@@ -100,6 +99,8 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator {
 
 		for (Resource resource : resources) {
 
+			LOG.info(String.format("Reading resource: %s", resource));
+
 			Object result = readObjectFrom(resource);
 
 			if (result instanceof Collection) {
@@ -137,7 +138,9 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator {
 	 * @param repositories must not be {@literal null}.
 	 */
 	private void persist(Object object, Repositories repositories) {
+
 		CrudRepository<Object, Serializable> repository = repositories.getRepositoryFor(object.getClass());
+		LOG.debug(String.format("Persisting %s using repository %s", object, repository));
 		repository.save(object);
 	}
 }
