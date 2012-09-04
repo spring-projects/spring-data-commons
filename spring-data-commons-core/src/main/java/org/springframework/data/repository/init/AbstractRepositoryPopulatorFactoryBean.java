@@ -23,7 +23,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.repository.support.Repositories;
 
 /**
- * {@link FactoryBean} to set up a {@link ResourceReaderRepositoryPopulator} with a {@link JacksonResourceReader}.
+ * Base class for {@link FactoryBean}s creating {@link ResourceReaderRepositoryPopulator}s. Sub-classes have to provide
+ * a {@link ResourceReader} to hand into the {@link RepositoryPopulator} instance created.
  * 
  * @author Oliver Gierke
  */
