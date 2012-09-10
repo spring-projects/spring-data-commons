@@ -18,6 +18,7 @@ package org.springframework.data.mapping.context;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import groovy.lang.MetaClass;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -30,6 +31,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.AbstractPersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
@@ -116,12 +118,30 @@ public class AbstractMappingContextUnitTests {
 		context.getPersistentEntity((TypeInformation<?>) null);
 	}
 
+	/**
+	 * @see DATACMNS-228
+	 */
+	@Test
+	public void doesNotCreatePersistentPropertyForGroovyMetaClass() {
+
+		DummyMappingContext mappingContext = new DummyMappingContext();
+		mappingContext.initialize();
+
+		PersistentEntity<Object, DummyPersistenProperty> entity = mappingContext.getPersistentEntity(Sample.class);
+		assertThat(entity.getPersistentProperty("metaClass"), is(nullValue()));
+	}
+
 	class Person {
 		String name;
 	}
 
 	class Unsupported {
 
+	}
+
+	class Sample {
+
+		MetaClass metaClass;
 	}
 
 	class DummyMappingContext extends

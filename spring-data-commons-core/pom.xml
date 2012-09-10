@@ -161,6 +161,14 @@
 			<version>2.2.3U1</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- Groovy -->
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>1.8.6</version>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 	

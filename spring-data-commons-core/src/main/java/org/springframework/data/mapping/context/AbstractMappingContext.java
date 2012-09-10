@@ -22,8 +22,8 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +52,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
+import org.springframework.util.ReflectionUtils.FieldFilter;
 
 /**
  * Base class to build mapping metadata and thus create instances of {@link PersistentEntity} and
@@ -68,8 +69,6 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationContextAware, ApplicationEventPublisherAware,
 		ApplicationListener<ContextRefreshedEvent> {
-
-	private static final Set<String> UNMAPPED_FIELDS = new HashSet<String>(Arrays.asList("class", "this$0"));
 
 	private final ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
 
@@ -280,11 +279,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			}
 
 			ReflectionUtils.doWithFields(type, new PersistentPropertyCreator(entity, descriptors),
-					new ReflectionUtils.FieldFilter() {
-						public boolean matches(Field field) {
-							return !Modifier.isStatic(field.getModifiers()) && !UNMAPPED_FIELDS.contains(field.getName());
-						}
-					});
+					PersistentFieldFilter.INSTANCE);
 
 			try {
 				entity.verify();
@@ -415,6 +410,94 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			for (TypeInformation<?> candidate : property.getPersistentEntityType()) {
 				addPersistentEntity(candidate);
 			}
+		}
+	}
+
+	/**
+	 * {@link FieldFilter} rejecting static fields as well as artifically introduced ones. See
+	 * {@link PersistentFieldFilter#UNMAPPED_FIELDS} for details.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	private static enum PersistentFieldFilter implements FieldFilter {
+
+		INSTANCE;
+
+		private static final Iterable<FieldMatch> UNMAPPED_FIELDS;
+
+		static {
+
+			Set<FieldMatch> matches = new HashSet<FieldMatch>();
+			matches.add(new FieldMatch("class", null));
+			matches.add(new FieldMatch("this\\$.*", null));
+			matches.add(new FieldMatch("metaClass", "groovy.lang.MetaClass"));
+
+			UNMAPPED_FIELDS = Collections.unmodifiableCollection(matches);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.util.ReflectionUtils.FieldFilter#matches(java.lang.reflect.Field)
+		 */
+		public boolean matches(Field field) {
+
+			if (Modifier.isStatic(field.getModifiers())) {
+				return false;
+			}
+
+			for (FieldMatch candidate : UNMAPPED_FIELDS) {
+				if (candidate.matches(field)) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+	}
+
+	/**
+	 * Value object to help defining field eclusion based on name patterns and types.
+	 * 
+	 * @since 1.4
+	 * @author Oliver Gierke
+	 */
+	static class FieldMatch {
+
+		private final String namePattern;
+		private final String typeName;
+
+		/**
+		 * Creates a new {@link FieldMatch} for the given name pattern and type name. At least one of the paramters must not
+		 * be {@literal null}.
+		 * 
+		 * @param namePattern a regex pattern to match field names, can be {@literal null}.
+		 * @param typeName the name of the type to exclude, can be {@literal null}.
+		 */
+		public FieldMatch(String namePattern, String typeName) {
+
+			Assert.isTrue(!(namePattern == null && typeName == null), "Either name patter or type name must be given!");
+
+			this.namePattern = namePattern;
+			this.typeName = typeName;
+		}
+
+		/**
+		 * Returns whether the given {@link Field} matches the defined {@link FieldMatch}.
+		 * 
+		 * @param field must not be {@literal null}.
+		 * @return
+		 */
+		public boolean matches(Field field) {
+
+			if (namePattern != null && !field.getName().matches(namePattern)) {
+				return false;
+			}
+
+			if (typeName != null && !field.getType().getName().equals(typeName)) {
+				return false;
+			}
+
+			return true;
 		}
 	}
 }
