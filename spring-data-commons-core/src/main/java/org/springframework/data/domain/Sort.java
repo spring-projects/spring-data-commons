@@ -26,7 +26,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Sort option for queries. You have to provide at least a list of properties to sort for that must not include
- * {@code null} or empty strings. The direction defaults to {@value Sort#DEFAULT_DIRECTION}.
+ * {@literal null} or empty strings. The direction defaults to {@value Sort#DEFAULT_DIRECTION}.
  * 
  * @author Oliver Gierke
  */
@@ -35,17 +35,21 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	private static final long serialVersionUID = 5737186511678863905L;
 	public static final Direction DEFAULT_DIRECTION = Direction.ASC;
 
-	private List<Order> orders;
+	private final List<Order> orders;
 
+	/**
+	 * Creates a new {@link Sort} instance using the given {@link Order}s.
+	 * 
+	 * @param orders must not be {@literal null}.
+	 */
 	public Sort(Order... orders) {
-
 		this(Arrays.asList(orders));
 	}
 
 	/**
 	 * Creates a new {@link Sort} instance.
 	 * 
-	 * @param orders must not be {@literal null} or contain {@literal null} or empty strings
+	 * @param orders must not be {@literal null} or contain {@literal null}.
 	 */
 	public Sort(List<Order> orders) {
 
@@ -62,7 +66,6 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings
 	 */
 	public Sort(String... properties) {
-
 		this(DEFAULT_DIRECTION, properties);
 	}
 
@@ -73,7 +76,6 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings
 	 */
 	public Sort(Direction direction, String... properties) {
-
 		this(direction, properties == null ? new ArrayList<String>() : Arrays.asList(properties));
 	}
 
@@ -136,20 +138,17 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Iterable#iterator()
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
 	public Iterator<Order> iterator() {
-
 		return this.orders.iterator();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#equals(java.lang.Object)
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -184,7 +183,6 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 */
 	@Override
 	public String toString() {
-
 		return StringUtils.collectionToCommaDelimitedString(orders);
 	}
 
@@ -215,7 +213,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	}
 
 	/**
-	 * PropertyPath implements the pairing of an {@code Order} and a property. It is used to provide input for
+	 * PropertyPath implements the pairing of an {@link Direction} and a property. It is used to provide input for
 	 * {@link Sort}
 	 * 
 	 * @author Oliver Gierke
@@ -231,13 +229,13 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * Creates a new {@link Order} instance. if order is {@literal null} then order defaults to
 		 * {@value Sort#DEFAULT_DIRECTION}
 		 * 
-		 * @param direction can be {@code null}
-		 * @param property must not be {@code null} or empty
+		 * @param direction can be {@literal null}, will default to {@value Sort#DEFAULT_DIRECTION}
+		 * @param property must not be {@literal null} or empty.
 		 */
 		public Order(Direction direction, String property) {
 
-			if (property == null || "".equals(property.trim())) {
-				throw new IllegalArgumentException("PropertyPath must not null or empty!");
+			if (!StringUtils.hasText(property)) {
+				throw new IllegalArgumentException("Property must not null or empty!");
 			}
 
 			this.direction = direction == null ? DEFAULT_DIRECTION : direction;
@@ -245,14 +243,19 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		}
 
 		/**
-		 * Creates a new {@link Order} instance. Takes a single property. Order defaults to {@value Sort.DEFAULT_ORDER}
+		 * Creates a new {@link Order} instance. Takes a single property. Direction defaults to
+		 * {@value Sort#DEFAULT_DIRECTION}.
 		 * 
-		 * @param property - must not be {@code null} or empty
+		 * @param property must not be {@literal null} or empty.
 		 */
 		public Order(String property) {
 			this(DEFAULT_DIRECTION, property);
 		}
 
+		/**
+		 * @deprecated use {@link Sort#Sort(Direction, List)} instead.
+		 */
+		@Deprecated
 		public static List<Order> create(Direction direction, Iterable<String> properties) {
 
 			List<Order> orders = new ArrayList<Sort.Order>();
