@@ -107,7 +107,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 		}
 
 		try {
-			return ClassUtils.resolveClassName(className, RepositoryInterfaceAwareBeanPostProcessor.class.getClassLoader());
+			return ClassUtils.resolveClassName(className, context.getBeanClassLoader());
 		} catch (IllegalArgumentException ex) {
 			LOG.warn(String.format("Couldn't load class %s referenced as repository interface in bean %s!", className,
 					beanName));
