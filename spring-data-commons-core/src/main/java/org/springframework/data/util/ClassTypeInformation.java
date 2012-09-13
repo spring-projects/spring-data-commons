@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.util.ClassUtils;
 
 /**
  * {@link TypeInformation} for a plain {@link Class}.
@@ -91,12 +92,12 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * 
 	 * @param type
 	 */
-	public ClassTypeInformation(Class<S> type) {
+	ClassTypeInformation(Class<S> type) {
 		this(type, GenericTypeResolver.getTypeVariableMap(type));
 	}
 
 	ClassTypeInformation(Class<S> type, Map<TypeVariable, Type> typeVariableMap) {
-		super(type, typeVariableMap);
+		super(ClassUtils.getUserClass(type), typeVariableMap);
 		this.type = type;
 	}
 
