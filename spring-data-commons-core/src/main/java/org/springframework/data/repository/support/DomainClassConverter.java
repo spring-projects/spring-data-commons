@@ -27,6 +27,7 @@ import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link org.springframework.core.convert.converter.Converter} to convert arbitrary input into domain classes managed
@@ -59,6 +60,10 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 	 */
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+		if (source == null || !StringUtils.hasText(source.toString())) {
+			return null;
+		}
 
 		RepositoryInformation info = repositories.getRepositoryInformationFor(targetType.getType());
 
