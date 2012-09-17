@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
@@ -33,14 +34,12 @@ import org.springframework.web.context.request.ServletWebRequest;
 /**
  * Unit test for {@link PageableArgumentResolver}.
  * 
- * @author Oliver Gierke - gierke@synyx.de
+ * @author Oliver Gierke
  */
 public class PageableArgumentResolverUnitTests {
 
-	Method correctMethod;
-	Method failedMethod;
-	Method invalidQualifiers;
-	Method defaultsMethod;
+	Method correctMethod, failedMethod, invalidQualifiers, defaultsMethod, defaultsMethodWithSort,
+			defaultsMethodWithSortAndDirection;
 
 	MockHttpServletRequest request;
 
@@ -52,6 +51,9 @@ public class PageableArgumentResolverUnitTests {
 		invalidQualifiers = SampleController.class.getMethod("invalidQualifiers", Pageable.class, Pageable.class);
 
 		defaultsMethod = SampleController.class.getMethod("defaultsMethod", Pageable.class);
+		defaultsMethodWithSort = SampleController.class.getMethod("defaultsMethodWithSort", Pageable.class);
+		defaultsMethodWithSortAndDirection = SampleController.class.getMethod("defaultsMethodWithSortAndDirection",
+				Pageable.class);
 
 		request = new MockHttpServletRequest();
 
@@ -92,16 +94,14 @@ public class PageableArgumentResolverUnitTests {
 	@Test
 	public void assertDefaults() throws Exception {
 
-		MethodParameter parameter = new MethodParameter(defaultsMethod, 0);
-		NativeWebRequest webRequest = new ServletWebRequest(new MockHttpServletRequest());
-		PageableArgumentResolver resolver = new PageableArgumentResolver();
-		Object argument = resolver.resolveArgument(parameter, webRequest);
+		Object argument = setupAndResolve(defaultsMethod);
 
-		assertTrue(argument instanceof Pageable);
+		assertThat(argument, is(instanceOf(Pageable.class)));
 
 		Pageable pageable = (Pageable) argument;
-		assertEquals(SampleController.DEFAULT_PAGESIZE, pageable.getPageSize());
-		assertEquals(SampleController.DEFAULT_PAGENUMBER, pageable.getPageNumber());
+		assertThat(pageable.getPageSize(), is(SampleController.DEFAULT_PAGESIZE));
+		assertThat(pageable.getPageNumber(), is(SampleController.DEFAULT_PAGENUMBER));
+		assertThat(pageable.getSort(), is(nullValue()));
 	}
 
 	@Test
@@ -124,6 +124,38 @@ public class PageableArgumentResolverUnitTests {
 		assertEquals(sizeParam - 1, pageable.getPageNumber());
 	}
 
+	/**
+	 * @see DATACMNS-146
+	 */
+	@Test
+	public void appliesDefaultSort() {
+
+		Object argument = setupAndResolve(defaultsMethodWithSort);
+
+		assertThat(argument, is(instanceOf(Pageable.class)));
+
+		Pageable pageable = (Pageable) argument;
+		assertThat(pageable.getPageSize(), is(SampleController.DEFAULT_PAGESIZE));
+		assertThat(pageable.getPageNumber(), is(SampleController.DEFAULT_PAGENUMBER));
+		assertThat(pageable.getSort(), is(new Sort("foo")));
+	}
+
+	/**
+	 * @see DATACMNS-146
+	 */
+	@Test
+	public void appliesDefaultSortAndDirection() {
+
+		Object argument = setupAndResolve(defaultsMethodWithSortAndDirection);
+
+		assertThat(argument, is(instanceOf(Pageable.class)));
+
+		Pageable pageable = (Pageable) argument;
+		assertThat(pageable.getPageSize(), is(SampleController.DEFAULT_PAGESIZE));
+		assertThat(pageable.getPageNumber(), is(SampleController.DEFAULT_PAGENUMBER));
+		assertThat(pageable.getSort(), is(new Sort(Direction.DESC, "foo")));
+	}
+
 	private void assertSizeForPrefix(int size, Sort sort, int index) throws Exception {
 
 		MethodParameter parameter = new MethodParameter(correctMethod, index);
@@ -132,24 +164,41 @@ public class PageableArgumentResolverUnitTests {
 		PageableArgumentResolver resolver = new PageableArgumentResolver();
 
 		Object argument = resolver.resolveArgument(parameter, webRequest);
-		assertTrue(argument instanceof Pageable);
+		assertThat(argument, is(instanceOf(Pageable.class)));
 
 		Pageable pageable = (Pageable) argument;
-		assertEquals(size, pageable.getPageSize());
+		assertThat(pageable.getPageSize(), is(size));
 
 		if (null != sort) {
-			assertEquals(sort, pageable.getSort());
+			assertThat(pageable.getSort(), is(sort));
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private class SampleController {
+	private Object setupAndResolve(Method method) {
+
+		MethodParameter parameter = new MethodParameter(method, 0);
+		NativeWebRequest webRequest = new ServletWebRequest(new MockHttpServletRequest());
+		PageableArgumentResolver resolver = new PageableArgumentResolver();
+		return resolver.resolveArgument(parameter, webRequest);
+	}
+
+	static class SampleController {
 
 		static final int DEFAULT_PAGESIZE = 198;
 		static final int DEFAULT_PAGENUMBER = 42;
 
 		public void defaultsMethod(
 				@PageableDefaults(value = DEFAULT_PAGESIZE, pageNumber = DEFAULT_PAGENUMBER) Pageable pageable) {
+
+		}
+
+		public void defaultsMethodWithSort(
+				@PageableDefaults(value = DEFAULT_PAGESIZE, pageNumber = DEFAULT_PAGENUMBER, sort = "foo") Pageable pageable) {
+
+		}
+
+		public void defaultsMethodWithSortAndDirection(
+				@PageableDefaults(value = DEFAULT_PAGESIZE, pageNumber = DEFAULT_PAGENUMBER, sort = "foo", sortDir = Direction.DESC) Pageable pageable) {
 
 		}
 

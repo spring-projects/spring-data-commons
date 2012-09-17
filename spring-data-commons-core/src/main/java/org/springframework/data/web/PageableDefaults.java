@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 
 /**
  * Annotation to set defaults when injecting a {@link Pageable} into a controller method.
@@ -42,4 +43,18 @@ public @interface PageableDefaults {
 	 * parameter defined in request (default is 0).
 	 */
 	int pageNumber() default 0;
+
+	/**
+	 * The properties to sort by by default. If unset, no sorting will be applied at all.
+	 * 
+	 * @return
+	 */
+	String[] sort() default {};
+
+	/**
+	 * The direction to sort by. Defaults to {@link Direction#ASC.
+	 * 
+	 * @return
+	 */
+	Direction sortDir() default Direction.ASC;
 }

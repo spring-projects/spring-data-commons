@@ -20,6 +20,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.servlet.ServletRequest;
 
 import org.springframework.beans.PropertyValue;
@@ -118,9 +119,7 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 		// search for PageableDefaults annotation
 		for (Annotation annotation : methodParameter.getParameterAnnotations()) {
 			if (annotation instanceof PageableDefaults) {
-				PageableDefaults defaults = (PageableDefaults) annotation;
-				// +1 is because we substract 1 later
-				return new PageRequest(defaults.pageNumber() + 1, defaults.value());
+				return getDefaultPageRequestFrom((PageableDefaults) annotation);
 			}
 		}
 
@@ -128,6 +127,19 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 		// default values. Create fresh copy as Spring will manipulate the
 		// instance under the covers
 		return new PageRequest(fallbackPagable.getPageNumber(), fallbackPagable.getPageSize(), fallbackPagable.getSort());
+	}
+
+	private static Pageable getDefaultPageRequestFrom(PageableDefaults defaults) {
+
+		// +1 is because we substract 1 later
+		int defaultPageNumber = defaults.pageNumber() + 1;
+		int defaultPageSize = defaults.value();
+
+		if (defaults.sort().length == 0) {
+			return new PageRequest(defaultPageNumber, defaultPageSize);
+		}
+
+		return new PageRequest(defaultPageNumber, defaultPageSize, defaults.sortDir(), defaults.sort());
 	}
 
 	/**
