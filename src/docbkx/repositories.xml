@@ -68,7 +68,7 @@
         <programlisting language="java">public interface CrudRepository&lt;T, ID extends Serializable&gt;
     extends Repository&lt;T, ID&gt; {
 
-    T save(T entity);
+    &lt;S extends T&gt; S save(S entity);
 
     T findOne(ID primaryKey);
 
@@ -377,7 +377,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
         and providing a sorting direction (<code>Asc</code> or
         <code>Desc</code>). To create a query method that supports dynamic
         sorting have a look at <xref
-        linkend="repositories.special-parameters"/>. </para>
+        linkend="repositories.special-parameters"/>.</para>
 
         <section id="repositories.query-methods.property-expressions">
           <title>Property expressions</title>
@@ -439,12 +439,14 @@ List&lt;User&gt; findByLastname(String lastname, Sort sort);
 List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlisting>
         </example>
 
-        <para>The first method allows you to pass a <code>Pageable</code>
-        instance to the query method to dynamically add paging to your
-        statically defined query. <code>Sorting</code> options are handed via
-        the <interfacename>Pageable</interfacename> instance too. If you only
-        need sorting, simply add a <code>Sort</code> parameter to your method.
-        As you also can see, simply returning a
+        <para>The first method allows you to pass a
+        <code>org.springframework.data.domain.Pageable</code> instance to the
+        query method to dynamically add paging to your statically defined
+        query. Sorting options are handed via the
+        <interfacename>Pageable</interfacename> instance too. If you only need
+        sorting, simply add an
+        <code>org.springframework.data.domain.Sort</code> parameter to your
+        method. As you also can see, simply returning a
         <interfacename>List</interfacename> is possible as well. We will then
         not retrieve the additional metadata required to build the actual
         <interfacename>Page</interfacename> instance but rather simply
