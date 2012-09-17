@@ -114,6 +114,20 @@ public class DomainClassConverterUnitTests {
 		assertMatches(false);
 	}
 
+	/**
+	 * @see DATACMNS-233
+	 */
+	public void returnsNullForNullSource() {
+		assertThat(converter.convert(null, sourceDescriptor, targetDescriptor), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-233
+	 */
+	public void returnsNullForEmptyStringSource() {
+		assertThat(converter.convert("", sourceDescriptor, targetDescriptor), is(nullValue()));
+	}
+
 	private void assertMatches(boolean matchExpected) {
 
 		assertThat(converter.matches(sourceDescriptor, targetDescriptor), is(matchExpected));
