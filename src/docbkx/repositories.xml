@@ -839,7 +839,9 @@ public class UserController {
 
   private final UserRepository userRepository;
 
+  @Autowired
   public UserController(UserRepository userRepository) {
+    Assert.notNull(repository, "Repository must not be null!");
     userRepository = userRepository;
   }
 
@@ -849,7 +851,8 @@ public class UserController {
     // Do null check for id
     User user = userRepository.findOne(id);
     // Do null check for user
-    // Populate model
+
+    model.addAttribute("user", user);
     return "user";
   }
 }</programlisting>
@@ -894,8 +897,7 @@ public class UserController {
   @RequestMapping("/{id}")
   public String showUserForm(@PathVariable("id") User user, Model model) {
 
-    // Do null check for user
-    // Populate model
+    model.addAttribute("user", user);
     return "userForm";
   }
 }</programlisting>
@@ -911,23 +913,33 @@ public class UserController {
         stateless X to Y conversion approach. We now ship with a
         <classname>DomainClassConverter</classname> that pretty much mimics
         the behaviour of
-        <classname>DomainClassPropertyEditorRegistrar</classname>. To register
-        the converter you have to declare
-        <classname>ConversionServiceFactoryBean</classname>, register the
-        converter and tell the Spring MVC namespace to use the configured
-        conversion service:</para>
+        <classname>DomainClassPropertyEditorRegistrar</classname>. To
+        configure, simply declare a bean instance and pipe the
+        <interfacename>ConversionService</interfacename> being used into it's
+        constructor:</para>
 
         <programlisting language="xml">&lt;mvc:annotation-driven conversion-service="conversionService" /&gt;
 
-&lt;bean id="conversionService" class="….context.support.ConversionServiceFactoryBean"&gt;
-  &lt;property name="converters"&gt;
-    &lt;list&gt;
-      &lt;bean class="org.springframework.data.repository.support.DomainClassConverter"&gt;
-        &lt;constructor-arg ref="conversionService" /&gt;
-      &lt;/bean&gt;
-    &lt;/list&gt;
-  &lt;/property&gt;
+&lt;bean class="org.springframework.data.repository.support.DomainClassConverter"&gt;
+  &lt;constructor-arg ref="conversionService" /&gt;
 &lt;/bean&gt;</programlisting>
+
+        <para>If you're using JavaConfig you can simply extend
+        <classname>WebMvcConfigurationSupport</classname> and hand the
+        <classname>FormatingConversionService</classname> the configuration
+        superclass provides into the
+        <classname>DomainClassConverter</classname> instance you
+        create.</para>
+
+        <programlisting language="java">class WebConfiguration extends WebMvcConfigurationSupport {
+
+  // Other configuration omitted
+
+  @Bean
+  public DomainClassConverter&lt;?&gt; domainClassConverter() {
+    return new DomainClassConverter&lt;FormattingConversionService&gt;(mvcConversionService());
+  }
+}</programlisting>
       </simplesect>
     </section>
 
@@ -945,6 +957,9 @@ public class UserController {
 
     int page = Integer.parseInt(request.getParameter("page"));
     int pageSize = Integer.parseInt(request.getParameter("pageSize"));
+
+    Pageable pageable = new PageRequest(page, pageSize);
+
     model.addAttribute("users", userService.getUsers(pageable));
     return "users";
   }
@@ -977,7 +992,7 @@ public class UserController {
   @RequestMapping
   public String showUsers(Model model, Pageable pageable) {
 
-    model.addAttribute("users", userDao.readAll(pageable));
+    model.addAttribute("users", userRepository.findAll(pageable));
     return "users";
   }
 }</programlisting>
@@ -1050,12 +1065,14 @@ public class UserController {
         bean declaration directly. In case you might need controller method
         specific defaults for the <interfacename>Pageable</interfacename>
         simply annotate the method parameter with
-        <interfacename>@PageableDefaults</interfacename> and specify page and
-        page size as annotation attributes:</para>
+        <interfacename>@PageableDefaults</interfacename> and specify page
+        (through <code>pageNumber</code>), page size (through
+        <code>value</code>) as well as <code>sort</code> (the list of
+        properties to sort by) as wel as <code>sortDir</code> (the direction
+        to sort by) as annotation attributes:</para>
 
         <programlisting lang="" language="java">public String showUsers(Model model, 
-  @PageableDefaults(pageNumber = 0, value = 30) Pageable pageable) { … }
-</programlisting>
+  @PageableDefaults(pageNumber = 0, value = 30) Pageable pageable) { … }</programlisting>
       </simplesect>
     </section>
 
