@@ -97,6 +97,7 @@ public class RepositoryBeanDefinitionBuilder {
 
 		if (customImplementationBeanName != null) {
 			builder.addPropertyReference("customImplementation", customImplementationBeanName);
+			builder.addDependsOn(customImplementationBeanName);
 		}
 
 		return builder;
