@@ -17,8 +17,8 @@ package org.springframework.data.repository.init;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.Resource;
@@ -33,11 +33,11 @@ import org.springframework.util.Assert;
  */
 public abstract class AbstractRepositoryPopulatorFactoryBean extends
 		AbstractFactoryBean<ResourceReaderRepositoryPopulator> implements ApplicationListener<ContextRefreshedEvent>,
-		ApplicationEventPublisherAware {
+		ApplicationContextAware {
 
 	private Resource[] resources;
 	private RepositoryPopulator populator;
-	private ApplicationEventPublisher publisher;
+	private ApplicationContext context;
 
 	/**
 	 * Configures the {@link Resource}s to be used to load objects from and initialize the repositories eventually.
@@ -51,10 +51,10 @@ public abstract class AbstractRepositoryPopulatorFactoryBean extends
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
 	 */
-	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
-		this.publisher = publisher;
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		this.context = applicationContext;
 	}
 
 	/* 
@@ -75,7 +75,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean extends
 
 		ResourceReaderRepositoryPopulator initializer = new ResourceReaderRepositoryPopulator(getResourceReader());
 		initializer.setResources(resources);
-		initializer.setApplicationEventPublisher(publisher);
+		initializer.setApplicationEventPublisher(context);
 
 		this.populator = initializer;
 
@@ -88,7 +88,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean extends
 	 */
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
-		if (event.getApplicationContext().equals(getBeanFactory())) {
+		if (event.getApplicationContext().equals(context)) {
 			Repositories repositories = new Repositories(event.getApplicationContext());
 			populator.populate(repositories);
 		}
