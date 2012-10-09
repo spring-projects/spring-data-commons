@@ -1,8 +1,36 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.4.0.RELEASE (2012-10-09)
+---------------------------------------------
+** Bug
+    * [DATACMNS-176] - StackOverflowError when inserted object is a CGLIB proxy
+    * [DATACMNS-221] - Parsing of method names with non-ascii characters fails in some cases
+    * [DATACMNS-226] - ConfigurableTypeInformationMapper caches too aggressively
+    * [DATACMNS-228] - Mapping sub-system should exclude Groovy introduced properties from persistent properties
+    * [DATACMNS-233] - DomainClassConverter should gracefully return null for null sources or empty strings
+    * [DATACMNS-235] - Enforce ordering of bean creation when using custom repository implementations
+
+** Improvement
+    * [DATACMNS-146] - Ability to specify default sort on @PageableDefaults
+    * [DATACMNS-220] - In query method names not containing "By" get/find/read prefixes are not stripped
+    * [DATACMNS-222] - AbstractRepositoryPopulatorFactoryBean javdoc is incorrect
+    * [DATACMNS-223] - RepositoryPopulator should log each resource that it processes
+    * [DATACMNS-224] - As a developer, I want an application event to be emitted when RepositoryPopulator finishes
+    * [DATACMNS-229] - RepositoryInterfaceAwareBeanPostProcessor should use ConfigurableListableBeanFactory#getBeanClassLoader in #getClassForPropertyValue
+    * [DATACMNS-230] - Clarify usage of Sort in special parameter handling section of the reference documentation
+    * [DATACMNS-231] - Polish Sort implementation and JavaDoc
+    * [DATACMNS-242] - Improve exception message in error cases of QueryMethod
+
+** Task
+    * [DATACMNS-192] - Release 1.4 GA
+    * [DATACMNS-207] - Remove deprecated method from PersistentProperty
+    * [DATACMNS-225] - Update Querydsl Maven plugin to 1.0.4
+    * [DATACMNS-240] - Upgrade to Querydsl 2.8.0
+    * [DATACMNS-241] - Upgrade to Spring HATEOAS 0.3.0.RELEASE
+
 Changes in version 1.4.0.RC1 (2012-08-23)
-----------------------------------------
+-----------------------------------------
 ** Bug
     * [DATACMNS-205] - Reference docs build broken
 
