@@ -53,16 +53,16 @@ public class QueryMethod {
 
 		for (Class<?> type : Parameters.TYPES) {
 			if (getNumberOfOccurences(method, type) > 1) {
-				throw new IllegalStateException(
-						String.format("Method must only one argument of type %s!", type.getSimpleName()));
+				throw new IllegalStateException(String.format("Method must only one argument of type %s! Offending method: %s",
+						type.getSimpleName(), method.toString()));
 			}
 		}
 
 		if (hasParameterOfType(method, Pageable.class)) {
 			assertReturnTypeAssignable(method, Page.class, List.class);
 			if (hasParameterOfType(method, Sort.class)) {
-				throw new IllegalStateException("Method must not have Pageable *and* Sort parameter. "
-						+ "Use sorting capabilities on Pageble instead!");
+				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameter. "
+						+ "Use sorting capabilities on Pageble instead! Offending method: %s", method.toString()));
 			}
 		}
 
@@ -73,7 +73,8 @@ public class QueryMethod {
 		Assert.notNull(this.parameters);
 
 		if (isPageQuery()) {
-			Assert.isTrue(this.parameters.hasPageableParameter(), "Paging query needs to have a Pageable parameter!");
+			Assert.isTrue(this.parameters.hasPageableParameter(),
+					String.format("Paging query needs to have a Pageable parameter! Offending method %s", method.toString()));
 		}
 	}
 
