@@ -104,12 +104,17 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 			AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
 			beanDefinition.setSource(configuration.getSource());
 
+			RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
+			generator.setBeanClassLoader(parser.getReaderContext().getBeanClassLoader());
+
+			String beanName = generator.generateBeanName(beanDefinition, parser.getRegistry());
+
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("Registering repository: " + configuration.getBeanId() + " - Interface: "
-						+ configuration.getRepositoryInterface() + " - Factory: " + extension.getRepositoryFactoryClassName());
+				LOG.debug("Registering repository: " + beanName + " - Interface: " + configuration.getRepositoryInterface()
+						+ " - Factory: " + extension.getRepositoryFactoryClassName());
 			}
 
-			BeanComponentDefinition definition = new BeanComponentDefinition(beanDefinition, configuration.getBeanId());
+			BeanComponentDefinition definition = new BeanComponentDefinition(beanDefinition, beanName);
 			parser.registerBeanComponent(definition);
 		} catch (RuntimeException e) {
 			handleError(e, configuration.getConfigurationSource().getElement(), parser.getReaderContext());
