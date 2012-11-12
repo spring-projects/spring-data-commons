@@ -18,6 +18,7 @@ package org.springframework.data.repository.config;
 import java.lang.annotation.Annotation;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -33,6 +34,9 @@ import org.springframework.util.Assert;
  */
 public abstract class RepositoryBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar {
 
+	// see SPR-9568
+	private final ResourceLoader resourceLoader = new DefaultResourceLoader();
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry)
@@ -47,12 +51,14 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 			return;
 		}
 
-		ResourceLoader resourceLoader = new DefaultResourceLoader();
 		AnnotationRepositoryConfigurationSource configuration = new AnnotationRepositoryConfigurationSource(
 				annotationMetadata, getAnnotation());
 
 		RepositoryConfigurationExtension extension = getExtension();
 		extension.registerBeansForRoot(registry, configuration);
+
+		RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
+		generator.setBeanClassLoader(getBeanClassLoader(registry));
 
 		for (RepositoryConfiguration<AnnotationRepositoryConfigurationSource> repositoryConfiguration : extension
 				.getRepositoryConfigurations(configuration, resourceLoader)) {
@@ -62,8 +68,18 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 
 			extension.postProcess(definitionBuilder, configuration);
 
-			registry.registerBeanDefinition(repositoryConfiguration.getBeanId(), definitionBuilder.getBeanDefinition());
+			String beanName = generator.generateBeanName(definitionBuilder.getBeanDefinition(), registry);
+			registry.registerBeanDefinition(beanName, definitionBuilder.getBeanDefinition());
 		}
+	}
+
+	private ClassLoader getBeanClassLoader(BeanDefinitionRegistry registry) {
+
+		if (registry instanceof ConfigurableListableBeanFactory) {
+			return ((ConfigurableListableBeanFactory) registry).getBeanClassLoader();
+		}
+
+		return resourceLoader.getClassLoader();
 	}
 
 	/**

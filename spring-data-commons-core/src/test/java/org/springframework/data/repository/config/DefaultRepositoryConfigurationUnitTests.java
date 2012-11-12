@@ -41,7 +41,6 @@ public class DefaultRepositoryConfigurationUnitTests {
 		RepositoryConfiguration<RepositoryConfigurationSource> configuration = new DefaultRepositoryConfiguration<RepositoryConfigurationSource>(
 				source, "com.acme.MyRepository");
 
-		assertThat(configuration.getBeanId(), is("myRepository"));
 		assertThat(configuration.getConfigurationSource(), is(source));
 		assertThat(configuration.getImplementationBeanName(), is("myRepositoryImpl"));
 		assertThat(configuration.getImplementationClassName(), is("MyRepositoryImpl"));
