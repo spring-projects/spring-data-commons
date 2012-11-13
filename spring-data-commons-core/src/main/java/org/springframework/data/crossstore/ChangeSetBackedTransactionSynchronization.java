@@ -15,13 +15,13 @@
  */
 package org.springframework.data.crossstore;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronization;
 
 public class ChangeSetBackedTransactionSynchronization implements TransactionSynchronization {
 
-	protected final Log log = LogFactory.getLog(getClass());
+	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final ChangeSetPersister<Object> changeSetPersister;
 	private final ChangeSetBacked entity;

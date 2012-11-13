@@ -20,8 +20,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
  */
 public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, ApplicationEventPublisherAware {
 
-	private static final Log LOG = LogFactory.getLog(ResourceReaderRepositoryPopulator.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaderRepositoryPopulator.class);
 
 	private final ResourcePatternResolver resolver;
 	private final ResourceReader reader;
@@ -110,7 +110,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 		for (Resource resource : resources) {
 
-			LOG.info(String.format("Reading resource: %s", resource));
+			LOGGER.info(String.format("Reading resource: %s", resource));
 
 			Object result = readObjectFrom(resource);
 
@@ -119,7 +119,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 					if (element != null) {
 						persist(element, repositories);
 					} else {
-						LOG.info("Skipping null element found in unmarshal result!");
+						LOGGER.info("Skipping null element found in unmarshal result!");
 					}
 				}
 			} else {
@@ -155,7 +155,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	private void persist(Object object, Repositories repositories) {
 
 		CrudRepository<Object, Serializable> repository = repositories.getRepositoryFor(object.getClass());
-		LOG.debug(String.format("Persisting %s using repository %s", object, repository));
+		LOGGER.debug(String.format("Persisting %s using repository %s", object, repository));
 		repository.save(object);
 	}
 }
