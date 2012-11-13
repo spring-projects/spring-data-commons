@@ -17,8 +17,8 @@ package org.springframework.data.repository.config;
 
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.parsing.ReaderContext;
@@ -39,7 +39,7 @@ import org.w3c.dom.Element;
  */
 public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 
-	private static final Log LOG = LogFactory.getLog(RepositoryBeanDefinitionParser.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryBeanDefinitionParser.class);
 
 	private final RepositoryConfigurationExtension extension;
 
@@ -109,8 +109,8 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 
 			String beanName = generator.generateBeanName(beanDefinition, parser.getRegistry());
 
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Registering repository: " + beanName + " - Interface: " + configuration.getRepositoryInterface()
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Registering repository: " + beanName + " - Interface: " + configuration.getRepositoryInterface()
 						+ " - Factory: " + extension.getRepositoryFactoryClassName());
 			}
 

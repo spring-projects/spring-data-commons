@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.BridgeMethodResolver;
@@ -34,6 +34,7 @@ import org.springframework.dao.support.PersistenceExceptionTranslationIntercepto
 import org.springframework.transaction.annotation.Ejb3TransactionAnnotationParser;
 import org.springframework.transaction.annotation.SpringTransactionAnnotationParser;
 import org.springframework.transaction.annotation.TransactionAnnotationParser;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionAttributeSource;
@@ -98,7 +99,6 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	/**
 	 * Implementation of the {@link org.springframework.transaction.interceptor.TransactionAttributeSource} interface for
 	 * working with transaction metadata in JDK 1.5+ annotation format.
-	 * 
 	 * <p>
 	 * This class reads Spring's JDK 1.5+ {@link Transactional} annotation and exposes corresponding transaction
 	 * attributes to Spring's transaction infrastructure. Also supports EJB3's {@link javax.ejb.TransactionAttribute}
@@ -216,13 +216,11 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	/**
 	 * Abstract implementation of {@link TransactionAttributeSource} that caches attributes for methods and implements a
 	 * fallback policy: 1. specific target method; 2. target class; 3. declaring method; 4. declaring class/interface.
-	 * 
 	 * <p>
 	 * Defaults to using the target class's transaction attribute if none is associated with the target method. Any
 	 * transaction attribute associated with the target method completely overrides a class transaction attribute. If none
 	 * found on the target class, the interface that the invoked method has been called through (in case of a JDK proxy)
 	 * will be checked.
-	 * 
 	 * <p>
 	 * This implementation caches attributes by method after they are first used. If it is ever desirable to allow dynamic
 	 * changing of transaction attributes (which is very unlikely), caching could be made configurable. Caching is
@@ -246,7 +244,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		 * As this base class is not marked Serializable, the logger will be recreated after serialization - provided that
 		 * the concrete subclass is Serializable.
 		 */
-		protected final Log logger = LogFactory.getLog(getClass());
+		protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 		/**
 		 * Cache of TransactionAttributes, keyed by DefaultCacheKey (Method + target Class).
@@ -409,8 +407,8 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 					return false;
 				}
 				DefaultCacheKey otherKey = (DefaultCacheKey) other;
-				return (this.method.equals(otherKey.method) && ObjectUtils.nullSafeEquals(this.targetClass,
-						otherKey.targetClass));
+				return this.method.equals(otherKey.method)
+						&& ObjectUtils.nullSafeEquals(this.targetClass, otherKey.targetClass);
 			}
 
 			@Override

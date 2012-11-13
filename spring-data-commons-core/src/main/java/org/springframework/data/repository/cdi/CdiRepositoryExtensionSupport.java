@@ -31,8 +31,8 @@ import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Qualifier;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
@@ -45,7 +45,7 @@ import org.springframework.data.repository.RepositoryDefinition;
  */
 public abstract class CdiRepositoryExtensionSupport implements Extension {
 
-	private static final Log LOGGER = LogFactory.getLog(CdiRepositoryExtensionSupport.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CdiRepositoryExtensionSupport.class);
 
 	private final Map<Class<?>, Set<Annotation>> repositoryTypes = new HashMap<Class<?>, Set<Annotation>>();
 

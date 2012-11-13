@@ -29,8 +29,8 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 /**
@@ -41,7 +41,7 @@ import org.springframework.util.Assert;
  */
 public abstract class CdiRepositoryBean<T> implements Bean<T> {
 
-	private static final Log LOG = LogFactory.getLog(CdiRepositoryBean.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CdiRepositoryBean.class);
 
 	private final Set<Annotation> qualifiers;
 	private final Class<T> repositoryType;
@@ -76,8 +76,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 		interfaces.add(repositoryType);
 		interfaces.addAll(Arrays.asList(repositoryType.getInterfaces()));
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(String.format("Declaring types '%s' for repository '%s'.", interfaces.toString(),
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(String.format("Declaring types '%s' for repository '%s'.", interfaces.toString(),
 					repositoryType.getName()));
 		}
 
@@ -103,8 +103,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 	 */
 	public final T create(CreationalContext<T> creationalContext) {
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(String.format("Creating bean instance for repository type '%s'.", repositoryType.getName()));
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(String.format("Creating bean instance for repository type '%s'.", repositoryType.getName()));
 		}
 		return create(creationalContext, repositoryType);
 	}
@@ -115,8 +115,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 	 */
 	public void destroy(T instance, CreationalContext<T> creationalContext) {
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(String.format("Destroying bean instance %s for repository type '%s'.", instance.toString(),
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(String.format("Destroying bean instance %s for repository type '%s'.", instance.toString(),
 					repositoryType.getName()));
 		}
 

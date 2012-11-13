@@ -18,8 +18,8 @@ package org.springframework.data.repository.core.support;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -40,7 +40,7 @@ import org.springframework.util.ClassUtils;
 class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
 		BeanFactoryAware {
 
-	private static final Log LOG = LogFactory.getLog(RepositoryInterfaceAwareBeanPostProcessor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryInterfaceAwareBeanPostProcessor.class);
 	private static final Class<?> REPOSITORY_TYPE = RepositoryFactoryBeanSupport.class;
 
 	private final Map<String, Class<?>> cache = new ConcurrentHashMap<String, Class<?>>();
@@ -109,7 +109,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 		try {
 			return ClassUtils.resolveClassName(className, context.getBeanClassLoader());
 		} catch (IllegalArgumentException ex) {
-			LOG.warn(String.format("Couldn't load class %s referenced as repository interface in bean %s!", className,
+			LOGGER.warn(String.format("Couldn't load class %s referenced as repository interface in bean %s!", className,
 					beanName));
 			return Void.class;
 		}

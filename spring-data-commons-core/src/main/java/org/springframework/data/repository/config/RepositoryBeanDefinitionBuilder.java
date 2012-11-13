@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -40,7 +40,7 @@ import org.springframework.util.StringUtils;
  */
 public class RepositoryBeanDefinitionBuilder {
 
-	private static final Log LOG = LogFactory.getLog(RepositoryBeanDefinitionBuilder.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryBeanDefinitionBuilder.class);
 
 	private final RepositoryConfiguration<?> configuration;
 	private final RepositoryConfigurationExtension extension;
@@ -118,8 +118,8 @@ public class RepositoryBeanDefinitionBuilder {
 			return null;
 		}
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Registering custom repository implementation: " + configuration.getImplementationBeanName() + " "
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Registering custom repository implementation: " + configuration.getImplementationBeanName() + " "
 					+ beanDefinition.getBeanClassName());
 		}
 
