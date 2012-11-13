@@ -17,25 +17,45 @@ package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Base class to implement {@link ImportBeanDefinitionRegistrar}s to enable repository
  * 
  * @author Oliver Gierke
  */
-public abstract class RepositoryBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar {
+public abstract class RepositoryBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar,
+		BeanClassLoaderAware, ResourceLoaderAware {
 
-	// see SPR-9568
-	private final ResourceLoader resourceLoader = new DefaultResourceLoader();
+	private ResourceLoader resourceLoader;
+	private ClassLoader beanClassLoader;
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
+	 */
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		this.resourceLoader = resourceLoader;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -51,6 +71,8 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 			return;
 		}
 
+		defaultExternalResources(registry);
+
 		AnnotationRepositoryConfigurationSource configuration = new AnnotationRepositoryConfigurationSource(
 				annotationMetadata, getAnnotation());
 
@@ -58,7 +80,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 		extension.registerBeansForRoot(registry, configuration);
 
 		RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
-		generator.setBeanClassLoader(getBeanClassLoader(registry));
+		generator.setBeanClassLoader(beanClassLoader);
 
 		for (RepositoryConfiguration<AnnotationRepositoryConfigurationSource> repositoryConfiguration : extension
 				.getRepositoryConfigurations(configuration, resourceLoader)) {
@@ -73,13 +95,40 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 		}
 	}
 
-	private ClassLoader getBeanClassLoader(BeanDefinitionRegistry registry) {
+	/**
+	 * Workaround the lack of injectability of external resources into {@link ImportBeanDefinitionRegistrar}s in the
+	 * Spring 3.1 timeline. We populate {@link #beanClassLoader} and default the {@link #resourceLoader} in case they
+	 * haven't been set until a call to this method.
+	 * 
+	 * @param registry must not be {@literal null}.
+	 * @see SPR-9568
+	 */
+	private void defaultExternalResources(BeanDefinitionRegistry registry) {
 
-		if (registry instanceof ConfigurableListableBeanFactory) {
-			return ((ConfigurableListableBeanFactory) registry).getBeanClassLoader();
+		if (beanClassLoader == null) {
+			this.beanClassLoader = getBeanClassLoader(registry);
 		}
 
-		return resourceLoader.getClassLoader();
+		if (resourceLoader == null) {
+			this.resourceLoader = new DefaultResourceLoader(this.beanClassLoader);
+		}
+	}
+
+	/**
+	 * Returns the bean class loader contained in the given registry if it is a {@link ConfigurableBeanFactory}. Falls
+	 * back to the {@link ResourceLoader}'s {@link ClassLoader} or the global default one if that one is {@literal null}
+	 * in turn.
+	 * 
+	 * @param registry must not be {@literal null}.
+	 * @return
+	 */
+	private ClassLoader getBeanClassLoader(BeanDefinitionRegistry registry) {
+
+		if (registry instanceof ConfigurableBeanFactory) {
+			return ((ConfigurableBeanFactory) registry).getBeanClassLoader();
+		}
+
+		return resourceLoader == null ? ClassUtils.getDefaultClassLoader() : resourceLoader.getClassLoader();
 	}
 
 	/**
