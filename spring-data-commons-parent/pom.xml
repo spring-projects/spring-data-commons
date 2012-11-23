@@ -15,7 +15,7 @@
 		<org.springframework.version.30>3.0.7.RELEASE</org.springframework.version.30>
 		<org.springframework.version>3.1.2.RELEASE</org.springframework.version>
 		<org.springframework.hateoas.version>0.3.0.RELEASE</org.springframework.hateoas.version>
-		<org.hamcrest.version>1.2.1</org.hamcrest.version>
+		<org.hamcrest.version>1.3</org.hamcrest.version>
 		<bundlor.failOnWarnings>true</bundlor.failOnWarnings>
 	</properties>
 

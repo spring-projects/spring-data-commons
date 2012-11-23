@@ -7,10 +7,10 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<repository:jackson-populator id="jackson-populator"
-		location="classpath:org/springframework/data/repository/init/data.json" />
+		locations="classpath:org/springframework/data/repository/init/data.json" />
 		
 	<repository:unmarshaller-populator
-		id="xml-populator" location="classpath:org/springframework/data/repository/init/data.xml"
+		id="xml-populator" locations="classpath:org/springframework/data/repository/init/data.xml"
 		unmarshaller-ref="unmarshaller" />
 
 	<oxm:jaxb2-marshaller id="unmarshaller" contextPath="org.springframework.data.repository.config" />

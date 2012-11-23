@@ -15,8 +15,10 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+
+import java.util.List;
 
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -53,6 +55,9 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 		assertThat(bean, is(instanceOf(ResourceReaderRepositoryPopulator.class)));
 		Object resourceReader = ReflectionTestUtils.getField(bean, "reader");
 		assertThat(resourceReader, is(instanceOf(JacksonResourceReader.class)));
+
+		Object resources = ReflectionTestUtils.getField(bean, "resources");
+		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.json");
 	}
 
 	/**
@@ -74,5 +79,19 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 		assertThat(resourceReader, is(instanceOf(UnmarshallingResourceReader.class)));
 		Object unmarshaller = ReflectionTestUtils.getField(resourceReader, "unmarshaller");
 		assertThat(unmarshaller, is(instanceOf(Jaxb2Marshaller.class)));
+
+		Object resources = ReflectionTestUtils.getField(bean, "resources");
+		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.xml");
+	}
+
+	private void assertIsListOfClasspathResourcesWithPath(Object source, String path) {
+
+		assertThat(source, is(instanceOf(List.class)));
+		List<?> list = (List<?>) source;
+		assertThat(list, is(not(empty())));
+		Object element = list.get(0);
+		assertThat(element, is(instanceOf(ClassPathResource.class)));
+		ClassPathResource resource = (ClassPathResource) element;
+		assertThat(resource.getPath(), is(path));
 	}
 }
