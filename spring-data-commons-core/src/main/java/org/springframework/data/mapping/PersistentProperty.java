@@ -45,6 +45,11 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 */
 	Class<?> getType();
 
+	/**
+	 * Returns the {@link TypeInformation} of the property.
+	 * 
+	 * @return
+	 */
 	TypeInformation<?> getTypeInformation();
 
 	/**
@@ -95,6 +100,17 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return
 	 */
 	boolean isIdProperty();
+
+	/**
+	 * Returns whether the current property is a <em>potential</em> version property of the owning
+	 * {@link PersistentEntity}. This method is mainly used by {@link PersistentEntity} implementation to discover version
+	 * property candidates on {@link PersistentEntity} creation you should rather call
+	 * {@link PersistentEntity#isVersionProperty(PersistentProperty)} to determine whether the current property is the
+	 * version property of that {@link PersistentEntity} under consideration.
+	 * 
+	 * @return
+	 */
+	boolean isVersionProperty();
 
 	/**
 	 * Returns whether the property is a {@link Collection}, {@link Iterable} or an array.

@@ -110,7 +110,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
-	public boolean isConstructorParameter(P property) {
+	public boolean isConstructorParameter(PersistentProperty<?> property) {
 
 		Assert.notNull(property);
 
@@ -238,7 +238,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 * @param property
 		 * @return
 		 */
-		boolean maps(P property) {
+		boolean maps(PersistentProperty<?> property) {
 
 			P referencedProperty = entity == null ? null : entity.getPersistentProperty(name);
 			return property == null ? false : property.equals(referencedProperty);

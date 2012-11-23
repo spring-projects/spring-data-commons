@@ -21,9 +21,11 @@ import java.lang.reflect.Field;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -59,6 +61,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * 
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getSpelExpression()
 	 */
+	@Override
 	public String getSpelExpression() {
 		return value == null ? null : value.value();
 	}
@@ -69,6 +72,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * 
 	 * @see org.springframework.data.mapping.BasicPersistentProperty#isTransient()
 	 */
+	@Override
 	public boolean isTransient() {
 
 		boolean isTransient = super.isTransient() || field.isAnnotationPresent(Transient.class);
@@ -76,11 +80,20 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return isTransient || field.isAnnotationPresent(Value.class) || field.isAnnotationPresent(Autowired.class);
 	}
 
-	/**
-	 * Regards the property as ID if there is an {@link Id} annotation found on it.
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isIdProperty()
 	 */
 	public boolean isIdProperty() {
-		return field.isAnnotationPresent(Id.class);
+		return AnnotationUtils.getAnnotation(field, Id.class) != null;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isVersionProperty()
+	 */
+	public boolean isVersionProperty() {
+		return AnnotationUtils.getAnnotation(field, Version.class) != null;
 	}
 
 	/**

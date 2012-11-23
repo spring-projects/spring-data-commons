@@ -37,6 +37,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Jon Brisbin
+ * @author Patryk Wasik
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
@@ -46,6 +47,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private final Set<Association<P>> associations;
 
 	private P idProperty;
+	private P versionProperty;
 
 	/**
 	 * Creates a new {@link BasicPersistentEntity} from the given {@link TypeInformation}.
@@ -87,7 +89,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#isConstructorArgument(org.springframework.data.mapping.PersistentProperty)
 	 */
-	public boolean isConstructorArgument(P property) {
+	public boolean isConstructorArgument(PersistentProperty<?> property) {
 		return constructor == null ? false : constructor.isConstructorParameter(property);
 	}
 
@@ -95,8 +97,16 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#isIdProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
-	public boolean isIdProperty(P property) {
+	public boolean isIdProperty(PersistentProperty<?> property) {
 		return this.idProperty == null ? false : this.idProperty.equals(property);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#isVersionProperty(org.springframework.data.mapping.PersistentProperty)
+	 */
+	public boolean isVersionProperty(PersistentProperty<?> property) {
+		return this.versionProperty == null ? false : this.versionProperty.equals(property);
 	}
 
 	/*
@@ -117,6 +127,30 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getVersionProperty()
+	 */
+	public P getVersionProperty() {
+		return versionProperty;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#hasIdProperty()
+	 */
+	public boolean hasIdProperty() {
+		return idProperty != null;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#hasVersionProperty()
+	 */
+	public boolean hasVersionProperty() {
+		return versionProperty != null;
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.MutablePersistentEntity#addPersistentProperty(P)
 	 */
 	public void addPersistentProperty(P property) {
@@ -133,6 +167,17 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			}
 
 			this.idProperty = property;
+		}
+
+		if (property.isVersionProperty()) {
+
+			if (this.versionProperty != null) {
+				throw new MappingException(String.format(
+						"Attempt to add version property %s but already have property %s registered "
+								+ "as version. Check your mapping configuration!", property.getField(), versionProperty.getField()));
+			}
+
+			this.versionProperty = property;
 		}
 	}
 

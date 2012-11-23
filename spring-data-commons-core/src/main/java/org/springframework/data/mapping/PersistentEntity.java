@@ -24,6 +24,7 @@ import org.springframework.data.util.TypeInformation;
  * @author Oliver Gierke
  * @author Graeme Rocher
  * @author Jon Brisbin
+ * @author Patryk Wasik
  */
 public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
@@ -51,7 +52,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @return true if the given {@link PersistentProperty} is referred to by a constructor argument or {@literal false}
 	 *         if not or {@literal null}.
 	 */
-	boolean isConstructorArgument(P property);
+	boolean isConstructorArgument(PersistentProperty<?> property);
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is the id property of the entity.
@@ -59,7 +60,15 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @param property
 	 * @return
 	 */
-	boolean isIdProperty(P property);
+	boolean isIdProperty(PersistentProperty<?> property);
+
+	/**
+	 * Returns whether the given {@link PersistentProperty} is the version property of the entity.
+	 * 
+	 * @param property
+	 * @return
+	 */
+	boolean isVersionProperty(PersistentProperty<?> property);
 
 	/**
 	 * Returns the id property of the {@link PersistentEntity}. Can be {@literal null} in case this is an entity
@@ -70,12 +79,36 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	P getIdProperty();
 
 	/**
+	 * Returns the version property of the {@link PersistentEntity}. Can be {@literal null} in case no version property is
+	 * available on the entity.
+	 * 
+	 * @return the version property of the {@link PersistentEntity}.
+	 */
+	P getVersionProperty();
+
+	/**
 	 * Obtains a {@link PersistentProperty} instance by name.
 	 * 
 	 * @param name The name of the property
 	 * @return the {@link PersistentProperty} or {@literal null} if it doesn't exist.
 	 */
 	P getPersistentProperty(String name);
+
+	/**
+	 * Returns whether the {@link PersistentEntity} has an id property. If this call returns {@literal true},
+	 * {@link #getIdProperty()} will return a non-{@literal null} value.
+	 * 
+	 * @return
+	 */
+	boolean hasIdProperty();
+
+	/**
+	 * Returns whether the {@link PersistentEntity} has a version property. If this call returns {@literal true},
+	 * {@link #getVersionProperty()} will return a non-{@literal null} value.
+	 * 
+	 * @return
+	 */
+	boolean hasVersionProperty();
 
 	/**
 	 * Returns the resolved Java type of this entity.

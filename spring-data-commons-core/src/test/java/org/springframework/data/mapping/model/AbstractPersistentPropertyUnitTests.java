@@ -290,6 +290,10 @@ public class AbstractPersistentPropertyUnitTests {
 			return false;
 		}
 
+		public boolean isVersionProperty() {
+			return false;
+		}
+
 		@Override
 		protected Association<SamplePersistentProperty> createAssociation() {
 			return null;

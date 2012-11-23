@@ -39,11 +39,15 @@ public class AuditingHandlerUnitTests {
 	@Before
 	public void setUp() {
 
-		handler = new AuditingHandler<AuditedUser>();
+		handler = getHandler();
 		user = new AuditedUser();
 
 		auditorAware = mock(AuditorAware.class);
 		when(auditorAware.getCurrentAuditor()).thenReturn(user);
+	}
+
+	protected AuditingHandler<AuditedUser> getHandler() {
+		return new AuditingHandler<AuditedUser>();
 	}
 
 	/**

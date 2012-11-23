@@ -20,8 +20,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import groovy.lang.MetaClass;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.util.Collections;
 
 import org.junit.Before;
@@ -30,10 +28,8 @@ import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.model.AbstractPersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -47,17 +43,17 @@ import org.springframework.data.util.TypeInformation;
 public class AbstractMappingContextUnitTests {
 
 	final SimpleTypeHolder holder = new SimpleTypeHolder();
-	DummyMappingContext context;
+	SampleMappingContext context;
 
 	@Before
 	public void setUp() {
-		context = new DummyMappingContext();
+		context = new SampleMappingContext();
 		context.setSimpleTypeHolder(holder);
 	}
 
 	@Test
 	public void doesNotTryToLookupPersistentEntityForLeafProperty() {
-		PersistentPropertyPath<DummyPersistenProperty> path = context.getPersistentPropertyPath(PropertyPath.from("name",
+		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath(PropertyPath.from("name",
 				Person.class));
 		assertThat(path, is(notNullValue()));
 	}
@@ -67,6 +63,22 @@ public class AbstractMappingContextUnitTests {
 	 */
 	@Test(expected = MappingException.class)
 	public void doesNotAddInvalidEntity() {
+
+		context = new SampleMappingContext() {
+			@Override
+			@SuppressWarnings("unchecked")
+			protected <S> BasicPersistentEntity<Object, SamplePersistentProperty> createPersistentEntity(
+					TypeInformation<S> typeInformation) {
+				return new BasicPersistentEntity<Object, SamplePersistentProperty>((TypeInformation<Object>) typeInformation) {
+					@Override
+					public void verify() {
+						if (Unsupported.class.isAssignableFrom(getType())) {
+							throw new MappingException("Unsupported type!");
+						}
+					}
+				};
+			}
+		};
 
 		try {
 			context.getPersistentEntity(Unsupported.class);
@@ -82,7 +94,7 @@ public class AbstractMappingContextUnitTests {
 
 		ApplicationContext context = mock(ApplicationContext.class);
 
-		DummyMappingContext mappingContext = new DummyMappingContext();
+		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.setInitialEntitySet(Collections.singleton(Person.class));
 		mappingContext.setApplicationContext(context);
 
@@ -98,7 +110,7 @@ public class AbstractMappingContextUnitTests {
 	@Test
 	public void returnsNullPersistentEntityForSimpleTypes() {
 
-		DummyMappingContext context = new DummyMappingContext();
+		SampleMappingContext context = new SampleMappingContext();
 		assertThat(context.getPersistentEntity(String.class), is(nullValue()));
 	}
 
@@ -124,10 +136,10 @@ public class AbstractMappingContextUnitTests {
 	@Test
 	public void doesNotCreatePersistentPropertyForGroovyMetaClass() {
 
-		DummyMappingContext mappingContext = new DummyMappingContext();
+		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
 
-		PersistentEntity<Object, DummyPersistenProperty> entity = mappingContext.getPersistentEntity(Sample.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Sample.class);
 		assertThat(entity.getPersistentProperty("metaClass"), is(nullValue()));
 	}
 
@@ -142,48 +154,5 @@ public class AbstractMappingContextUnitTests {
 	class Sample {
 
 		MetaClass metaClass;
-	}
-
-	class DummyMappingContext extends
-			AbstractMappingContext<BasicPersistentEntity<Object, DummyPersistenProperty>, DummyPersistenProperty> {
-
-		@Override
-		@SuppressWarnings("unchecked")
-		protected <S> BasicPersistentEntity<Object, DummyPersistenProperty> createPersistentEntity(
-				TypeInformation<S> typeInformation) {
-			return new BasicPersistentEntity<Object, DummyPersistenProperty>((TypeInformation<Object>) typeInformation) {
-
-				@Override
-				public void verify() {
-					if (holder.isSimpleType(getType()) || Unsupported.class.equals(getType())) {
-						throw new MappingException("Invalid!");
-					}
-				}
-			};
-		}
-
-		@Override
-		protected DummyPersistenProperty createPersistentProperty(final Field field, final PropertyDescriptor descriptor,
-				final BasicPersistentEntity<Object, DummyPersistenProperty> owner, final SimpleTypeHolder simpleTypeHolder) {
-
-			return new DummyPersistenProperty(field, descriptor, owner, simpleTypeHolder);
-		}
-	}
-
-	class DummyPersistenProperty extends AbstractPersistentProperty<DummyPersistenProperty> {
-
-		public DummyPersistenProperty(Field field, PropertyDescriptor propertyDescriptor,
-				BasicPersistentEntity<?, DummyPersistenProperty> owner, SimpleTypeHolder simpleTypeHolder) {
-			super(field, propertyDescriptor, owner, simpleTypeHolder);
-		}
-
-		public boolean isIdProperty() {
-			return false;
-		}
-
-		@Override
-		protected Association<DummyPersistenProperty> createAssociation() {
-			return new Association<DummyPersistenProperty>(this, null);
-		}
 	}
 }
