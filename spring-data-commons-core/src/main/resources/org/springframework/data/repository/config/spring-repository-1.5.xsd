@@ -12,8 +12,7 @@
 
 	<xsd:complexType name="repositories">
 		<xsd:sequence>
-			<xsd:element name="include-filter" type="context:filterType"
-									 minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="include-filter" type="context:filterType" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
    Controls which eligible types to include for component scanning.
@@ -106,6 +105,41 @@
 	<xsd:attributeGroup name="transactional-repository-attributes">
 		<xsd:attributeGroup ref="repository-attributes"/>
 		<xsd:attribute name="transaction-manager-ref" type="transactionManagerRef"/>
+	</xsd:attributeGroup>
+	
+	<xsd:attributeGroup name="auditing-attributes">
+		<xsd:attribute name="auditor-aware-ref">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				References a bean of type AuditorAware to represent the current principal.
+				]]></xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:assignable-to type="org.springframework.data.domain.AuditorAware" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="set-dates" default="true" type="xsd:boolean">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Configures whether the creation and modification dates are set.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="date-time-provider-ref">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Configures a DateTimeProvider that allows customizing which DateTime shall be used for setting
+				creation and modification dates.
+				]]></xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:assignable-to type="org.springframework.data.jpa.domain.support.DateTimeProvider" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:attributeGroup>
 
 	<xsd:simpleType name="query-strategy">

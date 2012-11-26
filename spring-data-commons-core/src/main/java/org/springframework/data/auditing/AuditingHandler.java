@@ -67,7 +67,7 @@ public class AuditingHandler<T> implements InitializingBean {
 	 * 
 	 * @param modifyOnCreation if modification information shall be set on creation, too
 	 */
-	public void setModifyOnCreation(final boolean modifyOnCreation) {
+	public void setModifyOnCreation(boolean modifyOnCreation) {
 		this.modifyOnCreation = modifyOnCreation;
 	}
 
