@@ -24,7 +24,7 @@ import org.joda.time.DateTime;
  * instance (typically some user) is to be defined by a generics definition.
  * 
  * @param <U> the auditing type. Typically some kind of user.
- * @param <ID> the type of the auditing type's idenifier
+ * @param <ID> the type of the audited type's identifier
  * @author Oliver Gierke
  */
 public interface Auditable<U, ID extends Serializable> extends Persistable<ID> {
