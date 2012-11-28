@@ -33,6 +33,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.mapping.MappingMetadataTests.SampleMappingContext;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
@@ -93,6 +95,17 @@ public class RepositoriesUnitTests {
 		new Repositories(null);
 	}
 
+	/**
+	 * @see DATACMNS-256
+	 */
+	@Test
+	public void exposesPersistentEntityForDomainTypes() {
+
+		Repositories repositories = new Repositories(context);
+		assertThat(repositories.getPersistentEntity(Person.class), is(notNullValue()));
+		assertThat(repositories.getPersistentEntity(Address.class), is(nullValue()));
+	}
+
 	class Person {
 
 	}
@@ -112,18 +125,24 @@ public class RepositoriesUnitTests {
 	static class SampleRepoFactoryInformation<T, S extends Serializable> implements RepositoryFactoryInformation<T, S> {
 
 		private final RepositoryMetadata repositoryMetadata;
+		private final SampleMappingContext mappingContext;
 
 		public SampleRepoFactoryInformation(Class<?> repositoryInterface) {
 			this.repositoryMetadata = new DefaultRepositoryMetadata(repositoryInterface);
+			this.mappingContext = new SampleMappingContext();
 		}
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public EntityInformation<T, S> getEntityInformation() {
-			return (EntityInformation) new DummyEntityInformation(repositoryMetadata.getDomainType());
+			return new DummyEntityInformation(repositoryMetadata.getDomainType());
 		}
 
 		public RepositoryInformation getRepositoryInformation() {
 			return new DummyRepositoryInformation(repositoryMetadata.getRepositoryInterface());
+		}
+
+		public PersistentEntity<?, ?> getPersistentEntity() {
+			return mappingContext.getPersistentEntity(repositoryMetadata.getDomainType());
 		}
 
 		public List<QueryMethod> getQueryMethods() {

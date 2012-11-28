@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -126,6 +128,20 @@ public class Repositories implements Iterable<Class<?>> {
 
 		RepositoryFactoryInformation<Object, Serializable> information = getRepoInfoFor(domainClass);
 		return information == null ? null : information.getRepositoryInformation();
+	}
+
+	/**
+	 * Returns the {@link PersistentEntity} for the given domain class. Might return {@literal null} in case the module
+	 * storing the given domain class does not support the mapping subsystem.
+	 * 
+	 * @param domainClass must not be {@literal null}.
+	 * @return the {@link PersistentEntity} for the given domain class or {@literal null} if no repository is registered
+	 *         for the domain class or the repository is not backed by a {@link MappingContext} implementation.
+	 */
+	public PersistentEntity<?, ?> getPersistentEntity(Class<?> domainClass) {
+
+		RepositoryFactoryInformation<Object, Serializable> information = getRepoInfoFor(domainClass);
+		return information == null ? null : information.getPersistentEntity();
 	}
 
 	/**

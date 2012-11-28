@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
@@ -44,6 +46,14 @@ public interface RepositoryFactoryInformation<T, ID extends Serializable> {
 	 * @return
 	 */
 	RepositoryInformation getRepositoryInformation();
+
+	/**
+	 * Returns the {@link PersistentEntity} managed by the underlying repository. Can be {@literal null} in case the
+	 * underlying persistence mechanism does not expose a {@link MappingContext}.
+	 * 
+	 * @return
+	 */
+	PersistentEntity<?, ?> getPersistentEntity();
 
 	/**
 	 * Returns all {@link QueryMethod}s declared for that repository.

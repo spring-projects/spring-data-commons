@@ -21,6 +21,8 @@ import java.util.List;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
@@ -47,6 +49,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private Class<? extends T> repositoryInterface;
 	private Object customImplementation;
 	private NamedQueries namedQueries;
+	private MappingContext<?, ?> mappingContext;
 
 	/**
 	 * Setter to inject the repository interface to implement.
@@ -89,6 +92,16 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.namedQueries = namedQueries;
 	}
 
+	/**
+	 * Configures the {@link MappingContext} to be used to lookup {@link PersistentEntity} instances for
+	 * {@link #getPersistentEntity()}.
+	 * 
+	 * @param mappingContext
+	 */
+	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
+		this.mappingContext = mappingContext;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getEntityInformation()
@@ -105,9 +118,24 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getRepositoryInformation()
 	 */
 	public RepositoryInformation getRepositoryInformation() {
+
 		RepositoryMetadata metadata = factory.getRepositoryMetadata(repositoryInterface);
 		return this.factory.getRepositoryInformation(metadata,
 				customImplementation == null ? null : customImplementation.getClass());
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getPersistentEntity()
+	 */
+	public PersistentEntity<?, ?> getPersistentEntity() {
+
+		if (mappingContext == null) {
+			return null;
+		}
+
+		RepositoryMetadata metadata = factory.getRepositoryMetadata(repositoryInterface);
+		return mappingContext.getPersistentEntity(metadata.getDomainType());
 	}
 
 	/* (non-Javadoc)
