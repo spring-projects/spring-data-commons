@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.config;
+package org.springframework.data.config;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -36,7 +36,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.data.repository.config.TypeFilterParser.Type;
+import org.springframework.data.config.TypeFilterParser;
+import org.springframework.data.config.TypeFilterParser.Type;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;

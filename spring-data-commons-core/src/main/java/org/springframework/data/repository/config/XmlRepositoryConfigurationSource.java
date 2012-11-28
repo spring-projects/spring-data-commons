@@ -19,7 +19,8 @@ import java.util.Arrays;
 
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.data.repository.config.TypeFilterParser.Type;
+import org.springframework.data.config.TypeFilterParser;
+import org.springframework.data.config.TypeFilterParser.Type;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;

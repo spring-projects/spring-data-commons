@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.config;
+package org.springframework.data.config;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -41,7 +41,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author Oliver Gierke
  */
-class TypeFilterParser {
+public class TypeFilterParser {
 
 	private static final String FILTER_TYPE_ATTRIBUTE = "type";
 	private static final String FILTER_EXPRESSION_ATTRIBUTE = "expression";
@@ -74,6 +74,14 @@ class TypeFilterParser {
 		this.classLoader = classLoader;
 	}
 
+	/**
+	 * Returns all {@link TypeFilter} declared in nested elements of the given {@link Element}. Allows to selectively
+	 * retrieve including or excluding filters based on the given {@link Type}.
+	 * 
+	 * @param element must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
 	public Iterable<TypeFilter> parseTypeFilters(Element element, Type type) {
 
 		NodeList nodeList = element.getChildNodes();
@@ -97,6 +105,13 @@ class TypeFilterParser {
 		return filters;
 	}
 
+	/**
+	 * Createsa a {@link TypeFilter} instance from the given {@link Element} and {@link ClassLoader}.
+	 * 
+	 * @param element must not be {@literal null}.
+	 * @param classLoader must not be {@literal null}.
+	 * @return
+	 */
 	protected TypeFilter createTypeFilter(Element element, ClassLoader classLoader) {
 
 		String filterType = element.getAttribute(FILTER_TYPE_ATTRIBUTE);
@@ -125,7 +140,6 @@ class TypeFilterParser {
 			@Override
 			@SuppressWarnings("unchecked")
 			public TypeFilter getFilter(String expression, ClassLoader classLoader) throws ClassNotFoundException {
-
 				return new AnnotationTypeFilter((Class<Annotation>) classLoader.loadClass(expression));
 			}
 		},
@@ -133,28 +147,22 @@ class TypeFilterParser {
 		ASSIGNABLE {
 			@Override
 			public TypeFilter getFilter(String expression, ClassLoader classLoader) throws ClassNotFoundException {
-
 				return new AssignableTypeFilter(classLoader.loadClass(expression));
 			}
-
 		},
 
 		ASPECTJ {
 			@Override
 			public TypeFilter getFilter(String expression, ClassLoader classLoader) {
-
 				return new AspectJTypeFilter(expression, classLoader);
 			}
-
 		},
 
 		REGEX {
 			@Override
 			public TypeFilter getFilter(String expression, ClassLoader classLoader) {
-
 				return new RegexPatternTypeFilter(Pattern.compile(expression));
 			}
-
 		},
 
 		CUSTOM {
@@ -199,14 +207,13 @@ class TypeFilterParser {
 		}
 	}
 
-	static enum Type {
+	public static enum Type {
 
 		INCLUDE("include-filter"), EXCLUDE("exclude-filter");
 
 		private String elementName;
 
 		private Type(String elementName) {
-
 			this.elementName = elementName;
 		}
 
