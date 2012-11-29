@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -281,10 +281,37 @@ public class PropertyPathUnitTests {
 		assertThat(left.hashCode(), is(not(shortPath.hashCode())));
 	}
 
+	/**
+	 * @see DATACMNS-257
+	 */
+	@Test
+	public void findsAllUppercaseProperty() {
+
+		PropertyPath path = PropertyPath.from("UUID", Foo.class);
+
+		assertThat(path, is(notNullValue()));
+		assertThat(path.getSegment(), is("UUID"));
+	}
+
+	/**
+	 * @see DATACMNS-257
+	 */
+	@Test
+	public void findsNestedAllUppercaseProperty() {
+
+		PropertyPath path = PropertyPath.from("_fooUUID", Sample2.class);
+
+		assertThat(path, is(notNullValue()));
+		assertThat(path.getSegment(), is("_foo"));
+		assertThat(path.hasNext(), is(true));
+		assertThat(path.next().getSegment(), is("UUID"));
+	}
+
 	private class Foo {
 
 		String userName;
 		String _email;
+		String UUID;
 	}
 
 	private class Bar {
