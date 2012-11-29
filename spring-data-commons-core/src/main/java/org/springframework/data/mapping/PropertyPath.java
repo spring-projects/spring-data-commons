@@ -35,6 +35,7 @@ import org.springframework.util.StringUtils;
 public class PropertyPath implements Iterable<PropertyPath> {
 
 	private static final String DELIMITERS = "_\\.";
+	private static final String ALL_UPPERCASE = "[A-Z0-9._$]+";
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 
 	private final TypeInformation<?> owningType;
@@ -67,7 +68,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 		Assert.hasText(name);
 		Assert.notNull(owningType);
 
-		String propertyName = StringUtils.uncapitalize(name);
+		String propertyName = name.matches(ALL_UPPERCASE) ? name : StringUtils.uncapitalize(name);
 		TypeInformation<?> type = owningType.getProperty(propertyName);
 
 		if (type == null) {
