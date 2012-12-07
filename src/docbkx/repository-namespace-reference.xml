@@ -2,14 +2,14 @@
 <!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <appendix id="namespace-reference">
-  <title>Namespace reference</title>
+  <title>Namespace Reference</title>
 
   <section id="namespace-dao-config">
     <title>The <code>&lt;repositories /&gt;</code> element</title>
 
-    <para>The <code>&lt;repositories /&gt;</code> triggers the setup of the
-    Spring Data repository infrastructure. The most important attribute is
-    <code>base-package</code> which defines the package to scan for Spring
+    <para>The <code>&lt;repositories /&gt;</code> element triggers the setup
+    of the Spring Data repository infrastructure. The most important attribute
+    is <code>base-package</code> which defines the package to scan for Spring
     Data repository interfaces.<footnote>
         <para>see <xref
         linkend="repositories.create-instances.spring"/></para>
@@ -39,7 +39,7 @@
             interfaces extending <interfacename>*Repository</interfacename>
             (actual interface is determined by specific Spring Data module) in
             auto detection mode. All packages below the configured package
-            will be scanned, too. Wildcards are also allowed.</entry>
+            will be scanned, too. Wildcards are allowed.</entry>
           </row>
 
           <row>

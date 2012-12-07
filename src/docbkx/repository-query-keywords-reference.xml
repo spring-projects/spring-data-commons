@@ -2,24 +2,23 @@
 <!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <appendix id="repository-query-keywords">
-  <title>Repository query keywords</title>
+  <title>Repository Query Keywords</title>
 
   <section>
     <title>Supported query keywords</title>
 
     <para>The following table lists the keywords generally supported by the
-    Spring data repository query derivation mechanism. However consult the
-    store specific documentation for the exact list of supported keywords as
-    some of the ones listed here might not be supported in a particular
-    store.</para>
+    Spring Data repository query derivation mechanism. However, consult the
+    store-specific documentation for the exact list of supported keywords,
+    because some listed here might not be supported in a particular store.<!--BT Add AND and OR? Listed in the JPA-specific info.--></para>
 
     <table>
       <title>Query keywords</title>
 
       <tgroup cols="2">
-        <colspec colwidth="1*" />
+        <colspec colwidth="1*"/>
 
-        <colspec colwidth="4*" />
+        <colspec colwidth="4*"/>
 
         <thead>
           <row>
