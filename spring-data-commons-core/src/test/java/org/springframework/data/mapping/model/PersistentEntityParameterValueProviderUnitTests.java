@@ -20,7 +20,9 @@ import static org.junit.Assert.*;
 
 import java.util.Iterator;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -39,6 +41,9 @@ import org.springframework.data.util.ClassTypeInformation;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistentEntityParameterValueProviderUnitTests<P extends PersistentProperty<P>> {
 
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
 	@Mock
 	PropertyValueProvider<P> propertyValueProvider;
 	@Mock
@@ -53,6 +58,7 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 		Object outer = new Outer();
 
 		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class)) {
+			@Override
 			public P getPersistentProperty(String name) {
 				return property;
 			}
@@ -67,6 +73,22 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 		assertThat(iterator.hasNext(), is(false));
 	}
 
+	@Test
+	public void rejectsPropertyIfNameDoesNotMatch() {
+
+		PersistentEntity<Entity, P> entity = new BasicPersistentEntity<Entity, P>(ClassTypeInformation.from(Entity.class));
+		ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<P>(entity, propertyValueProvider,
+				property);
+
+		PreferredConstructor<Entity, P> constructor = entity.getPersistenceConstructor();
+
+		exception.expect(MappingException.class);
+		exception.expectMessage("bar");
+		exception.expectMessage(Entity.class.getName());
+
+		provider.getParameterValue(constructor.getParameters().iterator().next());
+	}
+
 	static class Outer {
 
 		class Inner {
@@ -76,6 +98,15 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 			Inner(Object myObject) {
 
 			}
+		}
+	}
+
+	static class Entity {
+
+		String foo;
+
+		public Entity(String bar) {
+
 		}
 	}
 }
