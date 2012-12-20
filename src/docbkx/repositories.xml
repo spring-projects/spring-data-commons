@@ -35,7 +35,7 @@
     marker interface to capture the types to work with and to help you to
     discover interfaces that extend this one. The
     <interfacename>CrudRepository</interfacename> provides sophisticated CRUD
-    functionality for the entity class being managed.</para>
+    functionality for the entity class that is being managed.</para>
 
     <example id="repositories.repository">
       <title><interfacename>CrudRepository</interfacename> interface</title>
