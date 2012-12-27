@@ -131,7 +131,7 @@
 }</programlisting>
     </example>
 
-    <para>Accessing the second page of <classname>User</classname> by a page
+    <para>Pageable and its implementation PageRequest is 0 indexed, so accessing the second page of <classname>User</classname> by a page
     size of 20 you could simply do something like this:</para>
 
     <programlisting language="java">PagingAndSortingRepository&lt;User, Long&gt; repository = // … get access to a bean
@@ -1013,7 +1013,7 @@ public class UserController {
 
           <tbody>
             <row>
-              <entry><code>page</code></entry>
+              <entry><code>page.page</code></entry>
 
               <entry>The page you want to retrieve</entry>
             </row>
