@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,6 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	/**
 	 * Determines the qualifiers of the given type.
 	 */
-	@SuppressWarnings("serial")
 	private Set<Annotation> getQualifiers(final Class<?> type) {
 
 		Set<Annotation> qualifiers = new HashSet<Annotation>();
@@ -105,14 +104,14 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 				qualifiers.add(annotation);
 			}
 		}
+
 		// Add @Default qualifier if no qualifier is specified.
 		if (qualifiers.isEmpty()) {
-			qualifiers.add(new AnnotationLiteral<Default>() {
-			});
+			qualifiers.add(DefaultAnnotationLiteral.INSTANCE);
 		}
+
 		// Add @Any qualifier.
-		qualifiers.add(new AnnotationLiteral<Any>() {
-		});
+		qualifiers.add(AnyAnnotationLiteral.INSTANCE);
 		return qualifiers;
 	}
 
@@ -123,5 +122,17 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	 */
 	protected Iterable<Entry<Class<?>, Set<Annotation>>> getRepositoryTypes() {
 		return repositoryTypes.entrySet();
+	}
+
+	private static class DefaultAnnotationLiteral extends AnnotationLiteral<Default> implements Default {
+
+		private static final long serialVersionUID = 511359421048623933L;
+		private static final DefaultAnnotationLiteral INSTANCE = new DefaultAnnotationLiteral();
+	}
+
+	private static class AnyAnnotationLiteral extends AnnotationLiteral<Any> implements Any {
+
+		private static final long serialVersionUID = 7261821376671361463L;
+		private static final AnyAnnotationLiteral INSTANCE = new AnyAnnotationLiteral();
 	}
 }
