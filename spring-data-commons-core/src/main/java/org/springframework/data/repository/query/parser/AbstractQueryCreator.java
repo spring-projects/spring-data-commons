@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 * Creates the actual query object applying the given {@link Sort} parameter. Use this method in case you haven't
 	 * provided a {@link ParameterAccessor} in the first place but want to apply dynamic sorting nevertheless.
 	 * 
-	 * @param sort
+	 * @param dynamicSort
 	 * @return
 	 */
 	public T createQuery(Sort dynamicSort) {

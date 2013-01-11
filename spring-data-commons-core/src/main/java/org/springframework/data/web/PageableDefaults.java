@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 
 /**
- * Annotation to set defaults when injecting a {@link Pageable} into a controller method.
+ * Annotation to set defaults when injecting a {@link org.springframework.data.domain.Pageable} into a controller
+ * method.
  * 
  * @author Oliver Gierke
  */
@@ -39,7 +39,7 @@ public @interface PageableDefaults {
 	int value() default 10;
 
 	/**
-	 * The default-pagenumber the injected {@link org.synyx.hades.domain.Pageable} should get if no corresponding
+	 * The default-pagenumber the injected {@link org.springframework.data.domain.Pageable} should get if no corresponding
 	 * parameter defined in request (default is 0).
 	 */
 	int pageNumber() default 0;
@@ -52,7 +52,7 @@ public @interface PageableDefaults {
 	String[] sort() default {};
 
 	/**
-	 * The direction to sort by. Defaults to {@link Direction#ASC.
+	 * The direction to sort by. Defaults to {@link Direction#ASC}.
 	 * 
 	 * @return
 	 */

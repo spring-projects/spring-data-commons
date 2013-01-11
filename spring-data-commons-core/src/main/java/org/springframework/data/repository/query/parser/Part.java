@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.util.StringUtils;
 /**
  * A single part of a method name that has to be transformed into a query part. The actual transformation is defined by
  * a {@link Type} that is determined from inspecting the given part. The query part can then be looked up via
- * {@link #getQueryPart()}.
+ * {@link #getProperty()}.
  * 
  * @author Oliver Gierke
  */
@@ -47,8 +47,7 @@ public class Part {
 	 * start parameter index.
 	 * 
 	 * @param part must not be {@literal null}.
-	 * @param clazz must not be {@l
-
+	 * @param clazz must not be {@literal null}.
 	 */
 	public Part(String part, Class<?> clazz) {
 
@@ -251,11 +250,10 @@ public class Part {
 		}
 
 		/**
-		 * Returns whether the the type supports the given raw propertyPath. Default implementation checks whether the
-		 * propertyPath ends with the registered keyword. Does not support the keyword if the propertyPath is a valid field
-		 * as is.
+		 * Returns whether the the type supports the given raw property. Default implementation checks whether the property
+		 * ends with the registered keyword. Does not support the keyword if the property is a valid field as is.
 		 * 
-		 * @param propertyPath
+		 * @param property
 		 * @return
 		 */
 		protected boolean supports(String property) {

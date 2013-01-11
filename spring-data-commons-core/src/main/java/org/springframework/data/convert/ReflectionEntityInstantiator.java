@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 
 /**
- * {@link EntityInstantiator} that uses the {@link PersistentEntity}'s {@link MappedConstructor} to instantiate an
+ * {@link EntityInstantiator} that uses the {@link PersistentEntity}'s {@link PreferredConstructor} to instantiate an
  * instance of the entity via reflection.
  * 
  * @author Oliver Gierke
@@ -72,7 +72,7 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 		}
 
 		try {
-			return (T) BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());
+			return BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());
 		} catch (BeanInstantiationException e) {
 			throw new MappingInstantiationException(e.getMessage(), e);
 		}

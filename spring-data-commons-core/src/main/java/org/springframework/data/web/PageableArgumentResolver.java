@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 
 	/**
 	 * Setter to configure a fallback instance of {@link Pageable} that is being used to back missing parameters. Defaults
-	 * to {@value #DEFAULT_PAGE_REQUEST}.
+	 * to {@link #DEFAULT_PAGE_REQUEST}.
 	 * 
 	 * @param fallbackPagable the fallbackPagable to set
 	 */

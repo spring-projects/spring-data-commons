@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 by the original author(s).
+ * Copyright 2011-2013 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
  * Value object to encapsulate the constructor to be used when mapping persistent data to objects.
  * 
  * @author Oliver Gierke
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
@@ -105,7 +105,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referenced in a constructor argument of the
-	 * {@link PersistentEntity} backing this {@link MappedConstructor}.
+	 * {@link PersistentEntity} backing this {@link PreferredConstructor}.
 	 * 
 	 * @param property must not be {@literal null}.
 	 * @return

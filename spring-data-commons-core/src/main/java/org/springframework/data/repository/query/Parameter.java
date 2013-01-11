@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.springframework.data.repository.query;
 
 import static java.lang.String.*;
 
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,13 +44,9 @@ public class Parameter {
 	private final MethodParameter parameter;
 
 	/**
-	 * Creates a new {@link Parameter} for the given type, {@link Annotation}s, positioned at the given index inside the
-	 * given {@link Parameters}.
+	 * Creates a new {@link Parameter} for the given {@link MethodParameter}.
 	 * 
-	 * @param type
-	 * @param parameters
-	 * @param index
-	 * @param name
+	 * @param parameter must not be {@literal null}.
 	 */
 	protected Parameter(MethodParameter parameter) {
 
@@ -70,19 +65,16 @@ public class Parameter {
 	 * @return
 	 */
 	boolean isFirst() {
-
 		return getIndex() == 0;
 	}
 
 	/**
 	 * Returns whether the parameter is a special parameter.
 	 * 
-	 * @param index
 	 * @return
 	 * @see #TYPES
 	 */
 	public boolean isSpecialParameter() {
-
 		return TYPES.contains(parameter.getParameterType());
 	}
 
@@ -92,14 +84,12 @@ public class Parameter {
 	 * @return
 	 */
 	public boolean isBindable() {
-
 		return !isSpecialParameter();
 	}
 
 	/**
 	 * Returns the placeholder to be used for the parameter. Can either be a named one or positional.
 	 * 
-	 * @param index
 	 * @return
 	 */
 	public String getPlaceholder() {
@@ -117,18 +107,15 @@ public class Parameter {
 	 * @return
 	 */
 	public int getIndex() {
-
 		return parameter.getParameterIndex();
 	}
 
 	/**
 	 * Returns whether the parameter is annotated with {@link Param}.
 	 * 
-	 * @param index
 	 * @return
 	 */
 	public boolean isNamedParameter() {
-
 		return !isSpecialParameter() && getName() != null;
 	}
 
@@ -138,6 +125,7 @@ public class Parameter {
 	 * @return
 	 */
 	public String getName() {
+
 		Param annotation = parameter.getParameterAnnotation(Param.class);
 		return annotation == null ? parameter.getParameterName() : annotation.value();
 	}
@@ -157,7 +145,6 @@ public class Parameter {
 	 */
 	@Override
 	public String toString() {
-
 		return format("%s:%s", isNamedParameter() ? getName() : "#" + getIndex(), getType().getName());
 	}
 
@@ -167,7 +154,6 @@ public class Parameter {
 	 * @return
 	 */
 	boolean isPageable() {
-
 		return Pageable.class.isAssignableFrom(getType());
 	}
 
@@ -177,7 +163,6 @@ public class Parameter {
 	 * @return
 	 */
 	boolean isSort() {
-
 		return Sort.class.isAssignableFrom(getType());
 	}
 }

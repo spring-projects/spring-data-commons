@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,11 +64,11 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * @param reader must not be {@literal null}.
 	 * @param classLoader
 	 */
-	public ResourceReaderRepositoryPopulator(ResourceReader resourceReader, ClassLoader classLoader) {
+	public ResourceReaderRepositoryPopulator(ResourceReader reader, ClassLoader classLoader) {
 
-		Assert.notNull(resourceReader);
+		Assert.notNull(reader);
 
-		this.reader = resourceReader;
+		this.reader = reader;
 		this.classLoader = classLoader;
 		this.resolver = classLoader == null ? new PathMatchingResourcePatternResolver()
 				: new PathMatchingResourcePatternResolver(classLoader);

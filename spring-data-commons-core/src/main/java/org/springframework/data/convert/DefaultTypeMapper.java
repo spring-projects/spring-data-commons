@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.convert.MongoTypeMapper#readType(com.mongodb.DBObject)
+	 * @see org.springframework.data.convert.TypeMapper#readType(java.lang.Object)
 	 */
 	public TypeInformation<?> readType(S source) {
 
@@ -159,7 +159,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.convert.MongoTypeMapper#writeType(java.lang.Class, com.mongodb.DBObject)
+	 * @see org.springframework.data.convert.TypeMapper#writeType(java.lang.Class, java.lang.Object)
 	 */
 	public void writeType(Class<?> type, S dbObject) {
 		writeType(ClassTypeInformation.from(type), dbObject);
@@ -167,7 +167,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.convert.MongoTypeMapper#writeType(java.lang.Class, com.mongodb.DBObject)
+	 * @see org.springframework.data.convert.TypeMapper#writeType(org.springframework.data.util.TypeInformation, java.lang.Object)
 	 */
 	public void writeType(TypeInformation<?> info, S sink) {
 

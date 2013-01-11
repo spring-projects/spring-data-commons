@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Sort option for queries. You have to provide at least a list of properties to sort for that must not include
- * {@literal null} or empty strings. The direction defaults to {@value Sort#DEFAULT_DIRECTION}.
+ * {@literal null} or empty strings. The direction defaults to {@link Sort#DEFAULT_DIRECTION}.
  * 
  * @author Oliver Gierke
  */
@@ -72,7 +72,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	/**
 	 * Creates a new {@link Sort} instance.
 	 * 
-	 * @param direction defaults to {@value Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
+	 * @param direction defaults to {@linke Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
 	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings
 	 */
 	public Sort(Direction direction, String... properties) {
@@ -227,9 +227,9 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 
 		/**
 		 * Creates a new {@link Order} instance. if order is {@literal null} then order defaults to
-		 * {@value Sort#DEFAULT_DIRECTION}
+		 * {@link Sort#DEFAULT_DIRECTION}
 		 * 
-		 * @param direction can be {@literal null}, will default to {@value Sort#DEFAULT_DIRECTION}
+		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
 		 * @param property must not be {@literal null} or empty.
 		 */
 		public Order(Direction direction, String property) {
@@ -244,7 +244,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 
 		/**
 		 * Creates a new {@link Order} instance. Takes a single property. Direction defaults to
-		 * {@value Sort#DEFAULT_DIRECTION}.
+		 * {@link Sort#DEFAULT_DIRECTION}.
 		 * 
 		 * @param property must not be {@literal null} or empty.
 		 */

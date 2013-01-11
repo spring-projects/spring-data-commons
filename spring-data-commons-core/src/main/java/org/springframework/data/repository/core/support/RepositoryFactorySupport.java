@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
-import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
 
@@ -63,10 +63,9 @@ public abstract class RepositoryFactorySupport {
 	/**
 	 * Sets the strategy of how to lookup a query to execute finders.
 	 * 
-	 * @param queryLookupStrategy the createFinderQueries to set
+	 * @param key
 	 */
 	public void setQueryLookupStrategyKey(Key key) {
-
 		this.queryLookupStrategyKey = key;
 	}
 
@@ -164,7 +163,7 @@ public abstract class RepositoryFactorySupport {
 	/**
 	 * Returns the {@link RepositoryInformation} for the given repository interface.
 	 * 
-	 * @param repositoryInterface
+	 * @param metadata
 	 * @param customImplementationClass
 	 * @return
 	 */
