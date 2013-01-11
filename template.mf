@@ -1,0 +1,34 @@
+Bundle-SymbolicName: org.springframework.data.core
+Bundle-Name: Spring Data Commons Core
+Bundle-Vendor: SpringSource
+Bundle-ManifestVersion: 2
+Import-Package: 
+ sun.reflect;version="0";resolution:=optional
+Import-Template:
+ com.mysema.query.*;version="[2.2.0,3.0.0)";resolution:=optional,
+ javax.enterprise.*;version="${cdi:[=.=.=,+1.0.0)}";resolution:=optional,
+ javax.inject.*;version="[1.0.0,2.0.0)";resolution:=optional,
+ javax.xml.bind.*;version="0";resolution:=optional,
+ javax.xml.transform.*;version="0";resolution:=optional,
+ org.codehaus.jackson.*;version="${jackson:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.aop.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional, 
+ org.springframework.beans.*;version="${spring30:[=.=.=,+1.0.0)}",
+ org.springframework.core.*;version="${spring30:[=.=.=,+1.0.0)}",
+ org.springframework.context.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.dao.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.expression.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.expression.spel.standard.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.expression.spel.support.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.hateoas.*;version="${springhateoas:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.oxm.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.transaction.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.util.*;version="${spring30:[=.=.=,+1.0.0)}",
+ org.springframework.validation.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.springframework.web.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.aopalliance.*;version="[1.0.0, 2.0.0)";resolution:=optional,
+ org.apache.commons.logging.*;version="[1.1.1, 2.0.0)",
+ org.joda.time.*;version="[1.6.0,2.0.0)";resolution:=optional,
+ org.slf4j.*;version="[1.5.0,1.6.0)",
+ javax.servlet.*;version="[2.5.0, 3.0.0)";resolution:=optional,
+ org.w3c.dom.*;version="0"
+DynamicImport-Package: *
