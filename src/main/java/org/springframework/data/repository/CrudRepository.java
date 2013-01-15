@@ -57,7 +57,7 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	 * Returns whether an entity with the given id exists.
 	 * 
 	 * @param id must not be {@literal null}.
-	 * @return true if an entity with the given id exists, alse otherwise
+	 * @return true if an entity with the given id exists, false otherwise
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}
 	 */
 	boolean exists(ID id);
