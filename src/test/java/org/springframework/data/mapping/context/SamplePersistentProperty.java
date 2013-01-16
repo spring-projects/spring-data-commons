@@ -23,7 +23,7 @@ import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
-class SamplePersistentProperty extends AnnotationBasedPersistentProperty<SamplePersistentProperty> {
+public class SamplePersistentProperty extends AnnotationBasedPersistentProperty<SamplePersistentProperty> {
 
 	public SamplePersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
 			BasicPersistentEntity<?, SamplePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {

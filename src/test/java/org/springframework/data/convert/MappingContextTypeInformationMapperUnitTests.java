@@ -24,10 +24,9 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mapping.MappingMetadataTests;
-import org.springframework.data.mapping.MappingMetadataTests.SampleMappingContext;
-import org.springframework.data.mapping.MappingMetadataTests.SampleProperty;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.context.SampleMappingContext;
+import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
@@ -43,7 +42,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 
 	@Before
 	public void setUp() {
-		mappingContext = new MappingMetadataTests.SampleMappingContext();
+		mappingContext = new SampleMappingContext();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -65,7 +64,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 	@Test
 	public void extractsAliasForUnknownType() {
 
-		SampleMappingContext mappingContext = new MappingMetadataTests.SampleMappingContext();
+		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
@@ -76,7 +75,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 	@Test
 	public void doesNotReturnTypeAliasForSimpleType() {
 
-		SampleMappingContext mappingContext = new MappingMetadataTests.SampleMappingContext();
+		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
@@ -87,13 +86,13 @@ public class MappingContextTypeInformationMapperUnitTests {
 	@SuppressWarnings("rawtypes")
 	public void detectsTypeForUnknownEntity() {
 
-		SampleMappingContext mappingContext = new MappingMetadataTests.SampleMappingContext();
+		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
 		assertThat(mapper.resolveTypeFrom("foo"), is(nullValue()));
 
-		PersistentEntity<?, SampleProperty> entity = mappingContext.getPersistentEntity(Entity.class);
+		PersistentEntity<?, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Entity.class);
 
 		assertThat(entity, is(notNullValue()));
 		assertThat(mapper.resolveTypeFrom("foo"), is((TypeInformation) from(Entity.class)));

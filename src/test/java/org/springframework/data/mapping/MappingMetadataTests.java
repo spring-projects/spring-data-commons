@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,12 @@ package org.springframework.data.mapping;
 
 import static org.junit.Assert.*;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.mapping.context.AbstractMappingContext;
-import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
-import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.mapping.model.MutablePersistentEntity;
-import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.mapping.context.SampleMappingContext;
+import org.springframework.data.mapping.context.SamplePersistentProperty;
 
 /**
  * Integration tests for Mapping metadata.
@@ -51,7 +45,7 @@ public class MappingMetadataTests {
 		ctx.setInitialEntitySet(Collections.singleton(PersonWithId.class));
 		ctx.initialize();
 
-		PersistentEntity<?, SampleProperty> person = ctx.getPersistentEntity(PersonWithId.class);
+		PersistentEntity<?, SamplePersistentProperty> person = ctx.getPersistentEntity(PersonWithId.class);
 		assertNotNull(person.getIdProperty());
 		assertEquals(String.class, person.getIdProperty().getType());
 	}
@@ -62,46 +56,11 @@ public class MappingMetadataTests {
 		ctx.setInitialEntitySet(Collections.singleton(PersonWithChildren.class));
 		ctx.initialize();
 
-		PersistentEntity<?, SampleProperty> person = ctx.getPersistentEntity(PersonWithChildren.class);
-		person.doWithAssociations(new AssociationHandler<MappingMetadataTests.SampleProperty>() {
-			public void doWithAssociation(Association<SampleProperty> association) {
+		PersistentEntity<?, SamplePersistentProperty> person = ctx.getPersistentEntity(PersonWithChildren.class);
+		person.doWithAssociations(new AssociationHandler<SamplePersistentProperty>() {
+			public void doWithAssociation(Association<SamplePersistentProperty> association) {
 				assertEquals(Child.class, association.getInverse().getComponentType());
 			}
 		});
-	}
-
-	public interface SampleProperty extends PersistentProperty<SampleProperty> {
-	}
-
-	public static class SampleMappingContext extends
-			AbstractMappingContext<MutablePersistentEntity<?, SampleProperty>, SampleProperty> {
-
-		@Override
-		protected <T> MutablePersistentEntity<?, SampleProperty> createPersistentEntity(TypeInformation<T> typeInformation) {
-
-			return new BasicPersistentEntity<T, MappingMetadataTests.SampleProperty>(typeInformation);
-		}
-
-		@Override
-		protected SampleProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
-				MutablePersistentEntity<?, SampleProperty> owner, SimpleTypeHolder simpleTypeHolder) {
-			return new SamplePropertyImpl(field, descriptor, owner, simpleTypeHolder);
-		}
-	}
-
-	public static class SamplePropertyImpl extends AnnotationBasedPersistentProperty<SampleProperty> implements
-			SampleProperty {
-
-		public SamplePropertyImpl(Field field, PropertyDescriptor propertyDescriptor,
-				PersistentEntity<?, SampleProperty> owner, SimpleTypeHolder simpleTypeHolder) {
-
-			super(field, propertyDescriptor, owner, simpleTypeHolder);
-		}
-
-		@Override
-		protected Association<SampleProperty> createAssociation() {
-
-			return new Association<MappingMetadataTests.SampleProperty>(this, null);
-		}
 	}
 }

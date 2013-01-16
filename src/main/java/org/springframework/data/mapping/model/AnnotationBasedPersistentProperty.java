@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,8 @@ package org.springframework.data.mapping.model;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.util.Assert;
 
 /**
  * Special {@link PersistentProperty} that takes annotations at a property into account.
@@ -43,16 +46,15 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
 	 * 
-	 * @param field
-	 * @param propertyDescriptor
-	 * @param owner
+	 * @param field must not be {@literal null}.
+	 * @param propertyDescriptor can be {@literal null}.
+	 * @param owner must not be {@literal null}.
 	 */
 	public AnnotationBasedPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
 			PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
 
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
-		this.value = field.getAnnotation(Value.class);
-		field.isAnnotationPresent(Autowired.class);
+		this.value = findAnnotation(Value.class);
 	}
 
 	/**
@@ -75,9 +77,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Override
 	public boolean isTransient() {
 
-		boolean isTransient = super.isTransient() || field.isAnnotationPresent(Transient.class);
-
-		return isTransient || field.isAnnotationPresent(Value.class) || field.isAnnotationPresent(Autowired.class);
+		boolean isTransient = super.isTransient() || isAnnotationPresent(Transient.class);
+		return isTransient || isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class);
 	}
 
 	/*
@@ -85,7 +86,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @see org.springframework.data.mapping.PersistentProperty#isIdProperty()
 	 */
 	public boolean isIdProperty() {
-		return AnnotationUtils.getAnnotation(field, Id.class) != null;
+		return isAnnotationPresent(Id.class);
 	}
 
 	/* 
@@ -93,7 +94,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @see org.springframework.data.mapping.PersistentProperty#isVersionProperty()
 	 */
 	public boolean isVersionProperty() {
-		return AnnotationUtils.getAnnotation(field, Version.class) != null;
+		return isAnnotationPresent(Version.class);
 	}
 
 	/**
@@ -101,21 +102,43 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	@Override
 	public boolean isAssociation() {
+		return !isTransient() && isAnnotationPresent(Reference.class);
+	}
 
-		if (isTransient()) {
-			return false;
-		}
-		if (field.isAnnotationPresent(Reference.class)) {
-			return true;
-		}
+	/**
+	 * Returns the annotation found for the current {@link AnnotationBasedPersistentProperty}. Will prefer field
+	 * annotations over ones found at getters or setters.
+	 * 
+	 * @param annotationType must not be {@literal null}.
+	 * @return
+	 */
+	protected <A extends Annotation> A findAnnotation(Class<? extends A> annotationType) {
 
-		// TODO: do we need this? Shouldn't the section above already find that annotation?
-		for (Annotation annotation : field.getDeclaredAnnotations()) {
-			if (annotation.annotationType().isAnnotationPresent(Reference.class)) {
-				return true;
+		Assert.notNull(annotationType, "Annotation type must not be null!");
+
+		for (Method method : Arrays.asList(getGetter(), getSetter())) {
+
+			if (method == null) {
+				continue;
+			}
+
+			A annotation = AnnotationUtils.findAnnotation(method, annotationType);
+
+			if (annotation != null) {
+				return annotation;
 			}
 		}
 
-		return false;
+		return AnnotationUtils.getAnnotation(field, annotationType);
+	}
+
+	/**
+	 * Returns whether the property carries the an annotation of the given type.
+	 * 
+	 * @param annotationType the annotation type to look up.
+	 * @return
+	 */
+	protected boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
+		return findAnnotation(annotationType) != null;
 	}
 }
