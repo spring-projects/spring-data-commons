@@ -201,15 +201,8 @@
 	<repositories>
 		<repository>
 			<id>spring.libs-snapshots</id>
-			<url>http://repo.springsource.org/libs-snapshot</url>
+			<url>http://repo.springsource.org/libs-snapshot-local</url>
 		</repository>
 	</repositories>
-	
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-plugins-release</id>
-			<url>http://repo.springsource.org/plugins-release</url>
-		</pluginRepository>
-	</pluginRepositories>
 
 </project>
