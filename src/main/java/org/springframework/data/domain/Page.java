@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.List;
 public interface Page<T> extends Iterable<T> {
 
 	/**
-	 * Returns the number of the current page. Is always positive and less that {@code Page#getTotalPages()}.
+	 * Returns the number of the current page. Is always non-negative and less that {@code Page#getTotalPages()}.
 	 * 
 	 * @return the number of the current page
 	 */
@@ -91,10 +91,9 @@ public interface Page<T> extends Iterable<T> {
 	boolean isLastPage();
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Iterable#iterator()
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
 	Iterator<T> iterator();
 
 	/**

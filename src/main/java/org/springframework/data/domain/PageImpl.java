@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	/**
 	 * Constructor of {@code PageImpl}.
 	 * 
-	 * @param content the content of this page
-	 * @param pageable the paging information
+	 * @param content the content of this page, must not be {@literal null}.
+	 * @param pageable the paging information, can be {@literal null}.
 	 * @param total the total amount of items available
 	 */
 	public PageImpl(List<T> content, Pageable pageable, long total) {
@@ -57,148 +57,120 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	 * Creates a new {@link PageImpl} with the given content. This will result in the created {@link Page} being identical
 	 * to the entire {@link List}.
 	 * 
-	 * @param content
+	 * @param content must not be {@literal null}.
 	 */
 	public PageImpl(List<T> content) {
-
-		this(content, null, (null == content) ? 0 : content.size());
+		this(content, null, null == content ? 0 : content.size());
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#getNumber()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#getNumber()
+	 */
 	public int getNumber() {
-
 		return pageable == null ? 0 : pageable.getPageNumber();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#getSize()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#getSize()
+	 */
 	public int getSize() {
-
 		return pageable == null ? 0 : pageable.getPageSize();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#getTotalPages()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#getTotalPages()
+	 */
 	public int getTotalPages() {
-
 		return getSize() == 0 ? 0 : (int) Math.ceil((double) total / (double) getSize());
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#getNumberOfElements()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#getNumberOfElements()
+	 */
 	public int getNumberOfElements() {
-
 		return content.size();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#getTotalElements()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#getTotalElements()
+	 */
 	public long getTotalElements() {
-
 		return total;
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#hasPreviousPage()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#hasPreviousPage()
+	 */
 	public boolean hasPreviousPage() {
-
 		return getNumber() > 0;
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#isFirstPage()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#isFirstPage()
+	 */
 	public boolean isFirstPage() {
-
 		return !hasPreviousPage();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#hasNextPage()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#hasNextPage()
+	 */
 	public boolean hasNextPage() {
-
-		return ((getNumber() + 1) * getSize()) < total;
+		return (getNumber() + 1) * getSize() < total;
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#isLastPage()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#isLastPage()
+	 */
 	public boolean isLastPage() {
-
 		return !hasNextPage();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#iterator()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#iterator()
+	 */
 	public Iterator<T> iterator() {
-
 		return content.iterator();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#asList()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#getContent()
+	 */
 	public List<T> getContent() {
-
 		return Collections.unmodifiableList(content);
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see org.springframework.data.domain.Page#hasContent()
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#hasContent()
+	 */
 	public boolean hasContent() {
-
 		return !content.isEmpty();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see org.springframework.data.domain.Page#getSort()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#getSort()
+	 */
 	public Sort getSort() {
-
 		return pageable == null ? null : pageable.getSort();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#toString()
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 
@@ -212,10 +184,9 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#equals(java.lang.Object)
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -237,10 +208,9 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#hashCode()
-			 */
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 
