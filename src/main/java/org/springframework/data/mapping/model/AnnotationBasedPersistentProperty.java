@@ -15,11 +15,15 @@
  */
 package org.springframework.data.mapping.model;
 
+import static org.springframework.core.annotation.AnnotationUtils.*;
+
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +46,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		AbstractPersistentProperty<P> {
 
 	private final Value value;
+	private final Map<Class<? extends Annotation>, Annotation> annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
 
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
@@ -112,9 +117,14 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param annotationType must not be {@literal null}.
 	 * @return
 	 */
-	protected <A extends Annotation> A findAnnotation(Class<? extends A> annotationType) {
+	@SuppressWarnings("unchecked")
+	public <A extends Annotation> A findAnnotation(Class<? extends A> annotationType) {
 
 		Assert.notNull(annotationType, "Annotation type must not be null!");
+
+		if (annotationCache != null && annotationCache.containsKey(annotationType)) {
+			return (A) annotationCache.get(annotationType);
+		}
 
 		for (Method method : Arrays.asList(getGetter(), getSetter())) {
 
@@ -125,11 +135,26 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			A annotation = AnnotationUtils.findAnnotation(method, annotationType);
 
 			if (annotation != null) {
-				return annotation;
+				return cacheAndReturn(annotationType, annotation);
 			}
 		}
 
-		return AnnotationUtils.getAnnotation(field, annotationType);
+		return cacheAndReturn(annotationType, getAnnotation(field, annotationType));
+	}
+
+	/**
+	 * Puts the given annotation into the local cache and returns it.
+	 * 
+	 * @param annotation
+	 * @return
+	 */
+	private <A extends Annotation> A cacheAndReturn(Class<? extends A> type, A annotation) {
+
+		if (annotationCache != null) {
+			annotationCache.put(type, annotation);
+		}
+
+		return annotation;
 	}
 
 	/**
