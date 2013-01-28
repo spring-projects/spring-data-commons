@@ -19,7 +19,7 @@
     <properties>
     	<jackson>1.9.7</jackson>
     	<querydsl>2.8.0</querydsl>
-    	<springhateoas>0.4.0.BUILD-SNAPSHOT</springhateoas>
+    	<springhateoas>0.4.0.RELEASE</springhateoas>
     </properties>
     
     <dependencies>
