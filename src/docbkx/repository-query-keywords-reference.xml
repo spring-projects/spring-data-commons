@@ -8,9 +8,9 @@
     <title>Supported query keywords</title>
 
     <para>The following table lists the keywords generally supported by the
-    Spring data repository query derivation mechanism. However consult the
-    store specific documentation for the exact list of supported keywords as
-    some of the ones listed here might not be supported in a particular
+    Spring Data repository query derivation mechanism. However, consult the
+    store-specific documentation for the exact list of supported keywords,
+    because some listed here might not be supported in a particular
     store.</para>
 
     <table>
@@ -30,6 +30,18 @@
         </thead>
 
         <tbody>
+          <row>
+            <entry><code>AND</code></entry>
+
+            <entry><literal>And</literal></entry>
+          </row>
+
+          <row>
+            <entry><code>OR</code></entry>
+
+            <entry><literal>Or</literal></entry>
+          </row>
+
           <row>
             <entry><code>AFTER</code></entry>
 
