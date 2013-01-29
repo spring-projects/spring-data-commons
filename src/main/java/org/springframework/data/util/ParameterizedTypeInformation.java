@@ -163,6 +163,15 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return super.equals(obj);
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return super.hashCode() + (isResolvedCompletely() ? this.type.hashCode() : 0);
+	}
+
 	private boolean isResolvedCompletely() {
 
 		Type[] types = type.getActualTypeArguments();
