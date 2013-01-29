@@ -74,4 +74,42 @@ public class UserCredentialsUnitTests {
 		assertThat(credentials.hasPassword(), is(true));
 		assertThat(credentials.getPassword(), is("password"));
 	}
+
+	/**
+	 * @see DATACMNS-275
+	 */
+
+	@Test
+	public void returnsNullForNotSetObfuscatedPassword() {
+		assertThat(new UserCredentials(null, null).getObfuscatedPassword(), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-275
+	 */
+	@Test
+	public void obfuscatesShortPasswordsEntirely() {
+
+		assertThat(new UserCredentials(null, "sa").getObfuscatedPassword(), is("**"));
+		assertThat(new UserCredentials(null, "s").getObfuscatedPassword(), is("*"));
+	}
+
+	/**
+	 * @see DATACMNS-275
+	 */
+	@Test
+	public void returnsObfuscatedPasswordCorrectly() {
+		assertThat(new UserCredentials(null, "password").getObfuscatedPassword(), is("p******d"));
+	}
+
+	/**
+	 * @see DATACMNS-275
+	 */
+	@Test
+	public void toStringDoesNotExposePlainPassword() {
+
+		UserCredentials credentials = new UserCredentials(null, "mypassword");
+		assertThat(credentials.toString(), not(containsString(credentials.getPassword())));
+		assertThat(credentials.toString(), containsString(credentials.getObfuscatedPassword()));
+	}
 }

@@ -79,6 +79,47 @@ public class UserCredentials {
 		return this.password != null;
 	}
 
+	/**
+	 * Returns the password in obfuscated fashion which means everthing except the first and last character replaced by
+	 * stars. If the password is one or two characters long we'll obfuscate it entirely.
+	 * 
+	 * @return the obfuscated password
+	 */
+	public String getObfuscatedPassword() {
+
+		if (!hasPassword()) {
+			return null;
+		}
+
+		StringBuilder builder = new StringBuilder();
+
+		if (password.length() < 3) {
+
+			for (int i = password.length(); i != 0; i--) {
+				builder.append("*");
+			}
+
+			return builder.toString();
+		}
+
+		builder.append(password.charAt(0));
+
+		for (int i = password.length() - 2; i != 0; i--) {
+			builder.append("*");
+		}
+
+		return builder.append(password.substring(password.length() - 1)).toString();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return String.format("username = [%s], password = [%s]", username, getObfuscatedPassword());
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
