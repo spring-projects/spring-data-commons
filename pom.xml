@@ -20,6 +20,8 @@
     	<jackson>1.9.7</jackson>
     	<querydsl>2.8.0</querydsl>
     	<springhateoas>0.4.0.RELEASE</springhateoas>
+    	<dist.key>DATACMNS</dist.key>
+    	<schema.key>repository</schema.key>
     </properties>
     
     <dependencies>
@@ -194,6 +196,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>wagon-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
