@@ -21,7 +21,6 @@
     	<querydsl>2.8.0</querydsl>
     	<springhateoas>0.4.0.RELEASE</springhateoas>
     	<dist.key>DATACMNS</dist.key>
-    	<schema.key>repository</schema.key>
     </properties>
     
     <dependencies>
