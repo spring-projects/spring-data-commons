@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<context version="7.0.3.1152">
-    <scope name="spring-data-commons-core" type="Project">
+<context version="7.1.7.187">
+    <scope name="spring-data-commons" type="Project">
         <architecture>
             <element name="Web" type="Layer">
                 <element name="Assignment" type="TypeFilter">
                     <element name="**.web.**" type="IncludeTypePattern"/>
                 </element>
                 <dependency type="AllowedDependency" toName="External|External"/>
-                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Application"/>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Application"/>
                 <dependency type="AllowedDependency" toName="External|External::Subsystem|Java Beans"/>
                 <dependency type="AllowedDependency" toName="External|External::Subsystem|Reflection"/>
                 <dependency type="AllowedDependency" toName="External|External::Subsystem|Servlet API"/>
@@ -21,78 +21,74 @@
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.repository.*" type="IncludeTypePattern"/>
                     </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Application::Subsystem|Domain"/>
+                    <stereotype name="Public"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain"/>
                 </element>
                 <element name="Core" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.util.**" type="IncludeTypePattern"/>
                         <element name="**.core.*" type="IncludeTypePattern"/>
                     </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|API"/>
                 </element>
                 <element name="Query" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.query.**" type="IncludeTypePattern"/>
                     </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Application::Subsystem|Domain"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Core"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core"/>
                 </element>
                 <element name="Implementation" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.core.support.**" type="IncludeTypePattern"/>
                     </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Application::Subsystem|Domain"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|API"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Core"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Query"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Query"/>
                 </element>
                 <element name="Support" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.support.**" type="WeakTypePattern"/>
                     </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|API"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Core"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Implementation"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Query"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Implementation"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Query"/>
+                </element>
+                <element name="History" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.history.**" type="IncludeTypePattern"/>
+                    </element>
+                </element>
+                <element name="CDI" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.cdi.**" type="IncludeTypePattern"/>
+                    </element>
+                    <dependency type="AllowedDependency" toName="External|External::Subsystem|JavaEE"/>
+                    <dependency type="AllowedDependency" toName="External|External::Subsystem|Logging"/>
+                    <dependency type="AllowedDependency" toName="External|External::Subsystem|Reflection"/>
+                    <dependency type="AllowedDependency" toName="External|External::Subsystem|Spring"/>
+                </element>
+                <element name="Init" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.init.**" type="IncludeTypePattern"/>
+                    </element>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Support"/>
                 </element>
                 <element name="Configuration" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.config.**" type="IncludeTypePattern"/>
                     </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|API"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Core"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Implementation"/>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Repositories::Subsystem|Query"/>
+                    <stereotype name="Unrestricted"/>
                 </element>
-                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Application"/>
-                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Core"/>
-                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Mapping"/>
-            </element>
-            <element name="Application" type="Layer">
-                <element name="Assignment" type="TypeFilter"/>
-                <element name="Domain" type="Subsystem">
-                    <element name="Assignment" type="TypeFilter">
-                        <element name="**.domain.**" type="IncludeTypePattern"/>
-                    </element>
-                </element>
-                <element name="Querydsl" type="Subsystem">
-                    <element name="Assignment" type="TypeFilter">
-                        <element name="**.querydsl.**" type="IncludeTypePattern"/>
-                    </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Application::Subsystem|Domain"/>
-                </element>
-                <element name="Cross store" type="Subsystem">
-                    <element name="Assignment" type="TypeFilter">
-                        <element name="**.crossstore.**" type="IncludeTypePattern"/>
-                    </element>
-                </element>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Application"/>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Core"/>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Mapping"/>
             </element>
             <element name="Conversion" type="Layer">
                 <element name="Assignment" type="TypeFilter">
                     <element name="**.convert.**" type="IncludeTypePattern"/>
                 </element>
-                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Core"/>
-                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Mapping"/>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Core"/>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Mapping"/>
             </element>
             <element name="Mapping" type="Layer">
                 <element name="Assignment" type="TypeFilter">
@@ -108,9 +104,9 @@
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.context.**" type="IncludeTypePattern"/>
                     </element>
-                    <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Mapping::Subsystem|Model"/>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Mapping::Subsystem|Model"/>
                 </element>
-                <dependency type="AllowedDependency" toName="Project|spring-data-commons-core::Layer|Core"/>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Core"/>
             </element>
             <element name="Core" type="Layer">
                 <element name="Assignment" type="TypeFilter"/>
@@ -118,6 +114,7 @@
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.util.**" type="WeakTypePattern"/>
                     </element>
+                    <stereotype name="Public"/>
                 </element>
                 <element name="Annotations" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
@@ -128,7 +125,6 @@
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.authentication.**" type="IncludeTypePattern"/>
                     </element>
-                    <stereotype name="Unrestricted"/>
                 </element>
                 <element name="Configuration" type="Subsystem">
                     <element name="Assignment" type="TypeFilter">
@@ -140,20 +136,81 @@
                     <element name="Assignment" type="TypeFilter">
                         <element name="**.history.**" type="WeakTypePattern"/>
                     </element>
+                </element>
+                <element name="Support" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.support.**" type="WeakTypePattern"/>
+                    </element>
+                </element>
+                <element name="Auditing" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.auditing.**" type="IncludeTypePattern"/>
+                    </element>
                     <stereotype name="Unrestricted"/>
+                </element>
+                <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Application"/>
+            </element>
+            <element name="Application" type="Layer">
+                <element name="Assignment" type="TypeFilter"/>
+                <element name="Domain" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.domain.**" type="WeakTypePattern"/>
+                    </element>
+                </element>
+                <element name="JAXB" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.domain.jaxb.**" type="IncludeTypePattern"/>
+                    </element>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain"/>
+                    <dependency type="AllowedDependency" toName="External|External::Subsystem|JAXB"/>
+                    <dependency type="AllowedDependency" toName="External|External::Subsystem|Spring"/>
+                </element>
+                <element name="Querydsl" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.querydsl.**" type="IncludeTypePattern"/>
+                    </element>
+                    <dependency type="AllowedDependency" toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain"/>
+                </element>
+                <element name="Cross store" type="Subsystem">
+                    <element name="Assignment" type="TypeFilter">
+                        <element name="**.crossstore.**" type="IncludeTypePattern"/>
+                    </element>
                 </element>
             </element>
         </architecture>
         <workspace>
-            <element name="spring-data-commons-core/src/main/java" type="JavaRootDirectory">
-                <reference name="Project|spring-data-commons-core::BuildUnit|spring-data-commons-core"/>
+            <element name="src/main/java" type="JavaRootDirectory">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
             </element>
-            <element name="spring-data-commons-core/target/classes" type="JavaRootDirectory">
-                <reference name="Project|spring-data-commons-core::BuildUnit|spring-data-commons-core"/>
+            <element name="target/classes" type="JavaRootDirectory">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
             </element>
         </workspace>
+        <itemDefinition>
+            <item type="IgnoreWarningFilterItem">
+                <property name="AttributeId" value="NoAttachedSourceFile"/>
+                <property name="Comment" value="Ignore generated classes"/>
+                <property name="Date" value="2013-01-29 10:28:36"/>
+                <property name="ElementType" value="Class"/>
+                <property name="Pattern" value="org.springframework.data.querydsl.QSimpleEntityPathResolverUnitTests_Sample"/>
+            </item>
+            <item type="IgnoreWarningFilterItem">
+                <property name="AttributeId" value="NoAttachedSourceFile"/>
+                <property name="Comment" value="Ignore generated classes"/>
+                <property name="Date" value="2013-01-29 10:28:36"/>
+                <property name="ElementType" value="Class"/>
+                <property name="Pattern" value="org.springframework.data.querydsl.QUser"/>
+            </item>
+            <item type="IgnoreWarningFilterItem">
+                <property name="AttributeId" value="NoAttachedSourceFile"/>
+                <property name="Comment" value="Ignore generated classes"/>
+                <property name="Date" value="2013-01-29 10:28:36"/>
+                <property name="ElementType" value="Class"/>
+                <property name="Pattern" value="org.springframework.data.querydsl.QSimpleEntityPathResolverUnitTests_NamedUser"/>
+            </item>
+        </itemDefinition>
         <physical>
-            <element name="spring-data-commons-core" type="BuildUnit"/>
+            <element name="spring-data-commons" type="BuildUnit"/>
         </physical>
     </scope>
     <scope name="External" type="External">
@@ -215,12 +272,28 @@
             </element>
             <element name="Logging" type="Subsystem">
                 <element name="Assignment" type="TypeFilter">
-                    <element name="org.apache.commons.logging.**" type="IncludeTypePattern"/>
+                    <element name="org.slf4j.**" type="IncludeTypePattern"/>
                 </element>
             </element>
             <element name="AOP" type="Subsystem">
                 <element name="Assignment" type="TypeFilter">
                     <element name="org.aopalliance.**" type="IncludeTypePattern"/>
+                </element>
+            </element>
+            <element name="JavaEE" type="Subsystem">
+                <element name="Assignment" type="TypeFilter">
+                    <element name="javax.enterprise.**" type="IncludeTypePattern"/>
+                    <element name="javax.inject.**" type="IncludeTypePattern"/>
+                </element>
+            </element>
+            <element name="JAXB" type="Subsystem">
+                <element name="Assignment" type="TypeFilter">
+                    <element name="javax.xml.**" type="IncludeTypePattern"/>
+                </element>
+            </element>
+            <element name="Jackson" type="Subsystem">
+                <element name="Assignment" type="TypeFilter">
+                    <element name="org.codehaus.jackson.**" type="IncludeTypePattern"/>
                 </element>
             </element>
         </architecture>
@@ -281,6 +354,18 @@
             </item>
         </itemDefinition>
     </scope>
+    <itemDefinition>
+        <item type="MoveTypeItem">
+            <property name="AssignedTo" value=""/>
+            <property name="Comment" value=""/>
+            <property name="Date" value="2013-01-29 09:59:22"/>
+            <property name="Priority" value="Medium"/>
+            <property name="SourceScope" value="spring-data-commons"/>
+            <property name="TargetNamespace" value="org.springframework.data.mapping.context"/>
+            <property name="TargetScope" value="spring-data-commons"/>
+            <property name="Type" value="org.springframework.data.mapping.model.MappingContextIsNewStrategyFactory"/>
+        </item>
+    </itemDefinition>
     <attributeConfiguration type="AttributeConfiguration">
         <property name="ExtendedCyclomaticComplexity" value="disabled"/>
         <property name="MaxExtendedCyclomaticComplexityPerMethod" value="disabled"/>

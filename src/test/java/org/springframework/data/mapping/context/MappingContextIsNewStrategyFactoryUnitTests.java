@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping.model;
+package org.springframework.data.mapping.context;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -23,9 +23,9 @@ import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.mapping.context.SampleMappingContext;
-import org.springframework.data.mapping.model.MappingContextIsNewStrategyFactory.PropertyIsNullIsNewStrategy;
-import org.springframework.data.mapping.model.MappingContextIsNewStrategyFactory.PropertyIsNullOrZeroNumberIsNewStrategy;
+import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory;
+import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory.PropertyIsNullIsNewStrategy;
+import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory.PropertyIsNullOrZeroNumberIsNewStrategy;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
 
