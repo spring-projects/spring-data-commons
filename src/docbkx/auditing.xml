@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<section id="auditing.basics">
+  <title>Basics</title>
+
+  <para>Spring Data provides sophisticated support to transparently keep track
+  of who created or changed an entity and the point in time this happened. To
+  benefit from that functionality you have to equip your entity classes with
+  auditing metadata that can be defined either using annotations or by
+  implementing an interface.</para>
+
+  <section id="auditing.annotations">
+    <title>Annotation based auditing metadata</title>
+
+    <para>We provide <interfacename>@CreatedBy</interfacename>,
+    <interfacename>@LastModifiedBy</interfacename> to capture the user who
+    created or modified the entity as well as
+    <interfacename>@CreatedDate</interfacename> and
+    <interfacename>@LastModifiedDate</interfacename> to capture the point in
+    time this happened.</para>
+
+    <example>
+      <title>An audited entity</title>
+
+      <programlisting language="java">class Customer {
+
+  @CreatedBy
+  private User user;
+  
+  @CreatedDate
+  private DateTime createdDate;
+
+  // … further properties omitted
+}</programlisting>
+    </example>
+
+    <para>As you can see, the annotations can be applied selectively,
+    depending on which information you'd like to capture. For the annotations
+    capturing the points in time can be used on properties of type
+    <classname>org.joda.time.DateTime</classname>,
+    <classname>java.util.Date</classname> as well as
+    <code>long</code>/<classname>Long</classname>. </para>
+  </section>
+
+  <section id="auditing.interfaces">
+    <title>Interface-based auditing metadata</title>
+
+    <para>In case you don't want to use annotations to define auditing
+    metadata you can let your domain class implement the
+    <interfacename>Auditable</interfacename> interface. It exposes setter
+    methods for all of the auditing properties. </para>
+
+    <para>There's also a convenience base class
+    <interfacename>AbstractAuditable</interfacename> which you can extend to
+    avoid the need to manually implement the interface methods. Be aware that
+    this increases the coupling of your domain classes to Spring Data which
+    might be something you want to avoid. Usually the annotation based way of
+    defining auditing metadata is preferred as it is less invasive and more
+    flexible.</para>
+  </section>
+
+  <section id="auditing.auditor-aware">
+    <title>AuditorAware</title>
+
+    <para>In case you use either <interfacename>@CreatedBy</interfacename> or
+    <interfacename>@LastModifiedBy</interfacename>, the auditing
+    infrastructure somehow needs to become aware of the current principal. To
+    do so, we provide an <interfacename>AuditorAware&lt;T&gt;</interfacename>
+    SPI interface that you have to implement to tell the infrastructure who
+    the current user or system interacting with the application is. The
+    generic type <code>T</code> defines of what type the properties annotated
+    with <interfacename>@CreatedBy</interfacename> or
+    <interfacename>@LastModifiedBy</interfacename> have to be. </para>
+
+    <para>Here's an example implementation of the interface using Spring
+    Security's <interfacename>Authentication</interfacename> object:</para>
+
+    <example>
+      <title>Implementation of AuditorAware based on Spring Security</title>
+
+      <programlisting language="java">class SpringSecurityAuditorAware implements AuditorAware&lt;User&gt; {
+
+  public User getCurrentAuditor() {
+    
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authentication == null || !authentication.isAuthenticated()) {
+      return null;
+    }
+
+    return ((MyUserDetails) authentication.getPrincipal()).getUser();
+  }
+}</programlisting>
+    </example>
+
+    <para>The implementation is accessing the
+    <interfacename>Authentication</interfacename> object provided by Spring
+    Security and looks up the custom
+    <interfacename>UserDetails</interfacename> instance from it that you have
+    created in your <interfacename>UserDetailsService</interfacename>
+    implementation. We're assuming here that you are exposing the domain user
+    through that <interfacename>UserDetails</interfacename> implementation but
+    you could also look it up from anywhere based on the
+    <interfacename>Authentication</interfacename> found.</para>
+  </section>
+</section>
