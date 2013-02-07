@@ -1,6 +1,20 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.4.1.RELEASE (2013-02-07)
+---------------------------------------------
+** Bug
+    * [DATACMNS-257] - PropertyPath cannot deal with all uppercase fields
+    * [DATACMNS-276] - ParameterizedTypeInformation is missing hashCode() method
+
+** Improvement
+    * [DATACMNS-168] - Allow customizing the bean name for repository beans
+    * [DATACMNS-253] - IndexOutOfBoundsException in Repository proxy when missing parameters
+    * [DATACMNS-254] - Auditable's identifier type constrained to the the same type as Persistable's
+
+** Task
+    * [DATACMNS-280] - Release 1.4.1
+
 Changes in version 1.4.0.RELEASE (2012-10-09)
 ---------------------------------------------
 ** Bug
