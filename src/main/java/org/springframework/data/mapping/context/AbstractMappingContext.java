@@ -278,11 +278,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				descriptors.put(descriptor.getName(), descriptor);
 			}
 
-			ReflectionUtils.doWithFields(type, new PersistentPropertyCreator(entity, descriptors),
-					PersistentFieldFilter.INSTANCE);
-
 			try {
+
+				ReflectionUtils.doWithFields(type, new PersistentPropertyCreator(entity, descriptors),
+						PersistentFieldFilter.INSTANCE);
 				entity.verify();
+
 			} catch (MappingException e) {
 				persistentEntities.remove(typeInformation);
 				throw e;

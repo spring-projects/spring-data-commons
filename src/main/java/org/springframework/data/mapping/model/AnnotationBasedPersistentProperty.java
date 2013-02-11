@@ -59,7 +59,47 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
 
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
+		populateAnnotationCache(field);
 		this.value = findAnnotation(Value.class);
+	}
+
+	/**
+	 * Populates the annotation cache by eagerly accessing the annotations directly annotated to the accessors (if
+	 * available) and the backing field. Annotations override annotations found on field.
+	 * 
+	 * @param field
+	 * @throws MappingException in case we find an ambiguous mapping on the accessor methods
+	 */
+	private final void populateAnnotationCache(Field field) {
+
+		for (Method method : Arrays.asList(getGetter(), getSetter())) {
+
+			if (method == null) {
+				continue;
+			}
+
+			for (Annotation annotation : method.getAnnotations()) {
+
+				Class<? extends Annotation> annotationType = annotation.annotationType();
+
+				if (annotationCache.containsKey(annotationType)) {
+					throw new MappingException(String.format("Ambiguous mapping! Annotation %s configured "
+							+ "multiple times on accessor methods of property %s in class %s!", annotationType, getName(), getOwner()
+							.getType().getName()));
+				}
+
+				annotationCache.put(annotationType, annotation);
+			}
+		}
+
+		for (Annotation annotation : field.getAnnotations()) {
+
+			Class<? extends Annotation> annotationType = annotation.annotationType();
+
+			if (!annotationCache.containsKey(annotationType)) {
+				annotationCache.put(annotationType, annotation);
+			}
+		}
 	}
 
 	/**
