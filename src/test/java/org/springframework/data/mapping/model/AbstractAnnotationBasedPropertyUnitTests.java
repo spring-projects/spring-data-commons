@@ -23,12 +23,17 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Oliver Gierke
@@ -36,11 +41,12 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
 public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedPersistentProperty<P>> {
 
 	BasicPersistentEntity<Object, SamplePersistentProperty> entity;
+	SampleMappingContext context;
 
 	@Before
 	public void setUp() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		context = new SampleMappingContext();
 		entity = context.getPersistentEntity(Sample.class);
 	}
 
@@ -72,6 +78,47 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 		assertAnnotationPresent(Id.class, entity.getPersistentProperty("id"));
 	}
 
+	/**
+	 * @see DATACMNS-282
+	 */
+	@Test
+	public void populatesAnnotationCacheWithDirectAnnotationsOnCreation() {
+
+		SamplePersistentProperty property = entity.getPersistentProperty("meta");
+
+		// Assert direct annotations are cached on construction
+		Map<Class<? extends Annotation>, Annotation> cache = getAnnotationCache(property);
+		assertThat(cache.containsKey(MyAnnotationAsMeta.class), is(true));
+		assertThat(cache.containsKey(MyAnnotation.class), is(false));
+
+		// Assert meta annotation is found and cached
+		MyAnnotation annotation = property.findAnnotation(MyAnnotation.class);
+		assertThat(annotation, is(notNullValue()));
+		assertThat(cache.containsKey(MyAnnotation.class), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-282
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void discoversAmbiguousMappingUsingDirectAnnotationsOnAccessors() {
+
+		try {
+			context.getPersistentEntity(InvalidSample.class);
+			fail("Expected MappingException!");
+		} catch (MappingException o_O) {
+			ConcurrentMap<TypeInformation<?>, ?> entities = (ConcurrentMap<TypeInformation<?>, ?>) ReflectionTestUtils
+					.getField(context, "persistentEntities");
+			assertThat(entities.containsKey(ClassTypeInformation.from(InvalidSample.class)), is(false));
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
+		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
+	}
+
 	private <A extends Annotation> A assertAnnotationPresent(Class<A> annotationType,
 			AnnotationBasedPersistentProperty<?> property) {
 
@@ -89,6 +136,9 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 		String field;
 		String getter;
 		String setter;
+
+		@MyAnnotationAsMeta
+		String meta;
 
 		@MyAnnotation("field")
 		String override;
@@ -109,10 +159,32 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 		}
 	}
 
+	static class InvalidSample {
+
+		String meta;
+
+		@MyAnnotation
+		public String getMeta() {
+			return meta;
+		}
+
+		@MyAnnotation
+		public void setMeta(String meta) {
+			this.meta = meta;
+		}
+	}
+
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 	public static @interface MyAnnotation {
 		String value() default "";
+	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(value = { FIELD, METHOD })
+	@MyAnnotation
+	public static @interface MyAnnotationAsMeta {
+
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
