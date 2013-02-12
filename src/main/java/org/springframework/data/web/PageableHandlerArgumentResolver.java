@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,19 +34,20 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
-import org.springframework.web.bind.support.WebArgumentResolver;
+import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
  * Extracts paging information from web requests and thus allows injecting {@link Pageable} instances into controller
  * methods. Request properties to be parsed can be configured. Default configuration uses request properties beginning
  * with {@link #DEFAULT_PREFIX}{@link #DEFAULT_SEPARATOR}.
  * 
- * @deprecated use {@link PageableWebHandlerArgumentResolver} instead.
+ * @since 1.6
  * @author Oliver Gierke
  */
-@Deprecated
-public class PageableArgumentResolver implements WebArgumentResolver {
+public class PageableHandlerArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private static final Pageable DEFAULT_PAGE_REQUEST = new PageRequest(0, 10);
 	private static final String DEFAULT_PREFIX = "page";
@@ -79,41 +80,45 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 	/**
 	 * Setter to configure the separator between prefix and actual property value. Defaults to {@link #DEFAULT_SEPARATOR}.
 	 * 
-	 * @param separator the separator to set
+	 * @param separator the separator to set. Will default to {@link #DEFAULT_SEPEARATOR} if set to {@literal null}.
 	 */
 	public void setSeparator(String separator) {
 		this.separator = null == separator ? DEFAULT_SEPARATOR : separator;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.web.bind.support.WebArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.context.request.NativeWebRequest)
+	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
 	 */
-	public Object resolveArgument(MethodParameter methodParameter, NativeWebRequest webRequest) {
+	public boolean supportsParameter(MethodParameter parameter) {
+		return Pageable.class.equals(parameter.getParameterType());
+	}
 
-		if (methodParameter.getParameterType().equals(Pageable.class)) {
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
+	 */
+	public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-			assertPageableUniqueness(methodParameter);
+		assertPageableUniqueness(methodParameter);
 
-			Pageable request = getDefaultFromAnnotationOrFallback(methodParameter);
-			ServletRequest servletRequest = (ServletRequest) webRequest.getNativeRequest();
-			PropertyValues propertyValues = new ServletRequestParameterPropertyValues(servletRequest,
-					getPrefix(methodParameter), separator);
+		Pageable request = getDefaultFromAnnotationOrFallback(methodParameter);
+		ServletRequest servletRequest = (ServletRequest) webRequest.getNativeRequest();
+		PropertyValues propertyValues = new ServletRequestParameterPropertyValues(servletRequest,
+				getPrefix(methodParameter), separator);
 
-			DataBinder binder = new ServletRequestDataBinder(request);
+		DataBinder binder = new ServletRequestDataBinder(request);
 
-			binder.initDirectFieldAccess();
-			binder.registerCustomEditor(Sort.class, new SortPropertyEditor("sort.dir", propertyValues));
-			binder.bind(propertyValues);
+		binder.initDirectFieldAccess();
+		binder.registerCustomEditor(Sort.class, new SortPropertyEditor("sort.dir", propertyValues));
+		binder.bind(propertyValues);
 
-			if (request.getPageNumber() > 0) {
-				request = new PageRequest(request.getPageNumber() - 1, request.getPageSize(), request.getSort());
-			}
-
-			return request;
+		if (request.getPageNumber() > 0) {
+			request = new PageRequest(request.getPageNumber() - 1, request.getPageSize(), request.getSort());
 		}
 
-		return UNRESOLVED;
+		return request;
 	}
 
 	private Pageable getDefaultFromAnnotationOrFallback(MethodParameter methodParameter) {

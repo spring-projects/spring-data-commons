@@ -1005,19 +1005,36 @@ public class UserController {
 
       <para>The bottom line is that the controller should not have to handle
       the functionality of extracting pagination information from the request.
-      So Spring includes a <classname>PageableArgumentResolver</classname>
-      that will do the work for you.</para>
+      So Spring Data ships with a
+      <classname>PageableHandlerArgumentResolver</classname> that will do the
+      work for you. The Spring MVC JavaConfig support exposes a
+      <classname>WebMvcConfigurationSupport</classname> helper class to
+      customize the configuration as follows:</para>
 
-      <programlisting language="xml">&lt;bean class="….web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"&gt;
+      <programlisting language="xml">@Configuration
+public class WebConfig extends WebMvcConfigurationSupport {
+
+  @Override
+  public void configureMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) {
+    converters.add(new PageableHandlerArgumentResolver());
+  }
+}</programlisting>
+
+      <para>If you're stuck with XML configuration you can register the
+      resolver as follows:</para>
+
+      <programlisting language="xml">&lt;bean class="….web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"&gt;
   &lt;property name="customArgumentResolvers"&gt;
     &lt;list&gt;
-      &lt;bean class="org.springframework.data.web.PageableArgumentResolver" /&gt;
+      &lt;bean class="org.springframework.data.web.PageableHandlerArgumentResolver" /&gt;
     &lt;/list&gt;
   &lt;/property&gt;
 &lt;/bean&gt;</programlisting>
 
-      <para>This configuration allows you to simplify controllers down to
-      something like this:</para>
+      <para>When using Spring 3.0.x versions use the
+      <classname>PageableArgumentResolver</classname> instead. Once you've
+      configured the resolver with Spring MVC it allows you to simplify
+      controllers down to something like this:</para>
 
       <programlisting lang="" language="java">@Controller
 @RequestMapping("/users")
