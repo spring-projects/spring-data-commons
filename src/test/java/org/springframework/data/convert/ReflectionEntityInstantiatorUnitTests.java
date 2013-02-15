@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,17 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.convert.ReflectionEntityInstantiator.*;
+import static org.springframework.data.util.ClassTypeInformation.*;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.convert.ReflectionEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.data.mapping.PersistentEntity;
@@ -32,9 +37,9 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
@@ -92,7 +97,7 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 	@Test
 	public void createsInnerClassInstanceCorrectly() {
 
-		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class));
+		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
 		PreferredConstructor<Inner, P> constructor = entity.getPersistenceConstructor();
 		Parameter<Object, P> parameter = constructor.getParameters().iterator().next();
 
@@ -114,6 +119,37 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 		});
 	}
 
+	/**
+	 * @see DATACMNS-283
+	 */
+	@Test
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void capturesContextOnInstantiationException() throws Exception {
+
+		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<Sample, P>(from(Sample.class));
+
+		when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("FOO");
+
+		Constructor constructor = Sample.class.getConstructor(Long.class, String.class);
+		List<Object> parameters = Arrays.asList((Object) "FOO", (Object) "FOO");
+
+		try {
+			INSTANCE.createInstance(entity, provider);
+			fail("Expected MappingInstantiationException!");
+		} catch (MappingInstantiationException o_O) {
+
+			assertThat(o_O.getConstructor(), is(constructor));
+			assertThat(o_O.getConstructorArguments(), is(parameters));
+			assertEquals(Sample.class, o_O.getEntityType());
+
+			assertThat(o_O.getMessage(), containsString(Sample.class.getName()));
+			assertThat(o_O.getMessage(), containsString(Long.class.getName()));
+			assertThat(o_O.getMessage(), containsString(String.class.getName()));
+			assertThat(o_O.getMessage(), containsString("FOO"));
+			System.out.println(o_O.getMessage());
+		}
+	}
+
 	static class Foo {
 
 		Foo(String foo) {
@@ -125,6 +161,18 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 
 		class Inner {
 
+		}
+	}
+
+	static class Sample {
+
+		final Long id;
+		final String name;
+
+		public Sample(Long id, String name) {
+
+			this.id = id;
+			this.name = name;
 		}
 	}
 }
