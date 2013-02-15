@@ -17,6 +17,7 @@ package org.springframework.data.convert;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.BeanInstantiationException;
@@ -60,7 +61,7 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 					return BeanUtils.instantiateClass(entity.getType());
 				}
 			} catch (BeanInstantiationException e) {
-				throw new MappingInstantiationException(e.getMessage(), e);
+				new MappingInstantiationException(entity, Collections.emptyList(), e);
 			}
 		}
 
@@ -74,7 +75,7 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 		try {
 			return BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());
 		} catch (BeanInstantiationException e) {
-			throw new MappingInstantiationException(e.getMessage(), e);
+			throw new MappingInstantiationException(entity, params, e);
 		}
 	}
 }
