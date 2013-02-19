@@ -90,6 +90,24 @@ public interface Page<T> extends Iterable<T> {
 	 */
 	boolean isLastPage();
 
+	/**
+	 * Returns the {@link Pageable} to request the next {@link Page}. Can be {@literal null} in case the current
+	 * {@link Page} is already the last one. Clients should check {@link #hasNextPage()} before calling this method to
+	 * make sure they receive a non-{@literal null} value.
+	 * 
+	 * @return
+	 */
+	Pageable nextPageable();
+
+	/**
+	 * Returns the {@link Pageable} to request the previous page. Can be {@literal null} in case the current {@link Page}
+	 * is already the first one. Clients should check {@link #hasPreviousPage()} before calling this method make sure
+	 * receive a non-{@literal null} value.
+	 * 
+	 * @return
+	 */
+	Pageable previousPageable();
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()

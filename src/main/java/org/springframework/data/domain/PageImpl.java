@@ -135,6 +135,27 @@ public class PageImpl<T> implements Page<T>, Serializable {
 		return !hasNextPage();
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#nextPageable()
+	 */
+	public Pageable nextPageable() {
+		return hasNextPage() ? pageable.next() : null;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Page#previousOrFirstPageable()
+	 */
+	public Pageable previousPageable() {
+
+		if (hasPreviousPage()) {
+			return pageable.previousOrFirst();
+		}
+
+		return null;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Page#iterator()

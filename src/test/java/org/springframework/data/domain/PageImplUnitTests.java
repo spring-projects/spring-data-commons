@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.springframework.data.domain;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -51,32 +50,56 @@ public class PageImplUnitTests {
 		PageImpl<String> page = new PageImpl<String>(content, pageable, 100);
 
 		assertEqualsAndHashcode(page, page);
-
 		assertEqualsAndHashcode(page, new PageImpl<String>(content, pageable, 100));
-
 		assertNotEqualsAndHashcode(page, new PageImpl<String>(content, pageable, 90));
-
 		assertNotEqualsAndHashcode(page, new PageImpl<String>(content, new PageRequest(1, 10), 100));
-
 		assertNotEqualsAndHashcode(page, new PageImpl<String>(content, new PageRequest(0, 15), 100));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNullContentForSimpleSetup() throws Exception {
-
 		new PageImpl<Object>(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNullContentForAdvancedSetup() throws Exception {
-
 		new PageImpl<Object>(null, null, 0);
 	}
 
 	@Test
+	public void returnsNextPageable() {
+
+		Page<Object> page = new PageImpl<Object>(Arrays.asList(new Object()), new PageRequest(0, 1), 10);
+
+		assertThat(page.isFirstPage(), is(true));
+		assertThat(page.hasPreviousPage(), is(false));
+		assertThat(page.previousPageable(), is(nullValue()));
+
+		assertThat(page.isLastPage(), is(false));
+		assertThat(page.hasNextPage(), is(true));
+		assertThat(page.nextPageable(), is((Pageable) new PageRequest(1, 1)));
+	}
+
+	@Test
+	public void returnsPreviousPageable() {
+
+		Page<Object> page = new PageImpl<Object>(Arrays.asList(new Object()), new PageRequest(1, 1), 2);
+
+		assertThat(page.isFirstPage(), is(false));
+		assertThat(page.hasPreviousPage(), is(true));
+		assertThat(page.previousPageable(), is((Pageable) new PageRequest(0, 1)));
+
+		assertThat(page.isLastPage(), is(true));
+		assertThat(page.hasNextPage(), is(false));
+		assertThat(page.nextPageable(), is(nullValue()));
+	}
+
+	@Test
 	public void createsPageForEmptyContentCorrectly() {
+
 		List<String> list = Collections.emptyList();
 		Page<String> page = new PageImpl<String>(list);
+
 		assertThat(page.getContent(), is(list));
 		assertThat(page.getNumber(), is(0));
 		assertThat(page.getNumberOfElements(), is(0));

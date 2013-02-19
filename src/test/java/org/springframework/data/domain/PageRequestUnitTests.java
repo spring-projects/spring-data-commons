@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.springframework.data.domain;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
 import org.junit.Test;
@@ -30,20 +31,28 @@ public class PageRequestUnitTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNegativePage() {
-
 		new PageRequest(-1, 10);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNegativeSize() {
-
 		new PageRequest(0, -1);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void preventsZeroSize() {
+	@Test
+	public void navigatesPageablesCorrectly() {
 
-		new PageRequest(0, 0);
+		Pageable request = new PageRequest(1, 10);
+
+		assertThat(request.hasPrevious(), is(true));
+		assertThat(request.next(), is((Pageable) new PageRequest(2, 10)));
+
+		Pageable first = request.previousOrFirst();
+
+		assertThat(first.hasPrevious(), is(false));
+		assertThat(first, is((Pageable) new PageRequest(0, 10)));
+		assertThat(first, is(request.first()));
+		assertThat(first.previousOrFirst(), is(first));
 	}
 
 	@Test
