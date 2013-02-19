@@ -36,6 +36,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * 
  * @author Oliver Gierke
  */
+@SuppressWarnings("deprecation")
 public class PageableArgumentResolverUnitTests {
 
 	Method correctMethod, failedMethod, invalidQualifiers, defaultsMethod, defaultsMethodWithSort,
@@ -47,7 +48,7 @@ public class PageableArgumentResolverUnitTests {
 	public void setUp() throws SecurityException, NoSuchMethodException {
 
 		correctMethod = SampleController.class.getMethod("correctMethod", Pageable.class, Pageable.class);
-		failedMethod = SampleController.class.getMethod("failedMethod", Pageable.class, Pageable.class);
+		failedMethod = SampleController.class.getMethod("noQualifiers", Pageable.class, Pageable.class);
 		invalidQualifiers = SampleController.class.getMethod("invalidQualifiers", Pageable.class, Pageable.class);
 
 		defaultsMethod = SampleController.class.getMethod("defaultsMethod", Pageable.class);
@@ -206,7 +207,7 @@ public class PageableArgumentResolverUnitTests {
 
 		}
 
-		public void failedMethod(Pageable first, Pageable second) {
+		public void noQualifiers(Pageable first, Pageable second) {
 
 		}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,32 +21,27 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
 /**
- * Annotation to set defaults when injecting a {@link org.springframework.data.domain.Pageable} into a controller
- * method.
+ * Annotation to define the default {@link Sort} options to be used when injecting a {@link Sort} instance into a
+ * controller handler method.
  * 
- * @deprecated use {@link PageableDefault} instead.
+ * @since 1.6
  * @author Oliver Gierke
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-@Deprecated
-public @interface PageableDefaults {
+public @interface SortDefault {
 
 	/**
-	 * The default-size the injected {@link org.springframework.data.domain.Pageable} should get if no corresponding
-	 * parameter defined in request (default is 10).
+	 * Alias for {@link #sort()} to make a declaration configuring fields only more concise.
+	 * 
+	 * @return
 	 */
-	int value() default 10;
-
-	/**
-	 * The default-pagenumber the injected {@link org.springframework.data.domain.Pageable} should get if no corresponding
-	 * parameter defined in request (default is 0).
-	 */
-	int pageNumber() default 0;
+	String[] value() default {};
 
 	/**
 	 * The properties to sort by by default. If unset, no sorting will be applied at all.
@@ -60,5 +55,24 @@ public @interface PageableDefaults {
 	 * 
 	 * @return
 	 */
-	Direction sortDir() default Direction.ASC;
+	Direction direction() default Direction.ASC;
+
+	/**
+	 * Wrapper annotation to allow declaring multiple {@link SortDefault} annotations on a method parameter.
+	 * 
+	 * @since 1.6
+	 * @author Oliver Gierke
+	 */
+	@Documented
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.PARAMETER)
+	public @interface SortDefaults {
+
+		/**
+		 * The individual {@link SortDefault} declarations to be sorted by.
+		 * 
+		 * @return
+		 */
+		SortDefault[] value();
+	}
 }

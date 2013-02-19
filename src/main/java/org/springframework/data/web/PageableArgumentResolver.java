@@ -15,11 +15,10 @@
  */
 package org.springframework.data.web;
 
+import static org.springframework.data.web.SpringDataAnnotationUtils.*;
+
 import java.beans.PropertyEditorSupport;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.servlet.ServletRequest;
 
@@ -131,7 +130,7 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 		return new PageRequest(fallbackPagable.getPageNumber(), fallbackPagable.getPageSize(), fallbackPagable.getSort());
 	}
 
-	private static Pageable getDefaultPageRequestFrom(PageableDefaults defaults) {
+	static Pageable getDefaultPageRequestFrom(PageableDefaults defaults) {
 
 		// +1 is because we substract 1 later
 		int defaultPageNumber = defaults.pageNumber() + 1;
@@ -160,94 +159,6 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 		}
 
 		return prefix;
-	}
-
-	/**
-	 * Asserts uniqueness of all {@link Pageable} parameters of the method of the given {@link MethodParameter}.
-	 * 
-	 * @param parameter
-	 */
-	private void assertPageableUniqueness(MethodParameter parameter) {
-
-		Method method = parameter.getMethod();
-
-		if (containsMoreThanOnePageableParameter(method)) {
-			Annotation[][] annotations = method.getParameterAnnotations();
-			assertQualifiersFor(method.getParameterTypes(), annotations);
-		}
-	}
-
-	/**
-	 * Returns whether the given {@link Method} has more than one {@link Pageable} parameter.
-	 * 
-	 * @param method
-	 * @return
-	 */
-	private boolean containsMoreThanOnePageableParameter(Method method) {
-
-		boolean pageableFound = false;
-
-		for (Class<?> type : method.getParameterTypes()) {
-
-			if (pageableFound && type.equals(Pageable.class)) {
-				return true;
-			}
-
-			if (type.equals(Pageable.class)) {
-				pageableFound = true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Asserts that every {@link Pageable} parameter of the given parameters carries an {@link Qualifier} annotation to
-	 * distinguish them from each other.
-	 * 
-	 * @param parameterTypes
-	 * @param annotations
-	 */
-	private void assertQualifiersFor(Class<?>[] parameterTypes, Annotation[][] annotations) {
-
-		Set<String> values = new HashSet<String>();
-
-		for (int i = 0; i < annotations.length; i++) {
-
-			if (Pageable.class.equals(parameterTypes[i])) {
-
-				Qualifier qualifier = findAnnotation(annotations[i]);
-
-				if (null == qualifier) {
-					throw new IllegalStateException(
-							"Ambiguous Pageable arguments in handler method. If you use multiple parameters of type Pageable you need to qualify them with @Qualifier");
-				}
-
-				if (values.contains(qualifier.value())) {
-					throw new IllegalStateException("Values of the user Qualifiers must be unique!");
-				}
-
-				values.add(qualifier.value());
-			}
-		}
-	}
-
-	/**
-	 * Returns a {@link Qualifier} annotation from the given array of {@link Annotation}s. Returns {@literal null} if the
-	 * array does not contain a {@link Qualifier} annotation.
-	 * 
-	 * @param annotations
-	 * @return
-	 */
-	private Qualifier findAnnotation(Annotation[] annotations) {
-
-		for (Annotation annotation : annotations) {
-			if (annotation instanceof Qualifier) {
-				return (Qualifier) annotation;
-			}
-		}
-
-		return null;
 	}
 
 	/**

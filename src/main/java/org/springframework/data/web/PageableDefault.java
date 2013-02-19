@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,31 +22,40 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.SortDefault.SortDefaults;
 
 /**
  * Annotation to set defaults when injecting a {@link org.springframework.data.domain.Pageable} into a controller
- * method.
+ * method. Instead of configuring {@link #sort()} and {@link #direction()} you can also use {@link SortDefault} or
+ * {@link SortDefaults}.
  * 
- * @deprecated use {@link PageableDefault} instead.
+ * @since 1.6
  * @author Oliver Gierke
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-@Deprecated
-public @interface PageableDefaults {
+public @interface PageableDefault {
+
+	/**
+	 * Alias for {@link #size()}. Prefer to use the {@link #size()} method as it makes the annotation declaration more
+	 * expressive and you'll probably want to configure the {@link #page()} anyway.
+	 * 
+	 * @return
+	 */
+	int value() default 10;
 
 	/**
 	 * The default-size the injected {@link org.springframework.data.domain.Pageable} should get if no corresponding
 	 * parameter defined in request (default is 10).
 	 */
-	int value() default 10;
+	int size() default 10;
 
 	/**
 	 * The default-pagenumber the injected {@link org.springframework.data.domain.Pageable} should get if no corresponding
 	 * parameter defined in request (default is 0).
 	 */
-	int pageNumber() default 0;
+	int page() default 0;
 
 	/**
 	 * The properties to sort by by default. If unset, no sorting will be applied at all.
@@ -60,5 +69,5 @@ public @interface PageableDefaults {
 	 * 
 	 * @return
 	 */
-	Direction sortDir() default Direction.ASC;
+	Direction direction() default Direction.ASC;
 }
