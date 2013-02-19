@@ -5,7 +5,7 @@ Bundle-ManifestVersion: 2
 Import-Package: 
  sun.reflect;version="0";resolution:=optional
 Import-Template:
- com.mysema.query.*;version="[2.2.0,3.0.0)";resolution:=optional,
+ com.mysema.query.*;version="${querydsl:[=.=.=,+1.0.0)}";resolution:=optional,
  javax.enterprise.*;version="${cdi:[=.=.=,+1.0.0)}";resolution:=optional,
  javax.inject.*;version="[1.0.0,2.0.0)";resolution:=optional,
  javax.xml.bind.*;version="0";resolution:=optional,
@@ -26,9 +26,8 @@ Import-Template:
  org.springframework.validation.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
  org.springframework.web.*;version="${spring30:[=.=.=,+1.0.0)}";resolution:=optional,
  org.aopalliance.*;version="[1.0.0, 2.0.0)";resolution:=optional,
- org.apache.commons.logging.*;version="[1.1.1, 2.0.0)",
- org.joda.time.*;version="[1.6.0,2.0.0)";resolution:=optional,
- org.slf4j.*;version="[1.5.0,1.6.0)",
- javax.servlet.*;version="[2.5.0, 3.0.0)";resolution:=optional,
+ org.joda.time.*;version="${jodatime:[=.=.=,+1.0.0)}";resolution:=optional,
+ org.slf4j.*;version="${slf4j:[=.=.=,+1.0.0)}",
+ javax.servlet.*;version="[2.5.0, 4.0.0)";resolution:=optional,
  org.w3c.dom.*;version="0"
 DynamicImport-Package: *
