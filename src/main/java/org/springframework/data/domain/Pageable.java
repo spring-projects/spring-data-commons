@@ -23,7 +23,7 @@ package org.springframework.data.domain;
 public interface Pageable {
 
 	/**
-	 * Returns the page to be returned.
+	 * Returns the number of the page to be returned.
 	 * 
 	 * @return the page to be returned.
 	 */
@@ -46,7 +46,7 @@ public interface Pageable {
 	/**
 	 * Returns the sorting parameters.
 	 * 
-	 * @return
+	 * @return the sorting parameters.
 	 */
 	Sort getSort();
 
