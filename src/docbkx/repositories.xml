@@ -126,7 +126,7 @@ exactly is hardly understandable with the current wording.-->
     </example>
 
     <para>Accessing the second page of <classname>User</classname> by a page
-    size of 20 you could simply do something like this:</para>
+    size of 20 you could simply do something like this (pages are zero indexed):</para>
 
     <programlisting language="java">PagingAndSortingRepository&lt;User, Long&gt; repository = // … get access to a bean
 Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20));</programlisting>

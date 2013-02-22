@@ -23,7 +23,7 @@ package org.springframework.data.domain;
 public interface Pageable {
 
 	/**
-	 * Returns the number of the page to be returned.
+	 * Returns the number of the page to be returned. Note that pages are zero indexed.
 	 * 
 	 * @return the page to be returned.
 	 */
