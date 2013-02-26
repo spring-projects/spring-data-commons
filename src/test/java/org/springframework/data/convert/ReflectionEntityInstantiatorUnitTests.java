@@ -47,6 +47,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
  * Unit tests for {@link ReflectionEntityInstantiator}.
  * 
  * @author Oliver Gierke
+ * @author Johannes Mockenhaupt
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
@@ -92,6 +93,19 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 	}
 
 	/**
+	 * @see DATACMNS-300
+	 */
+	@Test(expected = MappingInstantiationException.class)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void throwsExceptionOnBeanInstantiationException() {
+
+		when(entity.getPersistenceConstructor()).thenReturn(null);
+		when(entity.getType()).thenReturn((Class) PersistentEntity.class);
+
+		INSTANCE.createInstance(entity, provider);
+	}
+
+	/**
 	 * @see DATACMNS-134
 	 */
 	@Test
@@ -134,8 +148,10 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 		List<Object> parameters = Arrays.asList((Object) "FOO", (Object) "FOO");
 
 		try {
+
 			INSTANCE.createInstance(entity, provider);
 			fail("Expected MappingInstantiationException!");
+
 		} catch (MappingInstantiationException o_O) {
 
 			assertThat(o_O.getConstructor(), is(constructor));
@@ -146,7 +162,6 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 			assertThat(o_O.getMessage(), containsString(Long.class.getName()));
 			assertThat(o_O.getMessage(), containsString(String.class.getName()));
 			assertThat(o_O.getMessage(), containsString("FOO"));
-			System.out.println(o_O.getMessage());
 		}
 	}
 
