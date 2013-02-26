@@ -61,7 +61,7 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 					return BeanUtils.instantiateClass(entity.getType());
 				}
 			} catch (BeanInstantiationException e) {
-				new MappingInstantiationException(entity, Collections.emptyList(), e);
+				throw new MappingInstantiationException(entity, Collections.emptyList(), e);
 			}
 		}
 
