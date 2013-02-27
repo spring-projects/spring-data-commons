@@ -21,11 +21,13 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 
 /**
  * Unit test for {@link Sort}.
  * 
  * @author Oliver Gierke
+ * @author Kevin Raymond
  */
 public class SortUnitTests {
 
@@ -97,5 +99,31 @@ public class SortUnitTests {
 
 		Sort sort = new Sort("foo").and(null);
 		assertThat(sort, hasItem(new Sort.Order("foo")));
+	}
+	
+	/**
+	 * Asserts that the ignore case flag is set when the ignoreCase method is called.
+	 * 
+	 * @see DATACMNS-281
+	 * @author Kevin Raymond
+	 */
+	@Test
+	public void ignoreCaseAllowed() {
+		
+		Sort.Order order = new Sort.Order(Direction.ASC, "foo").ignoreCase();
+		assertThat(order.isIgnoreCase(), equalTo(true));
+	}
+	
+	/**
+	 * Asserts that the ignore case flag is false when a new {@link Order} is created.
+	 * 
+	 * @see DATACMNS-281
+	 * @author Kevin Raymond
+	 */
+	@Test	
+	public void ignoreCaseDefault() {
+		
+		Sort.Order order = new Sort.Order(Direction.ASC, "foo");
+		assertThat(order.isIgnoreCase(), equalTo(false));
 	}
 }

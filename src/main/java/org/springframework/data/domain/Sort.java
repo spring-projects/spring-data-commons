@@ -234,13 +234,16 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 * {@link Sort}
 	 * 
 	 * @author Oliver Gierke
+	 * @author Kevin Raymond
 	 */
 	public static class Order implements Serializable {
 
 		private static final long serialVersionUID = 1522511010900108987L;
+		private static final boolean DEFAULT_IGNORE_CASE = false;
 
 		private final Direction direction;
 		private final String property;
+		private boolean ignoreCase;
 
 		/**
 		 * Creates a new {@link Order} instance. if order is {@literal null} then order defaults to
@@ -251,12 +254,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 */
 		public Order(Direction direction, String property) {
 
-			if (!StringUtils.hasText(property)) {
-				throw new IllegalArgumentException("Property must not null or empty!");
-			}
-
-			this.direction = direction == null ? DEFAULT_DIRECTION : direction;
-			this.property = property;
+			this(direction, property, DEFAULT_IGNORE_CASE);
 		}
 
 		/**
@@ -267,6 +265,25 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 */
 		public Order(String property) {
 			this(DEFAULT_DIRECTION, property);
+		}
+		
+		/**
+		 * Creates a new {@link Order} instance. if order is {@literal null} then order defaults to
+		 * {@link Sort#DEFAULT_DIRECTION}
+		 * 
+		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
+		 * @param property must not be {@literal null} or empty.
+		 * @param ignoreCase true if sorting should be case insensitive. false if sorting should be case sensitive.
+		 */
+		private Order(Direction direction, String property, boolean ignoreCase) {
+
+			if (!StringUtils.hasText(property)) {
+				throw new IllegalArgumentException("Property must not null or empty!");
+			}
+
+			this.direction = direction == null ? DEFAULT_DIRECTION : direction;
+			this.property = property;
+			this.ignoreCase = ignoreCase;
 		}
 
 		/**
@@ -308,6 +325,15 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		public boolean isAscending() {
 			return this.direction.equals(Direction.ASC);
 		}
+		
+		/**
+		 * Returns whether or not the sort will be case sensitive or not.
+		 * 
+		 * @return
+		 */
+		public boolean isIgnoreCase() {
+			return ignoreCase;
+		}
 
 		/**
 		 * Returns a new {@link Order} with the given {@link Order}.
@@ -327,6 +353,16 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 */
 		public Sort withProperties(String... properties) {
 			return new Sort(this.direction, properties);
+		}
+		
+		/**
+		 * Returns a new {@link Order} with case insensitive sorting enabled.
+		 * 
+		 * @return
+		 */
+		public Order ignoreCase() {
+			ignoreCase = true;
+			return this;
 		}
 
 		/*
