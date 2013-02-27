@@ -45,7 +45,7 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	<S extends T> Iterable<S> save(Iterable<S> entities);
 
 	/**
-	 * Retrives an entity by its id.
+	 * Retrieves an entity by its id.
 	 * 
 	 * @param id must not be {@literal null}.
 	 * @return the entity with the given id or {@literal null} if none found
