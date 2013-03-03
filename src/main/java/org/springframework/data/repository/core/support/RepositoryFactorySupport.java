@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.aop.framework.ReflectiveMethodInvocation;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -35,6 +39,12 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.augment.MethodMetadata;
+import org.springframework.data.repository.augment.QueryAugmentationEngine;
+import org.springframework.data.repository.augment.QueryAugmentationEngineAware;
+import org.springframework.data.repository.augment.QueryAugmentor;
+import org.springframework.data.repository.augment.QueryContext;
+import org.springframework.data.repository.augment.UpdateContext;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -74,9 +84,11 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	private EvaluationContextProvider evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
 
 	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
+	private QueryAugmentationEngine augmentationEngine = QueryAugmentationEngine.NONE;
 
 	public RepositoryFactorySupport() {
 		this.queryPostProcessors.add(collectingListener);
+		this.postProcessors.add(MethodMetadataRepositoryProxyPostProcessor.INSTANCE);
 	}
 
 	/**
@@ -115,6 +127,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	public void setEvaluationContextProvider(EvaluationContextProvider evaluationContextProvider) {
 		this.evaluationContextProvider = evaluationContextProvider == null ? DefaultEvaluationContextProvider.INSTANCE
 				: evaluationContextProvider;
+	}
+
+	/**
+	 * Configures the {@link QueryAugmentor}s to be used with the repository instances about to be created.
+	 * 
+	 * @param augmentors must not be {@literal null}.
+	 */
+	public void setQueryAugmentors(
+			List<QueryAugmentor<? extends QueryContext<?>, ? extends QueryContext<?>, ? extends UpdateContext<?>>> augmentors) {
+		this.augmentationEngine = new QueryAugmentationEngine(augmentors, DefaultMethodMetadata.INSTANCE);
 	}
 
 	/**
@@ -183,6 +205,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		validate(information, customImplementation);
 
 		Object target = getTargetRepository(information);
+
+		if (target instanceof QueryAugmentationEngineAware) {
+			((QueryAugmentationEngineAware) target).setQueryAugmentationEngine(augmentationEngine);
+		}
 
 		// Create proxy
 		ProxyFactory result = new ProxyFactory();
@@ -593,6 +619,71 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 			result += 17 * ObjectUtils.nullSafeHashCode(customImplementationClassName);
 
 			return result;
+		}
+	}
+
+	/**
+	 * {@link RepositoryProxyPostProcessor} registering an {@link ExposeInvocationInterceptor} to make the repository
+	 * level method invocation available to the infrastructure.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	private static enum MethodMetadataRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
+
+		INSTANCE;
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.RepositoryProxyPostProcessor#postProcess(org.springframework.aop.framework.ProxyFactory, org.springframework.data.repository.core.RepositoryInformation)
+		 */
+		public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
+			factory.addAdvice(ExposeInvocationInterceptor.INSTANCE);
+		}
+	}
+
+	/**
+	 * Default implementation of {@link MethodMetadata}.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	private static enum DefaultMethodMetadata implements MethodMetadata {
+
+		INSTANCE;
+
+		private MethodInvocation getMethodInvocation() {
+			return ExposeInvocationInterceptor.currentInvocation();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.MethodMetadata#getInvocationTargetType()
+		 */
+		public List<Class<?>> getInvocationTargetType() {
+
+			MethodInvocation invocation = getMethodInvocation();
+
+			if (invocation instanceof ReflectiveMethodInvocation) {
+				Advised proxy = (Advised) ((ReflectiveMethodInvocation) invocation).getProxy();
+				return Arrays.asList((Class<?>[]) proxy.getProxiedInterfaces());
+			}
+
+			return Collections.<Class<?>> singletonList(getMethodInvocation().getThis().getClass());
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.MethodMetadata#getInvocationArguments()
+		 */
+		public Object[] getInvocationArguments() {
+			return getMethodInvocation().getArguments();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.MethodMetadata#getMethod()
+		 */
+		public Method getMethod() {
+			return getMethodInvocation().getMethod();
 		}
 	}
 }
