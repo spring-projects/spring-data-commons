@@ -243,8 +243,8 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 	private static Pageable getDefaultPageRequestFrom(PageableDefault defaults) {
 
-		int defaultPageNumber = defaults.page();
-		int defaultPageSize = getSpecificPropertyOrDefaultFromValue(defaults, "size");
+		Integer defaultPageNumber = defaults.page();
+		Integer defaultPageSize = getSpecificPropertyOrDefaultFromValue(defaults, "size");
 
 		if (defaults.sort().length == 0) {
 			return new PageRequest(defaultPageNumber, defaultPageSize);
