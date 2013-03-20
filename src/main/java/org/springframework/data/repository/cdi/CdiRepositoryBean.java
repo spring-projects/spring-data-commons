@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Stereotype;
@@ -52,6 +53,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 	 * 
 	 * @param qualifiers must not be {@literal null}.
 	 * @param repositoryType has to be an interface must not be {@literal null}.
+	 * @param beanManager the CDI {@link BeanManager}, must not be {@literal null}.
 	 */
 	public CdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager) {
 
@@ -85,11 +87,11 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 	}
 
 	/**
-	 * Returns an instance of an {@link EntityManager}.
+	 * Returns an instance of an the given {@link Bean}.
 	 * 
-	 * @param beanManager The BeanManager.
-	 * @param bean The bean representing an EntityManager.
-	 * @return The EntityManager instance.
+	 * @param bean the {@link Bean} about to create an instance for.
+	 * @param type the expected type of the componentn instance created for that {@link Bean}.
+	 * @return the actual component instance.
 	 */
 	@SuppressWarnings("unchecked")
 	protected <S> S getDependencyInstance(Bean<S> bean, Class<S> type) {
@@ -106,6 +108,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug(String.format("Creating bean instance for repository type '%s'.", repositoryType.getName()));
 		}
+
 		return create(creationalContext, repositoryType);
 	}
 
@@ -189,9 +192,19 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 		return Collections.emptySet();
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see javax.enterprise.inject.spi.Bean#getScope()
+	 */
+	public Class<? extends Annotation> getScope() {
+		return ApplicationScoped.class;
+	}
+
 	/**
-	 * @param creationalContext
-	 * @param repositoryType
+	 * Creates the actual component instance.
+	 * 
+	 * @param creationalContext will never be {@literal null}.
+	 * @param repositoryType will never be {@literal null}.
 	 * @return
 	 */
 	protected abstract T create(CreationalContext<T> creationalContext, Class<T> repositoryType);

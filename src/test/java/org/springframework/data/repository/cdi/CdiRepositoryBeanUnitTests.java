@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.junit.Test;
@@ -96,14 +98,22 @@ public class CdiRepositoryBeanUnitTests {
 		assertThat(stereotypes, hasItem(StereotypeAnnotation.class));
 	}
 
+	/**
+	 * @see DATACMNS-299
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void scopeDefaultsToApplicationScoped() {
+
+		Bean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS, SampleRepository.class,
+				beanManager);
+		assertThat(bean.getScope(), equalTo((Class) ApplicationScoped.class));
+	}
+
 	static class DummyCdiRepositoryBean<T> extends CdiRepositoryBean<T> {
 
 		public DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager) {
 			super(qualifiers, repositoryType, beanManager);
-		}
-
-		public Class<? extends Annotation> getScope() {
-			return null;
 		}
 
 		@Override
