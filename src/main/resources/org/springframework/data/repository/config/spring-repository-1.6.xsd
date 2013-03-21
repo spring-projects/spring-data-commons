@@ -140,6 +140,13 @@
 				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="modify-on-creation" default="true" type="xsd:boolean">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Configures whether the entity shall be marked as modified on creation.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:attributeGroup>
 
 	<xsd:simpleType name="query-strategy">
