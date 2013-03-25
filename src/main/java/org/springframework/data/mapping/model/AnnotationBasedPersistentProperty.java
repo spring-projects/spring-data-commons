@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.annotation.AccessType;
+import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
@@ -47,6 +49,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	private final Map<Class<? extends Annotation>, Annotation> annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
 
 	private Boolean isTransient;
+	private boolean usePropertyAccess;
 
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
@@ -59,7 +62,11 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
 
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
+
 		populateAnnotationCache(field);
+
+		AccessType accessType = findPropertyOrOwnerAnnotation(AccessType.class);
+		this.usePropertyAccess = accessType == null ? false : Type.PROPERTY.equals(accessType.value());
 		this.value = findAnnotation(Value.class);
 	}
 
@@ -84,21 +91,29 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 				if (annotationCache.containsKey(annotationType) && !annotationCache.get(annotationType).equals(annotation)) {
 					throw new MappingException(String.format("Ambiguous mapping! Annotation %s configured "
-							+ "multiple times on accessor methods of property %s in class %s!", annotationType, getName(), getOwner()
-							.getType().getName()));
+							+ "multiple times on accessor methods of property %s in class %s!", annotationType.getSimpleName(),
+							getName(), getOwner().getType().getSimpleName()));
 				}
 
 				annotationCache.put(annotationType, annotation);
 			}
 		}
 
+		if (field == null) {
+			return;
+		}
+
 		for (Annotation annotation : field.getAnnotations()) {
 
 			Class<? extends Annotation> annotationType = annotation.annotationType();
 
-			if (!annotationCache.containsKey(annotationType)) {
-				annotationCache.put(annotationType, annotation);
+			if (annotationCache.containsKey(annotationType)) {
+				throw new MappingException(String.format("Ambiguous mapping! Annotation %s configured "
+						+ "on field %s and one of its accessor methods in class %s!", annotationType.getSimpleName(),
+						field.getName(), getOwner().getType().getSimpleName()));
 			}
+
+			annotationCache.put(annotationType, annotation);
 		}
 	}
 
@@ -183,7 +198,18 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			}
 		}
 
-		return cacheAndReturn(annotationType, AnnotationUtils.getAnnotation(field, annotationType));
+		return field == null ? null : cacheAndReturn(annotationType, AnnotationUtils.getAnnotation(field, annotationType));
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#findPropertyOrOwnerAnnotation(java.lang.Class)
+	 */
+	@Override
+	public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
+
+		A annotation = findAnnotation(annotationType);
+		return annotation == null ? owner.findAnnotation(annotationType) : annotation;
 	}
 
 	/**
@@ -209,6 +235,15 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
 		return findAnnotation(annotationType) != null;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#usePropertyAccess()
+	 */
+	@Override
+	public boolean usePropertyAccess() {
+		return super.usePropertyAccess() || usePropertyAccess;
 	}
 
 	/* 

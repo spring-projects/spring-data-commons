@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,20 @@
 package org.springframework.data.mapping.model;
 
 import java.beans.PropertyDescriptor;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Simple impementation of {@link PersistentProperty}.
@@ -37,6 +38,12 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  */
 public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>> implements PersistentProperty<P> {
+
+	private static final Field CAUSE_FIELD;
+
+	static {
+		CAUSE_FIELD = ReflectionUtils.findField(Throwable.class, "cause");
+	}
 
 	protected final String name;
 	protected final PropertyDescriptor propertyDescriptor;
@@ -50,12 +57,11 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	public AbstractPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner,
 			SimpleTypeHolder simpleTypeHolder) {
 
-		Assert.notNull(field);
 		Assert.notNull(simpleTypeHolder);
 		Assert.notNull(owner);
 
-		this.name = field.getName();
-		this.rawType = field.getType();
+		this.name = field == null ? propertyDescriptor.getName() : field.getName();
+		this.rawType = field == null ? propertyDescriptor.getPropertyType() : field.getType();
 		this.information = owner.getTypeInformation().getProperty(this.name);
 		this.propertyDescriptor = propertyDescriptor;
 		this.field = field;
@@ -113,18 +119,15 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityType() {
 
 		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
-
 		TypeInformation<?> type = getTypeInformation();
-
-		if (isEntity()) {
-			result.add(type);
-		}
 
 		if (type.isCollectionLike() || isMap()) {
 			TypeInformation<?> nestedType = getTypeInformationIfNotSimpleType(getTypeInformation().getActualType());
 			if (nestedType != null) {
 				result.add(nestedType);
 			}
+		} else {
+			result.add(type);
 		}
 
 		return result;
@@ -209,16 +212,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#isAssociation()
 	 */
 	public boolean isAssociation() {
-		if (field.isAnnotationPresent(Reference.class)) {
-			return true;
-		}
-		for (Annotation annotation : field.getDeclaredAnnotations()) {
-			if (annotation.annotationType().isAnnotationPresent(Reference.class)) {
-				return true;
-			}
-		}
-
-		return false;
+		return field == null ? false : AnnotationUtils.getAnnotation(field, Reference.class) != null;
 	}
 
 	public Association<P> getAssociation() {
@@ -293,6 +287,14 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.data.mongodb.core.mapping.MongoPersistentProperty#usePropertyAccess()
+	 */
+	public boolean usePropertyAccess() {
+		return owner.getType().isInterface() || CAUSE_FIELD.equals(getField());
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -307,7 +309,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		}
 
 		AbstractPersistentProperty<?> that = (AbstractPersistentProperty<?>) obj;
-		return this.field.equals(that.field);
+
+		return this.field == null ? this.propertyDescriptor.equals(that.propertyDescriptor) : this.field.equals(that.field);
 	}
 
 	/* 
@@ -316,7 +319,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public int hashCode() {
-		return this.field.hashCode();
+		return this.field == null ? this.propertyDescriptor.hashCode() : this.field.hashCode();
 	}
 
 	/* 
@@ -325,6 +328,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public String toString() {
-		return this.field.toString();
+		return this.field == null ? this.propertyDescriptor.toString() : this.field.toString();
 	}
 }

@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.model;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
@@ -51,7 +53,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private final Set<P> properties;
 	private final Set<Association<P>> associations;
 
-	private final Map<String, P> propertyCache = new HashMap<String, P>();
+	private final Map<String, P> propertyCache;
+	private final Map<Class<? extends Annotation>, Annotation> annotationCache;
 
 	private P idProperty;
 	private P versionProperty;
@@ -70,8 +73,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * {@link Comparator} will be used to define the order of the {@link PersistentProperty} instances added to the
 	 * entity.
 	 * 
-	 * @param information must not be {@literal null}
-	 * @param comparator
+	 * @param information must not be {@literal null}.
+	 * @param comparator can be {@literal null}.
 	 */
 	public BasicPersistentEntity(TypeInformation<T> information, Comparator<P> comparator) {
 
@@ -82,6 +85,9 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.constructor = new PreferredConstructorDiscoverer<T, P>(information, this).getConstructor();
 		this.associations = comparator == null ? new HashSet<Association<P>>() : new TreeSet<Association<P>>(
 				new AssociationComparator<P>(comparator));
+
+		this.propertyCache = new HashMap<String, P>();
+		this.annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
 	}
 
 	/* 
@@ -303,6 +309,25 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		for (Association<? extends PersistentProperty<?>> association : associations) {
 			handler.doWithAssociation(association);
 		}
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#findAnnotation(java.lang.Class)
+	 */
+	@Override
+	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
+
+		A annotation = annotationType.getAnnotation(annotationType);
+
+		if (annotation != null) {
+			return annotation;
+		}
+
+		annotation = AnnotationUtils.findAnnotation(getType(), annotationType);
+		annotationCache.put(annotationType, annotation);
+
+		return annotation;
 	}
 
 	/* (non-Javadoc)

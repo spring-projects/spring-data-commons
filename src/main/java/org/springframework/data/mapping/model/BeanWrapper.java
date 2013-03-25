@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 by the original author(s).
+ * Copyright 2011-2014 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,31 +41,22 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * 
 	 * @param <E>
 	 * @param <T>
-	 * @param bean must not be {@literal null}
-	 * @param conversionService
+	 * @param bean must not be {@literal null}.
+	 * @param conversionService can be {@literal null}.
 	 * @return
 	 */
 	public static <E extends PersistentEntity<T, ?>, T> BeanWrapper<E, T> create(T bean,
 			ConversionService conversionService) {
+
+		Assert.notNull(bean, "Wrapped instance must not be null!");
+
 		return new BeanWrapper<E, T>(bean, conversionService);
 	}
 
 	private BeanWrapper(T bean, ConversionService conversionService) {
-		Assert.notNull(bean);
+
 		this.bean = bean;
 		this.conversionService = conversionService;
-	}
-
-	/**
-	 * Sets the given {@link PersistentProperty} to the given value. Will do type conversion if a
-	 * {@link ConversionService} is configured. Will use the accessor method of the given {@link PersistentProperty} if it
-	 * has one or field access otherwise.
-	 * 
-	 * @param property must not be {@literal null}.
-	 * @param value
-	 */
-	public void setProperty(PersistentProperty<?> property, Object value) {
-		setProperty(property, value, false);
 	}
 
 	/**
@@ -78,23 +69,25 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
-	public void setProperty(PersistentProperty<?> property, Object value, boolean fieldAccessOnly) {
+	public void setProperty(PersistentProperty<?> property, Object value) {
 
 		Method setter = property.getSetter();
 
 		try {
 
-			if (fieldAccessOnly || null == setter) {
+			if (!property.usePropertyAccess()) {
+
 				Object valueToSet = getPotentiallyConvertedValue(value, property.getType());
 				ReflectionUtils.makeAccessible(property.getField());
 				ReflectionUtils.setField(property.getField(), bean, valueToSet);
-				return;
-			}
 
-			Class<?>[] paramTypes = setter.getParameterTypes();
-			Object valueToSet = getPotentiallyConvertedValue(value, paramTypes[0]);
-			ReflectionUtils.makeAccessible(setter);
-			ReflectionUtils.invokeMethod(setter, bean, valueToSet);
+			} else if (property.usePropertyAccess() && setter != null) {
+
+				Class<?>[] paramTypes = setter.getParameterTypes();
+				Object valueToSet = getPotentiallyConvertedValue(value, paramTypes[0]);
+				ReflectionUtils.makeAccessible(setter);
+				ReflectionUtils.invokeMethod(setter, bean, valueToSet);
+			}
 
 		} catch (IllegalStateException e) {
 			throw new MappingException("Could not set object property!", e);
@@ -109,7 +102,7 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * @return
 	 */
 	public Object getProperty(PersistentProperty<?> property) {
-		return getProperty(property, property.getType(), false);
+		return getProperty(property, property.getType());
 	}
 
 	/**
@@ -118,20 +111,23 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * @param <S>
 	 * @param property must not be {@literal null}.
 	 * @param type
-	 * @param fieldAccessOnly
 	 * @return
 	 */
-	public <S> S getProperty(PersistentProperty<?> property, Class<? extends S> type, boolean fieldAccessOnly) {
+	public <S> S getProperty(PersistentProperty<?> property, Class<? extends S> type) {
 
 		try {
-			Object obj;
-			Field field = property.getField();
+
+			Object obj = null;
 			Method getter = property.getGetter();
 
-			if (fieldAccessOnly || null == getter) {
+			if (!property.usePropertyAccess()) {
+
+				Field field = property.getField();
 				ReflectionUtils.makeAccessible(field);
 				obj = ReflectionUtils.getField(field, bean);
-			} else {
+
+			} else if (property.usePropertyAccess() && getter != null) {
+
 				ReflectionUtils.makeAccessible(getter);
 				obj = ReflectionUtils.invokeMethod(getter, bean);
 			}

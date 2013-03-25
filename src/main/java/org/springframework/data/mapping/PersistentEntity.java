@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.mapping;
+
+import java.lang.annotation.Annotation;
 
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.util.TypeInformation;
@@ -150,4 +152,12 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	void doWithAssociations(AssociationHandler<P> handler);
 
 	void doWithAssociations(SimpleAssociationHandler handler);
+
+	/**
+	 * Looks up the annotation of the given type on the {@link PersistentEntity}.
+	 * 
+	 * @param annotationType must not be {@literal null}.
+	 * @return
+	 */
+	<A extends Annotation> A findAnnotation(Class<A> annotationType);
 }

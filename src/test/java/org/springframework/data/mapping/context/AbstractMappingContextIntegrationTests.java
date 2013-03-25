@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
@@ -63,6 +64,18 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		context.initialize();
 
 		assertThat(context.hasPersistentEntityFor(Person.class), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-243
+	 */
+	@Test
+	public void createsPersistentEntityForInterfaceCorrectly() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(InterfaceOnly.class);
+
+		assertThat(entity.getIdProperty(), is(notNullValue()));
 	}
 
 	/**
@@ -121,7 +134,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 			PersistentProperty prop = mock(PersistentProperty.class);
 
 			when(prop.getTypeInformation()).thenReturn(owner.getTypeInformation());
-			when(prop.getName()).thenReturn(field.getName());
+			when(prop.getName()).thenReturn(field == null ? descriptor.getName() : field.getName());
 			when(prop.getPersistentEntityType()).thenReturn(Collections.EMPTY_SET);
 
 			try {
@@ -139,5 +152,11 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		String firstname;
 		String lastname;
 		String email;
+	}
+
+	interface InterfaceOnly {
+
+		@Id
+		String getId();
 	}
 }

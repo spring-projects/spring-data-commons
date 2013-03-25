@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,19 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.annotation.AccessType;
+import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
-import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
+ * Unit tests for {@link AnnotationBasedPersistentProperty}.
+ * 
  * @author Oliver Gierke
  */
-public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedPersistentProperty<P>> {
+public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBasedPersistentProperty<P>> {
 
 	BasicPersistentEntity<Object, SamplePersistentProperty> entity;
 	SampleMappingContext context;
@@ -49,27 +51,33 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 		entity = context.getPersistentEntity(Sample.class);
 	}
 
+	/**
+	 * @see DATACMNS-269
+	 */
 	@Test
 	public void discoversAnnotationOnField() {
 		assertAnnotationPresent(MyAnnotation.class, entity.getPersistentProperty("field"));
 	}
 
+	/**
+	 * @see DATACMNS-269
+	 */
 	@Test
 	public void discoversAnnotationOnGetters() {
 		assertAnnotationPresent(MyAnnotation.class, entity.getPersistentProperty("getter"));
 	}
 
+	/**
+	 * @see DATACMNS-269
+	 */
 	@Test
 	public void discoversAnnotationOnSetters() {
 		assertAnnotationPresent(MyAnnotation.class, entity.getPersistentProperty("setter"));
 	}
 
-	@Test
-	public void prefersAnnotationOnMethodsToOverride() {
-		MyAnnotation annotation = assertAnnotationPresent(MyAnnotation.class, entity.getPersistentProperty("override"));
-		assertThat(annotation.value(), is("method"));
-	}
-
+	/**
+	 * @see DATACMNS-269
+	 */
 	@Test
 	public void findsMetaAnnotation() {
 
@@ -100,17 +108,54 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 	 * @see DATACMNS-282
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void discoversAmbiguousMappingUsingDirectAnnotationsOnAccessors() {
 
 		try {
 			context.getPersistentEntity(InvalidSample.class);
 			fail("Expected MappingException!");
 		} catch (MappingException o_O) {
-			Map<TypeInformation<?>, ?> entities = (Map<TypeInformation<?>, ?>) ReflectionTestUtils.getField(context,
-					"persistentEntities");
-			assertThat(entities.containsKey(ClassTypeInformation.from(InvalidSample.class)), is(false));
+			assertThat(context.hasPersistentEntityFor(InvalidSample.class), is(false));
 		}
+	}
+
+	/**
+	 * @see DATACMNS-243
+	 */
+	@Test
+	public void defaultsToFieldAccess() {
+		assertThat(getProperty(FieldAccess.class, "name").usePropertyAccess(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-243
+	 */
+	@Test
+	public void usesAccessTypeDeclaredOnTypeAsDefault() {
+		assertThat(getProperty(PropertyAccess.class, "firstname").usePropertyAccess(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-243
+	 */
+	@Test
+	public void propertyAnnotationOverridesTypeConfiguration() {
+		assertThat(getProperty(PropertyAccess.class, "lastname").usePropertyAccess(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-243
+	 */
+	@Test
+	public void fieldAnnotationOverridesTypeConfiguration() {
+		assertThat(getProperty(PropertyAccess.class, "emailAddress").usePropertyAccess(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-243
+	 */
+	@Test(expected = MappingException.class)
+	public void detectsAmbiguityCausedByFieldAnAccessorAnnotation() {
+		context.getPersistentEntity(AnotherInvalidSample.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -126,22 +171,20 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 		return annotation;
 	}
 
+	private SamplePersistentProperty getProperty(Class<?> type, String name) {
+		return context.getPersistentEntity(type).getPersistentProperty(name);
+	}
+
 	static class Sample {
 
-		@MyId
-		String id;
+		@MyId String id;
 
-		@MyAnnotation
-		String field;
+		@MyAnnotation String field;
 		String getter;
 		String setter;
 		String doubleMapping;
 
-		@MyAnnotationAsMeta
-		String meta;
-
-		@MyAnnotation("field")
-		String override;
+		@MyAnnotationAsMeta String meta;
 
 		@MyAnnotation
 		public String getGetter() {
@@ -151,11 +194,6 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 		@MyAnnotation
 		public void setSetter(String setter) {
 			this.setter = setter;
-		}
-
-		@MyAnnotation("method")
-		public String getOverride() {
-			return override;
 		}
 
 		@MyAnnotation
@@ -184,6 +222,16 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 		}
 	}
 
+	static class AnotherInvalidSample {
+
+		@MyAnnotation String property;
+
+		@MyAnnotation
+		public String getProperty() {
+			return property;
+		}
+	}
+
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 	public static @interface MyAnnotation {
@@ -201,5 +249,25 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 	@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 	@Id
 	public static @interface MyId {
+	}
+
+	static class FieldAccess {
+		String name;
+	}
+
+	@AccessType(Type.PROPERTY)
+	static class PropertyAccess {
+
+		String firstname, lastname;
+		@AccessType(Type.FIELD) String emailAddress;
+
+		public String getFirstname() {
+			return firstname;
+		}
+
+		@AccessType(Type.FIELD)
+		public String getLastname() {
+			return lastname;
+		}
 	}
 }

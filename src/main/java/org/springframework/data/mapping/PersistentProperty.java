@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,11 @@ import org.springframework.data.util.TypeInformation;
  */
 public interface PersistentProperty<P extends PersistentProperty<P>> {
 
+	/**
+	 * Returns the {@link PersistentEntity} owning the current {@link PersistentProperty}.
+	 * 
+	 * @return
+	 */
 	PersistentEntity<?, P> getOwner();
 
 	/**
@@ -193,10 +198,27 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	<A extends Annotation> A findAnnotation(Class<A> annotationType);
 
 	/**
+	 * Looks up the annotation of the given type on the property and the owning type if no annotation can be found on it.
+	 * Usefull to lookup annotations that can be configured on the type but overridden on an individual property.
+	 * 
+	 * @param annotationType must not be {@literal null}.
+	 * @return
+	 */
+	<A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType);
+
+	/**
 	 * Returns whether the {@link PersistentProperty} has an annotation of the given type.
 	 * 
 	 * @param annotationType the annotation to lookup, must not be {@literal null}.
 	 * @return whether the {@link PersistentProperty} has an annotation of the given type.
 	 */
 	boolean isAnnotationPresent(Class<? extends Annotation> annotationType);
+
+	/**
+	 * Returns whether property access shall be used for reading the property value. This means it will use the getter
+	 * instead of field access.
+	 * 
+	 * @return
+	 */
+	boolean usePropertyAccess();
 }

@@ -291,8 +291,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			try {
 
-				ReflectionUtils.doWithFields(type, new PersistentPropertyCreator(entity, descriptors),
-						PersistentFieldFilter.INSTANCE);
+				PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
+				ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
+				persistentPropertyCreator.addPropertiesForRemainingDescriptors();
+
 				entity.verify();
 
 			} catch (MappingException e) {
@@ -394,27 +396,63 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		private final E entity;
 		private final Map<String, PropertyDescriptor> descriptors;
+		private final Map<String, PropertyDescriptor> remainingDescriptors;
 
 		/**
 		 * Creates a new {@link PersistentPropertyCreator} for the given {@link PersistentEntity} and
 		 * {@link PropertyDescriptor}s.
 		 * 
-		 * @param entity
-		 * @param descriptors
+		 * @param entity must not be {@literal null}.
+		 * @param descriptors must not be {@literal null}.
 		 */
 		private PersistentPropertyCreator(E entity, Map<String, PropertyDescriptor> descriptors) {
+
+			Assert.notNull(entity, "PersistentEntity must not be null!");
+			Assert.notNull(descriptors, "PropertyDescriptors must not be null!");
+
 			this.entity = entity;
 			this.descriptors = descriptors;
+			this.remainingDescriptors = new HashMap<String, PropertyDescriptor>(descriptors);
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.util.ReflectionUtils.FieldCallback#doWith(java.lang.reflect.Field)
+		 */
 		public void doWith(Field field) {
 
-			PropertyDescriptor descriptor = descriptors.get(field.getName());
+			String fieldName = field.getName();
 
 			ReflectionUtils.makeAccessible(field);
+			createAndRegisterProperty(field, descriptors.get(fieldName));
+
+			this.remainingDescriptors.remove(fieldName);
+		}
+
+		/**
+		 * Adds {@link PersistentProperty} instances for all suitable {@link PropertyDescriptor}s without a backing
+		 * {@link Field}.
+		 * 
+		 * @see PersistentPropertyFilter
+		 */
+		public void addPropertiesForRemainingDescriptors() {
+
+			for (PropertyDescriptor descriptor : remainingDescriptors.values()) {
+				if (PersistentPropertyFilter.INSTANCE.matches(descriptor)) {
+					createAndRegisterProperty(null, descriptor);
+				}
+			}
+		}
+
+		private void createAndRegisterProperty(Field field, PropertyDescriptor descriptor) {
+
 			P property = createPersistentProperty(field, descriptor, entity, simpleTypeHolder);
 
 			if (property.isTransient()) {
+				return;
+			}
+
+			if (field == null && !property.usePropertyAccess()) {
 				return;
 			}
 
@@ -439,25 +477,25 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	}
 
 	/**
-	 * {@link FieldFilter} rejecting static fields as well as artifically introduced ones. See
-	 * {@link PersistentFieldFilter#UNMAPPED_FIELDS} for details.
+	 * Filter rejecting static fields as well as artifically introduced ones. See
+	 * {@link PersistentPropertyFilter#UNMAPPED_PROPERTIES} for details.
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static enum PersistentFieldFilter implements FieldFilter {
+	static enum PersistentPropertyFilter implements FieldFilter {
 
 		INSTANCE;
 
-		private static final Iterable<FieldMatch> UNMAPPED_FIELDS;
+		private static final Iterable<PropertyMatch> UNMAPPED_PROPERTIES;
 
 		static {
 
-			Set<FieldMatch> matches = new HashSet<FieldMatch>();
-			matches.add(new FieldMatch("class", null));
-			matches.add(new FieldMatch("this\\$.*", null));
-			matches.add(new FieldMatch("metaClass", "groovy.lang.MetaClass"));
+			Set<PropertyMatch> matches = new HashSet<PropertyMatch>();
+			matches.add(new PropertyMatch("class", null));
+			matches.add(new PropertyMatch("this\\$.*", null));
+			matches.add(new PropertyMatch("metaClass", "groovy.lang.MetaClass"));
 
-			UNMAPPED_FIELDS = Collections.unmodifiableCollection(matches);
+			UNMAPPED_PROPERTIES = Collections.unmodifiableCollection(matches);
 		}
 
 		/* 
@@ -470,59 +508,82 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return false;
 			}
 
-			for (FieldMatch candidate : UNMAPPED_FIELDS) {
-				if (candidate.matches(field)) {
+			for (PropertyMatch candidate : UNMAPPED_PROPERTIES) {
+				if (candidate.matches(field.getName(), field.getType())) {
 					return false;
 				}
 			}
 
 			return true;
 		}
-	}
-
-	/**
-	 * Value object to help defining field eclusion based on name patterns and types.
-	 * 
-	 * @since 1.4
-	 * @author Oliver Gierke
-	 */
-	static class FieldMatch {
-
-		private final String namePattern;
-		private final String typeName;
 
 		/**
-		 * Creates a new {@link FieldMatch} for the given name pattern and type name. At least one of the paramters must not
-		 * be {@literal null}.
+		 * Returns whether the given {@link PropertyDescriptor} is one to create a {@link PersistentProperty} for.
 		 * 
-		 * @param namePattern a regex pattern to match field names, can be {@literal null}.
-		 * @param typeName the name of the type to exclude, can be {@literal null}.
-		 */
-		public FieldMatch(String namePattern, String typeName) {
-
-			Assert.isTrue(!(namePattern == null && typeName == null), "Either name patter or type name must be given!");
-
-			this.namePattern = namePattern;
-			this.typeName = typeName;
-		}
-
-		/**
-		 * Returns whether the given {@link Field} matches the defined {@link FieldMatch}.
-		 * 
-		 * @param field must not be {@literal null}.
+		 * @param descriptor must not be {@literal null}.
 		 * @return
 		 */
-		public boolean matches(Field field) {
+		public boolean matches(PropertyDescriptor descriptor) {
 
-			if (namePattern != null && !field.getName().matches(namePattern)) {
+			Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
+
+			if (descriptor.getReadMethod() == null && descriptor.getWriteMethod() == null) {
 				return false;
 			}
 
-			if (typeName != null && !field.getType().getName().equals(typeName)) {
-				return false;
+			for (PropertyMatch candidate : UNMAPPED_PROPERTIES) {
+				if (candidate.matches(descriptor.getName(), descriptor.getPropertyType())) {
+					return false;
+				}
 			}
 
 			return true;
+		}
+
+		/**
+		 * Value object to help defining property exclusion based on name patterns and types.
+		 * 
+		 * @since 1.4
+		 * @author Oliver Gierke
+		 */
+		static class PropertyMatch {
+
+			private final String namePattern;
+			private final String typeName;
+
+			/**
+			 * Creates a new {@link PropertyMatch} for the given name pattern and type name. At least one of the paramters
+			 * must not be {@literal null}.
+			 * 
+			 * @param namePattern a regex pattern to match field names, can be {@literal null}.
+			 * @param typeName the name of the type to exclude, can be {@literal null}.
+			 */
+			public PropertyMatch(String namePattern, String typeName) {
+
+				Assert.isTrue(!(namePattern == null && typeName == null), "Either name patter or type name must be given!");
+
+				this.namePattern = namePattern;
+				this.typeName = typeName;
+			}
+
+			/**
+			 * Returns whether the given {@link Field} matches the defined {@link PropertyMatch}.
+			 * 
+			 * @param field must not be {@literal null}.
+			 * @return
+			 */
+			public boolean matches(String name, Class<?> type) {
+
+				if (namePattern != null && !name.matches(namePattern)) {
+					return false;
+				}
+
+				if (typeName != null && !type.getName().equals(typeName)) {
+					return false;
+				}
+
+				return true;
+			}
 		}
 	}
 }

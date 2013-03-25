@@ -368,6 +368,11 @@ public class AbstractPersistentPropertyUnitTests {
 		}
 
 		@Override
+		public boolean isAssociation() {
+			return false;
+		}
+
+		@Override
 		protected Association<SamplePersistentProperty> createAssociation() {
 			return null;
 		}
@@ -380,6 +385,11 @@ public class AbstractPersistentPropertyUnitTests {
 		@Override
 		public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
 			return false;
+		}
+
+		@Override
+		public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
+			return null;
 		}
 	}
 
