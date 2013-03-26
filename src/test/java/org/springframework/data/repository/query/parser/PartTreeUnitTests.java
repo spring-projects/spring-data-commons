@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -316,6 +316,37 @@ public class PartTreeUnitTests {
 		assertPart(tree, new Part[] { new Part("øre", DomainObjectWithSpecialChars.class),
 				new Part("år", DomainObjectWithSpecialChars.class) });
 		assertTrue(tree.getSort().getOrderFor("år").isAscending());
+	}
+
+	/**
+	 * @see DATACMNS-303
+	 */
+	@Test
+	public void identifiesSimpleCountByCorrectly() {
+
+		PartTree tree = new PartTree("countByLastname", User.class);
+		assertThat(tree.isCountProjection(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-303
+	 */
+	@Test
+	public void identifiesExtendedCountByCorrectly() {
+
+		PartTree tree = new PartTree("countUserByLastname", User.class);
+		assertThat(tree.isCountProjection(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-303
+	 */
+	@Test
+	public void identifiesCountAndDistinctByCorrectly() {
+
+		PartTree tree = new PartTree("countDistinctUserByLastname", User.class);
+		assertThat(tree.isCountProjection(), is(true));
+		assertThat(tree.isDistinct(), is(true));
 	}
 
 	private static void assertType(Iterable<String> sources, Type type, String property) {

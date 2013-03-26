@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.springframework.util.StringUtils;
  */
 public class PartTree implements Iterable<OrPart> {
 
-	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get)(\\p{Lu}.*?)??By");
+	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count)(\\p{Lu}.*?)??By");
 	private static final String KEYWORD_TEMPLATE = "(%s)(?=\\p{Lu})";
 
 	/**
@@ -67,7 +67,7 @@ public class PartTree implements Iterable<OrPart> {
 			this.subject = new Subject(null);
 			this.predicate = new Predicate(source, domainClass);
 		} else {
-			this.subject = new Subject(matcher.group(2));
+			this.subject = new Subject(matcher.group(0));
 			this.predicate = new Predicate(source.substring(matcher.group().length()), domainClass);
 		}
 	}
@@ -94,11 +94,19 @@ public class PartTree implements Iterable<OrPart> {
 	/**
 	 * Returns whether we indicate distinct lookup of entities.
 	 * 
-	 * @return <tt>true<tt> if distinct
+	 * @return {@literal true} if distinct
 	 */
 	public boolean isDistinct() {
-
 		return subject.isDistinct();
+	}
+
+	/**
+	 * Returns whether a count projection shall be applied.
+	 * 
+	 * @return
+	 */
+	public Boolean isCountProjection() {
+		return subject.isCountProjection();
 	}
 
 	/**
@@ -141,7 +149,7 @@ public class PartTree implements Iterable<OrPart> {
 
 		OrderBySource orderBySource = predicate.getOrderBySource();
 		return String.format("%s%s", StringUtils.collectionToDelimitedString(predicate.nodes, " or "),
-				(orderBySource == null ? "" : " " + orderBySource));
+				orderBySource == null ? "" : " " + orderBySource);
 	}
 
 	/**
@@ -198,15 +206,24 @@ public class PartTree implements Iterable<OrPart> {
 	 * {@code DistinctUser}.
 	 * 
 	 * @author Phil Webb
+	 * @author Oliver Gierke
 	 */
 	private static class Subject {
 
 		private static final String DISTINCT = "Distinct";
+		private static final Pattern COUNT_BY_TEMPLATE = Pattern.compile("^count(\\p{Lu}.*?)??By");
 
-		private boolean distinct;
+		private final boolean distinct;
+		private final boolean count;
 
 		public Subject(String subject) {
-			this.distinct = (subject == null ? false : subject.contains(DISTINCT));
+
+			this.distinct = subject == null ? false : subject.contains(DISTINCT);
+			this.count = subject == null ? false : COUNT_BY_TEMPLATE.matcher(subject).find();
+		}
+
+		public boolean isCountProjection() {
+			return count;
 		}
 
 		public boolean isDistinct() {
@@ -269,4 +286,5 @@ public class PartTree implements Iterable<OrPart> {
 			return orderBySource;
 		}
 	}
+
 }
