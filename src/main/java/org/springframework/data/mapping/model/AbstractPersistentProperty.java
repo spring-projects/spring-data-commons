@@ -309,4 +309,13 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	public int hashCode() {
 		return this.field.hashCode();
 	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return String.format("%s.%s : %s", getOwner().getType().getName(), getName(), getType().getName());
+	}
 }
