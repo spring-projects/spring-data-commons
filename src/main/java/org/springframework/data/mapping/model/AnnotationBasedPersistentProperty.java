@@ -206,4 +206,26 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	protected boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
 		return findAnnotation(annotationType) != null;
 	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#toString()
+	 */
+	@Override
+	public String toString() {
+
+		if (annotationCache.isEmpty()) {
+			populateAnnotationCache(field);
+		}
+
+		StringBuilder builder = new StringBuilder();
+
+		for (Annotation annotation : annotationCache.values()) {
+			if (annotation != null) {
+				builder.append(annotation.toString()).append(" ");
+			}
+		}
+
+		return builder.toString() + super.toString();
+	}
 }
