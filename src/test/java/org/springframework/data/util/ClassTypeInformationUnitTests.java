@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -263,6 +263,20 @@ public class ClassTypeInformationUnitTests {
 		assertThat(information.getActualType().getActualType().getType(), is((Object) String.class));
 	}
 
+	/**
+	 * @see DATACMNS-309
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void findsGetterOnInterface() {
+
+		TypeInformation<Product> information = from(Product.class);
+		TypeInformation<?> categoryIdInfo = information.getProperty("category.id");
+
+		assertThat(categoryIdInfo, is(notNullValue()));
+		assertThat(categoryIdInfo, is((TypeInformation) from(Long.class)));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -374,5 +388,14 @@ public class ClassTypeInformationUnitTests {
 
 	class LongImplementation implements GenericInterface<Long> {
 
+	}
+
+	interface Product {
+		Category getCategory();
+	}
+
+	interface Category {
+
+		Long getId();
 	}
 }
