@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -318,6 +318,14 @@ public class PartTreeUnitTests {
 		assertTrue(tree.getSort().getOrderFor("år").isAscending());
 	}
 
+	/**
+	 * @see DATAJPA-324
+	 */
+	@Test
+	public void resolvesPropertyPathFromGettersOnInterfaces() {
+		assertThat(new PartTree("findByCategoryId", Product.class), is(notNullValue()));
+	}
+
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
 	}
@@ -395,5 +403,15 @@ public class PartTreeUnitTests {
 	class DomainObjectWithSpecialChars {
 		String øre;
 		String år;
+	}
+
+	interface Product {
+
+		Category getCategory();
+	}
+
+	interface Category {
+
+		Long getId();
 	}
 }
