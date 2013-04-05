@@ -349,6 +349,14 @@ public class PartTreeUnitTests {
 		assertThat(tree.isDistinct(), is(true));
 	}
 
+	/**
+	 * @see DATAJPA-324
+	 */
+	@Test
+	public void resolvesPropertyPathFromGettersOnInterfaces() {
+		assertThat(new PartTree("findByCategoryId", Product.class), is(notNullValue()));
+	}
+
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
 	}
@@ -426,5 +434,15 @@ public class PartTreeUnitTests {
 	class DomainObjectWithSpecialChars {
 		String øre;
 		String år;
+	}
+
+	interface Product {
+
+		Category getCategory();
+	}
+
+	interface Category {
+
+		Long getId();
 	}
 }
