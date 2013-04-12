@@ -394,8 +394,11 @@ public class ClassTypeInformationUnitTests {
 		Category getCategory();
 	}
 
-	interface Category {
+	interface Category extends Identifiable {
 
+	}
+
+	interface Identifiable {
 		Long getId();
 	}
 }

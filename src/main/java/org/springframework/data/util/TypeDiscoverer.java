@@ -198,9 +198,37 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return createInfo(field.getGenericType());
 		}
 
+		PropertyDescriptor descriptor = findPropertyDescriptor(type, fieldname);
+		return descriptor == null ? null : createInfo(getGenericType(descriptor));
+	}
+
+	/**
+	 * Finds the {@link PropertyDescriptor} for the property with the given name on the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param fieldname must not be {@literal null} or empty.
+	 * @return
+	 */
+	private static PropertyDescriptor findPropertyDescriptor(Class<?> type, String fieldname) {
+
 		PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(type, fieldname);
 
-		return descriptor == null ? null : createInfo(getGenericType(descriptor));
+		if (descriptor != null) {
+			return descriptor;
+		}
+
+		List<Class<?>> superTypes = new ArrayList<Class<?>>();
+		superTypes.addAll(Arrays.asList(type.getInterfaces()));
+		superTypes.add(type.getSuperclass());
+
+		for (Class<?> interfaceType : type.getInterfaces()) {
+			descriptor = findPropertyDescriptor(interfaceType, fieldname);
+			if (descriptor != null) {
+				return descriptor;
+			}
+		}
+
+		return null;
 	}
 
 	/**
