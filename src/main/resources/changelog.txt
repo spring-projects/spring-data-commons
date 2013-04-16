@@ -1,6 +1,29 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.5.1.RELEASE (2013-04-16)
+---------------------------------------------
+** Bug
+    * [DATACMNS-283] - Improve exception message for failed instantiations in ReflectionEntityInstatiator
+    * [DATACMNS-285] - Spring Data Commons Maven artifactId seems outdated on springsource.org
+    * [DATACMNS-300] - ReflectionEntityInstantiator should actually throw created exception
+    * [DATACMNS-306] - RepositoryBeanDefinitionBuilder does not populate the source of created BeanDefinitions
+    * [DATACMNS-309] - TypeDiscoverer does not correctly resolve nested property path expressions
+
+** Improvement
+    * [DATACMNS-282] - Improve caching in AnnotationBasedPersistentProperty
+    * [DATACMNS-284] - As a user I'd like to use Spring Data Commons without changes in Virgo 3.6.0.RELEASE
+    * [DATACMNS-287] - Polish JavaDoc
+    * [DATACMNS-288] - Upgrade to Spring Data Build 1.0.2.RELEASE
+    * [DATACMNS-289] - Upgrade to Spring Data Build 1.0.2.RELEASE
+    * [DATACMNS-305] - Add toString() methods to PersistentProperty implementations
+
+** New Feature
+    * [DATACMNS-311] - TypeDiscoverer fails to resolve properties expressed through read methods in supertypes
+    
+** Task
+    * [DATACMNS-312] - Release 1.5.1
+
 Changes in version 1.5.0.RELEASE (2013-02-07)
 ---------------------------------------------
 ** Bug

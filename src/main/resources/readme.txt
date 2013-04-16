@@ -1,4 +1,4 @@
-SPRING DATA Commons 1.0.0 M1 (? ? 2010)
+SPRING DATA Commons 1.5.1 (04/16/2013)
 -------------------------------------------------
 
 Spring Data Commons is released under the terms of the Apache Software License Version 2.0 (see license.txt).
