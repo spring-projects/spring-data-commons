@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.springframework.data.build</groupId>
         <artifactId>spring-data-parent</artifactId>
-        <version>1.0.2.RELEASE</version>
+        <version>1.0.3.BUILD-SNAPSHOT</version>
         <relativePath>../spring-data-build/parent/pom.xml</relativePath>
     </parent>
     
@@ -73,6 +73,12 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
+			<version>${spring}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
 			<version>${spring}</version>
 			<optional>true</optional>
 		</dependency>
