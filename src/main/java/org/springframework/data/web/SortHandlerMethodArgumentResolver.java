@@ -16,6 +16,7 @@
 package org.springframework.data.web;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -306,7 +307,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 			builder.add(order.getProperty());
 		}
 
-		return builder.dumpExpressionIfPresentInto(expressions);
+		return builder == null ? Collections.<String> emptyList() : builder.dumpExpressionIfPresentInto(expressions);
 	}
 
 	/**
@@ -336,7 +337,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 			builder.add(order.getProperty());
 		}
 
-		return builder.dumpExpressionIfPresentInto(expressions);
+		return builder == null ? Collections.<String> emptyList() : builder.dumpExpressionIfPresentInto(expressions);
 	}
 
 	/**
