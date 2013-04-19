@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2013 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,16 +28,17 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.dao.support.PersistenceExceptionTranslationInterceptor;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 /**
  * Unit test for {@link TransactionalRepositoryProxyPostProcessor}.
  * 
  * @author Oliver Gierke
+ * @since 1.6
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TransactionRepositoryProxyPostProcessorUnitTests {
+public class PersistenceExceptionTranslationRepositoryProxyPostProcessorUnitTests {
 
 	@Mock
 	ListableBeanFactory beanFactory;
@@ -55,20 +56,18 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullBeanFactory() throws Exception {
-		new TransactionalRepositoryProxyPostProcessor(null, "transactionManager");
-	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullTxManagerName() throws Exception {
-		new TransactionalRepositoryProxyPostProcessor(beanFactory, null);
+		new PersistenceExceptionTranslationRepositoryProxyPostProcessor(null);
 	}
 
 	@Test
 	public void setsUpBasicInstance() throws Exception {
 
-		RepositoryProxyPostProcessor postProcessor = new TransactionalRepositoryProxyPostProcessor(beanFactory, "txManager");
+		RepositoryProxyPostProcessor postProcessor = new PersistenceExceptionTranslationRepositoryProxyPostProcessor(
+				beanFactory);
+
 		postProcessor.postProcess(proxyFactory);
 
-		verify(proxyFactory).addAdvice(isA(TransactionInterceptor.class));
+		verify(proxyFactory).addAdvice(isA(PersistenceExceptionTranslationInterceptor.class));
 	}
 }

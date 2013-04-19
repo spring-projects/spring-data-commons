@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 
 	private String transactionManagerName = TxUtils.DEFAULT_TRANSACTION_MANAGER;
 	private RepositoryProxyPostProcessor txPostProcessor;
+	private RepositoryProxyPostProcessor exceptionPostProcessor;
 
 	/**
 	 * Setter to configure which transaction manager to be used. We have to use the bean name explicitly as otherwise the
@@ -46,7 +47,6 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	 * @param transactionManager
 	 */
 	public void setTransactionManager(String transactionManager) {
-
 		this.transactionManagerName = transactionManager == null ? TxUtils.DEFAULT_TRANSACTION_MANAGER : transactionManager;
 	}
 
@@ -60,6 +60,7 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	protected final RepositoryFactorySupport createRepositoryFactory() {
 
 		RepositoryFactorySupport factory = doCreateRepositoryFactory();
+		factory.addRepositoryProxyPostProcessor(exceptionPostProcessor);
 		factory.addRepositoryProxyPostProcessor(txPostProcessor);
 		return factory;
 	}
@@ -72,17 +73,15 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	protected abstract RepositoryFactorySupport doCreateRepositoryFactory();
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org
-			 * .springframework.beans.factory.BeanFactory)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
+	 */
 	public void setBeanFactory(BeanFactory beanFactory) {
 
 		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
 
-		this.txPostProcessor = new TransactionalRepositoryProxyPostProcessor((ListableBeanFactory) beanFactory,
-				transactionManagerName);
+		ListableBeanFactory listableBeanFactory = (ListableBeanFactory) beanFactory;
+		this.txPostProcessor = new TransactionalRepositoryProxyPostProcessor(listableBeanFactory, transactionManagerName);
+		this.exceptionPostProcessor = new PersistenceExceptionTranslationRepositoryProxyPostProcessor(listableBeanFactory);
 	}
 }

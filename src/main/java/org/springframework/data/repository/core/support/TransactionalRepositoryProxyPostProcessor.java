@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,19 +53,18 @@ import org.springframework.util.ObjectUtils;
 class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
 
 	private final TransactionInterceptor transactionInterceptor;
-	private final PersistenceExceptionTranslationInterceptor petInterceptor;
 
 	/**
-	 * Creates a new {@link TransactionalRepositoryProxyPostProcessor}.
+	 * Creates a new {@link TransactionalRepositoryProxyPostProcessor} using the given {@link ListableBeanFactory} and
+	 * transaction manager bean name.
+	 * 
+	 * @param beanFactory must not be {@literal null}.
+	 * @param transactionManagerName must not be {@literal null} or empty.
 	 */
 	public TransactionalRepositoryProxyPostProcessor(ListableBeanFactory beanFactory, String transactionManagerName) {
 
 		Assert.notNull(beanFactory);
 		Assert.notNull(transactionManagerName);
-
-		this.petInterceptor = new PersistenceExceptionTranslationInterceptor();
-		this.petInterceptor.setBeanFactory(beanFactory);
-		this.petInterceptor.afterPropertiesSet();
 
 		this.transactionInterceptor = new TransactionInterceptor(null, new CustomAnnotationTransactionAttributeSource());
 		this.transactionInterceptor.setTransactionManagerBeanName(transactionManagerName);
@@ -74,15 +73,10 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.support.RepositoryProxyPostProcessor
-			 * #postProcess(org.springframework.aop.framework.ProxyFactory)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryProxyPostProcessor#postProcess(org.springframework.aop.framework.ProxyFactory)
+	 */
 	public void postProcess(ProxyFactory factory) {
-
-		factory.addAdvice(petInterceptor);
 		factory.addAdvice(transactionInterceptor);
 	}
 
