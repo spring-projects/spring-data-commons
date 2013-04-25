@@ -19,20 +19,20 @@ package org.springframework.data.repository.support;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.repository.CrudRepository;
@@ -42,6 +42,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.core.support.DummyEntityInformation;
+import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 
@@ -53,25 +54,24 @@ import org.springframework.data.repository.query.QueryMethod;
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoriesUnitTests {
 
-	@Mock
-	PersonRepository personRepository;
-	@Mock
-	AddressRepository addressRepository;
-	@Mock
 	ApplicationContext context;
 
 	@Before
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setUp() {
 
-		Map factoryInformations = getBeanAsMap(new SampleRepoFactoryInformation<Address, Long>(AddressRepository.class),
-				new SampleRepoFactoryInformation<Person, Long>(PersonRepository.class));
-		Map<String, PersonRepository> personRepositories = getBeanAsMap(personRepository);
-		Map<String, AddressRepository> addressRepositories = getBeanAsMap(addressRepository);
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		beanFactory.registerBeanDefinition("addressRepository", getRepositoryBeanDefinition(AddressRepository.class));
+		beanFactory.registerBeanDefinition("personRepository", getRepositoryBeanDefinition(PersonRepository.class));
 
-		when(context.getBeansOfType(RepositoryFactoryInformation.class)).thenReturn(factoryInformations);
-		when(context.getBeansOfType(PersonRepository.class)).thenReturn(personRepositories);
-		when(context.getBeansOfType(AddressRepository.class)).thenReturn(addressRepositories);
+		context = new GenericApplicationContext(beanFactory);
+	}
+
+	private AbstractBeanDefinition getRepositoryBeanDefinition(Class<?> repositoryInterface) {
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(DummyRepositoryFactoryBean.class);
+		builder.addPropertyValue("repositoryInterface", repositoryInterface);
+
+		return builder.getBeanDefinition();
 	}
 
 	@Test
@@ -148,15 +148,5 @@ public class RepositoriesUnitTests {
 		public List<QueryMethod> getQueryMethods() {
 			return Collections.emptyList();
 		}
-	}
-
-	private static <T> Map<String, T> getBeanAsMap(T... beans) {
-
-		Map<String, T> beanMap = new HashMap<String, T>();
-
-		for (T bean : beans) {
-			beanMap.put(bean.toString(), bean);
-		}
-		return beanMap;
 	}
 }

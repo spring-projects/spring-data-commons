@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 
+import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.repository.Repository;
 
 /**
@@ -27,14 +28,27 @@ import org.springframework.data.repository.Repository;
 public class DummyRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends
 		RepositoryFactoryBeanSupport<T, S, ID> {
 
+	private T repository;
+
+	public DummyRepositoryFactoryBean() {
+		setMappingContext(new SampleMappingContext());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#setRepositoryInterface(java.lang.Class)
+	 */
+	@Override
+	public void setRepositoryInterface(Class<? extends T> repositoryInterface) {
+		this.repository = mock(repositoryInterface);
+		super.setRepositoryInterface(repositoryInterface);
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#createRepositoryFactory()
 	 */
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
-
-		Repository<?, ?> repository = mock(Repository.class);
 		return new DummyRepositoryFactory(repository);
 	}
 }
