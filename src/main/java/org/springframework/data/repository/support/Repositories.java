@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
 package org.springframework.data.repository.support;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.mapping.PersistentEntity;
@@ -44,13 +47,16 @@ public class Repositories implements Iterable<Class<?>> {
 	static final Repositories NONE = new Repositories();
 
 	private final Map<Class<?>, RepositoryFactoryInformation<Object, Serializable>> domainClassToBeanName = new HashMap<Class<?>, RepositoryFactoryInformation<Object, Serializable>>();
-	private final Map<RepositoryFactoryInformation<Object, Serializable>, CrudRepository<Object, Serializable>> repositories = new HashMap<RepositoryFactoryInformation<Object, Serializable>, CrudRepository<Object, Serializable>>();
+	private final Map<RepositoryFactoryInformation<Object, Serializable>, String> repositories = new HashMap<RepositoryFactoryInformation<Object, Serializable>, String>();
+
+	private final BeanFactory beanFactory;
+	private final Set<String> repositoryFactoryBeanNames = new HashSet<String>();
 
 	/**
 	 * Constructor to create the {@link #NONE} instance.
 	 */
 	private Repositories() {
-
+		this.beanFactory = null;
 	}
 
 	/**
@@ -59,28 +65,14 @@ public class Repositories implements Iterable<Class<?>> {
 	 * 
 	 * @param factory must not be {@literal null}.
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Repositories(ListableBeanFactory factory) {
 
 		Assert.notNull(factory);
+		this.beanFactory = factory;
 
-		Collection<RepositoryFactoryInformation> providers = BeanFactoryUtils.beansOfTypeIncludingAncestors(factory,
-				RepositoryFactoryInformation.class).values();
-
-		for (RepositoryFactoryInformation<Object, Serializable> info : providers) {
-
-			RepositoryInformation information = info.getRepositoryInformation();
-			Class repositoryInterface = information.getRepositoryInterface();
-
-			if (CrudRepository.class.isAssignableFrom(repositoryInterface)) {
-				Class<CrudRepository<Object, Serializable>> objectType = repositoryInterface;
-				CrudRepository<Object, Serializable> repository = BeanFactoryUtils.beanOfTypeIncludingAncestors(factory,
-						objectType);
-
-				this.domainClassToBeanName.put(information.getDomainType(), info);
-				this.repositories.put(info, repository);
-			}
-		}
+		String[] beanNamesForType = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory,
+				RepositoryFactoryInformation.class, false, false);
+		this.repositoryFactoryBeanNames.addAll(Arrays.asList(beanNamesForType));
 	}
 
 	/**
@@ -90,6 +82,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 * @return
 	 */
 	public boolean hasRepositoryFor(Class<?> domainClass) {
+		lookupRepositoryFactoryInformationFor(domainClass);
 		return domainClassToBeanName.containsKey(domainClass);
 	}
 
@@ -101,7 +94,14 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T, S extends Serializable> CrudRepository<T, S> getRepositoryFor(Class<?> domainClass) {
-		return (CrudRepository<T, S>) repositories.get(domainClassToBeanName.get(domainClass));
+
+		RepositoryFactoryInformation<Object, Serializable> information = getRepoInfoFor(domainClass);
+
+		if (information == null) {
+			return null;
+		}
+
+		return (CrudRepository<T, S>) beanFactory.getBean(repositories.get(information));
 	}
 
 	/**
@@ -166,7 +166,7 @@ public class Repositories implements Iterable<Class<?>> {
 			}
 		}
 
-		return null;
+		return lookupRepositoryFactoryInformationFor(domainClass);
 	}
 
 	/* 
@@ -174,6 +174,46 @@ public class Repositories implements Iterable<Class<?>> {
 	 * @see java.lang.Iterable#iterator()
 	 */
 	public Iterator<Class<?>> iterator() {
+		lookupRepositoryFactoryInformationFor(null);
 		return domainClassToBeanName.keySet().iterator();
+	}
+
+	/**
+	 * Looks up the {@link RepositoryFactoryInformation} for a given domain type. Will inspect the {@link BeanFactory} for
+	 * beans implementing {@link RepositoryFactoryInformation} and cache the domain class to repository bean name mappings
+	 * for further lookups. If a {@link RepositoryFactoryInformation} for the given domain type is found we interrupt the
+	 * lookup proces to prevent beans from being looked up early.
+	 * 
+	 * @param domainType
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private RepositoryFactoryInformation<Object, Serializable> lookupRepositoryFactoryInformationFor(Class<?> domainType) {
+
+		if (domainClassToBeanName.containsKey(domainType)) {
+			return domainClassToBeanName.get(domainType);
+		}
+
+		for (String repositoryFactoryName : repositoryFactoryBeanNames) {
+
+			RepositoryFactoryInformation<Object, Serializable> information = beanFactory.getBean(repositoryFactoryName,
+					RepositoryFactoryInformation.class);
+
+			RepositoryInformation info = information.getRepositoryInformation();
+			Class<?> repositoryInterface = info.getRepositoryInterface();
+
+			if (!CrudRepository.class.isAssignableFrom(repositoryInterface)) {
+				continue;
+			}
+
+			repositories.put(information, BeanFactoryUtils.transformedBeanName(repositoryFactoryName));
+			domainClassToBeanName.put(info.getDomainType(), information);
+
+			if (info.getDomainType().equals(domainType)) {
+				return information;
+			}
+		}
+
+		return null;
 	}
 }

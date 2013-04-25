@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,23 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.support.DummyEntityInformation;
-import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
+import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 
 /**
  * Unit test for {@link DomainClassPropertyEditorRegistrar}.
@@ -46,89 +41,48 @@ import org.springframework.data.repository.core.support.RepositoryFactoryInforma
 @RunWith(MockitoJUnitRunner.class)
 public class DomainClassPropertyEditorRegistrarUnitTests {
 
-	DomainClassPropertyEditorRegistrar registrar = new DomainClassPropertyEditorRegistrar();
-	@Mock
-	ApplicationContext context;
 	@Mock
 	PropertyEditorRegistry registry;
-	@Mock
-	EntityRepository repository;
-	@Mock
-	RepositoryFactoryInformation<Entity, Serializable> provider;
 
+	DomainClassPropertyEditorRegistrar registrar;
+	ApplicationContext context;
 	DomainClassPropertyEditor<Entity, Serializable> reference;
 
 	@Before
 	public void setup() {
 
-		EntityInformation<Entity, Serializable> entityInformation = new DummyEntityInformation<Entity>(Entity.class);
-		RepositoryInformation repositoryInformation = new DummyRepositoryInformation(EntityRepository.class);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(DummyRepositoryFactoryBean.class);
+		builder.addPropertyValue("repositoryInterface", EntityRepository.class);
 
-		when(provider.getEntityInformation()).thenReturn(entityInformation);
-		when(provider.getRepositoryInformation()).thenReturn(repositoryInformation);
+		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+		factory.registerBeanDefinition("provider", builder.getBeanDefinition());
 
-		Map<String, EntityRepository> map = getBeanAsMap(repository);
-		when(context.getBeansOfType(EntityRepository.class)).thenReturn(map);
-
-		reference = new DomainClassPropertyEditor<Entity, Serializable>(repository, entityInformation, registry);
+		context = new GenericApplicationContext(factory);
+		registrar = new DomainClassPropertyEditorRegistrar();
 	}
 
 	@Test
 	public void addsRepositoryForEntityIfAvailableInAppContext() throws Exception {
 
-		letContextContain(provider);
 		registrar.setApplicationContext(context);
 		registrar.registerCustomEditors(registry);
 
-		verify(registry).registerCustomEditor(eq(Entity.class), eq(reference));
+		verify(registry).registerCustomEditor(eq(Entity.class), any(DomainClassPropertyEditor.class));
 	}
 
 	@Test
 	public void doesNotAddDaoAtAllIfNoDaosFound() throws Exception {
 
-		letContextContain(provider);
 		registrar.registerCustomEditors(registry);
 
-		verify(registry, never()).registerCustomEditor(eq(Entity.class), eq(reference));
+		verify(registry, never()).registerCustomEditor(eq(Entity.class), any(DomainClassPropertyEditor.class));
 	}
 
-	private void letContextContain(Object bean) {
-
-		Map<String, Object> beanMap = getBeanAsMap(bean);
-
-		when(context.getBeansOfType(argThat(is(subtypeOf(bean.getClass()))))).thenReturn(beanMap);
-	}
-
-	private <T> Map<String, T> getBeanAsMap(T bean) {
-
-		Map<String, T> beanMap = new HashMap<String, T>();
-		beanMap.put(bean.toString(), bean);
-		return beanMap;
-	}
-
-	@SuppressWarnings("serial")
-	private static class Entity implements Serializable {
+	static class Entity {
 
 	}
 
-	private static interface EntityRepository extends CrudRepository<Entity, Serializable> {
+	static interface EntityRepository extends CrudRepository<Entity, Serializable> {
 
-	}
-
-	private static <T> TypeSafeMatcher<Class<T>> subtypeOf(final Class<? extends T> type) {
-
-		return new TypeSafeMatcher<Class<T>>() {
-
-			public void describeTo(Description arg0) {
-
-				arg0.appendText("not a subtype of");
-			}
-
-			@Override
-			public boolean matchesSafely(Class<T> arg0) {
-
-				return arg0.isAssignableFrom(type);
-			}
-		};
 	}
 }
