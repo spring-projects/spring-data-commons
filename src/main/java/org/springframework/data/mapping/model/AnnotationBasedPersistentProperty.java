@@ -82,7 +82,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 				Class<? extends Annotation> annotationType = annotation.annotationType();
 
-				if (annotationCache.containsKey(annotationType)) {
+				if (annotationCache.containsKey(annotationType) && !annotationCache.get(annotationType).equals(annotation)) {
 					throw new MappingException(String.format("Ambiguous mapping! Annotation %s configured "
 							+ "multiple times on accessor methods of property %s in class %s!", annotationType, getName(), getOwner()
 							.getType().getName()));

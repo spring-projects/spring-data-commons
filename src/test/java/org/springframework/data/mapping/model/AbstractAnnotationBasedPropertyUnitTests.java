@@ -136,6 +136,7 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 		String field;
 		String getter;
 		String setter;
+		String doubleMapping;
 
 		@MyAnnotationAsMeta
 		String meta;
@@ -157,6 +158,16 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 		public String getOverride() {
 			return override;
 		}
+
+		@MyAnnotation
+		public String getDoubleMapping() {
+			return doubleMapping;
+		}
+
+		@MyAnnotation
+		public void setDoubleMapping(String doubleMapping) {
+			this.doubleMapping = doubleMapping;
+		}
 	}
 
 	static class InvalidSample {
@@ -168,7 +179,7 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 			return meta;
 		}
 
-		@MyAnnotation
+		@MyAnnotation("foo")
 		public void setMeta(String meta) {
 			this.meta = meta;
 		}
