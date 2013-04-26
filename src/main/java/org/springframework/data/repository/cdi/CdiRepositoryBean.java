@@ -17,9 +17,11 @@ package org.springframework.data.repository.cdi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -29,10 +31,12 @@ import javax.enterprise.inject.Stereotype;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.inject.spi.PassivationCapable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Base class for {@link Bean} wrappers.
@@ -40,13 +44,14 @@ import org.springframework.util.Assert;
  * @author Dirk Mahler
  * @author Oliver Gierke
  */
-public abstract class CdiRepositoryBean<T> implements Bean<T> {
+public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CdiRepositoryBean.class);
 
 	private final Set<Annotation> qualifiers;
 	private final Class<T> repositoryType;
 	private final BeanManager beanManager;
+	private final String passivationId;
 
 	/**
 	 * Creates a new {@link CdiRepositoryBean}.
@@ -65,6 +70,30 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 		this.qualifiers = qualifiers;
 		this.repositoryType = repositoryType;
 		this.beanManager = beanManager;
+		this.passivationId = createPassivationId(qualifiers, repositoryType);
+	}
+
+	/**
+	 * Creates a unique identifier for the given repository type and the given annotations.
+	 * 
+	 * @param qualifiers must not be {@literal null} or contain {@literal null} values.
+	 * @param repositoryType must not be {@literal null}.
+	 * @return
+	 */
+	private final String createPassivationId(Set<Annotation> qualifiers, Class<?> repositoryType) {
+
+		List<String> qualifierNames = new ArrayList<String>(qualifiers.size());
+
+		for (Annotation qualifier : qualifiers) {
+			qualifierNames.add(qualifier.annotationType().getName());
+		}
+
+		Collections.sort(qualifierNames);
+
+		StringBuilder builder = new StringBuilder(StringUtils.collectionToDelimitedString(qualifierNames, ":"));
+		builder.append(":").append(repositoryType.getName());
+
+		return builder.toString();
 	}
 
 	/*
@@ -198,6 +227,14 @@ public abstract class CdiRepositoryBean<T> implements Bean<T> {
 	 */
 	public Class<? extends Annotation> getScope() {
 		return ApplicationScoped.class;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see javax.enterprise.inject.spi.PassivationCapable#getId()
+	 */
+	public String getId() {
+		return passivationId;
 	}
 
 	/**

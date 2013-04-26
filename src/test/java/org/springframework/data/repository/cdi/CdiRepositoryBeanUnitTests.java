@@ -44,7 +44,11 @@ import org.springframework.data.repository.Repository;
 @RunWith(MockitoJUnitRunner.class)
 public class CdiRepositoryBeanUnitTests {
 
+	static final String PASSIVATION_ID = "javax.enterprise.inject.Default:org.springframework.data.repository.cdi.CdiRepositoryBeanUnitTests$SampleRepository";
+
 	static final Set<Annotation> NO_ANNOTATIONS = Collections.emptySet();
+	static final Set<Annotation> SINGLE_ANNOTATION = Collections
+			.singleton((Annotation) new CdiRepositoryExtensionSupport.DefaultAnnotationLiteral());
 
 	@Mock
 	BeanManager beanManager;
@@ -108,6 +112,17 @@ public class CdiRepositoryBeanUnitTests {
 		Bean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS, SampleRepository.class,
 				beanManager);
 		assertThat(bean.getScope(), equalTo((Class) ApplicationScoped.class));
+	}
+
+	/**
+	 * @see DATACMNS-322
+	 */
+	@Test
+	public void createsPassivationId() {
+
+		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(SINGLE_ANNOTATION,
+				SampleRepository.class, beanManager);
+		assertThat(bean.getId(), is(PASSIVATION_ID));
 	}
 
 	static class DummyCdiRepositoryBean<T> extends CdiRepositoryBean<T> {

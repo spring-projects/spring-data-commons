@@ -124,13 +124,13 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 		return repositoryTypes.entrySet();
 	}
 
-	private static class DefaultAnnotationLiteral extends AnnotationLiteral<Default> implements Default {
+	static class DefaultAnnotationLiteral extends AnnotationLiteral<Default> implements Default {
 
 		private static final long serialVersionUID = 511359421048623933L;
 		private static final DefaultAnnotationLiteral INSTANCE = new DefaultAnnotationLiteral();
 	}
 
-	private static class AnyAnnotationLiteral extends AnnotationLiteral<Any> implements Any {
+	static class AnyAnnotationLiteral extends AnnotationLiteral<Any> implements Any {
 
 		private static final long serialVersionUID = 7261821376671361463L;
 		private static final AnyAnnotationLiteral INSTANCE = new AnyAnnotationLiteral();
