@@ -27,6 +27,8 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.beans.factory.config.TypedStringValue;
+import org.springframework.core.Ordered;
+import org.springframework.core.PriorityOrdered;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -38,7 +40,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  */
 class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
-		BeanFactoryAware {
+		BeanFactoryAware, PriorityOrdered {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryInterfaceAwareBeanPostProcessor.class);
 	private static final Class<?> REPOSITORY_TYPE = RepositoryFactoryBeanSupport.class;
@@ -113,5 +115,13 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 					beanName));
 			return Void.class;
 		}
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.core.Ordered#getOrder()
+	 */
+	public int getOrder() {
+		return Ordered.LOWEST_PRECEDENCE - 1;
 	}
 }
