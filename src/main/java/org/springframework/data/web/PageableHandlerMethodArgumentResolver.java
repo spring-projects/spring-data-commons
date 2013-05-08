@@ -218,7 +218,7 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 		StringBuilder builder = new StringBuilder(prefix);
 
-		if (parameter.hasParameterAnnotation(Qualifier.class)) {
+		if (parameter != null && parameter.hasParameterAnnotation(Qualifier.class)) {
 			builder.append(parameter.getParameterAnnotation(Qualifier.class).value());
 			builder.append(qualifierSeparator);
 		}
