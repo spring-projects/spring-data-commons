@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
@@ -90,17 +89,17 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	@Test
-	public void registersEntitiesOnContextRefreshedEvent() {
+	public void registersEntitiesOnInitialization() {
 
 		ApplicationContext context = mock(ApplicationContext.class);
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.setInitialEntitySet(Collections.singleton(Person.class));
-		mappingContext.setApplicationContext(context);
+		mappingContext.setApplicationEventPublisher(context);
 
 		verify(context, times(0)).publishEvent(Mockito.any(ApplicationEvent.class));
 
-		mappingContext.onApplicationEvent(new ContextRefreshedEvent(context));
+		mappingContext.afterPropertiesSet();
 		verify(context, times(1)).publishEvent(Mockito.any(ApplicationEvent.class));
 	}
 
