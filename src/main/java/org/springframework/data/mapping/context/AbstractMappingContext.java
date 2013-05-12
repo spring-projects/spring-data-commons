@@ -34,13 +34,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
@@ -67,12 +63,10 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Oliver Gierke
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
-		implements MappingContext<E, P>, ApplicationContextAware, ApplicationEventPublisherAware,
-		ApplicationListener<ContextRefreshedEvent> {
+		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
 
 	private final ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
 
-	private ApplicationContext applicationContext;
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
@@ -82,20 +76,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 	private final Lock read = lock.readLock();
 	private final Lock write = lock.writeLock();
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-
-		this.applicationContext = applicationContext;
-
-		// Default publisher
-		if (this.applicationEventPublisher == null) {
-			this.applicationEventPublisher = applicationContext;
-		}
-	}
 
 	/* 
 	 * (non-Javadoc)
@@ -324,16 +304,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner,
 			SimpleTypeHolder simpleTypeHolder);
 
-	/*
+	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
-	public void onApplicationEvent(ContextRefreshedEvent event) {
-
-		if (!event.getApplicationContext().equals(applicationContext)) {
-			return;
-		}
-
+	@Override
+	public void afterPropertiesSet() {
 		initialize();
 	}
 
