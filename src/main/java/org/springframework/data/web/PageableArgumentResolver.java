@@ -50,7 +50,7 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 	private static final String DEFAULT_PREFIX = "page";
 	private static final String DEFAULT_SEPARATOR = ".";
 
-	private Pageable fallbackPagable = DEFAULT_PAGE_REQUEST;
+	private Pageable fallbackPageable = DEFAULT_PAGE_REQUEST;
 	private String prefix = DEFAULT_PREFIX;
 	private String separator = DEFAULT_SEPARATOR;
 
@@ -58,10 +58,10 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 	 * Setter to configure a fallback instance of {@link Pageable} that is being used to back missing parameters. Defaults
 	 * to {@link #DEFAULT_PAGE_REQUEST}.
 	 * 
-	 * @param fallbackPagable the fallbackPagable to set
+	 * @param fallbackPageable the fallbackPageable to set
 	 */
-	public void setFallbackPagable(Pageable fallbackPagable) {
-		this.fallbackPagable = null == fallbackPagable ? DEFAULT_PAGE_REQUEST : fallbackPagable;
+	public void setFallbackPageable(Pageable fallbackPageable) {
+		this.fallbackPageable = null == fallbackPageable ? DEFAULT_PAGE_REQUEST : fallbackPageable;
 	}
 
 	/**
@@ -126,7 +126,7 @@ public class PageableArgumentResolver implements WebArgumentResolver {
 		// Construct request with fallback request to ensure sensible
 		// default values. Create fresh copy as Spring will manipulate the
 		// instance under the covers
-		return new PageRequest(fallbackPagable.getPageNumber(), fallbackPagable.getPageSize(), fallbackPagable.getSort());
+		return new PageRequest(fallbackPageable.getPageNumber(), fallbackPageable.getPageSize(), fallbackPageable.getSort());
 	}
 
 	private static Pageable getDefaultPageRequestFrom(PageableDefaults defaults) {
