@@ -1,11 +1,11 @@
 /*
- * Copyright 2011-2013 by the original author(s).
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -39,6 +41,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 	private final Constructor<T> constructor;
 	private final List<Parameter<Object, P>> parameters;
+	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new ConcurrentHashMap<PersistentProperty<?>, Boolean>();
 
 	/**
 	 * Creates a new {@link PreferredConstructor} from the given {@link Constructor} and {@link Parameter}s.
@@ -114,12 +117,20 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 		Assert.notNull(property);
 
+		Boolean cached = isPropertyParameterCache.get(property);
+
+		if (cached != null) {
+			return cached;
+		}
+
 		for (Parameter<?, P> parameter : parameters) {
 			if (parameter.maps(property)) {
+				isPropertyParameterCache.put(property, true);
 				return true;
 			}
 		}
 
+		isPropertyParameterCache.put(property, false);
 		return false;
 	}
 

@@ -15,6 +15,9 @@
  */
 package org.springframework.data.convert;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ClassUtils;
@@ -30,6 +33,7 @@ import org.springframework.util.StringUtils;
 public class SimpleTypeInformationMapper implements TypeInformationMapper {
 
 	public static final SimpleTypeInformationMapper INSTANCE = new SimpleTypeInformationMapper();
+	private static final Map<String, TypeInformation<?>> cache = new ConcurrentHashMap<String, TypeInformation<?>>();
 
 	/**
 	 * Returns the {@link TypeInformation} that shall be used when the given {@link String} value is found as type hint.
@@ -52,11 +56,23 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 			return null;
 		}
 
+		TypeInformation<?> information = cache.get(value);
+
+		if (information != null) {
+			return information;
+		}
+
 		try {
-			return ClassTypeInformation.from(ClassUtils.forName(value, null));
+			information = ClassTypeInformation.from(ClassUtils.forName(value, null));
 		} catch (ClassNotFoundException e) {
 			return null;
 		}
+
+		if (information != null) {
+			cache.put(value, information);
+		}
+
+		return information;
 	}
 
 	/**
@@ -67,7 +83,6 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 	 * @return the String representation to be stored or {@literal null} if no type information shall be stored.
 	 */
 	public String createAliasFor(TypeInformation<?> type) {
-
 		return type.getType().getName();
 	}
 }

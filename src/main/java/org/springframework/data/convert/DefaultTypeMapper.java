@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
@@ -38,6 +40,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 	private final TypeAliasAccessor<S> accessor;
 	private final List<? extends TypeInformationMapper> mappers;
+	private final Map<Object, TypeInformation<?>> typeCache;
 
 	/**
 	 * Creates a new {@link DefaultTypeMapper} using the given {@link TypeAliasAccessor}. It will use a
@@ -84,6 +87,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		this.mappers = Collections.unmodifiableList(mappers);
 		this.accessor = accessor;
+		this.typeCache = new ConcurrentHashMap<Object, TypeInformation<?>>();
 	}
 
 	/*
@@ -93,21 +97,37 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	public TypeInformation<?> readType(S source) {
 
 		Assert.notNull(source);
-		Object alias = accessor.readAliasFrom(source);
 
-		if (alias == null) {
-			return null;
+		Object alias = accessor.readAliasFrom(source);
+		return alias == null ? null : getFromCacheOrCreate(alias);
+	}
+
+	/**
+	 * Tries to lookup a {@link TypeInformation} for the given alias from the cache and return it if found. If none is
+	 * found it'll consult the {@link TypeInformationMapper}s and cache the value found.
+	 * 
+	 * @param alias
+	 * @return
+	 */
+	private TypeInformation<?> getFromCacheOrCreate(Object alias) {
+
+		TypeInformation<?> typeInformation = typeCache.get(alias);
+
+		if (typeInformation != null) {
+			return typeInformation;
 		}
 
 		for (TypeInformationMapper mapper : mappers) {
-			TypeInformation<?> type = mapper.resolveTypeFrom(alias);
 
-			if (type != null) {
-				return type;
+			typeInformation = mapper.resolveTypeFrom(alias);
+
+			if (typeInformation != null) {
+				typeCache.put(alias, typeInformation);
+				return typeInformation;
 			}
 		}
 
-		return null;
+		return typeInformation;
 	}
 
 	/*

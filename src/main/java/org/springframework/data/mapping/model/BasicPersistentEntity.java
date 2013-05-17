@@ -17,7 +17,9 @@ package org.springframework.data.mapping.model;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -45,6 +47,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private final TypeInformation<T> information;
 	private final Set<P> properties;
 	private final Set<Association<P>> associations;
+
+	private final Map<String, P> propertyCache = new HashMap<String, P>();
 
 	private P idProperty;
 	private P versionProperty;
@@ -157,6 +161,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(property);
 		properties.add(property);
+		propertyCache.put(property.getName(), property);
 
 		if (property.isIdProperty()) {
 
@@ -193,14 +198,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperty(java.lang.String)
 	 */
 	public P getPersistentProperty(String name) {
-
-		for (P property : properties) {
-			if (property.getName().equals(name)) {
-				return property;
-			}
-		}
-
-		return null;
+		return propertyCache.get(name);
 	}
 
 	/*
