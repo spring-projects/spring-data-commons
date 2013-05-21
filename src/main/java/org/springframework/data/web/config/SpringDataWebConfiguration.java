@@ -17,6 +17,10 @@ package org.springframework.data.web.config;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.repository.support.DomainClassConverter;
@@ -24,7 +28,7 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
@@ -34,7 +38,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
  * @author Oliver Gierke
  */
 @Configuration
-class SpringDataWebConfiguration extends WebMvcConfigurationSupport {
+class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(SpringDataWebConfiguration.class);
+
+	@Autowired(required = false)
+	@Qualifier("mvcConversionService")
+	FormattingConversionService conversionService;
 
 	@Bean
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
@@ -48,7 +58,16 @@ class SpringDataWebConfiguration extends WebMvcConfigurationSupport {
 
 	@Bean
 	public DomainClassConverter<FormattingConversionService> mvcDomainClassConverter() {
-		return new DomainClassConverter<FormattingConversionService>(mvcConversionService());
+
+		if (conversionService == null) {
+
+			LOGGER.warn("No default Spring MVC FormattingConversionService registered! Have you forgotten to "
+					+ "use @EnableWebMvc or register a configuration class extending WebMvcConfigurationSupport?");
+
+			return null;
+		}
+
+		return new DomainClassConverter<FormattingConversionService>(conversionService);
 	}
 
 	/* 

@@ -17,13 +17,11 @@ package org.springframework.data.web.config;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 /**
  * JavaConfig class to register {@link PagedResourcesAssembler} and {@link PagedResourcesAssemblerArgumentResolver}.
@@ -32,19 +30,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
  * @author Oliver Gierke
  */
 @Configuration
-class HateoasAwareSpringDataWebConfiguration extends WebMvcConfigurationSupport {
-
-	@Autowired
-	SpringDataWebConfiguration config;
+class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfiguration {
 
 	@Bean
 	public PagedResourcesAssembler<?> pagedResourcesAssembler() {
-		return new PagedResourcesAssembler<Object>(config.pageableResolver(), null);
+		return new PagedResourcesAssembler<Object>(pageableResolver(), null);
 	}
 
 	@Bean
 	public PagedResourcesAssemblerArgumentResolver pagedResourcesAssemblerArgumentResolver() {
-		return new PagedResourcesAssemblerArgumentResolver(config.pageableResolver(), null);
+		return new PagedResourcesAssemblerArgumentResolver(pageableResolver(), null);
 	}
 
 	/* 
@@ -52,8 +47,8 @@ class HateoasAwareSpringDataWebConfiguration extends WebMvcConfigurationSupport 
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport#addArgumentResolvers(java.util.List)
 	 */
 	@Override
-	protected void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-		config.addArgumentResolvers(argumentResolvers);
+	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+		super.addArgumentResolvers(argumentResolvers);
 		argumentResolvers.add(pagedResourcesAssemblerArgumentResolver());
 	}
 }

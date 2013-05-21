@@ -10,11 +10,14 @@
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.config.**"/>
                     </element>
+                    <dependency toName="External|External::Subsystem|Logging" type="AllowedDependency"/>
                     <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Support" type="AllowedDependency"/>
+                    <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
                 </element>
-                <dependency toName="External|External" type="AllowedDependency"/>
                 <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
+                <dependency toName="Project|spring-data-commons::Layer|Repositories" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Java Beans" type="AllowedDependency"/>
+                <dependency toName="External|External::Subsystem|Logging" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Reflection" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Servlet API" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
@@ -154,6 +157,12 @@
                     </element>
                     <stereotype name="Unrestricted"/>
                 </element>
+                <element type="Subsystem" name="Transactions">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.transaction.**"/>
+                    </element>
+                    <stereotype name="Unrestricted"/>
+                </element>
                 <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
             </element>
             <element type="Layer" name="Application">
@@ -278,7 +287,7 @@
             </element>
             <element type="Subsystem" name="Logging">
                 <element type="TypeFilter" name="Assignment">
-                    <element type="IncludeTypePattern" name="org.slf4j.**"/>
+                    <element type="IncludeTypePattern" name="org.slf4j.*"/>
                 </element>
             </element>
             <element type="Subsystem" name="AOP">

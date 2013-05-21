@@ -35,6 +35,7 @@ import org.springframework.data.web.WebTestUtils;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.SpringDataWebConfigurationImportSelector;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 /**
@@ -46,6 +47,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 public class EnableSpringDataWebSupportIntegrationTests {
 
 	@Configuration
+	@EnableWebMvc
 	@EnableSpringDataWebSupport
 	static class SampleConfig {
 

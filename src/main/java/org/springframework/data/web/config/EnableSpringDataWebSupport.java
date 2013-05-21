@@ -20,8 +20,6 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportSelector;
@@ -84,15 +82,8 @@ public @interface EnableSpringDataWebSupport {
 		 */
 		@Override
 		public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-
-			List<String> configs = new ArrayList<String>();
-
-			if (HATEOAS_PRESENT) {
-				configs.add(HateoasAwareSpringDataWebConfiguration.class.getName());
-			}
-
-			configs.add(SpringDataWebConfiguration.class.getName());
-			return configs.toArray(new String[configs.size()]);
+			return new String[] { HATEOAS_PRESENT ? HateoasAwareSpringDataWebConfiguration.class.getName()
+					: SpringDataWebConfiguration.class.getName() };
 		}
 	}
 }
