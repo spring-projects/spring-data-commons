@@ -161,7 +161,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(property);
 		properties.add(property);
-		propertyCache.put(property.getName(), property);
+
+		if (!propertyCache.containsKey(property.getName())) {
+			propertyCache.put(property.getName(), property);
+		}
 
 		if (property.isIdProperty()) {
 

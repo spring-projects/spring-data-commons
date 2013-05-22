@@ -316,6 +316,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public String toString() {
-		return String.format("%s.%s : %s", getOwner().getType().getName(), getName(), getType().getName());
+		return this.field.toString();
 	}
 }
