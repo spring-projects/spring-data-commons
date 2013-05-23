@@ -51,6 +51,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private final Map<TypeVariable, Type> typeVariableMap;
 	private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
 
+	private Class<S> resolvedType;
+
 	/**
 	 * Creates a ne {@link TypeDiscoverer} for the given type, type variable map and parent.
 	 * 
@@ -261,7 +263,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#getType()
 	 */
 	public Class<S> getType() {
-		return resolveType(type);
+
+		if (resolvedType == null) {
+			this.resolvedType = resolveType(type);
+		}
+
+		return this.resolvedType;
 	}
 
 	/* 

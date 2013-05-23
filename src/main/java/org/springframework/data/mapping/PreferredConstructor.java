@@ -20,9 +20,9 @@ import static org.springframework.util.ObjectUtils.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -41,13 +41,13 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 	private final Constructor<T> constructor;
 	private final List<Parameter<Object, P>> parameters;
-	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new ConcurrentHashMap<PersistentProperty<?>, Boolean>();
+	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new HashMap<PersistentProperty<?>, Boolean>();
 
 	/**
 	 * Creates a new {@link PreferredConstructor} from the given {@link Constructor} and {@link Parameter}s.
 	 * 
-	 * @param constructor
-	 * @param parameters
+	 * @param constructor must not be {@literal null}.
+	 * @param parameters must not be {@literal null}.
 	 */
 	public PreferredConstructor(Constructor<T> constructor, Parameter<Object, P>... parameters) {
 
@@ -167,6 +167,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		private final PersistentEntity<T, P> entity;
 
 		private Boolean enclosingClassCache;
+		private Boolean hasSpelExpression;
 
 		/**
 		 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
@@ -240,7 +241,12 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 * @return
 		 */
 		public boolean hasSpelExpression() {
-			return StringUtils.hasText(getSpelExpression());
+
+			if (this.hasSpelExpression == null) {
+				this.hasSpelExpression = StringUtils.hasText(getSpelExpression());
+			}
+
+			return this.hasSpelExpression;
 		}
 
 		/**

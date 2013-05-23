@@ -35,6 +35,7 @@ import org.springframework.core.GenericTypeResolver;
 class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
 	private final ParameterizedType type;
+	private TypeInformation<?> componentType;
 
 	/**
 	 * Creates a new {@link ParameterizedTypeInformation} for the given {@link Type} and parent {@link TypeDiscoverer}.
@@ -136,7 +137,12 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 */
 	@Override
 	public TypeInformation<?> getComponentType() {
-		return createInfo(type.getActualTypeArguments()[0]);
+
+		if (componentType == null) {
+			this.componentType = createInfo(type.getActualTypeArguments()[0]);
+		}
+
+		return this.componentType;
 	}
 
 	/* 
