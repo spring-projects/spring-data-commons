@@ -29,8 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -65,7 +63,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
 
-	private final ConcurrentMap<TypeInformation<?>, E> persistentEntities = new ConcurrentHashMap<TypeInformation<?>, E>();
+	private final Map<TypeInformation<?>, E> persistentEntities = new HashMap<TypeInformation<?>, E>();
 
 	private ApplicationEventPublisher applicationEventPublisher;
 
