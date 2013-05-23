@@ -48,6 +48,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	private final Value value;
 	private final Map<Class<? extends Annotation>, Annotation> annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
 
+	private Boolean isTransient;
+
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
 	 * 
@@ -122,8 +124,12 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Override
 	public boolean isTransient() {
 
-		boolean isTransient = super.isTransient() || isAnnotationPresent(Transient.class);
-		return isTransient || isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class);
+		if (isTransient == null) {
+			boolean isTransient = super.isTransient() || isAnnotationPresent(Transient.class);
+			this.isTransient = isTransient || isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class);
+		}
+
+		return this.isTransient;
 	}
 
 	/*
