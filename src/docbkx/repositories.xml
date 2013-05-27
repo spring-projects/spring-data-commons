@@ -1064,9 +1064,9 @@ public class UserController {
 
           <tbody>
             <row>
-              <entry><code>page</code></entry>
+              <entry><code>page.page</code></entry>
 
-              <entry>Page you want to retrieve.</entry>
+              <entry>Page you want to retrieve (1-based).</entry>
             </row>
 
             <row>
