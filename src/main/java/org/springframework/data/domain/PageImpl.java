@@ -84,7 +84,7 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	 * @see org.springframework.data.domain.Page#getTotalPages()
 	 */
 	public int getTotalPages() {
-		return getSize() == 0 ? 0 : (int) Math.ceil((double) total / (double) getSize());
+		return getSize() == 0 ? 1 : (int) Math.ceil((double) total / (double) getSize());
 	}
 
 	/*
@@ -124,7 +124,7 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	 * @see org.springframework.data.domain.Page#hasNextPage()
 	 */
 	public boolean hasNextPage() {
-		return (getNumber() + 1) * getSize() < total;
+		return getNumber() + 1 < getTotalPages();
 	}
 
 	/*

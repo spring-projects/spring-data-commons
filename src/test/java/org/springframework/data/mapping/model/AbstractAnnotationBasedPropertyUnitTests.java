@@ -24,7 +24,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -108,8 +107,8 @@ public class AbstractAnnotationBasedPropertyUnitTests<P extends AnnotationBasedP
 			context.getPersistentEntity(InvalidSample.class);
 			fail("Expected MappingException!");
 		} catch (MappingException o_O) {
-			ConcurrentMap<TypeInformation<?>, ?> entities = (ConcurrentMap<TypeInformation<?>, ?>) ReflectionTestUtils
-					.getField(context, "persistentEntities");
+			Map<TypeInformation<?>, ?> entities = (Map<TypeInformation<?>, ?>) ReflectionTestUtils.getField(context,
+					"persistentEntities");
 			assertThat(entities.containsKey(ClassTypeInformation.from(InvalidSample.class)), is(false));
 		}
 	}

@@ -218,7 +218,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 
 		StringBuilder builder = new StringBuilder();
 
-		if (parameter.hasParameterAnnotation(Qualifier.class)) {
+		if (parameter != null && parameter.hasParameterAnnotation(Qualifier.class)) {
 			builder.append(parameter.getParameterAnnotation(Qualifier.class).value()).append(qualifierDelimiter);
 		}
 

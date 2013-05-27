@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
@@ -142,6 +143,17 @@ public class AbstractMappingContextUnitTests {
 		assertThat(entity.getPersistentProperty("metaClass"), is(nullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-???
+	 */
+	@Test
+	public void usesMostConcreteProperty() {
+
+		SampleMappingContext mappingContext = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Extension.class);
+		assertThat(entity.getPersistentProperty("foo").isIdProperty(), is(true));
+	}
+
 	class Person {
 		String name;
 	}
@@ -153,5 +165,14 @@ public class AbstractMappingContextUnitTests {
 	class Sample {
 
 		MetaClass metaClass;
+	}
+
+	static class Base {
+		String foo;
+	}
+
+	static class Extension extends Base {
+		@Id
+		String foo;
 	}
 }

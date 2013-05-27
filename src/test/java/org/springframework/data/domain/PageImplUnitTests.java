@@ -106,11 +106,24 @@ public class PageImplUnitTests {
 		assertThat(page.getSize(), is(0));
 		assertThat(page.getSort(), is((Sort) null));
 		assertThat(page.getTotalElements(), is(0L));
-		assertThat(page.getTotalPages(), is(0));
+		assertThat(page.getTotalPages(), is(1));
 		assertThat(page.hasNextPage(), is(false));
 		assertThat(page.hasPreviousPage(), is(false));
 		assertThat(page.isFirstPage(), is(true));
 		assertThat(page.isLastPage(), is(true));
 		assertThat(page.hasContent(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-323
+	 */
+	@Test
+	public void returnsCorrectTotalPages() {
+
+		Page<String> page = new PageImpl<String>(Arrays.asList("a"));
+
+		assertThat(page.getTotalPages(), is(1));
+		assertThat(page.hasNextPage(), is(false));
+		assertThat(page.hasPreviousPage(), is(false));
 	}
 }
