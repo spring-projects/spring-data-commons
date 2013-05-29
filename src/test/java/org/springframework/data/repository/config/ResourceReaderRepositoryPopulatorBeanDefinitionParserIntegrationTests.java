@@ -25,6 +25,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.repository.init.Jackson2ResourceReader;
 import org.springframework.data.repository.init.JacksonResourceReader;
 import org.springframework.data.repository.init.ResourceReaderRepositoryPopulator;
 import org.springframework.data.repository.init.UnmarshallingResourceReader;
@@ -55,6 +56,28 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 		assertThat(bean, is(instanceOf(ResourceReaderRepositoryPopulator.class)));
 		Object resourceReader = ReflectionTestUtils.getField(bean, "reader");
 		assertThat(resourceReader, is(instanceOf(JacksonResourceReader.class)));
+
+		Object resources = ReflectionTestUtils.getField(bean, "resources");
+		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.json");
+	}
+
+	/**
+	 * @see DATACMNS-333
+	 */
+	@Test
+	public void registersJackson2InitializerCorrectly() {
+
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
+		reader.loadBeanDefinitions(new ClassPathResource("populators.xml", getClass()));
+
+		BeanDefinition definition = beanFactory.getBeanDefinition("jackson2-populator");
+		assertThat(definition, is(notNullValue()));
+
+		Object bean = beanFactory.getBean("jackson2-populator");
+		assertThat(bean, is(instanceOf(ResourceReaderRepositoryPopulator.class)));
+		Object resourceReader = ReflectionTestUtils.getField(bean, "reader");
+		assertThat(resourceReader, is(instanceOf(Jackson2ResourceReader.class)));
 
 		Object resources = ReflectionTestUtils.getField(bean, "resources");
 		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.json");

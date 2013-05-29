@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
  */
 package org.springframework.data.repository.config;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
+import org.springframework.data.repository.init.Jackson2RepositoryPopulatorFactoryBean;
 import org.springframework.data.repository.init.JacksonRepositoryPopulatorFactoryBean;
 import org.springframework.data.repository.init.UnmarshallerRepositoryPopulatorFactoryBean;
 import org.springframework.util.StringUtils;
@@ -38,8 +41,16 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 	protected String getBeanClassName(Element element) {
 
 		String name = element.getLocalName();
-		return "unmarshaller-populator".equals(name) ? UnmarshallerRepositoryPopulatorFactoryBean.class.getName()
-				: JacksonRepositoryPopulatorFactoryBean.class.getName();
+
+		if ("unmarshaller-populator".equals(name)) {
+			return UnmarshallerRepositoryPopulatorFactoryBean.class.getName();
+		} else if ("jackson-populator".equals(name)) {
+			return JacksonRepositoryPopulatorFactoryBean.class.getName();
+		} else if ("jackson2-populator".equals(name)) {
+			return Jackson2RepositoryPopulatorFactoryBean.class.getName();
+		}
+
+		throw new IllegalStateException("Unsupported populator type " + name + "!");
 	}
 
 	/*
@@ -55,7 +66,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 
 		if ("unmarshaller-populator".equals(localName)) {
 			parseXmlPopulator(element, builder);
-		} else if ("jackson-populator".equals(localName)) {
+		} else if (Arrays.asList("jackson-populator", "jackson2-populator").contains(localName)) {
 			parseJsonPopulator(element, builder);
 		}
 	}
@@ -66,7 +77,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 	 * @param element
 	 * @param builder
 	 */
-	private void parseJsonPopulator(Element element, BeanDefinitionBuilder builder) {
+	private static void parseJsonPopulator(Element element, BeanDefinitionBuilder builder) {
 
 		String objectMapperRef = element.getAttribute("object-mapper-ref");
 
@@ -81,7 +92,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 	 * @param element
 	 * @param builder
 	 */
-	private void parseXmlPopulator(Element element, BeanDefinitionBuilder builder) {
+	private static void parseXmlPopulator(Element element, BeanDefinitionBuilder builder) {
 
 		String unmarshallerRefName = element.getAttribute("unmarshaller-ref");
 

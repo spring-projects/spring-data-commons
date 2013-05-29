@@ -18,6 +18,7 @@
     
     <properties>
     	<jackson>1.9.7</jackson>
+    	<jackson2>2.2.2</jackson2>
     	<springhateoas>0.6.0.BUILD-SNAPSHOT</springhateoas>
     	<dist.key>DATACMNS</dist.key>
     </properties>
@@ -67,6 +68,12 @@
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
 			<version>${jackson}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson2}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>

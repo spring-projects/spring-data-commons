@@ -95,6 +95,27 @@
 		</xsd:annotation>
 		<xsd:union memberTypes="xsd:string" />
 	</xsd:simpleType>
+	
+	<!-- JSON (Jackson2) initializer -->
+	
+	<xsd:element name="jackson2-populator">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="populator">
+					<xsd:attribute name="object-mapper-ref" type="objectMapper2Type" />
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:simpleType name="objectMapper2Type">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:expected-type type="com.fasterxml.jackson.databind.ObjectMapper" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string" />
+	</xsd:simpleType>
 
 	<xsd:attributeGroup name="repository-attributes">
 		<xsd:attribute name="repository-impl-postfix" type="xsd:string"/>
