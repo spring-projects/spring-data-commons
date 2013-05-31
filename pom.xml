@@ -12,14 +12,14 @@
     <parent>
         <groupId>org.springframework.data.build</groupId>
         <artifactId>spring-data-parent</artifactId>
-        <version>1.1.0.BUILD-SNAPSHOT</version>
+        <version>1.1.0.RELEASE</version>
         <relativePath>../spring-data-build/parent/pom.xml</relativePath>
     </parent>
     
     <properties>
     	<jackson>1.9.7</jackson>
     	<jackson2>2.2.2</jackson2>
-    	<springhateoas>0.6.0.BUILD-SNAPSHOT</springhateoas>
+    	<springhateoas>0.6.0.RELEASE</springhateoas>
     	<dist.key>DATACMNS</dist.key>
     </properties>
     
@@ -211,8 +211,8 @@
 	
 	<repositories>
 		<repository>
-			<id>spring.libs-snapshots</id>
-			<url>http://repo.springsource.org/libs-snapshot-local</url>
+			<id>spring-libs-releases</id>
+			<url>http://repo.springsource.org/libs-release-local</url>
 		</repository>
 	</repositories>
 

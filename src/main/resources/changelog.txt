@@ -1,6 +1,74 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.6.0.M1 (2013-05-31)
+----------------------------------------
+** Bug
+    * [DATACMNS-281] - Change Order class so that case insensitive sorts can be performed by setting an ignore case flag
+    * [DATACMNS-283] - Improve exception message for failed instantiations in ReflectionEntityInstatiator
+    * [DATACMNS-285] - Spring Data Commons Maven artifactId seems outdated on springsource.org
+    * [DATACMNS-300] - ReflectionEntityInstantiator should actually throw created exception
+    * [DATACMNS-306] - RepositoryBeanDefinitionBuilder does not populate the source of created BeanDefinitions
+    * [DATACMNS-309] - TypeDiscoverer does not correctly resolve nested property path expressions
+    * [DATACMNS-320] - Mapping ambiguation detection is too aggressive
+    * [DATACMNS-322] - CdiRepositoryBean should implement PassivationCapable
+    * [DATACMNS-323] - PageImpl.getTotalPages() possibly returns incorrect result when PageImpl is instantiated with simple constructor
+    * [DATACMNS-326] - RepositoryInterfaceAwareBeanFactoryPostProcessor should implement PriorityOrdered
+    * [DATACMNS-327] - AbstractMappingContext has to init domain classes in afterPropertiesSet()
+    * [DATACMNS-330] - Ease configuration for Spring MVC integration
+    * [DATACMNS-331] - Add ResourceAssembler implementation to convert Page instances into PagedResources
+    * [DATACMNS-333] - Support for Jackson 2.x for JSON repository populators
+
+** Improvement
+    * [DATACMNS-117] - Add HandlerMethodArgumentResolver alternative to the PageableArgumentResolver
+    * [DATACMNS-282] - Improve caching in AnnotationBasedPersistentProperty
+    * [DATACMNS-284] - As a user I'd like to use Spring Data Commons without changes in Virgo 3.6.0.RELEASE
+    * [DATACMNS-286] - Extend Pageable/Page APIs to allow accessing Pageables pointing to the next or previous Page
+    * [DATACMNS-287] - Polish JavaDoc
+    * [DATACMNS-288, DATACMNS-289] - Upgrade to Spring Data Build 1.0.2.RELEASE
+    * [DATACMNS-295] - Ability to set modifyOnCreation flag on AuditingHandler
+    * [DATACMNS-299] - Scope of CDI bean should default to ApplicationScoped
+    * [DATACMNS-301] - Upgrade to Querydsl 3.0.0
+    * [DATACMNS-303] - Add support for count projections
+    * [DATACMNS-305] - Add toString() methods to PersistentProperty implementations
+    * [DATACMNS-318] - Introduce dedicated annotation to enable exception translation
+    * [DATACMNS-319] - Repositories should lookup repository beans less aggressively
+    * [DATACMNS-324] - Open up OSGi manifest for Spring 4
+    * [DATACMNS-325] - Open up lower boundary of Slf4j in manifest
+    * [DATACMNS-328] - Typo in field name of PageableArgumentResolver
+    * [DATACMNS-329] - Add integration test to guard against potential regressions for SPR-10517
+    * [DATACMNS-334] - Adapt to new features in Spring Data Build 1.1.0
+
+** New Feature
+    * [DATACMNS-310] - Integrate best-effort TransactionManager from Spring Data Neo4j
+    * [DATACMNS-311] - TypeDiscoverer fails to resolve properties expressed through read methods in supertypes
+
+** Task
+    * [DATACMNS-313] - Release 1.6 M1
+    * [DATACMNS-332] - Performance improvements in conversion system hotspots
+
+Changes in version 1.5.1.RELEASE (2013-04-16)
+---------------------------------------------
+** Bug
+    * [DATACMNS-283] - Improve exception message for failed instantiations in ReflectionEntityInstatiator
+    * [DATACMNS-285] - Spring Data Commons Maven artifactId seems outdated on springsource.org
+    * [DATACMNS-300] - ReflectionEntityInstantiator should actually throw created exception
+    * [DATACMNS-306] - RepositoryBeanDefinitionBuilder does not populate the source of created BeanDefinitions
+    * [DATACMNS-309] - TypeDiscoverer does not correctly resolve nested property path expressions
+
+** Improvement
+    * [DATACMNS-282] - Improve caching in AnnotationBasedPersistentProperty
+    * [DATACMNS-284] - As a user I'd like to use Spring Data Commons without changes in Virgo 3.6.0.RELEASE
+    * [DATACMNS-287] - Polish JavaDoc
+    * [DATACMNS-288, DATACMNS-289] - Upgrade to Spring Data Build 1.0.2.RELEASE
+    * [DATACMNS-305] - Add toString() methods to PersistentProperty implementations
+
+** New Feature
+    * [DATACMNS-311] - TypeDiscoverer fails to resolve properties expressed through read methods in supertypes
+
+** Task
+    * [DATACMNS-312] - Release 1.5.1
+
 Changes in version 1.5.0.RELEASE (2013-02-07)
 ---------------------------------------------
 ** Bug
