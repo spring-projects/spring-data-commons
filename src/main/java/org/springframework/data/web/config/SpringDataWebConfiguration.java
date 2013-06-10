@@ -37,10 +37,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * @author Oliver Gierke
  */
 @Configuration
-class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
+public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
-	@Autowired
-	private ApplicationContext context;
+	@Autowired private ApplicationContext context;
 
 	@Bean
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
