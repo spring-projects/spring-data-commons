@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.Person;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
@@ -214,6 +215,34 @@ public class AbstractPersistentPropertyUnitTests {
 		}
 	}
 
+	/**
+	 * @see DATACMNS-337
+	 */
+	@Test
+	public void resolvesActualType() {
+
+		SamplePersistentProperty property = getProperty(Sample.class, "person");
+		assertThat(property.getActualType(), is((Object) Person.class));
+
+		property = getProperty(Sample.class, "persons");
+		assertThat(property.getActualType(), is((Object) Person.class));
+
+		property = getProperty(Sample.class, "personArray");
+		assertThat(property.getActualType(), is((Object) Person.class));
+
+		property = getProperty(Sample.class, "personMap");
+		assertThat(property.getActualType(), is((Object) Person.class));
+	}
+
+	private <T> SamplePersistentProperty getProperty(Class<T> type, String name) {
+
+		BasicPersistentEntity<T, SamplePersistentProperty> entity = new BasicPersistentEntity<T, SamplePersistentProperty>(
+				ClassTypeInformation.from(type));
+
+		Field field = ReflectionUtils.findField(type, name);
+		return new SamplePersistentProperty(field, null, entity, typeHolder);
+	}
+
 	class Generic<T> {
 		T genericField;
 
@@ -228,8 +257,7 @@ public class AbstractPersistentPropertyUnitTests {
 	}
 
 	@SuppressWarnings("serial")
-	class TestClassSet extends TreeSet<Object> {
-	}
+	class TestClassSet extends TreeSet<Object> {}
 
 	@SuppressWarnings("rawtypes")
 	class TestClassComplex {
@@ -298,5 +326,13 @@ public class AbstractPersistentPropertyUnitTests {
 		protected Association<SamplePersistentProperty> createAssociation() {
 			return null;
 		}
+	}
+
+	static class Sample {
+
+		Person person;
+		Collection<Person> persons;
+		Person[] personArray;
+		Map<String, Person> personMap;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,4 +171,12 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return the map's value type or {@literal null} if no {@link java.util.Map}
 	 */
 	Class<?> getMapValueType();
+
+	/**
+	 * Returns the actual type of the property. This will be the original property type if no generics were used, the
+	 * component type for collection-like types and arrays as well as the value type for map properties.
+	 * 
+	 * @return
+	 */
+	Class<?> getActualType();
 }
