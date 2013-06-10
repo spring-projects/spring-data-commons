@@ -47,8 +47,7 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	 * that if you need to stick to the former request parameters an 1-indexed behavior. This will be removed in the next
 	 * major version (1.7). So consider migrating to the new way of exposing request parameters.
 	 */
-	@Deprecated
-	public static final PageableHandlerMethodArgumentResolver LEGACY;
+	@Deprecated public static final PageableHandlerMethodArgumentResolver LEGACY;
 
 	static {
 		LEGACY = new PageableHandlerMethodArgumentResolver();
@@ -65,6 +64,7 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	private static final String DEFAULT_SIZE_PROPERTY = "size";
 	private static final String DEFAULT_PREFIX = "";
 	private static final String DEFAULT_QUALIFIER_SEPARATOR = "_";
+	private static final int DEFAULT_MAX_PAGE_SIZE = 2000;
 
 	private Pageable fallbackPageable = DEFAULT_PAGE_REQUEST;
 	private SortHandlerMethodArgumentResolver sortResolver = new SortHandlerMethodArgumentResolver();
@@ -72,6 +72,7 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	private String sizeProperty = DEFAULT_SIZE_PROPERTY;
 	private String prefix = DEFAULT_PREFIX;
 	private String qualifierSeparator = DEFAULT_QUALIFIER_SEPARATOR;
+	private int maxPageSize = DEFAULT_MAX_PAGE_SIZE;
 	private boolean oneIndexedParameters = false;
 
 	/**
@@ -86,6 +87,16 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	 */
 	public void setFallbackPageable(Pageable fallbackPageable) {
 		this.fallbackPageable = fallbackPageable;
+	}
+
+	/**
+	 * Configures the maximum page size to be accepted. This allows to put an upper boundary of the page size to prevent
+	 * potential attacks trying to issue an {@link OutOfMemoryError}. Defaults to {@link #DEFAULT_MAX_PAGE_SIZE}.
+	 * 
+	 * @param maxPageSize the maxPageSize to set
+	 */
+	public void setMaxPageSize(int maxPageSize) {
+		this.maxPageSize = maxPageSize;
 	}
 
 	/**
@@ -173,12 +184,12 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 		Pageable pageable = (Pageable) value;
 
 		String pagePropertyName = getParameterNameToUse(pageProperty, parameter);
-		String propertyToLookup = getParameterNameToUse(sizeProperty, parameter);
+		String sizePropertyName = getParameterNameToUse(sizeProperty, parameter);
 
 		int pageNumber = pageable.getPageNumber();
 
 		builder.queryParam(pagePropertyName, oneIndexedParameters ? pageNumber + 1 : pageNumber);
-		builder.queryParam(propertyToLookup, pageable.getPageSize());
+		builder.queryParam(sizePropertyName, pageable.getPageSize() <= maxPageSize ? pageable.getPageSize() : maxPageSize);
 
 		sortResolver.enhance(builder, parameter, pageable.getSort());
 	}
@@ -201,6 +212,7 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 				: defaultOrFallback.getPageNumber();
 		int pageSize = StringUtils.hasText(pageSizeString) ? Integer.parseInt(pageSizeString) : defaultOrFallback
 				.getPageSize();
+		pageSize = pageSize > maxPageSize ? maxPageSize : pageSize;
 
 		Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
 		return new PageRequest(page, pageSize, sort == null ? defaultOrFallback.getSort() : sort);

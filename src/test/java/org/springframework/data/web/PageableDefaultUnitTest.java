@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -48,8 +49,7 @@ public abstract class PageableDefaultUnitTest {
 	static final PageRequest REFERENCE_WITH_SORT = new PageRequest(PAGE_NUMBER, PAGE_SIZE, SORT);
 	static final PageRequest REFERENCE_WITH_SORT_FIELDS = new PageRequest(PAGE_NUMBER, PAGE_SIZE, new Sort(SORT_FIELDS));
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void supportsPageable() {
@@ -124,11 +124,16 @@ public abstract class PageableDefaultUnitTest {
 		resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null);
 	}
 
-	private void assertSupportedAndResult(MethodParameter parameter, Pageable pageable) throws Exception {
+	protected void assertSupportedAndResult(MethodParameter parameter, Pageable pageable) throws Exception {
+		assertSupportedAndResult(parameter, pageable, TestUtils.getWebRequest());
+	}
+
+	protected void assertSupportedAndResult(MethodParameter parameter, Pageable pageable, NativeWebRequest request)
+			throws Exception {
 
 		HandlerMethodArgumentResolver resolver = getResolver();
 		assertThat(resolver.supportsParameter(parameter), is(true));
-		assertThat(resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null), is((Object) pageable));
+		assertThat(resolver.resolveArgument(parameter, null, request, null), is((Object) pageable));
 	}
 
 	protected void assertUriStringFor(Pageable pageable, String expected) {

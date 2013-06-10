@@ -17,9 +17,13 @@ package org.springframework.data.web;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.MethodParameter;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.ServletWebRequest;
 
 /**
  * Unit tests for {@link PageableHandlerMethodArgumentResolver}. Pulls in defaulting tests from
@@ -39,9 +43,30 @@ public class PageableHandlerMethodArgumentResolverUnitTest extends PageableDefau
 		assertUriStringFor(REFERENCE_WITH_SORT_FIELDS, basicString + "&sort=firstname,lastname,asc");
 	}
 
+	/**
+	 * @see DATACMNS-335
+	 */
+	@Test
+	public void preventsPageSizeFromExceedingMayValueIfConfigured() throws Exception {
+
+		// Write side
+		assertUriStringFor(new PageRequest(0, 200), "page=0&size=100");
+
+		// Read side
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "0");
+		request.addParameter("size", "200");
+
+		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
+
+		assertSupportedAndResult(parameter, new PageRequest(0, 100), new ServletWebRequest(request));
+	}
+
 	@Override
 	protected PageableHandlerMethodArgumentResolver getResolver() {
-		return new PageableHandlerMethodArgumentResolver();
+		PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
+		resolver.setMaxPageSize(100);
+		return resolver;
 	}
 
 	@Override
@@ -57,8 +82,8 @@ public class PageableHandlerMethodArgumentResolverUnitTest extends PageableDefau
 
 		void simpleDefault(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER) Pageable pageable);
 
-		void simpleDefaultWithSort(
-				@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER, sort = { "firstname", "lastname" }) Pageable pageable);
+		void simpleDefaultWithSort(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER,
+				sort = { "firstname", "lastname" }) Pageable pageable);
 
 		void simpleDefaultWithSortAndDirection(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER, sort = { "firstname",
 				"lastname" }, direction = Direction.DESC) Pageable pageable);
