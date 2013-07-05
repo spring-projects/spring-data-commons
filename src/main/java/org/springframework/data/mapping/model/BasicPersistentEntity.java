@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 by the original author(s).
+ * Copyright 2011-2013 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Jon Brisbin
  * @author Patryk Wasik
+ * @author Thomas Darimont
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
@@ -166,15 +167,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			propertyCache.put(property.getName(), property);
 		}
 
-		if (property.isIdProperty()) {
+		P idProperty = returnPropertyIfBetterIdPropertyCandidateOrNull(property);
 
-			if (this.idProperty != null) {
-				throw new MappingException(String.format(
-						"Attempt to add id property %s but already have property %s registered "
-								+ "as id. Check your mapping configuration!", property.getField(), idProperty.getField()));
-			}
-
-			this.idProperty = property;
+		if (idProperty != null) {
+			this.idProperty = idProperty;
 		}
 
 		if (property.isVersionProperty()) {
@@ -187,6 +183,26 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 			this.versionProperty = property;
 		}
+	}
+
+	/**
+	 * Returns the given property if it is a better candidate for the id property than the current id property.
+	 * 
+	 * @param property the new id property candidate, will never be {@literal null}.
+	 * @return the given id property or {@literal null} if the given property is not an id property.
+	 */
+	protected P returnPropertyIfBetterIdPropertyCandidateOrNull(P property) {
+
+		if (!property.isIdProperty()) {
+			return null;
+		}
+
+		if (this.idProperty != null) {
+			throw new MappingException(String.format("Attempt to add id property %s but already have property %s registered "
+					+ "as id. Check your mapping configuration!", property.getField(), idProperty.getField()));
+		}
+
+		return property;
 	}
 
 	/* (non-Javadoc)
