@@ -185,6 +185,12 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
+	/**
+	 * Returns the given property if it is a better candidate for the id property than the current id property.
+	 * 
+	 * @param property - The new id property candidate will never be {@literal null}
+	 * @return the given id property or {@literal null} if the given property is not an id property
+	 */
 	protected P returnPropertyIfBetterIdPropertyCandidateOrNull(P property) {
 
 		if (!property.isIdProperty()) {
