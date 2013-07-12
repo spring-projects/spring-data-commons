@@ -188,8 +188,9 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 		int pageNumber = pageable.getPageNumber();
 
-		builder.queryParam(pagePropertyName, oneIndexedParameters ? pageNumber + 1 : pageNumber);
-		builder.queryParam(sizePropertyName, pageable.getPageSize() <= maxPageSize ? pageable.getPageSize() : maxPageSize);
+		builder.replaceQueryParam(pagePropertyName, oneIndexedParameters ? pageNumber + 1 : pageNumber);
+		builder.replaceQueryParam(sizePropertyName, pageable.getPageSize() <= maxPageSize ? pageable.getPageSize()
+				: maxPageSize);
 
 		sortResolver.enhance(builder, parameter, pageable.getSort());
 	}

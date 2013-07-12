@@ -15,6 +15,11 @@
  */
 package org.springframework.data.web;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
@@ -22,8 +27,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
+import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Unit tests for {@link PageableHandlerMethodArgumentResolver}. Pulls in defaulting tests from
@@ -60,6 +68,28 @@ public class PageableHandlerMethodArgumentResolverUnitTest extends PageableDefau
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
 
 		assertSupportedAndResult(parameter, new PageRequest(0, 100), new ServletWebRequest(request));
+	}
+
+	/**
+	 * @see DATACMNS-343
+	 */
+	@Test
+	public void replacesExistingPaginationInformation() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
+		UriComponentsContributor resolver = new PageableHandlerMethodArgumentResolver();
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://localhost:8080?page=0&size=10");
+		resolver.enhance(builder, parameter, new PageRequest(1, 20));
+
+		MultiValueMap<String, String> params = builder.build().getQueryParams();
+
+		List<String> page = params.get("page");
+		assertThat(page.size(), is(1));
+		assertThat(page.get(0), is("1"));
+
+		List<String> size = params.get("size");
+		assertThat(size.size(), is(1));
+		assertThat(size.get(0), is("20"));
 	}
 
 	@Override
