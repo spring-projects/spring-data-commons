@@ -144,7 +144,7 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	/**
-	 * @see DATACMNS-???
+	 * @see DATACMNS-332
 	 */
 	@Test
 	public void usesMostConcreteProperty() {
