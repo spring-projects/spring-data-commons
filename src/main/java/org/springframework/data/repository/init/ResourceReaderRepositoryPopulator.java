@@ -16,7 +16,6 @@
 package org.springframework.data.repository.init;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -27,7 +26,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.util.Assert;
 
@@ -152,10 +151,12 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * @param object must not be {@literal null}.
 	 * @param repositories must not be {@literal null}.
 	 */
+	@SuppressWarnings({ "unchecked" })
 	private void persist(Object object, Repositories repositories) {
 
-		CrudRepository<Object, Serializable> repository = repositories.getRepositoryFor(object.getClass());
-		LOGGER.debug(String.format("Persisting %s using repository %s", object, repository));
-		repository.save(object);
+		CrudInvoker<Object> invoker = (CrudInvoker<Object>) repositories.getCrudInvoker(object.getClass());
+		LOGGER.debug(String.format("Persisting %s using repository %s", object, invoker));
+
+		invoker.invokeSave(object);
 	}
 }

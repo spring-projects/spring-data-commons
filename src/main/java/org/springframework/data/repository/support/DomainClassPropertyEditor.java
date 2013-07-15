@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.io.Serializable;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -33,26 +34,26 @@ import org.springframework.util.StringUtils;
  */
 public class DomainClassPropertyEditor<T, ID extends Serializable> extends PropertyEditorSupport {
 
-	private final CrudRepository<T, ID> repository;
+	private final CrudInvoker<?> invoker;
 	private final EntityInformation<T, ID> information;
 	private final PropertyEditorRegistry registry;
 
 	/**
-	 * Creates a new {@link DomainClassPropertyEditor} for the given {@link CrudRepository}, {@link EntityInformation} and
+	 * Creates a new {@link DomainClassPropertyEditor} for the given repository, {@link EntityInformation} and
 	 * {@link PropertyEditorRegistry}.
 	 * 
-	 * @param repository must not be {@literal null}.
+	 * @param invoker must not be {@literal null}.
 	 * @param information must not be {@literal null}.
 	 * @param registry must not be {@literal null}.
 	 */
-	public DomainClassPropertyEditor(CrudRepository<T, ID> repository, EntityInformation<T, ID> information,
+	public DomainClassPropertyEditor(CrudInvoker<?> invoker, EntityInformation<T, ID> information,
 			PropertyEditorRegistry registry) {
 
-		Assert.notNull(repository);
+		Assert.notNull(invoker);
 		Assert.notNull(information);
 		Assert.notNull(registry);
 
-		this.repository = repository;
+		this.invoker = invoker;
 		this.information = information;
 		this.registry = registry;
 	}
@@ -69,7 +70,7 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 			return;
 		}
 
-		setValue(repository.findOne(getId(idAsString)));
+		setValue(invoker.invokeFindOne(getId(idAsString)));
 	}
 
 	/*
@@ -142,7 +143,7 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 
 		DomainClassPropertyEditor<?, ?> that = (DomainClassPropertyEditor<?, ?>) obj;
 
-		return this.repository.equals(that.repository) && this.registry.equals(that.registry)
+		return this.invoker.equals(that.invoker) && this.registry.equals(that.registry)
 				&& this.information.equals(that.information);
 	}
 
@@ -154,7 +155,7 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 	public int hashCode() {
 
 		int hashCode = 17;
-		hashCode += repository.hashCode() * 32;
+		hashCode += invoker.hashCode() * 32;
 		hashCode += information.hashCode() * 32;
 		hashCode += registry.hashCode() * 32;
 		return hashCode;

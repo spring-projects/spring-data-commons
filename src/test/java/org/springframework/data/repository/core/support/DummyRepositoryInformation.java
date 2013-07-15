@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.support;
+package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
 
+import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 
 public final class DummyRepositoryInformation implements RepositoryInformation {
 
@@ -70,5 +70,13 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 
 	public Method getTargetClassMethod(Method method) {
 		return method;
+	}
+
+	public boolean isBaseClassMethod(Method method) {
+		return true;
+	}
+
+	public CrudMethods getCrudMethods() {
+		return new DefaultCrudMethods(this);
 	}
 }

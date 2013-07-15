@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.EntityInformation;
 
 /**
@@ -41,12 +42,9 @@ public class DomainClassPropertyEditorUnitTests {
 
 	DomainClassPropertyEditor<User, Integer> editor;
 
-	@Mock
-	PropertyEditorRegistry registry;
-	@Mock
-	UserRepository userRepository;
-	@Mock
-	EntityInformation<User, Integer> information;
+	@Mock PropertyEditorRegistry registry;
+	@Mock CrudInvoker<User> userRepository;
+	@Mock EntityInformation<User, Integer> information;
 
 	@Before
 	public void setUp() {
@@ -60,11 +58,11 @@ public class DomainClassPropertyEditorUnitTests {
 
 		User user = new User(1);
 		when(information.getId(user)).thenReturn(user.getId());
-		when(userRepository.findOne(1)).thenReturn(user);
+		when(userRepository.invokeFindOne(1)).thenReturn(user);
 
 		editor.setAsText("1");
 
-		verify(userRepository, times(1)).findOne(1);
+		verify(userRepository, times(1)).invokeFindOne(1);
 	}
 
 	@Test

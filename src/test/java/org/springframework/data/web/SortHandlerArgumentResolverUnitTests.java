@@ -38,7 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @since 1.6
  * @author Oliver Gierke
  */
-public class SortHandlerArgumentResolverUnitTests extends SortDefaultUnitTest {
+public class SortHandlerArgumentResolverUnitTests extends SortDefaultUnitTests {
 
 	static final String SORT_0 = "username";
 	static final String SORT_1 = "username,asc";

@@ -35,7 +35,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * @since 1.6
  * @author Oliver Gierke
  */
-public abstract class SortDefaultUnitTest {
+public abstract class SortDefaultUnitTests {
 
 	static final String SORT_0 = "username";
 	static final String SORT_1 = "username,asc";

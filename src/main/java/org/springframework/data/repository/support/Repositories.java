@@ -31,6 +31,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
@@ -92,8 +93,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 * @param domainClass must not be {@literal null}.
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public <T, S extends Serializable> CrudRepository<T, S> getRepositoryFor(Class<?> domainClass) {
+	public Object getRepositoryFor(Class<?> domainClass) {
 
 		RepositoryFactoryInformation<Object, Serializable> information = getRepoInfoFor(domainClass);
 
@@ -101,7 +101,7 @@ public class Repositories implements Iterable<Class<?>> {
 			return null;
 		}
 
-		return (CrudRepository<T, S>) beanFactory.getBean(repositories.get(information));
+		return beanFactory.getBean(repositories.get(information));
 	}
 
 	/**
@@ -118,11 +118,11 @@ public class Repositories implements Iterable<Class<?>> {
 	}
 
 	/**
-	 * Returns the {@link EntityInformation} for the given domain class.
+	 * Returns the {@link RepositoryInformation} for the given domain class.
 	 * 
 	 * @param domainClass must not be {@literal null}.
-	 * @return the {@link EntityInformation} for the given domain class or {@literal null} if no repository registered for
-	 *         this domain class.
+	 * @return the {@link RepositoryInformation} for the given domain class or {@literal null} if no repository registered
+	 *         for this domain class.
 	 */
 	public RepositoryInformation getRepositoryInformationFor(Class<?> domainClass) {
 
@@ -154,6 +154,19 @@ public class Repositories implements Iterable<Class<?>> {
 
 		RepositoryFactoryInformation<Object, Serializable> information = getRepoInfoFor(domainClass);
 		return information == null ? Collections.<QueryMethod> emptyList() : information.getQueryMethods();
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> CrudInvoker<T> getCrudInvoker(Class<T> domainClass) {
+
+		RepositoryInformation information = getRepositoryInformationFor(domainClass);
+		Object repository = getRepositoryFor(domainClass);
+
+		if (repository instanceof CrudRepository) {
+			return new CrudRepositoryInvoker<T>((CrudRepository<T, Serializable>) repository);
+		} else {
+			return new ReflectionRepositoryInvoker<T>(repository, information.getCrudMethods());
+		}
 	}
 
 	private RepositoryFactoryInformation<Object, Serializable> getRepoInfoFor(Class<?> domainClass) {
@@ -200,11 +213,6 @@ public class Repositories implements Iterable<Class<?>> {
 					RepositoryFactoryInformation.class);
 
 			RepositoryInformation info = information.getRepositoryInformation();
-			Class<?> repositoryInterface = info.getRepositoryInterface();
-
-			if (!CrudRepository.class.isAssignableFrom(repositoryInterface)) {
-				continue;
-			}
 
 			repositories.put(information, BeanFactoryUtils.transformedBeanName(repositoryFactoryName));
 			domainClassToBeanName.put(info.getDomainType(), information);

@@ -56,11 +56,27 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	boolean isQueryMethod(Method method);
 
 	/**
+	 * Returns whether the given method is logically a base class method. This also includes methods (re)declared in the
+	 * repository interface that match the signatures of the base implementation.
+	 * 
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	boolean isBaseClassMethod(Method method);
+
+	/**
 	 * Returns all methods considered to be query methods.
 	 * 
 	 * @return
 	 */
 	Iterable<Method> getQueryMethods();
+
+	/**
+	 * Returns {@link CrudMethods} meta information for the repository.
+	 * 
+	 * @return
+	 */
+	CrudMethods getCrudMethods();
 
 	/**
 	 * Returns the target class method that is backing the given method. This can be necessary if a repository interface

@@ -43,8 +43,7 @@ public class RepositoriesIntegrationTests {
 	@Configuration
 	static class Config {
 
-		@Autowired
-		ApplicationContext context;
+		@Autowired ApplicationContext context;
 
 		@Bean
 		public Repositories repositories() {
@@ -52,22 +51,40 @@ public class RepositoriesIntegrationTests {
 		}
 
 		@Bean
-		public RepositoryFactoryBeanSupport<Repository<User, Long>, User, Long> repositoryFactory() {
+		public RepositoryFactoryBeanSupport<Repository<User, Long>, User, Long> userRepositoryFactory() {
 
 			DummyRepositoryFactoryBean<Repository<User, Long>, User, Long> factory = new DummyRepositoryFactoryBean<Repository<User, Long>, User, Long>();
 			factory.setRepositoryInterface(UserRepository.class);
 
 			return factory;
 		}
+
+		@Bean
+		public RepositoryFactoryBeanSupport<Repository<Product, Long>, Product, Long> productRepositoryFactory() {
+
+			DummyRepositoryFactoryBean<Repository<Product, Long>, Product, Long> factory = new DummyRepositoryFactoryBean<Repository<Product, Long>, Product, Long>();
+			factory.setRepositoryInterface(ProductRepository.class);
+
+			return factory;
+		}
 	}
 
-	@Autowired
-	Repositories repositories;
+	@Autowired Repositories repositories;
 
 	@Test
-	public void foo() {
+	public void detectsRepositories() {
+
 		assertThat(repositories, is(notNullValue()));
 		assertThat(repositories.hasRepositoryFor(User.class), is(true));
+		assertThat(repositories.hasRepositoryFor(Product.class), is(true));
+	}
+
+	@Test
+	public void createsCrudInvokersCorrectly() {
+
+		assertThat(repositories, is(notNullValue()));
+		assertThat(repositories.getCrudInvoker(User.class), is(instanceOf(CrudRepositoryInvoker.class)));
+		assertThat(repositories.getCrudInvoker(Product.class), is(instanceOf(ReflectionRepositoryInvoker.class)));
 	}
 
 	static class User {
@@ -76,5 +93,14 @@ public class RepositoriesIntegrationTests {
 
 	interface UserRepository extends CrudRepository<User, Long> {
 
+	}
+
+	static class Product {}
+
+	interface ProductRepository extends Repository<Product, Long> {
+
+		Product findOne(Long id);
+
+		Product save(Product product);
 	}
 }

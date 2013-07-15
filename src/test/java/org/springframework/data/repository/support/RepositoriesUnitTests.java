@@ -43,6 +43,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.core.support.DummyEntityInformation;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
+import org.springframework.data.repository.core.support.DummyRepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 
@@ -75,12 +76,12 @@ public class RepositoriesUnitTests {
 	}
 
 	@Test
-	public void considersCrudRepositoriesOnly() {
+	public void doesNotConsiderCrudRepositoriesOnly() {
 
 		Repositories repositories = new Repositories(context);
 
 		assertThat(repositories.hasRepositoryFor(Person.class), is(true));
-		assertThat(repositories.hasRepositoryFor(Address.class), is(false));
+		assertThat(repositories.hasRepositoryFor(Address.class), is(true));
 	}
 
 	@Test
@@ -103,7 +104,7 @@ public class RepositoriesUnitTests {
 
 		Repositories repositories = new Repositories(context);
 		assertThat(repositories.getPersistentEntity(Person.class), is(notNullValue()));
-		assertThat(repositories.getPersistentEntity(Address.class), is(nullValue()));
+		assertThat(repositories.getPersistentEntity(Address.class), is(notNullValue()));
 	}
 
 	class Person {

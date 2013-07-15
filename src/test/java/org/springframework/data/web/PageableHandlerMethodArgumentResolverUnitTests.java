@@ -35,11 +35,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Unit tests for {@link PageableHandlerMethodArgumentResolver}. Pulls in defaulting tests from
- * {@link PageableDefaultUnitTest}.
+ * {@link PageableDefaultUnitTests}.
  * 
  * @author Oliver Gierke
  */
-public class PageableHandlerMethodArgumentResolverUnitTest extends PageableDefaultUnitTest {
+public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
 	@Test
 	public void buildsUpRequestParameters() {

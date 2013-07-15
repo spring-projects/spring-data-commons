@@ -80,6 +80,7 @@
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.init.**"/>
                     </element>
+                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
                     <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Support" type="AllowedDependency"/>
                 </element>
                 <element type="Subsystem" name="Configuration">

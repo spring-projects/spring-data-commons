@@ -17,7 +17,7 @@ package org.springframework.data.web;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.data.web.SortDefaultUnitTest.*;
+import static org.springframework.data.web.SortDefaultUnitTests.*;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +40,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @since 1.6
  * @author Oliver Gierke
  */
-public abstract class PageableDefaultUnitTest {
+public abstract class PageableDefaultUnitTests {
 
 	static final int PAGE_SIZE = 47;
 	static final int PAGE_NUMBER = 23;

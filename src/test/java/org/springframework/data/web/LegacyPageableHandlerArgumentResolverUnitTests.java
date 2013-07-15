@@ -41,7 +41,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Oliver Gierke
  */
 @SuppressWarnings("deprecation")
-public class LegacyPageableHandlerArgumentResolverUnitTests extends PageableDefaultUnitTest {
+public class LegacyPageableHandlerArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
 	Method correctMethod, noQualifiers, invalidQualifiers, defaultsMethod, defaultsMethodWithSort,
 			defaultsMethodWithSortAndDirection, otherMethod;

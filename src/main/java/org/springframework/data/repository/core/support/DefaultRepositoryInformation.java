@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.Assert;
@@ -42,8 +43,8 @@ import org.springframework.util.ClassUtils;
  */
 class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements RepositoryInformation {
 
-	@SuppressWarnings("rawtypes")
-	private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class.getTypeParameters();
+	@SuppressWarnings("rawtypes") private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class
+			.getTypeParameters();
 	private static final String DOMAIN_TYPE_NAME = PARAMETERS[0].getName();
 	private static final String ID_TYPE_NAME = PARAMETERS[1].getName();
 
@@ -52,12 +53,13 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	private final RepositoryMetadata metadata;
 	private final Class<?> repositoryBaseClass;
 	private final Class<?> customImplementationClass;
+	private final CrudMethods crudMethods;
 
 	/**
 	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository interface and repository base class.
 	 * 
-	 * @param metadata
-	 * @param repositoryBaseClass
+	 * @param metadata must not be {@literal null}.
+	 * @param repositoryBaseClass must not be {@literal null}.
 	 * @param customImplementationClass
 	 */
 	public DefaultRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass,
@@ -71,12 +73,14 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 		this.metadata = metadata;
 		this.repositoryBaseClass = repositoryBaseClass;
 		this.customImplementationClass = customImplementationClass;
+		this.crudMethods = new DefaultCrudMethods(this);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getRepositoryInterface()
 	 */
+	@Override
 	public Class<?> getRepositoryInterface() {
 		return metadata.getRepositoryInterface();
 	}
@@ -85,6 +89,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
 	 */
+	@Override
 	public Class<?> getDomainType() {
 		return metadata.getDomainType();
 	}
@@ -93,6 +98,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
 	 */
+	@Override
 	public Class<? extends Serializable> getIdType() {
 		return metadata.getIdType();
 	}
@@ -101,6 +107,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryInformation#getRepositoryBaseClass()
 	 */
+	@Override
 	public Class<?> getRepositoryBaseClass() {
 		return this.repositoryBaseClass;
 	}
@@ -109,6 +116,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryInformation#getTargetClassMethod(java.lang.reflect.Method)
 	 */
+	@Override
 	public Method getTargetClassMethod(Method method) {
 
 		if (methodCache.containsKey(method)) {
@@ -152,6 +160,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryInformation#getQueryMethods()
 	 */
+	@Override
 	public Set<Method> getQueryMethods() {
 
 		Set<Method> result = new HashSet<Method>();
@@ -170,6 +179,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryInformation#isCustomMethod(java.lang.reflect.Method)
 	 */
+	@Override
 	public boolean isCustomMethod(Method method) {
 		return isTargetClassMethod(method, customImplementationClass);
 	}
@@ -178,17 +188,19 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryInformation#isQueryMethod(java.lang.reflect.Method)
 	 */
+	@Override
 	public boolean isQueryMethod(Method method) {
 		return getQueryMethods().contains(method);
 	}
 
-	/**
-	 * Returns whether the given method is a method covered by the base implementation.
-	 * 
-	 * @param method
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryInformation#isBaseClassMethod(java.lang.reflect.Method)
 	 */
+	@Override
 	public boolean isBaseClassMethod(Method method) {
+
+		Assert.notNull(method, "Method must not be null!");
 		return isTargetClassMethod(method, repositoryBaseClass);
 	}
 
@@ -234,6 +246,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryInformation#hasCustomMethod()
 	 */
+	@Override
 	public boolean hasCustomMethod() {
 
 		Class<?> repositoryInterface = getRepositoryInterface();
@@ -250,6 +263,15 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 		}
 
 		return false;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryInformation#getCrudMethods()
+	 */
+	@Override
+	public CrudMethods getCrudMethods() {
+		return crudMethods;
 	}
 
 	/**

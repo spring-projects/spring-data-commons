@@ -39,6 +39,7 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.DummyEntityInformation;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
+import org.springframework.data.repository.core.support.DummyRepositoryInformation;
 
 /**
  * Unit test for {@link DomainClassConverter}.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 package org.springframework.data.repository.support;
 
 import java.io.Serializable;
+
 import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * Simple helper class to use Hades DAOs to provide {@link java.beans.PropertyEditor}s for domain classes. To get this
@@ -56,10 +58,10 @@ public class DomainClassPropertyEditorRegistrar implements PropertyEditorRegistr
 		for (Class<?> domainClass : repositories) {
 
 			RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(domainClass);
-			CrudRepository<Object, Serializable> repository = repositories.getRepositoryFor(domainClass);
+			CrudInvoker<?> invoker = repositories.getCrudInvoker(domainClass);
 
 			DomainClassPropertyEditor<Object, Serializable> editor = new DomainClassPropertyEditor<Object, Serializable>(
-					repository, repositories.getEntityInformationFor(repositoryInformation.getDomainType()), registry);
+					invoker, repositories.getEntityInformationFor(repositoryInformation.getDomainType()), registry);
 
 			registry.registerCustomEditor(repositoryInformation.getDomainType(), editor);
 		}

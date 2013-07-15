@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 
@@ -26,6 +25,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.util.StringUtils;
 
@@ -65,11 +65,12 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			return null;
 		}
 
-		RepositoryInformation info = repositories.getRepositoryInformationFor(targetType.getType());
+		Class<?> domainType = targetType.getType();
 
-		CrudRepository<?, Serializable> repository = repositories.getRepositoryFor(targetType.getType());
-		Serializable id = conversionService.convert(source, info.getIdType());
-		return repository.findOne(id);
+		RepositoryInformation info = repositories.getRepositoryInformationFor(domainType);
+		CrudInvoker<?> invoker = repositories.getCrudInvoker(domainType);
+
+		return invoker.invokeFindOne(conversionService.convert(source, info.getIdType()));
 	}
 
 	/*
