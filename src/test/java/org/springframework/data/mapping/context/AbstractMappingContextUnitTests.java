@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 import groovy.lang.MetaClass;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -144,7 +145,7 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	/**
-	 * @see DATACMNS-???
+	 * @see DATACMNS-332
 	 */
 	@Test
 	public void usesMostConcreteProperty() {
@@ -152,6 +153,22 @@ public class AbstractMappingContextUnitTests {
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Extension.class);
 		assertThat(entity.getPersistentProperty("foo").isIdProperty(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-345
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void returnsEntityForComponentType() {
+
+		SampleMappingContext mappingContext = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Sample.class);
+		SamplePersistentProperty property = entity.getPersistentProperty("persons");
+		PersistentEntity<Object, SamplePersistentProperty> propertyEntity = mappingContext.getPersistentEntity(property);
+
+		assertThat(propertyEntity, is(notNullValue()));
+		assertThat(propertyEntity.getType(), is(equalTo((Class) Person.class)));
 	}
 
 	class Person {
@@ -165,6 +182,7 @@ public class AbstractMappingContextUnitTests {
 	class Sample {
 
 		MetaClass metaClass;
+		List<Person> persons;
 	}
 
 	static class Base {
@@ -172,7 +190,6 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	static class Extension extends Base {
-		@Id
-		String foo;
+		@Id String foo;
 	}
 }
