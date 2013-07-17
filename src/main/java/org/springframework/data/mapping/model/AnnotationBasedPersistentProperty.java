@@ -117,9 +117,9 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	/**
 	 * Considers plain transient fields, fields annotated with {@link Transient}, {@link Value} or {@link Autowired} as
-	 * transien.
+	 * transient.
 	 * 
-	 * @see org.springframework.data.mapping.BasicPersistentProperty#isTransient()
+	 * @see org.springframework.data.mapping.PersistentProperty#isTransient()
 	 */
 	@Override
 	public boolean isTransient() {

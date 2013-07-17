@@ -36,7 +36,7 @@ public interface TypeInformation<S> {
 	List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor);
 
 	/**
-	 * Returns the property information for the property with the given name. Supports proeprty traversal through dot
+	 * Returns the property information for the property with the given name. Supports property traversal through dot
 	 * notation.
 	 * 
 	 * @param fieldname
