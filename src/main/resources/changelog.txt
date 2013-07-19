@@ -1,6 +1,26 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.5.2.RELEASE (2013-07-19)
+---------------------------------------------
+** Bug
+    * [DATACMNS-320] - Mapping ambiguation detection is too aggressive
+    * [DATACMNS-323] - PageImpl.getTotalPages() possibly returns incorrect result when PageImpl is instantiated with simple constructor
+    * [DATACMNS-326] - RepositoryInterfaceAwareBeanFactoryPostProcessor should implement PriorityOrdered
+    * [DATACMNS-327] - AbstractMappingContext has to init domain classes in afterPropertiesSet()
+    * [DATACMNS-345] - AbstractMappingContext doesn't consider the actual type of property of a generic collection type. 
+
+** Improvement
+    * [DATACMNS-324] - Open up OSGi manifest for Spring 4
+    * [DATACMNS-325] - Open up lower boundary of Slf4j in manifest
+    * [DATACMNS-328] - Typo in field name of PageableArgumentResolver
+    * [DATACMNS-329] - Add integration test to guard against potential regressions for SPR-10517
+
+** Task
+    * [DATACMNS-332] - Performance improvements in conversion system hotspots
+    * [DATACMNS-347] - Release 1.5.2
+
+
 Changes in version 1.5.1.RELEASE (2013-04-16)
 ---------------------------------------------
 ** Bug
