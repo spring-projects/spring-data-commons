@@ -35,6 +35,7 @@ import org.springframework.util.Assert;
  * respectively.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
@@ -193,12 +194,30 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		Assert.notNull(info);
 
+		Object alias = getAliasFor(info);
+		if (alias != null) {
+			accessor.writeTypeTo(sink, alias);
+		}
+	}
+
+	/**
+	 * Returns the alias to be used for the given {@link TypeInformation}.
+	 * 
+	 * @param info must not be {@literal null}
+	 * @return the alias for the given {@link TypeInformation} or {@literal null} of none was found or all mappers
+	 *         returned {@literal null}.
+	 */
+	protected final Object getAliasFor(TypeInformation<?> info) {
+
+		Assert.notNull(info);
+
 		for (TypeInformationMapper mapper : mappers) {
 			Object alias = mapper.createAliasFor(info);
 			if (alias != null) {
-				accessor.writeTypeTo(sink, alias);
-				return;
+				return alias;
 			}
 		}
+
+		return null;
 	}
 }

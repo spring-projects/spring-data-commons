@@ -39,15 +39,14 @@ import org.springframework.data.util.TypeInformation;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultTypeMapperUnitTests {
 
+	static final TypeInformation<String> STRING_TYPE_INFO = ClassTypeInformation.from(String.class);
 	static final String STRING = String.class.getName();
 
-	@Mock
-	TypeAliasAccessor<Map<String, String>> accessor;
+	@Mock TypeAliasAccessor<Map<String, String>> accessor;
 
-	@Mock
-	TypeInformationMapper mapper;
+	@Mock TypeInformationMapper mapper;
 
-	TypeMapper<Map<String, String>> typeMapper;
+	DefaultTypeMapper<Map<String, String>> typeMapper;
 	Map<String, String> source;
 
 	@Before
@@ -58,7 +57,7 @@ public class DefaultTypeMapperUnitTests {
 		this.source = Collections.singletonMap("key", STRING);
 
 		when(accessor.readAliasFrom(source)).thenReturn(STRING);
-		when(mapper.resolveTypeFrom(STRING)).thenReturn((TypeInformation) ClassTypeInformation.from(String.class));
+		when(mapper.resolveTypeFrom(STRING)).thenReturn((TypeInformation) STRING_TYPE_INFO);
 	}
 
 	@Test
@@ -66,10 +65,22 @@ public class DefaultTypeMapperUnitTests {
 	public void cachesResolvedTypeInformation() {
 
 		TypeInformation<?> information = typeMapper.readType(source);
-		assertThat(information, is((TypeInformation) ClassTypeInformation.from(String.class)));
+		assertThat(information, is((TypeInformation) STRING_TYPE_INFO));
 		verify(mapper, times(1)).resolveTypeFrom(STRING);
 
 		typeMapper.readType(source);
 		verify(mapper, times(1)).resolveTypeFrom(STRING);
+	}
+
+	/**
+	 * @see DATACMNS-349
+	 */
+	@Test
+	public void returnsTypeAliasForInformation() {
+
+		Object alias = "alias";
+		when(mapper.createAliasFor(STRING_TYPE_INFO)).thenReturn(alias);
+
+		assertThat(this.typeMapper.getAliasFor(STRING_TYPE_INFO), is(alias));
 	}
 }
