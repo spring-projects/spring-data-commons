@@ -185,6 +185,27 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 		writeType(ClassTypeInformation.from(type), dbObject);
 	}
 
+	/**
+	 * Asks the configured list of {@link TypeInformationMapper} for the type alias of the given type.
+	 * 
+	 * @param info may not be {@literal null}
+	 * @return the alias for the given {@link TypeInformation} or {@literal null} of none was found or all mappers
+	 *         returned null.
+	 */
+	protected Object getAliasFor(TypeInformation<?> info) {
+
+		Assert.notNull(info);
+
+		for (TypeInformationMapper mapper : mappers) {
+			Object alias = mapper.createAliasFor(info);
+			if (alias != null) {
+				return alias;
+			}
+		}
+
+		return null;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.TypeMapper#writeType(org.springframework.data.util.TypeInformation, java.lang.Object)
@@ -193,12 +214,9 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		Assert.notNull(info);
 
-		for (TypeInformationMapper mapper : mappers) {
-			Object alias = mapper.createAliasFor(info);
-			if (alias != null) {
-				accessor.writeTypeTo(sink, alias);
-				return;
-			}
+		Object alias = getAliasFor(info);
+		if (alias != null) {
+			accessor.writeTypeTo(sink, alias);
 		}
 	}
 }
