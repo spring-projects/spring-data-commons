@@ -17,6 +17,7 @@ package org.springframework.data.repository.query;
 
 import static java.lang.String.*;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,11 +30,11 @@ import org.springframework.util.Assert;
  * Class to abstract a single parameter of a query method. It is held in the context of a {@link Parameters} instance.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class Parameter {
 
-	@SuppressWarnings("unchecked")
-	static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
+	@SuppressWarnings("unchecked") static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
 	private static final String PARAM_ON_SPECIAL = format("You must not user @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
@@ -126,8 +127,15 @@ public class Parameter {
 	 */
 	public String getName() {
 
-		Param annotation = parameter.getParameterAnnotation(Param.class);
+		Param annotation = getParameterAnnotation(Param.class);
 		return annotation == null ? parameter.getParameterName() : annotation.value();
+	}
+
+	/**
+	 * @return the annotation of the given type or {@literal null}.
+	 */
+	protected <A extends Annotation> A getParameterAnnotation(Class<A> annotationType) {
+		return parameter.getParameterAnnotation(annotationType);
 	}
 
 	/**

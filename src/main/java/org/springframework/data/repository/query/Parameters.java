@@ -35,8 +35,7 @@ import org.springframework.util.Assert;
  */
 public class Parameters implements Iterable<Parameter> {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
+	@SuppressWarnings("unchecked") public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
 	private static final String ALL_OR_NOTHING = String.format("Either use @%s "
 			+ "on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
