@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,28 +46,28 @@ public class ParametersUnitTests {
 		Method validWithPageable = SampleDao.class.getMethod("validWithPageable", String.class, Pageable.class);
 		Method validWithSort = SampleDao.class.getMethod("validWithSort", String.class, Sort.class);
 
-		new Parameters(valid);
-		new Parameters(validWithPageable);
-		new Parameters(validWithSort);
+		new DefaultParameters(valid);
+		new DefaultParameters(validWithPageable);
+		new DefaultParameters(validWithSort);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsInvalidMethodWithParamMissing() throws Exception {
 
 		Method method = SampleDao.class.getMethod("invalidParamMissing", String.class, String.class);
-		new Parameters(method);
+		new DefaultParameters(method);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullMethod() throws Exception {
 
-		new Parameters(null);
+		new DefaultParameters(null);
 	}
 
 	@Test
 	public void detectsNamedParameterCorrectly() throws Exception {
 
-		Parameters parameters = getParametersFor("validWithSort", String.class, Sort.class);
+		Parameters<?, ?> parameters = getParametersFor("validWithSort", String.class, Sort.class);
 
 		Parameter parameter = parameters.getParameter(0);
 
@@ -85,12 +85,12 @@ public class ParametersUnitTests {
 
 		Method method = SampleDao.class.getMethod("validWithSortFirst", Sort.class, String.class);
 
-		Parameters parameters = new Parameters(method);
+		Parameters<?, ?> parameters = new DefaultParameters(method);
 		assertThat(parameters.getBindableParameter(0).getIndex(), is(1));
 
 		method = SampleDao.class.getMethod("validWithSortInBetween", String.class, Sort.class, String.class);
 
-		parameters = new Parameters(method);
+		parameters = new DefaultParameters(method);
 
 		assertThat(parameters.getBindableParameter(0).getIndex(), is(0));
 		assertThat(parameters.getBindableParameter(1).getIndex(), is(2));
@@ -99,28 +99,28 @@ public class ParametersUnitTests {
 	@Test
 	public void detectsEmptyParameterListCorrectly() throws Exception {
 
-		Parameters parameters = getParametersFor("emptyParameters");
+		Parameters<?, ?> parameters = getParametersFor("emptyParameters");
 		assertThat(parameters.hasParameterAt(0), is(false));
 	}
 
 	@Test
 	public void detectsPageableParameter() throws Exception {
-		Parameters parameters = getParametersFor("validWithPageable", String.class, Pageable.class);
+		Parameters<?, ?> parameters = getParametersFor("validWithPageable", String.class, Pageable.class);
 		assertThat(parameters.getPageableIndex(), is(1));
 	}
 
 	@Test
 	public void detectsSortParameter() throws Exception {
-		Parameters parameters = getParametersFor("validWithSort", String.class, Sort.class);
+		Parameters<?, ?> parameters = getParametersFor("validWithSort", String.class, Sort.class);
 		assertThat(parameters.getSortIndex(), is(1));
 	}
 
-	private Parameters getParametersFor(String methodName, Class<?>... parameterTypes) throws SecurityException,
+	private Parameters<?, ?> getParametersFor(String methodName, Class<?>... parameterTypes) throws SecurityException,
 			NoSuchMethodException {
 
 		Method method = SampleDao.class.getMethod(methodName, parameterTypes);
 
-		return new Parameters(method);
+		return new DefaultParameters(method);
 	}
 
 	static class User {

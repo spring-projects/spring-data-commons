@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
  */
 public class ParametersParameterAccessor implements ParameterAccessor {
 
-	private final Parameters parameters;
+	private final Parameters<?, ?> parameters;
 	private final Object[] values;
 
 	/**
@@ -37,7 +37,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 * @param parameters
 	 * @param values
 	 */
-	public ParametersParameterAccessor(Parameters parameters, Object[] values) {
+	public ParametersParameterAccessor(Parameters<?, ?> parameters, Object[] values) {
 
 		Assert.notNull(parameters);
 		Assert.notNull(values);
@@ -53,7 +53,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 * 
 	 * @return the parameters will never be {@literal null}.
 	 */
-	public Parameters getParameters() {
+	public Parameters<?, ?> getParameters() {
 		return parameters;
 	}
 

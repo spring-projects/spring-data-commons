@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.repository.query;
+
+import static java.lang.String.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -33,11 +35,12 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class Parameters implements Iterable<Parameter> {
+public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Iterable<T> {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
+	@SuppressWarnings("unchecked") public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
+	private static final String PARAM_ON_SPECIAL = format("You must not user @%s on a parameter typed %s or %s",
+			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
 	private static final String ALL_OR_NOTHING = String.format("Either use @%s "
 			+ "on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
 			Pageable.class.getSimpleName(), Sort.class.getSimpleName());
@@ -45,7 +48,7 @@ public class Parameters implements Iterable<Parameter> {
 	private final int pageableIndex;
 	private final int sortIndex;
 
-	private final List<Parameter> parameters;
+	private final List<T> parameters;
 	private final ParameterNameDiscoverer discoverer = new LocalVariableTableParameterNameDiscoverer();
 
 	/**
@@ -57,14 +60,22 @@ public class Parameters implements Iterable<Parameter> {
 
 		Assert.notNull(method);
 
-		this.parameters = new ArrayList<Parameter>();
+		this.parameters = new ArrayList<T>();
 
 		List<Class<?>> types = Arrays.asList(method.getParameterTypes());
 
 		for (int i = 0; i < types.size(); i++) {
-			MethodParameter parameter = new MethodParameter(method, i);
-			parameter.initParameterNameDiscovery(discoverer);
-			parameters.add(createParameter(parameter));
+
+			MethodParameter methodParameter = new MethodParameter(method, i);
+			methodParameter.initParameterNameDiscovery(discoverer);
+
+			T parameter = createParameter(methodParameter);
+
+			if (parameter.isSpecialParameter() && parameter.isNamedParameter()) {
+				throw new IllegalArgumentException(PARAM_ON_SPECIAL);
+			}
+
+			parameters.add(parameter);
 		}
 
 		this.pageableIndex = types.indexOf(Pageable.class);
@@ -78,16 +89,16 @@ public class Parameters implements Iterable<Parameter> {
 	 * 
 	 * @param originals
 	 */
-	private Parameters(List<Parameter> originals) {
+	protected Parameters(List<T> originals) {
 
-		this.parameters = new ArrayList<Parameter>();
+		this.parameters = new ArrayList<T>();
 
 		int pageableIndexTemp = -1;
 		int sortIndexTemp = -1;
 
 		for (int i = 0; i < originals.size(); i++) {
 
-			Parameter original = originals.get(i);
+			T original = originals.get(i);
 			this.parameters.add(original);
 
 			pageableIndexTemp = original.isPageable() ? i : -1;
@@ -98,9 +109,13 @@ public class Parameters implements Iterable<Parameter> {
 		this.sortIndex = sortIndexTemp;
 	}
 
-	protected Parameter createParameter(MethodParameter parameter) {
-		return new Parameter(parameter);
-	}
+	/**
+	 * Creates a {@link Parameter} instance for the given {@link MethodParameter}.
+	 * 
+	 * @param parameter will never be {@literal null}.
+	 * @return
+	 */
+	protected abstract T createParameter(MethodParameter parameter);
 
 	/**
 	 * Returns whether the method the {@link Parameters} was created for contains a {@link Pageable} argument.
@@ -108,7 +123,6 @@ public class Parameters implements Iterable<Parameter> {
 	 * @return
 	 */
 	public boolean hasPageableParameter() {
-
 		return pageableIndex != -1;
 	}
 
@@ -119,7 +133,6 @@ public class Parameters implements Iterable<Parameter> {
 	 * @return the pageableIndex
 	 */
 	public int getPageableIndex() {
-
 		return pageableIndex;
 	}
 
@@ -130,7 +143,6 @@ public class Parameters implements Iterable<Parameter> {
 	 * @return
 	 */
 	public int getSortIndex() {
-
 		return sortIndex;
 	}
 
@@ -140,7 +152,6 @@ public class Parameters implements Iterable<Parameter> {
 	 * @return
 	 */
 	public boolean hasSortParameter() {
-
 		return sortIndex != -1;
 	}
 
@@ -150,7 +161,6 @@ public class Parameters implements Iterable<Parameter> {
 	 * @return
 	 */
 	public boolean potentiallySortsDynamically() {
-
 		return hasSortParameter() || hasPageableParameter();
 	}
 
@@ -160,7 +170,7 @@ public class Parameters implements Iterable<Parameter> {
 	 * @param index
 	 * @return
 	 */
-	public Parameter getParameter(int index) {
+	public T getParameter(int index) {
 
 		try {
 			return parameters.get(index);
@@ -191,7 +201,6 @@ public class Parameters implements Iterable<Parameter> {
 	 * @return
 	 */
 	public boolean hasSpecialParameter() {
-
 		return hasSortParameter() || hasPageableParameter();
 	}
 
@@ -201,7 +210,6 @@ public class Parameters implements Iterable<Parameter> {
 	 * @return
 	 */
 	public int getNumberOfParameters() {
-
 		return parameters.size();
 	}
 
@@ -212,19 +220,21 @@ public class Parameters implements Iterable<Parameter> {
 	 * @see Parameter#TYPES
 	 * @see Parameter#isSpecialParameter()
 	 */
-	public Parameters getBindableParameters() {
+	public S getBindableParameters() {
 
-		List<Parameter> bindables = new ArrayList<Parameter>();
+		List<T> bindables = new ArrayList<T>();
 
-		for (Parameter candidate : this) {
+		for (T candidate : this) {
 
 			if (candidate.isBindable()) {
 				bindables.add(candidate);
 			}
 		}
 
-		return new Parameters(bindables);
+		return createFrom(bindables);
 	}
+
+	protected abstract S createFrom(List<T> parameters);
 
 	/**
 	 * Returns a bindable parameter with the given index. So for a method with a signature of
@@ -234,8 +244,7 @@ public class Parameters implements Iterable<Parameter> {
 	 * @param bindableIndex
 	 * @return
 	 */
-	public Parameter getBindableParameter(int bindableIndex) {
-
+	public T getBindableParameter(int bindableIndex) {
 		return getBindableParameters().getParameter(bindableIndex);
 	}
 
@@ -249,7 +258,7 @@ public class Parameters implements Iterable<Parameter> {
 
 		boolean nameFound = false;
 
-		for (Parameter parameter : this.getBindableParameters()) {
+		for (T parameter : this.getBindableParameters()) {
 
 			if (parameter.isNamedParameter()) {
 				Assert.isTrue(nameFound || parameter.isFirst(), ALL_OR_NOTHING);
@@ -267,17 +276,14 @@ public class Parameters implements Iterable<Parameter> {
 	 * @return
 	 */
 	public static boolean isBindable(Class<?> type) {
-
 		return !TYPES.contains(type);
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Iterable#iterator()
-			 */
-	public Iterator<Parameter> iterator() {
-
+	 * (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
+	public Iterator<T> iterator() {
 		return parameters.iterator();
 	}
 }

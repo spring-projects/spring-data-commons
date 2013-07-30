@@ -32,11 +32,7 @@ import org.springframework.util.Assert;
  */
 public class Parameter {
 
-	@SuppressWarnings("unchecked")
-	static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
-
-	private static final String PARAM_ON_SPECIAL = format("You must not user @%s on a parameter typed %s or %s",
-			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
+	@SuppressWarnings("unchecked") static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
 	private static final String NAMED_PARAMETER_TEMPLATE = ":%s";
 	private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
@@ -51,12 +47,7 @@ public class Parameter {
 	protected Parameter(MethodParameter parameter) {
 
 		Assert.notNull(parameter);
-
 		this.parameter = parameter;
-
-		if (isSpecialParameter() && isNamedParameter()) {
-			throw new IllegalArgumentException(PARAM_ON_SPECIAL);
-		}
 	}
 
 	/**

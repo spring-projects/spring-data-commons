@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class QueryMethod {
 
 	private final RepositoryMetadata metadata;
 	private final Method method;
-	private final Parameters parameters;
+	private final Parameters<?, ?> parameters;
 
 	/**
 	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct query to use for following
@@ -84,8 +84,8 @@ public class QueryMethod {
 	 * @param method
 	 * @return must not return {@literal null}.
 	 */
-	protected Parameters createParameters(Method method) {
-		return new Parameters(method);
+	protected Parameters<?, ?> createParameters(Method method) {
+		return new DefaultParameters(method);
 	}
 
 	/**
@@ -189,7 +189,7 @@ public class QueryMethod {
 	 * 
 	 * @return
 	 */
-	public Parameters getParameters() {
+	public Parameters<?, ?> getParameters() {
 		return parameters;
 	}
 
