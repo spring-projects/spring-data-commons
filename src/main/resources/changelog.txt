@@ -1,6 +1,24 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.6.0.RC1 (2013-08-01)
+----------------------------------------
+** Bug
+    * [DATACMNS-343] - PageableHandlerMethodArgumentResolver should replace pagination parameters not add them
+    * [DATACMNS-345] -  AbstractMappingContext doesn't consider the actual type of property of a generic collection type. 
+
+** Improvement
+    * [DATACMNS-335] - PageableHandlerMethodArgumentResolver should allow configuring maximum page size
+    * [DATACMNS-336] - Make configuration classes backing @EnableSpringDataWebSupport public
+    * [DATACMNS-337] - PersistentProperty should expose actual type
+    * [DATACMNS-342] - Open up API in BasicPersistentEntity to support more advanced id property selection mechanisms.
+    * [DATACMNS-344] - Allow Repositories to work with non-CrudRepositories
+    * [DATACMNS-349] - Open up SPI in DefaultTypeMapper to provide a method to get the Type alias for a given TypeInformation
+    * [DATACMNS-350] - Provide access to parameter annotations in Parameter
+    
+** Task
+    * [DATACMNS-314] - Release 1.6 RC1
+
 Changes in version 1.6.0.M1 (2013-05-31)
 ----------------------------------------
 ** Bug
