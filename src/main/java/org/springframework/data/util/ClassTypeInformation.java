@@ -17,6 +17,7 @@ package org.springframework.data.util;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -86,6 +87,16 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	public static <S> TypeInformation<S> fromReturnTypeOf(Method method) {
 		return new ClassTypeInformation(method.getDeclaringClass()).createInfo(method.getGenericReturnType());
 	}
+
+    /**
+     * Creates a {@link TypeInformation} from the given field's type.
+     *
+     * @param field
+     * @return
+     */
+    public static <S> TypeInformation<S> fromTypeOf(Field field) {
+        return new ClassTypeInformation(field.getDeclaringClass()).createInfo(field.getGenericType());
+    }
 
 	/**
 	 * Creates {@link ClassTypeInformation} for the given type.
