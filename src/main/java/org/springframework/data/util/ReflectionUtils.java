@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package org.springframework.data.util;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils.FieldFilter;
 
 /**
@@ -29,6 +31,25 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @since 1.5
  */
 public class ReflectionUtils {
+
+	/**
+	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
+	 * class cannot be loaded or instantiated.
+	 * 
+	 * @param classname the fully qualified class name to create an instance for.
+	 * @param defaultInstance the instance to fall back to in case the given class cannot be loaded or instantiated.
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T createInstanceIfPresent(String classname, T defaultInstance) {
+
+		try {
+			Class<?> type = ClassUtils.getDefaultClassLoader().loadClass(classname);
+			return (T) BeanUtils.instantiateClass(type);
+		} catch (Exception e) {
+			return defaultInstance;
+		}
+	}
 
 	/**
 	 * A {@link FieldFilter} that has a description.

@@ -28,6 +28,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -44,12 +45,12 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private static final String ALL_OR_NOTHING = String.format("Either use @%s "
 			+ "on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
 			Pageable.class.getSimpleName(), Sort.class.getSimpleName());
+	private static final ParameterNameDiscoverer discoverer = ReflectionUtils.createInstanceIfPresent(
+			"org.springframework.core.DefaultParameterNameDiscoverer", new LocalVariableTableParameterNameDiscoverer());
 
 	private final int pageableIndex;
 	private final int sortIndex;
-
 	private final List<T> parameters;
-	private final ParameterNameDiscoverer discoverer = new LocalVariableTableParameterNameDiscoverer();
 
 	/**
 	 * Creates a new instance of {@link Parameters}.
