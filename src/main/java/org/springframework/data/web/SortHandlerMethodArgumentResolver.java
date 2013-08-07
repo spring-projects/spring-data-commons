@@ -41,16 +41,19 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver, UriComponentsContributor {
 
 	private static final String DEFAULT_PARAMETER = "sort";
 	private static final String DEFAULT_PROPERTY_DELIMITER = ",";
 	private static final String DEFAULT_QUALIFIER_DELIMITER = "_";
+	private static final Sort DEFAULT_SORT = null;
 
 	private static final String SORT_DEFAULTS_NAME = SortDefaults.class.getSimpleName();
 	private static final String SORT_DEFAULT_NAME = SortDefault.class.getSimpleName();
 
+	private Sort fallbackSort = DEFAULT_SORT;
 	private String sortParameter = DEFAULT_PARAMETER;
 	private String propertyDelimiter = DEFAULT_PROPERTY_DELIMITER;
 	private String qualifierDelimiter = DEFAULT_QUALIFIER_DELIMITER;
@@ -150,7 +153,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 			return legacyMode ? parseLegacyParameterIntoSort(webRequest, parameter) : parseParameterIntoSort(
 					directionParameter, propertyDelimiter);
 		} else {
-			return getDefaults(parameter);
+			return getDefaultFromAnnotationOrFallback(parameter);
 		}
 	}
 
@@ -160,32 +163,33 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 * instance then (property ordering).
 	 * 
 	 * @param parameter will never be {@literal null}.
-	 * @return the default {@link Sort} instance derived from the parameter annotations or {@literal null}.
+	 * @return the default {@link Sort} instance derived from the parameter annotations or the configured fallback-sort
+	 *         {@link #setFallbackSort(Sort)}.
 	 */
-	private Sort getDefaults(MethodParameter parameter) {
+	private Sort getDefaultFromAnnotationOrFallback(MethodParameter parameter) {
 
 		SortDefaults annotatedDefaults = parameter.getParameterAnnotation(SortDefaults.class);
-		Sort sort = null;
-
-		if (annotatedDefaults != null) {
-			for (SortDefault annotatedDefault : annotatedDefaults.value()) {
-				sort = appendOrCreateSortTo(annotatedDefault, sort);
-			}
-		}
-
 		SortDefault annotatedDefault = parameter.getParameterAnnotation(SortDefault.class);
 
-		if (annotatedDefault == null) {
-			return sort;
-		}
-
-		if (sort != null && annotatedDefault != null) {
+		if (annotatedDefault != null && annotatedDefaults != null) {
 			throw new IllegalArgumentException(String.format(
 					"Cannot use both @%s and @%s on parameter %s! Move %s into %s to define sorting order!", SORT_DEFAULTS_NAME,
 					SORT_DEFAULT_NAME, parameter.toString(), SORT_DEFAULT_NAME, SORT_DEFAULTS_NAME));
 		}
 
-		return appendOrCreateSortTo(annotatedDefault, sort);
+		if (annotatedDefault != null) {
+			return appendOrCreateSortTo(annotatedDefault, null);
+		}
+
+		if (annotatedDefaults != null) {
+			Sort sort = null;
+			for (SortDefault currentAnnotatedDefault : annotatedDefaults.value()) {
+				sort = appendOrCreateSortTo(currentAnnotatedDefault, sort);
+			}
+			return sort;
+		}
+
+		return fallbackSort;
 	}
 
 	/**
@@ -403,5 +407,18 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 
 			return expressions;
 		}
+	}
+
+	/**
+	 * Configures the {@link Sort} to be used as fallback in case no {@link SortDefault} or {@link SortDefaults} (the
+	 * latter only supported in legacy mode) can be found at the method parameter to be resolved.
+	 * <p>
+	 * If you set this to {@literal null}, be aware that you controller methods will get {@literal null} handed into them
+	 * in case no {@link Sort} data can be found in the request.
+	 * 
+	 * @param fallbackSort the {@link Sort} to be used as general fallback.
+	 */
+	public void setFallbackSort(Sort fallbackSort) {
+		this.fallbackSort = fallbackSort;
 	}
 }

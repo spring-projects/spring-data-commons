@@ -37,6 +37,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class SortHandlerArgumentResolverUnitTests extends SortDefaultUnitTests {
 
@@ -44,6 +45,34 @@ public class SortHandlerArgumentResolverUnitTests extends SortDefaultUnitTests {
 	static final String SORT_1 = "username,asc";
 	static final String[] SORT_2 = new String[] { "username,ASC", "lastname,firstname,DESC" };
 	static final String SORT_3 = "firstname,lastname";
+
+	/**
+	 * @see DATACMNS-351
+	 */
+	@Test
+	public void fallbackToGivenDefaultSort() throws Exception {
+
+		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
+		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		Sort fallbackSort = new Sort(Direction.ASC, "ID");
+		resolver.setFallbackSort(fallbackSort);
+
+		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
+		assertThat(sort, is(fallbackSort));
+	}
+
+	/**
+	 * @see DATACMNS-351
+	 */
+	@Test
+	public void fallbackToDefaultDefaultSort() throws Exception {
+
+		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
+		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+
+		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
+		assertThat(sort, is(nullValue()));
+	}
 
 	@Test
 	public void discoversSimpleSortFromRequest() {
