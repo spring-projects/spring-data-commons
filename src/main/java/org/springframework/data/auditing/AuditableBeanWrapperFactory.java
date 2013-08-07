@@ -19,6 +19,9 @@ import java.lang.reflect.Field;
 import java.util.Date;
 
 import org.joda.time.DateTime;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
@@ -110,6 +113,7 @@ class AuditableBeanWrapperFactory {
 	 */
 	static class ReflectionAuditingBeanWrapper implements AuditableBeanWrapper {
 
+		private final ConversionService conversionService;
 		private final AnnotationAuditingMetadata metadata;
 		private final Object target;
 
@@ -124,6 +128,12 @@ class AuditableBeanWrapperFactory {
 
 			this.metadata = AnnotationAuditingMetadata.getMetadata(target.getClass());
 			this.target = target;
+
+			DefaultConversionService conversionService = new DefaultConversionService();
+			conversionService.addConverter(DateTimeToLongConverter.INSTANCE);
+			conversionService.addConverter(DateTimeToDateConverter.INSTANCE);
+
+			this.conversionService = conversionService;
 		}
 
 		/* 
@@ -205,16 +215,32 @@ class AuditableBeanWrapperFactory {
 				return value;
 			}
 
-			if (Date.class.equals(targetType)) {
-				return value.toDate();
-			}
-
-			if (Long.class.equals(targetType) || long.class.equals(targetType)) {
-				return value.getMillis();
+			if (conversionService.canConvert(DateTime.class, targetType)) {
+				return conversionService.convert(value, targetType);
 			}
 
 			throw new IllegalArgumentException(String.format("Invalid date type for field %s! Supported types are %s.",
 					field, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
+		}
+	}
+
+	static enum DateTimeToLongConverter implements Converter<DateTime, Long> {
+
+		INSTANCE;
+
+		@Override
+		public Long convert(DateTime source) {
+			return source.getMillis();
+		}
+	}
+
+	static enum DateTimeToDateConverter implements Converter<DateTime, Date> {
+
+		INSTANCE;
+
+		@Override
+		public Date convert(DateTime source) {
+			return source.toDate();
 		}
 	}
 }

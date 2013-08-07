@@ -65,11 +65,9 @@ public class ReflectionAuditingBeanWrapperUnitTests {
 
 		class Sample {
 
-			@CreatedDate
-			Long createdDate;
+			@CreatedDate Long createdDate;
 
-			@LastModifiedDate
-			long modifiedDate;
+			@LastModifiedDate long modifiedDate;
 		}
 
 		Sample sample = new Sample();
