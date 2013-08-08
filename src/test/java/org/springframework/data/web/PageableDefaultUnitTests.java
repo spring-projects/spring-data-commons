@@ -19,6 +19,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.web.SortDefaultUnitTests.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -126,6 +129,11 @@ public abstract class PageableDefaultUnitTests {
 
 	protected void assertSupportedAndResult(MethodParameter parameter, Pageable pageable) throws Exception {
 		assertSupportedAndResult(parameter, pageable, TestUtils.getWebRequest());
+	}
+
+	protected void assertSupportedAndResult(MethodParameter parameter, Pageable pageable, HttpServletRequest request)
+			throws Exception {
+		assertSupportedAndResult(parameter, pageable, new ServletWebRequest(request));
 	}
 
 	protected void assertSupportedAndResult(MethodParameter parameter, Pageable pageable, NativeWebRequest request)

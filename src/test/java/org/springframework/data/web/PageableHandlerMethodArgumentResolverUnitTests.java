@@ -30,7 +30,6 @@ import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -67,7 +66,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
 
-		assertSupportedAndResult(parameter, new PageRequest(0, 100), new ServletWebRequest(request));
+		assertSupportedAndResult(parameter, new PageRequest(0, 100), request);
 	}
 
 	/**
@@ -90,6 +89,38 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		List<String> size = params.get("size");
 		assertThat(size.size(), is(1));
 		assertThat(size.get(0), is("20"));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsEmptyPageParameterName() {
+		new PageableHandlerMethodArgumentResolver().setPageParameterName("");
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullPageParameterName() {
+		new PageableHandlerMethodArgumentResolver().setPageParameterName(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsEmptySizeParameterName() {
+		new PageableHandlerMethodArgumentResolver().setSizeParameterName("");
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullSizeParameterName() {
+		new PageableHandlerMethodArgumentResolver().setSizeParameterName(null);
+	}
+
+	@Test
+	public void qualifierIsUsedInParameterLookup() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("validQualifier", Pageable.class), 0);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("foo_page", "2");
+		request.addParameter("foo_size", "10");
+
+		assertSupportedAndResult(parameter, new PageRequest(2, 10), request);
 	}
 
 	@Override
@@ -125,6 +156,8 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 				@SortDefaults(@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC)) Pageable pageable);
 
 		void invalidQualifiers(@Qualifier("foo") Pageable first, @Qualifier("foo") Pageable second);
+
+		void validQualifier(@Qualifier("foo") Pageable pageable);
 
 		void noQualifiers(Pageable first, Pageable second);
 	}

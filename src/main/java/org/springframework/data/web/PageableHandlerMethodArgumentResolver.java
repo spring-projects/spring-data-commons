@@ -51,8 +51,8 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 	static {
 		LEGACY = new PageableHandlerMethodArgumentResolver();
-		LEGACY.pageProperty = "page.page";
-		LEGACY.sizeProperty = "page.size";
+		LEGACY.pageParameterName = "page.page";
+		LEGACY.sizeParameterName = "page.size";
 		LEGACY.fallbackPageable = new PageRequest(1, 10);
 		LEGACY.oneIndexedParameters = true;
 		LEGACY.sortResolver.setLegacyMode(true);
@@ -63,15 +63,15 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	private static final String DEFAULT_PAGE_PROPERTY = "page";
 	private static final String DEFAULT_SIZE_PROPERTY = "size";
 	private static final String DEFAULT_PREFIX = "";
-	private static final String DEFAULT_QUALIFIER_SEPARATOR = "_";
+	private static final String DEFAULT_QUALIFIER_DELIMITER = "_";
 	private static final int DEFAULT_MAX_PAGE_SIZE = 2000;
 
 	private Pageable fallbackPageable = DEFAULT_PAGE_REQUEST;
 	private SortHandlerMethodArgumentResolver sortResolver = new SortHandlerMethodArgumentResolver();
-	private String pageProperty = DEFAULT_PAGE_PROPERTY;
-	private String sizeProperty = DEFAULT_SIZE_PROPERTY;
+	private String pageParameterName = DEFAULT_PAGE_PROPERTY;
+	private String sizeParameterName = DEFAULT_SIZE_PROPERTY;
 	private String prefix = DEFAULT_PREFIX;
-	private String qualifierSeparator = DEFAULT_QUALIFIER_SEPARATOR;
+	private String qualifierDelimiter = DEFAULT_QUALIFIER_DELIMITER;
 	private int maxPageSize = DEFAULT_MAX_PAGE_SIZE;
 	private boolean oneIndexedParameters = false;
 
@@ -102,23 +102,23 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	/**
 	 * Configures the parameter name to be used to find the page number in the request. Defaults to {@code page}.
 	 * 
-	 * @param pageProperty the parameter name to be used, must not be {@literal null} or empty.
+	 * @param pageParameterName the parameter name to be used, must not be {@literal null} or empty.
 	 */
-	public void setPageProperty(String pageProperty) {
+	public void setPageParameterName(String pageParameterName) {
 
-		Assert.hasText(pageProperty, "Page parameter name must not be null or empty!");
-		this.pageProperty = pageProperty;
+		Assert.hasText(pageParameterName, "Page parameter name must not be null or empty!");
+		this.pageParameterName = pageParameterName;
 	}
 
 	/**
 	 * Configures the parameter name to be used to find the page size in the request. Defaults to {@code size}.
 	 * 
-	 * @param sizeProperty the parameter name to be used, must not be {@literal null} or empty.
+	 * @param sizeParameterName the parameter name to be used, must not be {@literal null} or empty.
 	 */
-	public void setSizeProperty(String sizeProperty) {
+	public void setSizeParameterName(String sizeParameterName) {
 
-		Assert.hasText(sizeProperty, "Size parameter name must not be null or empty!");
-		this.sizeProperty = sizeProperty;
+		Assert.hasText(sizeParameterName, "Size parameter name must not be null or empty!");
+		this.sizeParameterName = sizeParameterName;
 	}
 
 	/**
@@ -132,13 +132,13 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	}
 
 	/**
-	 * The separator to be used between the qualifier and the actual page number and size properties. Defaults to
+	 * The delimiter to be used between the qualifier and the actual page number and size properties. Defaults to
 	 * {@code _}. So a qualifier of {@code foo} will result in a page number parameter of {@code foo_page}.
 	 * 
-	 * @param qualifierSeparator the qualifierSeparator to be used or {@literal null} to reset to the default.
+	 * @param qualifierDelimiter the delimter to be used or {@literal null} to reset to the default.
 	 */
-	public void setQualifierSeparator(String qualifierSeparator) {
-		this.qualifierSeparator = qualifierSeparator == null ? DEFAULT_QUALIFIER_SEPARATOR : qualifierSeparator;
+	public void setQualifierDelimiter(String qualifierDelimiter) {
+		this.qualifierDelimiter = qualifierDelimiter == null ? DEFAULT_QUALIFIER_DELIMITER : qualifierDelimiter;
 	}
 
 	/**
@@ -183,8 +183,8 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 		Pageable pageable = (Pageable) value;
 
-		String pagePropertyName = getParameterNameToUse(pageProperty, parameter);
-		String sizePropertyName = getParameterNameToUse(sizeProperty, parameter);
+		String pagePropertyName = getParameterNameToUse(pageParameterName, parameter);
+		String sizePropertyName = getParameterNameToUse(sizeParameterName, parameter);
 
 		int pageNumber = pageable.getPageNumber();
 
@@ -206,8 +206,8 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 		Pageable defaultOrFallback = getDefaultFromAnnotationOrFallback(methodParameter);
 
-		String pageString = webRequest.getParameter(getParameterNameToUse(pageProperty, methodParameter));
-		String pageSizeString = webRequest.getParameter(getParameterNameToUse(sizeProperty, methodParameter));
+		String pageString = webRequest.getParameter(getParameterNameToUse(pageParameterName, methodParameter));
+		String pageSizeString = webRequest.getParameter(getParameterNameToUse(sizeParameterName, methodParameter));
 
 		int page = StringUtils.hasText(pageString) ? Integer.parseInt(pageString) - (oneIndexedParameters ? 1 : 0)
 				: defaultOrFallback.getPageNumber();
@@ -233,7 +233,7 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 		if (parameter != null && parameter.hasParameterAnnotation(Qualifier.class)) {
 			builder.append(parameter.getParameterAnnotation(Qualifier.class).value());
-			builder.append(qualifierSeparator);
+			builder.append(qualifierDelimiter);
 		}
 
 		return builder.append(source).toString();
