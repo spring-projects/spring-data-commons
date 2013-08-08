@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    
-    <groupId>org.springframework.data</groupId>
-    <artifactId>spring-data-commons</artifactId>
-    <version>1.6.0.BUILD-SNAPSHOT</version>
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>org.springframework.data</groupId>
+	<artifactId>spring-data-commons</artifactId>
+	<version>1.6.0.BUILD-SNAPSHOT</version>
 
-    <name>Spring Data Core</name>
+	<name>Spring Data Core</name>
 
-    <parent>
-        <groupId>org.springframework.data.build</groupId>
-        <artifactId>spring-data-parent</artifactId>
-        <version>1.1.1.RELEASE</version>
-        <relativePath>../spring-data-build/parent/pom.xml</relativePath>
-    </parent>
-    
-    <properties>
-    	<jackson>1.9.7</jackson>
-    	<jackson2>2.2.2</jackson2>
-    	<springhateoas>0.6.0.RELEASE</springhateoas>
-    	<dist.key>DATACMNS</dist.key>
-    </properties>
-    
-    <dependencies>
-    	<dependency>
-    		<groupId>org.springframework</groupId>
+	<parent>
+		<groupId>org.springframework.data.build</groupId>
+		<artifactId>spring-data-parent</artifactId>
+		<version>1.1.1.RELEASE</version>
+		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
+	</parent>
+	
+	<properties>
+		<jackson>1.9.7</jackson>
+		<jackson2>2.2.2</jackson2>
+		<springhateoas>0.6.0.RELEASE</springhateoas>
+		<dist.key>DATACMNS</dist.key>
+	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>${spring}</version>
 			<exclusions>
@@ -177,9 +177,9 @@
 			<version>1.8.6</version>
 			<scope>test</scope>
 		</dependency>
-    </dependencies>
-    
-    <build>
+	</dependencies>
+	
+	<build>
 		<plugins>
 			<plugin>
 				<groupId>com.mysema.maven</groupId>
