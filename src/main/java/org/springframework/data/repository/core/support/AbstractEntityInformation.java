@@ -50,7 +50,8 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 			 */
 	public boolean isNew(T entity) {
 
-		return getId(entity) == null;
+		ID id = getId(entity);
+		return id == null || (id instanceof Number && ((Number) id).longValue() < 1);
 	}
 
 	/*
