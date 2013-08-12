@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
@@ -47,12 +48,13 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public abstract class RepositoryFactorySupport {
+public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 	private final List<RepositoryProxyPostProcessor> postProcessors = new ArrayList<RepositoryProxyPostProcessor>();
 	private QueryLookupStrategy.Key queryLookupStrategyKey;
 	private List<QueryCreationListener<?>> queryPostProcessors = new ArrayList<QueryCreationListener<?>>();
 	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
+	private ClassLoader classLoader = org.springframework.util.ClassUtils.getDefaultClassLoader();
 
 	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
@@ -76,6 +78,15 @@ public abstract class RepositoryFactorySupport {
 	 */
 	public void setNamedQueries(NamedQueries namedQueries) {
 		this.namedQueries = namedQueries == null ? PropertiesBasedNamedQueries.EMPTY : namedQueries;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader == null ? org.springframework.util.ClassUtils.getDefaultClassLoader() : classLoader;
 	}
 
 	/**
@@ -146,7 +157,7 @@ public abstract class RepositoryFactorySupport {
 
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, customImplementation, target));
 
-		return (T) result.getProxy();
+		return (T) result.getProxy(classLoader);
 	}
 
 	/**

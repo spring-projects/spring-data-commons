@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
@@ -41,7 +42,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable> implements
-		InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T> {
+		InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware {
 
 	private RepositoryFactorySupport factory;
 
@@ -50,6 +51,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private Object customImplementation;
 	private NamedQueries namedQueries;
 	private MappingContext<?, ?> mappingContext;
+	private ClassLoader classLoader;
 
 	/**
 	 * Setter to inject the repository interface to implement.
@@ -69,7 +71,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param queryLookupStrategyKey
 	 */
 	public void setQueryLookupStrategyKey(Key queryLookupStrategyKey) {
-
 		this.queryLookupStrategyKey = queryLookupStrategyKey;
 	}
 
@@ -79,7 +80,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param customImplementation
 	 */
 	public void setCustomImplementation(Object customImplementation) {
-
 		this.customImplementation = customImplementation;
 	}
 
@@ -100,6 +100,15 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
 		this.mappingContext = mappingContext;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader;
 	}
 
 	/*
@@ -179,6 +188,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.factory = createRepositoryFactory();
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
+		this.factory.setBeanClassLoader(classLoader);
 	}
 
 	/**

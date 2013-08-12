@@ -36,6 +36,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.ClassUtils;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport}.
@@ -47,15 +49,11 @@ public class RepositoryFactorySupportUnitTests {
 
 	RepositoryFactorySupport factory;
 
-	@Mock
-	PagingAndSortingRepository<Object, Serializable> backingRepo;
-	@Mock
-	ObjectRepositoryCustom customImplementation;
+	@Mock PagingAndSortingRepository<Object, Serializable> backingRepo;
+	@Mock ObjectRepositoryCustom customImplementation;
 
-	@Mock
-	MyQueryCreationListener listener;
-	@Mock
-	PlainQueryCreationListener otherListener;
+	@Mock MyQueryCreationListener listener;
+	@Mock PlainQueryCreationListener otherListener;
 
 	@Before
 	public void setUp() {
@@ -111,6 +109,16 @@ public class RepositoryFactorySupportUnitTests {
 		Class<? extends Repository<?, ?>> foo = (Class<? extends Repository<?, ?>>) repositoryInterface;
 
 		assertThat(factory.getRepository(foo), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-341
+	 */
+	@Test
+	public void usesDefaultClassLoaderIfNullConfigured() {
+
+		factory.setBeanClassLoader(null);
+		assertThat(ReflectionTestUtils.getField(factory, "classLoader"), is((Object) ClassUtils.getDefaultClassLoader()));
 	}
 
 	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {
