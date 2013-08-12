@@ -41,7 +41,7 @@ import org.springframework.web.context.request.NativeWebRequest;
  * methods. Request properties to be parsed can be configured. Default configuration uses request properties beginning
  * with {@link #DEFAULT_PREFIX}{@link #DEFAULT_SEPARATOR}.
  * 
- * @deprecated use {@link PageableWebHandlerArgumentResolver} instead.
+ * @deprecated use {@link PageableHandlerMethodArgumentResolver} instead.
  * @author Oliver Gierke
  */
 @Deprecated
