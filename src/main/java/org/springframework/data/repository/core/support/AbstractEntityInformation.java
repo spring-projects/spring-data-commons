@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,14 @@ import org.springframework.util.Assert;
  * {@link #getId(Object)} returns {@literal null}.
  * 
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 public abstract class AbstractEntityInformation<T, ID extends Serializable> implements EntityInformation<T, ID> {
 
 	private final Class<T> domainClass;
+
+	private boolean idTypePrimitiveSet;
+	private boolean idTypePrimitive;
 
 	/**
 	 * Creates a new {@link AbstractEntityInformation} from the given domain class.
@@ -50,7 +54,8 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 			 */
 	public boolean isNew(T entity) {
 
-		return getId(entity) == null;
+		ID id = getId(entity);
+		return id == null || (this.isIdTypePrimitive() && id instanceof Number && ((Number) id).longValue() < 1L);
 	}
 
 	/*
@@ -63,5 +68,14 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 	public Class<T> getJavaType() {
 
 		return this.domainClass;
+	}
+
+	protected boolean isIdTypePrimitive() {
+		if (!this.idTypePrimitiveSet) {
+			this.idTypePrimitive = getIdType() != null && getIdType().isPrimitive();
+			this.idTypePrimitiveSet = true;
+		}
+
+		return this.idTypePrimitive;
 	}
 }
