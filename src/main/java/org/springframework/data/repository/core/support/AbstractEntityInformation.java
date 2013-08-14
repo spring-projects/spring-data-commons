@@ -31,13 +31,10 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 
 	private final Class<T> domainClass;
 
-	private boolean idTypePrimitiveSet;
-	private boolean idTypePrimitive;
-
 	/**
 	 * Creates a new {@link AbstractEntityInformation} from the given domain class.
 	 * 
-	 * @param domainClass
+	 * @param domainClass must not be {@literal null}.
 	 */
 	public AbstractEntityInformation(Class<T> domainClass) {
 
@@ -46,36 +43,30 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.support.IsNewAware#isNew(java.lang
-			 * .Object)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.EntityInformation#isNew(java.lang.Object)
+	 */
 	public boolean isNew(T entity) {
 
 		ID id = getId(entity);
-		return id == null || this.isIdTypePrimitive() && id instanceof Number && ((Number) id).longValue() == 0;
+		Class<ID> idType = getIdType();
+
+		if (!idType.isPrimitive()) {
+			return id == null;
+		}
+
+		if (id instanceof Number) {
+			return ((Number) id).longValue() == 0L;
+		}
+
+		throw new IllegalArgumentException(String.format("Unsupported primitive id type %s!", idType));
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.support.EntityInformation#getJavaType
-			 * ()
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
+	 */
 	public Class<T> getJavaType() {
-
 		return this.domainClass;
-	}
-
-	protected boolean isIdTypePrimitive() {
-		if (!this.idTypePrimitiveSet) {
-			this.idTypePrimitive = getIdType() != null && getIdType().isPrimitive();
-			this.idTypePrimitiveSet = true;
-		}
-
-		return this.idTypePrimitive;
 	}
 }

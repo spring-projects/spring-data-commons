@@ -20,9 +20,13 @@ import static org.junit.Assert.*;
 
 import java.io.Serializable;
 
+import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.data.domain.Persistable;
+import org.junit.rules.ExpectedException;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Unit tests for {@link AbstractEntityInformation}.
@@ -31,6 +35,8 @@ import org.springframework.data.repository.core.EntityInformation;
  * @author Nick Williams
  */
 public class AbstractEntityInformationUnitTests {
+
+	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullDomainClass() throws Exception {
@@ -46,78 +52,85 @@ public class AbstractEntityInformationUnitTests {
 		assertThat(metadata.isNew(new Object()), is(false));
 	}
 
-	// See DATACMNS-357
+	/**
+	 * @see DATACMNS-357
+	 */
 	@Test
-	public void considersEntityNewIfGetIdReturnsNullAndIdTypeIsPrimitiveNumber() throws Exception {
+	public void detectsNewStateForPrimitiveIds() {
 
-		EntityInformation<LongIdEntity, Long> metadata1 =
-				new DummyEntityAndIdInformation<LongIdEntity, Long>(LongIdEntity.class, long.class);
-		assertThat(metadata1.isNew(null), is(true));
-		assertThat(metadata1.isNew(new LongIdEntity(null)), is(true));
-		assertThat(metadata1.isNew(new LongIdEntity(-1L)), is(true));
-		assertThat(metadata1.isNew(new LongIdEntity(0L)), is(true));
-		assertThat(metadata1.isNew(new LongIdEntity(1L)), is(false));
+		FooEn<PrimitiveIdEntity, Serializable> fooEn = new FooEn<PrimitiveIdEntity, Serializable>(PrimitiveIdEntity.class);
 
-		EntityInformation<IntIdEntity, Integer> metadata2 =
-				new DummyEntityAndIdInformation<IntIdEntity, Integer>(IntIdEntity.class, int.class);
-		assertThat(metadata2.isNew(null), is(true));
-		assertThat(metadata2.isNew(new IntIdEntity(null)), is(true));
-		assertThat(metadata2.isNew(new IntIdEntity(-1)), is(true));
-		assertThat(metadata2.isNew(new IntIdEntity(0)), is(true));
-		assertThat(metadata2.isNew(new IntIdEntity(1)), is(false));
+		PrimitiveIdEntity entity = new PrimitiveIdEntity();
+		assertThat(fooEn.isNew(entity), is(true));
+
+		entity.id = 5L;
+		assertThat(fooEn.isNew(entity), is(false));
 	}
 
-	// See DATACMNS-357
+	/**
+	 * @see DATACMNS-357
+	 */
 	@Test
-	public void considersEntityNewIfGetIdReturnsNullAndIdTypeIsPrimitiveWrapperNumber() throws Exception {
+	public void detectsNewStateForPrimitiveWrapperIds() {
 
-		EntityInformation<LongIdEntity, Long> metadata1 =
-				new DummyEntityAndIdInformation<LongIdEntity, Long>(LongIdEntity.class, Long.class);
-		assertThat(metadata1.isNew(null), is(true));
-		assertThat(metadata1.isNew(new LongIdEntity(null)), is(true));
-		assertThat(metadata1.isNew(new LongIdEntity(-1L)), is(false));
-		assertThat(metadata1.isNew(new LongIdEntity(0L)), is(false));
-		assertThat(metadata1.isNew(new LongIdEntity(1L)), is(false));
+		FooEn<PrimitiveWrapperIdEntity, Serializable> fooEn = new FooEn<PrimitiveWrapperIdEntity, Serializable>(
+				PrimitiveWrapperIdEntity.class);
 
-		EntityInformation<IntIdEntity, Integer> metadata2 =
-				new DummyEntityAndIdInformation<IntIdEntity, Integer>(IntIdEntity.class, Integer.class);
-		assertThat(metadata2.isNew(null), is(true));
-		assertThat(metadata2.isNew(new IntIdEntity(null)), is(true));
-		assertThat(metadata2.isNew(new IntIdEntity(-1)), is(false));
-		assertThat(metadata2.isNew(new IntIdEntity(0)), is(false));
-		assertThat(metadata2.isNew(new IntIdEntity(1)), is(false));
+		PrimitiveWrapperIdEntity entity = new PrimitiveWrapperIdEntity();
+		assertThat(fooEn.isNew(entity), is(true));
+
+		entity.id = 5L;
+		assertThat(fooEn.isNew(entity), is(false));
 	}
 
-	private static abstract class NumberIdEntity<T extends Number> implements Persistable<T> {
+	/**
+	 * @see DATACMNS-357
+	 */
+	@Test
+	public void rejectsUnsupportedPrimitiveIdType() {
 
-		private final T id;
+		FooEn<UnsupportedPrimitiveIdEntity, ?> information = new FooEn<UnsupportedPrimitiveIdEntity, Boolean>(
+				UnsupportedPrimitiveIdEntity.class);
 
-		public NumberIdEntity(T id) {
-			this.id = id;
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(boolean.class.getName());
+		information.isNew(new UnsupportedPrimitiveIdEntity());
+	}
+
+	static class PrimitiveIdEntity {
+
+		@Id long id;
+	}
+
+	static class PrimitiveWrapperIdEntity {
+
+		@Id Long id;
+	}
+
+	static class UnsupportedPrimitiveIdEntity {
+
+		@Id boolean id;
+	}
+
+	static class FooEn<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
+
+		private final Class<T> type;
+
+		private FooEn(Class<T> type) {
+			super(type);
+			this.type = type;
 		}
 
 		@Override
-		public T getId() {
-			return this.id;
+		@SuppressWarnings("unchecked")
+		public ID getId(T entity) {
+			return (ID) ReflectionTestUtils.getField(entity, "id");
 		}
 
 		@Override
-		public boolean isNew() {
-			throw new UnsupportedOperationException();
-		}
-	}
-
-	private static final class LongIdEntity extends NumberIdEntity<Long> {
-
-		public LongIdEntity(Long id) {
-			super(id);
-		}
-	}
-
-	private static final class IntIdEntity extends NumberIdEntity<Integer> {
-
-		public IntIdEntity(Integer id) {
-			super(id);
+		@SuppressWarnings("unchecked")
+		public Class<ID> getIdType() {
+			return (Class<ID>) ReflectionUtils.findField(type, "id").getType();
 		}
 	}
 }
