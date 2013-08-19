@@ -27,6 +27,8 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.DomainClassConverter;
+import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
@@ -37,7 +39,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 /**
- * Annotation to automatically register the following beans for usage with Spring MVC.
+ * Annotation to automatically register the following beans for usage with Spring MVC. Note that using this annotation
+ * will require Spring 3.2.
  * <ul>
  * <li>{@link DomainClassConverter} - to allow usage of domain types managed by Spring Data repositories as controller
  * method arguments bound with {@link PathVariable} or {@link RequestParam}.</li>
@@ -46,8 +49,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
  * <li>{@link SortHandlerMethodArgumentResolver} - to allow injection of {@link Sort} instances into controller methods
  * automatically created from request parameters.</li>
  * </ul>
- * If Spring HATEOAS is present on the classpath we will additionall register the following beans:
+ * If Spring HATEOAS is present on the classpath we will register the following beans:
  * <ul>
+ * <li>{@link HateoasPageableHandlerMethodArgumentResolver} - instead of {@link PageableHandlerMethodArgumentResolver}</li>
+ * <li>{@link HateoasSortHandlerMethodArgumentResolver} - instead of {@link SortHandlerMethodArgumentResolver}</li>
  * <li>{@link PagedResourcesAssembler} - for injection into web components</li>
  * <li>{@link PagedResourcesAssemblerArgumentResolver} - for injection of {@link PagedResourcesAssembler} into
  * controller methods</li>

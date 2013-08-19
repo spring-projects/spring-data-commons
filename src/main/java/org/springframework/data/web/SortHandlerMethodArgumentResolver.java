@@ -25,7 +25,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.web.SortDefault.SortDefaults;
-import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -33,7 +32,6 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * {@link HandlerMethodArgumentResolver} to automatically create {@link Sort} instances from request parameters or
@@ -42,8 +40,9 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @since 1.6
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Nick Williams
  */
-public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver, UriComponentsContributor {
+public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private static final String DEFAULT_PARAMETER = "sort";
 	private static final String DEFAULT_PROPERTY_DELIMITER = ",";
@@ -76,10 +75,10 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 * 
 	 * @param sortParameter must not be {@literal null} or empty.
 	 */
-	public void setSortParameter(String parameter) {
+	public void setSortParameter(String sortParameter) {
 
-		Assert.hasText(parameter);
-		this.sortParameter = parameter;
+		Assert.hasText(sortParameter);
+		this.sortParameter = sortParameter;
 	}
 
 	/**
@@ -108,42 +107,16 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
 	 */
+	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return Sort.class.equals(parameter.getParameterType());
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
-	 */
-	public void enhance(UriComponentsBuilder builder, MethodParameter parameter, Object value) {
-
-		if (!(value instanceof Sort)) {
-			return;
-		}
-
-		Sort sort = (Sort) value;
-
-		if (legacyMode) {
-
-			List<String> expressions = legacyFoldExpressions(sort);
-			Assert.isTrue(expressions.size() == 2,
-					String.format("Expected 2 sort expressions (fields, direction) but got %d!", expressions.size()));
-			builder.queryParam(getSortParameter(parameter), expressions.get(0));
-			builder.queryParam(getLegacyDirectionParameter(parameter), expressions.get(1));
-
-		} else {
-
-			for (String expression : foldIntoExpressions(sort)) {
-				builder.queryParam(getSortParameter(parameter), expression);
-			}
-		}
-	}
-
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
+	@Override
 	public Sort resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
@@ -218,7 +191,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 * @param parameter will never be {@literal null}.
 	 * @return
 	 */
-	private String getSortParameter(MethodParameter parameter) {
+	protected String getSortParameter(MethodParameter parameter) {
 
 		StringBuilder builder = new StringBuilder();
 
@@ -246,7 +219,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 		return new Sort(Direction.fromStringOrNull(directions), fields.split(","));
 	}
 
-	private String getLegacyDirectionParameter(MethodParameter parameter) {
+	protected String getLegacyDirectionParameter(MethodParameter parameter) {
 		return getSortParameter(parameter) + ".dir";
 	}
 
@@ -292,7 +265,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 * @param sort must not be {@literal null}.
 	 * @return
 	 */
-	private List<String> foldIntoExpressions(Sort sort) {
+	protected List<String> foldIntoExpressions(Sort sort) {
 
 		List<String> expressions = new ArrayList<String>();
 		ExpressionBuilder builder = null;
@@ -322,7 +295,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 * @param sort must not be {@literal null}.
 	 * @return
 	 */
-	private List<String> legacyFoldExpressions(Sort sort) {
+	protected List<String> legacyFoldExpressions(Sort sort) {
 
 		List<String> expressions = new ArrayList<String>();
 		ExpressionBuilder builder = null;

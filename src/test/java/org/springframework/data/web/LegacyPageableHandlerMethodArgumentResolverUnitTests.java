@@ -32,6 +32,7 @@ import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Unit tests for {@link PageableHandlerMethodArgumentResolver} in it's legacy mode. Essentially a copy of
@@ -39,9 +40,10 @@ import org.springframework.web.context.request.ServletWebRequest;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 @SuppressWarnings("deprecation")
-public class LegacyPageableHandlerArgumentResolverUnitTests extends PageableDefaultUnitTests {
+public class LegacyPageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
 	Method correctMethod, noQualifiers, invalidQualifiers, defaultsMethod, defaultsMethodWithSort,
 			defaultsMethodWithSortAndDirection, otherMethod;
@@ -210,8 +212,18 @@ public class LegacyPageableHandlerArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Override
-	protected PageableHandlerMethodArgumentResolver getResolver() {
-		return PageableHandlerMethodArgumentResolver.LEGACY;
+	protected HateoasPageableHandlerMethodArgumentResolver getResolver() {
+		return HateoasPageableHandlerMethodArgumentResolver.LEGACY;
+	}
+
+	protected void assertUriStringFor(Pageable pageable, String expected) {
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
+		MethodParameter parameter = getParameterOfMethod("supportedMethod");
+
+		getResolver().enhance(builder, parameter, pageable);
+
+		assertThat(builder.build().toUriString(), endsWith(expected));
 	}
 
 	static interface SampleController {
@@ -224,8 +236,8 @@ public class LegacyPageableHandlerArgumentResolverUnitTests extends PageableDefa
 		void simpleDefaultWithSortAndDirection(@PageableDefaults(value = PAGE_SIZE, pageNumber = PAGE_NUMBER, sort = {
 				"firstname", "lastname" }, sortDir = Direction.DESC) Pageable pageable);
 
-		void simpleDefaultWithExternalSort(
-				@PageableDefaults(value = PAGE_SIZE, pageNumber = PAGE_NUMBER) @SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC) Pageable pageable);
+		void simpleDefaultWithExternalSort(@PageableDefaults(value = PAGE_SIZE, pageNumber = PAGE_NUMBER) @SortDefault(
+				sort = { "firstname", "lastname" }, direction = Direction.DESC) Pageable pageable);
 
 		void simpleDefaultWithContaineredExternalSort(
 				@PageableDefaults(value = PAGE_SIZE, pageNumber = PAGE_NUMBER) @SortDefaults(@SortDefault(sort = { "firstname",

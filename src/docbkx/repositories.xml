@@ -864,6 +864,10 @@ public class MyRepositoryFactoryBean&lt;R extends JpaRepository&lt;T, I&gt;, T, 
         range. As it the newly introduced support changes quite a lot of
         things we kept the documentation of the former behavior in <xref
         linkend="web.legacy"/>.</para>
+
+        <para>Also note that the JavaConfig support introduced in Spring Data
+        Commons 1.6 requires Spring 3.2 due to some issues with JavaConfig and
+        overridden methods in Spring 3.1.</para>
       </note>
 
       <para>Spring Data modules ships with a variety of web support if the
@@ -1128,7 +1132,7 @@ class PersonController {
         <para>Assume we have 30 <classname>Person</classname> instances in the
         database. You can now trigger a request <code>GET
         http://localhost:8080/persons</code> and you'll see something similar
-        to this: </para>
+        to this:</para>
 
         <para><programlisting>{ "links" : [ { "rel" : "next", 
                 "href" : "http://localhost:8080/persons?page=1&amp;size=20 } 

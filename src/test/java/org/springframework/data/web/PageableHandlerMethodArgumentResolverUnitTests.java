@@ -15,11 +15,6 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import java.util.List;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
@@ -27,37 +22,22 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
-import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Unit tests for {@link PageableHandlerMethodArgumentResolver}. Pulls in defaulting tests from
  * {@link PageableDefaultUnitTests}.
  * 
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
-
-	@Test
-	public void buildsUpRequestParameters() {
-
-		String basicString = String.format("page=%d&size=%d", PAGE_NUMBER, PAGE_SIZE);
-
-		assertUriStringFor(REFERENCE_WITHOUT_SORT, basicString);
-		assertUriStringFor(REFERENCE_WITH_SORT, basicString + "&sort=firstname,lastname,desc");
-		assertUriStringFor(REFERENCE_WITH_SORT_FIELDS, basicString + "&sort=firstname,lastname,asc");
-	}
 
 	/**
 	 * @see DATACMNS-335
 	 */
 	@Test
 	public void preventsPageSizeFromExceedingMayValueIfConfigured() throws Exception {
-
-		// Write side
-		assertUriStringFor(new PageRequest(0, 200), "page=0&size=100");
 
 		// Read side
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -67,28 +47,6 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
 
 		assertSupportedAndResult(parameter, new PageRequest(0, 100), request);
-	}
-
-	/**
-	 * @see DATACMNS-343
-	 */
-	@Test
-	public void replacesExistingPaginationInformation() throws Exception {
-
-		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
-		UriComponentsContributor resolver = new PageableHandlerMethodArgumentResolver();
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://localhost:8080?page=0&size=10");
-		resolver.enhance(builder, parameter, new PageRequest(1, 20));
-
-		MultiValueMap<String, String> params = builder.build().getQueryParams();
-
-		List<String> page = params.get("page");
-		assertThat(page.size(), is(1));
-		assertThat(page.get(0), is("1"));
-
-		List<String> size = params.get("size");
-		assertThat(size.size(), is(1));
-		assertThat(size.get(0), is("20"));
 	}
 
 	@Test(expected = IllegalArgumentException.class)

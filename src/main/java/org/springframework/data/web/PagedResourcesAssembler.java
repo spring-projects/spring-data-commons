@@ -38,10 +38,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, PagedResources<Resource<T>>> {
 
-	private final PageableHandlerMethodArgumentResolver pageableResolver;
+	private final HateoasPageableHandlerMethodArgumentResolver pageableResolver;
 	private final UriComponents baseUri;
 
 	/**
@@ -52,9 +53,9 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @param resolver
 	 * @param baseUri
 	 */
-	public PagedResourcesAssembler(PageableHandlerMethodArgumentResolver resolver, UriComponents baseUri) {
+	public PagedResourcesAssembler(HateoasPageableHandlerMethodArgumentResolver resolver, UriComponents baseUri) {
 
-		this.pageableResolver = resolver == null ? new PageableHandlerMethodArgumentResolver() : resolver;
+		this.pageableResolver = resolver == null ? new HateoasPageableHandlerMethodArgumentResolver() : resolver;
 		this.baseUri = baseUri;
 	}
 

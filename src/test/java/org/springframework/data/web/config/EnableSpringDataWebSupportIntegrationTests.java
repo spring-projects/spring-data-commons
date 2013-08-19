@@ -17,6 +17,7 @@ package org.springframework.data.web.config;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -25,9 +26,11 @@ import java.util.List;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.SpringVersion;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
@@ -51,6 +54,11 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	@EnableSpringDataWebSupport
 	static class SampleConfig {
 
+	}
+
+	@Before
+	public void setUp() {
+		assumeThat(SpringVersion.getVersion(), startsWith("3.2"));
 	}
 
 	@After
@@ -88,6 +96,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
+		assertThat(names, hasItems("pageableResolver", "sortResolver"));
 		assertThat(names, not(hasItems("pagedResourcesAssembler", "pagedResourcesAssemblerArgumentResolver")));
 	}
 

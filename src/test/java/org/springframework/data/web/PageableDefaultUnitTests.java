@@ -32,7 +32,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Base test class to test supporting of a {@link HandlerMethodArgumentResolver} implementation defaulting
@@ -42,6 +41,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 public abstract class PageableDefaultUnitTests {
 
@@ -142,16 +142,6 @@ public abstract class PageableDefaultUnitTests {
 		HandlerMethodArgumentResolver resolver = getResolver();
 		assertThat(resolver.supportsParameter(parameter), is(true));
 		assertThat(resolver.resolveArgument(parameter, null, request, null), is((Object) pageable));
-	}
-
-	protected void assertUriStringFor(Pageable pageable, String expected) {
-
-		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
-		MethodParameter parameter = getParameterOfMethod("supportedMethod");
-
-		getResolver().enhance(builder, parameter, pageable);
-
-		assertThat(builder.build().toUriString(), endsWith(expected));
 	}
 
 	protected abstract PageableHandlerMethodArgumentResolver getResolver();

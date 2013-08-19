@@ -41,11 +41,19 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 	@Autowired private ApplicationContext context;
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#pageableResolver()
+	 */
 	@Bean
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
-		return new PageableHandlerMethodArgumentResolver();
+		return new PageableHandlerMethodArgumentResolver(sortResolver());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#sortResolver()
+	 */
 	@Bean
 	public SortHandlerMethodArgumentResolver sortResolver() {
 		return new SortHandlerMethodArgumentResolver();
@@ -79,7 +87,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 
-		argumentResolvers.add(pageableResolver());
 		argumentResolvers.add(sortResolver());
+		argumentResolvers.add(pageableResolver());
 	}
 }

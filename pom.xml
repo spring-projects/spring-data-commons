@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.1.1.RELEASE</version>
+		<version>1.2.0.BUILD-SNAPSHOT</version>
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
 	
@@ -162,6 +162,12 @@
 			<version>${springhateoas}</version>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring}</version>
+			<optional>true</optional>
+		</dependency>
 		
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
@@ -211,8 +217,8 @@
 	
 	<repositories>
 		<repository>
-			<id>spring-libs-releases</id>
-			<url>http://repo.springsource.org/libs-release-local</url>
+			<id>spring-libs-snapshot</id>
+			<url>http://repo.springsource.org/libs-snapshot-local</url>
 		</repository>
 	</repositories>
 

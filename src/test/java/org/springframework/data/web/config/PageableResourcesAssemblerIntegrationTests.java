@@ -17,6 +17,7 @@ package org.springframework.data.web.config;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.util.Arrays;
 
@@ -25,6 +26,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.SpringVersion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -63,6 +65,8 @@ public class PageableResourcesAssemblerIntegrationTests {
 	@Test
 	public void injectsPagedResourcesAssembler() {
 
+		assumeThat(SpringVersion.getVersion(), startsWith("3.2"));
+
 		WebApplicationContext context = WebTestUtils.createApplicationContext(Config.class);
 		SampleController controller = context.getBean(SampleController.class);
 
@@ -77,8 +81,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 	@Controller
 	static class SampleController {
 
-		@Autowired
-		PagedResourcesAssembler<Person> assembler;
+		@Autowired PagedResourcesAssembler<Person> assembler;
 
 		@RequestMapping("/persons")
 		PagedResources<Resource<Person>> sample(Pageable pageable) {

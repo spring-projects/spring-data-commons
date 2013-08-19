@@ -22,25 +22,24 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Extracts paging information from web requests and thus allows injecting {@link Pageable} instances into controller
- * methods. Request properties to be parsed can be configured. Default configuration uses request properties beginning
- * with {@link #PAGE_PROPERTY}{@link #DEFAULT_SEPARATOR}.
+ * methods. Request properties to be parsed can be configured. Default configuration uses request parameters beginning
+ * with {@link #DEFAULT_PAGE_PARAMETER}{@link #DEFAULT_QUALIFIER_DELIMITER}.
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 @SuppressWarnings("deprecation")
-public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver, UriComponentsContributor {
+public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	/**
 	 * A {@link PageableHandlerMethodArgumentResolver} preconfigured to the setup of {@link PageableArgumentResolver}. Use
@@ -60,20 +59,36 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	}
 
 	private static final Pageable DEFAULT_PAGE_REQUEST = new PageRequest(0, 20);
-	private static final String DEFAULT_PAGE_PROPERTY = "page";
-	private static final String DEFAULT_SIZE_PROPERTY = "size";
+	private static final String DEFAULT_PAGE_PARAMETER = "page";
+	private static final String DEFAULT_SIZE_PARAMETER = "size";
 	private static final String DEFAULT_PREFIX = "";
 	private static final String DEFAULT_QUALIFIER_DELIMITER = "_";
 	private static final int DEFAULT_MAX_PAGE_SIZE = 2000;
 
 	private Pageable fallbackPageable = DEFAULT_PAGE_REQUEST;
-	private SortHandlerMethodArgumentResolver sortResolver = new SortHandlerMethodArgumentResolver();
-	private String pageParameterName = DEFAULT_PAGE_PROPERTY;
-	private String sizeParameterName = DEFAULT_SIZE_PROPERTY;
+	private SortHandlerMethodArgumentResolver sortResolver;
+	private String pageParameterName = DEFAULT_PAGE_PARAMETER;
+	private String sizeParameterName = DEFAULT_SIZE_PARAMETER;
 	private String prefix = DEFAULT_PREFIX;
 	private String qualifierDelimiter = DEFAULT_QUALIFIER_DELIMITER;
 	private int maxPageSize = DEFAULT_MAX_PAGE_SIZE;
 	private boolean oneIndexedParameters = false;
+
+	/**
+	 * Constructs an instance of this resolved with a default {@link SortHandlerMethodArgumentResolver}.
+	 */
+	public PageableHandlerMethodArgumentResolver() {
+		this(null);
+	}
+
+	/**
+	 * Constructs an instance of this resolver with the specified {@link SortHandlerMethodArgumentResolver}.
+	 * 
+	 * @param sortResolver The sort resolver to use
+	 */
+	public PageableHandlerMethodArgumentResolver(SortHandlerMethodArgumentResolver sortResolver) {
+		this.sortResolver = sortResolver == null ? new SortHandlerMethodArgumentResolver() : sortResolver;
+	}
 
 	/**
 	 * Configures the {@link Pageable} to be used as fallback in case no {@link PageableDefault} or
@@ -100,6 +115,16 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	}
 
 	/**
+	 * Retrieves the maximum page size to be accepted. This allows to put an upper boundary of the page size to prevent
+	 * potential attacks trying to issue an {@link OutOfMemoryError}. Defaults to {@link #DEFAULT_MAX_PAGE_SIZE}.
+	 * 
+	 * @return the maximum page size allowed.
+	 */
+	protected int getMaxPageSize() {
+		return this.maxPageSize;
+	}
+
+	/**
 	 * Configures the parameter name to be used to find the page number in the request. Defaults to {@code page}.
 	 * 
 	 * @param pageParameterName the parameter name to be used, must not be {@literal null} or empty.
@@ -111,6 +136,15 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	}
 
 	/**
+	 * Retrieves the parameter name to be used to find the page number in the request. Defaults to {@code page}.
+	 * 
+	 * @return the parameter name to be used, never {@literal null} or empty.
+	 */
+	protected String getPageParameterName() {
+		return this.pageParameterName;
+	}
+
+	/**
 	 * Configures the parameter name to be used to find the page size in the request. Defaults to {@code size}.
 	 * 
 	 * @param sizeParameterName the parameter name to be used, must not be {@literal null} or empty.
@@ -119,6 +153,15 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 		Assert.hasText(sizeParameterName, "Size parameter name must not be null or empty!");
 		this.sizeParameterName = sizeParameterName;
+	}
+
+	/**
+	 * Retrieves the parameter name to be used to find the page size in the request. Defaults to {@code size}.
+	 * 
+	 * @return the parameter name to be used, never {@literal null} or empty.
+	 */
+	protected String getSizeParameterName() {
+		return this.sizeParameterName;
 	}
 
 	/**
@@ -142,17 +185,6 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	}
 
 	/**
-	 * Configure the {@link SortHandlerMethodArgumentResolver} to be used with the
-	 * {@link PageableHandlerMethodArgumentResolver}.
-	 * 
-	 * @param sortResolver the {@link SortHandlerMethodArgumentResolver} to be used ot {@literal null} to reset it to the
-	 *          default one.
-	 */
-	public void setSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
-		this.sortResolver = sortResolver == null ? new SortHandlerMethodArgumentResolver() : sortResolver;
-	}
-
-	/**
 	 * Configures whether to expose and assume 1-based page number indexes in the request parameters. Defaults to
 	 * {@literal false}, meaning a page number of 0 in the request equals the first page. If this is set to
 	 * {@literal true}, a page number of 1 in the request will be considered the first page.
@@ -163,42 +195,31 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 		this.oneIndexedParameters = oneIndexedParameters;
 	}
 
+	/**
+	 * Indicates whether to expose and assume 1-based page number indexes in the request parameters. Defaults to
+	 * {@literal false}, meaning a page number of 0 in the request equals the first page. If this is set to
+	 * {@literal true}, a page number of 1 in the request will be considered the first page.
+	 * 
+	 * @return whether to assume 1-based page number indexes in the request parameters.
+	 */
+	protected boolean isOneIndexedParameters() {
+		return this.oneIndexedParameters;
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
 	 */
+	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return Pageable.class.equals(parameter.getParameterType());
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
-	 */
-	public void enhance(UriComponentsBuilder builder, MethodParameter parameter, Object value) {
-
-		if (!(value instanceof Pageable)) {
-			return;
-		}
-
-		Pageable pageable = (Pageable) value;
-
-		String pagePropertyName = getParameterNameToUse(pageParameterName, parameter);
-		String sizePropertyName = getParameterNameToUse(sizeParameterName, parameter);
-
-		int pageNumber = pageable.getPageNumber();
-
-		builder.replaceQueryParam(pagePropertyName, oneIndexedParameters ? pageNumber + 1 : pageNumber);
-		builder.replaceQueryParam(sizePropertyName, pageable.getPageSize() <= maxPageSize ? pageable.getPageSize()
-				: maxPageSize);
-
-		sortResolver.enhance(builder, parameter, pageable.getSort());
-	}
-
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
+	@Override
 	public Pageable resolveArgument(MethodParameter methodParameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
@@ -225,9 +246,9 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	 * 
 	 * @param source the basic parameter name.
 	 * @param parameter the {@link MethodParameter} potentially qualified.
-	 * @return
+	 * @return the name of the request parameter.
 	 */
-	private String getParameterNameToUse(String source, MethodParameter parameter) {
+	protected String getParameterNameToUse(String source, MethodParameter parameter) {
 
 		StringBuilder builder = new StringBuilder(prefix);
 

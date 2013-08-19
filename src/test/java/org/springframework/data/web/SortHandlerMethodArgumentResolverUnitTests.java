@@ -17,7 +17,6 @@ package org.springframework.data.web;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.data.domain.Sort.Direction.*;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,7 +29,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Unit tests for {@link SortHandlerMethodArgumentResolver}.
@@ -38,8 +36,9 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @since 1.6
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Nick Williams
  */
-public class SortHandlerArgumentResolverUnitTests extends SortDefaultUnitTests {
+public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
 	static final String SORT_0 = "username";
 	static final String SORT_1 = "username,asc";
@@ -115,25 +114,6 @@ public class SortHandlerArgumentResolverUnitTests extends SortDefaultUnitTests {
 		assertThat(result, is(nullValue()));
 	}
 
-	@Test
-	public void buildsUpRequestParameters() {
-		assertUriStringFor(SORT, "sort=firstname,lastname,desc");
-		assertUriStringFor(new Sort(ASC, "foo").and(new Sort(DESC, "bar").and(new Sort(ASC, "foobar"))),
-				"sort=foo,asc&sort=bar,desc&sort=foobar,asc");
-		assertUriStringFor(new Sort(ASC, "foo").and(new Sort(ASC, "bar").and(new Sort(DESC, "foobar"))),
-				"sort=foo,bar,asc&sort=foobar,desc");
-	}
-
-	private void assertUriStringFor(Sort sort, String expected) {
-
-		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
-		MethodParameter parameter = getParameterOfMethod("supportedMethod");
-
-		new SortHandlerMethodArgumentResolver().enhance(builder, parameter, sort);
-
-		assertThat(builder.build().toUriString(), endsWith(expected));
-	}
-
 	private static void assertSupportedAndResolvedTo(NativeWebRequest request, MethodParameter parameter, Sort sort) {
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
@@ -147,7 +127,6 @@ public class SortHandlerArgumentResolverUnitTests extends SortDefaultUnitTests {
 	}
 
 	private static NativeWebRequest getRequestWithSort(Sort sort) {
-
 		return getRequestWithSort(sort, null);
 	}
 
