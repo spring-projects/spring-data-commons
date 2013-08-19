@@ -42,6 +42,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 public abstract class PageableDefaultUnitTests {
 
@@ -154,7 +155,7 @@ public abstract class PageableDefaultUnitTests {
 		assertThat(builder.build().toUriString(), endsWith(expected));
 	}
 
-	protected abstract PageableHandlerMethodArgumentResolver getResolver();
+	protected abstract HateoasPageableHandlerMethodArgumentResolver getResolver();
 
 	protected abstract Class<?> getControllerClass();
 

@@ -39,6 +39,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 @SuppressWarnings("deprecation")
 public class LegacyPageableHandlerArgumentResolverUnitTests extends PageableDefaultUnitTests {
@@ -210,8 +211,8 @@ public class LegacyPageableHandlerArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Override
-	protected PageableHandlerMethodArgumentResolver getResolver() {
-		return PageableHandlerMethodArgumentResolver.LEGACY;
+	protected HateoasPageableHandlerMethodArgumentResolver getResolver() {
+		return HateoasPageableHandlerMethodArgumentResolver.LEGACY;
 	}
 
 	static interface SampleController {

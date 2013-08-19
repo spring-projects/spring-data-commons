@@ -37,6 +37,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * {@link PageableDefaultUnitTests}.
  * 
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
@@ -76,7 +77,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	public void replacesExistingPaginationInformation() throws Exception {
 
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
-		UriComponentsContributor resolver = new PageableHandlerMethodArgumentResolver();
+		UriComponentsContributor resolver = new HateoasPageableHandlerMethodArgumentResolver();
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://localhost:8080?page=0&size=10");
 		resolver.enhance(builder, parameter, new PageRequest(1, 20));
 
@@ -123,9 +124,37 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		assertSupportedAndResult(parameter, new PageRequest(2, 10), request);
 	}
 
-	@Override
-	protected PageableHandlerMethodArgumentResolver getResolver() {
+	@Test(expected = IllegalArgumentException.class)
+	public void pageResolverMustBeHateoasResolver() {
+		new HateoasPageableHandlerMethodArgumentResolver().setSortResolver(new SortHandlerMethodArgumentResolver());
+	}
+
+	@Test
+	public void pageResolverMayBeHateoasResolver() {
+		new HateoasPageableHandlerMethodArgumentResolver()
+				.setSortResolver(new HateoasSortHandlerMethodArgumentResolver());
+	}
+
+	@Test
+	public void pageResolverDefaultsToHateoasResolver() {
+		PageableHandlerMethodArgumentResolver resolver = new HateoasPageableHandlerMethodArgumentResolver();
+		assertSame(HateoasSortHandlerMethodArgumentResolver.class, resolver.getSortResolver().getClass());
+	}
+
+	@Test
+	public void pageResolverMayBeNonHateoasResolver() {
+		new PageableHandlerMethodArgumentResolver().setSortResolver(new SortHandlerMethodArgumentResolver());
+	}
+
+	@Test
+	public void pageResolverDefaultsToNonHateoasResolver() {
 		PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
+		assertSame(SortHandlerMethodArgumentResolver.class, resolver.getSortResolver().getClass());
+	}
+
+	@Override
+	protected HateoasPageableHandlerMethodArgumentResolver getResolver() {
+		HateoasPageableHandlerMethodArgumentResolver resolver = new HateoasPageableHandlerMethodArgumentResolver();
 		resolver.setMaxPageSize(100);
 		return resolver;
 	}

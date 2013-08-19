@@ -38,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @since 1.6
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Nick Williams
  */
 public class SortHandlerArgumentResolverUnitTests extends SortDefaultUnitTests {
 
@@ -129,7 +130,7 @@ public class SortHandlerArgumentResolverUnitTests extends SortDefaultUnitTests {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
 		MethodParameter parameter = getParameterOfMethod("supportedMethod");
 
-		new SortHandlerMethodArgumentResolver().enhance(builder, parameter, sort);
+		new HateoasSortHandlerMethodArgumentResolver().enhance(builder, parameter, sort);
 
 		assertThat(builder.build().toUriString(), endsWith(expected));
 	}

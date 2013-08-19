@@ -19,6 +19,8 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -28,18 +30,33 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 @Configuration
 public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfiguration {
 
+	@Override
+	public HateoasPageableHandlerMethodArgumentResolver createPageableResolver() {
+		return new HateoasPageableHandlerMethodArgumentResolver();
+	}
+
+	@Override
+	public HateoasSortHandlerMethodArgumentResolver createSortResolver() {
+		return new HateoasSortHandlerMethodArgumentResolver();
+	}
+
 	@Bean
 	public PagedResourcesAssembler<Object> pagedResourcesAssembler() {
-		return new PagedResourcesAssembler<Object>(pageableResolver(), null);
+		return new PagedResourcesAssembler<Object>(
+				(HateoasPageableHandlerMethodArgumentResolver) pageableResolver(), null
+		);
 	}
 
 	@Bean
 	public PagedResourcesAssemblerArgumentResolver pagedResourcesAssemblerArgumentResolver() {
-		return new PagedResourcesAssemblerArgumentResolver(pageableResolver(), null);
+		return new PagedResourcesAssemblerArgumentResolver(
+				(HateoasPageableHandlerMethodArgumentResolver) pageableResolver(), null
+		);
 	}
 
 	/* 
