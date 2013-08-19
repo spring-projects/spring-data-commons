@@ -35,10 +35,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  * Unit tests for {@link PagedResourcesAssembler}.
  * 
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 public class PagedResourcesAssemblerUnitTests {
 
-	PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
+	HateoasPageableHandlerMethodArgumentResolver resolver = new HateoasPageableHandlerMethodArgumentResolver();
 
 	@Before
 	public void setUp() {

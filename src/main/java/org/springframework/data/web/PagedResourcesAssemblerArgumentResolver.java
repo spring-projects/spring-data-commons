@@ -32,10 +32,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final PageableHandlerMethodArgumentResolver resolver;
+	private final HateoasPageableHandlerMethodArgumentResolver resolver;
 	private final MethodLinkBuilderFactory<?> linkBuilderFactory;
 
 	/**
@@ -45,7 +46,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	 * @param resolver can be {@literal null}.
 	 * @param linkBuilderFactory can be {@literal null}, will be defaulted to a {@link ControllerLinkBuilderFactory}.
 	 */
-	public PagedResourcesAssemblerArgumentResolver(PageableHandlerMethodArgumentResolver resolver,
+	public PagedResourcesAssemblerArgumentResolver(HateoasPageableHandlerMethodArgumentResolver resolver,
 			MethodLinkBuilderFactory<?> linkBuilderFactory) {
 
 		this.resolver = resolver;

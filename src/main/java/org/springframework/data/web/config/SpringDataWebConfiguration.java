@@ -35,6 +35,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Nick Williams
  */
 @Configuration
 public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
@@ -43,11 +44,21 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 	@Bean
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
+		return createPageableResolver();
+	}
+
+	// Necessary to prevent IllegalStateException: Singleton 'pageableResolver' isn't currently in creation for HATEOAS
+	PageableHandlerMethodArgumentResolver createPageableResolver() {
 		return new PageableHandlerMethodArgumentResolver();
 	}
 
 	@Bean
 	public SortHandlerMethodArgumentResolver sortResolver() {
+		return createSortResolver();
+	}
+
+	// Necessary to prevent IllegalStateException: Singleton 'sortResolver' isn't currently in creation for HATEOAS
+	public SortHandlerMethodArgumentResolver createSortResolver() {
 		return new SortHandlerMethodArgumentResolver();
 	}
 
