@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.w3c.dom.Element;
 
@@ -62,7 +63,8 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 
 		try {
 
-			XmlRepositoryConfigurationSource configSource = new XmlRepositoryConfigurationSource(element, parser);
+			Environment environment = parser.getDelegate().getEnvironment();
+			XmlRepositoryConfigurationSource configSource = new XmlRepositoryConfigurationSource(element, parser, environment);
 
 			for (RepositoryConfiguration<XmlRepositoryConfigurationSource> config : extension.getRepositoryConfigurations(
 					configSource, parser.getReaderContext().getResourceLoader())) {

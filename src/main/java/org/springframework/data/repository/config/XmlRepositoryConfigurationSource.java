@@ -18,6 +18,7 @@ package org.springframework.data.repository.config;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.TypeFilterParser;
 import org.springframework.data.config.TypeFilterParser.Type;
@@ -50,8 +51,11 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * 
 	 * @param element must not be {@literal null}.
 	 * @param context must not be {@literal null}.
+	 * @param environment must not be {@literal null}.
 	 */
-	public XmlRepositoryConfigurationSource(Element element, ParserContext context) {
+	public XmlRepositoryConfigurationSource(Element element, ParserContext context, Environment environment) {
+
+		super(environment);
 
 		Assert.notNull(element);
 		Assert.notNull(context);

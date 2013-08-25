@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 
@@ -34,6 +36,18 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 
 	protected static final String DEFAULT_REPOSITORY_IMPL_POSTFIX = "Impl";
 
+	private final Environment environment;
+
+	/**
+	 * Creates a new {@link RepositoryConfigurationSourceSupport} with the given environment. Defaults to a plain
+	 * {@link StandardEnvironment} in case the given argument is {@literal null}.
+	 * 
+	 * @param environment nullable, defaults to a {@link StandardEnvironment}.
+	 */
+	public RepositoryConfigurationSourceSupport(Environment environment) {
+		this.environment = environment == null ? new StandardEnvironment() : environment;
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getCandidates(org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider)
@@ -42,6 +56,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 
 		ClassPathScanningCandidateComponentProvider scanner = new RepositoryComponentProvider(getIncludeFilters());
 		scanner.setResourceLoader(loader);
+		scanner.setEnvironment(environment);
 
 		for (TypeFilter filter : getExcludeFilters()) {
 			scanner.addExcludeFilter(filter);

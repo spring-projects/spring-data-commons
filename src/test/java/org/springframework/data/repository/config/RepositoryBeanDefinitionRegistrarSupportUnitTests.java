@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -38,8 +39,7 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
-	@Mock
-	BeanDefinitionRegistry registry;
+	@Mock BeanDefinitionRegistry registry;
 
 	@Test
 	public void registersBeanDefinitionForFoundBean() {
@@ -48,7 +48,41 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		DummyRegistrar registrar = new DummyRegistrar();
 		registrar.registerBeanDefinitions(metadata, registry);
 
-		verify(registry, times(1)).registerBeanDefinition(eq("myRepository"), any(BeanDefinition.class));
+		assertBeanDefinitionRegisteredFor("myRepository");
+		assertNoBeanDefinitionRegisteredFor("profileRepository");
+	}
+
+	/**
+	 * @see DATACMNS-360
+	 */
+	@Test
+	public void registeredProfileRepositoriesIfProfileActivated() {
+
+		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
+
+		StandardEnvironment environment = new StandardEnvironment();
+		environment.setActiveProfiles("profile");
+
+		DummyRegistrar registrar = new DummyRegistrar();
+		registrar.setEnvironment(environment);
+
+		registrar.registerBeanDefinitions(metadata, registry);
+
+		assertBeanDefinitionRegisteredFor("myRepository", "profileRepository");
+	}
+
+	private void assertBeanDefinitionRegisteredFor(String... names) {
+
+		for (String name : names) {
+			verify(registry, times(1)).registerBeanDefinition(eq(name), any(BeanDefinition.class));
+		}
+	}
+
+	private void assertNoBeanDefinitionRegisteredFor(String... names) {
+
+		for (String name : names) {
+			verify(registry, times(0)).registerBeanDefinition(eq(name), any(BeanDefinition.class));
+		}
 	}
 
 	static class DummyRegistrar extends RepositoryBeanDefinitionRegistrarSupport {

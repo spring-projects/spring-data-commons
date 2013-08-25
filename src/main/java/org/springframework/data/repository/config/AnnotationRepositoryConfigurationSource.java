@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Set;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
@@ -57,8 +58,12 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * 
 	 * @param metadata must not be {@literal null}.
 	 * @param annotation must not be {@literal null}.
+	 * @param environment
 	 */
-	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation) {
+	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
+			Environment environment) {
+
+		super(environment);
 
 		Assert.notNull(metadata);
 		Assert.notNull(annotation);
@@ -196,23 +201,23 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 		for (Class<?> filterClass : filterAttributes.getClassArray("value")) {
 			switch (filterType) {
-			case ANNOTATION:
-				Assert.isAssignable(Annotation.class, filterClass, "An error occured when processing a @ComponentScan "
-						+ "ANNOTATION type filter: ");
-				@SuppressWarnings("unchecked")
-				Class<Annotation> annoClass = (Class<Annotation>) filterClass;
-				typeFilters.add(new AnnotationTypeFilter(annoClass));
-				break;
-			case ASSIGNABLE_TYPE:
-				typeFilters.add(new AssignableTypeFilter(filterClass));
-				break;
-			case CUSTOM:
-				Assert.isAssignable(TypeFilter.class, filterClass, "An error occured when processing a @ComponentScan "
-						+ "CUSTOM type filter: ");
-				typeFilters.add(BeanUtils.instantiateClass(filterClass, TypeFilter.class));
-				break;
-			default:
-				throw new IllegalArgumentException("unknown filter type " + filterType);
+				case ANNOTATION:
+					Assert.isAssignable(Annotation.class, filterClass, "An error occured when processing a @ComponentScan "
+							+ "ANNOTATION type filter: ");
+					@SuppressWarnings("unchecked")
+					Class<Annotation> annoClass = (Class<Annotation>) filterClass;
+					typeFilters.add(new AnnotationTypeFilter(annoClass));
+					break;
+				case ASSIGNABLE_TYPE:
+					typeFilters.add(new AssignableTypeFilter(filterClass));
+					break;
+				case CUSTOM:
+					Assert.isAssignable(TypeFilter.class, filterClass, "An error occured when processing a @ComponentScan "
+							+ "CUSTOM type filter: ");
+					typeFilters.add(BeanUtils.instantiateClass(filterClass, TypeFilter.class));
+					break;
+				default:
+					throw new IllegalArgumentException("unknown filter type " + filterType);
 			}
 		}
 		return typeFilters;
