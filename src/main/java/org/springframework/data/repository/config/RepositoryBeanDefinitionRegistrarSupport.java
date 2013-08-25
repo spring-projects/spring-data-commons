@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
@@ -36,15 +38,17 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  */
 public abstract class RepositoryBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar,
-		BeanClassLoaderAware, ResourceLoaderAware {
+		BeanClassLoaderAware, ResourceLoaderAware, EnvironmentAware {
 
 	private ResourceLoader resourceLoader;
 	private ClassLoader beanClassLoader;
+	private Environment environment;
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
 	 */
+	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
 	}
@@ -53,8 +57,18 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
 	 */
+	@Override
 	public void setResourceLoader(ResourceLoader resourceLoader) {
 		this.resourceLoader = resourceLoader;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.EnvironmentAware#setEnvironment(org.springframework.core.env.Environment)
+	 */
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
 	}
 
 	/*
@@ -74,7 +88,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 		defaultExternalResources(registry);
 
 		AnnotationRepositoryConfigurationSource configuration = new AnnotationRepositoryConfigurationSource(
-				annotationMetadata, getAnnotation());
+				annotationMetadata, getAnnotation(), environment);
 
 		RepositoryConfigurationExtension extension = getExtension();
 		extension.registerBeansForRoot(registry, configuration);

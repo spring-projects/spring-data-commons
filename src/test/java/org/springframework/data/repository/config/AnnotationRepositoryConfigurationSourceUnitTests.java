@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
@@ -34,12 +36,14 @@ import org.springframework.core.type.StandardAnnotationMetadata;
 public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	RepositoryConfigurationSource source;
+	Environment environment;
 
 	@Before
 	public void setUp() {
 
 		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
-		source = new AnnotationRepositoryConfigurationSource(annotationMetadata, EnableRepositories.class);
+		environment = new StandardEnvironment();
+		source = new AnnotationRepositoryConfigurationSource(annotationMetadata, EnableRepositories.class, environment);
 	}
 
 	@Test
@@ -62,7 +66,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(DefaultConfiguration.class);
 		RepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
-				EnableRepositories.class);
+				EnableRepositories.class, environment);
 
 		Iterable<String> packages = source.getBasePackages();
 		assertThat(packages, hasItem(DefaultConfiguration.class.getPackage().getName()));
@@ -73,7 +77,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(DefaultConfigurationWithBasePackage.class);
 		RepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
-				EnableRepositories.class);
+				EnableRepositories.class, environment);
 
 		Iterable<String> packages = source.getBasePackages();
 		assertThat(packages, hasItem("foo"));
