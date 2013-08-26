@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -98,6 +99,21 @@ public class PagedResourcesAssemblerUnitTests {
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), startsWith(link.getHref()));
 		assertThat(resources.getLink(Link.REL_NEXT).getHref(), startsWith(link.getHref()));
+	}
+
+	/**
+	 * @see DATACMNS-358
+	 */
+	@Test
+	public void createsPagedResourcesForOneIndexedArgumentResolver() {
+
+		resolver.setOneIndexedParameters(true);
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
+
+		PageRequest request = new PageRequest(0, 1);
+		Page<Person> page = new PageImpl<Person>(Collections.<Person> emptyList(), request, 0);
+
+		assembler.toResource(page);
 	}
 
 	private static Page<Person> createPage(int index) {
