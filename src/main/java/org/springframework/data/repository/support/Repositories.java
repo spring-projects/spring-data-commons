@@ -173,7 +173,10 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass);
 
-		for (RepositoryFactoryInformation<Object, Serializable> information : repositories.keySet()) {
+		// Create defensive copy of the keys to allow threads to potentially add values while iterating over them
+		Set<RepositoryFactoryInformation<Object, Serializable>> keys = Collections.unmodifiableSet(repositories.keySet());
+
+		for (RepositoryFactoryInformation<Object, Serializable> information : keys) {
 			if (domainClass.equals(information.getEntityInformation().getJavaType())) {
 				return information;
 			}
