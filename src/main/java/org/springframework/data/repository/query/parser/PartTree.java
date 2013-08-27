@@ -34,11 +34,13 @@ import org.springframework.util.StringUtils;
  * each query execution.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class PartTree implements Iterable<OrPart> {
 
-	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count)(\\p{Lu}.*?)??By");
-	private static final String KEYWORD_TEMPLATE = "(%s)(?=\\p{Lu})";
+	private static final Pattern PREFIX_TEMPLATE = Pattern
+			.compile("^(find|read|get|count)((\\p{Lu}|\\P{M}\\p{M}*+).*?)??By");
+	private static final String KEYWORD_TEMPLATE = "(%s)(?=(\\p{Lu}|\\P{M}\\p{M}*+))";
 
 	/**
 	 * The subject, for example "findDistinctUserByNameOrderByAge" would have the subject "DistinctUser".
