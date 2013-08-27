@@ -40,6 +40,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * 
  * @author Oliver Gierke
  * @author Phillip Webb
+ * @author Thomas Darimont
  */
 public class PartTreeUnitTests {
 
@@ -357,6 +358,17 @@ public class PartTreeUnitTests {
 		assertThat(new PartTree("findByCategoryId", Product.class), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-363
+	 */
+	@Test
+	public void supportNonLowercaseUnicodeAttributeNamesInQueryMethodNames() throws Exception {
+
+		PartTree tree = new PartTree("findBy생일And이름", DomainObjectWithSpecialChars.class);
+		assertPart(tree, new Part[] { new Part("생일", DomainObjectWithSpecialChars.class),
+				new Part("이름", DomainObjectWithSpecialChars.class) });
+	}
+
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
 	}
@@ -434,6 +446,9 @@ public class PartTreeUnitTests {
 	class DomainObjectWithSpecialChars {
 		String øre;
 		String år;
+
+		String 생일; // Birthday
+		String 이름; // Name
 	}
 
 	interface Product {
