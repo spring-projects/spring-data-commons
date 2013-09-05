@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -167,12 +169,34 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 
 		for (Method method : getRepositoryInterface().getMethods()) {
 			method = ClassUtils.getMostSpecificMethod(method, getRepositoryInterface());
-			if (!isCustomMethod(method) && !isBaseClassMethod(method)) {
+			if (isQueryMethodCandidate(method)) {
 				result.add(method);
 			}
 		}
 
 		return Collections.unmodifiableSet(result);
+	}
+
+	/**
+	 * Checks whether the given method is a query method candidate.
+	 * 
+	 * @param method
+	 * @return
+	 */
+	private boolean isQueryMethodCandidate(Method method) {
+		return isQueryAnnotationPresentOn(method) || (!isCustomMethod(method) && !isBaseClassMethod(method));
+	}
+
+	/**
+	 * Checks whether the given method contains a custom store specific query annotation annotated with
+	 * {@link QueryAnnotation}. The method-hierarchy is also considered in the search for the annotation.
+	 * 
+	 * @param method
+	 * @return
+	 */
+	private boolean isQueryAnnotationPresentOn(Method method) {
+
+		return AnnotationUtils.findAnnotation(method, QueryAnnotation.class) != null;
 	}
 
 	/*

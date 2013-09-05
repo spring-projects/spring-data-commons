@@ -4,6 +4,10 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -13,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,11 +34,9 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryInformationUnitTests {
 
-	@SuppressWarnings("rawtypes")
-	static final Class<DummyGenericRepositorySupport> REPOSITORY = DummyGenericRepositorySupport.class;
+	@SuppressWarnings("rawtypes") static final Class<DummyGenericRepositorySupport> REPOSITORY = DummyGenericRepositorySupport.class;
 
-	@Mock
-	FooRepositoryCustom customImplementation;
+	@Mock FooRepositoryCustom customImplementation;
 
 	@Test
 	public void discoversRepositoryBaseClassMethod() throws Exception {
@@ -157,6 +160,20 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.isQueryMethod(queryMethod), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-364
+	 */
+	@Test
+	public void ignoresCrudMethodsAnnotatedWithQuery() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+
+		Method method = BaseRepository.class.getMethod("findOne", Serializable.class);
+
+		assertThat(information.getQueryMethods(), hasItem(method));
+	}
+
 	private Method getMethodFrom(Class<?> type, String name) {
 		for (Method method : type.getMethods()) {
 			if (method.getName().equals(name)) {
@@ -164,6 +181,13 @@ public class DefaultRepositoryInformationUnitTests {
 			}
 		}
 		return null;
+	}
+
+	@Target(ElementType.METHOD)
+	@Retention(RetentionPolicy.RUNTIME)
+	@QueryAnnotation
+	@interface MyQuery {
+
 	}
 
 	interface FooRepository extends CrudRepository<User, Integer>, FooRepositoryCustom {
@@ -200,6 +224,9 @@ public class DefaultRepositoryInformationUnitTests {
 		<K extends S> K save(K entity);
 
 		void delete(S entity);
+
+		@MyQuery
+		S findOne(ID id);
 	}
 
 	interface ConcreteRepository extends BaseRepository<User, Integer> {
