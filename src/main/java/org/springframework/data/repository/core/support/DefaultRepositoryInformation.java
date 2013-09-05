@@ -19,7 +19,6 @@ import static org.springframework.core.GenericTypeResolver.*;
 import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -30,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
@@ -178,7 +178,7 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	}
 
 	/**
-	 * Checks whether the given Method is a query method candidate.
+	 * Checks whether the given method is a query method candidate.
 	 * 
 	 * @param method
 	 * @return
@@ -188,25 +188,15 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 	}
 
 	/**
-	 * Checks whether the given method contains a custom store specific query annotation.
+	 * Checks whether the given method contains a custom store specific query annotation annotated with
+	 * {@link QueryAnnotation}. The method-hierarchy is also considered in the search for the annotation.
 	 * 
 	 * @param method
 	 * @return
 	 */
 	private boolean isQueryAnnotationPresentOn(Method method) {
 
-		Annotation[] annotations = method.getDeclaredAnnotations();
-		if (annotations.length == 0) {
-			return false;
-		}
-
-		for (Annotation annotation : annotations) {
-			if (annotation.annotationType().isAnnotationPresent(QueryAnnotation.class)) {
-				return true;
-			}
-		}
-
-		return false;
+		return AnnotationUtils.findAnnotation(method, QueryAnnotation.class) != null;
 	}
 
 	/*
