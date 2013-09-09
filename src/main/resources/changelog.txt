@@ -1,8 +1,32 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.6.0.RELEASE (2013-09-09)
+---------------------------------------------
+** Bug
+    * [DATACMNS-181] - page.page=3&page.size=30 and  @PageableDefaults(pageNumber = 3, value = 30) don't return the same page.
+    * [DATACMNS-304] - Misleading documentation of page parameter resolved by PageableArgumentResolver
+    * [DATACMNS-341] - RepositoryFactorySupport proxy classloader
+    * [DATACMNS-352] - SortHandlerMethodArgumentResolver and PageableHandlerMethodArgumentResolver have inconsistent property names
+    * [DATACMNS-353] - Mandatory transitive dependency to Spring HATEOS errantly added in 1.6.RC1
+    * [DATACMNS-358] - The current page number cannot be greater or equal to the total number of pages
+    * [DATACMNS-359] - Incorrect deprecation message in PageableArgumentResolver
+    * [DATACMNS-360] - Unable to use @Profile annotation on scanned repository interfaces
+    * [DATACMNS-362] - Potential concurrency issues in Repositories
+    * [DATACMNS-363] - Unicode characters not supported in property reference expressions
+
+** Improvement
+    * [DATACMNS-351] - Add setFallbackSort to SortHandlerMethodArgumentResolver
+    * [DATACMNS-355] - ReflectionAuditingBeanWrapper should use ConversionService to convert DateTime into target type
+    * [DATACMNS-356] - Let Parameters work with Spring 4's DefaultParameterNameDiscoverer if available
+    * [DATACMNS-357] - Add support to detect persistent state for primitive ids out of the box
+    * [DATACMNS-361] - Add a README.md file with project description
+
+** Task
+    * [DATACMNS-315] - Release 1.6 Final
+
 Changes in version 1.6.0.RC1 (2013-08-01)
-----------------------------------------
+-----------------------------------------
 ** Bug
     * [DATACMNS-343] - PageableHandlerMethodArgumentResolver should replace pagination parameters not add them
     * [DATACMNS-345] -  AbstractMappingContext doesn't consider the actual type of property of a generic collection type. 
