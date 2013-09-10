@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.6.1.RELEASE (2013-09-09)
+---------------------------------------------
+** Bug
+    * [DATACMNS-363] - Revert: Unicode characters not supported in property reference expressions
+
 Changes in version 1.6.0.RELEASE (2013-09-09)
 ---------------------------------------------
 ** Bug
