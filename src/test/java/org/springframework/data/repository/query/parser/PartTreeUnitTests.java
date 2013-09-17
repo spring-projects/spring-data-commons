@@ -40,6 +40,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * 
  * @author Oliver Gierke
  * @author Phillip Webb
+ * @author Thomas Darimont
  */
 public class PartTreeUnitTests {
 
@@ -357,6 +358,22 @@ public class PartTreeUnitTests {
 		assertThat(new PartTree("findByCategoryId", Product.class), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-368
+	 */
+	@Test
+	public void detectPropertyWithOrKeywordPart() {
+		assertThat(new PartTree("findByOrder", Product.class), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-368
+	 */
+	@Test
+	public void detectPropertyWithAndKeywordPart() {
+		assertThat(new PartTree("findByAnders", Product.class), is(notNullValue()));
+	}
+
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
 	}
@@ -434,14 +451,32 @@ public class PartTreeUnitTests {
 	class DomainObjectWithSpecialChars {
 		String øre;
 		String år;
+
+		public Order getOrder() {
+			return null;
+		}
 	}
 
 	interface Product {
+
+		Order getOrder(); // contains Or keyword
+
+		Anders getAnders(); // constains And keyword
 
 		Category getCategory();
 	}
 
 	interface Category {
+
+		Long getId();
+	}
+
+	interface Order {
+
+		Long getId();
+	}
+
+	interface Anders {
 
 		Long getId();
 	}
