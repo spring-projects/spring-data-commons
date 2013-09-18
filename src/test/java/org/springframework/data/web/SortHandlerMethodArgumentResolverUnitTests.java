@@ -40,11 +40,6 @@ import org.springframework.web.context.request.ServletWebRequest;
  */
 public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
-	static final String SORT_0 = "username";
-	static final String SORT_1 = "username,asc";
-	static final String[] SORT_2 = new String[] { "username,ASC", "lastname,firstname,DESC" };
-	static final String SORT_3 = "firstname,lastname";
-
 	/**
 	 * @see DATACMNS-351
 	 */
@@ -112,6 +107,23 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
 		assertThat(result, is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-366
+	 * @throws Exception
+	 */
+	@Test
+	public void requestForMultipleSortPropertiesIsUnmarshalledCorrectly() throws Exception {
+
+		MethodParameter parameter = getParameterOfMethod("supportedMethod");
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", SORT_3);
+
+		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
+		assertThat(result, is(new Sort(Direction.ASC, "firstname", "lastname")));
 	}
 
 	private static void assertSupportedAndResolvedTo(NativeWebRequest request, MethodParameter parameter, Sort sort) {
