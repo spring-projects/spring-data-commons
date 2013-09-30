@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.5.3.RELEASE (2013-09-30)
+---------------------------------------------
+** Bug
+    * [DATACMNS-360] - Unable to use @Profile annotation on scanned repository interfaces
+    * [DATACMNS-362] - Potential concurrency issues in Repositories
+
+** Task
+    * [DATACMNS-371] - Release 1.5.3.
+
+
 Changes in version 1.5.2.RELEASE (2013-07-19)
 ---------------------------------------------
 ** Bug
