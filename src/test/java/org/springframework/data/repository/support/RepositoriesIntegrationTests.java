@@ -17,6 +17,7 @@ package org.springframework.data.repository.support;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -85,6 +86,16 @@ public class RepositoriesIntegrationTests {
 		assertThat(repositories, is(notNullValue()));
 		assertThat(repositories.getCrudInvoker(User.class), is(instanceOf(CrudRepositoryInvoker.class)));
 		assertThat(repositories.getCrudInvoker(Product.class), is(instanceOf(ReflectionRepositoryInvoker.class)));
+	}
+
+	/**
+	 * @see DATACMNS-376
+	 */
+	@Test
+	public void returnsPersistentEntityForProxiedClass() {
+
+		User user = mock(User.class);
+		assertThat(repositories.getPersistentEntity(user.getClass()), is(notNullValue()));
 	}
 
 	static class User {

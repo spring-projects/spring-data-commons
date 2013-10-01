@@ -37,6 +37,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Wrapper class to access repository instances obtained from a {@link ListableBeanFactory}.
@@ -175,14 +176,15 @@ public class Repositories implements Iterable<Class<?>> {
 
 		// Create defensive copy of the keys to allow threads to potentially add values while iterating over them
 		Set<RepositoryFactoryInformation<Object, Serializable>> keys = Collections.unmodifiableSet(repositories.keySet());
+		Class<?> type = ClassUtils.getUserClass(domainClass);
 
 		for (RepositoryFactoryInformation<Object, Serializable> information : keys) {
-			if (domainClass.equals(information.getEntityInformation().getJavaType())) {
+			if (type.equals(information.getEntityInformation().getJavaType())) {
 				return information;
 			}
 		}
 
-		return lookupRepositoryFactoryInformationFor(domainClass);
+		return lookupRepositoryFactoryInformationFor(type);
 	}
 
 	/* 
