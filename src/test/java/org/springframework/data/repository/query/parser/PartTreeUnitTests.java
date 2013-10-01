@@ -320,6 +320,94 @@ public class PartTreeUnitTests {
 	}
 
 	/**
+	 * @see DATACMNS-363
+	 */
+	@Test
+	public void parsesSpecialCharactersOnlyCorrectly_Korean() {
+
+		PartTree tree = new PartTree("findBy이름And생일OrderBy생일Asc", DomainObjectWithSpecialChars.class);
+
+		assertPart(tree, new Part[] { new Part("이름", DomainObjectWithSpecialChars.class),
+				new Part("생일", DomainObjectWithSpecialChars.class) });
+		assertTrue(tree.getSort().getOrderFor("생일").isAscending());
+	}
+
+	/**
+	 * @see DATACMNS-363
+	 */
+	@Test
+	public void parsesSpecialUnicodeCharactersMixedWithRegularCharactersCorrectly_Korean() {
+
+		PartTree tree = new PartTree("findBy이름AndOrderIdOrderBy생일Asc", DomainObjectWithSpecialChars.class);
+
+		assertPart(tree, new Part[] { new Part("이름", DomainObjectWithSpecialChars.class),
+				new Part("order.id", DomainObjectWithSpecialChars.class) });
+		assertTrue(tree.getSort().getOrderFor("생일").isAscending());
+	}
+
+	/**
+	 * @see DATACMNS-363
+	 */
+	@Test
+	public void parsesNestedSpecialUnicodeCharactersMixedWithRegularCharactersCorrectly_Korean() {
+
+		PartTree tree = new PartTree( //
+				"findBy" + "이름" //
+						+ "And" + "OrderId" //
+						+ "And" + "Nested_이름" // we use _ here to mark the beginning of a new property reference "이름"
+						+ "Or" + "NestedOrderId" //
+						+ "OrderBy" + "생일" + "Asc", DomainObjectWithSpecialChars.class);
+
+		Iterator<OrPart> parts = tree.iterator();
+		assertPartsIn(parts.next(), new Part[] { //
+				new Part("이름", DomainObjectWithSpecialChars.class), //
+						new Part("order.id", DomainObjectWithSpecialChars.class), //
+						new Part("nested.이름", DomainObjectWithSpecialChars.class) //
+				});
+		assertPartsIn(parts.next(), new Part[] { //
+				new Part("nested.order.id", DomainObjectWithSpecialChars.class) //
+				});
+
+		assertTrue(tree.getSort().getOrderFor("생일").isAscending());
+	}
+
+	/**
+	 * @see DATACMNS-363
+	 */
+	@Test
+	public void parsesNestedSpecialUnicodeCharactersMixedWithRegularCharactersCorrectly_KoreanNumbersSymbols() {
+
+		PartTree tree = new PartTree( //
+				"findBy" + "이름" //
+						+ "And" + "OrderId" //
+						+ "And" + "Anders" //
+						+ "And" + "Property1" //
+						+ "And" + "Øre" //
+						+ "And" + "År" //
+						+ "Or" + "NestedOrderId" //
+						+ "And" + "Nested_property1" // we use _ here to mark the beginning of a new property reference "이름"
+						+ "And" + "Property1" //
+						+ "OrderBy" + "생일" + "Asc", DomainObjectWithSpecialChars.class);
+
+		Iterator<OrPart> parts = tree.iterator();
+		assertPartsIn(parts.next(), new Part[] { //
+				new Part("이름", DomainObjectWithSpecialChars.class), //
+						new Part("order.id", DomainObjectWithSpecialChars.class), //
+						new Part("anders", DomainObjectWithSpecialChars.class), //
+						new Part("property1", DomainObjectWithSpecialChars.class), //
+						new Part("øre", DomainObjectWithSpecialChars.class), //
+						new Part("år", DomainObjectWithSpecialChars.class) //
+				});
+		assertPartsIn(parts.next(), new Part[] { //
+				new Part("nested.order.id", DomainObjectWithSpecialChars.class), //
+						new Part("nested.property1", DomainObjectWithSpecialChars.class), //
+						new Part("property1", DomainObjectWithSpecialChars.class) //
+				});
+
+		assertTrue(tree.getSort().getOrderFor("생일").isAscending());
+	}
+
+	/**
 	 * @see DATACMNS-303
 	 */
 	@Test
@@ -374,6 +462,14 @@ public class PartTreeUnitTests {
 		assertThat(new PartTree("findByAnders", Product.class), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-368
+	 */
+	@Test
+	public void detectPropertyPathWithOrKeywordPart() {
+		assertThat(new PartTree("findByOrderId", Product.class), is(notNullValue()));
+	}
+
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
 	}
@@ -411,18 +507,23 @@ public class PartTreeUnitTests {
 	}
 
 	private void assertPart(PartTree tree, Part[]... parts) {
-		Iterator<OrPart> iterator = tree.iterator();
+
+		Iterator<OrPart> orParts = tree.iterator();
 		for (Part[] part : parts) {
-			assertThat(iterator.hasNext(), is(true));
-			Iterator<Part> partIterator = iterator.next().iterator();
-			for (int k = 0; k < part.length; k++) {
-				assertThat(String.format("Expected %d parts but have %d", part.length, k), partIterator.hasNext(), is(true));
-				Part next = partIterator.next();
-				assertThat(String.format("Expected %s but got %s!", part[k], next), part[k], is(next));
-			}
-			assertThat("Too many parts!", partIterator.hasNext(), is(false));
+			assertThat(orParts.hasNext(), is(true));
+			assertPartsIn(orParts.next(), part);
 		}
-		assertThat("Too many or parts!", iterator.hasNext(), is(false));
+		assertThat("Too many or parts!", orParts.hasNext(), is(false));
+	}
+
+	private void assertPartsIn(OrPart orPart, Part[] part) {
+		Iterator<Part> partIterator = orPart.iterator();
+		for (int k = 0; k < part.length; k++) {
+			assertThat(String.format("Expected %d parts but have %d", part.length, k), partIterator.hasNext(), is(true));
+			Part next = partIterator.next();
+			assertThat(String.format("Expected %s but got %s!", part[k], next), part[k], is(next));
+		}
+		assertThat("Too many parts!", partIterator.hasNext(), is(false));
 	}
 
 	private static <T> Collection<T> toCollection(Iterable<T> iterable) {
@@ -452,9 +553,16 @@ public class PartTreeUnitTests {
 		String øre;
 		String år;
 
-		public Order getOrder() {
-			return null;
-		}
+		String 생일; // Birthday
+		String 이름; // Name
+
+		int property1;
+
+		Order order;
+
+		Anders anders;
+
+		DomainObjectWithSpecialChars nested;
 	}
 
 	interface Product {
