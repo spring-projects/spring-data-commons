@@ -34,11 +34,23 @@ import org.springframework.util.StringUtils;
  * each query execution.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class PartTree implements Iterable<OrPart> {
 
 	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count)(\\p{Lu}.*?)??By");
-	private static final String KEYWORD_TEMPLATE = "(%s)(?=\\p{Lu})";
+
+	/*
+	 * We look for a pattern of: keyword followed by
+	 *
+	 *  an upper-case letter that has a lower-case variant \p{Lu}
+	 * OR
+	 *  any other letter NOT in the BASIC_LATIN Uni-code Block \\P{InBASIC_LATIN} (like Chinese, Korean, Japanese, etc.).
+	 *
+	 * @see http://www.regular-expressions.info/unicode.html
+	 * @see http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#ubc
+	 */
+	private static final String KEYWORD_TEMPLATE = "(%s)(?=(\\p{Lu}|\\P{InBASIC_LATIN}))";
 
 	/**
 	 * The subject, for example "findDistinctUserByNameOrderByAge" would have the subject "DistinctUser".
