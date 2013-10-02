@@ -25,7 +25,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -51,11 +53,14 @@ import org.springframework.data.repository.query.QueryMethod;
  * Unit tests for {@link Repositories}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoriesUnitTests {
 
 	ApplicationContext context;
+
+	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -107,11 +112,28 @@ public class RepositoriesUnitTests {
 		assertThat(repositories.getPersistentEntity(Address.class), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-374
+	 */
+	@Test
+	public void shouldThrowMeaningfulExceptionWhenTheRepositoryForAGivenDomainClassCannotBeFound() {
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(containsString("No repository found for domain class: "));
+
+		Repositories repositories = new Repositories(context);
+		repositories.getCrudInvoker(EntityWithoutRepository.class);
+	}
+
 	class Person {
 
 	}
 
 	class Address {
+
+	}
+
+	class EntityWithoutRepository {
 
 	}
 

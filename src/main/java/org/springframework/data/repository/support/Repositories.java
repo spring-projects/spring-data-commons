@@ -163,6 +163,8 @@ public class Repositories implements Iterable<Class<?>> {
 		RepositoryInformation information = getRepositoryInformationFor(domainClass);
 		Object repository = getRepositoryFor(domainClass);
 
+		Assert.notNull(repository, String.format("No repository found for domain class: %s", domainClass));
+
 		if (repository instanceof CrudRepository) {
 			return new CrudRepositoryInvoker<T>((CrudRepository<T, Serializable>) repository);
 		} else {
