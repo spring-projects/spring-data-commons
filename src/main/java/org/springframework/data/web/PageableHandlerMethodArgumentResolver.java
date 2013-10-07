@@ -17,6 +17,8 @@ package org.springframework.data.web;
 
 import static org.springframework.data.web.SpringDataAnnotationUtils.*;
 
+import java.lang.reflect.Method;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +43,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @SuppressWarnings("deprecation")
 public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
+	private static final String INVALID_DEFAULT_PAGE_SIZE = "Invalid default page size configured for method %s! Must not be less than one!";
+
 	/**
 	 * A {@link PageableHandlerMethodArgumentResolver} preconfigured to the setup of {@link PageableArgumentResolver}. Use
 	 * that if you need to stick to the former request parameters an 1-indexed behavior. This will be removed in the next
@@ -58,12 +62,12 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 		LEGACY.sortResolver.setSortParameter("page.sort");
 	}
 
-	private static final Pageable DEFAULT_PAGE_REQUEST = new PageRequest(0, 20);
 	private static final String DEFAULT_PAGE_PARAMETER = "page";
 	private static final String DEFAULT_SIZE_PARAMETER = "size";
 	private static final String DEFAULT_PREFIX = "";
 	private static final String DEFAULT_QUALIFIER_DELIMITER = "_";
 	private static final int DEFAULT_MAX_PAGE_SIZE = 2000;
+	static final Pageable DEFAULT_PAGE_REQUEST = new PageRequest(0, 20);
 
 	private Pageable fallbackPageable = DEFAULT_PAGE_REQUEST;
 	private SortHandlerMethodArgumentResolver sortResolver;
@@ -234,6 +238,10 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 				: defaultOrFallback.getPageNumber();
 		int pageSize = StringUtils.hasText(pageSizeString) ? Integer.parseInt(pageSizeString) : defaultOrFallback
 				.getPageSize();
+
+		// Limit lower bound
+		pageSize = pageSize < 1 ? defaultOrFallback.getPageSize() : pageSize;
+		// Limit upper bound
 		pageSize = pageSize > maxPageSize ? maxPageSize : pageSize;
 
 		Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
@@ -269,16 +277,23 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 		}
 
 		if (methodParameter.hasParameterAnnotation(PageableDefault.class)) {
-			return getDefaultPageRequestFrom(methodParameter.getParameterAnnotation(PageableDefault.class));
+			return getDefaultPageRequestFrom(methodParameter);
 		}
 
 		return fallbackPageable;
 	}
 
-	private static Pageable getDefaultPageRequestFrom(PageableDefault defaults) {
+	private static Pageable getDefaultPageRequestFrom(MethodParameter parameter) {
+
+		PageableDefault defaults = parameter.getParameterAnnotation(PageableDefault.class);
 
 		Integer defaultPageNumber = defaults.page();
 		Integer defaultPageSize = getSpecificPropertyOrDefaultFromValue(defaults, "size");
+
+		if (defaultPageSize < 1) {
+			Method annotatedMethod = parameter.getMethod();
+			throw new IllegalStateException(String.format(INVALID_DEFAULT_PAGE_SIZE, annotatedMethod));
+		}
 
 		if (defaults.sort().length == 0) {
 			return new PageRequest(defaultPageNumber, defaultPageSize);

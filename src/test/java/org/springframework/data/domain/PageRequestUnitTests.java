@@ -94,4 +94,12 @@ public class PageRequestUnitTests {
 		// Does not equal on different size
 		assertNotEqualsAndHashcode(request, new PageRequest(0, 11));
 	}
+
+	/**
+	 * @see DATACMNS-377
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void preventsPageSizeLessThanOne() {
+		new PageRequest(0, 0);
+	}
 }

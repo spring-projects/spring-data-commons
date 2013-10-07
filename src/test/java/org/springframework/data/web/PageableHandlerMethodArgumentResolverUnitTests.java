@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
@@ -33,6 +34,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
+	MethodParameter supportedMethodParameter;
+
+	@Before
+	public void setUp() throws Exception {
+		this.supportedMethodParameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
+	}
+
 	/**
 	 * @see DATACMNS-335
 	 */
@@ -44,9 +52,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		request.addParameter("page", "0");
 		request.addParameter("size", "200");
 
-		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
-
-		assertSupportedAndResult(parameter, new PageRequest(0, 100), request);
+		assertSupportedAndResult(supportedMethodParameter, new PageRequest(0, 100), request);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -81,6 +87,34 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		assertSupportedAndResult(parameter, new PageRequest(2, 10), request);
 	}
 
+	/**
+	 * @see DATACMNS-377
+	 */
+	@Test
+	public void usesDefaultPageSizeIfRequestPageSizeIsLessThanOne() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "0");
+		request.addParameter("size", "0");
+
+		assertSupportedAndResult(supportedMethodParameter, PageableHandlerMethodArgumentResolver.DEFAULT_PAGE_REQUEST,
+				request);
+	}
+
+	/**
+	 * @see DATACMNS-377
+	 */
+	@Test
+	public void rejectsInvalidCustomDefaultForPageSize() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("invalidDefaultPageSize", Pageable.class), 0);
+
+		exception.expect(IllegalStateException.class);
+		exception.expectMessage("invalidDefaultPageSize");
+
+		assertSupportedAndResult(parameter, PageableHandlerMethodArgumentResolver.DEFAULT_PAGE_REQUEST);
+	}
+
 	@Override
 	protected PageableHandlerMethodArgumentResolver getResolver() {
 		PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
@@ -98,6 +132,8 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		void supportedMethod(Pageable pageable);
 
 		void unsupportedMethod(String string);
+
+		void invalidDefaultPageSize(@PageableDefault(size = 0) Pageable pageable);
 
 		void simpleDefault(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER) Pageable pageable);
 
