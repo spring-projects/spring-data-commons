@@ -251,7 +251,13 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 					continue;
 				}
 
-				allOrders.add(new Order(direction, elements[i]));
+				String property = elements[i];
+
+				if (!StringUtils.hasText(property)) {
+					continue;
+				}
+
+				allOrders.add(new Order(direction, property));
 			}
 		}
 

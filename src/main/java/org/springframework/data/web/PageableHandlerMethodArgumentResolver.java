@@ -234,10 +234,10 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 		String pageString = webRequest.getParameter(getParameterNameToUse(pageParameterName, methodParameter));
 		String pageSizeString = webRequest.getParameter(getParameterNameToUse(sizeParameterName, methodParameter));
 
-		int page = StringUtils.hasText(pageString) ? Integer.parseInt(pageString) - (oneIndexedParameters ? 1 : 0)
-				: defaultOrFallback.getPageNumber();
-		int pageSize = StringUtils.hasText(pageSizeString) ? Integer.parseInt(pageSizeString) : defaultOrFallback
-				.getPageSize();
+		int page = StringUtils.hasText(pageString) ? parseAndApplyBoundaries(pageString, 0, Integer.MAX_VALUE)
+				- (oneIndexedParameters ? 1 : 0) : defaultOrFallback.getPageNumber();
+		int pageSize = StringUtils.hasText(pageSizeString) ? parseAndApplyBoundaries(pageSizeString, 0, maxPageSize)
+				: defaultOrFallback.getPageSize();
 
 		// Limit lower bound
 		pageSize = pageSize < 1 ? defaultOrFallback.getPageSize() : pageSize;
@@ -300,5 +300,24 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 		}
 
 		return new PageRequest(defaultPageNumber, defaultPageSize, defaults.direction(), defaults.sort());
+	}
+
+	/**
+	 * Tries to parse the given {@link String} into an integer and applies the given boundaries. Will return the lower
+	 * boundary if the {@link String} cannot be parsed.
+	 * 
+	 * @param parameter
+	 * @param lower
+	 * @param upper
+	 * @return
+	 */
+	private static int parseAndApplyBoundaries(String parameter, int lower, int upper) {
+
+		try {
+			int parsed = Integer.parseInt(parameter);
+			return parsed < lower ? lower : parsed > upper ? upper : parsed;
+		} catch (NumberFormatException e) {
+			return lower;
+		}
 	}
 }
