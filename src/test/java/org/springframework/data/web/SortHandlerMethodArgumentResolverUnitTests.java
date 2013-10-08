@@ -17,7 +17,11 @@ package org.springframework.data.web;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.domain.Sort.Direction.*;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
@@ -39,6 +43,13 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Nick Williams
  */
 public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
+
+	static MethodParameter PARAMETER;
+
+	@BeforeClass
+	public static void setUp() throws Exception {
+		PARAMETER = new MethodParameter(Controller.class.getMethod("supportedMethod", Sort.class), 0);
+	}
 
 	/**
 	 * @see DATACMNS-351
@@ -124,6 +135,61 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
 		assertThat(result, is(new Sort(Direction.ASC, "firstname", "lastname")));
+	}
+
+	/**
+	 * @see DATACMNS-408
+	 */
+	@Test
+	public void parsesEmptySortToNull() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-408
+	 */
+	@Test
+	public void sortParamIsInvalidProperty() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", ",DESC");
+
+		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-408
+	 */
+	@Test
+	public void sortParamIsInvalidPropertyWhenMultiProperty() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property1,,DESC");
+
+		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property1")));
+	}
+
+	/**
+	 * @see DATACMNS-408
+	 */
+	@Test
+	public void sortParamIsEmptyWhenMultiParams() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,DESC");
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property")));
+	}
+
+	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
+
+		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		return resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
 	}
 
 	private static void assertSupportedAndResolvedTo(NativeWebRequest request, MethodParameter parameter, Sort sort) {

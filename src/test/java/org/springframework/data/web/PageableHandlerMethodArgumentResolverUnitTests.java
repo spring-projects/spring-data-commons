@@ -15,6 +15,8 @@
  */
 package org.springframework.data.web;
 
+import static org.springframework.data.web.PageableHandlerMethodArgumentResolver.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -97,8 +99,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		request.addParameter("page", "0");
 		request.addParameter("size", "0");
 
-		assertSupportedAndResult(supportedMethodParameter, PageableHandlerMethodArgumentResolver.DEFAULT_PAGE_REQUEST,
-				request);
+		assertSupportedAndResult(supportedMethodParameter, DEFAULT_PAGE_REQUEST, request);
 	}
 
 	/**
@@ -112,7 +113,43 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("invalidDefaultPageSize");
 
-		assertSupportedAndResult(parameter, PageableHandlerMethodArgumentResolver.DEFAULT_PAGE_REQUEST);
+		assertSupportedAndResult(parameter, DEFAULT_PAGE_REQUEST);
+	}
+
+	/**
+	 * @see DATACMNS-408
+	 */
+	@Test
+	public void fallsBackToFirstPageIfNegativePageNumberIsGiven() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "-1");
+
+		assertSupportedAndResult(supportedMethodParameter, DEFAULT_PAGE_REQUEST, request);
+	}
+
+	/**
+	 * @see DATACMNS-408
+	 */
+	@Test
+	public void pageParamIsNotNumeric() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "a");
+
+		assertSupportedAndResult(supportedMethodParameter, DEFAULT_PAGE_REQUEST, request);
+	}
+
+	/**
+	 * @see DATACMNS-408
+	 */
+	@Test
+	public void sizeParamIsNotNumeric() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("size", "a");
+
+		assertSupportedAndResult(supportedMethodParameter, DEFAULT_PAGE_REQUEST, request);
 	}
 
 	@Override
