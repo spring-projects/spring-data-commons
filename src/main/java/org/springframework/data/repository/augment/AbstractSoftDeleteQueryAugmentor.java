@@ -15,16 +15,14 @@
  */
 package org.springframework.data.repository.augment;
 
-import org.springframework.beans.ConfigurablePropertyAccessor;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.PropertyAccessor;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.data.repository.SoftDelete;
-import org.springframework.validation.DataBinder;
+import org.springframework.data.util.DirectFieldAccessFallbackBeanWrapper;
 
 /**
  * Base class to implement a {@link QueryAugmentor} to soft-delete entities.
  * 
- * @since 1.6
+ * @since 1.7
  * @author Oliver Gierke
  */
 public abstract class AbstractSoftDeleteQueryAugmentor<Q extends QueryContext<?>, N extends QueryContext<?>, U extends UpdateContext<?>>
@@ -48,24 +46,30 @@ public abstract class AbstractSoftDeleteQueryAugmentor<Q extends QueryContext<?>
 			return context;
 		}
 
-		CustomDataBinder binder = new CustomDataBinder(entity);
-		binder.initDirectFieldAccess();
+		BeanWrapper wrapper = createBeanWrapper(context);
 
-		Object currentValue = binder.getPropertyAccessor().getPropertyValue(property);
+		Object currentValue = wrapper.getPropertyValue(property);
 		Object nextValue = annotation.flagMode().toDeletedValue(currentValue);
 
 		if (nextValue == null) {
 			return context;
 		}
 
-		MutablePropertyValues values = new MutablePropertyValues();
-		values.add(property, nextValue);
-
-		binder.bind(values);
-
+		wrapper.setPropertyValue(property, nextValue);
 		updateDeletedState(entity, context);
 
 		return null;
+	}
+
+	/**
+	 * Creates a new {@link BeanWrapper} for the given {@link UpdateContext}. Defaults to a
+	 * {@link DirectFieldAccessFallbackBeanWrapper}.
+	 * 
+	 * @param context will never be {@literal null}.
+	 * @return
+	 */
+	protected BeanWrapper createBeanWrapper(U context) {
+		return new DirectFieldAccessFallbackBeanWrapper(context.getEntity());
 	}
 
 	/**
@@ -75,21 +79,4 @@ public abstract class AbstractSoftDeleteQueryAugmentor<Q extends QueryContext<?>
 	 * @param context will never be {@literal null}.
 	 */
 	public abstract void updateDeletedState(Object entity, U context);
-
-	/**
-	 * Custom {@link DataBinder} to expose the {@link PropertyAccessor} used.
-	 * 
-	 * @author Oliver Gierke
-	 */
-	private static class CustomDataBinder extends DataBinder {
-
-		public CustomDataBinder(Object target) {
-			super(target);
-		}
-
-		@Override
-		public ConfigurablePropertyAccessor getPropertyAccessor() {
-			return super.getPropertyAccessor();
-		}
-	}
 }

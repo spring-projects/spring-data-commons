@@ -109,13 +109,17 @@ public abstract class AnnotationBasedQueryAugmentor<T extends Annotation, Q exte
 		return null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.augment.QueryAugmentor#augmentNativeQuery(org.springframework.data.repository.augment.QueryContext, org.springframework.data.repository.augment.MethodMetadata)
+	 */
 	public final N augmentNativeQuery(N context, MethodMetadata metadata) {
 		return null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.jpa.repository.support.JpaQueryAugmentor#augmentQuery(javax.persistence.criteria.CriteriaQuery, org.springframework.data.repository.core.support.MethodMetadata)
+	 * @see org.springframework.data.repository.augment.QueryAugmentor#augmentQuery(org.springframework.data.repository.augment.QueryContext, org.springframework.data.repository.augment.MethodMetadata)
 	 */
 	public final Q augmentQuery(Q context, MethodMetadata metadata) {
 
@@ -129,9 +133,9 @@ public abstract class AnnotationBasedQueryAugmentor<T extends Annotation, Q exte
 		return expression == null ? context : prepareQuery(context, expression);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.QueryAugmentor#augmentUpdate(org.springframework.data.repository.core.support.UpdateContext, org.springframework.data.repository.core.support.MethodMetadata)
+	 * @see org.springframework.data.repository.augment.QueryAugmentor#augmentUpdate(org.springframework.data.repository.augment.UpdateContext, org.springframework.data.repository.augment.MethodMetadata)
 	 */
 	public final U augmentUpdate(U update, MethodMetadata metadata) {
 
