@@ -36,8 +36,7 @@ import org.springframework.data.util.TypeInformation;
 @SuppressWarnings("unused")
 public class PropertyPathUnitTests {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	@SuppressWarnings("rawtypes")
@@ -305,6 +304,19 @@ public class PropertyPathUnitTests {
 		assertThat(path.getSegment(), is("_foo"));
 		assertThat(path.hasNext(), is(true));
 		assertThat(path.next().getSegment(), is("UUID"));
+	}
+
+	/**
+	 * @see DATACMNS-381
+	 */
+	public void exposesPreviouslyReferencedPathInExceptionMessage() {
+
+		exception.expect(PropertyReferenceException.class);
+		exception.expectMessage("bar"); // missing variable
+		exception.expectMessage("String"); // type
+		exception.expectMessage("Bar.user.name"); // previously referenced path
+
+		PropertyPath.from("userNameBar", Bar.class);
 	}
 
 	private class Foo {

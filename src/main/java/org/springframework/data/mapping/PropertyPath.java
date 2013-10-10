@@ -18,6 +18,7 @@ package org.springframework.data.mapping;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,7 +64,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param owningType must not be {@literal null}.
 	 * @param base the {@link PropertyPath} previously found.
 	 */
-	PropertyPath(String name, TypeInformation<?> owningType, PropertyPath base) {
+	PropertyPath(String name, TypeInformation<?> owningType, Stack<PropertyPath> base) {
 
 		Assert.hasText(name);
 		Assert.notNull(owningType);
@@ -264,14 +265,14 @@ public class PropertyPath implements Iterable<PropertyPath> {
 		Iterator<String> parts = iteratorSource.iterator();
 
 		PropertyPath result = null;
-		PropertyPath current = null;
+		Stack<PropertyPath> current = new Stack<PropertyPath>();
 
 		while (parts.hasNext()) {
 			if (result == null) {
-				result = create(parts.next(), type, null);
-				current = result;
+				result = create(parts.next(), type, current);
+				current.push(result);
 			} else {
-				current = create(parts.next(), current);
+				current.push(create(parts.next(), current));
 			}
 		}
 
@@ -285,10 +286,12 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param base
 	 * @return
 	 */
-	private static PropertyPath create(String source, PropertyPath base) {
+	private static PropertyPath create(String source, Stack<PropertyPath> base) {
 
-		PropertyPath propertyPath = create(source, base.type, base);
-		base.next = propertyPath;
+		PropertyPath previous = base.peek();
+
+		PropertyPath propertyPath = create(source, previous.type, base);
+		previous.next = propertyPath;
 		return propertyPath;
 	}
 
@@ -302,7 +305,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param type
 	 * @return
 	 */
-	private static PropertyPath create(String source, TypeInformation<?> type, PropertyPath base) {
+	private static PropertyPath create(String source, TypeInformation<?> type, Stack<PropertyPath> base) {
 
 		return create(source, type, "", base);
 	}
@@ -317,7 +320,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param addTail
 	 * @return
 	 */
-	private static PropertyPath create(String source, TypeInformation<?> type, String addTail, PropertyPath base) {
+	private static PropertyPath create(String source, TypeInformation<?> type, String addTail, Stack<PropertyPath> base) {
 
 		PropertyReferenceException exception = null;
 		PropertyPath current = null;
@@ -326,8 +329,14 @@ public class PropertyPath implements Iterable<PropertyPath> {
 
 			current = new PropertyPath(source, type, base);
 
+			if (!base.isEmpty()) {
+				base.peek().next = current;
+			}
+
+			base.push(current);
+
 			if (StringUtils.hasText(addTail)) {
-				current.next = create(addTail, current.type, current);
+				current.next = create(addTail, current.type, base);
 			}
 
 			return current;
@@ -354,5 +363,14 @@ public class PropertyPath implements Iterable<PropertyPath> {
 		}
 
 		throw exception;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
 	}
 }

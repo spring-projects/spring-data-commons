@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping;
 
+import java.util.Stack;
+
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -26,20 +28,20 @@ import org.springframework.util.Assert;
 public class PropertyReferenceException extends RuntimeException {
 
 	private static final long serialVersionUID = -5254424051438976570L;
-	private static final String ERROR_TEMPLATE = "No property %s found for type %s";
+	private static final String ERROR_TEMPLATE = "No property %s found for type %s!";
 
 	private final String propertyName;
 	private final TypeInformation<?> type;
-	private final PropertyPath base;
+	private final Stack<PropertyPath> base;
 
 	/**
 	 * Creates a new {@link PropertyReferenceException}.
 	 * 
 	 * @param propertyName the name of the property not found on the given type.
 	 * @param type the type the property could not be found on.
-	 * @param base the base {@link PropertyPath}.
+	 * @param base the previously calculated {@link PropertyPath}s.
 	 */
-	public PropertyReferenceException(String propertyName, TypeInformation<?> type, PropertyPath base) {
+	public PropertyReferenceException(String propertyName, TypeInformation<?> type, Stack<PropertyPath> base) {
 
 		Assert.hasText(propertyName);
 		Assert.notNull(type);
@@ -73,7 +75,15 @@ public class PropertyReferenceException extends RuntimeException {
 	 */
 	@Override
 	public String getMessage() {
-		return String.format(ERROR_TEMPLATE, propertyName, type.getType().getName());
+
+		StringBuilder builder = new StringBuilder(String.format(ERROR_TEMPLATE, propertyName, type.getType()
+				.getSimpleName()));
+
+		if (!base.isEmpty()) {
+			builder.append(" Traversed path: ").append(base.get(0).toString()).append(".");
+		}
+
+		return builder.toString();
 	}
 
 	/**
@@ -82,6 +92,6 @@ public class PropertyReferenceException extends RuntimeException {
 	 * @return
 	 */
 	public PropertyPath getBaseProperty() {
-		return base;
+		return base.isEmpty() ? null : base.peek();
 	}
 }
