@@ -171,6 +171,20 @@ public class AbstractMappingContextUnitTests {
 		assertThat(propertyEntity.getType(), is(equalTo((Class) Person.class)));
 	}
 
+	/**
+	 * @see DATACMNS-380
+	 */
+	@Test
+	public void returnsPersistentPropertyPathForDotPath() {
+
+		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath("persons.name",
+				Sample.class);
+
+		assertThat(path.getLength(), is(2));
+		assertThat(path.getBaseProperty().getName(), is("persons"));
+		assertThat(path.getLeafProperty().getName(), is("name"));
+	}
+
 	class Person {
 		String name;
 	}

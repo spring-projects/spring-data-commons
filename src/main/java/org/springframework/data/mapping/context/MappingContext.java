@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,10 +74,17 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	/**
 	 * Returns all {@link PersistentProperty}s for the given path expression based on the given {@link PropertyPath}.
 	 * 
-	 * @param <T>
-	 * @param type
-	 * @param path
-	 * @return
+	 * @param propertyPath must not be {@literal null}.
+	 * @return the {@link PersistentPropertyPath} representing the given {@link PropertyPath}.
 	 */
 	PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath);
+
+	/**
+	 * Returns all {@link PersistentProperty}s for the given dot path notation based on the given type.
+	 * 
+	 * @param propertyPath must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return the {@link PersistentPropertyPath} representing the given property path on the given type.
+	 */
+	PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type);
 }

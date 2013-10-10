@@ -22,10 +22,12 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -187,23 +189,47 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.Class, java.lang.String)
 	 */
 	public PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath) {
+		return getPersistentPropertyPath(propertyPath.toDotPath(), propertyPath.getOwningType());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.String, java.lang.Class)
+	 */
+	public PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type) {
+		return getPersistentPropertyPath(propertyPath, ClassTypeInformation.from(type));
+	}
+
+	private PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
+		return getPersistentPropertyPath(Arrays.asList(propertyPath.split("\\.")), type);
+	}
+
+	/**
+	 * Creates a {@link PersistentPropertyPath} for the given parts and {@link TypeInformation}.
+	 * 
+	 * @param parts must not be {@literal null} or empty.
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private PersistentPropertyPath<P> getPersistentPropertyPath(Iterable<String> parts, TypeInformation<?> type) {
 
 		List<P> result = new ArrayList<P>();
-		E current = getPersistentEntity(propertyPath.getOwningType());
+		Iterator<String> iterator = parts.iterator();
+		E current = getPersistentEntity(type);
 
-		for (PropertyPath segment : propertyPath) {
+		while (iterator.hasNext()) {
 
-			P persistentProperty = current.getPersistentProperty(segment.getSegment());
+			String segment = iterator.next();
+			P persistentProperty = current.getPersistentProperty(segment);
 
 			if (persistentProperty == null) {
-				throw new IllegalArgumentException(String.format("No property %s found on %s!", segment.getSegment(),
-						current.getName()));
+				throw new IllegalArgumentException(String.format("No property %s found on %s!", segment, current.getName()));
 			}
 
 			result.add(persistentProperty);
 
-			if (segment.hasNext()) {
-				current = getPersistentEntity(segment.getType());
+			if (iterator.hasNext()) {
+				current = getPersistentEntity(persistentProperty.getActualType());
 			}
 		}
 
