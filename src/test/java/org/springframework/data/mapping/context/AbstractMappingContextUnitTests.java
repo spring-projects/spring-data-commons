@@ -185,6 +185,14 @@ public class AbstractMappingContextUnitTests {
 		assertThat(path.getLeafProperty().getName(), is("name"));
 	}
 
+	/**
+	 * @see DATACMNS-380
+	 */
+	@Test(expected = MappingException.class)
+	public void rejectsInvalidPropertyReferenceWithMappingException() {
+		context.getPersistentPropertyPath("foo", Sample.class);
+	}
+
 	class Person {
 		String name;
 	}

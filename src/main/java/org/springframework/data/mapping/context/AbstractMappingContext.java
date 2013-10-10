@@ -223,7 +223,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			P persistentProperty = current.getPersistentProperty(segment);
 
 			if (persistentProperty == null) {
-				throw new IllegalArgumentException(String.format("No property %s found on %s!", segment, current.getName()));
+				throw new MappingException(String.format("No property %s found on %s!", segment, current.getName()));
 			}
 
 			result.add(persistentProperty);
