@@ -48,6 +48,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private static final String NAMED_QUERIES_LOCATION = "namedQueriesLocation";
 	private static final String QUERY_LOOKUP_STRATEGY = "queryLookupStrategy";
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS = "repositoryFactoryBeanClass";
+	private static final String CONSIDER_NESTED_REPOSITORIES = "considerNestedRepositories";
 
 	private final AnnotationMetadata metadata;
 	private final AnnotationAttributes attributes;
@@ -221,5 +222,13 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			}
 		}
 		return typeFilters;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#isConsideringNestedRepositoriesEnabled()
+	 */
+	@Override
+	public boolean isConsideringNestedRepositoriesEnabled() {
+		return attributes.getBoolean(CONSIDER_NESTED_REPOSITORIES);
 	}
 }

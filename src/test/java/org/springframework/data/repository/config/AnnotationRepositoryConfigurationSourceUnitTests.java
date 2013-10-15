@@ -32,6 +32,7 @@ import org.springframework.core.type.StandardAnnotationMetadata;
  * Unit tests for {@link AnnotationRepositoryConfigurationSource}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class AnnotationRepositoryConfigurationSourceUnitTests {
 
@@ -70,6 +71,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 		Iterable<String> packages = source.getBasePackages();
 		assertThat(packages, hasItem(DefaultConfiguration.class.getPackage().getName()));
+		assertThat(source.isConsideringNestedRepositoriesEnabled(), is(false));
 	}
 
 	@Test
@@ -83,17 +85,27 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(packages, hasItem("foo"));
 	}
 
-	public static class Person {
+	/**
+	 * @see DATACMNS-90
+	 */
+	@Test
+	public void returnsConsiderNestedRepositories() {
 
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(DefaultConfigurationWithNestedRepositories.class);
+		RepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
+				EnableRepositories.class, environment);
+
+		assertThat(source.isConsideringNestedRepositoriesEnabled(), is(true));
 	}
+
+	public static class Person {}
 
 	@EnableRepositories
-	static class DefaultConfiguration {
-
-	}
+	static class DefaultConfiguration {}
 
 	@EnableRepositories(basePackages = "foo")
-	static class DefaultConfigurationWithBasePackage {
+	static class DefaultConfigurationWithBasePackage {}
 
-	}
+	@EnableRepositories(considerNestedRepositories = true)
+	static class DefaultConfigurationWithNestedRepositories {}
 }

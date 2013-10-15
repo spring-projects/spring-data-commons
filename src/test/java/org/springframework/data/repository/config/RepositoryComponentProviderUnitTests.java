@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSourceUnitTests.Person;
 import org.springframework.data.repository.sample.SampleAnnotatedRepository;
 
 /**
  * Unit tests for {@link RepositoryComponentProvider}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class RepositoryComponentProviderUnitTests {
 
@@ -57,4 +61,23 @@ public class RepositoryComponentProviderUnitTests {
 		assertThat(components.size(), is(1));
 		assertThat(components.iterator().next().getBeanClassName(), is(MyOtherRepository.class.getName()));
 	}
+
+	/**
+	 * @DATACMNS-90
+	 */
+	@Test
+	public void shouldConsiderNestedRepositoryInterfacesIfEnabled() {
+
+		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.<TypeFilter> emptyList());
+		provider.setConsiderNestedRepositoryInterfaces(true);
+
+		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.config");
+		String nestedRepositoryClassName = "org.springframework.data.repository.config.RepositoryComponentProviderUnitTests$MyNestedRepository";
+
+		assertThat(components.size(), is(3));
+		assertThat(components,
+				Matchers.<BeanDefinition> hasItem(hasProperty("beanClassName", is(nestedRepositoryClassName))));
+	}
+
+	public interface MyNestedRepository extends Repository<Person, Long> {}
 }
