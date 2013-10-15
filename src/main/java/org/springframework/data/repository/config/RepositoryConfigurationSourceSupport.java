@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
@@ -54,7 +53,8 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 */
 	public Collection<String> getCandidates(ResourceLoader loader) {
 
-		ClassPathScanningCandidateComponentProvider scanner = new RepositoryComponentProvider(getIncludeFilters());
+		RepositoryComponentProvider scanner = new RepositoryComponentProvider(getIncludeFilters());
+		scanner.setConsiderNestedRepositoryInterfaces(isConsideringNestedRepositoriesEnabled());
 		scanner.setResourceLoader(loader);
 		scanner.setEnvironment(environment);
 
@@ -93,4 +93,10 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	protected Iterable<TypeFilter> getIncludeFilters() {
 		return Collections.emptySet();
 	}
+
+	/**
+	 * Controls whether nested repository-interfaces (e.g. defined as inner classes) should be considered by the
+	 * repository infrastructure.
+	 */
+	public abstract boolean isConsideringNestedRepositoriesEnabled();
 }

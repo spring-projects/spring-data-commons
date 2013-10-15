@@ -33,7 +33,7 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * Integratin tests for the initializer namespace elements.
+ * Integration tests for the initializer name-space elements.
  * 
  * @author Oliver Gierke
  */
