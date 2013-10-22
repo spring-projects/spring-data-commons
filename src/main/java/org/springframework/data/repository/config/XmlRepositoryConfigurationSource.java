@@ -151,11 +151,12 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return StringUtils.hasText(attribute) ? attribute : null;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#isConsideringNestedRepositoriesEnabled()
 	 */
 	@Override
-	public boolean isConsideringNestedRepositoriesEnabled() {
+	public boolean shouldConsiderNestedRepositories() {
 
 		String attribute = getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES);
 		return attribute != null && Boolean.parseBoolean(attribute);

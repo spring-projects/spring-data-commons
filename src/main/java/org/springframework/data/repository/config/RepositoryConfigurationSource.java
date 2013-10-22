@@ -77,9 +77,4 @@ public interface RepositoryConfigurationSource {
 	 * @return
 	 */
 	Collection<String> getCandidates(ResourceLoader loader);
-
-	/**
-	 * @return true if the container should look for nested repository interface definitions.
-	 */
-	boolean isConsideringNestedRepositoriesEnabled();
 }

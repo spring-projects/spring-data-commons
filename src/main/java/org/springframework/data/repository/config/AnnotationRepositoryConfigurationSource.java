@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
  * Annotation based {@link RepositoryConfigurationSource}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -224,11 +225,12 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return typeFilters;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#isConsideringNestedRepositoriesEnabled()
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#shouldConsiderNestedRepositories()
 	 */
 	@Override
-	public boolean isConsideringNestedRepositoriesEnabled() {
+	public boolean shouldConsiderNestedRepositories() {
 		return attributes.getBoolean(CONSIDER_NESTED_REPOSITORIES);
 	}
 }

@@ -30,6 +30,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * Base class to implement {@link RepositoryConfigurationSource}s.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public abstract class RepositoryConfigurationSourceSupport implements RepositoryConfigurationSource {
 
@@ -54,7 +55,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	public Collection<String> getCandidates(ResourceLoader loader) {
 
 		RepositoryComponentProvider scanner = new RepositoryComponentProvider(getIncludeFilters());
-		scanner.setConsiderNestedRepositoryInterfaces(isConsideringNestedRepositoriesEnabled());
+		scanner.setConsiderNestedRepositoryInterfaces(shouldConsiderNestedRepositories());
 		scanner.setResourceLoader(loader);
 		scanner.setEnvironment(environment);
 
@@ -95,8 +96,12 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	}
 
 	/**
-	 * Controls whether nested repository-interfaces (e.g. defined as inner classes) should be considered by the
-	 * repository infrastructure.
+	 * Returns whether we should consider nested repositories, i.e. repository interface definitions nested in other
+	 * classes.
+	 * 
+	 * @return {@literal true} if the container should look for nested repository interface definitions.
 	 */
-	public abstract boolean isConsideringNestedRepositoriesEnabled();
+	public boolean shouldConsiderNestedRepositories() {
+		return false;
+	}
 }
