@@ -231,6 +231,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	@Override
 	public boolean shouldConsiderNestedRepositories() {
-		return attributes.getBoolean(CONSIDER_NESTED_REPOSITORIES);
+		return attributes.containsKey(CONSIDER_NESTED_REPOSITORIES) && attributes.getBoolean(CONSIDER_NESTED_REPOSITORIES);
 	}
 }
