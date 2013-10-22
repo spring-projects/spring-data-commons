@@ -29,6 +29,7 @@ import org.springframework.data.domain.Sort;
  * Unit test for {@link Parameters}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class ParametersUnitTests {
 
@@ -115,6 +116,17 @@ public class ParametersUnitTests {
 		assertThat(parameters.getSortIndex(), is(1));
 	}
 
+	/**
+	 * @see DATAJPA-415
+	 * @throws Exception
+	 */
+	@Test
+	public void detectsVarArgsParameter() throws Exception {
+
+		Parameters<?, ?> parameters = getParametersFor("validWithVarArgs", Integer[].class);
+		assertThat(parameters.getNumberOfParameters(), is(1));
+	}
+
 	private Parameters<?, ?> getParametersFor(String methodName, Class<?>... parameterTypes) throws SecurityException,
 			NoSuchMethodException {
 
@@ -123,9 +135,7 @@ public class ParametersUnitTests {
 		return new DefaultParameters(method);
 	}
 
-	static class User {
-
-	}
+	static class User {}
 
 	static interface SampleDao {
 
@@ -143,5 +153,6 @@ public class ParametersUnitTests {
 
 		User emptyParameters();
 
+		User validWithVarArgs(Integer... ids);
 	}
 }

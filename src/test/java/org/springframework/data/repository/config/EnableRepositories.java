@@ -44,4 +44,6 @@ public @interface EnableRepositories {
 	String namedQueriesLocation() default "";
 
 	String repositoryImplementationPostfix() default "Impl";
+
+	boolean considerNestedRepositories() default false;
 }
