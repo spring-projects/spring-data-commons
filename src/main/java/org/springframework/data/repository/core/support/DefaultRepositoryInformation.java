@@ -328,7 +328,13 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 		Type boundType = variable.getBounds()[0];
 		String referenceName = boundType instanceof TypeVariable ? boundType.toString() : variable.toString();
 
-		if (DOMAIN_TYPE_NAME.equals(referenceName) && parameterType.isAssignableFrom(entityType)) {
+		boolean isDomainTypeVariableReference = DOMAIN_TYPE_NAME.equals(referenceName);
+		boolean parameterMatchesEntityType = parameterType.isAssignableFrom(entityType);
+
+		// We need this check to besure not to match save(Iterable) for entities implementing Iterable
+		boolean isNotIterable = !parameterType.equals(Iterable.class);
+
+		if (isDomainTypeVariableReference && parameterMatchesEntityType && isNotIterable) {
 			return true;
 		}
 
