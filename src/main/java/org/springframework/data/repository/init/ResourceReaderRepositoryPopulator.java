@@ -155,6 +155,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	private void persist(Object object, Repositories repositories) {
 
 		CrudInvoker<Object> invoker = (CrudInvoker<Object>) repositories.getCrudInvoker(object.getClass());
+		Assert.notNull(invoker, String.format("Cannot find a repository for domain class: %s", object.getClass();
 		LOGGER.debug(String.format("Persisting %s using repository %s", object, invoker));
 
 		invoker.invokeSave(object);
