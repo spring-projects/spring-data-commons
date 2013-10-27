@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
 /**
@@ -32,19 +33,19 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryConfigurationUnitTests {
 
-	@Mock
-	RepositoryConfigurationSource source;
+	@Mock RepositoryConfigurationSource source;
 
 	@Test
 	public void supportsBasicConfiguration() {
 
 		RepositoryConfiguration<RepositoryConfigurationSource> configuration = new DefaultRepositoryConfiguration<RepositoryConfigurationSource>(
-				source, "com.acme.MyRepository");
+				source, new RootBeanDefinition("com.acme.MyRepository"));
 
 		assertThat(configuration.getConfigurationSource(), is(source));
 		assertThat(configuration.getImplementationBeanName(), is("myRepositoryImpl"));
 		assertThat(configuration.getImplementationClassName(), is("MyRepositoryImpl"));
 		assertThat(configuration.getRepositoryInterface(), is("com.acme.MyRepository"));
 		assertThat(configuration.getQueryLookupStrategyKey(), is((Object) Key.CREATE_IF_NOT_FOUND));
+		assertThat(configuration.isLazyInit(), is(false));
 	}
 }

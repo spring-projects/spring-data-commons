@@ -52,7 +52,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getCandidates(org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider)
 	 */
-	public Collection<String> getCandidates(ResourceLoader loader) {
+	public Collection<BeanDefinition> getCandidates(ResourceLoader loader) {
 
 		RepositoryComponentProvider scanner = new RepositoryComponentProvider(getIncludeFilters());
 		scanner.setConsiderNestedRepositoryInterfaces(shouldConsiderNestedRepositories());
@@ -63,13 +63,11 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 			scanner.addExcludeFilter(filter);
 		}
 
-		Set<String> result = new HashSet<String>();
+		Set<BeanDefinition> result = new HashSet<BeanDefinition>();
 
 		for (String basePackage : getBasePackages()) {
-			Collection<BeanDefinition> components = scanner.findCandidateComponents(basePackage);
-			for (BeanDefinition definition : components) {
-				result.add(definition.getBeanClassName());
-			}
+			Set<BeanDefinition> candidate = scanner.findCandidateComponents(basePackage);
+			result.addAll(candidate);
 		}
 
 		return result;

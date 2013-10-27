@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -50,7 +51,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 		Set<RepositoryConfiguration<T>> result = new HashSet<RepositoryConfiguration<T>>();
 
-		for (String candidate : configSource.getCandidates(loader)) {
+		for (BeanDefinition candidate : configSource.getCandidates(loader)) {
 			result.add(getRepositoryConfiguration(candidate, configSource));
 		}
 		return result;
@@ -138,12 +139,12 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * interface name. Defaults to the {@link DefaultRepositoryConfiguration} but allows sub-classes to override this to
 	 * customize the behaviour.
 	 * 
-	 * @param interfaceName will never be {@literal null} or empty.
+	 * @param definition will never be {@literal null} or empty.
 	 * @param configSource will never be {@literal null}.
 	 * @return
 	 */
 	protected <T extends RepositoryConfigurationSource> RepositoryConfiguration<T> getRepositoryConfiguration(
-			String interfaceName, T configSource) {
-		return new DefaultRepositoryConfiguration<T>(configSource, interfaceName);
+			BeanDefinition definition, T configSource) {
+		return new DefaultRepositoryConfiguration<T>(configSource, definition);
 	}
 }
