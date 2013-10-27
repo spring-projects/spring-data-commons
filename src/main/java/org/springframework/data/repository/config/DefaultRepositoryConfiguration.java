@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -32,22 +33,22 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	private static final String DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX = "Impl";
 
 	private final T configurationSource;
-	private final String interfaceName;
+	private final BeanDefinition definition;
 
 	/**
 	 * Creates a new {@link DefaultRepositoryConfiguration} from the given {@link RepositoryConfigurationSource} and
-	 * interface name.
+	 * source {@link BeanDefinition}.
 	 * 
 	 * @param configurationSource must not be {@literal null}.
-	 * @param interfaceName must not be {@literal null} or empty.
+	 * @param definition must not be {@literal null}.
 	 */
-	public DefaultRepositoryConfiguration(T configurationSource, String interfaceName) {
+	public DefaultRepositoryConfiguration(T configurationSource, BeanDefinition definition) {
 
 		Assert.notNull(configurationSource);
-		Assert.hasText(interfaceName);
+		Assert.notNull(definition);
 
 		this.configurationSource = configurationSource;
-		this.interfaceName = interfaceName;
+		this.definition = definition;
 	}
 
 	/*
@@ -55,7 +56,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getBeanId()
 	 */
 	public String getBeanId() {
-		return StringUtils.uncapitalize(ClassUtils.getShortName(interfaceName));
+		return StringUtils.uncapitalize(ClassUtils.getShortName(getRepositoryFactoryBeanName()));
 	}
 
 	/*
@@ -81,7 +82,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryInterface()
 	 */
 	public String getRepositoryInterface() {
-		return interfaceName;
+		return definition.getBeanClassName();
 	}
 
 	/* 
@@ -104,7 +105,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationClassName()
 	 */
 	public String getImplementationClassName() {
-		return ClassUtils.getShortName(interfaceName) + getImplementationPostfix();
+		return ClassUtils.getShortName(getRepositoryInterface()) + getImplementationPostfix();
 	}
 
 	/* 
@@ -147,5 +148,14 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 */
 	public String getRepositoryFactoryBeanName() {
 		return configurationSource.getRepositoryFactoryBeanName();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#isLazyInit()
+	 */
+	@Override
+	public boolean isLazyInit() {
+		return definition.isLazyInit();
 	}
 }

@@ -16,10 +16,14 @@
 package org.springframework.data.repository.config;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
@@ -31,6 +35,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Custom {@link ClassPathScanningCandidateComponentProvider} scanning for interfaces extending the given base
@@ -103,6 +108,30 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		boolean isConsiderNestedRepositories = isConsiderNestedRepositoryInterfaces();
 
 		return isNonRepositoryInterface && (isTopLevelType || isConsiderNestedRepositories);
+	}
+
+	/**
+	 * Customizes the repository interface detection and triggers annotation detection on them.
+	 */
+	@Override
+	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
+
+		Set<BeanDefinition> candidates = super.findCandidateComponents(basePackage);
+
+		for (BeanDefinition candidate : candidates) {
+
+			if (candidate instanceof AnnotatedBeanDefinition) {
+
+				// TODO: Remove after upgrade to Spring 3.2.5 - SPR-11032, DATACMNS-386
+				// Use AnnotationConfigUtils directly
+				Method method = ReflectionUtils.findMethod(AnnotationConfigUtils.class, "processCommonDefinitionAnnotations",
+						AnnotatedBeanDefinition.class);
+				ReflectionUtils.makeAccessible(method);
+				ReflectionUtils.invokeMethod(method, null, candidate);
+			}
+		}
+
+		return candidates;
 	}
 
 	/**

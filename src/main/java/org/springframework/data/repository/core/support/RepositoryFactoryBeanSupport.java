@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,9 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private NamedQueries namedQueries;
 	private MappingContext<?, ?> mappingContext;
 	private ClassLoader classLoader;
+	private boolean lazyInit = false;
+
+	private T repository;
 
 	/**
 	 * Setter to inject the repository interface to implement.
@@ -100,6 +103,15 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
 		this.mappingContext = mappingContext;
+	}
+
+	/**
+	 * Configures whether to initialize the repository proxy lazily. This defaults to {@literal false}.
+	 * 
+	 * @param lazyInit whether to initialize the repository proxy lazily. This defaults to {@literal false}.
+	 */
+	public void setLazyInit(boolean lazy) {
+		this.lazyInit = lazy;
 	}
 
 	/* 
@@ -159,7 +171,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
 	public T getObject() {
-		return factory.getRepository(repositoryInterface, customImplementation);
+		return initAndReturn();
 	}
 
 	/*
@@ -189,6 +201,26 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
 		this.factory.setBeanClassLoader(classLoader);
+
+		if (!lazyInit) {
+			initAndReturn();
+		}
+	}
+
+	/**
+	 * Returns the previously initialized repository proxy or creates and returns the proxy if previously uninitialized.
+	 * 
+	 * @return
+	 */
+	private T initAndReturn() {
+
+		Assert.notNull(repositoryInterface, "Repository interface must not be null on initialization!");
+
+		if (this.repository == null) {
+			this.repository = this.factory.getRepository(repositoryInterface, customImplementation);
+		}
+
+		return this.repository;
 	}
 
 	/**

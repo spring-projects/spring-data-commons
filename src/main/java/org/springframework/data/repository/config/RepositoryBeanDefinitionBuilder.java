@@ -84,6 +84,7 @@ public class RepositoryBeanDefinitionBuilder {
 		builder.getRawBeanDefinition().setSource(configuration.getSource());
 		builder.addPropertyValue("repositoryInterface", configuration.getRepositoryInterface());
 		builder.addPropertyValue("queryLookupStrategyKey", configuration.getQueryLookupStrategyKey());
+		builder.addPropertyValue("lazyInit", configuration.isLazyInit());
 
 		NamedQueriesBeanDefinitionBuilder definitionBuilder = new NamedQueriesBeanDefinitionBuilder(
 				extension.getDefaultNamedQueryLocation());

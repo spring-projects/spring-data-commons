@@ -18,6 +18,7 @@ package org.springframework.data.repository.config;
 import java.util.Collection;
 
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 
@@ -71,10 +72,10 @@ public interface RepositoryConfigurationSource {
 	String getRepositoryFactoryBeanName();
 
 	/**
-	 * Returns the fully-qualified names of the repository interfaces to create repository instances for.
+	 * Returns the source {@link BeanDefinition}s of the repository interfaces to create repository instances for.
 	 * 
 	 * @param loader
 	 * @return
 	 */
-	Collection<String> getCandidates(ResourceLoader loader);
+	Collection<BeanDefinition> getCandidates(ResourceLoader loader);
 }

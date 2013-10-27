@@ -19,7 +19,9 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -28,6 +30,8 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Oliver Gierke
  */
 public class RepositoryFactoryBeanSupportUnitTests {
+
+	public @Rule ExpectedException exception = ExpectedException.none();
 
 	/**
 	 * @see DATACMNS-341
@@ -40,9 +44,21 @@ public class RepositoryFactoryBeanSupportUnitTests {
 
 		RepositoryFactoryBeanSupport factoryBean = new DummyRepositoryFactoryBean();
 		factoryBean.setBeanClassLoader(classLoader);
+		factoryBean.setLazyInit(true);
 		factoryBean.afterPropertiesSet();
 
 		Object factory = ReflectionTestUtils.getField(factoryBean, "factory");
 		assertThat(ReflectionTestUtils.getField(factory, "classLoader"), is((Object) classLoader));
+	}
+
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void initializationFailsWithMissingRepositoryInterface() {
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage("Repository interface");
+
+		RepositoryFactoryBeanSupport factoryBean = new DummyRepositoryFactoryBean();
+		factoryBean.afterPropertiesSet();
 	}
 }

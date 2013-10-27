@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -57,9 +58,11 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test
 	public void evaluatesExcludeFiltersCorrectly() {
 
-		Collection<String> candidates = source.getCandidates(new DefaultResourceLoader());
+		Collection<BeanDefinition> candidates = source.getCandidates(new DefaultResourceLoader());
 		assertThat(candidates, hasSize(1));
-		assertThat(candidates, hasItem(MyRepository.class.getName()));
+
+		BeanDefinition candidate = candidates.iterator().next();
+		assertThat(candidate.getBeanClassName(), is(MyRepository.class.getName()));
 	}
 
 	@Test
