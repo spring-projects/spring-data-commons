@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,6 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param owningType must not be {@literal null}.
 	 */
 	PropertyPath(String name, Class<?> owningType) {
-
 		this(name, ClassTypeInformation.from(owningType), null);
 	}
 
@@ -132,7 +131,6 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @see #hasNext()
 	 */
 	public PropertyPath next() {
-
 		return next;
 	}
 
@@ -143,7 +141,6 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @return
 	 */
 	public boolean hasNext() {
-
 		return next != null;
 	}
 
@@ -167,7 +164,6 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @return
 	 */
 	public boolean isCollection() {
-
 		return isCollection;
 	}
 
@@ -241,7 +237,6 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @return
 	 */
 	public static PropertyPath from(String source, Class<?> type) {
-
 		return from(source, ClassTypeInformation.from(type));
 	}
 
@@ -253,6 +248,9 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @return
 	 */
 	public static PropertyPath from(String source, TypeInformation<?> type) {
+
+		Assert.hasText(source, "Source must not be null or empty!");
+		Assert.notNull(type, "TypeInformation must not be null or empty!");
 
 		List<String> iteratorSource = new ArrayList<String>();
 		Matcher matcher = SPLITTER.matcher("_" + source);

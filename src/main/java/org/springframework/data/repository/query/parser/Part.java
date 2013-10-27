@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -46,25 +47,27 @@ public class Part {
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
 	 * 
-	 * @param part must not be {@literal null}.
+	 * @param source must not be {@literal null}.
 	 * @param clazz must not be {@literal null}.
 	 */
-	public Part(String part, Class<?> clazz) {
-
-		this(part, clazz, false);
+	public Part(String source, Class<?> clazz) {
+		this(source, clazz, false);
 	}
 
 	/**
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
 	 * 
-	 * @param part must not be {@literal null}.
+	 * @param source must not be {@literal null}.
 	 * @param clazz must not be {@literal null}.
 	 * @param alwaysIgnoreCase
 	 */
-	public Part(String part, Class<?> clazz, boolean alwaysIgnoreCase) {
+	public Part(String source, Class<?> clazz, boolean alwaysIgnoreCase) {
 
-		String partToUse = detectAndSetIgnoreCase(part);
+		Assert.hasText(source, "Part source must not be null or emtpy!");
+		Assert.notNull(clazz, "Type must not be null!");
+
+		String partToUse = detectAndSetIgnoreCase(source);
 		if (alwaysIgnoreCase && ignoreCase != IgnoreCaseType.ALWAYS) {
 			this.ignoreCase = IgnoreCaseType.WHEN_POSSIBLE;
 		}

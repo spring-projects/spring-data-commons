@@ -185,7 +185,9 @@ public class PartTree implements Iterable<OrPart> {
 
 			String[] split = split(source, "And");
 			for (String part : split) {
-				children.add(new Part(part, domainClass, alwaysIgnoreCase));
+				if (StringUtils.hasText(part)) {
+					children.add(new Part(part, domainClass, alwaysIgnoreCase));
+				}
 			}
 		}
 

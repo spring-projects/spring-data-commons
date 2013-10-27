@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.mapping;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.mapping.PropertyPath.*;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -305,6 +306,51 @@ public class PropertyPathUnitTests {
 		assertThat(path.getSegment(), is("_foo"));
 		assertThat(path.hasNext(), is(true));
 		assertThat(path.next().getSegment(), is("UUID"));
+	}
+
+	/**
+	 * @see DATACMNS-381
+	 */
+	public void exposesPreviouslyReferencedPathInExceptionMessage() {
+
+		exception.expect(PropertyReferenceException.class);
+		exception.expectMessage("bar"); // missing variable
+		exception.expectMessage("String"); // type
+		exception.expectMessage("Bar.user.name"); // previously referenced path
+
+		PropertyPath.from("userNameBar", Bar.class);
+	}
+
+	/**
+	 * @see DATACMNS-387
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullSource() {
+		from(null, Foo.class);
+	}
+
+	/**
+	 * @see DATACMNS-387
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsEmptySource() {
+		from("", Foo.class);
+	}
+
+	/**
+	 * @see DATACMNS-387
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullClass() {
+		from("foo", (Class<?>) null);
+	}
+
+	/**
+	 * @see DATACMNS-387
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullTypeInformation() {
+		from("foo", (TypeInformation<?>) null);
 	}
 
 	private class Foo {
