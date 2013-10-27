@@ -56,7 +56,7 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	}
 
 	@Bean
-	public PagedResourcesAssembler<Object> pagedResourcesAssembler() {
+	public PagedResourcesAssembler<?> pagedResourcesAssembler() {
 		return new PagedResourcesAssembler<Object>(pageableResolver(), null);
 	}
 
