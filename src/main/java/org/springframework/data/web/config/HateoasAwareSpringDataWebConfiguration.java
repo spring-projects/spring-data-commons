@@ -31,6 +31,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Ben Hale
  */
 @Configuration
 public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfiguration {
@@ -56,7 +57,7 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	}
 
 	@Bean
-	public PagedResourcesAssembler<Object> pagedResourcesAssembler() {
+	public PagedResourcesAssembler<?> pagedResourcesAssembler() {
 		return new PagedResourcesAssembler<Object>(pageableResolver(), null);
 	}
 
