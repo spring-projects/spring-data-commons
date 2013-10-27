@@ -277,6 +277,14 @@ public class ClassTypeInformationUnitTests {
 		assertThat(categoryIdInfo, is((TypeInformation) from(Long.class)));
 	}
 
+	/**
+	 * @see DATACMNS-387
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullClass() {
+		from(null);
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}

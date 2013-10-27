@@ -470,6 +470,18 @@ public class PartTreeUnitTests {
 		assertThat(new PartTree("findByOrderId", Product.class), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-387
+	 */
+	@Test
+	public void buildsPartTreeFromEmptyPredicateCorrectly() {
+
+		PartTree tree = new PartTree("findAllByOrderByLastnameAsc", User.class);
+
+		assertThat(tree.getParts(), is(emptyIterable()));
+		assertThat(tree.getSort(), is(new Sort(Direction.ASC, "lastname")));
+	}
+
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
 	}

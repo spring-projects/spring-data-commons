@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -60,10 +61,12 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * Simple factory method to easily create new instances of {@link ClassTypeInformation}.
 	 * 
 	 * @param <S>
-	 * @param type
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	public static <S> TypeInformation<S> from(Class<S> type) {
+
+		Assert.notNull(type, "Type must not be null!");
 
 		Reference<TypeInformation<?>> cachedReference = CACHE.get(type);
 		TypeInformation<?> cachedTypeInfo = cachedReference == null ? null : cachedReference.get();
@@ -80,10 +83,12 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	/**
 	 * Creates a {@link TypeInformation} from the given method's return type.
 	 * 
-	 * @param method
+	 * @param method must not be {@literal null}.
 	 * @return
 	 */
 	public static <S> TypeInformation<S> fromReturnTypeOf(Method method) {
+
+		Assert.notNull(method, "Method must not be null!");
 		return new ClassTypeInformation(method.getDeclaringClass()).createInfo(method.getGenericReturnType());
 	}
 
