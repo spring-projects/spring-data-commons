@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.springframework.core.SpringVersion;
 import org.springframework.data.mapping.Person;
 
 /**
@@ -104,7 +106,14 @@ public class ClassTypeInformationUnitTests {
 
 		property = information.getProperty("rawSet");
 		assertEquals(Set.class, property.getType());
-		assertEquals(Object.class, property.getComponentType().getType());
+
+		// Spring 4 returns null for component types of raw types
+		if (SpringVersion.getVersion().startsWith("4")) {
+			assertThat(property.getComponentType(), nullValue());
+		} else {
+			assertThat(property.getComponentType().getType(), is(Matchers.<Class<?>> equalTo(Object.class)));
+		}
+
 		assertNull(property.getMapValueType());
 	}
 
