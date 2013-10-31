@@ -51,14 +51,12 @@ public class DomainClassConverterUnitTests {
 
 	static final User USER = new User();
 
-	@SuppressWarnings("rawtypes")
-	DomainClassConverter converter;
+	@SuppressWarnings("rawtypes") DomainClassConverter converter;
 
 	TypeDescriptor sourceDescriptor;
 	TypeDescriptor targetDescriptor;
 
-	@Mock
-	DefaultConversionService service;
+	@Mock DefaultConversionService service;
 
 	@Before
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -76,7 +74,9 @@ public class DomainClassConverterUnitTests {
 	@Test
 	public void matchFailsIfNoDaoAvailable() throws Exception {
 
-		converter.setApplicationContext(new GenericApplicationContext());
+		GenericApplicationContext ctx = new GenericApplicationContext();
+		ctx.refresh();
+		converter.setApplicationContext(ctx);
 		assertMatches(false);
 	}
 
@@ -143,7 +143,8 @@ public class DomainClassConverterUnitTests {
 	public void discoversFactoryAndRepoFromParentApplicationContext() {
 
 		ApplicationContext parent = initContextWithRepo();
-		ApplicationContext context = new GenericApplicationContext(parent);
+		GenericApplicationContext context = new GenericApplicationContext(parent);
+		context.refresh();
 
 		when(service.canConvert(String.class, Long.class)).thenReturn(true);
 
@@ -159,7 +160,9 @@ public class DomainClassConverterUnitTests {
 		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
 		factory.registerBeanDefinition("provider", builder.getBeanDefinition());
 
-		return new GenericApplicationContext(factory);
+		GenericApplicationContext ctx = new GenericApplicationContext(factory);
+		ctx.refresh();
+		return ctx;
 	}
 
 	private static class User {

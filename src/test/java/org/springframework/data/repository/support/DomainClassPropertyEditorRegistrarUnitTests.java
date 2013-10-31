@@ -28,7 +28,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
@@ -41,11 +40,10 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
 @RunWith(MockitoJUnitRunner.class)
 public class DomainClassPropertyEditorRegistrarUnitTests {
 
-	@Mock
-	PropertyEditorRegistry registry;
+	@Mock PropertyEditorRegistry registry;
 
 	DomainClassPropertyEditorRegistrar registrar;
-	ApplicationContext context;
+	GenericApplicationContext context;
 	DomainClassPropertyEditor<Entity, Serializable> reference;
 
 	@Before
@@ -58,6 +56,7 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 		factory.registerBeanDefinition("provider", builder.getBeanDefinition());
 
 		context = new GenericApplicationContext(factory);
+		context.refresh();
 		registrar = new DomainClassPropertyEditorRegistrar();
 	}
 

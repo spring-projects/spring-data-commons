@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.core.SpringVersion;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.repository.init.Jackson2ResourceReader;
 import org.springframework.data.repository.init.JacksonResourceReader;
@@ -40,6 +41,14 @@ import org.springframework.test.util.ReflectionTestUtils;
  */
 public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTests {
 
+	private ClassPathResource getPopulatorResource() {
+		String populatorsResourceName = "populators.xml";
+		if (SpringVersion.getVersion().startsWith("4.0")) {
+			populatorsResourceName = "populators-spring-4.0.xml";
+		}
+		return new ClassPathResource(populatorsResourceName, getClass());
+	}
+
 	/**
 	 * @see DATACMNS-58
 	 */
@@ -48,7 +57,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
-		reader.loadBeanDefinitions(new ClassPathResource("populators.xml", getClass()));
+		reader.loadBeanDefinitions(getPopulatorResource());
 
 		BeanDefinition definition = beanFactory.getBeanDefinition("jackson-populator");
 		assertThat(definition, is(notNullValue()));
@@ -70,7 +79,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
-		reader.loadBeanDefinitions(new ClassPathResource("populators.xml", getClass()));
+		reader.loadBeanDefinitions(getPopulatorResource());
 
 		BeanDefinition definition = beanFactory.getBeanDefinition("jackson2-populator");
 		assertThat(definition, is(notNullValue()));
@@ -92,7 +101,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
-		reader.loadBeanDefinitions(new ClassPathResource("populators.xml", getClass()));
+		reader.loadBeanDefinitions(getPopulatorResource());
 
 		BeanDefinition definition = beanFactory.getBeanDefinition("xml-populator");
 		assertThat(definition, is(notNullValue()));
