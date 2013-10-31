@@ -41,14 +41,6 @@ import org.springframework.test.util.ReflectionTestUtils;
  */
 public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTests {
 
-	private ClassPathResource getPopulatorResource() {
-		String populatorsResourceName = "populators.xml";
-		if (SpringVersion.getVersion().startsWith("4.0")) {
-			populatorsResourceName = "populators-spring-4.0.xml";
-		}
-		return new ClassPathResource(populatorsResourceName, getClass());
-	}
-
 	/**
 	 * @see DATACMNS-58
 	 */
@@ -117,7 +109,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.xml");
 	}
 
-	private void assertIsListOfClasspathResourcesWithPath(Object source, String path) {
+	private static void assertIsListOfClasspathResourcesWithPath(Object source, String path) {
 
 		assertThat(source, is(instanceOf(List.class)));
 		List<?> list = (List<?>) source;
@@ -126,5 +118,14 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 		assertThat(element, is(instanceOf(ClassPathResource.class)));
 		ClassPathResource resource = (ClassPathResource) element;
 		assertThat(resource.getPath(), is(path));
+	}
+
+	private static ClassPathResource getPopulatorResource() {
+
+		String springVersion = SpringVersion.getVersion();
+		String populatorsResourceName = springVersion.startsWith("4") ? "populators-spring-4.0.xml" : "populators.xml";
+
+		return new ClassPathResource(populatorsResourceName,
+				ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTests.class);
 	}
 }

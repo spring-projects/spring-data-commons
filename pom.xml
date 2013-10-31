@@ -23,6 +23,20 @@
 		<dist.key>DATACMNS</dist.key>
 	</properties>
 	
+	<profiles>
+		<profile>
+			<id>spring4</id>
+			<dependencies>
+				<dependency>
+					<groupId>javax.servlet</groupId>
+					<artifactId>javax.servlet-api</artifactId>
+					<version>3.0.1</version>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -131,13 +145,6 @@
 			<artifactId>ejb-api</artifactId>
 			<version>3.0</version>
 			<optional>true</optional>
-		</dependency>
-		
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
-			<scope>test</scope>
 		</dependency>
 
 		<!-- CDI -->
