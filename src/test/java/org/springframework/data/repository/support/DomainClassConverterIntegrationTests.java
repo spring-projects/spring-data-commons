@@ -48,13 +48,9 @@ import org.springframework.data.repository.core.support.RepositoryFactoryInforma
 @RunWith(MockitoJUnitRunner.class)
 public class DomainClassConverterIntegrationTests {
 
-	@Mock
-	@SuppressWarnings("rawtypes")
-	RepositoryFactoryBeanSupport factory;
-	@Mock
-	PersonRepository repository;
-	@Mock
-	RepositoryInformation information;
+	@Mock @SuppressWarnings("rawtypes") RepositoryFactoryBeanSupport factory;
+	@Mock PersonRepository repository;
+	@Mock RepositoryInformation information;
 
 	@Test
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -82,6 +78,7 @@ public class DomainClassConverterIntegrationTests {
 		when(factory.getRepositoryInformation()).thenReturn(information);
 
 		GenericApplicationContext context = new GenericApplicationContext(beanFactory);
+		context.refresh();
 		assertThat(context.getBeansOfType(RepositoryFactoryInformation.class).values().size(), is(1));
 
 		DomainClassConverter converter = new DomainClassConverter(new DefaultConversionService());

@@ -133,6 +133,13 @@
 			<optional>true</optional>
 		</dependency>
 		
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- CDI -->
 		<dependency>
 			<groupId>javax.enterprise</groupId>

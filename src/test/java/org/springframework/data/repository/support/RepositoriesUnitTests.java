@@ -33,7 +33,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -58,7 +57,7 @@ import org.springframework.data.repository.query.QueryMethod;
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoriesUnitTests {
 
-	ApplicationContext context;
+	GenericApplicationContext context;
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 
@@ -70,6 +69,7 @@ public class RepositoriesUnitTests {
 		beanFactory.registerBeanDefinition("personRepository", getRepositoryBeanDefinition(PersonRepository.class));
 
 		context = new GenericApplicationContext(beanFactory);
+		context.refresh();
 	}
 
 	private AbstractBeanDefinition getRepositoryBeanDefinition(Class<?> repositoryInterface) {
