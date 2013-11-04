@@ -1,6 +1,10 @@
 package org.springframework.data.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Value object to represent a Version consisting of major, minor and bugfix part.
@@ -176,6 +180,19 @@ public class Version implements Comparable<Version> {
 	 */
 	@Override
 	public String toString() {
-		return String.format("%d.%d.%d.%d", major, minor, bugfix, build);
+
+		List<Integer> digits = new ArrayList<Integer>();
+		digits.add(major);
+		digits.add(minor);
+
+		if (build != 0 || bugfix != 0) {
+			digits.add(bugfix);
+		}
+
+		if (build != 0) {
+			digits.add(build);
+		}
+
+		return StringUtils.collectionToDelimitedString(digits, ".");
 	}
 }

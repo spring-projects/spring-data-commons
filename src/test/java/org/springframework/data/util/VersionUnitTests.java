@@ -111,4 +111,16 @@ public class VersionUnitTests {
 		assertThat(nextBugfix.compareTo(version), is(greaterThan(0)));
 		assertThat(nextBuild.compareTo(version), is(greaterThan(0)));
 	}
+
+	@Test
+	public void removesTrailingZerosAfterSecondValueForToString() {
+
+		assertThat(new Version(2).toString(), is("2.0"));
+		assertThat(new Version(2, 0).toString(), is("2.0"));
+		assertThat(new Version(2, 0, 0).toString(), is("2.0"));
+		assertThat(new Version(2, 0, 0, 0).toString(), is("2.0"));
+		assertThat(new Version(2, 0, 1).toString(), is("2.0.1"));
+		assertThat(new Version(2, 0, 1, 0).toString(), is("2.0.1"));
+		assertThat(new Version(2, 0, 0, 1).toString(), is("2.0.0.1"));
+	}
 }
