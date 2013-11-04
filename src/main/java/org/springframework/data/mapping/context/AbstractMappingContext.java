@@ -124,7 +124,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	public Collection<E> getPersistentEntities() {
 		try {
 			read.lock();
-			return persistentEntities.values();
+			return Collections.unmodifiableSet(new HashSet<E>(persistentEntities.values()));
 		} finally {
 			read.unlock();
 		}

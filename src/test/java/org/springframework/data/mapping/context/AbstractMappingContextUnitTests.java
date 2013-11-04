@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 import groovy.lang.MetaClass;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -191,6 +193,24 @@ public class AbstractMappingContextUnitTests {
 	@Test(expected = MappingException.class)
 	public void rejectsInvalidPropertyReferenceWithMappingException() {
 		context.getPersistentPropertyPath("foo", Sample.class);
+	}
+
+	/**
+	 * @see DATACMNS-390
+	 */
+	@Test
+	public void exposesCopyOfPersistentEntitiesToAvoidConcurrentModificationException() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		context.getPersistentEntity(ClassTypeInformation.MAP);
+
+		Iterator<BasicPersistentEntity<Object, SamplePersistentProperty>> iterator = context.getPersistentEntities()
+				.iterator();
+
+		while (iterator.hasNext()) {
+			context.getPersistentEntity(ClassTypeInformation.SET);
+			iterator.next();
+		}
 	}
 
 	class Person {
