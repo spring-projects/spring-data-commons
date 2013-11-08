@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
+ * @author Oliver Gierke
  */
 public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar {
 
@@ -49,16 +50,15 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	private static final String MODIFY_ON_CREATE = "modifyOnCreation";
 	private static final String SET_DATES = "dateTimeForNow";
 
-	/**
-	 * @param annotationMetadata, must not be {@literal null}.
-	 * @param registry, must not be {@literal null}.
-	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata,
-	 *      org.springframework.beans.factory.support.BeanDefinitionRegistry)
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
+	@Override
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
 
-		Assert.notNull(annotationMetadata, "annotationMetadata must not be null!");
-		Assert.notNull(annotationMetadata, "registry must not be null!");
+		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null!");
+		Assert.notNull(annotationMetadata, "BeanDefinitionRegistry must not be null!");
 
 		AbstractBeanDefinition ahbd = registerAuditHandlerBeanDefinition(registry, getConfiguration(annotationMetadata));
 		registerAuditListenerBeanDefinition(ahbd, registry);
@@ -67,15 +67,15 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	/**
 	 * Registers an appropriate BeanDefinition for an {@link AuditingHandler}.
 	 * 
-	 * @param registry, must not be {@literal null}.
-	 * @param configuration, must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
+	 * @param configuration must not be {@literal null}.
 	 * @return
 	 */
 	private AbstractBeanDefinition registerAuditHandlerBeanDefinition(BeanDefinitionRegistry registry,
 			AnnotationAuditingConfiguration configuration) {
 
-		Assert.notNull(registry, "registry must not be null!");
-		Assert.notNull(configuration, "registry must not be null!");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
+		Assert.notNull(configuration, "AnnotationAuditingConfiguration must not be null!");
 
 		AbstractBeanDefinition ahbd = getAuditHandlerBeanDefinitionBuilder(configuration).getBeanDefinition();
 		registry.registerBeanDefinition(BeanDefinitionReaderUtils.generateBeanName(ahbd, registry), ahbd);
@@ -86,12 +86,12 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	 * Creates a {@link BeanDefinitionBuilder} to ease the definition of store specific {@link AuditingHandler}
 	 * implementations.
 	 * 
-	 * @param configuration, must not be {@literal null}.
+	 * @param configuration must not be {@literal null}.
 	 * @return
 	 */
 	protected BeanDefinitionBuilder getAuditHandlerBeanDefinitionBuilder(AnnotationAuditingConfiguration configuration) {
 
-		Assert.notNull(configuration, "configuration must not be null!");
+		Assert.notNull(configuration, "AnnotationAuditingConfiguration must not be null!");
 
 		return configureDefaultAuditHandlerAttributes(configuration,
 				BeanDefinitionBuilder.rootBeanDefinition(AuditingHandler.class));
@@ -101,8 +101,8 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	 * Configures the given {@link BeanDefinitionBuilder} with the default attributes from the given
 	 * {@link AnnotationAuditingConfiguration}.
 	 * 
-	 * @param configuration
-	 * @param builder
+	 * @param configuration must not be {@literal null}.
+	 * @param builder must not be {@literal null}.
 	 * @return the builder with the audit attributes configured.
 	 */
 	protected BeanDefinitionBuilder configureDefaultAuditHandlerAttributes(AnnotationAuditingConfiguration configuration,
@@ -128,9 +128,9 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	}
 
 	/**
-	 * Retrieve auditing configuration information.
+	 * Retrieve auditing configuration from the given {@link AnnotationMetadata}.
 	 * 
-	 * @param annotationMetadata
+	 * @param annotationMetadata will never be {@literal null}.
 	 * @return
 	 */
 	protected AnnotationAuditingConfiguration getConfiguration(AnnotationMetadata annotationMetadata) {
@@ -138,7 +138,9 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	}
 
 	/**
-	 * @return the annotation to use for the configuration of the auditing feature.
+	 * Return the annotation type to lookup configuration values from.
+	 * 
+	 * @return must not be {@literal null}.
 	 */
 	protected abstract Class<? extends Annotation> getAnnotation();
 
@@ -150,17 +152,17 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 			BeanDefinitionRegistry registry);
 
 	/**
-	 * Registers the given {@link AbstractBeanDefinition} as a singleton infrastructure bean under the given id.
+	 * Registers the given {@link AbstractBeanDefinition} as infrastructure bean under the given id.
 	 * 
-	 * @param def
-	 * @param id
-	 * @param registry
+	 * @param definition must not be {@literal null}.
+	 * @param id must not be {@literal null} or empty.
+	 * @param registry must not be {@literal null}.
 	 */
-	protected void registerInfrastructureBeanWithId(AbstractBeanDefinition def, String id, BeanDefinitionRegistry registry) {
+	protected void registerInfrastructureBeanWithId(AbstractBeanDefinition definition, String id,
+			BeanDefinitionRegistry registry) {
 
-		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-		def.setScope("singleton");
-		registry.registerBeanDefinition(id, def);
+		definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		registry.registerBeanDefinition(id, definition);
 	}
 
 	private BeanDefinition createLazyInitTargetSourceBeanDefinition(String auditorAwareRef) {

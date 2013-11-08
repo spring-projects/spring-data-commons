@@ -16,33 +16,42 @@
 package org.springframework.data.auditing.config;
 
 import org.springframework.data.auditing.DateTimeProvider;
+import org.springframework.data.domain.AuditorAware;
 
 /**
  * Configuration information for auditing.
  * 
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
+ * @author Oliver Gierke
  */
 public interface AnnotationAuditingConfiguration {
 
 	/**
-	 * @return References a bean of type AuditorAware to represent the current principal.
+	 * Returns the bean name of the {@link AuditorAware} instance to be used..
+	 * 
+	 * @return
 	 */
 	String getAuditorAwareRef();
 
 	/**
-	 * @return Configures whether the creation and modification dates are set and defaults to {@literal true}.
+	 * Returns whether the creation and modification dates shall be set. Defaults to {@literal true}.
+	 * 
+	 * @return
 	 */
 	boolean isSetDates();
 
 	/**
-	 * @return Configures whether the entity shall be marked as modified on creation and defaults to {@literal true}.
+	 * Returns whether the entity shall be marked as modified on creation. Defaults to {@literal true}.
+	 * 
+	 * @return
 	 */
 	boolean isModifyOnCreate();
 
 	/**
-	 * @return Configures a {@link DateTimeProvider} that allows customizing which DateTime shall be used for setting
-	 *         creation and modification dates.
+	 * Returns the bean name of the {@link DateTimeProvider} to be used.
+	 * 
+	 * @return
 	 */
 	String getDateTimeProviderRef();
 }

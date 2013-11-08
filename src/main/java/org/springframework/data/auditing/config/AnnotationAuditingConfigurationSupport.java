@@ -26,48 +26,59 @@ import org.springframework.util.Assert;
  * 
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
+ * @author Oliver Gierke
  */
 public class AnnotationAuditingConfigurationSupport implements AnnotationAuditingConfiguration {
 
 	private final AnnotationAttributes attributes;
 
 	/**
-	 * Creates a new instance of {@link AnnotationAuditingConfigurationSupport}.
+	 * Creates a new instance of {@link AnnotationAuditingConfigurationSupport} for the given {@link AnnotationMetadata}
+	 * and annotation type.
 	 * 
-	 * @param metadata, must not be {@literal null}.
-	 * @param annotation, must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
+	 * @param annotation must not be {@literal null}.
 	 */
 	public AnnotationAuditingConfigurationSupport(AnnotationMetadata metadata, Class<? extends Annotation> annotation) {
 
-		Assert.notNull(metadata, "metadata must not be null!");
-		Assert.notNull(annotation, "annotation must not be null!");
-		attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(annotation.getName()));
+		Assert.notNull(metadata, "AnnotationMetadata must not be null!");
+		Assert.notNull(annotation, "Annotation must not be null!");
+
+		this.attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(annotation.getName()));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.auditing.config.AnnotationAuditingConfiguration#getAuditorAwareRef()
 	 */
+	@Override
 	public String getAuditorAwareRef() {
 		return attributes.getString("auditorAwareRef");
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.auditing.config.AnnotationAuditingConfiguration#isSetDates()
 	 */
+	@Override
 	public boolean isSetDates() {
 		return attributes.getBoolean("setDates");
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.auditing.config.AnnotationAuditingConfiguration#getDateTimeProviderRef()
 	 */
+	@Override
 	public String getDateTimeProviderRef() {
 		return attributes.getString("dateTimeProviderRef");
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.auditing.config.AnnotationAuditingConfiguration#isModifyOnCreate()
 	 */
+	@Override
 	public boolean isModifyOnCreate() {
 		return attributes.getBoolean("modifyOnCreate");
 	}
