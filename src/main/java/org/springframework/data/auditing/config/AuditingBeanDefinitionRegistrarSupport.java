@@ -21,6 +21,7 @@ import java.lang.annotation.Annotation;
 
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.LazyInitTargetSource;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -110,6 +111,8 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 		if (StringUtils.hasText(configuration.getAuditorAwareRef())) {
 			builder.addPropertyValue(AUDITOR_AWARE,
 					createLazyInitTargetSourceBeanDefinition(configuration.getAuditorAwareRef()));
+		} else {
+			builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
 		}
 
 		builder.addPropertyValue(SET_DATES, configuration.isSetDates());
