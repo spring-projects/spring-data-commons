@@ -1,0 +1,74 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.auditing.config;
+
+import java.lang.annotation.Annotation;
+
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.util.Assert;
+
+/**
+ * Default implementation for {@link AnnotationAuditingConfiguration}.
+ * 
+ * @author Ranie Jade Ramiso
+ * @author Thomas Darimont
+ */
+public class AnnotationAuditingConfigurationSupport implements AnnotationAuditingConfiguration {
+
+	private final AnnotationAttributes attributes;
+
+	/**
+	 * Creates a new instance of {@link AnnotationAuditingConfigurationSupport}.
+	 * 
+	 * @param metadata, must not be {@literal null}.
+	 * @param annotation, must not be {@literal null}.
+	 */
+	public AnnotationAuditingConfigurationSupport(AnnotationMetadata metadata, Class<? extends Annotation> annotation) {
+
+		Assert.notNull(metadata, "metadata must not be null!");
+		Assert.notNull(annotation, "annotation must not be null!");
+		attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(annotation.getName()));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.auditing.config.AnnotationAuditingConfiguration#getAuditorAwareRef()
+	 */
+	public String getAuditorAwareRef() {
+		return attributes.getString("auditorAwareRef");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.auditing.config.AnnotationAuditingConfiguration#isSetDates()
+	 */
+	public boolean isSetDates() {
+		return attributes.getBoolean("setDates");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.auditing.config.AnnotationAuditingConfiguration#getDateTimeProviderRef()
+	 */
+	public String getDateTimeProviderRef() {
+		return attributes.getString("dateTimeProviderRef");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.auditing.config.AnnotationAuditingConfiguration#isModifyOnCreate()
+	 */
+	public boolean isModifyOnCreate() {
+		return attributes.getBoolean("modifyOnCreate");
+	}
+}
