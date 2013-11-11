@@ -43,7 +43,6 @@ import org.springframework.util.StringUtils;
  */
 public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar {
 
-	private static final String DEFAULT_AUDITOR_AWARE_BEAN_NAME = "auditorProvider";
 	private static final String AUDITOR_AWARE = "auditorAware";
 	private static final String DATE_TIME_PROVIDER = "dateTimeProvider";
 	private static final String MODIFY_ON_CREATE = "modifyOnCreation";
@@ -111,8 +110,6 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 		if (StringUtils.hasText(configuration.getAuditorAwareRef())) {
 			builder.addPropertyValue(AUDITOR_AWARE,
 					createLazyInitTargetSourceBeanDefinition(configuration.getAuditorAwareRef()));
-		} else {
-			builder.addPropertyReference(AUDITOR_AWARE, DEFAULT_AUDITOR_AWARE_BEAN_NAME);
 		}
 
 		builder.addPropertyValue(SET_DATES, configuration.isSetDates());
