@@ -20,6 +20,7 @@ import static org.springframework.util.ReflectionUtils.*;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +41,7 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Factory bean to create instances of a given repository interface. Creates a proxy implementing the configured
@@ -49,6 +51,8 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
+
+	private static final Map<RepositoryInformationCacheKey, RepositoryInformation> REPOSITORY_INFORMATION_CACHE = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
 
 	private final List<RepositoryProxyPostProcessor> postProcessors = new ArrayList<RepositoryProxyPostProcessor>();
 	private QueryLookupStrategy.Key queryLookupStrategyKey;
@@ -122,7 +126,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	 * @return
 	 */
 	public <T> T getRepository(Class<T> repositoryInterface) {
-
 		return getRepository(repositoryInterface, null);
 	}
 
@@ -180,7 +183,18 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	 */
 	protected RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata,
 			Class<?> customImplementationClass) {
-		return new DefaultRepositoryInformation(metadata, getRepositoryBaseClass(metadata), customImplementationClass);
+
+		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, customImplementationClass);
+		RepositoryInformation repositoryInformation = REPOSITORY_INFORMATION_CACHE.get(cacheKey);
+
+		if (repositoryInformation != null) {
+			return repositoryInformation;
+		}
+
+		repositoryInformation = new DefaultRepositoryInformation(metadata, getRepositoryBaseClass(metadata),
+				customImplementationClass);
+		REPOSITORY_INFORMATION_CACHE.put(cacheKey, repositoryInformation);
+		return repositoryInformation;
 	}
 
 	protected List<QueryMethod> getQueryMethods() {
@@ -401,6 +415,60 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		 */
 		public void onCreation(RepositoryQuery query) {
 			this.queryMethods.add(query.getQueryMethod());
+		}
+	}
+
+	/**
+	 * Simple value object to build up keys to cache {@link RepositoryInformation} instances.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	private static class RepositoryInformationCacheKey {
+
+		private final String repositoryInterfaceName;
+		private final String customImplementationClassName;
+
+		/**
+		 * Creates a new {@link RepositoryInformationCacheKey} for the given {@link RepositoryMetadata} and cuytom
+		 * implementation type.
+		 * 
+		 * @param repositoryInterfaceName must not be {@literal null}.
+		 * @param customImplementationClassName
+		 */
+		public RepositoryInformationCacheKey(RepositoryMetadata metadata, Class<?> customImplementationType) {
+			this.repositoryInterfaceName = metadata.getRepositoryInterface().getName();
+			this.customImplementationClassName = customImplementationType == null ? null : customImplementationType.getName();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+
+			if (!(obj instanceof RepositoryInformationCacheKey)) {
+				return false;
+			}
+
+			RepositoryInformationCacheKey that = (RepositoryInformationCacheKey) obj;
+			return this.repositoryInterfaceName.equals(that.repositoryInterfaceName)
+					&& ObjectUtils.nullSafeEquals(this.customImplementationClassName, that.customImplementationClassName);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+
+			int result = 31;
+
+			result += 17 * repositoryInterfaceName.hashCode();
+			result += 17 * ObjectUtils.nullSafeHashCode(customImplementationClassName);
+
+			return result;
 		}
 	}
 }
