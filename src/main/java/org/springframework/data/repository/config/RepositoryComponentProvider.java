@@ -16,7 +16,6 @@
 package org.springframework.data.repository.config;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +34,6 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Custom {@link ClassPathScanningCandidateComponentProvider} scanning for interfaces extending the given base
@@ -119,15 +117,8 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		Set<BeanDefinition> candidates = super.findCandidateComponents(basePackage);
 
 		for (BeanDefinition candidate : candidates) {
-
 			if (candidate instanceof AnnotatedBeanDefinition) {
-
-				// TODO: Remove after upgrade to Spring 3.2.5 - SPR-11032, DATACMNS-386
-				// Use AnnotationConfigUtils directly
-				Method method = ReflectionUtils.findMethod(AnnotationConfigUtils.class, "processCommonDefinitionAnnotations",
-						AnnotatedBeanDefinition.class);
-				ReflectionUtils.makeAccessible(method);
-				ReflectionUtils.invokeMethod(method, null, candidate);
+				AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 			}
 		}
 
