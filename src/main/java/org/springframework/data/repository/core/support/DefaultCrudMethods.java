@@ -15,8 +15,12 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.springframework.util.ClassUtils.*;
+import static org.springframework.util.ReflectionUtils.*;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,8 +30,6 @@ import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Default implementation to discover CRUD methods based on a given {@link RepositoryInformation}. Will detect methods
@@ -57,7 +59,7 @@ class DefaultCrudMethods implements CrudMethods {
 	 */
 	public DefaultCrudMethods(RepositoryInformation information) {
 
-		Assert.notNull(information, "information must not be null!");
+		Assert.notNull(information, "RepositoryInformation must not be null!");
 
 		this.findOneMethod = selectMostSuitableFindOneMethod(information);
 		this.findAllMethod = selectMostSuitableFindAllMethod(information);
@@ -68,129 +70,105 @@ class DefaultCrudMethods implements CrudMethods {
 	/**
 	 * The most suitable save method is selected as follows: We prefer
 	 * <ol>
-	 * <li>a {@link RepositoryMetadata#getDomainType()} as first parameter over
-	 * <li>
-	 * <li>an {@link Object} as first parameter
-	 * <li>
+	 * <li>a {@link RepositoryMetadata#getDomainType()} as first parameter over</li>
+	 * <li>an {@link Object} as first parameter</li>
 	 * </ol>
 	 * 
 	 * @param information must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
+	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableSaveMethod(RepositoryInformation information) {
 
-		Assert.notNull(information, "information must not be null!");
+		for (Class<?> type : Arrays.asList(information.getDomainType(), Object.class)) {
+			Method saveMethodCandidate = findMethod(information.getRepositoryInterface(), SAVE, type);
+			if (saveMethodCandidate != null) {
+				return getMostSpecificMethod(saveMethodCandidate, information.getRepositoryInterface());
+			}
+		}
 
-		Method saveMethodCandidate = ReflectionUtils.findMethod(information.getRepositoryInterface(), SAVE,
-				information.getDomainType());
-		return ClassUtils.getMostSpecificMethod(
-				saveMethodCandidate != null ? saveMethodCandidate : ReflectionUtils.findMethod(
-						information.getRepositoryInterface(), SAVE, Object.class), information.getRepositoryInterface());
+		return null;
 	}
 
 	/**
 	 * The most suitable delete method is selected as follows: We prefer
 	 * <ol>
-	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over
-	 * <li>
-	 * <li>a {@link Serializable} as first parameter over
-	 * <li>
-	 * <li>an {@link Iterable} as first parameter
-	 * <li>
+	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over</li>
+	 * <li>a {@link Serializable} as first parameter over</li>
+	 * <li>an {@link Iterable} as first parameter</li>
 	 * </ol>
 	 * 
 	 * @param information must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
+	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableDeleteMethod(RepositoryInformation information) {
 
-		Assert.notNull(information, "information must not be null!");
+		for (Class<?> type : Arrays.asList(information.getIdType(), Serializable.class, Iterable.class)) {
+			Method candidate = findMethod(information.getRepositoryInterface(), DELETE, type);
+			if (candidate != null) {
+				return getMostSpecificMethod(candidate, information.getRepositoryInterface());
+			}
+		}
 
-		Method deleteMethodCandiate = ReflectionUtils.findMethod(information.getRepositoryInterface(), DELETE,
-				information.getIdType());
-
-		deleteMethodCandiate = deleteMethodCandiate != null ? deleteMethodCandiate : ReflectionUtils.findMethod(
-				information.getRepositoryInterface(), DELETE, Serializable.class);
-
-		deleteMethodCandiate = deleteMethodCandiate != null ? deleteMethodCandiate : ReflectionUtils.findMethod(
-				information.getRepositoryInterface(), DELETE, Iterable.class);
-
-		return ClassUtils.getMostSpecificMethod(deleteMethodCandiate, information.getRepositoryInterface());
+		return null;
 	}
 
 	/**
 	 * The most suitable findAll method is selected as follows: We prefer
 	 * <ol>
-	 * <li>a {@link Pageable} as first parameter over
-	 * <li>
-	 * <li>a {@link Sort} as first parameter over
-	 * <li>
-	 * <li>no parameters
-	 * <li>
+	 * <li>a {@link Pageable} as first parameter over</li>
+	 * <li>a {@link Sort} as first parameter over</li>
+	 * <li>no parameters</li>
 	 * </ol>
 	 * 
 	 * @param information must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
+	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableFindAllMethod(RepositoryInformation information) {
 
-		Assert.notNull(information, "information must not be null!");
-
-		Method findAllCandidateMethod = null;
-		if (ClassUtils.hasMethod(information.getRepositoryInterface(), FIND_ALL)) {
-			findAllCandidateMethod = ClassUtils.getMostSpecificMethod(
-					ReflectionUtils.findMethod(CrudRepository.class, FIND_ALL), information.getRepositoryInterface());
+		for (Class<?> type : Arrays.asList(Pageable.class, Sort.class)) {
+			if (hasMethod(information.getRepositoryInterface(), FIND_ALL, type)) {
+				Method candidate = findMethod(PagingAndSortingRepository.class, FIND_ALL, type);
+				if (candidate != null) {
+					return getMostSpecificMethod(candidate, information.getRepositoryInterface());
+				}
+			}
 		}
 
-		Method findAllPageableCandidateMethod = null;
-		if (ClassUtils.hasMethod(information.getRepositoryInterface(), FIND_ALL, Pageable.class)) {
-			findAllPageableCandidateMethod = ClassUtils.getMostSpecificMethod(
-					ReflectionUtils.findMethod(PagingAndSortingRepository.class, FIND_ALL, Pageable.class),
-					information.getRepositoryInterface());
+		if (hasMethod(information.getRepositoryInterface(), FIND_ALL)) {
+			return getMostSpecificMethod(findMethod(CrudRepository.class, FIND_ALL), information.getRepositoryInterface());
 		}
 
-		Method findAllSortCandidateMethod = null;
-		if (ClassUtils.hasMethod(information.getRepositoryInterface(), FIND_ALL, Sort.class)) {
-			findAllSortCandidateMethod = ClassUtils.getMostSpecificMethod(
-					ReflectionUtils.findMethod(PagingAndSortingRepository.class, FIND_ALL, Sort.class),
-					information.getRepositoryInterface());
-		}
-
-		if (findAllPageableCandidateMethod != null) {
-			return findAllPageableCandidateMethod;
-		}
-
-		if (findAllSortCandidateMethod != null) {
-			return findAllSortCandidateMethod;
-		}
-
-		return findAllCandidateMethod;
+		return null;
 	}
 
 	/**
 	 * The most suitable findOne method is selected as follows: We prefer
 	 * <ol>
-	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over
-	 * <li>
-	 * <li>a {@link Serializable} as first parameter
-	 * <li>
+	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over</li>
+	 * <li>a {@link Serializable} as first parameter</li>
 	 * </ol>
 	 * 
 	 * @param information must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
+	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableFindOneMethod(RepositoryInformation information) {
 
-		Assert.notNull(information, "information must not be null!");
+		for (Class<?> type : Arrays.asList(information.getIdType(), Serializable.class)) {
+			Method candidate = findMethod(information.getRepositoryInterface(), FIND_ONE, type);
+			if (candidate != null) {
+				return getMostSpecificMethod(candidate, information.getRepositoryInterface());
+			}
+		}
 
-		Method findOneMethodCandidate = ReflectionUtils.findMethod(information.getRepositoryInterface(), FIND_ONE,
-				information.getIdType());
-		return ClassUtils.getMostSpecificMethod(
-				findOneMethodCandidate != null ? findOneMethodCandidate : ReflectionUtils.findMethod(
-						information.getRepositoryInterface(), FIND_ONE, Serializable.class), information.getRepositoryInterface());
+		return null;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getSaveMethod()
 	 */
 	@Override
@@ -198,7 +176,8 @@ class DefaultCrudMethods implements CrudMethods {
 		return saveMethod;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#hasSaveMethod()
 	 */
 	@Override
@@ -206,7 +185,8 @@ class DefaultCrudMethods implements CrudMethods {
 		return saveMethod != null;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getFindAllMethod()
 	 */
 	@Override
@@ -214,7 +194,8 @@ class DefaultCrudMethods implements CrudMethods {
 		return findAllMethod;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#hasFindAllMethod()
 	 */
 	@Override
@@ -222,7 +203,8 @@ class DefaultCrudMethods implements CrudMethods {
 		return findAllMethod != null;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getFindOneMethod()
 	 */
 	@Override
@@ -230,7 +212,8 @@ class DefaultCrudMethods implements CrudMethods {
 		return findOneMethod;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#hasFindOneMethod()
 	 */
 	@Override
@@ -238,7 +221,8 @@ class DefaultCrudMethods implements CrudMethods {
 		return findOneMethod != null;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#hasDelete()
 	 */
 	@Override
@@ -246,7 +230,8 @@ class DefaultCrudMethods implements CrudMethods {
 		return this.deleteMethod != null;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getDeleteMethod()
 	 */
 	@Override
