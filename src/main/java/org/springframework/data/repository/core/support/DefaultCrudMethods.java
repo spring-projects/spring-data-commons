@@ -15,16 +15,18 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import org.springframework.core.GenericTypeResolver;
-import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -33,18 +35,20 @@ import org.springframework.util.ReflectionUtils;
  * {@link CrudRepository}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  * @since 1.6
  */
 class DefaultCrudMethods implements CrudMethods {
 
-	private final RepositoryInformation information;
+	private static final String FIND_ONE = "findOne";
+	private static final String SAVE = "save";
+	private static final String FIND_ALL = "findAll";
+	private static final String DELETE = "delete";
 
-	private Method findAllMethod;
-	private boolean findAllHasPaging;
-
-	private Method findOneMethod;
-	private Method saveMethod;
-	private Method deleteMethod;
+	private final Method findAllMethod;
+	private final Method findOneMethod;
+	private final Method saveMethod;
+	private final Method deleteMethod;
 
 	/**
 	 * Creates a new {@link DefaultCrudMethods} using the given {@link RepositoryInformation}.
@@ -53,86 +57,137 @@ class DefaultCrudMethods implements CrudMethods {
 	 */
 	public DefaultCrudMethods(RepositoryInformation information) {
 
-		Assert.notNull(information, "RepositoryInformation must not be null!");
-		this.information = information;
+		Assert.notNull(information, "information must not be null!");
 
-		for (Method method : ReflectionUtils.getAllDeclaredMethods(information.getRepositoryInterface())) {
-
-			if (!information.isBaseClassMethod(method)) {
-				continue;
-			}
-
-			if (method.getName().equals("findAll")) {
-				findAllDetected(method);
-				continue;
-			}
-
-			if (method.getName().equals("findOne")) {
-				this.findOneMethod = method;
-			}
-
-			if (method.getName().equals("save")) {
-				this.saveMethod = method;
-			}
-
-			if (method.getName().equals("delete")) {
-				deleteDetected(method);
-			}
-		}
+		this.findOneMethod = selectMostSuitableFindOneMethod(information);
+		this.findAllMethod = selectMostSuitableFindAllMethod(information);
+		this.deleteMethod = selectMostSuitableDeleteMethod(information);
+		this.saveMethod = selectMostSuitableSaveMethod(information);
 	}
 
 	/**
-	 * Checks whether the given method is a more usable find all method. Will prefer methods taking a {@link Pageable} and
-	 * sort over a simple one.
+	 * The most suitable save method is selected as follows: We prefer
+	 * <ol>
+	 * <li>a {@link RepositoryMetadata#getDomainType()} as first parameter over
+	 * <li>
+	 * <li>an {@link Object} as first parameter
+	 * <li>
+	 * </ol>
 	 * 
-	 * @param method
+	 * @param information must not be {@literal null}.
+	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private void findAllDetected(Method method) {
+	private Method selectMostSuitableSaveMethod(RepositoryInformation information) {
 
-		if (findAllMethod != null && findAllHasPaging) {
-			return;
-		}
+		Assert.notNull(information, "information must not be null!");
 
-		Class<?>[] parameterType = method.getParameterTypes();
-
-		if (parameterType.length > 0) {
-
-			if (parameterType[0].equals(Pageable.class)) {
-				this.findAllMethod = method;
-				this.findAllHasPaging = true;
-				return;
-			}
-
-			if (parameterType[0].equals(Sort.class)) {
-				this.findAllMethod = method;
-			}
-
-			return;
-		}
-
-		if (findAllMethod == null) {
-			this.findAllMethod = method;
-		}
+		Method saveMethodCandidate = ReflectionUtils.findMethod(information.getRepositoryInterface(), SAVE,
+				information.getDomainType());
+		return ClassUtils.getMostSpecificMethod(
+				saveMethodCandidate != null ? saveMethodCandidate : ReflectionUtils.findMethod(
+						information.getRepositoryInterface(), SAVE, Object.class), information.getRepositoryInterface());
 	}
 
 	/**
-	 * Checks whether the given method is a more usable delete method. Will prefer delete-by-id methods over
-	 * delete-by-instance ones.
+	 * The most suitable delete method is selected as follows: We prefer
+	 * <ol>
+	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over
+	 * <li>
+	 * <li>a {@link Serializable} as first parameter over
+	 * <li>
+	 * <li>an {@link Iterable} as first parameter
+	 * <li>
+	 * </ol>
 	 * 
-	 * @param method
+	 * @param information must not be {@literal null}.
+	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private void deleteDetected(Method method) {
+	private Method selectMostSuitableDeleteMethod(RepositoryInformation information) {
 
-		MethodParameter parameter = new MethodParameter(method, 0);
-		Class<?> parameterType = GenericTypeResolver.resolveParameterType(parameter, information.getRepositoryInterface());
+		Assert.notNull(information, "information must not be null!");
 
-		if (information.getIdType().isAssignableFrom(parameterType)) {
-			this.deleteMethod = method;
+		Method deleteMethodCandiate = ReflectionUtils.findMethod(information.getRepositoryInterface(), DELETE,
+				information.getIdType());
+
+		deleteMethodCandiate = deleteMethodCandiate != null ? deleteMethodCandiate : ReflectionUtils.findMethod(
+				information.getRepositoryInterface(), DELETE, Serializable.class);
+
+		deleteMethodCandiate = deleteMethodCandiate != null ? deleteMethodCandiate : ReflectionUtils.findMethod(
+				information.getRepositoryInterface(), DELETE, Iterable.class);
+
+		return ClassUtils.getMostSpecificMethod(deleteMethodCandiate, information.getRepositoryInterface());
+	}
+
+	/**
+	 * The most suitable findAll method is selected as follows: We prefer
+	 * <ol>
+	 * <li>a {@link Pageable} as first parameter over
+	 * <li>
+	 * <li>a {@link Sort} as first parameter over
+	 * <li>
+	 * <li>no parameters
+	 * <li>
+	 * </ol>
+	 * 
+	 * @param information must not be {@literal null}.
+	 * @return the most suitable method or {@literal null} if no method could be found.
+	 */
+	private Method selectMostSuitableFindAllMethod(RepositoryInformation information) {
+
+		Assert.notNull(information, "information must not be null!");
+
+		Method findAllCandidateMethod = null;
+		if (ClassUtils.hasMethod(information.getRepositoryInterface(), FIND_ALL)) {
+			findAllCandidateMethod = ClassUtils.getMostSpecificMethod(
+					ReflectionUtils.findMethod(CrudRepository.class, FIND_ALL), information.getRepositoryInterface());
 		}
 
-		if (this.deleteMethod == null) {
-			this.deleteMethod = method;
+		Method findAllPageableCandidateMethod = null;
+		if (ClassUtils.hasMethod(information.getRepositoryInterface(), FIND_ALL, Pageable.class)) {
+			findAllPageableCandidateMethod = ClassUtils.getMostSpecificMethod(
+					ReflectionUtils.findMethod(PagingAndSortingRepository.class, FIND_ALL, Pageable.class),
+					information.getRepositoryInterface());
 		}
+
+		Method findAllSortCandidateMethod = null;
+		if (ClassUtils.hasMethod(information.getRepositoryInterface(), FIND_ALL, Sort.class)) {
+			findAllSortCandidateMethod = ClassUtils.getMostSpecificMethod(
+					ReflectionUtils.findMethod(PagingAndSortingRepository.class, FIND_ALL, Sort.class),
+					information.getRepositoryInterface());
+		}
+
+		if (findAllPageableCandidateMethod != null) {
+			return findAllPageableCandidateMethod;
+		}
+
+		if (findAllSortCandidateMethod != null) {
+			return findAllSortCandidateMethod;
+		}
+
+		return findAllCandidateMethod;
+	}
+
+	/**
+	 * The most suitable findOne method is selected as follows: We prefer
+	 * <ol>
+	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over
+	 * <li>
+	 * <li>a {@link Serializable} as first parameter
+	 * <li>
+	 * </ol>
+	 * 
+	 * @param information must not be {@literal null}.
+	 * @return the most suitable method or {@literal null} if no method could be found.
+	 */
+	private Method selectMostSuitableFindOneMethod(RepositoryInformation information) {
+
+		Assert.notNull(information, "information must not be null!");
+
+		Method findOneMethodCandidate = ReflectionUtils.findMethod(information.getRepositoryInterface(), FIND_ONE,
+				information.getIdType());
+		return ClassUtils.getMostSpecificMethod(
+				findOneMethodCandidate != null ? findOneMethodCandidate : ReflectionUtils.findMethod(
+						information.getRepositoryInterface(), FIND_ONE, Serializable.class), information.getRepositoryInterface());
 	}
 
 	/* (non-Javadoc)

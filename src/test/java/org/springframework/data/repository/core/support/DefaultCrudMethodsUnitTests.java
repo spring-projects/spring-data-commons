@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import org.junit.Test;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * Unit tests dor {@link DefaultCrudMethods}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class DefaultCrudMethodsUnitTests {
 
@@ -45,7 +47,7 @@ public class DefaultCrudMethodsUnitTests {
 
 		assertFindAllMethodOn(type, type.getMethod("findAll"));
 		assertDeleteMethodOn(type, type.getMethod("delete", Serializable.class));
-		assertSaveMethodOn(type, true);
+		assertSaveMethodPresent(type, true);
 	}
 
 	@Test
@@ -55,7 +57,28 @@ public class DefaultCrudMethodsUnitTests {
 
 		assertFindAllMethodOn(type, type.getMethod("findAll", Pageable.class));
 		assertDeleteMethodOn(type, type.getMethod("delete", Serializable.class));
-		assertSaveMethodOn(type, true);
+		assertSaveMethodPresent(type, true);
+	}
+
+	@Test
+	public void detectsFindAllWithSortParameterOnSortingRepository() throws Exception {
+
+		Class<RepositoryWithCustomSortingFindAll> type = RepositoryWithCustomSortingFindAll.class;
+
+		assertFindAllMethodOn(type, type.getMethod("findAll", Sort.class));
+		assertSaveMethodPresent(type, false);
+	}
+
+	/**
+	 * @see DATACMNS-393
+	 */
+	@Test
+	public void selectsFindAllWithSortParameterOnRepositoryAmongUnsuitableAlternatives() throws Exception {
+
+		Class<RepositoryWithInvalidPagingFallbackToSortFindAll> type = RepositoryWithInvalidPagingFallbackToSortFindAll.class;
+
+		assertFindAllMethodOn(type, type.getMethod("findAll", Sort.class));
+		assertSaveMethodPresent(type, false);
 	}
 
 	@Test
@@ -75,6 +98,32 @@ public class DefaultCrudMethodsUnitTests {
 		assertFindAllMethodOn(type, null);
 	}
 
+	/**
+	 * @see DATACMNS-393
+	 */
+	@Test
+	public void detectsOverloadedMethodsCorrectly() throws Exception {
+
+		Class<RepositoryWithAllCrudMethodOverloaded> type = RepositoryWithAllCrudMethodOverloaded.class;
+		assertFindOneMethodOn(type, type.getDeclaredMethod("findOne", Long.class));
+		assertDeleteMethodOn(type, type.getDeclaredMethod("delete", Long.class));
+		assertSaveMethodOn(type, type.getDeclaredMethod("save", Domain.class));
+		assertFindAllMethodOn(type, type.getDeclaredMethod("findAll"));
+	}
+
+	/**
+	 * @see DATACMNS-393
+	 */
+	@Test
+	public void ignoresWrongOverloadedMethods() throws Exception {
+
+		Class<RepositoryWithAllCrudMethodOverloadedWrong> type = RepositoryWithAllCrudMethodOverloadedWrong.class;
+		assertFindOneMethodOn(type, CrudRepository.class.getDeclaredMethod("findOne", Serializable.class));
+		assertDeleteMethodOn(type, CrudRepository.class.getDeclaredMethod("delete", Serializable.class));
+		assertSaveMethodOn(type, CrudRepository.class.getDeclaredMethod("save", Object.class));
+		assertFindAllMethodOn(type, CrudRepository.class.getDeclaredMethod("findAll"));
+	}
+
 	private static CrudMethods getMethodsFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
@@ -92,6 +141,14 @@ public class DefaultCrudMethodsUnitTests {
 		assertThat(methods.getFindAllMethod(), is(method));
 	}
 
+	private static void assertFindOneMethodOn(Class<?> type, Method method) {
+
+		CrudMethods methods = getMethodsFor(type);
+
+		assertThat(methods.hasFindOneMethod(), is(method != null));
+		assertThat(methods.getFindOneMethod(), is(method));
+	}
+
 	private static void assertDeleteMethodOn(Class<?> type, Method method) {
 
 		CrudMethods methods = getMethodsFor(type);
@@ -100,7 +157,15 @@ public class DefaultCrudMethodsUnitTests {
 		assertThat(methods.getDeleteMethod(), is(method));
 	}
 
-	private static void assertSaveMethodOn(Class<?> type, boolean present) {
+	private static void assertSaveMethodOn(Class<?> type, Method method) {
+
+		CrudMethods methods = getMethodsFor(type);
+
+		assertThat(methods.hasSaveMethod(), is(method != null));
+		assertThat(methods.getSaveMethod(), is(method));
+	}
+
+	private static void assertSaveMethodPresent(Class<?> type, boolean present) {
 
 		CrudMethods methods = getMethodsFor(type);
 
@@ -121,13 +186,59 @@ public class DefaultCrudMethodsUnitTests {
 		Iterable<Domain> findAll(Pageable pageable);
 	}
 
+	/**
+	 * @see DATACMNS-393
+	 */
+	interface RepositoryWithCustomSortingFindAll extends Repository<Domain, Serializable> {
+
+		Iterable<Domain> findAll(Sort sort);
+	}
+
 	interface RepositoryWithInvalidPagingFindAll extends Repository<Domain, Serializable> {
 
 		Iterable<Domain> findAll(Object pageable);
 	}
 
+	/**
+	 * @see DATACMNS-393
+	 */
+	interface RepositoryWithInvalidPagingFallbackToSortFindAll extends Repository<Domain, Serializable> {
+
+		Iterable<Domain> findAll(Object pageable);
+
+		Iterable<Domain> findAll(Sort sort);
+	}
+
 	interface RepositoryWithIterableDeleteOnly extends Repository<Domain, Serializable> {
 
 		void delete(Iterable<? extends Domain> entities);
+	}
+
+	/**
+	 * @see DATACMNS-393
+	 */
+	interface RepositoryWithAllCrudMethodOverloaded extends CrudRepository<Domain, Long> {
+
+		List<Domain> findAll();
+
+		<S extends Domain> S save(S entity);
+
+		void delete(Long id);
+
+		Domain findOne(Long id);
+	}
+
+	/**
+	 * @see DATACMNS-393
+	 */
+	interface RepositoryWithAllCrudMethodOverloadedWrong extends CrudRepository<Domain, Long> {
+
+		List<Domain> findAll(String s);
+
+		Domain save(Serializable entity);
+
+		void delete(Domain o);
+
+		Domain findOne(Domain o);
 	}
 }
