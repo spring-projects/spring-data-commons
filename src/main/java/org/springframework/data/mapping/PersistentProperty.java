@@ -15,11 +15,13 @@
  */
 package org.springframework.data.mapping;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -179,4 +181,22 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return
 	 */
 	Class<?> getActualType();
+
+	/**
+	 * Looks up the annotation of the given type on the {@link PersistentProperty}. Will inspect accessors and the
+	 * potentially backing field and traverse accessor methods to potentially available super types.
+	 * 
+	 * @param annotationType the annotation to look up, must not be {@literal null}.
+	 * @return the annotation of the given type if present or {@literal null} otherwise.
+	 * @see AnnotationUtils#findAnnotation(Method, Class)
+	 */
+	<A extends Annotation> A findAnnotation(Class<A> annotationType);
+
+	/**
+	 * Returns whether the {@link PersistentProperty} has an annotation of the given type.
+	 * 
+	 * @param annotationType the annotation to lookup, must not be {@literal null}.
+	 * @return whether the {@link PersistentProperty} has an annotation of the given type.
+	 */
+	boolean isAnnotationPresent(Class<? extends Annotation> annotationType);
 }

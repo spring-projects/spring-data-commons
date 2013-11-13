@@ -15,8 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import static org.springframework.core.annotation.AnnotationUtils.*;
-
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -164,7 +162,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <A extends Annotation> A findAnnotation(Class<? extends A> annotationType) {
+	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 
 		Assert.notNull(annotationType, "Annotation type must not be null!");
 
@@ -185,7 +183,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			}
 		}
 
-		return cacheAndReturn(annotationType, getAnnotation(field, annotationType));
+		return cacheAndReturn(annotationType, AnnotationUtils.getAnnotation(field, annotationType));
 	}
 
 	/**
@@ -209,7 +207,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param annotationType the annotation type to look up.
 	 * @return
 	 */
-	protected boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
+	public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
 		return findAnnotation(annotationType) != null;
 	}
 

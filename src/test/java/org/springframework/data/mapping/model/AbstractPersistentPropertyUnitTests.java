@@ -22,6 +22,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
@@ -325,6 +326,16 @@ public class AbstractPersistentPropertyUnitTests {
 		@Override
 		protected Association<SamplePersistentProperty> createAssociation() {
 			return null;
+		}
+
+		@Override
+		public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
+			return null;
+		}
+
+		@Override
+		public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
+			return false;
 		}
 	}
 
