@@ -140,10 +140,14 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 */
 	void doWithProperties(PropertyHandler<P> handler);
 
+	void doWithProperties(SimplePropertyHandler handler);
+
 	/**
 	 * Applies the given {@link AssociationHandler} to all {@link Association} contained in this {@link PersistentEntity}.
 	 * 
 	 * @param handler must not be {@literal null}.
 	 */
 	void doWithAssociations(AssociationHandler<P> handler);
+
+	void doWithAssociations(SimpleAssociationHandler handler);
 }

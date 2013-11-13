@@ -53,6 +53,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @see org.springframework.data.util.TypeDiscoverer#getMapValueType()
 	 */
 	@Override
+	@SuppressWarnings("deprecation")
 	public TypeInformation<?> getMapValueType() {
 
 		if (Map.class.equals(getType())) {

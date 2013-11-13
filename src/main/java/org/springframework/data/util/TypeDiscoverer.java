@@ -47,8 +47,7 @@ import org.springframework.util.ReflectionUtils;
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private final Type type;
-	@SuppressWarnings("rawtypes")
-	private final Map<TypeVariable, Type> typeVariableMap;
+	@SuppressWarnings("rawtypes") private final Map<TypeVariable, Type> typeVariableMap;
 	private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
 
 	private Class<S> resolvedType;
@@ -95,6 +94,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return new ClassTypeInformation((Class<?>) fieldType);
 		}
 
+		@SuppressWarnings("deprecation")
 		Map<TypeVariable, Type> variableMap = GenericTypeResolver.getTypeVariableMap(resolveType(fieldType));
 
 		if (fieldType instanceof ParameterizedType) {
@@ -136,9 +136,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param type
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	protected Class<S> resolveType(Type type) {
-
 		return (Class<S>) GenericTypeResolver.resolveType(type, getTypeVariableMap());
 	}
 

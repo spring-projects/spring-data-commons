@@ -30,6 +30,8 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.SimpleAssociationHandler;
+import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -251,8 +253,26 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#doWithProperties(org.springframework.data.mapping.PropertyHandler)
 	 */
 	public void doWithProperties(PropertyHandler<P> handler) {
+
 		Assert.notNull(handler);
+
 		for (P property : properties) {
+			if (!property.isTransient() && !property.isAssociation()) {
+				handler.doWithPersistentProperty(property);
+			}
+		}
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#doWithProperties(org.springframework.data.mapping.PropertyHandler.Simple)
+	 */
+	@Override
+	public void doWithProperties(SimplePropertyHandler handler) {
+
+		Assert.notNull(handler);
+
+		for (PersistentProperty<?> property : properties) {
 			if (!property.isTransient() && !property.isAssociation()) {
 				handler.doWithPersistentProperty(property);
 			}
@@ -264,8 +284,23 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#doWithAssociations(org.springframework.data.mapping.AssociationHandler)
 	 */
 	public void doWithAssociations(AssociationHandler<P> handler) {
+
 		Assert.notNull(handler);
+
 		for (Association<P> association : associations) {
+			handler.doWithAssociation(association);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#doWithAssociations(org.springframework.data.mapping.SimpleAssociationHandler)
+	 */
+	public void doWithAssociations(SimpleAssociationHandler handler) {
+
+		Assert.notNull(handler);
+
+		for (Association<? extends PersistentProperty<?>> association : associations) {
 			handler.doWithAssociation(association);
 		}
 	}
