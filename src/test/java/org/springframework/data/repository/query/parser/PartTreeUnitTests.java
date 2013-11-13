@@ -44,7 +44,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  */
 public class PartTreeUnitTests {
 
-	private String[] PREFIXES = { "find", "read", "get" };
+	private String[] PREFIXES = { "find", "read", "get", "query" };
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullSource() throws Exception {
@@ -415,6 +415,19 @@ public class PartTreeUnitTests {
 
 		PartTree tree = new PartTree("countByLastname", User.class);
 		assertThat(tree.isCountProjection(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-399
+	 */
+	@Test
+	public void queryPrefixShouldBeSupportedInRepositoryQueryMethods() {
+
+		PartTree tree = new PartTree("queryByFirstnameAndLastname", User.class);
+		Iterable<Part> parts = tree.getParts();
+
+		assertThat(parts, hasItem(part("firstname")));
+		assertThat(parts, hasItem(part("lastname")));
 	}
 
 	/**
