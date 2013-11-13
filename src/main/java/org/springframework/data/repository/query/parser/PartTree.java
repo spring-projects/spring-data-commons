@@ -38,7 +38,7 @@ import org.springframework.util.StringUtils;
  */
 public class PartTree implements Iterable<OrPart> {
 
-	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count)(\\p{Lu}.*?)??By");
+	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count|query)(\\p{Lu}.*?)??By");
 
 	/*
 	 * We look for a pattern of: keyword followed by

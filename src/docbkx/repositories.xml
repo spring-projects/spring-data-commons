@@ -316,7 +316,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
         <para>The query builder mechanism built into Spring Data repository
         infrastructure is useful for building constraining queries over
         entities of the repository. The mechanism strips the prefixes
-        <code>find…By</code>, <code>read…By</code>, and <code>get…By</code>
+        <code>find…By</code>, <code>read…By</code>, <code>query…By</code>, and <code>get…By</code>
         from the method and starts parsing the rest of it. The introducing
         clause can contain further expressions such as a <code>Distinct</code>
         to set a distinct flag on the query to be created. However, the first
