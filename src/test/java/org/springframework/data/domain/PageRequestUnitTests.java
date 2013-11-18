@@ -15,8 +15,6 @@
  */
 package org.springframework.data.domain;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
 import org.junit.Test;
@@ -27,39 +25,26 @@ import org.springframework.data.domain.Sort.Direction;
  * 
  * @author Oliver Gierke
  */
-public class PageRequestUnitTests {
+public class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
-	@Test(expected = IllegalArgumentException.class)
-	public void preventsNegativePage() {
-		new PageRequest(-1, 10);
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.AbstractPageRequestUnitTests#newPageRequest(int, int)
+	 */
+	@Override
+	public AbstractPageRequest newPageRequest(int page, int size) {
+		return this.newPageRequest(page, size, null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void preventsNegativeSize() {
-		new PageRequest(0, -1);
-	}
-
-	@Test
-	public void navigatesPageablesCorrectly() {
-
-		Pageable request = new PageRequest(1, 10);
-
-		assertThat(request.hasPrevious(), is(true));
-		assertThat(request.next(), is((Pageable) new PageRequest(2, 10)));
-
-		Pageable first = request.previousOrFirst();
-
-		assertThat(first.hasPrevious(), is(false));
-		assertThat(first, is((Pageable) new PageRequest(0, 10)));
-		assertThat(first, is(request.first()));
-		assertThat(first.previousOrFirst(), is(first));
+	public AbstractPageRequest newPageRequest(int page, int size, Sort sort) {
+		return new PageRequest(page, size, sort);
 	}
 
 	@Test
 	public void equalsRegardsSortCorrectly() {
 
 		Sort sort = new Sort(Direction.DESC, "foo");
-		PageRequest request = new PageRequest(0, 10, sort);
+		AbstractPageRequest request = new PageRequest(0, 10, sort);
 
 		// Equals itself
 		assertEqualsAndHashcode(request, request);
@@ -75,31 +60,5 @@ public class PageRequestUnitTests {
 
 		// Is not equal to instance with another sort
 		assertNotEqualsAndHashcode(request, new PageRequest(0, 10, Direction.ASC, "foo"));
-	}
-
-	@Test
-	public void equalsHonoursPageAndSize() {
-
-		PageRequest request = new PageRequest(0, 10);
-
-		// Equals itself
-		assertEqualsAndHashcode(request, request);
-
-		// Equals same setup
-		assertEqualsAndHashcode(request, new PageRequest(0, 10));
-
-		// Does not equal on different page
-		assertNotEqualsAndHashcode(request, new PageRequest(1, 10));
-
-		// Does not equal on different size
-		assertNotEqualsAndHashcode(request, new PageRequest(0, 11));
-	}
-
-	/**
-	 * @see DATACMNS-377
-	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void preventsPageSizeLessThanOne() {
-		new PageRequest(0, 0);
 	}
 }
