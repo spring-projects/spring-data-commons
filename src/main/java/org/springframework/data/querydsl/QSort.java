@@ -1,0 +1,125 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.querydsl;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.util.Assert;
+
+import com.mysema.query.types.OrderSpecifier;
+
+/**
+ * Sort option for queries that wraps a querydsl {@link OrderSpecifier}.
+ * 
+ * @author Thomas Darimont
+ */
+public class QSort extends Sort implements Serializable {
+
+	private static final long serialVersionUID = -6701117396842171930L;
+
+	private final List<OrderSpecifier<?>> orderSpecifiers;
+
+	/**
+	 * Creates a new {@link QSort} instance with the given {@link OrderSpecifier}s.
+	 * 
+	 * @param orderSpecifiers must not be {@literal null} or empty;
+	 */
+	public QSort(OrderSpecifier<?>... orderSpecifiers) {
+		this(Arrays.asList(orderSpecifiers));
+	}
+
+	/**
+	 * Creates a new {@link QSort} instance with the given {@link OrderSpecifier}s.
+	 * 
+	 * @param orderSpecifiers must not be {@literal null} or empty;
+	 */
+	public QSort(List<OrderSpecifier<?>> orderSpecifiers) {
+
+		Assert.notEmpty(orderSpecifiers, "Order specifiers must not be null or empty!");
+		this.orderSpecifiers = orderSpecifiers;
+	}
+
+	/**
+	 * @return the orderSpecifier
+	 */
+	public List<OrderSpecifier<?>> getOrderSpecifiers() {
+		return orderSpecifiers;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Sort#and(org.springframework.data.domain.Sort)
+	 */
+	@Override
+	public Sort and(Sort sort) {
+		throw new UnsupportedOperationException("You cannot combine a querydsl based QSort with an arbitrary Sort!");
+	}
+
+	/**
+	 * Returns a new {@link QSort} consisting of the {@link OrderSpecifier}s of the current {@code QSort} combined with
+	 * the ones from the given {@code QSort}.
+	 * 
+	 * @param sort can be {@literal null}.
+	 * @return
+	 */
+	public QSort and(QSort sort) {
+		return sort == null ? this : and(sort.getOrderSpecifiers());
+	}
+
+	/**
+	 * Returns a new {@link QSort} consisting of the {@link OrderSpecifier}s of the current {@link QSort} combined with
+	 * the given ones.
+	 * 
+	 * @param orderSpecifiers must not be {@literal null} or empty.
+	 * @return
+	 */
+	public QSort and(List<OrderSpecifier<?>> orderSpecifiers) {
+
+		Assert.notEmpty(orderSpecifiers, "OrderSpecifiers must not be null or empty!");
+
+		List<OrderSpecifier<?>> newOrderSpecifiers = new ArrayList<OrderSpecifier<?>>(this.orderSpecifiers);
+		newOrderSpecifiers.addAll(orderSpecifiers);
+
+		return new QSort(newOrderSpecifiers);
+	}
+
+	/**
+	 * Returns a new {@link QSort} consisting of the {@link OrderSpecifier}s of the current {@link QSort} combined with
+	 * the given ones.
+	 * 
+	 * @param orderSpecifiers must not be {@literal null} or empty.
+	 * @return
+	 */
+	public QSort and(OrderSpecifier<?>... orderSpecifiers) {
+
+		Assert.notEmpty(orderSpecifiers, "OrderSpecifiers must not be null or empty!");
+
+		return and(Arrays.asList(orderSpecifiers));
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Sort#getOrderFor(java.lang.String)
+	 */
+	@Override
+	public Order getOrderFor(String property) {
+		return null;
+	}
+}

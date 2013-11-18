@@ -23,6 +23,7 @@ import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -110,7 +111,7 @@ public class PagedResourcesAssemblerUnitTests {
 		resolver.setOneIndexedParameters(true);
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 
-		PageRequest request = new PageRequest(0, 1);
+		AbstractPageRequest request = new PageRequest(0, 1);
 		Page<Person> page = new PageImpl<Person>(Collections.<Person> emptyList(), request, 0);
 
 		assembler.toResource(page);
@@ -118,7 +119,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 	private static Page<Person> createPage(int index) {
 
-		PageRequest request = new PageRequest(index, 1);
+		AbstractPageRequest request = new PageRequest(index, 1);
 		return new PageImpl<Person>(Arrays.asList(new Person()), request, 3);
 	}
 

@@ -15,21 +15,18 @@
  */
 package org.springframework.data.domain;
 
-import java.io.Serializable;
-
 import org.springframework.data.domain.Sort.Direction;
 
 /**
  * Basic Java Bean implementation of {@code Pageable}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
-public class PageRequest implements Pageable, Serializable {
+public class PageRequest extends AbstractPageRequest {
 
-	private static final long serialVersionUID = 8280485938848398236L;
+	private static final long serialVersionUID = -4541509938956089562L;
 
-	private final int page;
-	private final int size;
 	private final Sort sort;
 
 	/**
@@ -63,43 +60,8 @@ public class PageRequest implements Pageable, Serializable {
 	 * @param sort can be {@literal null}.
 	 */
 	public PageRequest(int page, int size, Sort sort) {
-
-		if (page < 0) {
-			throw new IllegalArgumentException("Page index must not be less than zero!");
-		}
-
-		if (size < 1) {
-			throw new IllegalArgumentException("Page size must not be less than one!");
-		}
-
-		this.page = page;
-		this.size = size;
+		super(page, size);
 		this.sort = sort;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Pageable#getPageSize()
-	 */
-	public int getPageSize() {
-
-		return size;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Pageable#getPageNumber()
-	 */
-	public int getPageNumber() {
-		return page;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Pageable#getOffset()
-	 */
-	public int getOffset() {
-		return page * size;
 	}
 
 	/*
@@ -112,26 +74,18 @@ public class PageRequest implements Pageable, Serializable {
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Pageable#hasPrevious()
-	 */
-	public boolean hasPrevious() {
-		return page > 0;
-	}
-
-	/* 
-	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#next()
 	 */
 	public Pageable next() {
-		return new PageRequest(page + 1, size, sort);
+		return new PageRequest(getPageNumber() + 1, getPageSize(), getSort());
 	}
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Pageable#previousOrFirst()
+	 * @see org.springframework.data.domain.AbstractPageRequest#previous()
 	 */
-	public Pageable previousOrFirst() {
-		return hasPrevious() ? new PageRequest(page - 1, size, sort) : this;
+	public PageRequest previous() {
+		return getPageNumber() == 0 ? this : new PageRequest(getPageNumber() - 1, getPageSize(), getSort());
 	}
 
 	/* 
@@ -139,7 +93,7 @@ public class PageRequest implements Pageable, Serializable {
 	 * @see org.springframework.data.domain.Pageable#first()
 	 */
 	public Pageable first() {
-		return new PageRequest(0, size, sort);
+		return new PageRequest(0, getPageSize(), getSort());
 	}
 
 	/*
@@ -159,12 +113,9 @@ public class PageRequest implements Pageable, Serializable {
 
 		PageRequest that = (PageRequest) obj;
 
-		boolean pageEqual = this.page == that.page;
-		boolean sizeEqual = this.size == that.size;
-
 		boolean sortEqual = this.sort == null ? that.sort == null : this.sort.equals(that.sort);
 
-		return pageEqual && sizeEqual && sortEqual;
+		return super.equals(that) && sortEqual;
 	}
 
 	/*
@@ -173,14 +124,7 @@ public class PageRequest implements Pageable, Serializable {
 	 */
 	@Override
 	public int hashCode() {
-
-		int result = 17;
-
-		result = 31 * result + page;
-		result = 31 * result + size;
-		result = 31 * result + (null == sort ? 0 : sort.hashCode());
-
-		return result;
+		return 31 * super.hashCode() + (null == sort ? 0 : sort.hashCode());
 	}
 
 	/* 
@@ -189,7 +133,7 @@ public class PageRequest implements Pageable, Serializable {
 	 */
 	@Override
 	public String toString() {
-		return String.format("Page request [number: %d, size %d, sort: %s]", page, size,
+		return String.format("Page request [number: %d, size %d, sort: %s]", getPageNumber(), getPageSize(),
 				sort == null ? null : sort.toString());
 	}
 }
