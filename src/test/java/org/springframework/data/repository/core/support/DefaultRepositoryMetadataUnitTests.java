@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ClassUtils;
 
@@ -31,6 +32,7 @@ import org.springframework.data.repository.util.ClassUtils;
  * Unit tests for {@link DefaultRepositoryMetadata}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class DefaultRepositoryMetadataUnitTests {
 
@@ -48,6 +50,14 @@ public class DefaultRepositoryMetadataUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNonRepositoryInterface() {
 		new DefaultRepositoryMetadata(Collection.class);
+	}
+
+	/**
+	 * @see DATACMNS-406
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsUnparameterizedRepositoryInterface() {
+		new DefaultRepositoryMetadata(Repository.class);
 	}
 
 	@Test
@@ -137,10 +147,7 @@ public class DefaultRepositoryMetadataUnitTests {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	static class GenericEntity<T> {
-	}
+	static class GenericEntity<T> {}
 
-	static interface GenericEntityRepository extends CrudRepository<GenericEntity<String>, Long> {
-
-	}
+	static interface GenericEntityRepository extends CrudRepository<GenericEntity<String>, Long> {}
 }
