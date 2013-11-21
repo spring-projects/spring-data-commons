@@ -42,6 +42,7 @@ import org.springframework.util.ClassUtils;
  * Default implementation of {@link RepositoryInformation}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements RepositoryInformation {
 
@@ -76,15 +77,6 @@ class DefaultRepositoryInformation extends AbstractRepositoryMetadata implements
 		this.repositoryBaseClass = repositoryBaseClass;
 		this.customImplementationClass = customImplementationClass;
 		this.crudMethods = new DefaultCrudMethods(this);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryMetadata#getRepositoryInterface()
-	 */
-	@Override
-	public Class<?> getRepositoryInterface() {
-		return metadata.getRepositoryInterface();
 	}
 
 	/*

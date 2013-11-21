@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,12 @@ import org.springframework.util.Assert;
  * Base class for {@link RepositoryMetadata} implementations.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 	private final TypeInformation<?> typeInformation;
+	private final Class<?> repositoryInterface;
 
 	/**
 	 * Creates a new {@link AbstractRepositoryMetadata}.
@@ -40,6 +42,8 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 		Assert.notNull(repositoryInterface, "Given type must not be null!");
 		Assert.isTrue(repositoryInterface.isInterface(), "Given type must be an interface!");
+
+		this.repositoryInterface = repositoryInterface;
 		this.typeInformation = ClassTypeInformation.from(repositoryInterface);
 	}
 
@@ -53,5 +57,12 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		Class<?> rawType = returnTypeInfo.getType();
 
 		return Iterable.class.isAssignableFrom(rawType) ? returnTypeInfo.getComponentType().getType() : rawType;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#getRepositoryInterface()
+	 */
+	public Class<?> getRepositoryInterface() {
+		return this.repositoryInterface;
 	}
 }
