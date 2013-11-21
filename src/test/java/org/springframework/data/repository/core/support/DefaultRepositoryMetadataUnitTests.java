@@ -88,7 +88,6 @@ public class DefaultRepositoryMetadataUnitTests {
 	public void looksUpIdClassCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
-
 		assertEquals(Integer.class, metadata.getIdType());
 	}
 

@@ -69,32 +69,24 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 		return this.domainType;
 	}
 
-	/**
-	 * @param repositoryInterface must not be {@literal null}.
-	 * @return the resolved domain type, never {@literal null}.
-	 */
 	private Class<? extends Serializable> resolveIdType(Class<?> repositoryInterface) {
 
-		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
-
 		RepositoryDefinition annotation = repositoryInterface.getAnnotation(RepositoryDefinition.class);
-		Assert.isTrue(annotation != null && annotation.idClass() != null,
-				String.format("Could not resolve id type of %s!", repositoryInterface));
+
+		if (annotation == null || annotation.idClass() == null) {
+			throw new IllegalArgumentException(String.format("Could not resolve id type of %s!", repositoryInterface));
+		}
 
 		return annotation.idClass();
 	}
 
-	/**
-	 * @param repositoryInterface must not be {@literal null}.
-	 * @return the resolved domain type, never {@literal null}.
-	 */
 	private Class<?> resolveDomainType(Class<?> repositoryInterface) {
 
-		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
-
 		RepositoryDefinition annotation = repositoryInterface.getAnnotation(RepositoryDefinition.class);
-		Assert.isTrue(annotation != null && annotation.domainClass() != null,
-				String.format("Could not resolve domain type of %s!", repositoryInterface));
+
+		if (annotation == null || annotation.domainClass() == null) {
+			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s!", repositoryInterface));
+		}
 
 		return annotation.domainClass();
 	}

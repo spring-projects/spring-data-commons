@@ -59,7 +59,8 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		return Iterable.class.isAssignableFrom(rawType) ? returnTypeInfo.getComponentType().getType() : rawType;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getRepositoryInterface()
 	 */
 	public Class<?> getRepositoryInterface() {
