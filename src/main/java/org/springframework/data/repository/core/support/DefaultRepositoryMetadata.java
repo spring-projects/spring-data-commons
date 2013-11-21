@@ -41,7 +41,7 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 	/**
 	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository interface.
 	 * 
-	 * @param repositoryInterface
+	 * @param repositoryInterface must not be {@literal null}.
 	 */
 	public DefaultRepositoryMetadata(Class<?> repositoryInterface) {
 
@@ -70,33 +70,26 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 		return this.idType;
 	}
 
-	/**
-	 * @param repositoryInterface must not be {@literal null}.
-	 * @return the resolved domain type, never {@literal null}.
-	 */
-	private Class<?> resolveDomainType(Class<?> repositoryInterface) {
-
-		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
-
-		Class<?>[] arguments = resolveTypeArguments(repositoryInterface, Repository.class);
-		Assert.isTrue(arguments != null && arguments[0] != null,
-				String.format("Could not resolve domain type of %s!", repositoryInterface));
-
-		return arguments[0];
-	}
-
-	/**
-	 * @param repositoryInterface must not be {@literal null}.
-	 * @return the resolved id type, never {@literal null}.
-	 */
+	@SuppressWarnings("unchecked")
 	private Class<? extends Serializable> resolveIdType(Class<?> repositoryInterface) {
 
-		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
-
 		Class<?>[] arguments = resolveTypeArguments(repositoryInterface, Repository.class);
-		Assert.isTrue(arguments != null && arguments[1] != null,
-				String.format("Could not resolve id type of %s!", repositoryInterface));
+
+		if (arguments == null || arguments[1] == null) {
+			throw new IllegalArgumentException(String.format("Could not resolve id type of %s!", repositoryInterface));
+		}
 
 		return (Class<? extends Serializable>) arguments[1];
+	}
+
+	private Class<?> resolveDomainType(Class<?> repositoryInterface) {
+
+		Class<?>[] arguments = resolveTypeArguments(repositoryInterface, Repository.class);
+
+		if (arguments == null || arguments[0] == null) {
+			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s!", repositoryInterface));
+		}
+
+		return arguments[0];
 	}
 }
