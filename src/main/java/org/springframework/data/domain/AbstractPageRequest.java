@@ -21,6 +21,7 @@ import java.io.Serializable;
  * Abstract Java Bean implementation of {@code Pageable}.
  * 
  * @author Thomas Darimont
+ * @author Oliver Gierke
  */
 public abstract class AbstractPageRequest implements Pageable, Serializable {
 
@@ -33,8 +34,8 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 * Creates a new {@link AbstractPageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return
 	 * the first page.
 	 * 
-	 * @param page
-	 * @param size
+	 * @param page must not be less than zero.
+	 * @param size must not be less than one.
 	 */
 	public AbstractPageRequest(int page, int size) {
 
@@ -84,6 +85,14 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Pageable#previousOrFirst()
+	 */
+	public Pageable previousOrFirst() {
+		return hasPrevious() ? previous() : first();
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#next()
 	 */
 	public abstract Pageable next();
@@ -103,22 +112,17 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Pageable#previousOrFirst()
-	 */
-	public Pageable previousOrFirst() {
-		return hasPrevious() ? previous() : first();
-	}
-
-	/* 
-	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
+
 		final int prime = 31;
 		int result = 1;
+
 		result = prime * result + page;
 		result = prime * result + size;
+
 		return result;
 	}
 
@@ -128,17 +132,16 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+
+		if (obj == null || getClass() != obj.getClass()) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		}
+
 		AbstractPageRequest other = (AbstractPageRequest) obj;
-		if (page != other.page)
-			return false;
-		if (size != other.size)
-			return false;
-		return true;
+		return this.page == other.page && this.size == other.size;
 	}
 }

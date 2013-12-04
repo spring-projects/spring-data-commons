@@ -15,18 +15,24 @@
  */
 package org.springframework.data.querydsl;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 
 import com.mysema.query.types.OrderSpecifier;
 
 /**
+ * Unit tests for {@link QSort}.
+ * 
  * @author Thomas Darimont
+ * @author Oliver Gierke
  */
 public class QSortUnitTests {
 
@@ -125,5 +131,19 @@ public class QSortUnitTests {
 
 		assertThat(sort.getOrderFor("firstname"), is(new Sort.Order(Sort.Direction.ASC, "firstname")));
 		assertThat(sort.getOrderFor("lastname"), is(new Sort.Order(Sort.Direction.DESC, "lastname")));
+	}
+
+	/**
+	 * @see DATACMNS-402
+	 */
+	@Test
+	public void concatenatesPlainSortCorrectly() {
+
+		QUser user = QUser.user;
+		QSort sort = new QSort(user.firstname.asc());
+
+		Sort result = sort.and(new Sort(Direction.ASC, "lastname"));
+		assertThat(result, is(Matchers.<Order> iterableWithSize(2)));
+		assertThat(result, hasItems(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, "firstname")));
 	}
 }

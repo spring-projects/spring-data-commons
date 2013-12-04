@@ -86,7 +86,7 @@ public class QSort extends Sort implements Serializable {
 		Assert.notNull(orderSpecifier, "Order specifier must not be null!");
 
 		Expression<?> target = orderSpecifier.getTarget();
-		Object targetElement = ((com.mysema.query.types.Path) target).getMetadata().getElement();
+		Object targetElement = ((com.mysema.query.types.Path<?>) target).getMetadata().getElement();
 
 		Assert.notNull(targetElement, "Target element must not be null!");
 
@@ -98,15 +98,6 @@ public class QSort extends Sort implements Serializable {
 	 */
 	public List<OrderSpecifier<?>> getOrderSpecifiers() {
 		return orderSpecifiers;
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Sort#and(org.springframework.data.domain.Sort)
-	 */
-	@Override
-	public Sort and(Sort sort) {
-		throw new UnsupportedOperationException("You cannot combine a querydsl based QSort with an arbitrary Sort!");
 	}
 
 	/**
@@ -147,7 +138,6 @@ public class QSort extends Sort implements Serializable {
 	public QSort and(OrderSpecifier<?>... orderSpecifiers) {
 
 		Assert.notEmpty(orderSpecifiers, "OrderSpecifiers must not be null or empty!");
-
 		return and(Arrays.asList(orderSpecifiers));
 	}
 }
