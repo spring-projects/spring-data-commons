@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.bind.ServletRequestBindingException;
 
 /**
  * Unit tests for {@link PageableHandlerMethodArgumentResolver}. Pulls in defaulting tests from
@@ -113,6 +114,70 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		exception.expectMessage("invalidDefaultPageSize");
 
 		assertSupportedAndResult(parameter, PageableHandlerMethodArgumentResolver.DEFAULT_PAGE_REQUEST);
+	}
+
+	@Test(expected = ServletRequestBindingException.class)
+	public void pageParamIsNegative() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "-1");
+
+		assertSupportedAndResult(supportedMethodParameter, null, request);
+	}
+
+	@Test(expected = ServletRequestBindingException.class)
+	public void pageParamIsNotNumeric() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "a");
+
+		assertSupportedAndResult(supportedMethodParameter, null, request);
+	}
+
+	@Test(expected = ServletRequestBindingException.class)
+	public void sizeParamIsNotNumeric() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("size", "a");
+
+		assertSupportedAndResult(supportedMethodParameter, null, request);
+	}
+
+	@Test(expected = ServletRequestBindingException.class)
+	public void sortParamIsEmpty() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "");
+
+		assertSupportedAndResult(supportedMethodParameter, null, request);
+	}
+
+	@Test(expected = ServletRequestBindingException.class)
+	public void sortParamIsInvalidProperty() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", ",DESC");
+
+		assertSupportedAndResult(supportedMethodParameter, null, request);
+	}
+
+	@Test(expected = ServletRequestBindingException.class)
+	public void sortParamIsInvalidPropertyWhenMultiProperty() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property1,,DESC");
+
+		assertSupportedAndResult(supportedMethodParameter, null, request);
+	}
+
+	@Test(expected = ServletRequestBindingException.class)
+	public void sortParamIsEmptyWhenMultiParams() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,DESC");
+		request.addParameter("sort", "");
+
+		assertSupportedAndResult(supportedMethodParameter, null, request);
 	}
 
 	@Override

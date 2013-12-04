@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -233,19 +234,26 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 		String pageString = webRequest.getParameter(getParameterNameToUse(pageParameterName, methodParameter));
 		String pageSizeString = webRequest.getParameter(getParameterNameToUse(sizeParameterName, methodParameter));
+		
+		Pageable pageable = null;
+		try {
+			int page = StringUtils.hasText(pageString) ? Integer.parseInt(pageString) - (oneIndexedParameters ? 1 : 0)
+					: defaultOrFallback.getPageNumber();
+			int pageSize = StringUtils.hasText(pageSizeString) ? Integer.parseInt(pageSizeString) : defaultOrFallback
+					.getPageSize();
 
-		int page = StringUtils.hasText(pageString) ? Integer.parseInt(pageString) - (oneIndexedParameters ? 1 : 0)
-				: defaultOrFallback.getPageNumber();
-		int pageSize = StringUtils.hasText(pageSizeString) ? Integer.parseInt(pageSizeString) : defaultOrFallback
-				.getPageSize();
+			// Limit lower bound
+			pageSize = pageSize < 1 ? defaultOrFallback.getPageSize() : pageSize;
+			// Limit upper bound
+			pageSize = pageSize > maxPageSize ? maxPageSize : pageSize;
 
-		// Limit lower bound
-		pageSize = pageSize < 1 ? defaultOrFallback.getPageSize() : pageSize;
-		// Limit upper bound
-		pageSize = pageSize > maxPageSize ? maxPageSize : pageSize;
+			Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
+			pageable = new PageRequest(page, pageSize, sort == null ? defaultOrFallback.getSort() : sort);
 
-		Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
-		return new PageRequest(page, pageSize, sort == null ? defaultOrFallback.getSort() : sort);
+		} catch (IllegalArgumentException e) {
+			throw new ServletRequestBindingException(e.getMessage(), e);
+		}
+		return pageable;
 	}
 
 	/**
