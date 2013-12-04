@@ -23,6 +23,7 @@ import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
+import com.mysema.query.types.Expression;
 import com.mysema.query.types.OrderSpecifier;
 
 /**
@@ -51,9 +52,45 @@ public class QSort extends Sort implements Serializable {
 	 * @param orderSpecifiers must not be {@literal null} or empty;
 	 */
 	public QSort(List<OrderSpecifier<?>> orderSpecifiers) {
-
+		super(toOrders(orderSpecifiers));
 		Assert.notEmpty(orderSpecifiers, "Order specifiers must not be null or empty!");
 		this.orderSpecifiers = orderSpecifiers;
+	}
+
+	/**
+	 * Converts the given {@link OrderSpecifier}s into a list of {@link Order}s.
+	 * 
+	 * @param orderSpecifiers must not be {@literal null} or empty.
+	 * @return
+	 */
+	private static List<Order> toOrders(List<OrderSpecifier<?>> orderSpecifiers) {
+
+		Assert.notEmpty(orderSpecifiers, "Order specifiers must not be null or empty!");
+
+		List<Order> orders = new ArrayList<Sort.Order>();
+		for (OrderSpecifier<?> orderSpecifier : orderSpecifiers) {
+			orders.add(toOrder(orderSpecifier));
+		}
+
+		return orders;
+	}
+
+	/**
+	 * Converts the given {@link OrderSpecifier} into an {@link Order}.
+	 * 
+	 * @param orderSpecifier must not be {@literal null}.
+	 * @return
+	 */
+	private static Order toOrder(OrderSpecifier<?> orderSpecifier) {
+
+		Assert.notNull(orderSpecifier, "Order specifier must not be null!");
+
+		Expression<?> target = orderSpecifier.getTarget();
+		Object targetElement = ((com.mysema.query.types.Path) target).getMetadata().getElement();
+
+		Assert.notNull(targetElement, "Target element must not be null!");
+
+		return new Order(targetElement.toString()).with(orderSpecifier.isAscending() ? Direction.ASC : Direction.DESC);
 	}
 
 	/**
@@ -112,14 +149,5 @@ public class QSort extends Sort implements Serializable {
 		Assert.notEmpty(orderSpecifiers, "OrderSpecifiers must not be null or empty!");
 
 		return and(Arrays.asList(orderSpecifiers));
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Sort#getOrderFor(java.lang.String)
-	 */
-	@Override
-	public Order getOrderFor(String property) {
-		return null;
 	}
 }

@@ -18,7 +18,6 @@ package org.springframework.data.domain;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -37,13 +36,6 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	public static final Direction DEFAULT_DIRECTION = Direction.ASC;
 
 	private final List<Order> orders;
-
-	/**
-	 * Creates a new {@link Sort} instance.
-	 */
-	protected Sort() {
-		this.orders = Collections.emptyList();
-	}
 
 	/**
 	 * Creates a new {@link Sort} instance using the given {@link Order}s.
