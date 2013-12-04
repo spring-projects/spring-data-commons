@@ -5,7 +5,7 @@
 	
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>1.7.0.BUILD-SNAPSHOT</version>
+	<version>1.7.0.DATACMNS-402-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 
@@ -231,8 +231,8 @@
 	
 	<repositories>
 		<repository>
-			<id>spring-libs-milestone</id>
-			<url>http://repo.springsource.org/libs-milestone-local</url>
+			<id>spring-libs-snapshots</id>
+			<url>http://repo.springsource.org/libs-snapshot-local</url>
 		</repository>
 	</repositories>
 

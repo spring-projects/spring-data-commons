@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.core.MethodParameter;
+import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -48,9 +49,9 @@ public abstract class PageableDefaultUnitTests {
 	static final int PAGE_SIZE = 47;
 	static final int PAGE_NUMBER = 23;
 
-	static final PageRequest REFERENCE_WITHOUT_SORT = new PageRequest(PAGE_NUMBER, PAGE_SIZE);
-	static final PageRequest REFERENCE_WITH_SORT = new PageRequest(PAGE_NUMBER, PAGE_SIZE, SORT);
-	static final PageRequest REFERENCE_WITH_SORT_FIELDS = new PageRequest(PAGE_NUMBER, PAGE_SIZE, new Sort(SORT_FIELDS));
+	static final AbstractPageRequest REFERENCE_WITHOUT_SORT = new PageRequest(PAGE_NUMBER, PAGE_SIZE);
+	static final AbstractPageRequest REFERENCE_WITH_SORT = new PageRequest(PAGE_NUMBER, PAGE_SIZE, SORT);
+	static final AbstractPageRequest REFERENCE_WITH_SORT_FIELDS = new PageRequest(PAGE_NUMBER, PAGE_SIZE, new Sort(SORT_FIELDS));
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 
