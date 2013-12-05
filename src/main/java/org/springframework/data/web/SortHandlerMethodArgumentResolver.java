@@ -243,7 +243,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 			}
 
 			String[] elements = part.split(delimiter);
-			Direction direction = Direction.fromStringOrNull(elements[elements.length - 1]);
+			Direction direction = elements.length == 0 ? null : Direction.fromStringOrNull(elements[elements.length - 1]);
 
 			for (int i = 0; i < elements.length; i++) {
 

@@ -186,6 +186,18 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property")));
 	}
 
+	/**
+	 * @see DATACMNS-379
+	 */
+	@Test
+	public void parsesCommaParameterForSort() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", ",");
+
+		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
+	}
+
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
