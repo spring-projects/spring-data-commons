@@ -1,6 +1,58 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.6.3.RELEASE (2013-12-11)
+---------------------------------------------
+** Bug
+    * [DATACMNS-366] - PageableArgumentResolver does not support list of properties to sort on
+    * [DATACMNS-377] - All elements are returned if pageSize = 0
+    * [DATACMNS-379] - SortHanderMethodArgumentResolver fails to resolve comma-only sort parameter
+    * [DATACMNS-387] - Potential NullPointerExceptions in PartTree area
+    * [DATACMNS-390] - ConcurrentModificationException in MappingContextTypeInformationMapper.resolveTypeFrom
+    * [DATACMNS-393] - Improve CRUD Method detection in DefaultCrudMethods
+    * [DATACMNS-408] - Guard against invalid values when resolving pagination and sorting parameters from web requests
+
+** Improvement
+    * [DATACMNS-388] - Improve generics declaration in HateoasAwareSpringDataWebConfiguration
+    * [DATACMNS-406] - Tighten contract for RepositoryMetadata implementations
+
+** Task
+    * [DATACMNS-395] - RepositoryFactorySupport should cache RepositoryInformation instances
+    * [DATACMNS-409] - Release 1.6.3
+
+Changes in version 1.7.0.M1 (2013-11-19)
+---------------------------------------------
+** Bug
+    * [DATACMNS-363] - Unicode characters not supported in property reference expressions
+    * [DATACMNS-374] - NPE is thrown when populating the repository
+    * [DATACMNS-376] - Repositories cannot deal with CGLib proxied classes
+    * [DATACMNS-377] - All elements are returned if pageSize = 0
+    * [DATACMNS-385] - DefaultRepositoryInformation#getTargetClassMethod matches wrong save-Method if Entity implements Iterable
+    * [DATACMNS-387] - Potential NullPointerExceptions in PartTree area
+    * [DATACMNS-390] - ConcurrentModificationException in MappingContextTypeInformationMapper.resolveTypeFrom
+    * [DATACMNS-393] - Improve CRUD Method detection in DefaultCrudMethods
+
+** Improvement
+    * [DATACMNS-90] - Allow Repository namespace handler to be configured to scan for inner class repositories
+    * [DATACMNS-243] - Pull up property access improvement from MongoPersistentProperty
+    * [DATACMNS-368] - Add test to PartTree for property that contain keyword sequences.
+    * [DATACMNS-381] - Improve exception messages in PropertyReferenceException
+    * [DATACMNS-382] - Remove copy of AnnotationTypeFilter in RepositoryComponentProvider and reuse version from Spring Core.
+    * [DATACMNS-386] - Upgrade to Spring 3.2.x baseline
+    * [DATACMNS-388] - Improve generics declaration in HateoasAwareSpringDataWebConfiguration
+    * [DATACMNS-392] - Allow dedicated control over over instantiation time of repositories
+    * [DATACMNS-400] - Expose findAnnotation(…) on persistent property
+    * [DATACMNS-401] - Some cleanups regarding generics and deprecation warnings
+
+** New Feature
+    * DATACMNS-364] - Add ability to override repository CRUD methods using explicit query declarations.
+    * DATACMNS-384] - Introduce Version value object
+    * DATACMNS-389] - Add support to configure Auditing via JavaConfig.
+
+** Task
+    * [DATACMNS-391] - Ensure compatibility with Spring Framework 4.0
+    * [DATACMNS-395] - RepositoryFactorySupport should cache RepositoryInformation instances
+
 Changes in version 1.6.2.RELEASE (2013-10-25)
 ---------------------------------------------
 ** Bug
