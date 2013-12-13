@@ -29,6 +29,7 @@ import org.springframework.util.ReflectionUtils;
  * information.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  * @since 1.6
  */
 class ReflectionRepositoryInvoker<T> implements CrudInvoker<T> {
@@ -72,6 +73,6 @@ class ReflectionRepositoryInvoker<T> implements CrudInvoker<T> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public T invokeFindOne(Serializable id) {
-		return (T) ReflectionUtils.invokeMethod(methods.getFindOneMethod(), id);
+		return (T) ReflectionUtils.invokeMethod(methods.getFindOneMethod(), repository, id);
 	}
 }
