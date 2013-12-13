@@ -21,12 +21,14 @@ import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.test.context.ContextConfiguration;
@@ -36,6 +38,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Integration tests for {@link Repositories}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -61,16 +64,24 @@ public class RepositoriesIntegrationTests {
 		}
 
 		@Bean
-		public RepositoryFactoryBeanSupport<Repository<Product, Long>, Product, Long> productRepositoryFactory() {
+		public RepositoryFactoryBeanSupport<Repository<Product, Long>, Product, Long> productRepositoryFactory(
+				ProductRepository productRepository) {
 
 			DummyRepositoryFactoryBean<Repository<Product, Long>, Product, Long> factory = new DummyRepositoryFactoryBean<Repository<Product, Long>, Product, Long>();
 			factory.setRepositoryInterface(ProductRepository.class);
+			factory.setCustomImplementation(productRepository);
 
 			return factory;
+		}
+
+		@Bean
+		public ProductRepository productRepository() {
+			return mock(ProductRepository.class);
 		}
 	}
 
 	@Autowired Repositories repositories;
+	@Autowired ProductRepository productRepository;
 
 	@Test
 	public void detectsRepositories() {
@@ -98,6 +109,21 @@ public class RepositoriesIntegrationTests {
 		assertThat(repositories.getPersistentEntity(user.getClass()), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-410
+	 */
+	@Test
+	public void findOneShouldDelegateToAppropriateRepository() {
+
+		Mockito.reset(productRepository);
+		Product product = new Product();
+		when(productRepository.findOne(4711L)).thenReturn(product);
+
+		CrudInvoker<Product> crudInvoker = repositories.getCrudInvoker(Product.class);
+
+		assertThat(crudInvoker.invokeFindOne(4711L), is(product));
+	}
+
 	static class User {
 
 	}
@@ -106,9 +132,9 @@ public class RepositoriesIntegrationTests {
 
 	}
 
-	static class Product {}
+	public static class Product {}
 
-	interface ProductRepository extends Repository<Product, Long> {
+	public static interface ProductRepository extends Repository<Product, Long> {
 
 		Product findOne(Long id);
 
