@@ -26,14 +26,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * Extension of {@link SortHandlerMethodArgumentResolver} that also supports enhancing URIs using Spring HATEOAS
  * support.
- *
+ * 
  * @since 1.6
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Nick Williams
  */
-public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolver
-		implements UriComponentsContributor {
+public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolver implements
+		UriComponentsContributor {
 
 	/*
 	 * (non-Javadoc)
@@ -47,19 +47,22 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 		}
 
 		Sort sort = (Sort) value;
+		String sortParameter = getSortParameter(parameter);
 
 		if (legacyMode) {
 
 			List<String> expressions = legacyFoldExpressions(sort);
 			Assert.isTrue(expressions.size() == 2,
 					String.format("Expected 2 sort expressions (fields, direction) but got %d!", expressions.size()));
-			builder.queryParam(getSortParameter(parameter), expressions.get(0));
-			builder.queryParam(getLegacyDirectionParameter(parameter), expressions.get(1));
+			builder.replaceQueryParam(sortParameter, expressions.get(0));
+			builder.replaceQueryParam(getLegacyDirectionParameter(parameter), expressions.get(1));
 
 		} else {
 
+			builder.replaceQueryParam(sortParameter);
+
 			for (String expression : foldIntoExpressions(sort)) {
-				builder.queryParam(getSortParameter(parameter), expression);
+				builder.queryParam(sortParameter, expression);
 			}
 		}
 	}
