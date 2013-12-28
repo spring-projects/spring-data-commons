@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package org.springframework.data.auditing;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 import org.joda.time.DateTime;
 
 /**
@@ -27,11 +30,12 @@ public enum CurrentDateTimeProvider implements DateTimeProvider {
 
 	INSTANCE;
 
-	/*
+	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.jpa.domain.support.DateTimeProvider#getDateTime()
+	 * @see org.springframework.data.auditing.DateTimeProvider#getNow()
 	 */
-	public DateTime getDateTime() {
-		return new DateTime();
+	@Override
+	public Calendar getNow() {
+		return new GregorianCalendar();
 	}
 }

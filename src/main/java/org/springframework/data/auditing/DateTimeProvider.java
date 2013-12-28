@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package org.springframework.data.auditing;
 
-import org.joda.time.DateTime;
+import java.util.Calendar;
 
 /**
- * SPI to calculate the {@link DateTime} instance to be used when auditing.
+ * SPI to calculate the current time to be used when auditing.
  * 
  * @author Oliver Gierke
  * @since 1.5
@@ -26,9 +26,9 @@ import org.joda.time.DateTime;
 public interface DateTimeProvider {
 
 	/**
-	 * Returns the {@link DateTime} to be used as modification date.
+	 * Returns the current time to be used as modification or creation date.
 	 * 
 	 * @return
 	 */
-	DateTime getDateTime();
+	Calendar getNow();
 }

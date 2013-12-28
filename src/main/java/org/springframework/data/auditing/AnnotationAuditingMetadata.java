@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012-2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.auditing;
 
 import java.lang.reflect.Field;
@@ -8,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.joda.time.DateTime;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -35,15 +49,20 @@ class AnnotationAuditingMetadata {
 
 	private static final Map<Class<?>, AnnotationAuditingMetadata> METADATA_CACHE = new ConcurrentHashMap<Class<?>, AnnotationAuditingMetadata>();
 
-	static final List<Class<?>> SUPPORTED_DATE_TYPES;
+	private static final String JDK8_TIME_PACKAGE_PREFIX = "java.time";
+	public static final boolean IS_JDK_8 = org.springframework.util.ClassUtils.isPresent("java.time.Clock",
+			AnnotationAuditingMetadata.class.getClassLoader());
+
+	static final List<String> SUPPORTED_DATE_TYPES;
 
 	static {
 
-		List<Class<?>> types = new ArrayList<Class<?>>(4);
-		types.add(DateTime.class);
-		types.add(Date.class);
-		types.add(Long.class);
-		types.add(long.class);
+		List<String> types = new ArrayList<String>(5);
+		types.add("org.joda.time.DateTime");
+		types.add("org.joda.time.LocalDateTime");
+		types.add(Date.class.getName());
+		types.add(Long.class.getName());
+		types.add(long.class.getName());
 
 		SUPPORTED_DATE_TYPES = Collections.unmodifiableList(types);
 	}
@@ -53,6 +72,11 @@ class AnnotationAuditingMetadata {
 	private final Field lastModifiedByField;
 	private final Field lastModifiedDateField;
 
+	/**
+	 * Creates a new {@link AnnotationAuditingMetadata} instance for the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 */
 	private AnnotationAuditingMetadata(Class<?> type) {
 
 		Assert.notNull(type, "Given type must not be null!");
@@ -73,13 +97,18 @@ class AnnotationAuditingMetadata {
 	 */
 	private void assertValidDateFieldType(Field field) {
 
-		if (field == null || SUPPORTED_DATE_TYPES.contains(field.getType())) {
+		if (field == null || SUPPORTED_DATE_TYPES.contains(field.getType().getName())) {
+			return;
+		}
+
+		// Support JDK 8 date types if runtime allows
+		if (IS_JDK_8 && field.getType().getPackage().getName().startsWith(JDK8_TIME_PACKAGE_PREFIX)) {
 			return;
 		}
 
 		throw new IllegalStateException(String.format(
-				"Found created/modified date field with type %s but only %s are supported!", field.getType(),
-				SUPPORTED_DATE_TYPES));
+				"Found created/modified date field with type %s but only %s as well as java.time types are supported!",
+				field.getType(), SUPPORTED_DATE_TYPES));
 	}
 
 	/**

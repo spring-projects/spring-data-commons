@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,18 @@
 package org.springframework.data.auditing;
 
 import java.lang.reflect.Field;
-import java.util.Date;
+import java.util.Calendar;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.util.ReflectionUtils;
+import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * A factory class to {@link AuditableBeanWrapper} instances.
@@ -33,6 +36,9 @@ import org.springframework.util.Assert;
  * @since 1.5
  */
 class AuditableBeanWrapperFactory {
+
+	private static boolean IS_JODA_TIME_PRESENT = ClassUtils.isPresent("org.joda.time.DateTime",
+			ReflectionAuditingBeanWrapper.class.getClassLoader());
 
 	/**
 	 * Returns an {@link AuditableBeanWrapper} if the given object is capable of being equipped with auditing information.
@@ -85,8 +91,8 @@ class AuditableBeanWrapperFactory {
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(org.joda.time.DateTime)
 		 */
-		public void setCreatedDate(DateTime value) {
-			auditable.setCreatedDate(value);
+		public void setCreatedDate(Calendar value) {
+			auditable.setCreatedDate(new DateTime(value));
 		}
 
 		/* 
@@ -101,8 +107,8 @@ class AuditableBeanWrapperFactory {
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(org.joda.time.DateTime)
 		 */
-		public void setLastModifiedDate(DateTime value) {
-			auditable.setLastModifiedDate(value);
+		public void setLastModifiedDate(Calendar value) {
+			auditable.setLastModifiedDate(new DateTime(value));
 		}
 	}
 
@@ -129,9 +135,12 @@ class AuditableBeanWrapperFactory {
 			this.metadata = AnnotationAuditingMetadata.getMetadata(target.getClass());
 			this.target = target;
 
-			DefaultConversionService conversionService = new DefaultConversionService();
-			conversionService.addConverter(DateTimeToLongConverter.INSTANCE);
-			conversionService.addConverter(DateTimeToDateConverter.INSTANCE);
+			ConfigurableConversionService conversionService = new DefaultFormattingConversionService();
+
+			if (IS_JODA_TIME_PRESENT) {
+				conversionService.addConverter(CalendarToDateTimeConverter.INSTANCE);
+				conversionService.addConverter(CalendarToLocalDateTimeConverter.INSTANCE);
+			}
 
 			this.conversionService = conversionService;
 		}
@@ -146,9 +155,9 @@ class AuditableBeanWrapperFactory {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(org.joda.time.DateTime)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Calendar)
 		 */
-		public void setCreatedDate(DateTime value) {
+		public void setCreatedDate(Calendar value) {
 			setDateField(metadata.getCreatedDateField(), value);
 		}
 
@@ -162,9 +171,9 @@ class AuditableBeanWrapperFactory {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(org.joda.time.DateTime)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Calendar)
 		 */
-		public void setLastModifiedDate(DateTime value) {
+		public void setLastModifiedDate(Calendar value) {
 			setDateField(metadata.getLastModifiedDateField(), value);
 		}
 
@@ -187,7 +196,7 @@ class AuditableBeanWrapperFactory {
 		 * @param field
 		 * @param value
 		 */
-		private void setDateField(Field field, DateTime value) {
+		private void setDateField(Field field, Calendar value) {
 
 			if (field == null) {
 				return;
@@ -203,7 +212,7 @@ class AuditableBeanWrapperFactory {
 		 * @param field must not be {@literal null}.
 		 * @return
 		 */
-		private Object getDateValueToSet(DateTime value, Field field) {
+		private Object getDateValueToSet(Calendar value, Field field) {
 
 			if (value == null) {
 				return null;
@@ -211,11 +220,11 @@ class AuditableBeanWrapperFactory {
 
 			Class<?> targetType = field.getType();
 
-			if (DateTime.class.equals(targetType)) {
+			if (Calendar.class.equals(targetType)) {
 				return value;
 			}
 
-			if (conversionService.canConvert(DateTime.class, targetType)) {
+			if (conversionService.canConvert(Calendar.class, targetType)) {
 				return conversionService.convert(value, targetType);
 			}
 
@@ -224,23 +233,23 @@ class AuditableBeanWrapperFactory {
 		}
 	}
 
-	static enum DateTimeToLongConverter implements Converter<DateTime, Long> {
+	static enum CalendarToDateTimeConverter implements Converter<Calendar, DateTime> {
 
 		INSTANCE;
 
 		@Override
-		public Long convert(DateTime source) {
-			return source.getMillis();
+		public DateTime convert(Calendar source) {
+			return new DateTime(source);
 		}
 	}
 
-	static enum DateTimeToDateConverter implements Converter<DateTime, Date> {
+	static enum CalendarToLocalDateTimeConverter implements Converter<Calendar, LocalDateTime> {
 
 		INSTANCE;
 
 		@Override
-		public Date convert(DateTime source) {
-			return source.toDate();
+		public LocalDateTime convert(Calendar source) {
+			return new LocalDateTime(source);
 		}
 	}
 }
