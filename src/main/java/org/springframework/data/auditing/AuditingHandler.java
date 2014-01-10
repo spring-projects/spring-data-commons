@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.auditing;
 
+import java.util.Calendar;
+
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,13 +31,13 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.5
  */
-public class AuditingHandler<T> implements InitializingBean {
+public class AuditingHandler implements InitializingBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuditingHandler.class);
 
 	private final AuditableBeanWrapperFactory factory = new AuditableBeanWrapperFactory();
 	private DateTimeProvider dateTimeProvider = CurrentDateTimeProvider.INSTANCE;
-	private AuditorAware<T> auditorAware;
+	private AuditorAware<?> auditorAware;
 	private boolean dateTimeForNow = true;
 	private boolean modifyOnCreation = true;
 
@@ -44,7 +46,7 @@ public class AuditingHandler<T> implements InitializingBean {
 	 * 
 	 * @param auditorAware the auditorAware to set
 	 */
-	public void setAuditorAware(final AuditorAware<T> auditorAware) {
+	public void setAuditorAware(final AuditorAware<?> auditorAware) {
 
 		Assert.notNull(auditorAware);
 		this.auditorAware = auditorAware;
@@ -106,8 +108,8 @@ public class AuditingHandler<T> implements InitializingBean {
 			return;
 		}
 
-		T auditor = touchAuditor(wrapper, isNew);
-		DateTime now = dateTimeForNow ? touchDate(wrapper, isNew) : null;
+		Object auditor = touchAuditor(wrapper, isNew);
+		Calendar now = dateTimeForNow ? touchDate(wrapper, isNew) : null;
 
 		Object defaultedNow = now == null ? "not set" : now;
 		Object defaultedAuditor = auditor == null ? "unknown" : auditor;
@@ -121,13 +123,13 @@ public class AuditingHandler<T> implements InitializingBean {
 	 * @param auditable
 	 * @return
 	 */
-	private T touchAuditor(AuditableBeanWrapper wrapper, boolean isNew) {
+	private Object touchAuditor(AuditableBeanWrapper wrapper, boolean isNew) {
 
 		if (null == auditorAware) {
 			return null;
 		}
 
-		T auditor = auditorAware.getCurrentAuditor();
+		Object auditor = auditorAware.getCurrentAuditor();
 
 		if (isNew) {
 			wrapper.setCreatedBy(auditor);
@@ -146,9 +148,9 @@ public class AuditingHandler<T> implements InitializingBean {
 	 * @param wrapper
 	 * @return
 	 */
-	private DateTime touchDate(AuditableBeanWrapper wrapper, boolean isNew) {
+	private Calendar touchDate(AuditableBeanWrapper wrapper, boolean isNew) {
 
-		DateTime now = dateTimeProvider.getDateTime();
+		Calendar now = dateTimeProvider.getNow();
 
 		if (isNew) {
 			wrapper.setCreatedDate(now);

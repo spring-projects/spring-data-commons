@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.springframework.data.domain.AuditorAware;
 @SuppressWarnings("unchecked")
 public class AuditingHandlerUnitTests {
 
-	AuditingHandler<AuditedUser> handler;
+	AuditingHandler handler;
 	AuditorAware<AuditedUser> auditorAware;
 
 	AuditedUser user;
@@ -46,8 +46,8 @@ public class AuditingHandlerUnitTests {
 		when(auditorAware.getCurrentAuditor()).thenReturn(user);
 	}
 
-	protected AuditingHandler<AuditedUser> getHandler() {
-		return new AuditingHandler<AuditedUser>();
+	protected AuditingHandler getHandler() {
+		return new AuditingHandler();
 	}
 
 	/**
@@ -149,6 +149,6 @@ public class AuditingHandlerUnitTests {
 		handler.setDateTimeProvider(provider);
 		handler.markCreated(user);
 
-		verify(provider, times(1)).getDateTime();
+		verify(provider, times(1)).getNow();
 	}
 }
