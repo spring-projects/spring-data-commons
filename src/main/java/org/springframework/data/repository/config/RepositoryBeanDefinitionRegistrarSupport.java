@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,22 +87,22 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 
 		defaultExternalResources(registry);
 
-		AnnotationRepositoryConfigurationSource configuration = new AnnotationRepositoryConfigurationSource(
+		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(
 				annotationMetadata, getAnnotation(), environment);
 
 		RepositoryConfigurationExtension extension = getExtension();
-		extension.registerBeansForRoot(registry, configuration);
+		extension.registerBeansForRoot(registry, configurationSource);
 
 		RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
 		generator.setBeanClassLoader(beanClassLoader);
 
-		for (RepositoryConfiguration<AnnotationRepositoryConfigurationSource> repositoryConfiguration : extension
-				.getRepositoryConfigurations(configuration, resourceLoader)) {
+		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader);
 
-			RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(repositoryConfiguration, extension);
-			BeanDefinitionBuilder definitionBuilder = builder.build(registry, resourceLoader);
+		for (RepositoryConfiguration<AnnotationRepositoryConfigurationSource> configuration : extension
+				.getRepositoryConfigurations(configurationSource, resourceLoader)) {
 
-			extension.postProcess(definitionBuilder, configuration);
+			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
+			extension.postProcess(definitionBuilder, configurationSource);
 
 			String beanName = generator.generateBeanName(definitionBuilder.getBeanDefinition(), registry);
 			registry.registerBeanDefinition(beanName, definitionBuilder.getBeanDefinition());

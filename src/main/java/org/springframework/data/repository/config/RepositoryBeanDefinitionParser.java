@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 import org.w3c.dom.Element;
 
@@ -94,13 +95,15 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 	private void registerGenericRepositoryFactoryBean(
 			RepositoryConfiguration<XmlRepositoryConfigurationSource> configuration, ParserContext parser) {
 
-		RepositoryBeanDefinitionBuilder definitionBuilder = new RepositoryBeanDefinitionBuilder(configuration, extension);
+		ResourceLoader resourceLoader = parser.getReaderContext().getResourceLoader();
+		BeanDefinitionRegistry registry = parser.getRegistry();
+
+		RepositoryBeanDefinitionBuilder definitionBuilder = new RepositoryBeanDefinitionBuilder(registry, extension,
+				resourceLoader);
 
 		try {
 
-			BeanDefinitionBuilder builder = definitionBuilder.build(parser.getRegistry(), parser.getReaderContext()
-					.getResourceLoader());
-
+			BeanDefinitionBuilder builder = definitionBuilder.build(configuration);
 			extension.postProcess(builder, configuration.getConfigurationSource());
 
 			AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
@@ -109,7 +112,7 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 			RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
 			generator.setBeanClassLoader(parser.getReaderContext().getBeanClassLoader());
 
-			String beanName = generator.generateBeanName(beanDefinition, parser.getRegistry());
+			String beanName = generator.generateBeanName(beanDefinition, registry);
 
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("Registering repository: " + beanName + " - Interface: " + configuration.getRepositoryInterface()

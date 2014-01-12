@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -42,24 +44,29 @@ public class RepositoryBeanDefinitionBuilder {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryBeanDefinitionBuilder.class);
 
-	private final RepositoryConfiguration<?> configuration;
+	private final BeanDefinitionRegistry registry;
 	private final RepositoryConfigurationExtension extension;
+	private final ResourceLoader resourceLoader;
+
+	private final MetadataReaderFactory metadataReaderFactory;
 
 	/**
-	 * Creates a new {@link RepositoryBeanDefinitionBuilder} from the given {@link RepositoryConfiguration} and
-	 * {@link RepositoryConfigurationExtension}.
+	 * Creates a new {@link RepositoryBeanDefinitionBuilder} from the given {@link BeanDefinitionRegistry},
+	 * {@link RepositoryConfigurationExtension} and {@link ResourceLoader}.
 	 * 
-	 * @param configuration must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
 	 * @param extension must not be {@literal null}.
+	 * @param resourceLoader must not be {@literal null}.
 	 */
-	public RepositoryBeanDefinitionBuilder(RepositoryConfiguration<?> configuration,
-			RepositoryConfigurationExtension extension) {
+	public RepositoryBeanDefinitionBuilder(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
+			ResourceLoader resourceLoader) {
 
-		Assert.notNull(configuration);
 		Assert.notNull(extension);
 
-		this.configuration = configuration;
+		this.registry = registry;
 		this.extension = extension;
+		this.resourceLoader = resourceLoader;
+		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
 	}
 
 	/**
@@ -70,7 +77,7 @@ public class RepositoryBeanDefinitionBuilder {
 	 * @param resourceLoader must not be {@literal null}.
 	 * @return
 	 */
-	public BeanDefinitionBuilder build(BeanDefinitionRegistry registry, ResourceLoader resourceLoader) {
+	public BeanDefinitionBuilder build(RepositoryConfiguration<?> configuration) {
 
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
@@ -95,7 +102,7 @@ public class RepositoryBeanDefinitionBuilder {
 
 		builder.addPropertyValue("namedQueries", definitionBuilder.build(configuration.getSource()));
 
-		String customImplementationBeanName = registerCustomImplementation(registry, resourceLoader);
+		String customImplementationBeanName = registerCustomImplementation(configuration);
 
 		if (customImplementationBeanName != null) {
 			builder.addPropertyReference("customImplementation", customImplementationBeanName);
@@ -105,7 +112,7 @@ public class RepositoryBeanDefinitionBuilder {
 		return builder;
 	}
 
-	private String registerCustomImplementation(BeanDefinitionRegistry registry, ResourceLoader resourceLoader) {
+	private String registerCustomImplementation(RepositoryConfiguration<?> configuration) {
 
 		String beanName = configuration.getImplementationBeanName();
 
@@ -114,7 +121,7 @@ public class RepositoryBeanDefinitionBuilder {
 			return beanName;
 		}
 
-		AbstractBeanDefinition beanDefinition = detectCustomImplementation(registry, resourceLoader);
+		AbstractBeanDefinition beanDefinition = detectCustomImplementation(configuration);
 
 		if (null == beanDefinition) {
 			return null;
@@ -139,14 +146,15 @@ public class RepositoryBeanDefinitionBuilder {
 	 * @param parser
 	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found
 	 */
-	private AbstractBeanDefinition detectCustomImplementation(BeanDefinitionRegistry registry, ResourceLoader loader) {
+	private AbstractBeanDefinition detectCustomImplementation(RepositoryConfiguration<?> configuration) {
 
 		// Build pattern to lookup implementation class
 		Pattern pattern = Pattern.compile(".*\\." + configuration.getImplementationClassName());
 
 		// Build classpath scanner and lookup bean definition
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-		provider.setResourceLoader(loader);
+		provider.setResourceLoader(resourceLoader);
+		provider.setMetadataReaderFactory(metadataReaderFactory);
 		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
 
 		Set<BeanDefinition> definitions = new HashSet<BeanDefinition>();
