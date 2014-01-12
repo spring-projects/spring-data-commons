@@ -25,7 +25,9 @@ import java.util.Set;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.util.AnnotationLiteral;
@@ -33,6 +35,7 @@ import javax.inject.Qualifier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
@@ -48,6 +51,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CdiRepositoryExtensionSupport.class);
 
 	private final Map<Class<?>, Set<Annotation>> repositoryTypes = new HashMap<Class<?>, Set<Annotation>>();
+	private final Set<CdiRepositoryBean<?>> eagerRepositories = new HashSet<CdiRepositoryBean<?>>();
 
 	/**
 	 * Implementation of a an observer which checks for Spring Data repository types and stores them in
@@ -116,12 +120,44 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	}
 
 	/**
+	 * Triggers the eager initialization of beans registered for that behavior.
+	 * 
+	 * @param event must not be {@literal null}.
+	 * @param manager must not be {@literal null}.
+	 * @see #registerBean(CdiRepositoryBean)
+	 */
+	void afterDeploymentValidation(@Observes AfterDeploymentValidation event, BeanManager manager) {
+
+		for (CdiRepositoryBean<?> bean : eagerRepositories) {
+
+			LOGGER.debug("Eagerly instantiating CDI repository bean for {}.", bean.getBeanClass());
+			bean.initialize();
+		}
+	}
+
+	/**
 	 * Provides access to all repository types as well as their qualifiers.
 	 * 
 	 * @return
 	 */
 	protected Iterable<Entry<Class<?>, Set<Annotation>>> getRepositoryTypes() {
 		return repositoryTypes.entrySet();
+	}
+
+	/**
+	 * Registers the given {@link CdiRepositoryBean} for further general treatment by the infrastructure. In particular,
+	 * this will cause repositories to be instantiated eagerly if marked as such.
+	 * 
+	 * @param bean must not be {@literal null}.
+	 * @see #afterDeploymentValidation(AfterDeploymentValidation, BeanManager)
+	 */
+	protected void registerBean(CdiRepositoryBean<?> bean) {
+
+		Class<?> repositoryInterface = bean.getBeanClass();
+
+		if (AnnotationUtils.findAnnotation(repositoryInterface, Eager.class) != null) {
+			this.eagerRepositories.add(bean);
+		}
 	}
 
 	@SuppressWarnings("all")

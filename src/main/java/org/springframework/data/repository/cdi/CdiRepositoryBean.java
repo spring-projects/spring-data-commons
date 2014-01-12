@@ -53,6 +53,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	private final BeanManager beanManager;
 	private final String passivationId;
 
+	private transient T repoInstance;
+
 	/**
 	 * Creates a new {@link CdiRepositoryBean}.
 	 * 
@@ -107,11 +109,6 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		interfaces.add(repositoryType);
 		interfaces.addAll(Arrays.asList(repositoryType.getInterfaces()));
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(String.format("Declaring types '%s' for repository '%s'.", interfaces.toString(),
-					repositoryType.getName()));
-		}
-
 		return new HashSet<Type>(interfaces);
 	}
 
@@ -128,17 +125,27 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return (S) beanManager.getReference(bean, type, creationalContext);
 	}
 
+	/**
+	 * Forces the initialization of bean target.
+	 */
+	public final void initialize() {
+		create(beanManager.createCreationalContext(this));
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.context.spi.Contextual#create(javax.enterprise.context.spi.CreationalContext)
 	 */
 	public final T create(CreationalContext<T> creationalContext) {
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(String.format("Creating bean instance for repository type '%s'.", repositoryType.getName()));
+		if (this.repoInstance != null) {
+			LOGGER.debug("Returning eagerly created CDI repository instance for {}.", repositoryType.getName());
+			return this.repoInstance;
 		}
 
-		return create(creationalContext, repositoryType);
+		LOGGER.debug("Creating CDI repository bean instance for {}.", repositoryType.getName());
+		this.repoInstance = create(creationalContext, repositoryType);
+		return repoInstance;
 	}
 
 	/*
