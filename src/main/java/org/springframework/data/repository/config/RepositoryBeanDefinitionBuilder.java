@@ -43,6 +43,7 @@ import org.springframework.util.StringUtils;
 public class RepositoryBeanDefinitionBuilder {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryBeanDefinitionBuilder.class);
+	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
 
 	private final BeanDefinitionRegistry registry;
 	private final RepositoryConfigurationExtension extension;
@@ -142,18 +143,19 @@ public class RepositoryBeanDefinitionBuilder {
 	/**
 	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
 	 * 
-	 * @param config
-	 * @param parser
+	 * @param config must not be {@literal null}.
 	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found
 	 */
 	private AbstractBeanDefinition detectCustomImplementation(RepositoryConfiguration<?> configuration) {
 
 		// Build pattern to lookup implementation class
-		Pattern pattern = Pattern.compile(".*\\." + configuration.getImplementationClassName());
+		String className = configuration.getImplementationClassName();
+		Pattern pattern = Pattern.compile(".*\\." + className);
 
 		// Build classpath scanner and lookup bean definition
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
 		provider.setResourceLoader(resourceLoader);
+		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
 		provider.setMetadataReaderFactory(metadataReaderFactory);
 		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
 
