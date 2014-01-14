@@ -52,7 +52,7 @@ import org.springframework.util.ObjectUtils;
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
-	private static final Map<RepositoryInformationCacheKey, RepositoryInformation> REPOSITORY_INFORMATION_CACHE = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
+	private final Map<RepositoryInformationCacheKey, RepositoryInformation> REPOSITORY_INFORMATION_CACHE = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
 
 	private final List<RepositoryProxyPostProcessor> postProcessors = new ArrayList<RepositoryProxyPostProcessor>();
 	private QueryLookupStrategy.Key queryLookupStrategyKey;
