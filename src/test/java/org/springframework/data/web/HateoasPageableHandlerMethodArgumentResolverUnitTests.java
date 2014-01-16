@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,19 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 	@Test
 	public void preventsPageSizeFromExceedingMayValueIfConfiguredOnWrite() throws Exception {
 		assertUriStringFor(new PageRequest(0, 200), "page=0&size=100");
+	}
+
+	/**
+	 * @see DATACMNS-418
+	 */
+	@Test
+	public void returnCorrectTemplateVariables() {
+
+		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
+		assertThat(resolver.getPaginationTemplateVariables(null), is("{?page,size}{&sort}"));
+
+		resolver.setPageParameterName("foo");
+		assertThat(resolver.getPaginationTemplateVariables(null), is("{?foo,size}{&sort}"));
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,9 +76,20 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 		this.sortResolver = getDefaultedSortResolver(sortResolver);
 	}
 
-	private static HateoasSortHandlerMethodArgumentResolver getDefaultedSortResolver(
-			HateoasSortHandlerMethodArgumentResolver sortResolver) {
-		return sortResolver == null ? DEFAULT_SORT_RESOLVER : sortResolver;
+	/**
+	 * Returns the template variable for the pagination parameters.
+	 * 
+	 * @param parameter can be {@literal null}.
+	 * @return
+	 * @since 1.7
+	 */
+	public String getPaginationTemplateVariables(MethodParameter parameter) {
+
+		String pagePropertyName = getParameterNameToUse(getPageParameterName(), parameter);
+		String sizePropertyName = getParameterNameToUse(getSizeParameterName(), parameter);
+
+		String sortTemplateVariables = sortResolver.getSortTemplateVariables(parameter);
+		return String.format("{?%s,%s}{&%s", pagePropertyName, sizePropertyName, sortTemplateVariables.substring(2));
 	}
 
 	/*
@@ -104,5 +115,10 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 				: getMaxPageSize());
 
 		this.sortResolver.enhance(builder, parameter, pageable.getSort());
+	}
+
+	private static HateoasSortHandlerMethodArgumentResolver getDefaultedSortResolver(
+			HateoasSortHandlerMethodArgumentResolver sortResolver) {
+		return sortResolver == null ? DEFAULT_SORT_RESOLVER : sortResolver;
 	}
 }

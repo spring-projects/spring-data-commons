@@ -51,6 +51,16 @@ public class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandl
 		assertUriStringFor(SORT, "/?sort=firstname,lastname,desc", "/?sort=foo,asc");
 	}
 
+	/**
+	 * @see DATACMNS-418
+	 */
+	@Test
+	public void returnCorrectTemplateVariables() {
+
+		HateoasSortHandlerMethodArgumentResolver resolver = new HateoasSortHandlerMethodArgumentResolver();
+		assertThat(resolver.getSortTemplateVariables(null), is("{?sort}"));
+	}
+
 	private void assertUriStringFor(Sort sort, String expected) throws Exception {
 		assertUriStringFor(sort, expected, "/");
 	}

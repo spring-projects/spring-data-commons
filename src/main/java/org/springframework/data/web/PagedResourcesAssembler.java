@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ import static org.springframework.web.util.UriComponentsBuilder.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkTemplate;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
@@ -141,14 +143,28 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			foo(resources, page.previousPageable(), uri, Link.REL_PREVIOUS);
 		}
 
+		resources.add(new LinkTemplate(uri + pageableResolver.getPaginationTemplateVariables(getMethodParameter()),
+				Link.REL_SELF));
+
 		return resources;
 	}
 
 	private void foo(PagedResources<?> resources, Pageable pageable, String uri, String rel) {
 
 		UriComponentsBuilder builder = fromUriString(uri);
-		pageableResolver.enhance(builder, null, pageable);
+		pageableResolver.enhance(builder, getMethodParameter(), pageable);
 		resources.add(new Link(builder.build().toUriString(), rel));
+	}
+
+	/**
+	 * Return the {@link MethodParameter} to be used to potentially qualify the paging and sorting request parameters to.
+	 * Default implementations returns {@literal null}, which means the parameters will not be qualified.
+	 * 
+	 * @return
+	 * @since 1.7
+	 */
+	protected MethodParameter getMethodParameter() {
+		return null;
 	}
 
 	/**

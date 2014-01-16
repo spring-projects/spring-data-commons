@@ -19,7 +19,7 @@
 	<properties>
 		<jackson>1.9.7</jackson>
 		<jackson2>2.2.2</jackson2>
-		<springhateoas>0.8.0.RELEASE</springhateoas>
+		<springhateoas>0.9.0.BUILD-SNAPSHOT</springhateoas>
 		<dist.key>DATACMNS</dist.key>
 	</properties>
 	

@@ -16,6 +16,7 @@
                 <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
                 <dependency toName="Project|spring-data-commons::Layer|Repositories" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Java Beans" type="AllowedDependency"/>
+                <dependency toName="External|External::Subsystem|Logging" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Reflection" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Servlet API" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
