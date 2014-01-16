@@ -128,6 +128,18 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		assertRejectsAmbiguity("noMatchingQualifiers");
 	}
 
+	/**
+	 * @see DATACMNS-419
+	 */
+	@Test
+	public void doesNotFailForTemplatedMethodMapping() throws Exception {
+
+		Method method = Controller.class.getMethod("methodWithPathVariable", PagedResourcesAssembler.class);
+		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, null, null);
+
+		assertThat(result, is(notNullValue()));
+	}
+
 	private void assertSelectsParameter(Method method, int expectedIndex) throws Exception {
 
 		MethodParameter parameter = new MethodParameter(method, 0);

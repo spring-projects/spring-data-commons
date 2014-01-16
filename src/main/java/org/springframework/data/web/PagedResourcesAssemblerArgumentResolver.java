@@ -82,15 +82,29 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		Link linkToMethod = linkBuilderFactory.linkTo(parameter.getMethod(), new Object[0]).withSelfRel();
-		UriComponents fromUriString = UriComponentsBuilder.fromUriString(linkToMethod.getHref()).build();
-
+		UriComponents fromUriString = resolveBaseUri(parameter);
 		MethodParameter pageableParameter = findMatchingPageableParameter(parameter);
 
 		if (pageableParameter != null) {
 			return new MethodParameterAwarePagedResourcesAssembler<Object>(pageableParameter, resolver, fromUriString);
 		} else {
 			return new PagedResourcesAssembler<Object>(resolver, fromUriString);
+		}
+	}
+
+	/**
+	 * Eagerly resolve a base URI for the given {@link MethodParameter} to be handed to the assembler.
+	 * 
+	 * @param parameter must not be {@literal null}.
+	 * @return the {@link UriComponents} representing the base URI, or {@literal null} if it can't be resolved eagerly.
+	 */
+	private UriComponents resolveBaseUri(MethodParameter parameter) {
+
+		try {
+			Link linkToMethod = linkBuilderFactory.linkTo(parameter.getMethod(), new Object[0]).withSelfRel();
+			return UriComponentsBuilder.fromUriString(linkToMethod.getHref()).build();
+		} catch (IllegalArgumentException o_O) {
+			return null;
 		}
 	}
 
