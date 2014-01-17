@@ -24,6 +24,7 @@ import java.net.URI;
 import org.junit.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -57,8 +58,10 @@ public class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandl
 	@Test
 	public void returnCorrectTemplateVariables() {
 
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/").build();
+
 		HateoasSortHandlerMethodArgumentResolver resolver = new HateoasSortHandlerMethodArgumentResolver();
-		assertThat(resolver.getSortTemplateVariables(null), is("{?sort}"));
+		assertThat(resolver.getSortTemplateVariables(null, uriComponents), is("{?sort}"));
 	}
 
 	private void assertUriStringFor(Sort sort, String expected) throws Exception {

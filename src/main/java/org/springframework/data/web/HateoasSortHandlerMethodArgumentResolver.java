@@ -21,6 +21,8 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.util.Assert;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -42,8 +44,12 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 	 * @return
 	 * @since 1.7
 	 */
-	public String getSortTemplateVariables(MethodParameter parameter) {
-		return String.format("{?%s}", getSortParameter(parameter));
+	public String getSortTemplateVariables(MethodParameter parameter, UriComponents template) {
+
+		String sortParameter = getSortParameter(parameter);
+		MultiValueMap<String, String> queryParameters = template.getQueryParams();
+
+		return queryParameters.containsKey(sortParameter) ? "" : String.format("{?%s}", sortParameter);
 	}
 
 	/*

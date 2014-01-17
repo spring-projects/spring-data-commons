@@ -15,10 +15,17 @@
  */
 package org.springframework.data.web;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.mvc.UriComponentsContributor;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -83,13 +90,40 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 	 * @return
 	 * @since 1.7
 	 */
-	public String getPaginationTemplateVariables(MethodParameter parameter) {
+	public String getPaginationTemplateVariables(MethodParameter parameter, UriComponents template) {
 
 		String pagePropertyName = getParameterNameToUse(getPageParameterName(), parameter);
 		String sizePropertyName = getParameterNameToUse(getSizeParameterName(), parameter);
 
-		String sortTemplateVariables = sortResolver.getSortTemplateVariables(parameter);
-		return String.format("{?%s,%s}{&%s", pagePropertyName, sizePropertyName, sortTemplateVariables.substring(2));
+		List<String> names = new ArrayList<String>();
+		MultiValueMap<String, String> queryParameters = template.getQueryParams();
+		boolean existingFound = false;
+
+		for (String propertyName : Arrays.asList(pagePropertyName, sizePropertyName)) {
+
+			if (!queryParameters.containsKey(propertyName)) {
+				names.add(propertyName);
+			} else {
+				existingFound = true;
+			}
+		}
+
+		String sortTemplateVariables = sortResolver.getSortTemplateVariables(parameter, template);
+
+		if (StringUtils.hasText(sortTemplateVariables)) {
+			names.add(sortTemplateVariables.substring(2, sortTemplateVariables.length() - 1));
+		}
+
+		if (names.isEmpty()) {
+			return "";
+		}
+
+		StringBuilder builder = new StringBuilder();
+		builder.append(existingFound ? "{&" : "{?");
+		builder.append(StringUtils.collectionToCommaDelimitedString(names));
+		builder.append("}");
+
+		return builder.toString();
 	}
 
 	/*

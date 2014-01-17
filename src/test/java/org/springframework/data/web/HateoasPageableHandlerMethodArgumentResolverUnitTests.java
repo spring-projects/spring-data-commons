@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -80,13 +81,28 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 	 * @see DATACMNS-418
 	 */
 	@Test
-	public void returnCorrectTemplateVariables() {
+	public void appendsTemplateVariablesCorrectly() {
+
+		assertTemplateEnrichment("/foo", "{?page,size,sort}");
+		assertTemplateEnrichment("/foo?page=1", "{&size,sort}");
+		assertTemplateEnrichment("/foo?page=1&size=10", "{&sort}");
+		assertTemplateEnrichment("/foo?page=1&sort=foo,asc", "{&size}");
+		assertTemplateEnrichment("/foo?page=1&size=10&sort=foo,asc", "");
+	}
+
+	/**
+	 * @see DATACMNS-418
+	 */
+	@Test
+	public void returnsCustomizedTemplateVariables() {
+
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/foo").build();
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
-		assertThat(resolver.getPaginationTemplateVariables(null), is("{?page,size}{&sort}"));
-
 		resolver.setPageParameterName("foo");
-		assertThat(resolver.getPaginationTemplateVariables(null), is("{?foo,size}{&sort}"));
+		String variables = resolver.getPaginationTemplateVariables(null, uriComponents);
+
+		assertThat(variables, is("{?foo,size,sort}"));
 	}
 
 	@Override
@@ -105,5 +121,13 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		getResolver().enhance(builder, parameter, pageable);
 
 		assertThat(builder.build().toUriString(), endsWith(expected));
+	}
+
+	private void assertTemplateEnrichment(String baseUri, String expected) {
+
+		UriComponents uriComponents = UriComponentsBuilder.fromUriString(baseUri).build();
+
+		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
+		assertThat(resolver.getPaginationTemplateVariables(null, uriComponents), is(expected));
 	}
 }

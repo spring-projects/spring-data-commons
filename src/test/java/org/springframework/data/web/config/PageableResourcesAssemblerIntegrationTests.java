@@ -76,6 +76,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS), is(notNullValue()));
 		assertThat(resources.getLink(Link.REL_NEXT), is(notNullValue()));
+		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
 	}
 
 	@Controller

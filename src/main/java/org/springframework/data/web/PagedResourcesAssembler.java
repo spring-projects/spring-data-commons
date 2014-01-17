@@ -143,8 +143,9 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			foo(resources, page.previousPageable(), uri, Link.REL_PREVIOUS);
 		}
 
-		resources.add(new LinkTemplate(uri + pageableResolver.getPaginationTemplateVariables(getMethodParameter()),
-				Link.REL_SELF));
+		UriComponents uriComponents = UriComponentsBuilder.fromUriString(uri).build();
+		resources.add(new LinkTemplate(uri
+				+ pageableResolver.getPaginationTemplateVariables(getMethodParameter(), uriComponents), Link.REL_SELF));
 
 		return resources;
 	}
