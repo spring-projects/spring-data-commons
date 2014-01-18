@@ -17,13 +17,9 @@ package org.springframework.data.repository.config;
 
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.parsing.ReaderContext;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -40,8 +36,6 @@ import org.w3c.dom.Element;
  * @author Oliver Gierke
  */
 public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryBeanDefinitionParser.class);
 
 	private final RepositoryConfigurationExtension extension;
 
@@ -65,14 +59,14 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 		try {
 
 			Environment environment = parser.getDelegate().getEnvironment();
+			ResourceLoader resourceLoader = parser.getReaderContext().getResourceLoader();
+
 			XmlRepositoryConfigurationSource configSource = new XmlRepositoryConfigurationSource(element, parser, environment);
+			RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, resourceLoader);
 
-			for (RepositoryConfiguration<XmlRepositoryConfigurationSource> config : extension.getRepositoryConfigurations(
-					configSource, parser.getReaderContext().getResourceLoader())) {
-				registerGenericRepositoryFactoryBean(config, parser);
+			for (BeanComponentDefinition definition : delegate.registerRepositoriesIn(parser.getRegistry(), extension)) {
+				parser.registerBeanComponent(definition);
 			}
-
-			extension.registerBeansForRoot(parser.getRegistry(), configSource);
 
 		} catch (RuntimeException e) {
 			handleError(e, element, parser.getReaderContext());
@@ -83,47 +77,6 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 
 	private void handleError(Exception e, Element source, ReaderContext reader) {
 		reader.error(e.getMessage(), reader.extractSource(source), e);
-	}
-
-	/**
-	 * Registers a generic repository factory bean for a bean with the given name and the provided configuration context.
-	 * 
-	 * @param parser
-	 * @param name
-	 * @param context
-	 */
-	private void registerGenericRepositoryFactoryBean(
-			RepositoryConfiguration<XmlRepositoryConfigurationSource> configuration, ParserContext parser) {
-
-		ResourceLoader resourceLoader = parser.getReaderContext().getResourceLoader();
-		BeanDefinitionRegistry registry = parser.getRegistry();
-
-		RepositoryBeanDefinitionBuilder definitionBuilder = new RepositoryBeanDefinitionBuilder(registry, extension,
-				resourceLoader);
-
-		try {
-
-			BeanDefinitionBuilder builder = definitionBuilder.build(configuration);
-			extension.postProcess(builder, configuration.getConfigurationSource());
-
-			AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
-			beanDefinition.setSource(configuration.getSource());
-
-			RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
-			generator.setBeanClassLoader(parser.getReaderContext().getBeanClassLoader());
-
-			String beanName = generator.generateBeanName(beanDefinition, registry);
-
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Registering repository: " + beanName + " - Interface: " + configuration.getRepositoryInterface()
-						+ " - Factory: " + extension.getRepositoryFactoryClassName());
-			}
-
-			BeanComponentDefinition definition = new BeanComponentDefinition(beanDefinition, beanName);
-			parser.registerBeanComponent(definition);
-		} catch (RuntimeException e) {
-			handleError(e, configuration.getConfigurationSource().getElement(), parser.getReaderContext());
-		}
 	}
 
 	/**

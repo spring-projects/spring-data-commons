@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -86,6 +87,10 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	}
 
 	static class DummyRegistrar extends RepositoryBeanDefinitionRegistrarSupport {
+
+		DummyRegistrar() {
+			setResourceLoader(new DefaultResourceLoader());
+		}
 
 		/* 
 		 * (non-Javadoc)
