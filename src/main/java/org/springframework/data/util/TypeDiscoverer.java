@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -308,7 +308,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public TypeInformation<?> getMapValueType() {
 
 		if (isMap()) {
-			return getTypeArgument(getType(), Map.class, 1);
+			return getTypeArgument(Map.class, 1);
 		}
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
@@ -348,11 +348,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		if (isMap()) {
-			return getTypeArgument(rawType, Map.class, 0);
+			return getTypeArgument(Map.class, 0);
 		}
 
 		if (Iterable.class.isAssignableFrom(rawType)) {
-			return getTypeArgument(rawType, Iterable.class, 0);
+			return getTypeArgument(Iterable.class, 0);
 		}
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
@@ -448,9 +448,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return target.getSuperTypeInformation(getType()).equals(this);
 	}
 
-	private TypeInformation<?> getTypeArgument(Class<?> type, Class<?> bound, int index) {
-		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(type, bound);
-		return arguments == null ? null : createInfo(arguments[index]);
+	private TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
+
+		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
+
+		if (arguments == null) {
+			return getSuperTypeInformation(bound) instanceof ParameterizedTypeInformation ? ClassTypeInformation.OBJECT
+					: null;
+		}
+
+		return createInfo(arguments[index]);
 	}
 
 	/*
