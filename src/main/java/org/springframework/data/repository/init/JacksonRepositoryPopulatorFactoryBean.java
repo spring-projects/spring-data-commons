@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import org.springframework.beans.factory.FactoryBean;
 /**
  * {@link FactoryBean} to set up a {@link ResourceReaderRepositoryPopulator} with a {@link JacksonResourceReader}.
  * 
+ * @deprecated use {@link Jackson2RepositoryPopulatorFactoryBean} instead
  * @author Oliver Gierke
  */
+@Deprecated
 public class JacksonRepositoryPopulatorFactoryBean extends AbstractRepositoryPopulatorFactoryBean {
 
 	private ObjectMapper mapper;

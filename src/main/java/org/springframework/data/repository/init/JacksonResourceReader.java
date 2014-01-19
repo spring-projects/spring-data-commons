@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,10 @@ import org.springframework.util.ClassUtils;
 /**
  * A {@link ResourceReader} using Jackson to read JSON into objects.
  * 
+ * @deprecated use {@link Jackson2ResourceReader} instead.
  * @author Oliver Gierke
  */
+@Deprecated
 public class JacksonResourceReader implements ResourceReader {
 
 	private static final String DEFAULT_TYPE_KEY = "_class";
