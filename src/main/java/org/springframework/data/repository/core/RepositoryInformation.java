@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,13 +70,6 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	 * @return
 	 */
 	Iterable<Method> getQueryMethods();
-
-	/**
-	 * Returns {@link CrudMethods} meta information for the repository.
-	 * 
-	 * @return
-	 */
-	CrudMethods getCrudMethods();
 
 	/**
 	 * Returns the target class method that is backing the given method. This can be necessary if a repository interface

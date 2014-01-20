@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.CrudMethods;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.Assert;
 
 /**
- * Default implementation to discover CRUD methods based on a given {@link RepositoryInformation}. Will detect methods
+ * Default implementation to discover CRUD methods based on the given {@link RepositoryMetadata}. Will detect methods
  * exposed in {@link CrudRepository} but also hand crafted CRUD methods that are signature compatible with the ones on
  * {@link CrudRepository}.
  * 
@@ -53,18 +52,18 @@ class DefaultCrudMethods implements CrudMethods {
 	private final Method deleteMethod;
 
 	/**
-	 * Creates a new {@link DefaultCrudMethods} using the given {@link RepositoryInformation}.
+	 * Creates a new {@link DefaultCrudMethods} using the given {@link RepositoryMetadata}.
 	 * 
-	 * @param information must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
 	 */
-	public DefaultCrudMethods(RepositoryInformation information) {
+	public DefaultCrudMethods(RepositoryMetadata metadata) {
 
-		Assert.notNull(information, "RepositoryInformation must not be null!");
+		Assert.notNull(metadata, "RepositoryInformation must not be null!");
 
-		this.findOneMethod = selectMostSuitableFindOneMethod(information);
-		this.findAllMethod = selectMostSuitableFindAllMethod(information);
-		this.deleteMethod = selectMostSuitableDeleteMethod(information);
-		this.saveMethod = selectMostSuitableSaveMethod(information);
+		this.findOneMethod = selectMostSuitableFindOneMethod(metadata);
+		this.findAllMethod = selectMostSuitableFindAllMethod(metadata);
+		this.deleteMethod = selectMostSuitableDeleteMethod(metadata);
+		this.saveMethod = selectMostSuitableSaveMethod(metadata);
 	}
 
 	/**
@@ -74,16 +73,16 @@ class DefaultCrudMethods implements CrudMethods {
 	 * <li>an {@link Object} as first parameter</li>
 	 * </ol>
 	 * 
-	 * @param information must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
 	@SuppressWarnings("unchecked")
-	private Method selectMostSuitableSaveMethod(RepositoryInformation information) {
+	private Method selectMostSuitableSaveMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : Arrays.asList(information.getDomainType(), Object.class)) {
-			Method saveMethodCandidate = findMethod(information.getRepositoryInterface(), SAVE, type);
+		for (Class<?> type : Arrays.asList(metadata.getDomainType(), Object.class)) {
+			Method saveMethodCandidate = findMethod(metadata.getRepositoryInterface(), SAVE, type);
 			if (saveMethodCandidate != null) {
-				return getMostSpecificMethod(saveMethodCandidate, information.getRepositoryInterface());
+				return getMostSpecificMethod(saveMethodCandidate, metadata.getRepositoryInterface());
 			}
 		}
 
@@ -98,16 +97,16 @@ class DefaultCrudMethods implements CrudMethods {
 	 * <li>an {@link Iterable} as first parameter</li>
 	 * </ol>
 	 * 
-	 * @param information must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
 	@SuppressWarnings("unchecked")
-	private Method selectMostSuitableDeleteMethod(RepositoryInformation information) {
+	private Method selectMostSuitableDeleteMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : Arrays.asList(information.getIdType(), Serializable.class, Iterable.class)) {
-			Method candidate = findMethod(information.getRepositoryInterface(), DELETE, type);
+		for (Class<?> type : Arrays.asList(metadata.getIdType(), Serializable.class, Iterable.class)) {
+			Method candidate = findMethod(metadata.getRepositoryInterface(), DELETE, type);
 			if (candidate != null) {
-				return getMostSpecificMethod(candidate, information.getRepositoryInterface());
+				return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());
 			}
 		}
 
@@ -122,23 +121,23 @@ class DefaultCrudMethods implements CrudMethods {
 	 * <li>no parameters</li>
 	 * </ol>
 	 * 
-	 * @param information must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
 	@SuppressWarnings("unchecked")
-	private Method selectMostSuitableFindAllMethod(RepositoryInformation information) {
+	private Method selectMostSuitableFindAllMethod(RepositoryMetadata metadata) {
 
 		for (Class<?> type : Arrays.asList(Pageable.class, Sort.class)) {
-			if (hasMethod(information.getRepositoryInterface(), FIND_ALL, type)) {
+			if (hasMethod(metadata.getRepositoryInterface(), FIND_ALL, type)) {
 				Method candidate = findMethod(PagingAndSortingRepository.class, FIND_ALL, type);
 				if (candidate != null) {
-					return getMostSpecificMethod(candidate, information.getRepositoryInterface());
+					return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());
 				}
 			}
 		}
 
-		if (hasMethod(information.getRepositoryInterface(), FIND_ALL)) {
-			return getMostSpecificMethod(findMethod(CrudRepository.class, FIND_ALL), information.getRepositoryInterface());
+		if (hasMethod(metadata.getRepositoryInterface(), FIND_ALL)) {
+			return getMostSpecificMethod(findMethod(CrudRepository.class, FIND_ALL), metadata.getRepositoryInterface());
 		}
 
 		return null;
@@ -151,16 +150,16 @@ class DefaultCrudMethods implements CrudMethods {
 	 * <li>a {@link Serializable} as first parameter</li>
 	 * </ol>
 	 * 
-	 * @param information must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
 	@SuppressWarnings("unchecked")
-	private Method selectMostSuitableFindOneMethod(RepositoryInformation information) {
+	private Method selectMostSuitableFindOneMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : Arrays.asList(information.getIdType(), Serializable.class)) {
-			Method candidate = findMethod(information.getRepositoryInterface(), FIND_ONE, type);
+		for (Class<?> type : Arrays.asList(metadata.getIdType(), Serializable.class)) {
+			Method candidate = findMethod(metadata.getRepositoryInterface(), FIND_ONE, type);
 			if (candidate != null) {
-				return getMostSpecificMethod(candidate, information.getRepositoryInterface());
+				return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());
 			}
 		}
 

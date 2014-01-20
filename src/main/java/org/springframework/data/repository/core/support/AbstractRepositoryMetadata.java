@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -32,6 +35,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 	private final TypeInformation<?> typeInformation;
 	private final Class<?> repositoryInterface;
+	private CrudMethods crudMethods;
 
 	/**
 	 * Creates a new {@link AbstractRepositoryMetadata}.
@@ -65,5 +69,30 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 */
 	public Class<?> getRepositoryInterface() {
 		return this.repositoryInterface;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#getCrudMethods()
+	 */
+	@Override
+	public CrudMethods getCrudMethods() {
+
+		if (this.crudMethods == null) {
+			this.crudMethods = new DefaultCrudMethods(this);
+		}
+
+		return this.crudMethods;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#isPagingRepository()
+	 */
+	@Override
+	public boolean isPagingRepository() {
+
+		Method findAllMethod = getCrudMethods().getFindAllMethod();
+		return Arrays.asList(findAllMethod.getParameterTypes()).contains(Pageable.class);
 	}
 }
