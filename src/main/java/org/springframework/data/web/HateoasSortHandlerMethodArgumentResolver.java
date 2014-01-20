@@ -15,10 +15,15 @@
  */
 package org.springframework.data.web;
 
+import static org.springframework.hateoas.TemplateVariable.VariableType.*;
+
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.TemplateVariable.VariableType;
+import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
@@ -44,12 +49,19 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 	 * @return
 	 * @since 1.7
 	 */
-	public String getSortTemplateVariables(MethodParameter parameter, UriComponents template) {
+	public TemplateVariables getSortTemplateVariables(MethodParameter parameter, UriComponents template) {
 
 		String sortParameter = getSortParameter(parameter);
 		MultiValueMap<String, String> queryParameters = template.getQueryParams();
+		boolean append = !queryParameters.isEmpty();
 
-		return queryParameters.containsKey(sortParameter) ? "" : String.format("{?%s}", sortParameter);
+		if (queryParameters.containsKey(sortParameter)) {
+			return TemplateVariables.NONE;
+		}
+
+		String description = String.format("pagination.%s.description", sortParameter);
+		VariableType type = append ? REQUEST_PARAM_CONTINUED : REQUEST_PARAM;
+		return new TemplateVariables(new TemplateVariable(sortParameter, type, description));
 	}
 
 	/*

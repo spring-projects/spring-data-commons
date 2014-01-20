@@ -61,7 +61,7 @@ public class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandl
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/").build();
 
 		HateoasSortHandlerMethodArgumentResolver resolver = new HateoasSortHandlerMethodArgumentResolver();
-		assertThat(resolver.getSortTemplateVariables(null, uriComponents), is("{?sort}"));
+		assertThat(resolver.getSortTemplateVariables(null, uriComponents).toString(), is("{?sort}"));
 	}
 
 	private void assertUriStringFor(Sort sort, String expected) throws Exception {

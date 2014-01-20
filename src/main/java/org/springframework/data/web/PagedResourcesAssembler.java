@@ -29,6 +29,8 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.TemplateVariables;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
@@ -143,8 +145,8 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		}
 
 		UriComponents uriComponents = UriComponentsBuilder.fromUriString(uri).build();
-		resources.add(new Link(uri + pageableResolver.getPaginationTemplateVariables(getMethodParameter(), uriComponents),
-				Link.REL_SELF));
+		TemplateVariables variables = pageableResolver.getPaginationTemplateVariables(getMethodParameter(), uriComponents);
+		resources.add(new Link(new UriTemplate(uri, variables), Link.REL_SELF));
 
 		return resources;
 	}

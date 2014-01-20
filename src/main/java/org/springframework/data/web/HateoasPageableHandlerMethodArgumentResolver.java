@@ -15,6 +15,8 @@
  */
 package org.springframework.data.web;
 
+import static org.springframework.hateoas.TemplateVariable.VariableType.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,9 +24,11 @@ import java.util.List;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.TemplateVariable.VariableType;
+import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -90,40 +94,27 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 	 * @return
 	 * @since 1.7
 	 */
-	public String getPaginationTemplateVariables(MethodParameter parameter, UriComponents template) {
+	public TemplateVariables getPaginationTemplateVariables(MethodParameter parameter, UriComponents template) {
 
 		String pagePropertyName = getParameterNameToUse(getPageParameterName(), parameter);
 		String sizePropertyName = getParameterNameToUse(getSizeParameterName(), parameter);
 
-		List<String> names = new ArrayList<String>();
+		List<TemplateVariable> names = new ArrayList<TemplateVariable>();
 		MultiValueMap<String, String> queryParameters = template.getQueryParams();
-		boolean existingFound = false;
+		boolean append = !queryParameters.isEmpty();
 
 		for (String propertyName : Arrays.asList(pagePropertyName, sizePropertyName)) {
 
 			if (!queryParameters.containsKey(propertyName)) {
-				names.add(propertyName);
-			} else {
-				existingFound = true;
+
+				VariableType type = append ? REQUEST_PARAM_CONTINUED : REQUEST_PARAM;
+				String description = String.format("pagination.%s.description", propertyName);
+				names.add(new TemplateVariable(propertyName, type, description));
 			}
 		}
 
-		String sortTemplateVariables = sortResolver.getSortTemplateVariables(parameter, template);
-
-		if (StringUtils.hasText(sortTemplateVariables)) {
-			names.add(sortTemplateVariables.substring(2, sortTemplateVariables.length() - 1));
-		}
-
-		if (names.isEmpty()) {
-			return "";
-		}
-
-		StringBuilder builder = new StringBuilder();
-		builder.append(existingFound ? "{&" : "{?");
-		builder.append(StringUtils.collectionToCommaDelimitedString(names));
-		builder.append("}");
-
-		return builder.toString();
+		TemplateVariables pagingVariables = new TemplateVariables(names);
+		return pagingVariables.concat(sortResolver.getSortTemplateVariables(parameter, template));
 	}
 
 	/*

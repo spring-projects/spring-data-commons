@@ -84,6 +84,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 	public void appendsTemplateVariablesCorrectly() {
 
 		assertTemplateEnrichment("/foo", "{?page,size,sort}");
+		assertTemplateEnrichment("/foo?bar=1", "{&page,size,sort}");
 		assertTemplateEnrichment("/foo?page=1", "{&size,sort}");
 		assertTemplateEnrichment("/foo?page=1&size=10", "{&sort}");
 		assertTemplateEnrichment("/foo?page=1&sort=foo,asc", "{&size}");
@@ -100,7 +101,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setPageParameterName("foo");
-		String variables = resolver.getPaginationTemplateVariables(null, uriComponents);
+		String variables = resolver.getPaginationTemplateVariables(null, uriComponents).toString();
 
 		assertThat(variables, is("{?foo,size,sort}"));
 	}
@@ -128,6 +129,6 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		UriComponents uriComponents = UriComponentsBuilder.fromUriString(baseUri).build();
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
-		assertThat(resolver.getPaginationTemplateVariables(null, uriComponents), is(expected));
+		assertThat(resolver.getPaginationTemplateVariables(null, uriComponents).toString(), is(expected));
 	}
 }
