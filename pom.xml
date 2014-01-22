@@ -17,25 +17,10 @@
 	</parent>
 	
 	<properties>
-		<jackson>1.9.7</jackson>
-		<jackson2>2.2.2</jackson2>
+		<jackson1>1.9.7</jackson1>
 		<springhateoas>0.9.0.BUILD-SNAPSHOT</springhateoas>
 		<dist.key>DATACMNS</dist.key>
 	</properties>
-	
-	<profiles>
-		<profile>
-			<id>spring4</id>
-			<dependencies>
-				<dependency>
-					<groupId>javax.servlet</groupId>
-					<artifactId>javax.servlet-api</artifactId>
-					<version>3.0.1</version>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-	</profiles>
 	
 	<dependencies>
 		<dependency>
@@ -75,13 +60,13 @@
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
-			<version>${jackson}</version>
+			<version>${jackson1}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson2}</version>
+			<version>${jackson}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
