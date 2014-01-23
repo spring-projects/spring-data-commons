@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ public class PageRequest extends AbstractPageRequest {
 	 * Creates a new {@link PageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return the first
 	 * page.
 	 * 
-	 * @param size
-	 * @param page
+	 * @param page zero-based page index.
+	 * @param size the size of the page to be returned.
 	 */
 	public PageRequest(int page, int size) {
 		this(page, size, null);
@@ -43,10 +43,10 @@ public class PageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link PageRequest} with sort parameters applied.
 	 * 
-	 * @param page
-	 * @param size
-	 * @param direction
-	 * @param properties
+	 * @param page zero-based page index.
+	 * @param size the size of the page to be returned.
+	 * @param direction the direction of the {@link Sort} to be specified, can be {@literal null}.
+	 * @param properties the properties to sort by, must not be {@literal null} or empty.
 	 */
 	public PageRequest(int page, int size, Direction direction, String... properties) {
 		this(page, size, new Sort(direction, properties));
@@ -55,8 +55,8 @@ public class PageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link PageRequest} with sort parameters applied.
 	 * 
-	 * @param page
-	 * @param size
+	 * @param page zero-based page index.
+	 * @param size the size of the page to be returned.
 	 * @param sort can be {@literal null}.
 	 */
 	public PageRequest(int page, int size, Sort sort) {
