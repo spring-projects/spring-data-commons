@@ -55,6 +55,7 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS), is(nullValue()));
+		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
 		assertThat(resources.getLink(Link.REL_NEXT), is(notNullValue()));
 	}
 
@@ -65,6 +66,7 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS), is(notNullValue()));
+		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
 		assertThat(resources.getLink(Link.REL_NEXT), is(notNullValue()));
 	}
 
@@ -75,6 +77,7 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS), is(notNullValue()));
+		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
 		assertThat(resources.getLink(Link.REL_NEXT), is(nullValue()));
 	}
 
@@ -87,6 +90,7 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), startsWith(baseUri.toUriString()));
+		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
 		assertThat(resources.getLink(Link.REL_NEXT).getHref(), startsWith(baseUri.toUriString()));
 	}
 
@@ -99,6 +103,7 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1), link);
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), startsWith(link.getHref()));
+		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
 		assertThat(resources.getLink(Link.REL_NEXT).getHref(), startsWith(link.getHref()));
 	}
 
@@ -115,6 +120,31 @@ public class PagedResourcesAssemblerUnitTests {
 		Page<Person> page = new PageImpl<Person>(Collections.<Person> emptyList(), request, 0);
 
 		assembler.toResource(page);
+	}
+
+	/**
+	 * @see DATACMNS-418
+	 */
+	@Test
+	public void addsSelfLinkWithPaginationTemplateVariables() {
+
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
+		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
+
+		Link selfLink = resources.getLink(Link.REL_SELF);
+		assertThat(selfLink.getHref(), endsWith("{?page,size,sort}"));
+	}
+
+	/**
+	 * @see DATACMNS-418
+	 */
+	@Test
+	public void appendsMissingTemplateParametersToLink() {
+
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
+
+		Link link = new Link("/foo?page=0");
+		assertThat(assembler.appendPaginationParameterTemplates(link), is(new Link("/foo?page=0{&size,sort}")));
 	}
 
 	private static Page<Person> createPage(int index) {

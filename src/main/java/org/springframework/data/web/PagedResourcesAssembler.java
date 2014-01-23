@@ -113,6 +113,25 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		return createResource(page, assembler, link);
 	}
 
+	/**
+	 * Adds the pagination parameters for all parameters not already present in the given {@link Link}.
+	 * 
+	 * @param link must not be {@literal null}.
+	 * @return
+	 */
+	public Link appendPaginationParameterTemplates(Link link) {
+
+		Assert.notNull(link, "Link must not be null!");
+
+		String uri = link.getHref();
+		UriTemplate uriTemplate = new UriTemplate(uri);
+		UriComponents uriComponents = UriComponentsBuilder.fromUriString(uri).build();
+
+		TemplateVariables variables = pageableResolver.getPaginationTemplateVariables(getMethodParameter(), uriComponents);
+
+		return new Link(uriTemplate.with(variables), link.getRel());
+	}
+
 	private <S, R extends ResourceSupport> PagedResources<R> createResource(Page<S> page,
 			ResourceAssembler<S, R> assembler, Link link) {
 
@@ -144,9 +163,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			foo(resources, page.previousPageable(), uri, Link.REL_PREVIOUS);
 		}
 
-		UriComponents uriComponents = UriComponentsBuilder.fromUriString(uri).build();
-		TemplateVariables variables = pageableResolver.getPaginationTemplateVariables(getMethodParameter(), uriComponents);
-		resources.add(new Link(new UriTemplate(uri, variables), Link.REL_SELF));
+		resources.add(appendPaginationParameterTemplates(new Link(uri)));
 
 		return resources;
 	}
