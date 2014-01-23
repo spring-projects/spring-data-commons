@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 * Creates a new {@link Sort} instance.
 	 * 
 	 * @param direction defaults to {@linke Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
-	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings
+	 * @param properties must not be {@literal null}, empty or contain {@literal null} or empty strings.
 	 */
 	public Sort(Direction direction, String... properties) {
 		this(direction, properties == null ? new ArrayList<String>() : Arrays.asList(properties));
@@ -82,8 +82,8 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	/**
 	 * Creates a new {@link Sort} instance.
 	 * 
-	 * @param direction
-	 * @param properties
+	 * @param direction defaults to {@linke Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
+	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings.
 	 */
 	public Sort(Direction direction, List<String> properties) {
 
