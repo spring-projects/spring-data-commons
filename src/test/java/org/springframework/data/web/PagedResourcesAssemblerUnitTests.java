@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.junit.Before;
@@ -30,6 +31,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceAssembler;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -139,6 +142,24 @@ public class PagedResourcesAssemblerUnitTests {
 	 * @see DATACMNS-418
 	 */
 	@Test
+	public void invokesCustomElementResourceAssembler() {
+
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
+		PersonResourceAssembler personAssembler = new PersonResourceAssembler();
+
+		PagedResources<PersonResource> resources = assembler.toResource(createPage(0), personAssembler);
+
+		assertThat(resources.hasLink(Link.REL_SELF), is(true));
+		assertThat(resources.hasLink(Link.REL_NEXT), is(true));
+		Collection<PersonResource> content = resources.getContent();
+		assertThat(content, hasSize(1));
+		assertThat(content.iterator().next().name, is("Dave"));
+	}
+
+	/**
+	 * @see DATACMNS-418
+	 */
+	@Test
 	public void appendsMissingTemplateParametersToLink() {
 
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
@@ -150,10 +171,32 @@ public class PagedResourcesAssemblerUnitTests {
 	private static Page<Person> createPage(int index) {
 
 		AbstractPageRequest request = new PageRequest(index, 1);
-		return new PageImpl<Person>(Arrays.asList(new Person()), request, 3);
+
+		Person person = new Person();
+		person.name = "Dave";
+
+		return new PageImpl<Person>(Arrays.asList(person), request, 3);
 	}
 
 	static class Person {
+		String name;
+	}
 
+	static class PersonResource extends ResourceSupport {
+		String name;
+	}
+
+	static class PersonResourceAssembler implements ResourceAssembler<Person, PersonResource> {
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.hateoas.ResourceAssembler#toResource(java.lang.Object)
+		 */
+		@Override
+		public PersonResource toResource(Person entity) {
+			PersonResource resource = new PersonResource();
+			resource.name = entity.name;
+			return resource;
+		}
 	}
 }
