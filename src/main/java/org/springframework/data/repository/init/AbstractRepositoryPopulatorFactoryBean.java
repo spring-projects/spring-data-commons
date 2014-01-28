@@ -71,7 +71,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean extends
 	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#createInstance()
 	 */
 	@Override
-	protected ResourceReaderRepositoryPopulator createInstance() throws Exception {
+	protected ResourceReaderRepositoryPopulator createInstance() {
 
 		ResourceReaderRepositoryPopulator initializer = new ResourceReaderRepositoryPopulator(getResourceReader());
 		initializer.setResources(resources);

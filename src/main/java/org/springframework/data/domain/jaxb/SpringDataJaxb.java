@@ -57,10 +57,8 @@ public class SpringDataJaxb {
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class PageRequestDto {
 
-		@XmlAttribute
-		int page, size;
-		@XmlElement(name = "order", namespace = NAMESPACE)
-		List<OrderDto> orders = new ArrayList<OrderDto>();
+		@XmlAttribute int page, size;
+		@XmlElement(name = "order", namespace = NAMESPACE) List<OrderDto> orders = new ArrayList<OrderDto>();
 	}
 
 	/**
@@ -72,8 +70,7 @@ public class SpringDataJaxb {
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class SortDto {
 
-		@XmlElement(name = "order", namespace = SpringDataJaxb.NAMESPACE)
-		List<OrderDto> orders = new ArrayList<OrderDto>();
+		@XmlElement(name = "order", namespace = SpringDataJaxb.NAMESPACE) List<OrderDto> orders = new ArrayList<OrderDto>();
 	}
 
 	/**
@@ -85,10 +82,8 @@ public class SpringDataJaxb {
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class OrderDto {
 
-		@XmlAttribute
-		String property;
-		@XmlAttribute
-		Direction direction;
+		@XmlAttribute String property;
+		@XmlAttribute Direction direction;
 	}
 
 	/**
@@ -100,9 +95,7 @@ public class SpringDataJaxb {
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class PageDto extends ResourceSupport {
 
-		@XmlAnyElement
-		@XmlElementWrapper(name = "content")
-		List<Object> content;
+		@XmlAnyElement @XmlElementWrapper(name = "content") List<Object> content;
 	}
 
 	/**
@@ -113,7 +106,7 @@ public class SpringDataJaxb {
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T, S> List<T> unmarshal(Collection<S> source, XmlAdapter<S, T> adapter) throws Exception {
+	public static <T, S> List<T> unmarshal(Collection<S> source, XmlAdapter<S, T> adapter) {
 
 		Assert.notNull(adapter);
 
@@ -122,8 +115,13 @@ public class SpringDataJaxb {
 		}
 
 		List<T> result = new ArrayList<T>(source.size());
+
 		for (S element : source) {
-			result.add(adapter.unmarshal(element));
+			try {
+				result.add(adapter.unmarshal(element));
+			} catch (Exception o_O) {
+				throw new RuntimeException(o_O);
+			}
 		}
 		return result;
 	}
@@ -136,7 +134,7 @@ public class SpringDataJaxb {
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T, S> List<S> marshal(Iterable<T> source, XmlAdapter<S, T> adapter) throws Exception {
+	public static <T, S> List<S> marshal(Iterable<T> source, XmlAdapter<S, T> adapter) {
 
 		Assert.notNull(adapter);
 
@@ -145,9 +143,15 @@ public class SpringDataJaxb {
 		}
 
 		List<S> result = new ArrayList<S>();
+
 		for (T element : source) {
-			result.add(adapter.marshal(element));
+			try {
+				result.add(adapter.marshal(element));
+			} catch (Exception o_O) {
+				throw new RuntimeException(o_O);
+			}
 		}
+
 		return result;
 	}
 }

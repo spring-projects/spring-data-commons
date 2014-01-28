@@ -225,7 +225,7 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	 */
 	@Override
 	public Pageable resolveArgument(MethodParameter methodParameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
 
 		assertPageableUniqueness(methodParameter);
 

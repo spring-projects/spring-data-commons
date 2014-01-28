@@ -36,7 +36,7 @@ public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */
 	@Override
-	public PageDto marshal(Page<Object> source) throws Exception {
+	public PageDto marshal(Page<Object> source) {
 
 		if (source == null) {
 			return null;
@@ -54,7 +54,7 @@ public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */
 	@Override
-	public Page<Object> unmarshal(PageDto v) throws Exception {
+	public Page<Object> unmarshal(PageDto v) {
 		return null;
 	}
 

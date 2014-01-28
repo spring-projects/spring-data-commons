@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */
 	@Override
-	public PageRequestDto marshal(Pageable request) throws Exception {
+	public PageRequestDto marshal(Pageable request) {
 
 		SortDto sortDto = SortAdapter.INSTANCE.marshal(request.getSort());
 
@@ -55,7 +55,7 @@ class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */
 	@Override
-	public Pageable unmarshal(PageRequestDto v) throws Exception {
+	public Pageable unmarshal(PageRequestDto v) {
 
 		if (v.orders.isEmpty()) {
 			return new PageRequest(v.page, v.size);

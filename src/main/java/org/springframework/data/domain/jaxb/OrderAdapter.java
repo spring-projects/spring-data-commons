@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class OrderAdapter extends XmlAdapter<OrderDto, Order> {
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */
 	@Override
-	public OrderDto marshal(Order order) throws Exception {
+	public OrderDto marshal(Order order) {
 
 		if (order == null) {
 			return null;
@@ -51,7 +51,7 @@ public class OrderAdapter extends XmlAdapter<OrderDto, Order> {
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */
 	@Override
-	public Order unmarshal(OrderDto source) throws Exception {
+	public Order unmarshal(OrderDto source) {
 		return source == null ? null : new Order(source.direction, source.property);
 	}
 }

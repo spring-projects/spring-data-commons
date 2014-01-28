@@ -64,7 +64,7 @@ public class MappingInstantiationException extends RuntimeException {
 	private MappingInstantiationException(PersistentEntity<?, ?> entity, List<Object> arguments, String message,
 			Exception cause) {
 
-		super(buildExceptionMessage(entity, arguments, null), cause);
+		super(buildExceptionMessage(entity, arguments, message), cause);
 
 		this.entityType = entity == null ? null : entity.getType();
 		this.constructor = entity == null || entity.getPersistenceConstructor() == null ? null : entity
