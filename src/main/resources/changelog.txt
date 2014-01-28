@@ -1,8 +1,57 @@
 Spring Data Commons Changelog
 =============================
 
-Changes in version 1.7.0.M1 (2013-11-19)
+Changes in version 1.7.0.RC1 (2014-01-29)
+-----------------------------------------
+** Bug
+    * [DATACMNS-366] - PageableArgumentResolver does not support list of properties to sort on
+    * [DATACMNS-379] - SortHanderMethodArgumentResolver fails to resolve comma-only sort parameter
+    * [DATACMNS-407] - Incorrect prev and next links when using paging and sorting
+    * [DATACMNS-408] - Guard against invalid values when resolving pagination and sorting parameters from web requests
+    * [DATACMNS-412] - Exception 'java.lang.IllegalArgumentException: Not an managed type' upon a tomcat context reload
+    * [DATACMNS-415] - Performance improvements in configuration subsystem
+    * [DATACMNS-419] - PagedResourcesAssemblerArgumentResolver fails for methods with templated mappings
+    * [DATACMNS-429] - PageRequest constructor documentation parameter order incorrect.
+
+** Improvement
+    * [DATACMNS-402] - Add support for sorting by a QueryDSL OrderSpecifier.
+    * [DATACMNS-406] - Tighten contract for RepositoryMetadata implementations
+    * [DATACMNS-414] - Remove unnecessary generic type arguments in AuditingHandler
+    * [DATACMNS-416] - Provide means to eagerly enforce CDI repository beans
+    * [DATACMNS-418] - PagedResourcesAssembler should add self link to resources
+    * [DATACMNS-420] - Provide API to easily create repository bean definitions
+    * [DATACMNS-426] - ResourceMetadata should expose an isPagingRepository() method
+
+** Task
+    * [DATACMNS-417] - Add contribution guidelines
+    * [DATACMNS-421] - Clean up pom.xml after changes in Spring Data build
+    * [DATACMNS-422] - Mitigate semantic changes in Spring 4.0's GenericTypeResolver
+    * [DATACMNS-423] - Deprecate Jackson 1.x based repository initializers
+    * [DATACMNS-425] - Release Spring Data Commons 1.7.0.RC1
+    * [DATACMNS-430] - Use Jackson version properties from build parent
+    * [DATACMNS-431] - Code cleanups
+
+Changes in version 1.6.3.RELEASE (2013-12-11)
 ---------------------------------------------
+** Bug
+    * [DATACMNS-366] - PageableArgumentResolver does not support list of properties to sort on
+    * [DATACMNS-377] - All elements are returned if pageSize = 0
+    * [DATACMNS-379] - SortHanderMethodArgumentResolver fails to resolve comma-only sort parameter
+    * [DATACMNS-387] - Potential NullPointerExceptions in PartTree area
+    * [DATACMNS-390] - ConcurrentModificationException in MappingContextTypeInformationMapper.resolveTypeFrom
+    * [DATACMNS-393] - Improve CRUD Method detection in DefaultCrudMethods
+    * [DATACMNS-408] - Guard against invalid values when resolving pagination and sorting parameters from web requests
+
+** Improvement
+    * [DATACMNS-388] - Improve generics declaration in HateoasAwareSpringDataWebConfiguration
+    * [DATACMNS-406] - Tighten contract for RepositoryMetadata implementations
+
+** Task
+    * [DATACMNS-395] - RepositoryFactorySupport should cache RepositoryInformation instances
+    * [DATACMNS-409] - Release 1.6.3
+
+Changes in version 1.7.0.M1 (2013-11-19)
+----------------------------------------
 ** Bug
     * [DATACMNS-363] - Unicode characters not supported in property reference expressions
     * [DATACMNS-374] - NPE is thrown when populating the repository
