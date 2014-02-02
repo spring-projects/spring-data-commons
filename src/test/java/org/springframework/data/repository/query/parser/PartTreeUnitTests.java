@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,6 +41,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * @author Oliver Gierke
  * @author Phillip Webb
  * @author Thomas Darimont
+ * @author Martin Baumgartner
  */
 public class PartTreeUnitTests {
 
@@ -294,6 +295,22 @@ public class PartTreeUnitTests {
 	@Test
 	public void parsesBeforeKeywordCorrectly() {
 		assertType(Arrays.asList("birthdayBefore", "birthdayIsBefore"), Type.BEFORE, "birthday");
+	}
+	
+	/**
+	 * @see DATACMNS-433
+	 */
+	@Test
+	public void parsesLikeKeywordCorrectly() {
+		assertType(asList("activeLike", "activeIsLike"), LIKE, "active");
+	}
+	
+	/**
+	 * @see DATACMNS-433
+	 */
+	@Test
+	public void parsesNotLikeKeywordCorrectly() {
+		assertType(asList("activeNotLike", "activeIsNotLike"), NOT_LIKE, "active");
 	}
 
 	/**
