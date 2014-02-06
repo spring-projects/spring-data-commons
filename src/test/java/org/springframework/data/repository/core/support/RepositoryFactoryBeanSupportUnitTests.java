@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ import static org.mockito.Mockito.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link RepositoryFactoryBeanSupport}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class RepositoryFactoryBeanSupportUnitTests {
 
@@ -37,7 +39,7 @@ public class RepositoryFactoryBeanSupportUnitTests {
 	 * @see DATACMNS-341
 	 */
 	@Test
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void setsConfiguredClassLoaderOnRepositoryFactory() {
 
 		ClassLoader classLoader = mock(ClassLoader.class);
@@ -45,12 +47,16 @@ public class RepositoryFactoryBeanSupportUnitTests {
 		RepositoryFactoryBeanSupport factoryBean = new DummyRepositoryFactoryBean();
 		factoryBean.setBeanClassLoader(classLoader);
 		factoryBean.setLazyInit(true);
+		factoryBean.setRepositoryInterface(CrudRepository.class);
 		factoryBean.afterPropertiesSet();
 
 		Object factory = ReflectionTestUtils.getField(factoryBean, "factory");
 		assertThat(ReflectionTestUtils.getField(factory, "classLoader"), is((Object) classLoader));
 	}
 
+	/**
+	 * @see DATACMNS-432
+	 */
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void initializationFailsWithMissingRepositoryInterface() {
