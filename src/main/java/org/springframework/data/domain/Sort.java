@@ -375,6 +375,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 
 			result = 31 * result + direction.hashCode();
 			result = 31 * result + property.hashCode();
+			result = 31 * result + (ignoreCase ? 1 : 0);
 
 			return result;
 		}
@@ -396,7 +397,8 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 
 			Order that = (Order) obj;
 
-			return this.direction.equals(that.direction) && this.property.equals(that.property);
+			return this.direction.equals(that.direction) && this.property.equals(that.property)
+					&& this.ignoreCase == that.ignoreCase;
 		}
 
 		/*
@@ -405,7 +407,9 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 */
 		@Override
 		public String toString() {
-			return String.format("%s: %s", property, direction);
+
+			String result = String.format("%s: %s", property, direction);
+			return ignoreCase ? result.concat(", ignoring case") : result;
 		}
 	}
 }
