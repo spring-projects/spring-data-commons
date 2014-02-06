@@ -117,4 +117,17 @@ public class SortUnitTests {
 	public void orderDoesNotIgnoreCaseByDefault() {
 		assertThat(new Order(Direction.ASC, "foo").isIgnoreCase(), is(false));
 	}
+
+	/**
+	 * @see DATACMNS-436
+	 */
+	@Test
+	public void ordersWithDifferentIgnoreCaseDoNotEqual() {
+
+		Order foo = new Order("foo");
+		Order fooIgnoreCase = new Order("foo").ignoreCase();
+
+		assertThat(foo, is(not(fooIgnoreCase)));
+		assertThat(foo.hashCode(), is(not(fooIgnoreCase.hashCode())));
+	}
 }
