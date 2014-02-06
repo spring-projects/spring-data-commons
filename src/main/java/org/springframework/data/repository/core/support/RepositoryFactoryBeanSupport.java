@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  * 
  * @param <T> the type of the repository
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable> implements
 		InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware {
@@ -52,6 +53,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private NamedQueries namedQueries;
 	private MappingContext<?, ?> mappingContext;
 	private ClassLoader classLoader;
+
+	private RepositoryMetadata repositoryMetadata;
 
 	/**
 	 * Setter to inject the repository interface to implement.
@@ -118,7 +121,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
 
-		RepositoryMetadata repositoryMetadata = factory.getRepositoryMetadata(repositoryInterface);
 		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainType());
 	}
 
@@ -128,9 +130,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public RepositoryInformation getRepositoryInformation() {
 
-		RepositoryMetadata metadata = factory.getRepositoryMetadata(repositoryInterface);
-		return this.factory.getRepositoryInformation(metadata,
-				customImplementation == null ? null : customImplementation.getClass());
+		return this.factory.getRepositoryInformation(repositoryMetadata, customImplementation == null ? null
+				: customImplementation.getClass());
 	}
 
 	/* 
@@ -143,8 +144,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 			return null;
 		}
 
-		RepositoryMetadata metadata = factory.getRepositoryMetadata(repositoryInterface);
-		return mappingContext.getPersistentEntity(metadata.getDomainType());
+		return mappingContext.getPersistentEntity(repositoryMetadata.getDomainType());
 	}
 
 	/* (non-Javadoc)
@@ -185,10 +185,14 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public void afterPropertiesSet() {
 
+		Assert.notNull(repositoryInterface, "Repository interface must not be null on initialization!");
+
 		this.factory = createRepositoryFactory();
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
 		this.factory.setBeanClassLoader(classLoader);
+
+		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
 	}
 
 	/**
