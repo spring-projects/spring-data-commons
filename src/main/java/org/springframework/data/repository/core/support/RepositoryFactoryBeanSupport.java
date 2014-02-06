@@ -56,6 +56,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 	private T repository;
 
+	private RepositoryMetadata repositoryMetadata;
+
 	/**
 	 * Setter to inject the repository interface to implement.
 	 * 
@@ -130,7 +132,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
 
-		RepositoryMetadata repositoryMetadata = factory.getRepositoryMetadata(repositoryInterface);
 		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainType());
 	}
 
@@ -140,9 +141,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public RepositoryInformation getRepositoryInformation() {
 
-		RepositoryMetadata metadata = factory.getRepositoryMetadata(repositoryInterface);
-		return this.factory.getRepositoryInformation(metadata,
-				customImplementation == null ? null : customImplementation.getClass());
+		return this.factory.getRepositoryInformation(repositoryMetadata, customImplementation == null ? null
+				: customImplementation.getClass());
 	}
 
 	/* 
@@ -155,8 +155,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 			return null;
 		}
 
-		RepositoryMetadata metadata = factory.getRepositoryMetadata(repositoryInterface);
-		return mappingContext.getPersistentEntity(metadata.getDomainType());
+		return mappingContext.getPersistentEntity(repositoryMetadata.getDomainType());
 	}
 
 	/* (non-Javadoc)
@@ -197,10 +196,14 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public void afterPropertiesSet() {
 
+		Assert.notNull(repositoryInterface, "Repository interface must not be null on initialization!");
+
 		this.factory = createRepositoryFactory();
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
 		this.factory.setBeanClassLoader(classLoader);
+
+		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
 
 		if (!lazyInit) {
 			initAndReturn();

@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -45,6 +46,7 @@ public class RepositoryFactoryBeanSupportUnitTests {
 		RepositoryFactoryBeanSupport factoryBean = new DummyRepositoryFactoryBean();
 		factoryBean.setBeanClassLoader(classLoader);
 		factoryBean.setLazyInit(true);
+		factoryBean.setRepositoryInterface(CrudRepository.class);
 		factoryBean.afterPropertiesSet();
 
 		Object factory = ReflectionTestUtils.getField(factoryBean, "factory");
