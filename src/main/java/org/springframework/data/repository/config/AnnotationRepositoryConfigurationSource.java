@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,18 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AspectJTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -53,6 +57,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	private final AnnotationMetadata metadata;
 	private final AnnotationAttributes attributes;
+	private final ResourceLoader resourceLoader;
 
 	/**
 	 * Creates a new {@link AnnotationRepositoryConfigurationSource} from the given {@link AnnotationMetadata} and
@@ -60,18 +65,21 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * 
 	 * @param metadata must not be {@literal null}.
 	 * @param annotation must not be {@literal null}.
+	 * @param resourceLoader must not be {@literal null}.
 	 * @param environment
 	 */
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
-			Environment environment) {
+			ResourceLoader resourceLoader, Environment environment) {
 
 		super(environment);
 
 		Assert.notNull(metadata);
 		Assert.notNull(annotation);
+		Assert.notNull(resourceLoader);
 
 		this.attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(annotation.getName()));
 		this.metadata = metadata;
+		this.resourceLoader = resourceLoader;
 	}
 
 	/*
@@ -198,6 +206,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @return
 	 */
 	private List<TypeFilter> typeFiltersFor(AnnotationAttributes filterAttributes) {
+
 		List<TypeFilter> typeFilters = new ArrayList<TypeFilter>();
 		FilterType filterType = filterAttributes.getEnum("type");
 
@@ -219,9 +228,23 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 					typeFilters.add(BeanUtils.instantiateClass(filterClass, TypeFilter.class));
 					break;
 				default:
-					throw new IllegalArgumentException("unknown filter type " + filterType);
+					throw new IllegalArgumentException("Unknown filter type " + filterType);
 			}
 		}
+
+		for (String expression : getPatterns(filterAttributes)) {
+
+			String rawName = filterType.toString();
+
+			if ("REGEX".equals(rawName)) {
+				typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(expression)));
+			} else if ("ASPECTJ".equals(rawName)) {
+				typeFilters.add(new AspectJTypeFilter(expression, this.resourceLoader.getClassLoader()));
+			} else {
+				throw new IllegalArgumentException("Unknown filter type " + filterType);
+			}
+		}
+
 		return typeFilters;
 	}
 
@@ -232,5 +255,21 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	@Override
 	public boolean shouldConsiderNestedRepositories() {
 		return attributes.containsKey(CONSIDER_NESTED_REPOSITORIES) && attributes.getBoolean(CONSIDER_NESTED_REPOSITORIES);
+	}
+
+	/**
+	 * Safely reads the {@code pattern} attribute from the given {@link AnnotationAttributes} and returns an empty list if
+	 * the attribute is not present.
+	 * 
+	 * @param filterAttributes must not be {@literal null}.
+	 * @return
+	 */
+	private String[] getPatterns(AnnotationAttributes filterAttributes) {
+
+		try {
+			return filterAttributes.getStringArray("pattern");
+		} catch (IllegalArgumentException o_O) {
+			return new String[0];
+		}
 	}
 }
