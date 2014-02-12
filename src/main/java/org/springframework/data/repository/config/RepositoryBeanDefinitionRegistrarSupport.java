@@ -88,7 +88,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 		defaultExternalResources(registry);
 
 		AnnotationRepositoryConfigurationSource configuration = new AnnotationRepositoryConfigurationSource(
-				annotationMetadata, getAnnotation(), environment);
+				annotationMetadata, getAnnotation(), resourceLoader, environment);
 
 		RepositoryConfigurationExtension extension = getExtension();
 		extension.registerBeansForRoot(registry, configuration);

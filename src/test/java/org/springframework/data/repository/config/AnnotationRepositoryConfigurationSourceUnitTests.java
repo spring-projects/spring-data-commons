@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 
@@ -37,13 +38,16 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	RepositoryConfigurationSource source;
 	Environment environment;
+	ResourceLoader resourceLoader;
 
 	@Before
 	public void setUp() {
 
 		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 		environment = new StandardEnvironment();
-		source = new AnnotationRepositoryConfigurationSource(annotationMetadata, EnableRepositories.class, environment);
+		resourceLoader = new DefaultResourceLoader();
+		source = new AnnotationRepositoryConfigurationSource(annotationMetadata, EnableRepositories.class, resourceLoader,
+				environment);
 	}
 
 	@Test
@@ -65,8 +69,8 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	public void defaultsToPackageOfAnnotatedClass() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(DefaultConfiguration.class);
-		RepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
-				EnableRepositories.class, environment);
+		AnnotationRepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
+				EnableRepositories.class, resourceLoader, environment);
 
 		Iterable<String> packages = source.getBasePackages();
 		assertThat(packages, hasItem(DefaultConfiguration.class.getPackage().getName()));
@@ -76,8 +80,8 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	public void returnsConfiguredBasePackage() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(DefaultConfigurationWithBasePackage.class);
-		RepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
-				EnableRepositories.class, environment);
+		AnnotationRepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
+				EnableRepositories.class, resourceLoader, environment);
 
 		Iterable<String> packages = source.getBasePackages();
 		assertThat(packages, hasItem("foo"));
