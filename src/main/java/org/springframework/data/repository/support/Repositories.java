@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -82,19 +81,16 @@ public class Repositories implements Iterable<Class<?>> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void populateRepositoryFactoryInformation(ListableBeanFactory factory) {
 
-		Set<Map.Entry<String, RepositoryFactoryInformation>> repositoryFactoryBeans = BeanFactoryUtils
-				.beansOfTypeIncludingAncestors(factory, RepositoryFactoryInformation.class).entrySet();
+		for (String name : BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory, RepositoryFactoryInformation.class,
+				false, false)) {
 
-		for (Map.Entry<String, RepositoryFactoryInformation> entry : repositoryFactoryBeans) {
-
-			String beanName = entry.getKey();
-
-			RepositoryFactoryInformation repositoryFactoryInformation = entry.getValue();
+			RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.getBean(name,
+					RepositoryFactoryInformation.class);
 			Class<?> userDomainType = ClassUtils.getUserClass(repositoryFactoryInformation.getRepositoryInformation()
 					.getDomainType());
 
 			this.repositoryFactoryInfos.put(userDomainType, repositoryFactoryInformation);
-			this.repositoryBeanNames.put(userDomainType, BeanFactoryUtils.transformedBeanName(beanName));
+			this.repositoryBeanNames.put(userDomainType, BeanFactoryUtils.transformedBeanName(name));
 		}
 	}
 
