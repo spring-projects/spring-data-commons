@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 
 import org.junit.Test;
 import org.springframework.data.mapping.Person;
@@ -295,6 +296,26 @@ public class ClassTypeInformationUnitTests {
 		assertThat(from(MyIterable.class).getComponentType(), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-440
+	 */
+	@Test
+	public void detectsSpecialMapAsMapValueType() {
+
+		TypeInformation<SuperGenerics> information = ClassTypeInformation.from(SuperGenerics.class);
+
+		TypeInformation<?> propertyInformation = information.getProperty("seriously");
+		assertThat(propertyInformation.getType(), is((Object) SortedMap.class));
+
+		TypeInformation<?> mapValueType = propertyInformation.getMapValueType();
+		assertThat(mapValueType.getType(), is((Object) SortedMap.class));
+		assertThat(mapValueType.getComponentType().getType(), is((Object) String.class));
+
+		TypeInformation<?> nestedValueType = mapValueType.getMapValueType();
+		assertThat(nestedValueType.getType(), is((Object) List.class));
+		assertThat(nestedValueType.getComponentType().getType(), is((Object) Person.class));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -424,4 +445,9 @@ public class ClassTypeInformationUnitTests {
 	interface MyRawIterable extends Iterable {}
 
 	interface MyIterable<T> extends Iterable<T> {}
+
+	static class SuperGenerics {
+
+		SortedMap<String, ? extends SortedMap<String, List<Person>>> seriously;
+	}
 }
