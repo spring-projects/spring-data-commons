@@ -56,9 +56,13 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	@SuppressWarnings("deprecation")
 	public TypeInformation<?> getMapValueType() {
 
-		if (Map.class.equals(getType())) {
+		if (Map.class.isAssignableFrom(getType())) {
+
 			Type[] arguments = type.getActualTypeArguments();
-			return createInfo(arguments[1]);
+
+			if (arguments.length > 1) {
+				return createInfo(arguments[1]);
+			}
 		}
 
 		Class<?> rawType = getType();
