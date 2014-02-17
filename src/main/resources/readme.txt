@@ -1,5 +1,5 @@
-SPRING DATA Commons 1.6.3 (Dec 11th 2013)
------------------------------------------
+Spring Data Commons 1.6.4 (Feb 17th, 2014)
+------------------------------------------
 
 Spring Data Commons is released under the terms of the Apache Software License Version 2.0 (see license.txt).
 
