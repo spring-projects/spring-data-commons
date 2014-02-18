@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * Unit tests for {@link DefaultRepositoryInformation}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryInformationUnitTests {
@@ -208,6 +209,20 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getTargetClassMethod(method), is(reference));
 	}
 
+	/**
+	 * @see DATACMNS-441
+	 */
+	@Test
+	public void getQueryShouldNotReturnAnyBridgeMethods() {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomDefaultRepositoryMethodsRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+
+		for (Method method : information.getQueryMethods()) {
+			assertFalse(method.isBridge());
+		}
+	}
+
 	private Method getMethodFrom(Class<?> type, String name) {
 		for (Method method : type.getMethods()) {
 			if (method.getName().equals(name)) {
@@ -299,4 +314,10 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	interface BossRepository extends CrudRepository<Boss, Long> {}
+
+	interface CustomDefaultRepositoryMethodsRepository extends CrudRepository<User, Integer> {
+
+		@MyQuery
+		List<User> findAll();
+	}
 }
