@@ -38,11 +38,9 @@ import org.springframework.data.mapping.PersistentProperty;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<T>> {
 
-	@Mock
-	T first, second;
+	@Mock T first, second;
 
-	@Mock
-	Converter<T, String> converter;
+	@Mock Converter<T, String> converter;
 
 	PersistentPropertyPath<T> oneLeg;
 	PersistentPropertyPath<T> twoLegs;
@@ -121,4 +119,39 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 		assertThat(oneLeg.getLength(), is(1));
 		assertThat(twoLegs.getLength(), is(2));
 	}
+
+	/**
+	 * @see DATACMNS-444
+	 */
+	@Test
+	public void skipsMappedPropertyNameIfConverterReturnsNull() {
+
+		String result = twoLegs.toDotPath(new Converter<T, String>() {
+
+			@Override
+			public String convert(T source) {
+				return null;
+			}
+		});
+
+		assertThat(result, is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-444
+	 */
+	@Test
+	public void skipsMappedPropertyNameIfConverterReturnsEmptyStrings() {
+
+		String result = twoLegs.toDotPath(new Converter<T, String>() {
+
+			@Override
+			public String convert(T source) {
+				return "";
+			}
+		});
+
+		assertThat(result, is(nullValue()));
+	}
+
 }

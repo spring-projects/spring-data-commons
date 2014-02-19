@@ -93,10 +93,15 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		List<String> result = new ArrayList<String>();
 
 		for (T property : properties) {
-			result.add(converterToUse.convert(property));
+
+			String convert = converterToUse.convert(property);
+
+			if (StringUtils.hasText(convert)) {
+				result.add(convert);
+			}
 		}
 
-		return StringUtils.collectionToDelimitedString(result, delimiterToUse);
+		return result.isEmpty() ? null : StringUtils.collectionToDelimitedString(result, delimiterToUse);
 	}
 
 	/* 
