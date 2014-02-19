@@ -2,7 +2,7 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <chapter id="repositories">
-  <title>Working with Spring Data Repositories</title>
+  <title>lWorking with Spring Data Repositories</title>
 
   <para>The goal of Spring Data repository abstraction is to significantly
   reduce the amount of boilerplate code required to implement data access
@@ -216,23 +216,21 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20));</programlis
         <interfacename>PagingAndSortingRepository</interfacename>.
         Alternatively, if you do not want to extend Spring Data interfaces,
         you can also annotate your repository interface with
-        <interfacename>@RepositoryDefinition</interfacename>.<!--BT Preceding, where is an example of annotating with @RepositoryDefinition? If preceding is an alternative to 
-what you do in first sentence, I would move it after the info about extending Repository, CrudRep, etc.
-
-OG I'd like to keep it at this point as we're discussing here what is needed to let an interface be discovered 
-as Spring Data repository. Beyond that, there's not much more to tell about the annotation, so that mentioning
-it later on would create a high noise/effect ratio. What do you think?-->
-        Extending <interfacename>CrudRepository</interfacename> exposes a
-        complete set of methods to manipulate your entities. If you prefer to
-        be selective about the methods being exposed, simply copy the ones you
-        want to expose from <interfacename>CrudRepository</interfacename> into
-        your domain repository.</para>
+        <interfacename>@RepositoryDefinition</interfacename>. Extending
+        <interfacename>CrudRepository</interfacename> exposes a complete set
+        of methods to manipulate your entities. If you prefer to be selective
+        about the methods being exposed, simply copy the ones you want to
+        expose from <interfacename>CrudRepository</interfacename> into your
+        domain repository.</para>
 
         <example>
           <title>Selectively exposing CRUD methods</title>
 
-          <programlisting language="java">interface MyBaseRepository&lt;T, ID extends Serializable&gt; extends Repository&lt;T, ID&gt; {
+          <programlisting language="java">@NoRepositoryBean
+interface MyBaseRepository&lt;T, ID extends Serializable&gt; extends Repository&lt;T, ID&gt; {
+
   T findOne(ID id);
+
   T save(T entity);
 }
 
@@ -253,6 +251,13 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
         users, and find single ones by id, as well as triggering a query to
         find <interfacename>User</interfacename>s by their email
         address.</para>
+
+        <note>
+          <para>Note, that the intermediate repository interface is annotated
+          with <interfacename>@NoRepositoryBean</interfacename>. Make sure you
+          add that annotation to all repository interfaces that Spring Data
+          should not create instances for at runtime.</para>
+        </note>
       </section>
     </section>
 
