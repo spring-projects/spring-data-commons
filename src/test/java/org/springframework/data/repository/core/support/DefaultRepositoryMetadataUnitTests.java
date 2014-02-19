@@ -91,6 +91,16 @@ public class DefaultRepositoryMetadataUnitTests {
 		assertEquals(Integer.class, metadata.getIdType());
 	}
 
+	/**
+	 * @see DATACMNS-442
+	 */
+	@Test
+	public void detectsIdTypeOnIntermediateRepository() {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
+		assertEquals(Long.class, metadata.getIdType());
+	}
+
 	@SuppressWarnings("unused")
 	private class User {
 
@@ -149,4 +159,12 @@ public class DefaultRepositoryMetadataUnitTests {
 	static class GenericEntity<T> {}
 
 	static interface GenericEntityRepository extends CrudRepository<GenericEntity<String>, Long> {}
+
+	static interface IdTypeFixingRepository<T> extends Repository<T, Long> {
+
+	}
+
+	static interface ConcreteRepository extends IdTypeFixingRepository<User> {
+
+	}
 }
