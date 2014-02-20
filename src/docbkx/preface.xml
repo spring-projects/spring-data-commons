@@ -4,6 +4,7 @@
 <preface id="preface">
   <title>Preface</title>
 
-  <para>The Spring Data Commons project applies core Spring concepts to the development of solutions using many non-relational data stores. 
-  </para>
+  <para>The Spring Data Commons project applies core Spring concepts to the
+  development of solutions using many relational and non-relational data
+  stores.</para>
 </preface>

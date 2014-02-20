@@ -2,7 +2,7 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <chapter id="repositories">
-  <title>lWorking with Spring Data Repositories</title>
+  <title>Working with Spring Data Repositories</title>
 
   <para>The goal of Spring Data repository abstraction is to significantly
   reduce the amount of boilerplate code required to implement data access
@@ -20,9 +20,9 @@
     that you are using. <xref linkend="namespace-reference"/> covers XML
     configuration which is supported across all Spring Data modules supporting
     the repository API, <xref linkend="repository-query-keywords"/> covers the
-    query method method keywords supported by the repository abstraction in
-    general. For detailed information on the specific features of your module,
-    consult the chapter on that module of this document.</para>
+    query method keywords supported by the repository abstraction in general.
+    For detailed information on the specific features of your module, consult
+    the chapter on that module of this document.</para>
   </important>
 
   <section id="repositories.core-concepts">
@@ -30,8 +30,8 @@
 
     <para>The central interface in Spring Data repository abstraction is
     <interfacename>Repository</interfacename> (probably not that much of a
-    surprise). It takes the the domain class to manage as well as the id type
-    of the domain class as type arguments. This interface acts primarily as a
+    surprise). It takes the domain class to manage as well as the id type of
+    the domain class as type arguments. This interface acts primarily as a
     marker interface to capture the types to work with and to help you to
     discover interfaces that extend this one. The
     <interfacename>CrudRepository</interfacename> provides sophisticated CRUD
@@ -101,13 +101,15 @@
       </programlistingco>
     </example>
 
-    <para>Usually we will have persistence technology specific sub-interfaces
-    to include additional technology specific methods. We will now ship
-    implementations for a variety of Spring Data modules that implement
-    <interfacename>CrudRepository</interfacename>.</para>
-
-    <!--OG: Reverted to old wording as it made more sense. Refer to CrudRepository to be more specific. Discuss what
-exactly is hardly understandable with the current wording.-->
+    <note>
+      <para>We also provide persistence technology-specific abstractions like
+      e.g. <interfacename>JpaRepository</interfacename> or
+      <interfacename>MongoRepository</interfacename>. Those interfaces extend
+      <interfacename>CrudRepository</interfacename> and expose the
+      capabilities of the underlying persistence technology in addition to the
+      rather generic persistence technology-agnostic interfaces like e.g.
+      <interfacename>CrudRepository</interfacename>.</para>
+    </note>
 
     <para>On top of the <interfacename>CrudRepository</interfacename> there is
     a <interfacename>PagingAndSortingRepository</interfacename> abstraction
@@ -143,7 +145,8 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20));</programlis
       <listitem>
         <para>Declare an interface extending
         <interfacename>Repository</interfacename> or one of its subinterfaces
-        and type it to the domain class that it will handle.</para>
+        and type it to the domain class and ID type that it will
+        handle.</para>
 
         <programlisting language="java">public interface PersonRepository extends Repository&lt;User, Long&gt; { … }</programlisting>
       </listitem>
@@ -155,29 +158,36 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20));</programlis
       </listitem>
 
       <listitem>
-        <para>Set up Spring to create proxy instances for those
-        interfaces.</para>
+        <para>Set up Spring to create proxy instances for those interfaces.
+        Either via <link
+        linkend="repositories.create-instances.java-config">JavaConfig</link>:</para>
+
+        <programlisting language="java">import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+@EnableJpaRepositories
+class Config {}</programlisting>
+
+        <para>or via <link linkend="repositories.create-instances">XML
+        configuration</link>:</para>
 
         <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://www.springframework.org/schema/data/jpa"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/data/jpa
-    http://www.springframework.org/schema/data/jpa/spring-jpa.xsd"&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd"&gt;
 
-  &lt;repositories base-package="com.acme.repositories" /&gt;
+   &lt;jpa:repositories base-package="com.acme.repositories"/&gt;
 
 &lt;/beans&gt;</programlisting>
 
-        <note>
-          <para>The JPA namespace is used in this example. If you are using
-          the repository abstraction for any other store, you need to change
-          this to the appropriate namespace declaration of your store module
-          which should be exchanging <code>jpa</code> in favor of, for
-          example, <code>mongodb</code>.</para>
-        </note>
+        <para>The JPA namespace is used in this example. If you are using the
+        repository abstraction for any other store, you need to change this to
+        the appropriate namespace declaration of your store module which
+        should be exchanging <code>jpa</code> in favor of, for example,
+        <code>mongodb</code>. Also, note that the JavaConfig variant doesn't
+        configure a package explictly as the package of the annotated class is
+        used by default. To customize the package to scan</para>
       </listitem>
 
       <listitem>
@@ -223,6 +233,11 @@ Page&lt;User&gt; users = repository.findAll(new PageRequest(1, 20));</programlis
         expose from <interfacename>CrudRepository</interfacename> into your
         domain repository.</para>
 
+        <note>
+          <para>This allows you to define your own abstractions on top of the
+          provided Spring Data Repositories functionality.</para>
+        </note>
+
         <example>
           <title>Selectively exposing CRUD methods</title>
 
@@ -245,7 +260,9 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
         <methodname>findOne(…)</methodname> as well as
         <methodname>save(…)</methodname>.These methods will be routed into the
         base repository implementation of the store of your choice provided by
-        Spring Data because they are matching the method signatures in
+        Spring Data ,e.g. in the case if JPA
+        <classname>SimpleJpaRepository</classname>, because they are matching
+        the method signatures in
         <interfacename>CrudRepository</interfacename>. So the
         <interfacename>UserRepository</interfacename> will now be able to save
         users, and find single ones by id, as well as triggering a query to
@@ -266,7 +283,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
 
       <para>The repository proxy has two ways to derive a store-specific query
       from the method name. It can derive the query from the method name
-      directly, or by using an additionally created query. Available options
+      directly, or by using an manually defined query. Available options
       depend on the actual store. However, there's got to be an strategy that
       decides what actual query is created. Let's have a look at the available
       options.</para>
@@ -276,8 +293,11 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
 
         <para>The following strategies are available for the repository
         infrastructure to resolve the query. You can configure the strategy at
-        the namespace through the <code>query-lookup-strategy</code>
-        attribute. Some strategies may not be supported for particular
+        the namespace through the <code>query-lookup-strategy</code> attribute
+        in case of XML configuration or via the
+        <code>queryLookupStrategy</code> attribute of the
+        <classname>Enable${store}Repositories</classname> annotation in case
+        of Java config. Some strategies may not be supported for particular
         datastores.</para>
 
         <simplesect>
@@ -321,14 +341,14 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
         <para>The query builder mechanism built into Spring Data repository
         infrastructure is useful for building constraining queries over
         entities of the repository. The mechanism strips the prefixes
-        <code>find…By</code>, <code>read…By</code>, <code>query…By</code>, and <code>get…By</code>
-        from the method and starts parsing the rest of it. The introducing
-        clause can contain further expressions such as a <code>Distinct</code>
-        to set a distinct flag on the query to be created. However, the first
-        <code>By</code> acts as delimiter to indicate the start of the actual
-        criteria. At a very basic level you can define conditions on entity
-        properties and concatenate them with <code>And</code> and <code>Or
-        </code>.</para>
+        <code>find…By</code>, <code>read…By</code>, <code>query…By</code>,
+        <code>count…By</code>, and <code>get…By</code> from the method and
+        starts parsing the rest of it. The introducing clause can contain
+        further expressions such as a <code>Distinct</code> to set a distinct
+        flag on the query to be created. However, the first <code>By</code>
+        acts as delimiter to indicate the start of the actual criteria. At a
+        very basic level you can define conditions on entity properties and
+        concatenate them with <code>And</code> and <code>Or</code>.</para>
 
         <example>
           <title>Query creation from method names</title>
@@ -390,7 +410,7 @@ interface UserRepository extends MyBaseRepository&lt;User, Long&gt; {
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="repositories.query-methods.query-property-expressions">
         <title>Property expressions</title>
 
         <para>Property expressions can refer only to a direct property of the
@@ -441,7 +461,7 @@ OG Does that make sense with my comment above?-->To resolve this ambiguity you
       <section id="repositories.special-parameters">
         <title>Special parameter handling</title>
 
-        <para>To handle parameters to your query you simply define method
+        <para>To handle parameters in your query you simply define method
         parameters as already seen in the examples above. Besides that the
         infrastructure will recognize certain specific types like
         <interfacename>Pageable</interfacename> and
@@ -485,9 +505,10 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
       <title>Creating repository instances</title>
 
       <para>In this section you create instances and bean definitions for the
-      repository interfaces defined. The easiest way to do so is by using the
-      Spring namespace that is shipped with each Spring Data module that
-      supports the repository mechanism.</para>
+      repository interfaces defined. One way to do so is using the Spring
+      namespace that is shipped with each Spring Data module that supports the
+      repository mechanism although we generally recommend to use the
+      Java-Config style configuration.</para>
 
       <section id="repositories.create-instances.spring">
         <title>XML configuration</title>
@@ -520,7 +541,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
         so an interface of <interfacename>UserRepository</interfacename> would
         be registered under <code>userRepository</code>. The
         <code>base-package</code> attribute allows wildcards, so that you can
-        have a pattern of scanned packages.</para>
+        define a pattern of scanned packages.</para>
 
         <simplesect>
           <title>Using filters</title>
@@ -599,10 +620,10 @@ class ApplicationConfiguration {
         <title>Standalone usage</title>
 
         <para>You can also use the repository infrastructure outside of a
-        Spring container. You still need some Spring libraries in your
-        classpath, but generally you can set up repositories programmatically
-        as well. The Spring Data modules that provide repository support ship
-        a persistence technology-specific
+        Spring container, e.g. in CDI environments. You still need some Spring
+        libraries in your classpath, but generally you can set up repositories
+        programmatically as well. The Spring Data modules that provide
+        repository support ship a persistence technology-specific
         <classname>RepositoryFactory</classname> that you can use as
         follows.</para>
 
@@ -651,8 +672,9 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
 }</programlisting><note>
             <para>The implementation itself does not depend on Spring Data and
             can be a regular Spring bean. So you can use standard dependency
-            injection behavior to inject references to other beans, take part
-            in aspects, and so on.</para>
+            injection behavior to inject references to other beans like a
+            <classname>JdbTemplate</classname>, take part in aspects, and so
+            on.</para>
           </note></para>
       </example>
 
@@ -663,8 +685,8 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
 
   // Declare query methods here
 }</programlisting>Let your standard repository interface extend the custom
-        one. Doing so makes CRUD and custom functionality available to
-        clients.</para>
+        one. Doing so combines the CRUD and custom functionality and makes it
+        available to clients.</para>
       </example>
 
       <simplesect>
@@ -688,8 +710,8 @@ UserRepository repository = factory.getRepository(UserRepository.class);</progra
 
         <para>The first configuration example will try to look up a class
         <classname>com.acme.repository.UserRepositoryImpl</classname> to act
-        as custom repository implementation, where the second example will try
-        to lookup
+        as custom repository implementation, whereas the second example will
+        try to lookup
         <classname>com.acme.repository.UserRepositoryFooBar</classname>.</para>
       </simplesect>
 
@@ -1074,7 +1096,7 @@ public class UserController {
         </simplesect>
       </section>
 
-      <section>
+      <section id="core.web.pageables">
         <title>Hypermedia support for Pageables</title>
 
         <para>Spring HATEOAS ships with a representation model class
@@ -1163,7 +1185,7 @@ class PersonController {
       </section>
     </section>
 
-    <section>
+    <section id="core.repository-populators">
       <title>Repository populators</title>
 
       <para>If you work with the Spring JDBC module, you probably are familiar
@@ -1211,8 +1233,8 @@ class PersonController {
 &lt;/beans&gt;</programlisting>
       </example>
 
-      <para>This declaration causes the <filename>data.json</filename> file
-      being read, deserialized by a Jackson
+      <para>This declaration causes the <filename>data.json</filename> file to
+      be read and deserialized via a Jackson
       <classname>ObjectMapper</classname>. <!--BT Preceding, reword; wording doesn't track.
 
 OG What exactly is not understandable. Jackson ObjectMapper is familiar to developers in the area of JSON
