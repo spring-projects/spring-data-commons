@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<appendix id="namespace-reference">
+  <title>Populators namespace reference</title>
+
+  <section id="namespace-dao-config">
+    <title>The <code>&lt;populator /&gt;</code> element</title>
+
+    <para>The <code>&lt;populator /&gt;</code> element allows to populate the
+    a data store via the Spring Data repository infrastructure.<footnote>
+        <para>see <xref
+        linkend="repositories.create-instances.spring"/></para>
+      </footnote></para>
+
+    <table>
+      <title>Attributes</title>
+
+      <tgroup cols="2">
+        <colspec colwidth="1*"/>
+
+        <colspec colwidth="2*"/>
+
+        <thead>
+          <row>
+            <entry>Name</entry>
+
+            <entry>Description</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry><code>locations</code></entry>
+
+            <entry>Where to find the files to read the objects from the
+            repository shall be populated with.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</appendix>
