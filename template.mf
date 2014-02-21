@@ -1,6 +1,6 @@
 Bundle-SymbolicName: org.springframework.data.core
 Bundle-Name: Spring Data Commons Core
-Bundle-Vendor: SpringSource
+Bundle-Vendor: Pivotal Software, Inc.
 Bundle-ManifestVersion: 2
 Import-Package: 
  sun.reflect;version="0";resolution:=optional

@@ -59,6 +59,35 @@
             linkend="repositories.query-methods.query-lookup-strategies"/> for
             details. Defaults to <code>create-if-not-found</code>.</entry>
           </row>
+
+          <row>
+            <entry><code>include-filter</code></entry>
+
+            <entry>Controls which eligible types to include for component
+            scanning.</entry>
+          </row>
+
+          <row>
+            <entry><code>exclude-filter</code></entry>
+
+            <entry>Controls which eligible types to exclude for component
+            scanning.</entry>
+          </row>
+
+          <row>
+            <entry><code>named-queries-location</code></entry>
+
+            <entry>Defines the location to look for a Properties file
+            containing externally defined queries.</entry>
+          </row>
+
+          <row>
+            <entry><code>consider-nested-repositories</code></entry>
+
+            <entry>Controls whether nested repository interface definitions
+            should be considered. Defaults to
+            <literal>false</literal>.</entry>
+          </row>
         </tbody>
       </tgroup>
     </table>
