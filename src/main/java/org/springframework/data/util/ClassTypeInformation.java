@@ -124,4 +124,10 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	public boolean isAssignableFrom(TypeInformation<?> target) {
 		return getType().isAssignableFrom(target.getType());
 	}
+
+    @Override
+    public String toString() {
+        String typeVariableMapString = getTypeVariableMap().isEmpty() ? "" : getTypeVariableMap().toString()+" ";
+        return getType().getName()+" "+ typeVariableMapString;
+    }
 }
