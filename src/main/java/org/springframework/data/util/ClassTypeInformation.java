@@ -128,6 +128,6 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
     @Override
     public String toString() {
         String typeVariableMapString = getTypeVariableMap().isEmpty() ? "" : getTypeVariableMap().toString()+" ";
-        return getType().getName()+" "+ typeVariableMapString + getActualType();
+        return getType().getName()+" "+ typeVariableMapString;
     }
 }
