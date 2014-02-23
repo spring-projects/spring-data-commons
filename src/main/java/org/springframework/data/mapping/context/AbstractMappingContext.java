@@ -159,15 +159,15 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			read.unlock();
 		}
 
-		if (strict) {
-			throw new MappingException("Unknown persistent entity " + type);
-		}
+        if (!shouldCreatePersistentEntityFor(type)) {
+            return null;
+        }
 
-		if (!shouldCreatePersistentEntityFor(type)) {
-			return null;
-		}
+        if (strict) {
+            throw new MappingException("Unknown persistent entity " + type);
+        }
 
-		return addPersistentEntity(type);
+        return addPersistentEntity(type);
 	}
 
 	/*
@@ -260,8 +260,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			return persistentEntity;
 		}
 
-		Class<?> type = typeInformation.getType();
-
 		try {
 
 			write.lock();
@@ -271,30 +269,19 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
 			persistentEntities.put(typeInformation, entity);
 
-			BeanInfo info = Introspector.getBeanInfo(type);
+            try {
+                createPersistentProperties(entity);
 
-			final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
-			for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
-				descriptors.put(descriptor.getName(), descriptor);
-			}
+                verifyEntity(entity);
 
-			try {
-
-				ReflectionUtils.doWithFields(type, new PersistentPropertyCreator(entity, descriptors),
-						PersistentFieldFilter.INSTANCE);
-				entity.verify();
-
-			} catch (MappingException e) {
+            } catch (MappingException e) {
 				persistentEntities.remove(typeInformation);
 				throw e;
 			}
 
-			// Inform listeners
-			if (null != applicationEventPublisher) {
-				applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(this, entity));
-			}
+            publishMappingContextEvent(entity);
 
-			return entity;
+            return entity;
 
 		} catch (IntrospectionException e) {
 			throw new MappingException(e.getMessage(), e);
@@ -303,7 +290,34 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 	}
 
-	/**
+    protected void createPersistentProperties(E entity) throws IntrospectionException {
+        TypeInformation<?> typeInformation = entity.getTypeInformation();
+
+        Class<?> type = typeInformation.getType();
+
+        BeanInfo info = Introspector.getBeanInfo(type);
+
+        final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
+        for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
+            descriptors.put(descriptor.getName(), descriptor);
+        }
+
+        ReflectionUtils.doWithFields(type, new PersistentPropertyCreator(entity, descriptors),
+                PersistentFieldFilter.INSTANCE);
+    }
+
+    protected void verifyEntity(E entity) {
+        entity.verify();
+    }
+
+    protected void publishMappingContextEvent(E entity) {
+        // Inform listeners
+        if (null != applicationEventPublisher) {
+            applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(this, entity));
+        }
+    }
+
+    /**
 	 * Creates the concrete {@link PersistentEntity} instance.
 	 * 
 	 * @param <T>
