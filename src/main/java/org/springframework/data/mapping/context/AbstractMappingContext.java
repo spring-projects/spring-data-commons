@@ -61,6 +61,8 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @param P the concrete {@link PersistentProperty} type the {@link MappingContext} implementation creates
  * @author Jon Brisbin <jbrisbin@vmware.com>
  * @author Oliver Gierke
+ * @author Michael Hunger
+ * @author Thomas Darimont
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
@@ -159,12 +161,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			read.unlock();
 		}
 
-		if (strict) {
-			throw new MappingException("Unknown persistent entity " + type);
-		}
-
 		if (!shouldCreatePersistentEntityFor(type)) {
 			return null;
+		}
+
+		if (strict) {
+			throw new MappingException("Unknown persistent entity " + type);
 		}
 
 		return addPersistentEntity(type);
