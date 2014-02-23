@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.util.StringUtils;
 
 /**
  * Base class for all types that include parameterization of some kind. Crucial as we have to take note of the parent
@@ -181,6 +182,17 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	@Override
 	public int hashCode() {
 		return super.hashCode() + (isResolvedCompletely() ? this.type.hashCode() : 0);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		return String.format("%s<%s>", getType().getName(),
+				StringUtils.collectionToCommaDelimitedString(getTypeArguments()));
 	}
 
 	private boolean isResolvedCompletely() {

@@ -98,6 +98,7 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 		 */
 	@Override
 	public boolean equals(Object obj) {
+
 		if (!super.equals(obj)) {
 			return false;
 		}
@@ -113,9 +114,21 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 		 */
 	@Override
 	public int hashCode() {
+
 		int result = super.hashCode();
+
 		result += 31 * nullSafeHashCode(this.owningType);
 		result += 31 * nullSafeHashCode(this.variable);
+
 		return result;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return variable.getName();
 	}
 }

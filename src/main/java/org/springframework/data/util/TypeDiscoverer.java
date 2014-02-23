@@ -466,6 +466,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	@Override
 	public boolean equals(Object obj) {
+
 		if (obj == this) {
 			return true;
 		}
@@ -494,8 +495,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public int hashCode() {
 
 		int result = 17;
+
 		result += nullSafeHashCode(type);
 		result += nullSafeHashCode(typeVariableMap);
+
 		return result;
 	}
 }

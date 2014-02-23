@@ -317,6 +317,16 @@ public class ClassTypeInformationUnitTests {
 		assertThat(nestedValueType.getComponentType().getType(), is((Object) Person.class));
 	}
 
+	/**
+	 * @see DATACMNS-446
+	 */
+	@Test
+	public void createsToStringRepresentation() {
+
+		assertThat(from(SpecialPerson.class).toString(),
+				is("org.springframework.data.util.ClassTypeInformationUnitTests$SpecialPerson"));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}

@@ -18,6 +18,7 @@ package org.springframework.data.util;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.util.ClassTypeInformation.*;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -38,8 +39,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ParameterizedTypeUnitTests {
 
-	@Mock
-	ParameterizedType one;
+	@Mock ParameterizedType one;
 
 	@Before
 	public void setUp() {
@@ -83,6 +83,16 @@ public class ParameterizedTypeUnitTests {
 		propertyType = type.getProperty("param2");
 		assertThat(propertyType.getProperty("value").getType(), is(typeCompatibleWith(String.class)));
 		assertThat(propertyType.getMapValueType().getType(), is(typeCompatibleWith(Locale.class)));
+	}
+
+	/**
+	 * @see DATACMNS-446
+	 */
+	@Test
+	public void createsToStringRepresentation() {
+
+		assertThat(from(Foo.class).getProperty("param").toString(),
+				is("org.springframework.data.util.ParameterizedTypeUnitTests$Localized<java.lang.String>"));
 	}
 
 	@SuppressWarnings("serial")
