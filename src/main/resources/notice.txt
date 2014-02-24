@@ -1,5 +1,5 @@
-Spring Data Commons 1.7.0 RC1
-Copyright (c) [2010-2013] SpringSource, a division of Pivotal, Inc.
+Spring Data Commons 1.7.0 GA
+Copyright (c) [2010-2014] Pivotal Software, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0 (the "License").  
 You may not use this product except in compliance with the License.  
