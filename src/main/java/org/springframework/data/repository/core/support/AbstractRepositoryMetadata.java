@@ -93,6 +93,11 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	public boolean isPagingRepository() {
 
 		Method findAllMethod = getCrudMethods().getFindAllMethod();
+
+		if (findAllMethod == null) {
+			return false;
+		}
+
 		return Arrays.asList(findAllMethod.getParameterTypes()).contains(Pageable.class);
 	}
 }

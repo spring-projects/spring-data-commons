@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
@@ -35,6 +36,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Fabian Buch
  */
 public class AbstractRepositoryMetadataUnitTests {
 
@@ -62,6 +64,26 @@ public class AbstractRepositoryMetadataUnitTests {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("findByFirstname", Pageable.class, String.class);
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
+	}
+
+	/**
+	 * @see DATACMNS-453
+	 */
+	@Test
+	public void nonPageableRepository() {
+
+		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
+		assertThat(metadata.isPagingRepository(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-453
+	 */
+	@Test
+	public void pageableRepository() {
+
+		RepositoryMetadata metadata = new DummyRepositoryMetadata(PagedRepository.class);
+		assertThat(metadata.isPagingRepository(), is(true));
 	}
 
 	@Test
@@ -100,6 +122,10 @@ public class AbstractRepositoryMetadataUnitTests {
 		GenericType<User> someMethod();
 
 		List<Map<String, Object>> anotherMethod();
+	}
+
+	interface PagedRepository extends PagingAndSortingRepository<User, Long> {
+
 	}
 
 	class GenericType<T> {
