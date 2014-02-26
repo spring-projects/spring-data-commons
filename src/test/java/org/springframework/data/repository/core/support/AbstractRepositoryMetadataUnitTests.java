@@ -87,6 +87,20 @@ public class AbstractRepositoryMetadataUnitTests {
 	}
 
 	@Test
+	public void nonPageableRepository() throws Exception {
+
+		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
+		assertFalse(metadata.isPagingRepository());
+	}
+
+	@Test
+	public void pageableRepository() throws Exception {
+
+		RepositoryMetadata metadata = new DummyRepositoryMetadata(PagedRepository.class);
+		assertTrue(metadata.isPagingRepository());
+	}
+
+	@Test
 	public void determinesReturnTypeFromGenericType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("someMethod");
