@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
@@ -65,6 +66,20 @@ public class AbstractRepositoryMetadataUnitTests {
 	}
 
 	@Test
+	public void nonPageableRepository() throws Exception {
+
+		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
+		assertFalse(metadata.isPagingRepository());
+	}
+
+	@Test
+	public void pageableRepository() throws Exception {
+
+		RepositoryMetadata metadata = new DummyRepositoryMetadata(PagedRepository.class);
+		assertTrue(metadata.isPagingRepository());
+	}
+
+	@Test
 	public void determinesReturnTypeFromGenericType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("someMethod");
@@ -100,6 +115,10 @@ public class AbstractRepositoryMetadataUnitTests {
 		GenericType<User> someMethod();
 
 		List<Map<String, Object>> anotherMethod();
+	}
+
+	interface PagedRepository extends PagingAndSortingRepository<User, Long> {
+
 	}
 
 	class GenericType<T> {
