@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  */
 package org.springframework.data.domain;
 
-import java.util.Iterator;
-import java.util.List;
-
 /**
  * A page is a sublist of a list of objects. It allows gain information about the position of it in the containing
  * entire list.
@@ -25,21 +22,7 @@ import java.util.List;
  * @param <T>
  * @author Oliver Gierke
  */
-public interface Page<T> extends Iterable<T> {
-
-	/**
-	 * Returns the number of the current page. Is always non-negative and less that {@code Page#getTotalPages()}.
-	 * 
-	 * @return the number of the current page
-	 */
-	int getNumber();
-
-	/**
-	 * Returns the size of the page.
-	 * 
-	 * @return the size of the page
-	 */
-	int getSize();
+public interface Page<T> extends Slice<T> {
 
 	/**
 	 * Returns the number of total pages.
@@ -47,13 +30,6 @@ public interface Page<T> extends Iterable<T> {
 	 * @return the number of toral pages
 	 */
 	int getTotalPages();
-
-	/**
-	 * Returns the number of elements currently on this page.
-	 * 
-	 * @return the number of elements currently on this page
-	 */
-	int getNumberOfElements();
 
 	/**
 	 * Returns the total amount of elements.
@@ -65,73 +41,36 @@ public interface Page<T> extends Iterable<T> {
 	/**
 	 * Returns if there is a previous page.
 	 * 
+	 * @deprecated use {@link #hasPrevious()} instead.
 	 * @return if there is a previous page
 	 */
+	@Deprecated
 	boolean hasPreviousPage();
 
 	/**
 	 * Returns whether the current page is the first one.
 	 * 
+	 * @deprecated use {@link #isFirst()} instead.
 	 * @return
 	 */
+	@Deprecated
 	boolean isFirstPage();
 
 	/**
 	 * Returns if there is a next page.
 	 * 
+	 * @deprecated use {@link #hasNext()} instead.
 	 * @return if there is a next page
 	 */
+	@Deprecated
 	boolean hasNextPage();
 
 	/**
 	 * Returns whether the current page is the last one.
 	 * 
+	 * @deprecated use {@link #isLast()} instead.
 	 * @return
 	 */
+	@Deprecated
 	boolean isLastPage();
-
-	/**
-	 * Returns the {@link Pageable} to request the next {@link Page}. Can be {@literal null} in case the current
-	 * {@link Page} is already the last one. Clients should check {@link #hasNextPage()} before calling this method to
-	 * make sure they receive a non-{@literal null} value.
-	 * 
-	 * @return
-	 */
-	Pageable nextPageable();
-
-	/**
-	 * Returns the {@link Pageable} to request the previous page. Can be {@literal null} in case the current {@link Page}
-	 * is already the first one. Clients should check {@link #hasPreviousPage()} before calling this method make sure
-	 * receive a non-{@literal null} value.
-	 * 
-	 * @return
-	 */
-	Pageable previousPageable();
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
-	Iterator<T> iterator();
-
-	/**
-	 * Returns the page content as {@link List}.
-	 * 
-	 * @return
-	 */
-	List<T> getContent();
-
-	/**
-	 * Returns whether the {@link Page} has content at all.
-	 * 
-	 * @return
-	 */
-	boolean hasContent();
-
-	/**
-	 * Returns the sorting parameters for the page.
-	 * 
-	 * @return
-	 */
-	Sort getSort();
 }

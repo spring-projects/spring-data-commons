@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  */
 package org.springframework.data.domain;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -27,12 +23,10 @@ import java.util.List;
  * @param <T> the type of which the page consists.
  * @author Oliver Gierke
  */
-public class PageImpl<T> implements Page<T>, Serializable {
+public class PageImpl<T> extends Chunk<T> implements Page<T> {
 
 	private static final long serialVersionUID = 867755909294344406L;
 
-	private final List<T> content = new ArrayList<T>();
-	private final Pageable pageable;
 	private final long total;
 
 	/**
@@ -44,13 +38,8 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	 */
 	public PageImpl(List<T> content, Pageable pageable, long total) {
 
-		if (null == content) {
-			throw new IllegalArgumentException("Content must not be null!");
-		}
-
-		this.content.addAll(content);
+		super(content, pageable);
 		this.total = total;
-		this.pageable = pageable;
 	}
 
 	/**
@@ -65,34 +54,10 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#getNumber()
-	 */
-	public int getNumber() {
-		return pageable == null ? 0 : pageable.getPageNumber();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#getSize()
-	 */
-	public int getSize() {
-		return pageable == null ? 0 : pageable.getPageSize();
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Page#getTotalPages()
 	 */
 	public int getTotalPages() {
 		return getSize() == 0 ? 1 : (int) Math.ceil((double) total / (double) getSize());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#getNumberOfElements()
-	 */
-	public int getNumberOfElements() {
-		return content.size();
 	}
 
 	/*
@@ -108,7 +73,7 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	 * @see org.springframework.data.domain.Page#hasPreviousPage()
 	 */
 	public boolean hasPreviousPage() {
-		return getNumber() > 0;
+		return hasPrevious();
 	}
 
 	/*
@@ -116,7 +81,16 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	 * @see org.springframework.data.domain.Page#isFirstPage()
 	 */
 	public boolean isFirstPage() {
-		return !hasPreviousPage();
+		return isFirst();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Slice#hasNext()
+	 */
+	@Override
+	public boolean hasNext() {
+		return hasNextPage();
 	}
 
 	/*
@@ -127,65 +101,21 @@ public class PageImpl<T> implements Page<T>, Serializable {
 		return getNumber() + 1 < getTotalPages();
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Slice#isLast()
+	 */
+	@Override
+	public boolean isLast() {
+		return isLastPage();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Page#isLastPage()
 	 */
 	public boolean isLastPage() {
 		return !hasNextPage();
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#nextPageable()
-	 */
-	public Pageable nextPageable() {
-		return hasNextPage() ? pageable.next() : null;
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#previousOrFirstPageable()
-	 */
-	public Pageable previousPageable() {
-
-		if (hasPreviousPage()) {
-			return pageable.previousOrFirst();
-		}
-
-		return null;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#iterator()
-	 */
-	public Iterator<T> iterator() {
-		return content.iterator();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#getContent()
-	 */
-	public List<T> getContent() {
-		return Collections.unmodifiableList(content);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#hasContent()
-	 */
-	public boolean hasContent() {
-		return !content.isEmpty();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#getSort()
-	 */
-	public Sort getSort() {
-		return pageable == null ? null : pageable.getSort();
 	}
 
 	/*
@@ -196,6 +126,7 @@ public class PageImpl<T> implements Page<T>, Serializable {
 	public String toString() {
 
 		String contentType = "UNKNOWN";
+		List<T> content = getContent();
 
 		if (content.size() > 0) {
 			contentType = content.get(0).getClass().getName();
@@ -221,11 +152,7 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 		PageImpl<?> that = (PageImpl<?>) obj;
 
-		boolean totalEqual = this.total == that.total;
-		boolean contentEqual = this.content.equals(that.content);
-		boolean pageableEqual = this.pageable == null ? that.pageable == null : this.pageable.equals(that.pageable);
-
-		return totalEqual && contentEqual && pageableEqual;
+		return this.total == that.total && super.equals(obj);
 	}
 
 	/*
@@ -237,9 +164,8 @@ public class PageImpl<T> implements Page<T>, Serializable {
 
 		int result = 17;
 
-		result = 31 * result + (int) (total ^ total >>> 32);
-		result = 31 * result + (pageable == null ? 0 : pageable.hashCode());
-		result = 31 * result + content.hashCode();
+		result += 31 * (int) (total ^ total >>> 32);
+		result += 31 * super.hashCode();
 
 		return result;
 	}

@@ -1,17 +1,17 @@
 /*
- * Copyright 2008-2013 the original author or authors.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * Copyright 2008-2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.springframework.data.domain;
 
@@ -71,12 +71,12 @@ public class PageImplUnitTests {
 
 		Page<Object> page = new PageImpl<Object>(Arrays.asList(new Object()), new PageRequest(0, 1), 10);
 
-		assertThat(page.isFirstPage(), is(true));
-		assertThat(page.hasPreviousPage(), is(false));
+		assertThat(page.isFirst(), is(true));
+		assertThat(page.hasPrevious(), is(false));
 		assertThat(page.previousPageable(), is(nullValue()));
 
-		assertThat(page.isLastPage(), is(false));
-		assertThat(page.hasNextPage(), is(true));
+		assertThat(page.isLast(), is(false));
+		assertThat(page.hasNext(), is(true));
 		assertThat(page.nextPageable(), is((Pageable) new PageRequest(1, 1)));
 	}
 
@@ -85,12 +85,12 @@ public class PageImplUnitTests {
 
 		Page<Object> page = new PageImpl<Object>(Arrays.asList(new Object()), new PageRequest(1, 1), 2);
 
-		assertThat(page.isFirstPage(), is(false));
-		assertThat(page.hasPreviousPage(), is(true));
+		assertThat(page.isFirst(), is(false));
+		assertThat(page.hasPrevious(), is(true));
 		assertThat(page.previousPageable(), is((Pageable) new PageRequest(0, 1)));
 
-		assertThat(page.isLastPage(), is(true));
-		assertThat(page.hasNextPage(), is(false));
+		assertThat(page.isLast(), is(true));
+		assertThat(page.hasNext(), is(false));
 		assertThat(page.nextPageable(), is(nullValue()));
 	}
 
@@ -107,10 +107,10 @@ public class PageImplUnitTests {
 		assertThat(page.getSort(), is((Sort) null));
 		assertThat(page.getTotalElements(), is(0L));
 		assertThat(page.getTotalPages(), is(1));
-		assertThat(page.hasNextPage(), is(false));
-		assertThat(page.hasPreviousPage(), is(false));
-		assertThat(page.isFirstPage(), is(true));
-		assertThat(page.isLastPage(), is(true));
+		assertThat(page.hasNext(), is(false));
+		assertThat(page.hasPrevious(), is(false));
+		assertThat(page.isFirst(), is(true));
+		assertThat(page.isLast(), is(true));
 		assertThat(page.hasContent(), is(false));
 	}
 
@@ -123,7 +123,7 @@ public class PageImplUnitTests {
 		Page<String> page = new PageImpl<String>(Arrays.asList("a"));
 
 		assertThat(page.getTotalPages(), is(1));
-		assertThat(page.hasNextPage(), is(false));
-		assertThat(page.hasPreviousPage(), is(false));
+		assertThat(page.hasNext(), is(false));
+		assertThat(page.hasPrevious(), is(false));
 	}
 }

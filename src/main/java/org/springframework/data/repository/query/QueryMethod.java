@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -59,7 +60,7 @@ public class QueryMethod {
 		}
 
 		if (hasParameterOfType(method, Pageable.class)) {
-			assertReturnTypeAssignable(method, Page.class, List.class);
+			assertReturnTypeAssignable(method, Slice.class, Page.class, List.class);
 			if (hasParameterOfType(method, Sort.class)) {
 				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameter. "
 						+ "Use sorting capabilities on Pageble instead! Offending method: %s", method.toString()));
@@ -152,7 +153,20 @@ public class QueryMethod {
 	public boolean isCollectionQuery() {
 
 		Class<?> returnType = method.getReturnType();
-		return !isPageQuery() && org.springframework.util.ClassUtils.isAssignable(Iterable.class, returnType);
+		return !(isPageQuery() || isSliceQuery())
+				&& org.springframework.util.ClassUtils.isAssignable(Iterable.class, returnType);
+	}
+
+	/**
+	 * Returns whether the query method will return a {@link Slice}.
+	 * 
+	 * @return
+	 * @since 1.8
+	 */
+	public boolean isSliceQuery() {
+
+		Class<?> returnType = method.getReturnType();
+		return !isPageQuery() && org.springframework.util.ClassUtils.isAssignable(Slice.class, returnType);
 	}
 
 	/**

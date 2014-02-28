@@ -155,11 +155,11 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	private <R extends ResourceSupport> PagedResources<R> addPaginationLinks(PagedResources<R> resources, Page<?> page,
 			String uri) {
 
-		if (page.hasNextPage()) {
+		if (page.hasNext()) {
 			foo(resources, page.nextPageable(), uri, Link.REL_NEXT);
 		}
 
-		if (page.hasPreviousPage()) {
+		if (page.hasPrevious()) {
 			foo(resources, page.previousPageable(), uri, Link.REL_PREVIOUS);
 		}
 
