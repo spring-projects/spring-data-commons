@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 by the original author(s).
+ * Copyright 2011-2014 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * 
  * @param E the concrete {@link PersistentEntity} type the {@link MappingContext} implementation creates
  * @param P the concrete {@link PersistentProperty} type the {@link MappingContext} implementation creates
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  * @author Oliver Gierke
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
@@ -137,6 +137,15 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	public E getPersistentEntity(Class<?> type) {
 		Assert.notNull(type);
 		return getPersistentEntity(ClassTypeInformation.from(type));
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.MappingContext#hasPersistentEntityFor(java.lang.Class)
+	 */
+	@Override
+	public boolean hasPersistentEntityFor(Class<?> type) {
+		return type == null ? false : persistentEntities.containsKey(ClassTypeInformation.from(type));
 	}
 
 	/*
@@ -300,6 +309,23 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			throw new MappingException(e.getMessage(), e);
 		} finally {
 			write.unlock();
+		}
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentEntityAware#getManagedTypes()
+	 */
+	@Override
+	public Collection<TypeInformation<?>> getManagedTypes() {
+
+		try {
+
+			read.lock();
+			return Collections.unmodifiableSet(new HashSet<TypeInformation<?>>(persistentEntities.keySet()));
+
+		} finally {
+			read.unlock();
 		}
 	}
 

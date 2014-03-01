@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011-2014 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.context;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.beans.PropertyDescriptor;
@@ -27,6 +29,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -36,6 +39,35 @@ import org.springframework.data.util.TypeInformation;
  */
 public class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 
+	/**
+	 * @see DATACMNS-457
+	 */
+	@Test
+	public void returnsManagedType() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		context.setInitialEntitySet(Collections.singleton(Person.class));
+		context.initialize();
+
+		assertThat(context.getManagedTypes(), hasItem(ClassTypeInformation.from(Person.class)));
+	}
+
+	/**
+	 * @see DATACMNS-457
+	 */
+	@Test
+	public void indicatesManagedType() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		context.setInitialEntitySet(Collections.singleton(Person.class));
+		context.initialize();
+
+		assertThat(context.hasPersistentEntityFor(Person.class), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-65
+	 */
 	@Test
 	public void foo() throws InterruptedException {
 
@@ -56,7 +88,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 				entity.doWithProperties(new PropertyHandler<T>() {
 					public void doWithPersistentProperty(T persistentProperty) {
 						try {
-							Thread.sleep(1000);
+							Thread.sleep(250);
 						} catch (InterruptedException e) {
 							throw new RuntimeException(e);
 						}
@@ -66,7 +98,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		});
 
 		a.start();
-		Thread.sleep(2800);
+		Thread.sleep(700);
 		b.start();
 
 		a.join();
@@ -88,12 +120,12 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 
 			PersistentProperty prop = mock(PersistentProperty.class);
 
-			when(prop.getTypeInformation()).thenReturn((TypeInformation) owner.getTypeInformation());
+			when(prop.getTypeInformation()).thenReturn(owner.getTypeInformation());
 			when(prop.getName()).thenReturn(field.getName());
 			when(prop.getPersistentEntityType()).thenReturn(Collections.EMPTY_SET);
 
 			try {
-				Thread.sleep(800);
+				Thread.sleep(200);
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}

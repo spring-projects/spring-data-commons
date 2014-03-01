@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,15 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	E getPersistentEntity(Class<?> type);
 
 	/**
+	 * Returns whether the {@link MappingContext} currently contains a {@link PersistentEntity} for the type.
+	 * 
+	 * @param type can be {@literal null}.
+	 * @return
+	 * @since 1.8
+	 */
+	boolean hasPersistentEntityFor(Class<?> type);
+
+	/**
 	 * Returns a {@link PersistentEntity} for the given {@link TypeInformation}. Will return {@literal null} for types
 	 * that are considered simple ones.
 	 * 
@@ -87,4 +96,12 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @return the {@link PersistentPropertyPath} representing the given property path on the given type.
 	 */
 	PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type);
+
+	/**
+	 * Returns the {@link TypeInformation}s for all {@link PersistentEntity}s in the {@link MappingContext}.
+	 * 
+	 * @return all {@link TypeInformation}s for the {@link PersistentEntity}s in the {@link MappingContext}.
+	 * @since 1.8
+	 */
+	Collection<TypeInformation<?>> getManagedTypes();
 }
