@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,4 +78,14 @@ public interface RepositoryConfigurationSource {
 	 * @return
 	 */
 	Collection<BeanDefinition> getCandidates(ResourceLoader loader);
+
+	/**
+	 * Returns the value for the {@link String} attribute with the given name. The name is expected to be handed in
+	 * camel-case.
+	 * 
+	 * @param name must not be {@literal null} or empty.
+	 * @return the attribute with the given name or {@literal null} if not configured or empty.
+	 * @since 1.8
+	 */
+	String getAttribute(String name);
 }

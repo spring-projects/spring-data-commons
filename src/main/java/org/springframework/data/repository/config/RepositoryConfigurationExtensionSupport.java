@@ -86,6 +86,14 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.RepositoryConfigurationSource)
+	 */
+	public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {
+
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource)
 	 */
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {

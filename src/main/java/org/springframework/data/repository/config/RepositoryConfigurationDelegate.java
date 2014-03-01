@@ -90,6 +90,8 @@ public class RepositoryConfigurationDelegate {
 
 			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
 
+			extension.postProcess(definitionBuilder, configurationSource);
+
 			if (isXml) {
 				extension.postProcess(definitionBuilder, (XmlRepositoryConfigurationSource) configurationSource);
 			} else {

@@ -65,6 +65,14 @@ public interface RepositoryConfigurationExtension {
 	void registerBeansForRoot(BeanDefinitionRegistry registry, RepositoryConfigurationSource configurationSource);
 
 	/**
+	 * Callback to post process the {@link BeanDefinition} and tweak the configuration if necessary.
+	 * 
+	 * @param builder will never be {@literal null}.
+	 * @param config will never be {@literal null}.
+	 */
+	void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource config);
+
+	/**
 	 * Callback to post process the {@link BeanDefinition} built from annotations and tweak the configuration if
 	 * necessary.
 	 * 

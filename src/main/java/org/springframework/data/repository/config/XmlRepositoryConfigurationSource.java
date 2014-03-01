@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.springframework.data.repository.config;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.env.Environment;
@@ -41,6 +43,8 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	private static final String REPOSITORY_IMPL_POSTFIX = "repository-impl-postfix";
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS_NAME = "factory-class";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "consider-nested-repositories";
+
+	private static final Pattern CAMEL_CASE_PARTS = Pattern.compile("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])");
 
 	private final Element element;
 	private final ParserContext context;
@@ -160,5 +164,19 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 
 		String attribute = getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES);
 		return attribute != null && Boolean.parseBoolean(attribute);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String)
+	 */
+	@Override
+	public String getAttribute(String name) {
+
+		List<String> parts = Arrays.asList(CAMEL_CASE_PARTS.split(name));
+		String xmlAttributeName = StringUtils.collectionToDelimitedString(parts, "-");
+		String attribute = element.getAttribute(xmlAttributeName);
+
+		return StringUtils.hasText(attribute) ? attribute : null;
 	}
 }

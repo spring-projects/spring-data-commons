@@ -257,6 +257,17 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return attributes.containsKey(CONSIDER_NESTED_REPOSITORIES) && attributes.getBoolean(CONSIDER_NESTED_REPOSITORIES);
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String)
+	 */
+	@Override
+	public String getAttribute(String name) {
+
+		String attribute = attributes.getString(name);
+		return StringUtils.hasText(attribute) ? attribute : null;
+	}
+
 	/**
 	 * Safely reads the {@code pattern} attribute from the given {@link AnnotationAttributes} and returns an empty list if
 	 * the attribute is not present.
