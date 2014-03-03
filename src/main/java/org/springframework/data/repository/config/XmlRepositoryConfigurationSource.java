@@ -15,8 +15,10 @@
  */
 package org.springframework.data.repository.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.xml.ParserContext;
@@ -173,8 +175,13 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public String getAttribute(String name) {
 
-		List<String> parts = Arrays.asList(CAMEL_CASE_PARTS.split(name));
-		String xmlAttributeName = StringUtils.collectionToDelimitedString(parts, "-");
+		List<String> lowercase = new ArrayList<String>();
+
+		for (String part : Arrays.asList(CAMEL_CASE_PARTS.split(name))) {
+			lowercase.add(part.toLowerCase(Locale.US));
+		}
+
+		String xmlAttributeName = StringUtils.collectionToDelimitedString(lowercase, "-");
 		String attribute = element.getAttribute(xmlAttributeName);
 
 		return StringUtils.hasText(attribute) ? attribute : null;
