@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,14 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Christoph Strobl
  */
 public class PartTree implements Iterable<OrPart> {
 
-	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count|query)(\\p{Lu}.*?)??By");
+	private static final String DELETE_PATTERN = "delete|remove";
+
+	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count|query|" + DELETE_PATTERN
+			+ ")(\\p{Lu}.*?)??By");
 
 	/*
 	 * We look for a pattern of: keyword followed by
@@ -119,6 +123,16 @@ public class PartTree implements Iterable<OrPart> {
 	 */
 	public Boolean isCountProjection() {
 		return subject.isCountProjection();
+	}
+
+	/**
+	 * return true if the created {@link PartTree} is meant to be used for delete operation.
+	 * 
+	 * @return
+	 * @since 1.8
+	 */
+	public Boolean isDelete() {
+		return subject.isDelete();
 	}
 
 	/**
@@ -221,19 +235,33 @@ public class PartTree implements Iterable<OrPart> {
 	 * 
 	 * @author Phil Webb
 	 * @author Oliver Gierke
+	 * @author Christoph Strobl
 	 */
 	private static class Subject {
 
 		private static final String DISTINCT = "Distinct";
 		private static final Pattern COUNT_BY_TEMPLATE = Pattern.compile("^count(\\p{Lu}.*?)??By");
+		private static final Pattern DELETE_BY_TEMPLATE = Pattern.compile("^(" + DELETE_PATTERN + ")(\\p{Lu}.*?)??By");
 
 		private final boolean distinct;
 		private final boolean count;
+		private final boolean delete;
 
 		public Subject(String subject) {
 
 			this.distinct = subject == null ? false : subject.contains(DISTINCT);
-			this.count = subject == null ? false : COUNT_BY_TEMPLATE.matcher(subject).find();
+			this.count = matches(subject, COUNT_BY_TEMPLATE);
+			this.delete = matches(subject, DELETE_BY_TEMPLATE);
+		}
+
+		/**
+		 * Returns {@literal true} if {@link Subject} matches {@link #DELETE_BY_TEMPLATE}.
+		 * 
+		 * @return
+		 * @since 1.8
+		 */
+		public Boolean isDelete() {
+			return delete;
 		}
 
 		public boolean isCountProjection() {
@@ -242,6 +270,10 @@ public class PartTree implements Iterable<OrPart> {
 
 		public boolean isDistinct() {
 			return distinct;
+		}
+
+		private final boolean matches(String subject, Pattern pattern) {
+			return subject == null ? false : pattern.matcher(subject).find();
 		}
 	}
 
