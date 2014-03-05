@@ -42,10 +42,11 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * @author Phillip Webb
  * @author Thomas Darimont
  * @author Martin Baumgartner
+ * @author Christoph Strobl
  */
 public class PartTreeUnitTests {
 
-	private String[] PREFIXES = { "find", "read", "get", "query" };
+	private String[] PREFIXES = { "find", "read", "get", "query", "count", "delete", "remove" };
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullSource() throws Exception {
@@ -296,7 +297,7 @@ public class PartTreeUnitTests {
 	public void parsesBeforeKeywordCorrectly() {
 		assertType(Arrays.asList("birthdayBefore", "birthdayIsBefore"), Type.BEFORE, "birthday");
 	}
-	
+
 	/**
 	 * @see DATACMNS-433
 	 */
@@ -304,7 +305,7 @@ public class PartTreeUnitTests {
 	public void parsesLikeKeywordCorrectly() {
 		assertType(asList("activeLike", "activeIsLike"), LIKE, "active");
 	}
-	
+
 	/**
 	 * @see DATACMNS-433
 	 */
@@ -510,6 +511,46 @@ public class PartTreeUnitTests {
 
 		assertThat(tree.getParts(), is(emptyIterable()));
 		assertThat(tree.getSort(), is(new Sort(Direction.ASC, "lastname")));
+	}
+
+	/**
+	 * @see DATACMNS-448
+	 */
+	@Test
+	public void identifiesSimpleDeleteByCorrectly() {
+
+		PartTree tree = new PartTree("deleteByLastname", User.class);
+		assertThat(tree.isDelete(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-448
+	 */
+	@Test
+	public void identifiesExtendedDeleteByCorrectly() {
+
+		PartTree tree = new PartTree("deleteUserByLastname", User.class);
+		assertThat(tree.isDelete(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-448
+	 */
+	@Test
+	public void identifiesSimpleRemoveByCorrectly() {
+
+		PartTree tree = new PartTree("removeByLastname", User.class);
+		assertThat(tree.isDelete(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-448
+	 */
+	@Test
+	public void identifiesExtendedRemoveByCorrectly() {
+
+		PartTree tree = new PartTree("removeUserByLastname", User.class);
+		assertThat(tree.isDelete(), is(true));
 	}
 
 	private static void assertType(Iterable<String> sources, Type type, String property) {
