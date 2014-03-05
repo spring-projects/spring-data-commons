@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
@@ -37,7 +36,7 @@ import org.springframework.util.StringUtils;
 /**
  * A {@link ImportBeanDefinitionRegistrar} that serves as a base class for store specific implementations for
  * configuring audit support. Registers a {@link AuditingHandler} based on the provided configuration(
- * {@link AnnotationAuditingConfiguration}).
+ * {@link AuditingConfiguration}).
  * 
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
@@ -72,13 +71,13 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	 * @return
 	 */
 	private AbstractBeanDefinition registerAuditHandlerBeanDefinition(BeanDefinitionRegistry registry,
-			AnnotationAuditingConfiguration configuration) {
+			AuditingConfiguration configuration) {
 
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
-		Assert.notNull(configuration, "AnnotationAuditingConfiguration must not be null!");
+		Assert.notNull(configuration, "AuditingConfiguration must not be null!");
 
 		AbstractBeanDefinition ahbd = getAuditHandlerBeanDefinitionBuilder(configuration).getBeanDefinition();
-		registry.registerBeanDefinition(BeanDefinitionReaderUtils.generateBeanName(ahbd, registry), ahbd);
+		registry.registerBeanDefinition(getAuditingHandlerBeanName(), ahbd);
 		return ahbd;
 	}
 
@@ -89,9 +88,9 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	 * @param configuration must not be {@literal null}.
 	 * @return
 	 */
-	protected BeanDefinitionBuilder getAuditHandlerBeanDefinitionBuilder(AnnotationAuditingConfiguration configuration) {
+	protected BeanDefinitionBuilder getAuditHandlerBeanDefinitionBuilder(AuditingConfiguration configuration) {
 
-		Assert.notNull(configuration, "AnnotationAuditingConfiguration must not be null!");
+		Assert.notNull(configuration, "AuditingConfiguration must not be null!");
 
 		return configureDefaultAuditHandlerAttributes(configuration,
 				BeanDefinitionBuilder.rootBeanDefinition(AuditingHandler.class));
@@ -99,13 +98,13 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 
 	/**
 	 * Configures the given {@link BeanDefinitionBuilder} with the default attributes from the given
-	 * {@link AnnotationAuditingConfiguration}.
+	 * {@link AuditingConfiguration}.
 	 * 
 	 * @param configuration must not be {@literal null}.
 	 * @param builder must not be {@literal null}.
 	 * @return the builder with the audit attributes configured.
 	 */
-	protected BeanDefinitionBuilder configureDefaultAuditHandlerAttributes(AnnotationAuditingConfiguration configuration,
+	protected BeanDefinitionBuilder configureDefaultAuditHandlerAttributes(AuditingConfiguration configuration,
 			BeanDefinitionBuilder builder) {
 
 		if (StringUtils.hasText(configuration.getAuditorAwareRef())) {
@@ -124,6 +123,8 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 			builder.addPropertyValue(DATE_TIME_PROVIDER, CurrentDateTimeProvider.INSTANCE);
 		}
 
+		builder.setRole(AbstractBeanDefinition.ROLE_INFRASTRUCTURE);
+
 		return builder;
 	}
 
@@ -133,8 +134,8 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	 * @param annotationMetadata will never be {@literal null}.
 	 * @return
 	 */
-	protected AnnotationAuditingConfiguration getConfiguration(AnnotationMetadata annotationMetadata) {
-		return new AnnotationAuditingConfigurationSupport(annotationMetadata, getAnnotation());
+	protected AuditingConfiguration getConfiguration(AnnotationMetadata annotationMetadata) {
+		return new AnnotationAuditingConfiguration(annotationMetadata, getAnnotation());
 	}
 
 	/**
@@ -145,11 +146,20 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	protected abstract Class<? extends Annotation> getAnnotation();
 
 	/**
-	 * @param auditingHandlerDefinition
-	 * @param registry
+	 * Register the listener to eventually trigger the {@link AuditingHandler}.
+	 * 
+	 * @param auditingHandlerDefinition will never be {@literal null}.
+	 * @param registry will never be {@literal null}.
 	 */
 	protected abstract void registerAuditListenerBeanDefinition(BeanDefinition auditingHandlerDefinition,
 			BeanDefinitionRegistry registry);
+
+	/**
+	 * Return the name to be used to register the {@link AuditingHandler} under.
+	 * 
+	 * @return
+	 */
+	protected abstract String getAuditingHandlerBeanName();
 
 	/**
 	 * Registers the given {@link AbstractBeanDefinition} as infrastructure bean under the given id.

@@ -63,6 +63,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	protected void doParse(Element element, BeanDefinitionBuilder builder) {
 
 		String auditorAwareRef = element.getAttribute(AUDITOR_AWARE_REF);
+
 		if (StringUtils.hasText(auditorAwareRef)) {
 			builder.addPropertyValue("auditorAware", createLazyInitTargetSourceBeanDefinition(auditorAwareRef));
 		}

@@ -16,6 +16,7 @@
 package org.springframework.data.config;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
@@ -126,5 +127,24 @@ public abstract class ParsingUtils {
 		AbstractBeanDefinition definition = builder.getRawBeanDefinition();
 		definition.setSource(source);
 		return definition;
+	}
+
+	/**
+	 * Returns a {@link BeanDefinition} for an {@link ObjectFactoryCreatingFactoryBean} pointing to the bean with the
+	 * given name.
+	 * 
+	 * @param targetBeanName must not be {@literal null} or empty.
+	 * @param source
+	 * @return
+	 */
+	public static AbstractBeanDefinition getObjectFactoryBeanDefinition(String targetBeanName, Object source) {
+
+		Assert.hasText(targetBeanName, "Target bean name must not be null or empty!");
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(ObjectFactoryCreatingFactoryBean.class);
+		builder.addPropertyValue("targetBeanName", targetBeanName);
+		builder.setRole(AbstractBeanDefinition.ROLE_INFRASTRUCTURE);
+
+		return getSourceBeanDefinition(builder, source);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,43 +15,71 @@
  */
 package org.springframework.data.auditing.config;
 
-import org.springframework.data.auditing.DateTimeProvider;
-import org.springframework.data.domain.AuditorAware;
+import java.lang.annotation.Annotation;
+
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.util.Assert;
 
 /**
- * Configuration information for auditing.
+ * Default implementation for {@link AuditingConfiguration}.
  * 
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
  * @author Oliver Gierke
  */
-public interface AnnotationAuditingConfiguration {
+public class AnnotationAuditingConfiguration implements AuditingConfiguration {
+
+	private final AnnotationAttributes attributes;
 
 	/**
-	 * Returns the bean name of the {@link AuditorAware} instance to be used..
+	 * Creates a new instance of {@link AnnotationAuditingConfiguration} for the given {@link AnnotationMetadata} and
+	 * annotation type.
 	 * 
-	 * @return
+	 * @param metadata must not be {@literal null}.
+	 * @param annotation must not be {@literal null}.
 	 */
-	String getAuditorAwareRef();
+	public AnnotationAuditingConfiguration(AnnotationMetadata metadata, Class<? extends Annotation> annotation) {
 
-	/**
-	 * Returns whether the creation and modification dates shall be set. Defaults to {@literal true}.
-	 * 
-	 * @return
-	 */
-	boolean isSetDates();
+		Assert.notNull(metadata, "AnnotationMetadata must not be null!");
+		Assert.notNull(annotation, "Annotation must not be null!");
 
-	/**
-	 * Returns whether the entity shall be marked as modified on creation. Defaults to {@literal true}.
-	 * 
-	 * @return
-	 */
-	boolean isModifyOnCreate();
+		this.attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(annotation.getName()));
+	}
 
-	/**
-	 * Returns the bean name of the {@link DateTimeProvider} to be used.
-	 * 
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.auditing.config.AuditingConfiguration#getAuditorAwareRef()
 	 */
-	String getDateTimeProviderRef();
+	@Override
+	public String getAuditorAwareRef() {
+		return attributes.getString("auditorAwareRef");
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.auditing.config.AuditingConfiguration#isSetDates()
+	 */
+	@Override
+	public boolean isSetDates() {
+		return attributes.getBoolean("setDates");
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.auditing.config.AuditingConfiguration#getDateTimeProviderRef()
+	 */
+	@Override
+	public String getDateTimeProviderRef() {
+		return attributes.getString("dateTimeProviderRef");
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.auditing.config.AuditingConfiguration#isModifyOnCreate()
+	 */
+	@Override
+	public boolean isModifyOnCreate() {
+		return attributes.getBoolean("modifyOnCreate");
+	}
 }

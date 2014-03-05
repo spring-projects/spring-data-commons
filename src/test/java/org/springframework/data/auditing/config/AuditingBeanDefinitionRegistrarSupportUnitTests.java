@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,14 +30,20 @@ import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.auditing.EnableAuditing;
 
 /**
+ * Unit tests for {@link AuditingBeanDefinitionRegistrarSupport}.
+ * 
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
+ * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AuditingBeanDefinitionRegistrarSupportUnitTests {
 
-	@Mock private BeanDefinitionRegistry registry;
+	@Mock BeanDefinitionRegistry registry;
 
+	/**
+	 * @see DATCMNS-389
+	 */
 	@Test
 	public void testRegisterBeanDefinitions() {
 
@@ -62,9 +68,9 @@ public class AuditingBeanDefinitionRegistrarSupportUnitTests {
 		}
 
 		@Override
-		protected AnnotationAuditingConfiguration getConfiguration(AnnotationMetadata annotationMetadata) {
+		protected AuditingConfiguration getConfiguration(AnnotationMetadata annotationMetadata) {
 
-			return new AnnotationAuditingConfiguration() {
+			return new AuditingConfiguration() {
 				public String getAuditorAwareRef() {
 					return "auditor";
 				}
@@ -81,6 +87,15 @@ public class AuditingBeanDefinitionRegistrarSupportUnitTests {
 					return true;
 				}
 			};
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.config.AuditingBeanDefinitionRegistrarSupport#getAuditingHandlerBeanName()
+		 */
+		@Override
+		protected String getAuditingHandlerBeanName() {
+			return "auditingHandler";
 		}
 	}
 }

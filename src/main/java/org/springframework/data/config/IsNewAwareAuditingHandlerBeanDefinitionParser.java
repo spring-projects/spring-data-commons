@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
  */
 package org.springframework.data.config;
 
+import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.auditing.IsNewAwareAuditingHandler;
 import org.springframework.util.Assert;
 import org.w3c.dom.Element;
@@ -29,6 +32,7 @@ import org.w3c.dom.Element;
 public class IsNewAwareAuditingHandlerBeanDefinitionParser extends AuditingHandlerBeanDefinitionParser {
 
 	private final String isNewStrategyFactoryBeanId;
+	private String resolvedBeanName;
 
 	/**
 	 * Creates a new {@link IsNewAwareAuditingHandlerBeanDefinitionParser}.
@@ -39,6 +43,15 @@ public class IsNewAwareAuditingHandlerBeanDefinitionParser extends AuditingHandl
 
 		Assert.hasText(isNewStrategyFactoryBeanId);
 		this.isNewStrategyFactoryBeanId = isNewStrategyFactoryBeanId;
+	}
+
+	/**
+	 * Returns the bean name that was used to register the {@link IsNewAwareAuditingHandler}.
+	 * 
+	 * @return the resolvedBeanName
+	 */
+	public String getResolvedBeanName() {
+		return resolvedBeanName;
 	}
 
 	/* 
@@ -58,7 +71,18 @@ public class IsNewAwareAuditingHandlerBeanDefinitionParser extends AuditingHandl
 	protected void doParse(Element element, BeanDefinitionBuilder builder) {
 
 		builder.addConstructorArgReference(isNewStrategyFactoryBeanId);
-
 		super.doParse(element, builder);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
+	 */
+	@Override
+	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
+			throws BeanDefinitionStoreException {
+
+		this.resolvedBeanName = super.resolveId(element, definition, parserContext);
+		return resolvedBeanName;
 	}
 }
