@@ -56,7 +56,9 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		TypeInformation<?> returnTypeInfo = typeInformation.getReturnType(method);
 		Class<?> rawType = returnTypeInfo.getType();
 
-		return Iterable.class.isAssignableFrom(rawType) ? returnTypeInfo.getComponentType().getType() : rawType;
+		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray();
+
+		return needToUnwrap ? returnTypeInfo.getComponentType().getType() : rawType;
 	}
 
 	/* 

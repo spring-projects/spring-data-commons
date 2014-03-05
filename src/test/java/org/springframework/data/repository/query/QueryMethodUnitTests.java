@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,31 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 
 /**
  * Unit tests for {@link QueryMethod}.
  * 
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
 public class QueryMethodUnitTests {
 
-	@Mock
-	RepositoryMetadata metadata;
+	RepositoryMetadata metadata = new DefaultRepositoryMetadata(SampleRepository.class);
 
+	/**
+	 * @see DATAJPA-59
+	 */
 	@Test(expected = IllegalStateException.class)
 	public void rejectsPagingMethodWithInvalidReturnType() throws Exception {
 
@@ -48,18 +47,27 @@ public class QueryMethodUnitTests {
 		new QueryMethod(method, metadata);
 	}
 
+	/**
+	 * @see DATAJPA-59
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsPagingMethodWithoutPageable() throws Exception {
 		Method method = SampleRepository.class.getMethod("pagingMethodWithoutPageable");
 		new QueryMethod(method, metadata);
 	}
 
+	/**
+	 * @see DATACMNS-64
+	 */
 	@Test
 	public void setsUpSimpleQueryMethodCorrectly() throws Exception {
 		Method method = SampleRepository.class.getMethod("findByUsername", String.class);
 		new QueryMethod(method, metadata);
 	}
 
+	/**
+	 * @see DATACMNS-61
+	 */
 	@Test
 	public void considersIterableMethodForCollectionQuery() throws Exception {
 		Method method = SampleRepository.class.getMethod("sampleMethod");
@@ -67,6 +75,9 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isCollectionQuery(), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-67
+	 */
 	@Test
 	public void doesNotConsiderPageMethodCollectionQuery() throws Exception {
 		Method method = SampleRepository.class.getMethod("anotherSampleMethod", Pageable.class);
@@ -75,12 +86,11 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isCollectionQuery(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-171
+	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void detectsAnEntityBeingReturned() throws Exception {
-
-		when(metadata.getDomainType()).thenReturn((Class) User.class);
-		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) SpecialUser.class);
 
 		Method method = SampleRepository.class.getMethod("returnsEntitySubclass");
 		QueryMethod queryMethod = new QueryMethod(method, metadata);
@@ -88,12 +98,11 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isQueryForEntity(), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-171
+	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void detectsNonEntityBeingReturned() throws Exception {
-
-		when(metadata.getDomainType()).thenReturn((Class) User.class);
-		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) Integer.class);
 
 		Method method = SampleRepository.class.getMethod("returnsProjection");
 		QueryMethod queryMethod = new QueryMethod(method, metadata);
@@ -101,7 +110,20 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isQueryForEntity(), is(false));
 	}
 
-	interface SampleRepository {
+	/**
+	 * @see DATACMNS-471
+	 */
+	@Test
+	public void detectsCollectionMethodForArrayRetrunType() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("arrayOfUsers");
+
+		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(true));
+	}
+
+	interface SampleRepository extends Repository<User, Serializable> {
+
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
 
 		Page<String> pagingMethodWithoutPageable();
@@ -115,6 +137,8 @@ public class QueryMethodUnitTests {
 		SpecialUser returnsEntitySubclass();
 
 		Integer returnsProjection();
+
+		User[] arrayOfUsers();
 	}
 
 	class User {

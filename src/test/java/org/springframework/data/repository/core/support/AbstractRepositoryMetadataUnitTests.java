@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
@@ -38,6 +39,9 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  */
 public class AbstractRepositoryMetadataUnitTests {
 
+	/**
+	 * @see DATACMNS-98
+	 */
 	@Test
 	public void discoversSimpleReturnTypeCorrectly() throws Exception {
 
@@ -56,6 +60,9 @@ public class AbstractRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
+	/**
+	 * @see DATACMNS-98
+	 */
 	@Test
 	public void determinesReturnTypeFromPageable() throws Exception {
 
@@ -71,12 +78,27 @@ public class AbstractRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(GenericType.class)));
 	}
 
+	/**
+	 * @see DATACMNS-98
+	 */
 	@Test
 	public void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("anotherMethod");
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(Map.class)));
+	}
+
+	/**
+	 * @see DATACMNS-471
+	 */
+	@Test
+	public void detectsArrayReturnTypeCorrectly() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PagedRepository.class);
+		Method method = PagedRepository.class.getMethod("returnsArray");
+
+		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
 	interface UserRepository extends Repository<User, Long> {
@@ -102,6 +124,11 @@ public class AbstractRepositoryMetadataUnitTests {
 		List<Map<String, Object>> anotherMethod();
 	}
 
+	interface PagedRepository extends PagingAndSortingRepository<User, Long> {
+
+		User[] returnsArray();
+	}
+
 	class GenericType<T> {
 
 	}
@@ -120,5 +147,4 @@ public class AbstractRepositoryMetadataUnitTests {
 			return null;
 		}
 	}
-
 }
