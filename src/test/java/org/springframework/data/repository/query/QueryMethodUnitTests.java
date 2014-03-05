@@ -126,6 +126,18 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isPageQuery(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-471
+	 */
+	@Test
+	public void detectsCollectionMethodForArrayRetrunType() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("arrayOfUsers");
+
+		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(true));
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -143,6 +155,8 @@ public class QueryMethodUnitTests {
 		Integer returnsProjection();
 
 		Slice<User> sliceOfUsers();
+
+		User[] arrayOfUsers();
 	}
 
 	class User {
