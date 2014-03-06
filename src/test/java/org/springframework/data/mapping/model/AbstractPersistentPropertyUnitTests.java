@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ public class AbstractPersistentPropertyUnitTests {
 
 	@Before
 	public void setUp() {
+
 		typeInfo = ClassTypeInformation.from(TestClassComplex.class);
 		entity = new BasicPersistentEntity<TestClassComplex, SamplePersistentProperty>(typeInfo);
 		typeHolder = new SimpleTypeHolder();
@@ -68,6 +69,9 @@ public class AbstractPersistentPropertyUnitTests {
 		property.getComponentType();
 	}
 
+	/**
+	 * @see DATACMNS-101
+	 */
 	@Test
 	public void returnsNestedEntityTypeCorrectly() {
 
@@ -197,25 +201,6 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getSetter(), is(nullValue()));
 	}
 
-	private static PropertyDescriptor getPropertyDescriptor(Class<?> type, String propertyName) {
-
-		try {
-
-			BeanInfo info = Introspector.getBeanInfo(type);
-
-			for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
-				if (descriptor.getName().equals(propertyName)) {
-					return descriptor;
-				}
-			}
-
-			return null;
-
-		} catch (IntrospectionException e) {
-			return null;
-		}
-	}
-
 	/**
 	 * @see DATACMNS-337
 	 */
@@ -235,6 +220,46 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getActualType(), is((Object) Person.class));
 	}
 
+	/**
+	 * @see DATACMNS-462
+	 */
+	@Test
+	public void considersCollectionPropertyEntitiesIfComponentTypeIsEntity() {
+
+		SamplePersistentProperty property = getProperty(Sample.class, "persons");
+		assertThat(property.isEntity(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-462
+	 */
+	@Test
+	public void considersMapPropertyEntitiesIfValueTypeIsEntity() {
+
+		SamplePersistentProperty property = getProperty(Sample.class, "personMap");
+		assertThat(property.isEntity(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-462
+	 */
+	@Test
+	public void considersArrayPropertyEntitiesIfComponentTypeIsEntity() {
+
+		SamplePersistentProperty property = getProperty(Sample.class, "personArray");
+		assertThat(property.isEntity(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-462
+	 */
+	@Test
+	public void considersCollectionPropertySimpleIfComponentTypeIsSimple() {
+
+		SamplePersistentProperty property = getProperty(Sample.class, "strings");
+		assertThat(property.isEntity(), is(false));
+	}
+
 	private <T> SamplePersistentProperty getProperty(Class<T> type, String name) {
 
 		BasicPersistentEntity<T, SamplePersistentProperty> entity = new BasicPersistentEntity<T, SamplePersistentProperty>(
@@ -242,6 +267,25 @@ public class AbstractPersistentPropertyUnitTests {
 
 		Field field = ReflectionUtils.findField(type, name);
 		return new SamplePersistentProperty(field, null, entity, typeHolder);
+	}
+
+	private static PropertyDescriptor getPropertyDescriptor(Class<?> type, String propertyName) {
+
+		try {
+
+			BeanInfo info = Introspector.getBeanInfo(type);
+
+			for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
+				if (descriptor.getName().equals(propertyName)) {
+					return descriptor;
+				}
+			}
+
+			return null;
+
+		} catch (IntrospectionException e) {
+			return null;
+		}
 	}
 
 	class Generic<T> {
@@ -345,5 +389,6 @@ public class AbstractPersistentPropertyUnitTests {
 		Collection<Person> persons;
 		Person[] personArray;
 		Map<String, Person> personMap;
+		Collection<String> strings;
 	}
 }

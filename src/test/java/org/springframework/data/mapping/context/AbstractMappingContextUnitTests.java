@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import groovy.lang.MetaClass;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -222,6 +223,23 @@ public class AbstractMappingContextUnitTests {
 
 		context.setStrict(true);
 		assertThat(context.getPersistentEntity(Integer.class), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-462
+	 */
+	@Test
+	public void hasPersistentEntityForCollectionPropertiesAfterInitialization() {
+
+		context.getPersistentEntity(Sample.class);
+
+		for (BasicPersistentEntity<Object, SamplePersistentProperty> entity : context.getPersistentEntities()) {
+			if (entity.getType().equals(Person.class)) {
+				return;
+			}
+		}
+
+		fail("Expected to find persistent entity for Person!");
 	}
 
 	class Person {
