@@ -155,7 +155,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		result.setInterfaces(new Class[] { repositoryInterface, Repository.class });
 
 		for (RepositoryProxyPostProcessor processor : postProcessors) {
-			processor.postProcess(result);
+			processor.postProcess(result, information);
 		}
 
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, customImplementation, target));

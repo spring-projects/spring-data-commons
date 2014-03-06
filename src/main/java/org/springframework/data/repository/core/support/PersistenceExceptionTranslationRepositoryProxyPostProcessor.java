@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.dao.support.PersistenceExceptionTranslationInterceptor;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.util.Assert;
 
 /**
@@ -47,9 +48,9 @@ public class PersistenceExceptionTranslationRepositoryProxyPostProcessor impleme
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryProxyPostProcessor#postProcess(org.springframework.aop.framework.ProxyFactory)
+	 * @see org.springframework.data.repository.core.support.RepositoryProxyPostProcessor#postProcess(org.springframework.aop.framework.ProxyFactory, org.springframework.data.repository.core.RepositoryInformation)
 	 */
-	public void postProcess(ProxyFactory factory) {
+	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 		factory.addAdvice(interceptor);
 	}
 }

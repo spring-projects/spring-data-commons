@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.BridgeMethodResolver;
 import org.springframework.dao.support.PersistenceExceptionTranslationInterceptor;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.transaction.annotation.Ejb3TransactionAnnotationParser;
 import org.springframework.transaction.annotation.SpringTransactionAnnotationParser;
 import org.springframework.transaction.annotation.TransactionAnnotationParser;
@@ -52,7 +54,8 @@ import org.springframework.util.ObjectUtils;
  */
 class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
 
-	private final TransactionInterceptor transactionInterceptor;
+	private final BeanFactory beanFactory;
+	private final String transactionManagerName;
 
 	/**
 	 * Creates a new {@link TransactionalRepositoryProxyPostProcessor} using the given {@link ListableBeanFactory} and
@@ -66,17 +69,24 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		Assert.notNull(beanFactory);
 		Assert.notNull(transactionManagerName);
 
-		this.transactionInterceptor = new TransactionInterceptor(null, new CustomAnnotationTransactionAttributeSource());
-		this.transactionInterceptor.setTransactionManagerBeanName(transactionManagerName);
-		this.transactionInterceptor.setBeanFactory(beanFactory);
-		this.transactionInterceptor.afterPropertiesSet();
+		this.beanFactory = beanFactory;
+		this.transactionManagerName = transactionManagerName;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryProxyPostProcessor#postProcess(org.springframework.aop.framework.ProxyFactory)
+	 * @see org.springframework.data.repository.core.support.RepositoryProxyPostProcessor#postProcess(org.springframework.aop.framework.ProxyFactory, org.springframework.data.repository.core.RepositoryInformation)
 	 */
-	public void postProcess(ProxyFactory factory) {
+	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
+
+		CustomAnnotationTransactionAttributeSource transactionAttributeSource = new CustomAnnotationTransactionAttributeSource();
+		transactionAttributeSource.setRepositoryInformation(repositoryInformation);
+
+		TransactionInterceptor transactionInterceptor = new TransactionInterceptor(null, transactionAttributeSource);
+		transactionInterceptor.setTransactionManagerBeanName(transactionManagerName);
+		transactionInterceptor.setBeanFactory(beanFactory);
+		transactionInterceptor.afterPropertiesSet();
+
 		factory.addAdvice(transactionInterceptor);
 	}
 
@@ -248,6 +258,15 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		 */
 		final Map<Object, TransactionAttribute> attributeCache = new ConcurrentHashMap<Object, TransactionAttribute>();
 
+		private RepositoryInformation repositoryInformation;
+
+		/**
+		 * @param repositoryInformation the repositoryInformation to set
+		 */
+		public void setRepositoryInformation(RepositoryInformation repositoryInformation) {
+			this.repositoryInformation = repositoryInformation;
+		}
+
 		/**
 		 * Determine the transaction attribute for this method invocation.
 		 * <p>
@@ -349,8 +368,26 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 				return txAtt;
 			}
 
-			// End: Implementation class check block
+			// Fallback to implementation class transaction settings of nothing found
+			// return findTransactionAttribute(method);
+			Method targetClassMethod = repositoryInformation.getTargetClassMethod(method);
+
+			if (targetClassMethod.equals(method)) {
+				return null;
+			}
+
+			txAtt = findTransactionAttribute(targetClassMethod);
+			if (txAtt != null) {
+				return txAtt;
+			}
+
+			txAtt = findTransactionAttribute(targetClassMethod.getDeclaringClass());
+			if (txAtt != null) {
+				return txAtt;
+			}
+
 			return null;
+			// End: Implementation class check block
 		}
 
 		/**

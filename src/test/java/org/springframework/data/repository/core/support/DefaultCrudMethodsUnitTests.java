@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,6 +124,14 @@ public class DefaultCrudMethodsUnitTests {
 		assertFindAllMethodOn(type, CrudRepository.class.getDeclaredMethod("findAll"));
 	}
 
+	/**
+	 * @see DATACMNS-464
+	 */
+	@Test
+	public void detectsCustomSaveMethod() throws Exception {
+		assertSaveMethodOn(RepositoryWithCustomSave.class, RepositoryWithCustomSave.class.getMethod("save", Domain.class));
+	}
+
 	private static CrudMethods getMethodsFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
@@ -178,6 +186,11 @@ public class DefaultCrudMethodsUnitTests {
 	interface DomainCrudRepository extends CrudRepository<Domain, Long> {}
 
 	interface DomainPagingAndSortingRepository extends PagingAndSortingRepository<Domain, Long> {}
+
+	interface RepositoryWithCustomSave extends Repository<Domain, Serializable> {
+
+		Domain save(Domain domain);
+	}
 
 	interface RepositoryWithCustomSortingAndPagingFindAll extends Repository<Domain, Serializable> {
 
