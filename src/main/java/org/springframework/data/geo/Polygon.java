@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
-public class Polygon implements Iterable<Point> {
+public class Polygon implements Iterable<Point>, Shape {
 
 	private final List<Point> points;
 

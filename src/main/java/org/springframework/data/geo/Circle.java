@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
-public class Circle {
+public class Circle implements Shape {
 
 	private final Point center;
 	private final Distance radius;

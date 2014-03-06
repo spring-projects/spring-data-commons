@@ -25,7 +25,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
-public class Box {
+public class Box implements Shape {
 
 	private final Point first;
 	private final Point second;
