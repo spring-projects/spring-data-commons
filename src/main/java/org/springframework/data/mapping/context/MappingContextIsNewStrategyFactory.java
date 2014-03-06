@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.context;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapper;
@@ -27,24 +29,44 @@ import org.springframework.util.Assert;
 /**
  * An {@link IsNewStrategyFactory} using a {@link MappingContext} to determine the {@link IsNewStrategy} to be returned
  * for a particular type. It will look for a version and id property on the {@link PersistentEntity} and return a
- * strategy instance that will refelctively inspect the property for {@literal null} values or {@literal null} or a
+ * strategy instance that will reflectively inspect the property for {@literal null} values or {@literal null} or a
  * value of 0 in case of a version property.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupport {
 
-	private final MappingContext<? extends PersistentEntity<?, ?>, ?> context;
+	private final ObjectFactory<MappingContext<? extends PersistentEntity<?, ?>, ?>> factory;
+
+	private volatile MappingContext<? extends PersistentEntity<?, ?>, ?> context;
+
+	/**
+	 * Creates a new {@link MappingContextIsNewStrategyFactory} using the given {@link ObjectFactory}.
+	 * 
+	 * @param factory must not be {@literal null}.
+	 */
+	public MappingContextIsNewStrategyFactory(ObjectFactory<MappingContext<? extends PersistentEntity<?, ?>, ?>> factory) {
+
+		Assert.notNull(factory, "ObjectFactory must not be null!");
+		this.factory = factory;
+	}
 
 	/**
 	 * Creates a new {@link MappingContextIsNewStrategyFactory} using the given {@link MappingContext}.
 	 * 
 	 * @param context must not be {@literal null}.
 	 */
-	public MappingContextIsNewStrategyFactory(MappingContext<? extends PersistentEntity<?, ?>, ?> context) {
+	public MappingContextIsNewStrategyFactory(final MappingContext<? extends PersistentEntity<?, ?>, ?> context) {
 
 		Assert.notNull(context, "MappingContext must not be null!");
-		this.context = context;
+		this.factory = new ObjectFactory<MappingContext<? extends PersistentEntity<?, ?>, ?>>() {
+
+			@Override
+			public MappingContext<? extends PersistentEntity<?, ?>, ?> getObject() throws BeansException {
+				return context;
+			}
+		};
 	}
 
 	/*
@@ -54,7 +76,7 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	@Override
 	protected IsNewStrategy doGetIsNewStrategy(Class<?> type) {
 
-		PersistentEntity<?, ?> entity = context.getPersistentEntity(type);
+		PersistentEntity<?, ?> entity = getMappingContext().getPersistentEntity(type);
 
 		if (entity == null) {
 			return null;
@@ -67,6 +89,15 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		} else {
 			throw new MappingException(String.format("Cannot determine IsNewStrategy for type %s!", type));
 		}
+	}
+
+	/**
+	 * Returns the associated {@link MappingContext} which is created lazily if not present yet.
+	 * 
+	 * @return
+	 */
+	private MappingContext<? extends PersistentEntity<?, ?>, ?> getMappingContext() {
+		return context != null ? context : (context = factory.getObject());
 	}
 
 	/**
