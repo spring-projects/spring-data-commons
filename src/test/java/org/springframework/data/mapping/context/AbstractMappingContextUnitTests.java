@@ -224,6 +224,16 @@ public class AbstractMappingContextUnitTests {
 		assertThat(context.getPersistentEntity(Integer.class), is(nullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-462
+	 */
+	@Test
+	public void hasPersistentEntityForCollectionPropertiesAfterInitialization() {
+
+		context.getPersistentEntity(Sample.class);
+		assertThat(context.hasPersistentEntityFor(Person.class), is(true));
+	}
+
 	class Person {
 		String name;
 	}
