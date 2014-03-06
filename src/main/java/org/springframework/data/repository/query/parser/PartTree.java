@@ -39,11 +39,6 @@ import org.springframework.util.StringUtils;
  */
 public class PartTree implements Iterable<OrPart> {
 
-	private static final String DELETE_PATTERN = "delete|remove";
-
-	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count|query|" + DELETE_PATTERN
-			+ ")(\\p{Lu}.*?)??By");
-
 	/*
 	 * We look for a pattern of: keyword followed by
 	 *
@@ -55,6 +50,9 @@ public class PartTree implements Iterable<OrPart> {
 	 * @see http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#ubc
 	 */
 	private static final String KEYWORD_TEMPLATE = "(%s)(?=(\\p{Lu}|\\P{InBASIC_LATIN}))";
+	private static final String DELETE_PATTERN = "delete|remove";
+	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count|query|" + DELETE_PATTERN
+			+ ")(\\p{Lu}.*?)??By");
 
 	/**
 	 * The subject, for example "findDistinctUserByNameOrderByAge" would have the subject "DistinctUser".
