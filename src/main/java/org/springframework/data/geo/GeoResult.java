@@ -73,7 +73,7 @@ public class GeoResult<T> {
 			return true;
 		}
 
-		if (obj == null || !getClass().isInstance(obj)) {
+		if (!(obj instanceof GeoResult)) {
 			return false;
 		}
 
@@ -90,8 +90,10 @@ public class GeoResult<T> {
 	public int hashCode() {
 
 		int result = 17;
+
 		result += 31 * distance.hashCode();
 		result += 31 * content.hashCode();
+
 		return result;
 	}
 

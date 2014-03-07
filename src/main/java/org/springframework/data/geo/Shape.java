@@ -15,7 +15,6 @@
  */
 package org.springframework.data.geo;
 
-
 /**
  * Common interface for all shapes. Allows building external representations of them.
  * 

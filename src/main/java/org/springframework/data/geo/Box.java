@@ -60,28 +60,52 @@ public class Box implements Shape {
 		this.second = new Point(second[0], second[1]);
 	}
 
+	/**
+	 * Returns the first {@link Point} making up the {@link Box}.
+	 * 
+	 * @return
+	 */
 	public Point getFirst() {
 		return first;
 	}
 
+	/**
+	 * Returns the second {@link Point} making up the {@link Box}.
+	 * 
+	 * @return
+	 */
 	public Point getSecond() {
 		return second;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return String.format("Box [%s, %s]", first, second);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 
 		int result = 31;
+
 		result += 17 * first.hashCode();
 		result += 17 * second.hashCode();
+
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -89,11 +113,12 @@ public class Box implements Shape {
 			return true;
 		}
 
-		if (obj == null || !(obj instanceof Box)) {
+		if (!(obj instanceof Box)) {
 			return false;
 		}
 
 		Box that = (Box) obj;
+
 		return this.first.equals(that.first) && this.second.equals(that.second);
 	}
 }

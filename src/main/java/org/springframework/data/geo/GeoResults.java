@@ -45,6 +45,13 @@ public class GeoResults<T> implements Iterable<GeoResult<T>> {
 		this(results, (Metric) null);
 	}
 
+	/**
+	 * Creates a new {@link GeoResults} instance manually calculating the average distance in the given {@link Metric}
+	 * from the distance values of the given {@link GeoResult}s.
+	 * 
+	 * @param results must not be {@literal null}.
+	 * @param metric must not be {@literal null}.
+	 */
 	public GeoResults(List<? extends GeoResult<T>> results, Metric metric) {
 		this(results, calculateAverageDistance(results, metric));
 	}
@@ -53,11 +60,13 @@ public class GeoResults<T> implements Iterable<GeoResult<T>> {
 	 * Creates a new {@link GeoResults} instance from the given {@link GeoResult}s and average distance.
 	 * 
 	 * @param results must not be {@literal null}.
-	 * @param averageDistance
+	 * @param averageDistance can be {@literal null}.
 	 */
 	@PersistenceConstructor
 	public GeoResults(List<? extends GeoResult<T>> results, Distance averageDistance) {
+
 		Assert.notNull(results);
+
 		this.results = results;
 		this.averageDistance = averageDistance;
 	}
@@ -71,6 +80,15 @@ public class GeoResults<T> implements Iterable<GeoResult<T>> {
 		return averageDistance;
 	}
 
+	/**
+	 * Returns the actual content of the {@link GeoResults}.
+	 * 
+	 * @return
+	 */
+	public List<GeoResult<T>> getContent() {
+		return Collections.unmodifiableList(results);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
@@ -78,15 +96,6 @@ public class GeoResults<T> implements Iterable<GeoResult<T>> {
 	@SuppressWarnings("unchecked")
 	public Iterator<GeoResult<T>> iterator() {
 		return (Iterator<GeoResult<T>>) results.iterator();
-	}
-
-	/**
-	 * Returns the actual
-	 * 
-	 * @return
-	 */
-	public List<GeoResult<T>> getContent() {
-		return Collections.unmodifiableList(results);
 	}
 
 	/*
@@ -100,7 +109,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>> {
 			return true;
 		}
 
-		if (obj == null || !getClass().isInstance(obj)) {
+		if (!(obj instanceof GeoResults)) {
 			return false;
 		}
 
@@ -115,9 +124,12 @@ public class GeoResults<T> implements Iterable<GeoResult<T>> {
 	 */
 	@Override
 	public int hashCode() {
+
 		int result = 17;
+
 		result += 31 * results.hashCode();
 		result += 31 * averageDistance.hashCode();
+
 		return result;
 	}
 

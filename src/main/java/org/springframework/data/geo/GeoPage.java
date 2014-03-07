@@ -38,7 +38,9 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 	 * @param content must not be {@literal null}.
 	 */
 	public GeoPage(GeoResults<T> results) {
+
 		super(results.getContent());
+
 		this.averageDistance = results.getAverageDistance();
 	}
 
@@ -50,7 +52,9 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 	 * @param total
 	 */
 	public GeoPage(GeoResults<T> results, Pageable pageable, long total) {
+
 		super(results.getContent(), pageable, total);
+
 		this.averageDistance = results.getAverageDistance();
 	}
 

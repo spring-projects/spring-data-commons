@@ -15,7 +15,7 @@
  */
 package org.springframework.data.geo;
 
-import org.springframework.util.ObjectUtils;
+import org.springframework.util.Assert;
 
 /**
  * Value object to represent distances in a given metric.
@@ -42,7 +42,7 @@ public class Distance {
 	 * Creates a new {@link Distance} with the given {@link Metric}.
 	 * 
 	 * @param value
-	 * @param metric
+	 * @param metric can be {@literal null}.
 	 */
 	public Distance(double value, Metric metric) {
 		this.value = value;
@@ -50,6 +50,8 @@ public class Distance {
 	}
 
 	/**
+	 * Returns the distance value in the current {@link Metric}.
+	 * 
 	 * @return the value
 	 */
 	public double getValue() {
@@ -66,6 +68,8 @@ public class Distance {
 	}
 
 	/**
+	 * Retruns the {@link Metric} of the {@link Distance}.
+	 * 
 	 * @return the metric
 	 */
 	public Metric getMetric() {
@@ -76,24 +80,33 @@ public class Distance {
 	 * Adds the given distance to the current one. The resulting {@link Distance} will be in the same metric as the
 	 * current one.
 	 * 
-	 * @param other
+	 * @param other must not be {@literal null}.
 	 * @return
 	 */
 	public Distance add(Distance other) {
+
+		Assert.notNull(other, "Distance to add must not be null!");
+
 		double newNormalizedValue = getNormalizedValue() + other.getNormalizedValue();
+
 		return new Distance(newNormalizedValue * metric.getMultiplier(), metric);
 	}
 
 	/**
 	 * Adds the given {@link Distance} to the current one and forces the result to be in a given {@link Metric}.
 	 * 
-	 * @param other
-	 * @param metric
+	 * @param other must not be {@literal null}.
+	 * @param metric must not be {@literal null}.
 	 * @return
 	 */
 	public Distance add(Distance other, Metric metric) {
+
+		Assert.notNull(other, "Distance to must not be null!");
+		Assert.notNull(metric, "Result metric must not be null!");
+
 		double newLeft = getNormalizedValue() * metric.getMultiplier();
 		double newRight = other.getNormalizedValue() * metric.getMultiplier();
+
 		return new Distance(newLeft + newRight, metric);
 	}
 
@@ -108,13 +121,13 @@ public class Distance {
 			return true;
 		}
 
-		if (obj == null || !getClass().isInstance(obj)) {
+		if (!(obj instanceof Distance)) {
 			return false;
 		}
 
 		Distance that = (Distance) obj;
 
-		return this.value == that.value && ObjectUtils.nullSafeEquals(this.metric, that.metric);
+		return this.value == that.value && this.metric.equals(that.metric);
 	}
 
 	/*
@@ -123,9 +136,12 @@ public class Distance {
 	 */
 	@Override
 	public int hashCode() {
+
 		int result = 17;
+
 		result += 31 * Double.doubleToLongBits(value);
-		result += 31 * ObjectUtils.nullSafeHashCode(metric);
+		result += 31 * metric.hashCode();
+
 		return result;
 	}
 

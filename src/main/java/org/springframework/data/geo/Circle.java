@@ -54,7 +54,6 @@ public class Circle implements Shape {
 	 * @param center must not be {@literal null}.
 	 * @param radius's value must be greater or equal to zero.
 	 */
-	@PersistenceConstructor
 	public Circle(Point center, double radius) {
 		this(center, new Distance(radius));
 	}
@@ -95,10 +94,11 @@ public class Circle implements Shape {
 	 */
 	@Override
 	public String toString() {
-		return String.format("Circle [center=%s, radius=%f]", center, radius);
+		return String.format("Circle: [center=%s, radius=%f]", center, radius);
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -108,7 +108,7 @@ public class Circle implements Shape {
 			return true;
 		}
 
-		if (obj == null || !(obj instanceof Circle)) {
+		if (!(obj instanceof Circle)) {
 			return false;
 		}
 
@@ -123,9 +123,12 @@ public class Circle implements Shape {
 	 */
 	@Override
 	public int hashCode() {
+
 		int result = 17;
+
 		result += 31 * center.hashCode();
 		result += 31 * radius.hashCode();
+
 		return result;
 	}
 }

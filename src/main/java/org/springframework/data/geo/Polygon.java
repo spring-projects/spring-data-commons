@@ -17,10 +17,13 @@ package org.springframework.data.geo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Simple value object to represent a {@link Polygon}.
@@ -36,49 +39,53 @@ public class Polygon implements Iterable<Point>, Shape {
 	/**
 	 * Creates a new {@link Polygon} for the given Points.
 	 * 
-	 * @param x
-	 * @param y
-	 * @param z
+	 * @param x must not be {@literal null}.
+	 * @param y must not be {@literal null}.
+	 * @param z must not be {@literal null}.
 	 * @param others
 	 */
-	public <P extends Point> Polygon(P x, P y, P z, P... others) {
+	public Polygon(Point x, Point y, Point z, Point... others) {
 
-		Assert.notNull(x);
-		Assert.notNull(y);
-		Assert.notNull(z);
+		Assert.notNull(x, "X coordinate must not be null!");
+		Assert.notNull(y, "Y coordinate must not be null!");
+		Assert.notNull(z, "Z coordinate must not be null!");
 		Assert.notNull(others);
 
-		this.points = new ArrayList<Point>(3 + others.length);
-		this.points.addAll(Arrays.asList(x, y, z));
-		this.points.addAll(Arrays.asList(others));
+		List<Point> points = new ArrayList<Point>(3 + others.length);
+		points.addAll(Arrays.asList(x, y, z));
+		points.addAll(Arrays.asList(others));
+
+		this.points = Collections.unmodifiableList(points);
 	}
 
 	/**
 	 * Creates a new {@link Polygon} for the given Points.
 	 * 
-	 * @param points
+	 * @param points must not be {@literal null}.
 	 */
-	public <P extends Point> Polygon(List<P> points) {
+	@PersistenceConstructor
+	public Polygon(List<? extends Point> points) {
 
 		Assert.notNull(points);
 
-		this.points = new ArrayList<Point>(points.size());
+		List<Point> pointsToSet = new ArrayList<Point>(points.size());
 
 		for (Point point : points) {
+
 			Assert.notNull(point);
-			this.points.add(point);
+			pointsToSet.add(point);
 		}
+
+		this.points = Collections.unmodifiableList(pointsToSet);
 	}
 
+	/**
+	 * Returns all {@link Point}s the {@link Polygon} is made of.
+	 * 
+	 * @return
+	 */
 	public List<Point> getPoints() {
-
-		List<Point> result = new ArrayList<Point>();
-
-		for (Point point : points) {
-			result.add(point);
-		}
-
-		return result;
+		return this.points;
 	}
 
 	/*
@@ -100,7 +107,7 @@ public class Polygon implements Iterable<Point>, Shape {
 			return true;
 		}
 
-		if (obj == null || !(obj instanceof Polygon)) {
+		if (!(obj instanceof Polygon)) {
 			return false;
 		}
 
@@ -116,5 +123,14 @@ public class Polygon implements Iterable<Point>, Shape {
 	@Override
 	public int hashCode() {
 		return points.hashCode();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return String.format("Polygon: [%s]", StringUtils.collectionToCommaDelimitedString(points));
 	}
 }

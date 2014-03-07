@@ -29,6 +29,8 @@ public enum Metrics implements Metric {
 	private final double multiplier;
 
 	/**
+	 * Creates a new {@link Metrics} using the given muliplier.
+	 * 
 	 * @param multiplier the earth radius at equator.
 	 */
 	private Metrics(double multiplier) {
