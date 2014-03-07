@@ -52,6 +52,7 @@ public class PointUnitTests {
 	 */
 	@Test
 	public void invokingToStringWorksCorrectly() {
-		new Point(1.5, 1.5).toString();
+		assertThat(new Point(1.5, 1.5).toString(), is("Point [x=1.500000, y=1.500000]"));
 	}
+
 }

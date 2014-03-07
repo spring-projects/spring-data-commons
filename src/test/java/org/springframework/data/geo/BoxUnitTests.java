@@ -52,4 +52,13 @@ public class BoxUnitTests {
 		assertThat(first.hashCode(), is(second.hashCode()));
 		assertThat(first.hashCode(), is(not(third.hashCode())));
 	}
+
+	/**
+	 * @see DATACMNS-437
+	 */
+	@Test
+	public void testToString() {
+
+		assertThat(first.toString(), is("Box [Point [x=1.000000, y=1.000000], Point [x=2.000000, y=2.000000]]"));
+	}
 }

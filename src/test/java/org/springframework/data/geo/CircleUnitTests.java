@@ -61,4 +61,13 @@ public class CircleUnitTests {
 		assertThat(left, is(right));
 		assertThat(right, is(left));
 	}
+
+	/**
+	 * @see DATACMNS-437
+	 */
+	@Test
+	public void testToString() {
+
+		assertThat(new Circle(1, 1, 1).toString(), is("Circle: [center=Point [x=1.000000, y=1.000000], radius=1.0]"));
+	}
 }

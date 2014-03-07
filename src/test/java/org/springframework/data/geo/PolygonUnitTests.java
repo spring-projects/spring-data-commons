@@ -63,4 +63,14 @@ public class PolygonUnitTests {
 		assertThat(left, is(right));
 		assertThat(right, is(left));
 	}
+
+	/**
+	 * @see DATACMNS-437
+	 */
+	@Test
+	public void testToString() {
+
+		assertThat(new Polygon(third, second, first).toString(),
+				is("Polygon: [Point [x=3.000000, y=3.000000],Point [x=2.000000, y=2.000000],Point [x=1.000000, y=1.000000]]"));
+	}
 }

@@ -125,7 +125,7 @@ public class Polygon implements Iterable<Point>, Shape {
 		return points.hashCode();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
