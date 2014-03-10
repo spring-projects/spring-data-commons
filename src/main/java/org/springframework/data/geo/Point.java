@@ -15,6 +15,8 @@
  */
 package org.springframework.data.geo;
 
+import java.util.Locale;
+
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.util.Assert;
 
@@ -126,6 +128,6 @@ public class Point {
 	 */
 	@Override
 	public String toString() {
-		return String.format("Point [x=%f, y=%f]", x, y);
+		return String.format(Locale.ENGLISH, "Point [x=%f, y=%f]", x, y);
 	}
 }
