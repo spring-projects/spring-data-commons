@@ -5,14 +5,14 @@
 	
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>1.6.5.BUILD-SNAPSHOT</version>
+	<version>1.6.5.DATACMNS-463-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.2.1.RELEASE</version>
+		<version>1.2.2.RELEASE</version>
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
 	
