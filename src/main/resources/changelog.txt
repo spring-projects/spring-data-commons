@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.6.5.RELEASE (2014-03-10)
+---------------------------------------------
+** Bug
+    * [DATACMNS-442] - Additional documentation on @NoRepositoryBean annotation for intermediate repository interface.
+    * [DATACMNS-460] - Support for repository queries returning array type.
+    * [DATACMNS-462] - Fully initialize collection and map properties.
+
 Changes in version 1.6.4.RELEASE (2014-02-17)
 ---------------------------------------------
 ** Bug
