@@ -535,7 +535,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
           /&gt;</code> elements inside <code>&lt;repositories /&gt;</code>.
           The semantics are exactly equivalent to the elements in Spring's
           context namespace. For details, see <ulink
-          url="http://static.springsource.org/spring/docs/2.5.x/reference/beans.html#beans-scanning-filters"
+          url="http://docs.spring.io/spring/docs/3.0.x/reference/beans.html#beans-scanning-filters"
           vendor="">Spring reference documentation</ulink> on these
           elements.</para>
 
@@ -566,7 +566,7 @@ List&lt;User&gt; findByLastname(String lastname, Pageable pageable);</programlis
         configuration of the Spring container, see the reference
         documentation.<footnote>
             <para>JavaConfig in the Spring reference documentation - <ulink
-            url="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/beans.html#beans-java"/></para>
+            url="http://docs.spring.io/spring/docs/3.1.x/spring-framework-reference/html/beans.html#beans-java"/></para>
           </footnote></para>
 
         <para>A sample configuration to enable Spring Data repositories looks
@@ -882,7 +882,7 @@ public class MyRepositoryFactoryBean&lt;R extends JpaRepository&lt;T, I&gt;, T, 
 
       <para><footnote>
           <para>Spring HATEOAS - <ulink
-          url="https://github.com/SpringSource/spring-hateoas">https://github.com/SpringSource/spring-hateoas</ulink></para>
+          url="https://github.com/spring-projects/spring-hateoas">https://github.com/spring-projects/spring-hateoas</ulink></para>
         </footnote>In general, the integration support is enabled by using the
       <interfacename>@EnableSpringDataWebSupport</interfacename> annotation in
       your JavaConfig configuration class.</para>

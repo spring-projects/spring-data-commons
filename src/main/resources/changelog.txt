@@ -1,6 +1,33 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.6.5.RELEASE (2014-03-10)
+---------------------------------------------
+** Bug
+    * [DATACMNS-442] - Additional documentation on @NoRepositoryBean annotation for intermediate repository interface.
+    * [DATACMNS-460] - Support for repository queries returning array type.
+    * [DATACMNS-462] - Fully initialize collection and map properties.
+
+Changes in version 1.7.0.RELEASE (2014-02-24)
+---------------------------------------------
+** Bug
+    * [DATACMNS-432] - ConcurrentModificationException in Repositories.getRepoInfoFor(Repositories.java:183)
+    * [DATACMNS-436] - Order.ignoreCase not taken into account in equals(), hashCode() and toString()
+    * [DATACMNS-441] - Analyzing @Query annotated bridge methods lead to NPEs during QueryMethod processing in Java 8
+    * [DATACMNS-442] - ID type not detected for intermediate repository interface
+
+** Improvement
+    * [DATACMNS-433] - Add IsLike and IsNotLike
+    * [DATACMNS-434] - Update spring-data-parent's slf4j dependencies to version 1.7.5
+    * [DATACMNS-439] - AnnotationRepositoryConfigurationSource support for REGEX
+    * [DATACMNS-440] - Special map type causes fallback to Object in ParameterizedTypeInformation
+    * [DATACMNS-446] - Add toString() methods to ClassTypeInformation
+
+** Task
+    * [DATACMNS-443] - Release 1.7 GA.
+    * [DATACMNS-444] - DefaultPersistentPropertyPath should drop null path segments in toDotPath(…)
+    * [DATACMNS-445] - Documentation overhaul
+
 Changes in version 1.6.4.RELEASE (2014-02-17)
 ---------------------------------------------
 ** Bug
