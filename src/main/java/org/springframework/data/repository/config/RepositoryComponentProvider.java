@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,8 @@ import org.springframework.util.Assert;
  */
 class RepositoryComponentProvider extends ClassPathScanningCandidateComponentProvider {
 
+	private static final String METHOD_NOT_PUBLIC = "AnnotationConfigUtils.processCommonDefinitionAnnotations(…) is not public! Make sure you're using Spring 3.2.5 or better. The class was loaded from %s.";
+
 	private boolean considerNestedRepositoryInterfaces;
 
 	/**
@@ -56,6 +58,8 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	public RepositoryComponentProvider(Iterable<? extends TypeFilter> includeFilters) {
 
 		super(false);
+
+		assertRequiredSpringVersionPresent();
 
 		Assert.notNull(includeFilters);
 
@@ -140,6 +144,20 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	 */
 	public void setConsiderNestedRepositoryInterfaces(boolean considerNestedRepositoryInterfaces) {
 		this.considerNestedRepositoryInterfaces = considerNestedRepositoryInterfaces;
+	}
+
+	/**
+	 * Makes sure {@link AnnotationConfigUtils#processCommonDefinitionAnnotations(AnnotatedBeanDefinition) is public and
+	 * indicates the offending JAR if not.
+	 */
+	private static void assertRequiredSpringVersionPresent() {
+
+		try {
+			AnnotationConfigUtils.class.getMethod("processCommonDefinitionAnnotations", AnnotatedBeanDefinition.class);
+		} catch (NoSuchMethodException o_O) {
+			throw new IllegalStateException(String.format(METHOD_NOT_PUBLIC, AnnotationConfigUtils.class
+					.getProtectionDomain().getCodeSource().getLocation()), o_O);
+		}
 	}
 
 	/**
