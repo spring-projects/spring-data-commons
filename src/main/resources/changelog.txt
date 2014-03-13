@@ -1,6 +1,27 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.7.1.RELEASE (2014-03-13)
+---------------------------------------------
+** Bug
+    * [DATACMNS-447] Soften too strict strickt-check in MappingContext.
+    * [DATACMNS-453] Fix NPE in isPageableRepository() for Repositories without a findAll() method.
+    * [DATACMNS-460] Repository metadata now supports array return types for query methods.
+    * [DATACMNS-462] AbstractPersistentProperty considers collections and maps entities now.
+    
+** Improvement
+    * [DATACMNS-466] More aggressive checks for the correct Spring version.
+    
+** Task
+    * [DATACMNS-465] Polished template.mf
+
+Changes in version 1.6.5.RELEASE (2014-03-10)
+---------------------------------------------
+** Bug
+    * [DATACMNS-442] - Additional documentation on @NoRepositoryBean annotation for intermediate repository interface.
+    * [DATACMNS-460] - Support for repository queries returning array type.
+    * [DATACMNS-462] - Fully initialize collection and map properties.
+
 Changes in version 1.7.0.RELEASE (2014-02-24)
 ---------------------------------------------
 ** Bug

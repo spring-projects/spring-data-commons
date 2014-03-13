@@ -1,4 +1,4 @@
-Spring Data Commons 1.7.0 GA (Feb 24th, 2014)
+Spring Data Commons 1.7.1 GA (March 13th, 2014)
 ---------------------------------------------
 
 Spring Data Commons is released under the terms of the Apache Software License Version 2.0 (see license.txt).
@@ -13,5 +13,5 @@ The reference manual and javadoc are located in the 'docs' directory.
 
 ADDITIONAL RESOURCES:
 
-Spring Data Homepage: http://www.springsource.org/spring-data
-Spring Data Forum:    http://forum.springsource.org/forumdisplay.php?f=??
+Spring Data Homepage: http://projects.spring.io/spring-data
+Spring Data Forum:    http://forum.spring.io/forum/spring-projects/data/nosql
