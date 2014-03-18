@@ -16,11 +16,9 @@
 package org.springframework.data.mapping.model;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -30,7 +28,7 @@ import org.springframework.util.ReflectionUtils;
  * 
  * @author Oliver Gierke
  */
-public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
+public class BeanWrapper<T> {
 
 	private final T bean;
 	private final ConversionService conversionService;
@@ -39,18 +37,15 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * Creates a new {@link BeanWrapper} for the given bean instance and {@link ConversionService}. If
 	 * {@link ConversionService} is {@literal null} no property type conversion will take place.
 	 * 
-	 * @param <E>
 	 * @param <T>
 	 * @param bean must not be {@literal null}.
 	 * @param conversionService can be {@literal null}.
 	 * @return
 	 */
-	public static <E extends PersistentEntity<T, ?>, T> BeanWrapper<E, T> create(T bean,
-			ConversionService conversionService) {
+	public static <T> BeanWrapper<T> create(T bean, ConversionService conversionService) {
 
 		Assert.notNull(bean, "Wrapped instance must not be null!");
-
-		return new BeanWrapper<E, T>(bean, conversionService);
+		return new BeanWrapper<T>(bean, conversionService);
 	}
 
 	private BeanWrapper(T bean, ConversionService conversionService) {
@@ -64,12 +59,12 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * {@link ConversionService} is configured.
 	 * 
 	 * @param property must not be {@literal null}.
-	 * @param value
-	 * @param fieldAccessOnly whether to only try accessing the field ({@literal true}) or try using the getter first.
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
+	 * @param value can be {@literal null}.
+	 * @throws MappingException in case an exception occurred when setting the property value.
 	 */
 	public void setProperty(PersistentProperty<?> property, Object value) {
+
+		Assert.notNull(property, "PersistentProperty must not be null!");
 
 		Method setter = property.getSetter();
 
@@ -98,7 +93,7 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * Returns the value of the given {@link PersistentProperty} of the underlying bean instance.
 	 * 
 	 * @param <S>
-	 * @param property
+	 * @param property must not be {@literal null}.
 	 * @return
 	 */
 	public Object getProperty(PersistentProperty<?> property) {
@@ -110,10 +105,13 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	 * 
 	 * @param <S>
 	 * @param property must not be {@literal null}.
-	 * @param type
+	 * @param type can be {@literal null}.
 	 * @return
+	 * @throws MappingException in case an exception occured when accessing the property.
 	 */
 	public <S> S getProperty(PersistentProperty<?> property, Class<? extends S> type) {
+
+		Assert.notNull(property, "PersistentProperty must not be null!");
 
 		try {
 
@@ -143,8 +141,8 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	/**
 	 * Converts the given source value if it is not assignable to the given target type.
 	 * 
-	 * @param source
-	 * @param targetType
+	 * @param source can be {@literal null}.
+	 * @param targetType can be {@literal null}.
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
@@ -163,7 +161,7 @@ public class BeanWrapper<E extends PersistentEntity<T, ?>, T> {
 	/**
 	 * Returns the underlying bean instance.
 	 * 
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
 	public T getBean() {
 		return bean;

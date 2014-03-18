@@ -95,7 +95,7 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		 */
 		public boolean isNew(Object entity) {
 
-			BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper.create(entity, null);
+			BeanWrapper<Object> wrapper = BeanWrapper.create(entity, null);
 			Object propertyValue = wrapper.getProperty(property);
 
 			return decideIsNew(propertyValue);
