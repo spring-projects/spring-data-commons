@@ -15,6 +15,10 @@
  */
 package org.springframework.data.auditing;
 
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
 import org.springframework.util.Assert;
@@ -32,13 +36,30 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	private final IsNewStrategyFactory isNewStrategyFactory;
 
 	/**
+	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
+	 * 
+	 * @param mappingContext must not be {@literal null}.
+	 * @since 1.8
+	 */
+	public IsNewAwareAuditingHandler(
+			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
+
+		super(mappingContext);
+
+		Assert.notNull(mappingContext, "MappingContext must not be null!");
+		this.isNewStrategyFactory = new MappingContextIsNewStrategyFactory(mappingContext);
+	}
+
+	/**
 	 * Creates a new {@link IsNewAwareAuditingHandler} using the given {@link IsNewStrategyFactory}.
 	 * 
 	 * @param isNewStrategyFactory must not be {@literal null}.
+	 * @deprecated use constructor taking a {@link MappingContext} directly. Will be removed in 1.9.
 	 */
+	@Deprecated
 	public IsNewAwareAuditingHandler(IsNewStrategyFactory isNewStrategyFactory) {
 
-		Assert.notNull(isNewStrategyFactory, "IsNewStrategy must not be null!");
+		Assert.notNull(isNewStrategyFactory, "IsNewStrategyFactory must not be null!");
 		this.isNewStrategyFactory = isNewStrategyFactory;
 	}
 

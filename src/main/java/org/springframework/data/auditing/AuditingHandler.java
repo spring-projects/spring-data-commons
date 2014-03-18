@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 
 /**
@@ -35,16 +38,41 @@ public class AuditingHandler implements InitializingBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuditingHandler.class);
 
-	private final AuditableBeanWrapperFactory factory = new AuditableBeanWrapperFactory();
+	private final AuditableBeanWrapperFactory factory;
+
 	private DateTimeProvider dateTimeProvider = CurrentDateTimeProvider.INSTANCE;
 	private AuditorAware<?> auditorAware;
 	private boolean dateTimeForNow = true;
 	private boolean modifyOnCreation = true;
 
 	/**
+	 * Creates a new {@link AuditingHandler}.
+	 * 
+	 * @deprecated use the constructor taking a {@link MappingContext}.
+	 */
+	@Deprecated
+	public AuditingHandler() {
+		this.factory = new AuditableBeanWrapperFactory();
+	}
+
+	/**
+	 * Creates a new {@link AuditableBeanWrapper} using the given {@link MappingContext} when looking up auditing metadata
+	 * via reflection.
+	 * 
+	 * @param mappingContext must not be {@literal null}.
+	 * @since 1.8
+	 */
+	public AuditingHandler(
+			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
+
+		Assert.notNull(mappingContext, "MappingContext must not be null!");
+		this.factory = new MappingAuditableBeanWrapperFactory(mappingContext);
+	}
+
+	/**
 	 * Setter to inject a {@code AuditorAware} component to retrieve the current auditor.
 	 * 
-	 * @param auditorAware the auditorAware to set
+	 * @param auditorAware must not be {@literal null}.
 	 */
 	public void setAuditorAware(final AuditorAware<?> auditorAware) {
 

@@ -97,6 +97,15 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	P getPersistentProperty(String name);
 
 	/**
+	 * Returns the property equipped with an annotation of the given type.
+	 * 
+	 * @param annotationType must not be {@literal null}.
+	 * @return
+	 * @since 1.8
+	 */
+	P getPersistentProperty(Class<? extends Annotation> annotationType);
+
+	/**
 	 * Returns whether the {@link PersistentEntity} has an id property. If this call returns {@literal true},
 	 * {@link #getIdProperty()} will return a non-{@literal null} value.
 	 * 
@@ -158,6 +167,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * 
 	 * @param annotationType must not be {@literal null}.
 	 * @return
+	 * @since 1.8
 	 */
 	<A extends Annotation> A findAnnotation(Class<A> annotationType);
 }

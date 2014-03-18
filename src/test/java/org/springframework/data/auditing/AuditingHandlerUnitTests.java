@@ -46,6 +46,7 @@ public class AuditingHandlerUnitTests {
 		when(auditorAware.getCurrentAuditor()).thenReturn(user);
 	}
 
+	@SuppressWarnings("deprecation")
 	protected AuditingHandler getHandler() {
 		return new AuditingHandler();
 	}

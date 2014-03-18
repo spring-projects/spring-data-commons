@@ -1,3 +1,18 @@
+/*
+ * Copyright 2011-2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.mapping.model;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -8,16 +23,23 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.SortedSet;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentEntitySpec;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.Person;
+import org.springframework.data.mapping.context.SampleMappingContext;
+import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -29,8 +51,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 @RunWith(MockitoJUnitRunner.class)
 public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
-	@Mock
-	T property;
+	@Rule public ExpectedException exception = ExpectedException.none();
+
+	@Mock T property;
 
 	@Test
 	public void assertInvariants() {
@@ -122,13 +145,28 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		when(property.isIdProperty()).thenReturn(true);
 
 		entity.addPersistentProperty(property);
+		exception.expect(MappingException.class);
+		entity.addPersistentProperty(property);
+	}
 
-		try {
-			entity.addPersistentProperty(property);
-			fail("Expected MappingException!");
-		} catch (MappingException e) {
-			// expected
-		}
+	/**
+	 * @see DATACMNS-365
+	 */
+	@Test
+	public void detectsPropertyWithAnnotation() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+
+		PersistentProperty<?> property = entity.getPersistentProperty(LastModifiedBy.class);
+		assertThat(property, is(notNullValue()));
+		assertThat(property.getName(), is("field"));
+
+		property = entity.getPersistentProperty(CreatedBy.class);
+		assertThat(property, is(notNullValue()));
+		assertThat(property.getName(), is("property"));
+
+		assertThat(entity.getPersistentProperty(CreatedDate.class), is(nullValue()));
 	}
 
 	private BasicPersistentEntity<Person, T> createEntity(Comparator<T> comparator) {
@@ -142,5 +180,15 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 	static class Entity {
 
+		@LastModifiedBy String field;
+		String property;
+
+		/**
+		 * @return the property
+		 */
+		@CreatedBy
+		public String getProperty() {
+			return property;
+		}
 	}
 }

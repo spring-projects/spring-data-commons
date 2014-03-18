@@ -25,6 +25,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
 
@@ -46,6 +50,7 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	protected IsNewAwareAuditingHandler getHandler() {
 		return new IsNewAwareAuditingHandler(factory);
 	}
@@ -70,5 +75,22 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 
 		assertThat(user.createdDate, is(nullValue()));
 		assertThat(user.modifiedDate, is(notNullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-365
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullMappingContext() {
+		new IsNewAwareAuditingHandler(
+				(MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>>) null);
+	}
+
+	/**
+	 * @see DATACMNS-365
+	 */
+	@Test
+	public void setsUpHandlerWithMappingContext() {
+		new IsNewAwareAuditingHandler(new SampleMappingContext());
 	}
 }

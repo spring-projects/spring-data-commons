@@ -22,7 +22,6 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -36,9 +35,6 @@ import org.springframework.util.ClassUtils;
  * @since 1.5
  */
 class AuditableBeanWrapperFactory {
-
-	private static boolean IS_JODA_TIME_PRESENT = ClassUtils.isPresent("org.joda.time.DateTime",
-			ReflectionAuditingBeanWrapper.class.getClassLoader());
 
 	/**
 	 * Returns an {@link AuditableBeanWrapper} if the given object is capable of being equipped with auditing information.
@@ -113,13 +109,68 @@ class AuditableBeanWrapperFactory {
 	}
 
 	/**
+	 * Base class for {@link AuditableBeanWrapper} implementations that might need to convert {@link Calendar} values into
+	 * compatible types when setting date/time information.
+	 * 
+	 * @author Oliver Gierke
+	 * @since 1.8
+	 */
+	static abstract class DateConvertingAuditableBeanWrapper implements AuditableBeanWrapper {
+
+		private static boolean IS_JODA_TIME_PRESENT = ClassUtils.isPresent("org.joda.time.DateTime",
+				ReflectionAuditingBeanWrapper.class.getClassLoader());
+
+		private final ConversionService conversionService;
+
+		/**
+		 * Creates a new {@link DateConvertingAuditableBeanWrapper}.
+		 */
+		public DateConvertingAuditableBeanWrapper() {
+
+			DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
+
+			if (IS_JODA_TIME_PRESENT) {
+				conversionService.addConverter(CalendarToDateTimeConverter.INSTANCE);
+				conversionService.addConverter(CalendarToLocalDateTimeConverter.INSTANCE);
+			}
+
+			this.conversionService = conversionService;
+		}
+
+		/**
+		 * Returns the {@link Calendar} in a type, compatible to the given field.
+		 * 
+		 * @param value can be {@literal null}.
+		 * @param targetType must not be {@literal null}.
+		 * @param source must not be {@literal null}.
+		 * @return
+		 */
+		protected Object getDateValueToSet(Calendar value, Class<?> targetType, Object source) {
+
+			if (value == null) {
+				return null;
+			}
+
+			if (Calendar.class.equals(targetType)) {
+				return value;
+			}
+
+			if (conversionService.canConvert(Calendar.class, targetType)) {
+				return conversionService.convert(value, targetType);
+			}
+
+			throw new IllegalArgumentException(String.format("Invalid date type for member %s! Supported types are %s.",
+					source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
+		}
+	}
+
+	/**
 	 * An {@link AuditableBeanWrapper} implementation that sets values on the target object using refelction.
 	 * 
 	 * @author Oliver Gierke
 	 */
-	static class ReflectionAuditingBeanWrapper implements AuditableBeanWrapper {
+	static class ReflectionAuditingBeanWrapper extends DateConvertingAuditableBeanWrapper {
 
-		private final ConversionService conversionService;
 		private final AnnotationAuditingMetadata metadata;
 		private final Object target;
 
@@ -134,15 +185,6 @@ class AuditableBeanWrapperFactory {
 
 			this.metadata = AnnotationAuditingMetadata.getMetadata(target.getClass());
 			this.target = target;
-
-			ConfigurableConversionService conversionService = new DefaultFormattingConversionService();
-
-			if (IS_JODA_TIME_PRESENT) {
-				conversionService.addConverter(CalendarToDateTimeConverter.INSTANCE);
-				conversionService.addConverter(CalendarToLocalDateTimeConverter.INSTANCE);
-			}
-
-			this.conversionService = conversionService;
 		}
 
 		/* 
@@ -202,38 +244,11 @@ class AuditableBeanWrapperFactory {
 				return;
 			}
 
-			ReflectionUtils.setField(field, target, getDateValueToSet(value, field));
-		}
-
-		/**
-		 * Returns the {@link DateTime} in a type compatible to the given field.
-		 * 
-		 * @param value
-		 * @param field must not be {@literal null}.
-		 * @return
-		 */
-		private Object getDateValueToSet(Calendar value, Field field) {
-
-			if (value == null) {
-				return null;
-			}
-
-			Class<?> targetType = field.getType();
-
-			if (Calendar.class.equals(targetType)) {
-				return value;
-			}
-
-			if (conversionService.canConvert(Calendar.class, targetType)) {
-				return conversionService.convert(value, targetType);
-			}
-
-			throw new IllegalArgumentException(String.format("Invalid date type for field %s! Supported types are %s.",
-					field, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
+			ReflectionUtils.setField(field, target, getDateValueToSet(value, field.getType(), field));
 		}
 	}
 
-	static enum CalendarToDateTimeConverter implements Converter<Calendar, DateTime> {
+	private static enum CalendarToDateTimeConverter implements Converter<Calendar, DateTime> {
 
 		INSTANCE;
 
@@ -243,7 +258,7 @@ class AuditableBeanWrapperFactory {
 		}
 	}
 
-	static enum CalendarToLocalDateTimeConverter implements Converter<Calendar, LocalDateTime> {
+	private static enum CalendarToLocalDateTimeConverter implements Converter<Calendar, LocalDateTime> {
 
 		INSTANCE;
 

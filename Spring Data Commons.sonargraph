@@ -99,6 +99,20 @@
                 <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
                 <dependency toName="Project|spring-data-commons::Layer|Mapping" type="AllowedDependency"/>
             </element>
+            <element type="Layer" name="Auditing">
+                <element type="TypeFilter" name="Assignment">
+                    <element type="IncludeTypePattern" name="**.auditing.**"/>
+                </element>
+                <element type="Subsystem" name="Configuration">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.config.**"/>
+                    </element>
+                </element>
+                <dependency toName="External|External" type="AllowedDependency"/>
+                <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
+                <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
+                <dependency toName="Project|spring-data-commons::Layer|Mapping" type="AllowedDependency"/>
+            </element>
             <element type="Layer" name="Mapping">
                 <element type="TypeFilter" name="Assignment">
                     <element type="IncludeTypePattern" name="**.mapping.**"/>
@@ -135,12 +149,6 @@
                         <element type="IncludeTypePattern" name="**.authentication.**"/>
                     </element>
                 </element>
-                <element type="Subsystem" name="Configuration">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.config.**"/>
-                    </element>
-                    <stereotype name="Unrestricted"/>
-                </element>
                 <element type="Subsystem" name="History">
                     <element type="TypeFilter" name="Assignment">
                         <element type="WeakTypePattern" name="**.history.**"/>
@@ -151,15 +159,21 @@
                         <element type="WeakTypePattern" name="**.support.**"/>
                     </element>
                 </element>
-                <element type="Subsystem" name="Auditing">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.auditing.**"/>
-                    </element>
-                    <stereotype name="Unrestricted"/>
-                </element>
                 <element type="Subsystem" name="Transactions">
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.transaction.**"/>
+                    </element>
+                    <stereotype name="Unrestricted"/>
+                </element>
+                <element type="Subsystem" name="Configuration">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.config.**"/>
+                    </element>
+                    <stereotype name="Unrestricted"/>
+                </element>
+                <element type="Subsystem" name="Geo">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.geo.**"/>
                     </element>
                     <stereotype name="Unrestricted"/>
                 </element>

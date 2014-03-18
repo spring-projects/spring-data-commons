@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.config;
+package org.springframework.data.auditing.config;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
 
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.LazyInitTargetSource;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
+import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.auditing.AuditingHandler;
+import org.springframework.data.config.ParsingUtils;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -36,6 +42,30 @@ import org.w3c.dom.Element;
 public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
 	private static final String AUDITOR_AWARE_REF = "auditor-aware-ref";
+
+	private final String mappingContextBeanName;
+	private String resolvedBeanName;
+
+	/**
+	 * Creates a new {@link AuditingHandlerBeanDefinitionParser} to point to a {@link MappingContext} with the given bean
+	 * name.
+	 * 
+	 * @param mappingContextBeanName must not be {@literal null} or empty.
+	 */
+	public AuditingHandlerBeanDefinitionParser(String mappingContextBeanName) {
+
+		Assert.hasText(mappingContextBeanName, "MappingContext bean name must not be null!");
+		this.mappingContextBeanName = mappingContextBeanName;
+	}
+
+	/**
+	 * Returns the name of the bean definition the {@link AuditingHandler} was registered under.
+	 * 
+	 * @return the resolvedBeanName
+	 */
+	public String getResolvedBeanName() {
+		return resolvedBeanName;
+	}
 
 	/* 
 	 * (non-Javadoc)
@@ -62,6 +92,8 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	@Override
 	protected void doParse(Element element, BeanDefinitionBuilder builder) {
 
+		builder.addConstructorArgReference(mappingContextBeanName);
+
 		String auditorAwareRef = element.getAttribute(AUDITOR_AWARE_REF);
 
 		if (StringUtils.hasText(auditorAwareRef)) {
@@ -71,6 +103,18 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 		ParsingUtils.setPropertyValue(builder, element, "set-dates", "dateTimeForNow");
 		ParsingUtils.setPropertyReference(builder, element, "date-time-provider-ref", "dateTimeProvider");
 		ParsingUtils.setPropertyValue(builder, element, "modify-on-creation", "modifyOnCreation");
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
+	 */
+	@Override
+	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
+			throws BeanDefinitionStoreException {
+
+		this.resolvedBeanName = super.resolveId(element, definition, parserContext);
+		return resolvedBeanName;
 	}
 
 	private BeanDefinition createLazyInitTargetSourceBeanDefinition(String auditorAwareRef) {

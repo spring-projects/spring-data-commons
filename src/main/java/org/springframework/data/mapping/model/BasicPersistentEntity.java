@@ -228,6 +228,33 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return propertyCache.get(name);
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperty(java.lang.Class)
+	 */
+	@Override
+	public P getPersistentProperty(Class<? extends Annotation> annotationType) {
+
+		Assert.notNull(annotationType, "Annotation type must not be null!");
+
+		for (P property : properties) {
+			if (property.isAnnotationPresent(annotationType)) {
+				return property;
+			}
+		}
+
+		for (Association<P> association : associations) {
+
+			P property = association.getInverse();
+
+			if (property.isAnnotationPresent(annotationType)) {
+				return property;
+			}
+		}
+
+		return null;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getType()
