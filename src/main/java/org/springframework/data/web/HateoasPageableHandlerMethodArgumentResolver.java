@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariable.VariableType;
@@ -40,31 +39,10 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Oliver Gierke
  * @author Nick Williams
  */
-@SuppressWarnings("deprecation")
 public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandlerMethodArgumentResolver implements
 		UriComponentsContributor {
 
-	/**
-	 * A {@link HateoasPageableHandlerMethodArgumentResolver} preconfigured to the setup of
-	 * {@link PageableArgumentResolver}. Use that if you need to stick to the former request parameters an 1-indexed
-	 * behavior. This will be removed in the next major version (1.7). So consider migrating to the new way of exposing
-	 * request parameters.
-	 */
-	@Deprecated public static final HateoasPageableHandlerMethodArgumentResolver LEGACY;
 	private static final HateoasSortHandlerMethodArgumentResolver DEFAULT_SORT_RESOLVER = new HateoasSortHandlerMethodArgumentResolver();
-
-	static {
-
-		HateoasSortHandlerMethodArgumentResolver LEGACY_SORT = new HateoasSortHandlerMethodArgumentResolver();
-		LEGACY_SORT.setLegacyMode(true);
-		LEGACY_SORT.setSortParameter("page.sort");
-
-		LEGACY = new HateoasPageableHandlerMethodArgumentResolver(LEGACY_SORT);
-		LEGACY.setPageParameterName("page.page");
-		LEGACY.setSizeParameterName("page.size");
-		LEGACY.setFallbackPageable(new PageRequest(1, 10));
-		LEGACY.setOneIndexedParameters(true);
-	}
 
 	private final HateoasSortHandlerMethodArgumentResolver sortResolver;
 

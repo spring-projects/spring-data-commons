@@ -21,7 +21,6 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.data.repository.init.Jackson2RepositoryPopulatorFactoryBean;
-import org.springframework.data.repository.init.JacksonRepositoryPopulatorFactoryBean;
 import org.springframework.data.repository.init.UnmarshallerRepositoryPopulatorFactoryBean;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -31,7 +30,6 @@ import org.w3c.dom.Element;
  * 
  * @author Oliver Gierke
  */
-@SuppressWarnings("deprecation")
 public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
 	/* 
@@ -45,8 +43,6 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 
 		if ("unmarshaller-populator".equals(name)) {
 			return UnmarshallerRepositoryPopulatorFactoryBean.class.getName();
-		} else if ("jackson-populator".equals(name)) {
-			return JacksonRepositoryPopulatorFactoryBean.class.getName();
 		} else if ("jackson2-populator".equals(name)) {
 			return Jackson2RepositoryPopulatorFactoryBean.class.getName();
 		}

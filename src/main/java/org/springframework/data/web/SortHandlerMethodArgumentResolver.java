@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
@@ -56,19 +55,6 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	private String sortParameter = DEFAULT_PARAMETER;
 	private String propertyDelimiter = DEFAULT_PROPERTY_DELIMITER;
 	private String qualifierDelimiter = DEFAULT_QUALIFIER_DELIMITER;
-
-	boolean legacyMode = false;
-
-	/**
-	 * Enables legacy mode parsing of the sorting parameter from the incoming request. Uses the sort property configured
-	 * to lookup the fields to sort on and {@code $sortParameter.dir} for the direction.
-	 * 
-	 * @param legacyMode whether to enable the legacy mode or not.
-	 */
-	@Deprecated
-	void setLegacyMode(boolean legacyMode) {
-		this.legacyMode = legacyMode;
-	}
 
 	/**
 	 * Configure the request parameter to lookup sort information from. Defaults to {@code sort}.
@@ -123,8 +109,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 		String[] directionParameter = webRequest.getParameterValues(getSortParameter(parameter));
 
 		if (directionParameter != null && directionParameter.length != 0) {
-			return legacyMode ? parseLegacyParameterIntoSort(webRequest, parameter) : parseParameterIntoSort(
-					directionParameter, propertyDelimiter);
+			return parseParameterIntoSort(directionParameter, propertyDelimiter);
 		} else {
 			return getDefaultFromAnnotationOrFallback(parameter);
 		}
@@ -200,27 +185,6 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 		}
 
 		return builder.append(sortParameter).toString();
-	}
-
-	/**
-	 * Creates a {@link Sort} instance from the given request expecting the {@link Direction} being encoded in a parameter
-	 * with an appended {@code .dir}.
-	 * 
-	 * @param request must not be {@literal null}.
-	 * @param parameter must not be {@literal null}.
-	 * @return
-	 */
-	private Sort parseLegacyParameterIntoSort(WebRequest request, MethodParameter parameter) {
-
-		String property = getSortParameter(parameter);
-		String fields = request.getParameter(property);
-		String directions = request.getParameter(getLegacyDirectionParameter(parameter));
-
-		return new Sort(Direction.fromStringOrNull(directions), fields.split(","));
-	}
-
-	protected String getLegacyDirectionParameter(MethodParameter parameter) {
-		return getSortParameter(parameter) + ".dir";
 	}
 
 	/**
@@ -376,13 +340,8 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 				return expressions;
 			}
 
-			if (legacyMode) {
-				expressions.add(StringUtils.collectionToDelimitedString(elements, propertyDelimiter));
-				expressions.add(direction.name().toLowerCase());
-			} else {
-				elements.add(direction.name().toLowerCase());
-				expressions.add(StringUtils.collectionToDelimitedString(elements, propertyDelimiter));
-			}
+			elements.add(direction.name().toLowerCase());
+			expressions.add(StringUtils.collectionToDelimitedString(elements, propertyDelimiter));
 
 			return expressions;
 		}

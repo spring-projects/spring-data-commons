@@ -17,15 +17,12 @@ package org.springframework.data.web;
 
 import static org.springframework.hateoas.TemplateVariable.VariableType.*;
 
-import java.util.List;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.mvc.UriComponentsContributor;
-import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -78,21 +75,10 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 		Sort sort = (Sort) value;
 		String sortParameter = getSortParameter(parameter);
 
-		if (legacyMode) {
+		builder.replaceQueryParam(sortParameter);
 
-			List<String> expressions = legacyFoldExpressions(sort);
-			Assert.isTrue(expressions.size() == 2,
-					String.format("Expected 2 sort expressions (fields, direction) but got %d!", expressions.size()));
-			builder.replaceQueryParam(sortParameter, expressions.get(0));
-			builder.replaceQueryParam(getLegacyDirectionParameter(parameter), expressions.get(1));
-
-		} else {
-
-			builder.replaceQueryParam(sortParameter);
-
-			for (String expression : foldIntoExpressions(sort)) {
-				builder.queryParam(sortParameter, expression);
-			}
+		for (String expression : foldIntoExpressions(sort)) {
+			builder.queryParam(sortParameter, expression);
 		}
 	}
 }

@@ -5,9 +5,6 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/oxm http://www.springframework.org/schema/oxm/spring-oxm.xsd
 		http://www.springframework.org/schema/data/repository http://www.springframework.org/schema/data/repository/spring-repository.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-
-	<repository:jackson-populator id="jackson-populator"
-		locations="classpath:org/springframework/data/repository/init/data.json" />
 		
 	<repository:jackson2-populator id="jackson2-populator"
 		locations="classpath:org/springframework/data/repository/init/data.json" />

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,27 +40,9 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Oliver Gierke
  * @author Nick Williams
  */
-@SuppressWarnings("deprecation")
 public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private static final String INVALID_DEFAULT_PAGE_SIZE = "Invalid default page size configured for method %s! Must not be less than one!";
-
-	/**
-	 * A {@link PageableHandlerMethodArgumentResolver} preconfigured to the setup of {@link PageableArgumentResolver}. Use
-	 * that if you need to stick to the former request parameters an 1-indexed behavior. This will be removed in the next
-	 * major version (1.7). So consider migrating to the new way of exposing request parameters.
-	 */
-	@Deprecated public static final PageableHandlerMethodArgumentResolver LEGACY;
-
-	static {
-		LEGACY = new PageableHandlerMethodArgumentResolver();
-		LEGACY.pageParameterName = "page.page";
-		LEGACY.sizeParameterName = "page.size";
-		LEGACY.fallbackPageable = new PageRequest(1, 10);
-		LEGACY.oneIndexedParameters = true;
-		LEGACY.sortResolver.setLegacyMode(true);
-		LEGACY.sortResolver.setSortParameter("page.sort");
-	}
 
 	private static final String DEFAULT_PAGE_PARAMETER = "page";
 	private static final String DEFAULT_SIZE_PARAMETER = "size";
@@ -269,12 +251,6 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	}
 
 	private Pageable getDefaultFromAnnotationOrFallback(MethodParameter methodParameter) {
-
-		if (sortResolver.legacyMode && methodParameter.hasParameterAnnotation(PageableDefaults.class)) {
-			Pageable pageable = PageableArgumentResolver.getDefaultPageRequestFrom(methodParameter
-					.getParameterAnnotation(PageableDefaults.class));
-			return new PageRequest(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
-		}
 
 		if (methodParameter.hasParameterAnnotation(PageableDefault.class)) {
 			return getDefaultPageRequestFrom(methodParameter);

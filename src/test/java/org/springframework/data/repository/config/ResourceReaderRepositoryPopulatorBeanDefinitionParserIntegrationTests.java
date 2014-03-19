@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.repository.init.Jackson2ResourceReader;
-import org.springframework.data.repository.init.JacksonResourceReader;
 import org.springframework.data.repository.init.ResourceReaderRepositoryPopulator;
 import org.springframework.data.repository.init.UnmarshallingResourceReader;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -40,28 +39,6 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Thomas Darimont
  */
 public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTests {
-
-	/**
-	 * @see DATACMNS-58
-	 */
-	@Test
-	public void registersJacksonInitializerCorrectly() {
-
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
-		reader.loadBeanDefinitions(getPopulatorResource());
-
-		BeanDefinition definition = beanFactory.getBeanDefinition("jackson-populator");
-		assertThat(definition, is(notNullValue()));
-
-		Object bean = beanFactory.getBean("jackson-populator");
-		assertThat(bean, is(instanceOf(ResourceReaderRepositoryPopulator.class)));
-		Object resourceReader = ReflectionTestUtils.getField(bean, "reader");
-		assertThat(resourceReader, is(instanceOf(JacksonResourceReader.class)));
-
-		Object resources = ReflectionTestUtils.getField(bean, "resources");
-		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.json");
-	}
 
 	/**
 	 * @see DATACMNS-333
