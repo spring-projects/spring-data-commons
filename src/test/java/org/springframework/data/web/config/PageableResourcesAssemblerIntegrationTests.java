@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.SpringVersion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -77,6 +78,28 @@ public class PageableResourcesAssemblerIntegrationTests {
 		assertThat(resources.getLink(Link.REL_PREVIOUS), is(notNullValue()));
 		assertThat(resources.getLink(Link.REL_NEXT), is(notNullValue()));
 		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-471
+	 */
+	@Test
+	public void setsUpPagedResourcesAssemblerFromManualXmlConfig() {
+
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("manual.xml", getClass());
+		assertThat(context.getBean(PagedResourcesAssembler.class), is(notNullValue()));
+		context.close();
+	}
+
+	/**
+	 * @see DATACMNS-471
+	 */
+	@Test
+	public void setsUpPagedResourcesAssemblerFromJavaConfigXmlConfig() {
+
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("via-config-class.xml", getClass());
+		assertThat(context.getBean(PagedResourcesAssembler.class), is(notNullValue()));
+		context.close();
 	}
 
 	@Controller
