@@ -16,6 +16,7 @@
 package org.springframework.data.geo;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.number.IsCloseTo.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.geo.Metrics.*;
 
@@ -28,6 +29,10 @@ import org.junit.Test;
  * @author Thomas Darimont
  */
 public class DistanceUnitTests {
+
+	private static final double EPS = 0.000000001;
+	private static final double TEN_MILES_NORMALIZED = 0.002523219294755161;
+	private static final double TEN_KM_NORMALIZED = 0.001567855942887398;
 
 	/**
 	 * @see DATACMNS-437
@@ -61,5 +66,62 @@ public class DistanceUnitTests {
 		Distance right = new Distance(2.5, KILOMETERS);
 
 		assertThat(left.add(right, MILES), is(new Distance(3.106856281073925, MILES)));
+	}
+
+	/**
+	 * @see DATACMNS-474
+	 */
+	@Test
+	public void distanceWithSameMetricShoudEqualAfterConversion() {
+
+		assertThat(new Distance(1).in(NEUTRAL), is(new Distance(1)));
+		assertThat(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS), is(new Distance(10, KILOMETERS)));
+		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES), is(new Distance(10, MILES)));
+	}
+
+	/**
+	 * @see DATACMNS-474
+	 */
+	@Test
+	public void distanceWithDifferentMetricShoudEqualAfterConversion() {
+
+		assertThat(new Distance(10, MILES), is(new Distance(TEN_MILES_NORMALIZED).in(MILES)));
+		assertThat(new Distance(10, KILOMETERS), is(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS)));
+	}
+
+	/**
+	 * @see DATACMNS-474
+	 */
+	@Test
+	public void conversionShouldProduceCorrectNormalizedValue() {
+
+		assertThat(new Distance(TEN_KM_NORMALIZED, NEUTRAL).in(KILOMETERS).getNormalizedValue(),
+				closeTo(new Distance(10, KILOMETERS).getNormalizedValue(), EPS));
+
+		assertThat(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS).getNormalizedValue(),
+				closeTo(new Distance(10, KILOMETERS).getNormalizedValue(), EPS));
+
+		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES).getNormalizedValue(),
+				closeTo(new Distance(10, MILES).getNormalizedValue(), EPS));
+
+		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES).getNormalizedValue(),
+				closeTo(new Distance(16.09344, KILOMETERS).getNormalizedValue(), EPS));
+
+		assertThat(new Distance(TEN_MILES_NORMALIZED).in(KILOMETERS).getNormalizedValue(),
+				closeTo(new Distance(10, MILES).getNormalizedValue(), EPS));
+
+		assertThat(new Distance(10, KILOMETERS).in(MILES).getNormalizedValue(),
+				closeTo(new Distance(6.21371192, MILES).getNormalizedValue(), EPS));
+	}
+
+	/**
+	 * @see DATACMNS-474
+	 */
+	@Test
+	public void toStringAfterConversion() {
+
+		assertThat(new Distance(10, KILOMETERS).in(MILES).toString(), is(new Distance(6.21371256214785, MILES).toString()));
+		assertThat(new Distance(6.21371256214785, MILES).in(KILOMETERS).toString(),
+				is(new Distance(10, KILOMETERS).toString()));
 	}
 }

@@ -30,7 +30,7 @@ public class Distance {
 	private final Metric metric;
 
 	/**
-	 * Creates a new {@link Distance}.
+	 * Creates a new {@link Distance} with a neutral metric. This means the provided value needs to be in normalized form.
 	 * 
 	 * @param value
 	 */
@@ -45,6 +45,7 @@ public class Distance {
 	 * @param metric can be {@literal null}.
 	 */
 	public Distance(double value, Metric metric) {
+
 		this.value = value;
 		this.metric = metric == null ? Metrics.NEUTRAL : metric;
 	}
@@ -108,6 +109,19 @@ public class Distance {
 		double newRight = other.getNormalizedValue() * metric.getMultiplier();
 
 		return new Distance(newLeft + newRight, metric);
+	}
+
+	/**
+	 * Returns a new {@link Distance} in the given {@link Metric}. This means that the returned instance will have the
+	 * same normalized value as the original instance.
+	 * 
+	 * @param metric must not be {@literal null}.
+	 * @return
+	 */
+	public Distance in(Metric metric) {
+
+		Assert.notNull(metric, "Metric must not be null!");
+		return this.metric.equals(metric) ? this : new Distance(getNormalizedValue() * metric.getMultiplier(), metric);
 	}
 
 	/*
