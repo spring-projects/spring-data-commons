@@ -17,7 +17,6 @@ package org.springframework.data.web.config;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -26,11 +25,9 @@ import java.util.List;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.SpringVersion;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
@@ -49,6 +46,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 public class EnableSpringDataWebSupportIntegrationTests {
 
+	private static final String HATEOAS = "HATEOAS_PRESENT";
+	private static final String JACKSON = "JACKSON_PRESENT";
+
 	@Configuration
 	@EnableWebMvc
 	@EnableSpringDataWebSupport
@@ -56,14 +56,10 @@ public class EnableSpringDataWebSupportIntegrationTests {
 
 	}
 
-	@Before
-	public void setUp() {
-		assumeThat(SpringVersion.getVersion(), startsWith("3.2"));
-	}
-
 	@After
 	public void tearDown() {
-		reEnableHateoas();
+		reEnable(HATEOAS);
+		reEnable(JACKSON);
 	}
 
 	@Test
@@ -91,13 +87,39 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	@Test
 	public void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() throws Exception {
 
-		hideHateoas();
+		hide(HATEOAS);
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names, hasItems("pageableResolver", "sortResolver"));
 		assertThat(names, not(hasItems("pagedResourcesAssembler", "pagedResourcesAssemblerArgumentResolver")));
+	}
+
+	/**
+	 * @see DATACMNS-475
+	 */
+	@Test
+	public void registersJacksonSpecificBeanDefinitions() throws Exception {
+
+		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
+		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+
+		assertThat(names, hasItem("jacksonGeoModule"));
+	}
+
+	/**
+	 * @see DATACMNS-475
+	 */
+	@Test
+	public void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() throws Exception {
+
+		hide(JACKSON);
+
+		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
+		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+
+		assertThat(names, not(hasItem("jacksonGeoModule")));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -116,16 +138,16 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		assertThat(resolvers, hasItems(resolverMatchers.toArray(new Matcher[resolverMatchers.size()])));
 	}
 
-	private static void hideHateoas() throws Exception {
+	private static void hide(String module) throws Exception {
 
-		Field field = ReflectionUtils.findField(SpringDataWebConfigurationImportSelector.class, "HATEOAS_PRESENT");
+		Field field = ReflectionUtils.findField(SpringDataWebConfigurationImportSelector.class, module);
 		ReflectionUtils.makeAccessible(field);
 		ReflectionUtils.setField(field, null, false);
 	}
 
-	private static void reEnableHateoas() {
+	private static void reEnable(String module) {
 
-		Field field = ReflectionUtils.findField(SpringDataWebConfigurationImportSelector.class, "HATEOAS_PRESENT");
+		Field field = ReflectionUtils.findField(SpringDataWebConfigurationImportSelector.class, module);
 		ReflectionUtils.makeAccessible(field);
 		ReflectionUtils.setField(field, null, true);
 	}

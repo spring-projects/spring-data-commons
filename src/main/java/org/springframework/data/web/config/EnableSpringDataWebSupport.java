@@ -20,6 +20,8 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportSelector;
@@ -80,6 +82,7 @@ public @interface EnableSpringDataWebSupport {
 
 		// Don't make final to allow test cases faking this to false
 		private static boolean HATEOAS_PRESENT = ClassUtils.isPresent("org.springframework.hateoas.Link", null);
+		private static boolean JACKSON_PRESENT = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", null);
 
 		/* 
 		 * (non-Javadoc)
@@ -87,8 +90,17 @@ public @interface EnableSpringDataWebSupport {
 		 */
 		@Override
 		public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-			return new String[] { HATEOAS_PRESENT ? HateoasAwareSpringDataWebConfiguration.class.getName()
-					: SpringDataWebConfiguration.class.getName() };
+
+			List<String> imports = new ArrayList<String>();
+
+			imports.add(HATEOAS_PRESENT ? HateoasAwareSpringDataWebConfiguration.class.getName()
+					: SpringDataWebConfiguration.class.getName());
+
+			if (JACKSON_PRESENT) {
+				imports.add(SpringDataJacksonConfiguration.class.getName());
+			}
+
+			return imports.toArray(new String[imports.size()]);
 		}
 	}
 }

@@ -10,15 +10,15 @@
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.config.**"/>
                     </element>
+                    <dependency toName="Project|spring-data-commons::Layer|Core::Subsystem|Geo" type="AllowedDependency"/>
                     <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Support" type="AllowedDependency"/>
                     <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
                 </element>
                 <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
+                <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
                 <dependency toName="Project|spring-data-commons::Layer|Repositories" type="AllowedDependency"/>
-                <dependency toName="External|External::Subsystem|Java Beans" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Logging" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Reflection" type="AllowedDependency"/>
-                <dependency toName="External|External::Subsystem|Servlet API" type="AllowedDependency"/>
                 <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
             </element>
             <element type="Layer" name="Repositories">
@@ -143,6 +143,12 @@
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.annotation.**"/>
                     </element>
+                    <stereotype name="Public"/>
+                </element>
+                <element type="Subsystem" name="Geo">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.geo.**"/>
+                    </element>
                 </element>
                 <element type="Subsystem" name="Authentication">
                     <element type="TypeFilter" name="Assignment">
@@ -163,19 +169,11 @@
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.transaction.**"/>
                     </element>
-                    <stereotype name="Unrestricted"/>
                 </element>
                 <element type="Subsystem" name="Configuration">
                     <element type="TypeFilter" name="Assignment">
                         <element type="WeakTypePattern" name="**.config.**"/>
                     </element>
-                    <stereotype name="Unrestricted"/>
-                </element>
-                <element type="Subsystem" name="Geo">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.geo.**"/>
-                    </element>
-                    <stereotype name="Unrestricted"/>
                 </element>
                 <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
             </element>
@@ -269,11 +267,6 @@
                     <element type="IncludeTypePattern" name="com.mysema.query.**"/>
                 </element>
             </element>
-            <element type="Subsystem" name="Servlet API">
-                <element type="TypeFilter" name="Assignment">
-                    <element type="IncludeTypePattern" name="javax.servlet.**"/>
-                </element>
-            </element>
             <element type="Subsystem" name="Java Beans">
                 <element type="TypeFilter" name="Assignment">
                     <element type="IncludeTypePattern" name="java.beans.**"/>
@@ -322,7 +315,12 @@
             </element>
             <element type="Subsystem" name="Jackson">
                 <element type="TypeFilter" name="Assignment">
-                    <element type="IncludeTypePattern" name="org.codehaus.jackson.**"/>
+                    <element type="IncludeTypePattern" name="com.fasterxml.jackson.**"/>
+                </element>
+            </element>
+            <element type="Subsystem" name="JRE">
+                <element type="TypeFilter" name="Assignment">
+                    <element type="WeakTypePattern" name="java.**"/>
                 </element>
             </element>
         </architecture>
