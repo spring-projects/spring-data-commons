@@ -110,6 +110,32 @@ public class Distance {
 		return new Distance(newLeft + newRight, metric);
 	}
 
+	/**
+	 * Returns a new {@link Distance} with the given {@link Metric} and the value converted in such a way that the
+	 * following holds: <code>
+	 * assertThat(
+	 * 		        new Distance(10, KILOMETERS).in(MILES).getNormalizedValue(),
+	 * 		closeTo(new Distance(6.21371192, MILES).getNormalizedValue(),  0.000000001)
+	 * );
+	 * <code>
+	 * 
+	 * @param metric must not be {@literal null}.
+	 * @return
+	 * @since 1.8
+	 */
+	public Distance in(Metric metric) {
+
+		Assert.notNull(metric, "Metric must not be null!");
+
+		double value = this.value;
+
+		if (!this.metric.equals(metric)) {
+			value = getNormalizedValue() * metric.getMultiplier();
+		}
+
+		return new Distance(value, metric);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
