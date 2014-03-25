@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.util;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import org.springframework.util.StringUtils;
  * Utility class to work with classes.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
 public abstract class ClassUtils {
 
@@ -160,4 +162,27 @@ public abstract class ClassUtils {
 
 		throw ex;
 	}
+
+  /**
+   * A null-safe operation for getting the name of a Field.
+   * <p/>
+   * @param field the Field to determine the name of.
+   * @return the name of the Field or null if the Field reference is null.
+   * @see java.lang.reflect.Field#getName()
+   */
+  public static String nullSafeGetName(Field field) {
+    return (field != null ? field.getName() : null);
+  }
+
+  /**
+   * A null-safe operation for getting the name of a Method.
+   * <p/>
+   * @param method the Method to determine the name of.
+   * @return the name of the Method or null if the Method reference is null.
+   * @see java.lang.reflect.Method#getName()
+   */
+  public static String nullSafeGetName(Method method) {
+    return (method != null ? method.getName() : null);
+  }
+
 }
