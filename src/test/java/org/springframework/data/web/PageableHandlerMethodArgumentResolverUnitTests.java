@@ -15,6 +15,8 @@
  */
 package org.springframework.data.web;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static org.springframework.data.web.PageableHandlerMethodArgumentResolver.*;
 
 import org.junit.Before;
@@ -26,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.ServletWebRequest;
 
 /**
  * Unit tests for {@link PageableHandlerMethodArgumentResolver}. Pulls in defaulting tests from
@@ -150,6 +153,51 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		request.addParameter("size", "a");
 
 		assertSupportedAndResult(supportedMethodParameter, DEFAULT_PAGE_REQUEST, request);
+	}
+
+	/**
+	 * @see DATACMNS-477
+	 */
+	@Test
+	public void returnsNullIfFallbackIsNullAndNoParametersGiven() throws Exception {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setFallbackPageable(null);
+
+		assertSupportedAndResult(supportedMethodParameter, null, new ServletWebRequest(new MockHttpServletRequest()),
+				resolver);
+	}
+
+	/**
+	 * @see DATACMNS-477
+	 */
+	@Test
+	public void returnsNullIfFallbackIsNullAndOnlyPageIsGiven() throws Exception {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setFallbackPageable(null);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "20");
+
+		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null),
+				is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-477
+	 */
+	@Test
+	public void returnsNullIfFallbackIsNullAndOnlySizeIsGiven() throws Exception {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setFallbackPageable(null);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("size", "10");
+
+		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null),
+				is(nullValue()));
 	}
 
 	@Override
