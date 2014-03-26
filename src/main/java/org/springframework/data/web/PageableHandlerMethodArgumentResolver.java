@@ -100,7 +100,9 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	 * resolved.
 	 * <p>
 	 * If you set this to {@literal null}, be aware that you controller methods will get {@literal null} handed into them
-	 * in case no {@link Pageable} data can be found in the request.
+	 * in case no {@link Pageable} data can be found in the request. Note, that doing so will require you supply bot the
+	 * page <em>and</em> the size parameter with the requests as there will be no default for any of the parameters
+	 * available.
 	 * 
 	 * @param fallbackPageable the {@link Pageable} to be used as general fallback.
 	 */
@@ -233,6 +235,12 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 		String pageString = webRequest.getParameter(getParameterNameToUse(pageParameterName, methodParameter));
 		String pageSizeString = webRequest.getParameter(getParameterNameToUse(sizeParameterName, methodParameter));
+
+		boolean pageAndSizeGiven = StringUtils.hasText(pageString) && StringUtils.hasText(pageSizeString);
+
+		if (!pageAndSizeGiven && defaultOrFallback == null) {
+			return null;
+		}
 
 		int page = StringUtils.hasText(pageString) ? parseAndApplyBoundaries(pageString, 0, Integer.MAX_VALUE)
 				- (oneIndexedParameters ? 1 : 0) : defaultOrFallback.getPageNumber();

@@ -51,7 +51,8 @@ public abstract class PageableDefaultUnitTests {
 
 	static final AbstractPageRequest REFERENCE_WITHOUT_SORT = new PageRequest(PAGE_NUMBER, PAGE_SIZE);
 	static final AbstractPageRequest REFERENCE_WITH_SORT = new PageRequest(PAGE_NUMBER, PAGE_SIZE, SORT);
-	static final AbstractPageRequest REFERENCE_WITH_SORT_FIELDS = new PageRequest(PAGE_NUMBER, PAGE_SIZE, new Sort(SORT_FIELDS));
+	static final AbstractPageRequest REFERENCE_WITH_SORT_FIELDS = new PageRequest(PAGE_NUMBER, PAGE_SIZE, new Sort(
+			SORT_FIELDS));
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 
@@ -140,7 +141,12 @@ public abstract class PageableDefaultUnitTests {
 	protected void assertSupportedAndResult(MethodParameter parameter, Pageable pageable, NativeWebRequest request)
 			throws Exception {
 
-		HandlerMethodArgumentResolver resolver = getResolver();
+		assertSupportedAndResult(parameter, pageable, request, getResolver());
+	}
+
+	protected void assertSupportedAndResult(MethodParameter parameter, Pageable pageable, NativeWebRequest request,
+			HandlerMethodArgumentResolver resolver) throws Exception {
+
 		assertThat(resolver.supportsParameter(parameter), is(true));
 		assertThat(resolver.resolveArgument(parameter, null, request, null), is((Object) pageable));
 	}
