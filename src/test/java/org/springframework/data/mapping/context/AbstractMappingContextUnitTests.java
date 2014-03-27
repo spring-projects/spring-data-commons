@@ -23,6 +23,7 @@ import groovy.lang.MetaClass;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeMap;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -231,7 +232,33 @@ public class AbstractMappingContextUnitTests {
 	public void hasPersistentEntityForCollectionPropertiesAfterInitialization() {
 
 		context.getPersistentEntity(Sample.class);
-		assertThat(context.hasPersistentEntityFor(Person.class), is(true));
+		assertHasEntityFor(Person.class, context, true);
+	}
+
+	/**
+	 * @see DATACMNS-479
+	 */
+	@Test
+	public void doesNotAddMapImplementationClassesAsPersistentEntity() {
+
+		context.getPersistentEntity(Sample.class);
+		assertHasEntityFor(TreeMap.class, context, false);
+	}
+
+	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
+
+		boolean found = false;
+
+		for (BasicPersistentEntity<Object, SamplePersistentProperty> entity : context.getPersistentEntities()) {
+			if (entity.getType().equals(type)) {
+				found = true;
+				break;
+			}
+		}
+
+		if (found != expected) {
+			fail(String.format("%s to find persistent entity for %s!", expected ? "Expected" : "Did not expect", type));
+		}
 	}
 
 	class Person {
@@ -246,6 +273,7 @@ public class AbstractMappingContextUnitTests {
 
 		MetaClass metaClass;
 		List<Person> persons;
+		TreeMap<String, Person> personMap;
 	}
 
 	static class Base {

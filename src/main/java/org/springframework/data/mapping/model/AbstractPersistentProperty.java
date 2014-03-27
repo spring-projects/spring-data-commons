@@ -126,7 +126,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 			if (nestedType != null) {
 				result.add(nestedType);
 			}
-		} else {
+		} else if (isEntity()) {
 			result.add(type);
 		}
 
