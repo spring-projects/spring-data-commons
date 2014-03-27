@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.domain.jaxb;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +34,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.junit.After;
+import org.custommonkey.xmlunit.Diff;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -57,11 +58,11 @@ public class SpringDataJaxbUnitTests {
 	Unmarshaller unmarshaller;
 
 	Sort sort = new Sort(Direction.ASC, "firstname", "lastname");
-	Pageable reference = new PageRequest(2, 15, sort);
+	Pageable pageable = new PageRequest(2, 15, sort);
 	Resource resource = new ClassPathResource("pageable.xml", this.getClass());
 	Resource schemaFile = new ClassPathResource("spring-data-jaxb.xsd", this.getClass());
 
-	Scanner scanner;
+	String reference = readFile(resource);
 
 	@Before
 	public void setUp() throws Exception {
@@ -72,13 +73,6 @@ public class SpringDataJaxbUnitTests {
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
 		unmarshaller = context.createUnmarshaller();
-
-		scanner = new Scanner(resource.getFile());
-	}
-
-	@After
-	public void tearDown() {
-		scanner.close();
 	}
 
 	@Test
@@ -86,15 +80,12 @@ public class SpringDataJaxbUnitTests {
 
 		StringWriter writer = new StringWriter();
 		Wrapper wrapper = new Wrapper();
-		wrapper.pageable = reference;
+		wrapper.pageable = pageable;
 		wrapper.sort = sort;
 		wrapper.pageableWithoutSort = new PageRequest(10, 20);
 		marshaller.marshal(wrapper, writer);
 
-		for (String line : writer.toString().split("\n")) {
-			assertThat(scanner.hasNextLine(), is(true));
-			assertThat(line, is(scanner.nextLine()));
-		}
+		assertThat(new Diff(reference, writer.toString()).similar(), is(true));
 	}
 
 	@Test
@@ -103,7 +94,7 @@ public class SpringDataJaxbUnitTests {
 		Object result = unmarshaller.unmarshal(resource.getFile());
 
 		assertThat(result, is(instanceOf(Wrapper.class)));
-		assertThat(((Wrapper) result).pageable, is(reference));
+		assertThat(((Wrapper) result).pageable, is(pageable));
 		assertThat(((Wrapper) result).sort, is(sort));
 	}
 
@@ -119,18 +110,35 @@ public class SpringDataJaxbUnitTests {
 		marshaller.marshal(wrapper, new StringWriter());
 	}
 
+	private static String readFile(Resource resource) {
+
+		try {
+
+			Scanner scanner = new Scanner(resource.getInputStream());
+			StringBuilder builder = new StringBuilder();
+
+			while (scanner.hasNextLine()) {
+				builder.append(scanner.nextLine()).append("\n");
+			}
+
+			scanner.close();
+
+			return builder.toString();
+
+		} catch (IOException o_O) {
+			throw new RuntimeException(o_O);
+		}
+	}
+
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	static class Wrapper {
 
-		@XmlElement(name = "page-request", namespace = SpringDataJaxb.NAMESPACE)
-		Pageable pageable;
+		@XmlElement(name = "page-request", namespace = SpringDataJaxb.NAMESPACE) Pageable pageable;
 
-		@XmlElement(name = "page-request-without-sort", namespace = SpringDataJaxb.NAMESPACE)
-		Pageable pageableWithoutSort;
+		@XmlElement(name = "page-request-without-sort", namespace = SpringDataJaxb.NAMESPACE) Pageable pageableWithoutSort;
 
-		@XmlElement(name = "sort", namespace = SpringDataJaxb.NAMESPACE)
-		Sort sort;
+		@XmlElement(name = "sort", namespace = SpringDataJaxb.NAMESPACE) Sort sort;
 	}
 
 	@XmlRootElement(name = "wrapper", namespace = SpringDataJaxb.NAMESPACE)
@@ -138,16 +146,13 @@ public class SpringDataJaxbUnitTests {
 
 		Page<Content> page;
 
-		@XmlElement(name = "page-with-links")
-		@XmlJavaTypeAdapter(LinkedPageAdapter.class)
-		Page<Content> pageWithLinks;
+		@XmlElement(name = "page-with-links") @XmlJavaTypeAdapter(LinkedPageAdapter.class) Page<Content> pageWithLinks;
 	}
 
 	@XmlRootElement
 	static class Content {
 
-		@XmlAttribute
-		String name;
+		@XmlAttribute String name;
 	}
 
 	static class LinkedPageAdapter extends PageAdapter {
