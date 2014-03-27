@@ -113,18 +113,15 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityType() {
 
 		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
-
 		TypeInformation<?> type = getTypeInformation();
-
-		if (isEntity()) {
-			result.add(type);
-		}
 
 		if (type.isCollectionLike() || isMap()) {
 			TypeInformation<?> nestedType = getTypeInformationIfNotSimpleType(getTypeInformation().getActualType());
 			if (nestedType != null) {
 				result.add(nestedType);
 			}
+		} else if (isEntity()) {
+			result.add(type);
 		}
 
 		return result;
