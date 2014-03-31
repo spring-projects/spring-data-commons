@@ -5,14 +5,14 @@
 	
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>1.8.0.M1</version>
+	<version>1.8.0.BUILD-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.4.0.M1</version>
+		<version>1.4.0.BUILD-SNAPSHOT</version>
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
 	
@@ -208,8 +208,8 @@
 	
 	<repositories>
 		<repository>
-			<id>spring-libs-milestone</id>
-			<url>http://repo.spring.io/libs-milestone</url>
+			<id>spring-libs-snapshot</id>
+			<url>http://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
 	
