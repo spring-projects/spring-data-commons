@@ -293,7 +293,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 				if (queryMethods.iterator().hasNext()) {
 					throw new IllegalStateException("You have defined query method in the repository but "
-							+ "you don't have no query lookup strategy defined. The "
+							+ "you don't have any query lookup strategy defined. The "
 							+ "infrastructure apparently does not support query methods!");
 				}
 
