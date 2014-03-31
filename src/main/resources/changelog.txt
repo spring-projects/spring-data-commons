@@ -1,6 +1,67 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.8.0.M1 (2014-03-30)
+----------------------------------------
+** Bug
+    * [DATACMNS-447] - AbstractMappingContext.getPersistentEntity: Order of strict checking and shouldCreatePersistentEntity is wrong
+    * [DATACMNS-453] - NullPointerException at listing non-CRUD repositories in RepositoryMetadata.isPageableRepository()
+    * [DATACMNS-460] - Repositories do not support array return type.
+    * [DATACMNS-462] - AbstractPersistentProperties prevents collection and map properties from being fully initialized upfront
+    * [DATACMNS-477] - PageableHandlerMethodArgumentResolver.setFallbackPageable(null) does not work as specified
+    * [DATACMNS-479] - Regression in PersistentEntity detection for concrete Map types
+
+** Improvement
+    * [DATACMNS-138] - Document the lazy-init behavior of the AuditorAware (in the javadoc of the class as well as in the reference)
+    * [DATACMNS-243] - Pull up property access improvement from MongoPersistentProperty
+    * [DATACMNS-365] - @LastModifiedBy and @LastModifiedDate don't work on setters
+    * [DATACMNS-437] - Move GeoLocation object to Spring Data Commons.
+    * [DATACMNS-451] - Add custom CollectionFactory to customize collection and map instance creation.
+    * [DATACMNS-456] - RepositoryConfigurationSource should expose method to lookup String attributes
+    * [DATACMNS-457] - MappingContext should expose managed types and whether it has a PersistentEntity for a type
+    * [DATACMNS-458] - Introduce PersistentEntities value object
+    * [DATACMNS-461] - Cleanups in auditing configuration support
+    * [DATACMNS-466] - Detect invalid Spring version earlier
+    * [DATACMNS-468] - Remove obsolete generics for BeanWrapper
+    * [DATACMNS-475] - Add Jackson module to deserialize new geo types
+    * [DATACMNS-478] - Spring Data Commons should be buildable using Java 8
+    * [DATACMNS-480] - Add EntityInformation implementaiton based on PersistentEntity
+    * [DATACMNS-482] - Geospatial Types should be serializable
+
+** New Feature
+    * [DATACMNS-397] - Add support for pagination, without the need of a count query
+    * [DATACMNS-448] - Add support for 'remove', 'delete' keyword in order to be able to trigger store specific delete by queries.
+    * [DATACMNS-452] - Move types from store modules into Spring Data Commons
+    * [DATACMNS-474] - Allow conversion of Distance in other Metrics
+
+** Task
+    * [DATACMNS-450] - Release 1.8 M1
+    * [DATACMNS-464] - AbstractFallbackTransactionAttributeSource should consider repository target method transaction settings as fallback
+    * [DATACMNS-465] - Clean up template.mf
+    * [DATACMNS-470] - Remove code deprecated in 1.6
+    * [DATACMNS-471] - Add unit tests for PagedResourcesAssembler setup via XML
+
+Changes in version 1.7.1.RELEASE (2014-03-13)
+---------------------------------------------
+** Bug
+    * [DATACMNS-447] Soften too strict strickt-check in MappingContext.
+    * [DATACMNS-453] Fix NPE in isPageableRepository() for Repositories without a findAll() method.
+    * [DATACMNS-460] Repository metadata now supports array return types for query methods.
+    * [DATACMNS-462] AbstractPersistentProperty considers collections and maps entities now.
+
+** Improvement
+    * [DATACMNS-466] More aggressive checks for the correct Spring version.
+
+** Task
+    * [DATACMNS-465] Polished template.mf
+
+Changes in version 1.6.5.RELEASE (2014-03-10)
+---------------------------------------------
+** Bug
+    * [DATACMNS-442] - Additional documentation on @NoRepositoryBean annotation for intermediate repository interface.
+    * [DATACMNS-460] - Support for repository queries returning array type.
+    * [DATACMNS-462] - Fully initialize collection and map properties.
+
 Changes in version 1.7.0.RELEASE (2014-02-24)
 ---------------------------------------------
 ** Bug

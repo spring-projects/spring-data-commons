@@ -12,13 +12,13 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.4.0.BUILD-SNAPSHOT</version>
+		<version>1.4.0.M1</version>
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
 	
 	<properties>
 		<jackson1>1.9.7</jackson1>
-		<springhateoas>0.9.0.RELEASE</springhateoas>
+		<springhateoas>0.10.0.RELEASE</springhateoas>
 		<dist.key>DATACMNS</dist.key>
 	</properties>
 	
@@ -208,8 +208,8 @@
 	
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>http://repo.spring.io/libs-snapshot</url>
+			<id>spring-libs-milestone</id>
+			<url>http://repo.spring.io/libs-milestone</url>
 		</repository>
 	</repositories>
 	
