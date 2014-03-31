@@ -34,6 +34,8 @@ import org.springframework.util.StringUtils;
  */
 public class Polygon implements Iterable<Point>, Shape {
 
+	private static final long serialVersionUID = -2705040068154648988L;
+
 	private final List<Point> points;
 
 	/**

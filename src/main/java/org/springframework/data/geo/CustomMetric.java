@@ -24,6 +24,8 @@ package org.springframework.data.geo;
  */
 public class CustomMetric implements Metric {
 
+	private static final long serialVersionUID = -2972074177454114228L;
+
 	private final double multiplier;
 
 	/**

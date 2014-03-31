@@ -27,6 +27,8 @@ import org.springframework.util.Assert;
  */
 public class Box implements Shape {
 
+	private static final long serialVersionUID = 8198095179084040711L;
+
 	private final Point first;
 	private final Point second;
 

@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.springframework.util.SerializationUtils;
 
 /**
  * Unit tests for {@link Point}.
@@ -55,4 +56,15 @@ public class PointUnitTests {
 		assertThat(new Point(1.5, 1.5).toString(), is("Point [x=1.500000, y=1.500000]"));
 	}
 
+	/**
+	 * @see DATACMNS-482
+	 */
+	@Test
+	public void testSerialization() {
+
+		Point point = new Point(1.5, 1.5);
+
+		Point serialized = (Point) SerializationUtils.deserialize(SerializationUtils.serialize(point));
+		assertThat(serialized, is(point));
+	}
 }

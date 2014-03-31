@@ -15,6 +15,8 @@
  */
 package org.springframework.data.geo;
 
+import java.io.Serializable;
+
 import org.springframework.util.Assert;
 
 /**
@@ -24,7 +26,9 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
-public class Distance {
+public class Distance implements Serializable {
+
+	private static final long serialVersionUID = 2460886201934027744L;
 
 	private final double value;
 	private final Metric metric;

@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import static org.springframework.data.geo.Metrics.*;
 
 import org.junit.Test;
+import org.springframework.util.SerializationUtils;
 
 /**
  * Unit tests for {@link Distance}.
@@ -123,5 +124,17 @@ public class DistanceUnitTests {
 		assertThat(new Distance(10, KILOMETERS).in(MILES).toString(), is(new Distance(6.21371256214785, MILES).toString()));
 		assertThat(new Distance(6.21371256214785, MILES).in(KILOMETERS).toString(),
 				is(new Distance(10, KILOMETERS).toString()));
+	}
+
+	/**
+	 * @see DATACMNS-482
+	 */
+	@Test
+	public void testSerialization() {
+
+		Distance dist = new Distance(10, KILOMETERS);
+
+		Distance serialized = (Distance) SerializationUtils.deserialize(SerializationUtils.serialize(dist));
+		assertThat(serialized, is(dist));
 	}
 }
