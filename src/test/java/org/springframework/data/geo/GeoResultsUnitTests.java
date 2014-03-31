@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 
 import org.junit.Test;
+import org.springframework.util.SerializationUtils;
 
 /**
  * Unit tests for {@link GeoResults}.
@@ -42,5 +43,21 @@ public class GeoResultsUnitTests {
 		GeoResults<Object> geoResults = new GeoResults<Object>(Arrays.asList(first, second));
 
 		assertThat(geoResults.getAverageDistance(), is(new Distance(3.5)));
+	}
+
+	/**
+	 * @see DATACMNS-482
+	 */
+	@Test
+	public void testSerialization() {
+
+		GeoResult<String> result = new GeoResult<String>("test", new Distance(2));
+		@SuppressWarnings("unchecked")
+		GeoResults<String> geoResults = new GeoResults<String>(Arrays.asList(result));
+
+		@SuppressWarnings("unchecked")
+		GeoResults<String> serialized = (GeoResults<String>) SerializationUtils.deserialize(SerializationUtils
+				.serialize(geoResults));
+		assertThat(serialized, is(geoResults));
 	}
 }

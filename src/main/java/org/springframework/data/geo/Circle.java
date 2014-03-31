@@ -28,6 +28,8 @@ import org.springframework.util.Assert;
  */
 public class Circle implements Shape {
 
+	private static final long serialVersionUID = 5215611530535947924L;
+
 	private final Point center;
 	private final Distance radius;
 

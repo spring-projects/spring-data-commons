@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.springframework.util.SerializationUtils;
 
 /**
  * Unit tests for {@link Box}.
@@ -60,5 +61,15 @@ public class BoxUnitTests {
 	public void testToString() {
 
 		assertThat(first.toString(), is("Box [Point [x=1.000000, y=1.000000], Point [x=2.000000, y=2.000000]]"));
+	}
+
+	/**
+	 * @see DATACMNS-482
+	 */
+	@Test
+	public void testSerialization() {
+
+		Box serialized = (Box) SerializationUtils.deserialize(SerializationUtils.serialize(first));
+		assertThat(serialized, is(first));
 	}
 }

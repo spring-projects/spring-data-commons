@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.springframework.util.SerializationUtils;
 
 /**
  * Unit tests for {@link GeoResult}.
@@ -63,5 +64,18 @@ public class GeoResultUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullContent() {
 		new GeoResult(null, new Distance(2.5));
+	}
+
+	/**
+	 * @see DATACMNS-482
+	 */
+	@Test
+	public void testSerialization() {
+
+		GeoResult<String> result = new GeoResult<String>("test", new Distance(2));
+
+		@SuppressWarnings("unchecked")
+		GeoResult<String> serialized = (GeoResult<String>) SerializationUtils.deserialize(SerializationUtils.serialize(result));
+		assertThat(serialized, is(result));
 	}
 }

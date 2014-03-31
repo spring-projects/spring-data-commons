@@ -15,6 +15,7 @@
  */
 package org.springframework.data.geo;
 
+import java.io.Serializable;
 import java.util.Locale;
 
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -28,7 +29,9 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
-public class Point {
+public class Point implements Serializable {
+
+	private static final long serialVersionUID = 3583151228933783558L;
 
 	private final double x;
 	private final double y;

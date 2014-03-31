@@ -15,6 +15,7 @@
  */
 package org.springframework.data.geo;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +31,9 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @since 1.8
  */
-public class GeoResults<T> implements Iterable<GeoResult<T>> {
+public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
+
+	private static final long serialVersionUID = 8347363491300219485L;
 
 	private final List<? extends GeoResult<T>> results;
 	private final Distance averageDistance;
@@ -115,7 +118,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>> {
 
 		GeoResults<?> that = (GeoResults<?>) obj;
 
-		return this.results.equals(that.results) && this.averageDistance == that.averageDistance;
+		return this.results.equals(that.results) && this.averageDistance.equals(that.averageDistance);
 	}
 
 	/*
