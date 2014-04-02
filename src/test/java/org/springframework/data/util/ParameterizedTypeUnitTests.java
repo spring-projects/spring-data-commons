@@ -95,6 +95,31 @@ public class ParameterizedTypeUnitTests {
 				is("org.springframework.data.util.ParameterizedTypeUnitTests$Localized<java.lang.String>"));
 	}
 
+	/**
+	 * @see DATACMNS-485
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void hashCodeShouldBeConsistentWithEqualsForResolvedTypes() {
+
+		TypeInformation first = from(First.class).getProperty("property");
+		TypeInformation second = from(Second.class).getProperty("property");
+
+		assertThat(first, is(second));
+		assertThat(first.hashCode(), is(second.hashCode()));
+	}
+
+	/**
+	 * @see DATACMNS-485
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void getActualTypeShouldNotUnwrapParameterizedTypes() {
+
+		TypeInformation type = from(First.class).getProperty("property");
+		assertThat(type.getActualType(), is(type));
+	}
+
 	@SuppressWarnings("serial")
 	class Localized<S> extends HashMap<Locale, S> {
 		S value;
@@ -108,5 +133,17 @@ public class ParameterizedTypeUnitTests {
 	class Foo {
 		Localized<String> param;
 		Localized2<String> param2;
+	}
+
+	class Parameterized<T> {
+		T property;
+	}
+
+	class First {
+		Parameterized<String> property;
+	}
+
+	class Second {
+		Parameterized<String> property;
 	}
 }
