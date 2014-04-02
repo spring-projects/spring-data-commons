@@ -181,7 +181,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 */
 	@Override
 	public int hashCode() {
-		return super.hashCode() + (isResolvedCompletely() ? this.type.hashCode() : 0);
+		return isResolvedCompletely() ? this.type.hashCode() : super.hashCode();
 	}
 
 	/* 

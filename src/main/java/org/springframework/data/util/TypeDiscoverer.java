@@ -284,13 +284,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getComponentType();
 		}
 
-		List<TypeInformation<?>> arguments = getTypeArguments();
-
-		if (arguments.isEmpty()) {
-			return this;
-		}
-
-		return arguments.get(arguments.size() - 1);
+		return this;
 	}
 
 	/*
