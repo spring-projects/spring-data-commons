@@ -15,11 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.env.Environment;
@@ -27,6 +23,7 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.TypeFilterParser;
 import org.springframework.data.config.TypeFilterParser.Type;
 import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.util.ParsingUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -45,8 +42,6 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	private static final String REPOSITORY_IMPL_POSTFIX = "repository-impl-postfix";
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS_NAME = "factory-class";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "consider-nested-repositories";
-
-	private static final Pattern CAMEL_CASE_PARTS = Pattern.compile("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])");
 
 	private final Element element;
 	private final ParserContext context;
@@ -175,13 +170,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public String getAttribute(String name) {
 
-		List<String> lowercase = new ArrayList<String>();
-
-		for (String part : Arrays.asList(CAMEL_CASE_PARTS.split(name))) {
-			lowercase.add(part.toLowerCase(Locale.US));
-		}
-
-		String xmlAttributeName = StringUtils.collectionToDelimitedString(lowercase, "-");
+		String xmlAttributeName = ParsingUtils.reconcatenateCamelCase(name, "-");
 		String attribute = element.getAttribute(xmlAttributeName);
 
 		return StringUtils.hasText(attribute) ? attribute : null;
