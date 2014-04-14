@@ -27,6 +27,7 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
+import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
@@ -98,8 +99,42 @@ public class MappingContextTypeInformationMapperUnitTests {
 		assertThat(mapper.resolveTypeFrom("foo"), is((TypeInformation) from(Entity.class)));
 	}
 
+	/**
+	 * @see DATACMNS-485
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void createsTypeMapperForGenericTypesWithDifferentBindings() {
+
+		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(TypeAlias.class);
+
+		SampleMappingContext context = new SampleMappingContext();
+		context.setInitialEntitySet(scanner.findTypes(getClass().getPackage().getName()));
+		context.initialize();
+
+		new MappingContextTypeInformationMapper(context);
+	}
+
 	@TypeAlias("foo")
 	static class Entity {
 
+	}
+
+	@TypeAlias("genericType")
+	static class GenericType<T> {
+
+	}
+
+	@TypeAlias("concreteWrapper")
+	static class ConcreteWrapper {
+
+		GenericType<String> stringGeneric;
+		GenericType<Integer> integerGeneric;
+	}
+
+	@TypeAlias("genericWrapper")
+	static class GenericWrapper<T> {
+
+		GenericType<T> genericGeneric;
 	}
 }
