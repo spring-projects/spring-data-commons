@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -90,12 +91,31 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 			return;
 		}
 
-		if (typeMap.containsValue(alias)) {
+		TypeInformation<?> toStore = ClassTypeInformation.from(key.getType());
+		Object existingAlias = typeMap.get(toStore);
+
+		// Reject second alias for same type
+
+		if (existingAlias != null && !alias.equals(existingAlias)) {
 			throw new IllegalArgumentException(String.format(
-					"Detected mapping ambiguity! String %s cannot be mapped to more than one type!", alias));
+					"Trying to register alias '%s', but found already registered alias '%s' for type %s!", alias, existingAlias,
+					toStore));
 		}
 
-		typeMap.put(key, alias);
+		// Reject second type for same alias
+
+		if (typeMap.containsValue(alias)) {
+
+			for (Entry<TypeInformation<?>, Object> entry : typeMap.entrySet()) {
+				if (entry.getValue().equals(alias) && !entry.getKey().equals(toStore)) {
+					throw new IllegalArgumentException(String.format(
+							"Detected existing type mapping of %s to alias '%s' but attempted to bind the same alias to %s!",
+							toStore, alias, entry.getKey()));
+				}
+			}
+		}
+
+		typeMap.put(toStore, alias);
 	}
 
 	/*

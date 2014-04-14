@@ -19,7 +19,9 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -98,8 +100,41 @@ public class MappingContextTypeInformationMapperUnitTests {
 		assertThat(mapper.resolveTypeFrom("foo"), is((TypeInformation) from(Entity.class)));
 	}
 
+	/**
+	 * @see DATACMNS-485
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void createsTypeMapperForGenericTypesWithDifferentBindings() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		context.setInitialEntitySet(new HashSet<Class<? extends Object>>(Arrays.asList(Entity.class, GenericType.class,
+				ConcreteWrapper.class, GenericWrapper.class)));
+		context.initialize();
+
+		new MappingContextTypeInformationMapper(context);
+	}
+
 	@TypeAlias("foo")
 	static class Entity {
 
+	}
+
+	@TypeAlias("genericType")
+	static class GenericType<T> {
+
+	}
+
+	@TypeAlias("concreteWrapper")
+	static class ConcreteWrapper {
+
+		GenericType<String> stringGeneric;
+		GenericType<Integer> integerGeneric;
+	}
+
+	@TypeAlias("genericWrapper")
+	static class GenericWrapper<T> {
+
+		GenericType<T> genericGeneric;
 	}
 }
