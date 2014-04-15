@@ -1,4 +1,4 @@
-Spring Data Commons 1.7.1 GA (March 13th, 2014)
+Spring Data Commons 1.7.2 GA (Apr 15th, 2014)
 ---------------------------------------------
 
 Spring Data Commons is released under the terms of the Apache Software License Version 2.0 (see license.txt).
