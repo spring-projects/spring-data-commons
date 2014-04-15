@@ -40,18 +40,18 @@ import org.springframework.util.ClassUtils;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
-	public static final TypeInformation<Collection> COLLECTION = new ClassTypeInformation(Collection.class);
-	public static final TypeInformation<List> LIST = new ClassTypeInformation(List.class);
-	public static final TypeInformation<Set> SET = new ClassTypeInformation(Set.class);
-	public static final TypeInformation<Map> MAP = new ClassTypeInformation(Map.class);
-	public static final TypeInformation<Object> OBJECT = new ClassTypeInformation(Object.class);
+	public static final ClassTypeInformation<Collection> COLLECTION = new ClassTypeInformation(Collection.class);
+	public static final ClassTypeInformation<List> LIST = new ClassTypeInformation(List.class);
+	public static final ClassTypeInformation<Set> SET = new ClassTypeInformation(Set.class);
+	public static final ClassTypeInformation<Map> MAP = new ClassTypeInformation(Map.class);
+	public static final ClassTypeInformation<Object> OBJECT = new ClassTypeInformation(Object.class);
 
-	private static final Map<Class<?>, Reference<TypeInformation<?>>> CACHE = Collections
-			.synchronizedMap(new WeakHashMap<Class<?>, Reference<TypeInformation<?>>>());
+	private static final Map<Class<?>, Reference<ClassTypeInformation<?>>> CACHE = Collections
+			.synchronizedMap(new WeakHashMap<Class<?>, Reference<ClassTypeInformation<?>>>());
 
 	static {
-		for (TypeInformation<?> info : Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT)) {
-			CACHE.put(info.getType(), new WeakReference<TypeInformation<?>>(info));
+		for (ClassTypeInformation<?> info : Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT)) {
+			CACHE.put(info.getType(), new WeakReference<ClassTypeInformation<?>>(info));
 		}
 	}
 
@@ -64,19 +64,19 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	public static <S> TypeInformation<S> from(Class<S> type) {
+	public static <S> ClassTypeInformation<S> from(Class<S> type) {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		Reference<TypeInformation<?>> cachedReference = CACHE.get(type);
+		Reference<ClassTypeInformation<?>> cachedReference = CACHE.get(type);
 		TypeInformation<?> cachedTypeInfo = cachedReference == null ? null : cachedReference.get();
 
 		if (cachedTypeInfo != null) {
-			return (TypeInformation<S>) cachedTypeInfo;
+			return (ClassTypeInformation<S>) cachedTypeInfo;
 		}
 
-		TypeInformation<S> result = new ClassTypeInformation<S>(type);
-		CACHE.put(type, new WeakReference<TypeInformation<?>>(result));
+		ClassTypeInformation<S> result = new ClassTypeInformation<S>(type);
+		CACHE.put(type, new WeakReference<ClassTypeInformation<?>>(result));
 		return result;
 	}
 
@@ -114,6 +114,15 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	@Override
 	public Class<S> getType() {
 		return type;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#getRawTypeInformation()
+	 */
+	@Override
+	public ClassTypeInformation<?> getRawTypeInformation() {
+		return this;
 	}
 
 	/* 

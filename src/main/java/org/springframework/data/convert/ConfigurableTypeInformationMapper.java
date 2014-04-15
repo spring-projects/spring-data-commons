@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-12 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.util.Assert;
  */
 public class ConfigurableTypeInformationMapper implements TypeInformationMapper {
 
-	private final Map<TypeInformation<?>, Object> typeMap;
+	private final Map<ClassTypeInformation<?>, Object> typeMap;
 
 	/**
 	 * Creates a new {@link ConfigurableTypeMapper} for the given type map.
@@ -44,10 +44,10 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 	public ConfigurableTypeInformationMapper(Map<? extends Class<?>, String> sourceTypeMap) {
 
 		Assert.notNull(sourceTypeMap);
-		this.typeMap = new HashMap<TypeInformation<?>, Object>(sourceTypeMap.size());
+		this.typeMap = new HashMap<ClassTypeInformation<?>, Object>(sourceTypeMap.size());
 
 		for (Entry<? extends Class<?>, String> entry : sourceTypeMap.entrySet()) {
-			TypeInformation<?> key = ClassTypeInformation.from(entry.getKey());
+			ClassTypeInformation<?> key = ClassTypeInformation.from(entry.getKey());
 			String value = entry.getValue();
 
 			if (typeMap.containsValue(value)) {
@@ -71,13 +71,13 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.TypeInformationMapper#resolveTypeFrom(java.lang.Object)
 	 */
-	public TypeInformation<?> resolveTypeFrom(Object alias) {
+	public ClassTypeInformation<?> resolveTypeFrom(Object alias) {
 
 		if (alias == null) {
 			return null;
 		}
 
-		for (Entry<TypeInformation<?>, Object> entry : typeMap.entrySet()) {
+		for (Entry<ClassTypeInformation<?>, Object> entry : typeMap.entrySet()) {
 			if (entry.getValue().equals(alias)) {
 				return entry.getKey();
 			}

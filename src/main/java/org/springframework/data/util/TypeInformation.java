@@ -83,6 +83,14 @@ public interface TypeInformation<S> {
 	Class<S> getType();
 
 	/**
+	 * Returns a {@link ClassTypeInformation} to represent the {@link TypeInformation} of the raw type of the current
+	 * instance.
+	 * 
+	 * @return
+	 */
+	ClassTypeInformation<?> getRawTypeInformation();
+
+	/**
 	 * Transparently returns the {@link java.util.Map} value type if the type is a {@link java.util.Map}, returns the
 	 * component type if the type {@link #isCollectionLike()} or the simple type if none of this applies.
 	 * 

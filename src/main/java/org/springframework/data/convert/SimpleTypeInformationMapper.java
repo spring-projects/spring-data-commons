@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
 public class SimpleTypeInformationMapper implements TypeInformationMapper {
 
 	public static final SimpleTypeInformationMapper INSTANCE = new SimpleTypeInformationMapper();
-	private static final Map<String, TypeInformation<?>> cache = new ConcurrentHashMap<String, TypeInformation<?>>();
+	private static final Map<String, ClassTypeInformation<?>> cache = new ConcurrentHashMap<String, ClassTypeInformation<?>>();
 
 	/**
 	 * Returns the {@link TypeInformation} that shall be used when the given {@link String} value is found as type hint.
@@ -44,7 +44,7 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 	 * @return the type to be used for the given {@link String} representation or {@literal null} if nothing found or the
 	 *         class cannot be loaded.
 	 */
-	public TypeInformation<?> resolveTypeFrom(Object alias) {
+	public ClassTypeInformation<?> resolveTypeFrom(Object alias) {
 
 		if (!(alias instanceof String)) {
 			return null;
@@ -56,7 +56,7 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 			return null;
 		}
 
-		TypeInformation<?> information = cache.get(value);
+		ClassTypeInformation<?> information = cache.get(value);
 
 		if (information != null) {
 			return information;

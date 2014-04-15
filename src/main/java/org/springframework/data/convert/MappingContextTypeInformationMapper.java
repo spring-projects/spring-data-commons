@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.util.Assert;
  */
 public class MappingContextTypeInformationMapper implements TypeInformationMapper {
 
-	private final Map<TypeInformation<?>, Object> typeMap;
+	private final Map<ClassTypeInformation<?>, Object> typeMap;
 	private final MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext;
 
 	/**
@@ -47,11 +47,11 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 
 		Assert.notNull(mappingContext);
 
-		this.typeMap = new HashMap<TypeInformation<?>, Object>();
+		this.typeMap = new HashMap<ClassTypeInformation<?>, Object>();
 		this.mappingContext = mappingContext;
 
 		for (PersistentEntity<?, ?> entity : mappingContext.getPersistentEntities()) {
-			safelyAddToCache(entity.getTypeInformation(), entity.getTypeAlias());
+			safelyAddToCache(entity.getTypeInformation().getRawTypeInformation(), entity.getTypeAlias());
 		}
 	}
 
@@ -74,7 +74,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 		}
 
 		Object alias = entity.getTypeAlias();
-		safelyAddToCache(type, alias);
+		safelyAddToCache(type.getRawTypeInformation(), alias);
 
 		return alias;
 	}
@@ -85,50 +85,49 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	 * @param key must not be {@literal null}.
 	 * @param alias can be {@literal null}.
 	 */
-	private void safelyAddToCache(TypeInformation<?> key, Object alias) {
+	private void safelyAddToCache(ClassTypeInformation<?> key, Object alias) {
 
 		if (alias == null) {
 			return;
 		}
 
-		TypeInformation<?> toStore = ClassTypeInformation.from(key.getType());
-		Object existingAlias = typeMap.get(toStore);
+		Object existingAlias = typeMap.get(key);
 
 		// Reject second alias for same type
 
 		if (existingAlias != null && !alias.equals(existingAlias)) {
 			throw new IllegalArgumentException(String.format(
 					"Trying to register alias '%s', but found already registered alias '%s' for type %s!", alias, existingAlias,
-					toStore));
+					key));
 		}
 
 		// Reject second type for same alias
 
 		if (typeMap.containsValue(alias)) {
 
-			for (Entry<TypeInformation<?>, Object> entry : typeMap.entrySet()) {
-				if (entry.getValue().equals(alias) && !entry.getKey().equals(toStore)) {
+			for (Entry<ClassTypeInformation<?>, Object> entry : typeMap.entrySet()) {
+				if (entry.getValue().equals(alias) && !entry.getKey().equals(key)) {
 					throw new IllegalArgumentException(String.format(
-							"Detected existing type mapping of %s to alias '%s' but attempted to bind the same alias to %s!",
-							toStore, alias, entry.getKey()));
+							"Detected existing type mapping of %s to alias '%s' but attempted to bind the same alias to %s!", key,
+							alias, entry.getKey()));
 				}
 			}
 		}
 
-		typeMap.put(toStore, alias);
+		typeMap.put(key, alias);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.TypeInformationMapper#resolveTypeFrom(java.lang.Object)
 	 */
-	public TypeInformation<?> resolveTypeFrom(Object alias) {
+	public ClassTypeInformation<?> resolveTypeFrom(Object alias) {
 
 		if (alias == null) {
 			return null;
 		}
 
-		for (Entry<TypeInformation<?>, Object> entry : typeMap.entrySet()) {
+		for (Entry<ClassTypeInformation<?>, Object> entry : typeMap.entrySet()) {
 			if (entry.getValue().equals(alias)) {
 				return entry.getKey();
 			}
@@ -136,7 +135,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 
 		for (PersistentEntity<?, ?> entity : mappingContext.getPersistentEntities()) {
 			if (alias.equals(entity.getTypeAlias())) {
-				return entity.getTypeInformation();
+				return entity.getTypeInformation().getRawTypeInformation();
 			}
 		}
 

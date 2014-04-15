@@ -272,6 +272,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#getRawTypeInformation()
+	 */
+	@Override
+	public ClassTypeInformation<?> getRawTypeInformation() {
+		return ClassTypeInformation.from(getType()).getRawTypeInformation();
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getActualType()
 	 */
 	public TypeInformation<?> getActualType() {
