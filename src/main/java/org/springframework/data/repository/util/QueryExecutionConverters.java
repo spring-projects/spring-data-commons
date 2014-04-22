@@ -18,9 +18,11 @@ package org.springframework.data.repository.util;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -47,6 +49,9 @@ public class QueryExecutionConverters {
 
 		Set<Class<?>> wrapperTypes = new HashSet<Class<?>>();
 		Set<Converter<?, ?>> converters = new HashSet<Converter<?, ?>>();
+
+		wrapperTypes.add(Future.class);
+		converters.add(ObjectToFutureConverter.INSTANCE);
 
 		if (GUAVA_PRESENT) {
 			wrapperTypes.add(ObjectToGuavaOptionalConverter.INSTANCE.getWrapperType());
@@ -131,6 +136,25 @@ public class QueryExecutionConverters {
 
 		public Class<?> getWrapperType() {
 			return java.util.Optional.class;
+		}
+	}
+
+	/**
+	 * A Spring {@link Converter} to support returning {@link Future} instances from repository methods.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	private static enum ObjectToFutureConverter implements Converter<NullableWrapper, Future<Object>> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		public Future<Object> convert(NullableWrapper source) {
+			return new AsyncResult<Object>(source.getValue());
 		}
 	}
 }

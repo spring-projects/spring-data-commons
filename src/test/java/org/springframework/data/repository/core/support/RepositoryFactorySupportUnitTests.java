@@ -21,13 +21,19 @@ import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.concurrent.Future;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.core.SpringVersion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +42,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ClassUtils;
 
@@ -47,7 +55,7 @@ import org.springframework.util.ClassUtils;
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryFactorySupportUnitTests {
 
-	RepositoryFactorySupport factory;
+	DummyRepositoryFactory factory;
 
 	@Mock PagingAndSortingRepository<Object, Serializable> backingRepo;
 	@Mock ObjectRepositoryCustom customImplementation;
@@ -121,6 +129,44 @@ public class RepositoryFactorySupportUnitTests {
 		assertThat(ReflectionTestUtils.getField(factory, "classLoader"), is((Object) ClassUtils.getDefaultClassLoader()));
 	}
 
+	/**
+	 * @see DATACMNS-489
+	 */
+	@Test
+	public void wrapsExecutionResultIntoFutureIfConfigured() throws Exception {
+
+		// TODO: Remove once Spring 3.2.9 is released.
+		Assume.assumeThat(SpringVersion.getVersion().startsWith("4"), is(true));
+
+		final Object reference = new Object();
+
+		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(new Answer<Object>() {
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				Thread.sleep(500);
+				return reference;
+			}
+		});
+
+		AsyncRepository repository = factory.getRepository(AsyncRepository.class);
+
+		AsyncAnnotationBeanPostProcessor processor = new AsyncAnnotationBeanPostProcessor();
+		processor.setBeanFactory(new DefaultListableBeanFactory());
+		repository = (AsyncRepository) processor.postProcessAfterInitialization(repository, null);
+
+		Future<Object> future = repository.findByFirstname("Foo");
+
+		assertThat(future.isDone(), is(false));
+
+		while (!future.isDone()) {
+			Thread.sleep(300);
+		}
+
+		assertThat(future.get(), is(reference));
+
+		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
+	}
+
 	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {
 
 		Object findByClass(Class<?> clazz);
@@ -169,5 +215,11 @@ public class RepositoryFactorySupportUnitTests {
 	@RepositoryDefinition(domainClass = Object.class, idClass = Long.class)
 	interface AnnotatedRepository {
 
+	}
+
+	interface AsyncRepository extends Repository<Object, Long> {
+
+		@Async
+		Future<Object> findByFirstname(String firstname);
 	}
 }

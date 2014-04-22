@@ -31,6 +31,9 @@ import org.springframework.data.repository.query.RepositoryQuery;
 
 public class DummyRepositoryFactory extends RepositoryFactorySupport {
 
+	public final MyRepositoryQuery queryOne = mock(MyRepositoryQuery.class);
+	public final RepositoryQuery queryTwo = mock(RepositoryQuery.class);
+
 	private final Object repository;
 
 	public DummyRepositoryFactory(Object repository) {
@@ -44,7 +47,6 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-
 		return mock(EntityInformation.class);
 	}
 
@@ -73,10 +75,8 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
 
-		MyRepositoryQuery queryOne = mock(MyRepositoryQuery.class);
-		RepositoryQuery queryTwo = mock(RepositoryQuery.class);
-
 		QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
+
 		when(
 				strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
 						Mockito.any(NamedQueries.class))).thenReturn(queryOne, queryTwo);
