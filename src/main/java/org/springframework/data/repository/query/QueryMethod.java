@@ -40,6 +40,8 @@ public class QueryMethod {
 	private final Method method;
 	private final Parameters<?, ?> parameters;
 
+	private Class<?> domainClass;
+
 	/**
 	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct query to use for following
 	 * invocations of the method given.
@@ -129,11 +131,16 @@ public class QueryMethod {
 	 */
 	protected Class<?> getDomainClass() {
 
-		Class<?> repositoryDomainClass = metadata.getDomainType();
-		Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
+		if (domainClass == null) {
 
-		return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass) ? methodDomainClass
-				: repositoryDomainClass;
+			Class<?> repositoryDomainClass = metadata.getDomainType();
+			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
+
+			this.domainClass = repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass) ? methodDomainClass
+					: repositoryDomainClass;
+		}
+
+		return domainClass;
 	}
 
 	/**

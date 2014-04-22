@@ -30,6 +30,9 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
@@ -40,6 +43,8 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ClassUtils;
+import org.springframework.data.repository.util.NullableWrapper;
+import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -51,6 +56,8 @@ import org.springframework.util.ObjectUtils;
  * @author Oliver Gierke
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
+
+	private static final TypeDescriptor WRAPPER_TYPE = TypeDescriptor.valueOf(NullableWrapper.class);
 
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> REPOSITORY_INFORMATION_CACHE = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
 
@@ -273,6 +280,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 		private final Object customImplementation;
 		private final RepositoryInformation repositoryInformation;
+		private final GenericConversionService conversionService;
 		private final Object target;
 
 		/**
@@ -281,6 +289,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		 */
 		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation, Object customImplementation,
 				Object target) {
+
+			Assert.notNull(repositoryInformation, "RepositoryInformation must not be null!");
+			Assert.notNull(target, "Target must not be null!");
+
+			DefaultConversionService conversionService = new DefaultConversionService();
+			QueryExecutionConverters.registerConvertersIn(conversionService);
+			this.conversionService = conversionService;
 
 			this.repositoryInformation = repositoryInformation;
 			this.customImplementation = customImplementation;
@@ -325,22 +340,45 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		 */
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
+			Object result = doInvoke(invocation);
+			Class<?> expectedReturnType = invocation.getMethod().getReturnType();
+
+			if (result != null && expectedReturnType.isInstance(result)) {
+				return result;
+			}
+
+			if (conversionService.canConvert(NullableWrapper.class, expectedReturnType)
+					&& !conversionService.canBypassConvert(WRAPPER_TYPE, TypeDescriptor.valueOf(expectedReturnType))) {
+				return conversionService.convert(new NullableWrapper(result), expectedReturnType);
+			}
+
+			if (result == null) {
+				return null;
+			}
+
+			return conversionService.canConvert(result.getClass(), expectedReturnType) ? conversionService.convert(result,
+					expectedReturnType) : result;
+		}
+
+		private Object doInvoke(MethodInvocation invocation) throws Throwable {
+
 			Method method = invocation.getMethod();
+			Object[] arguments = invocation.getArguments();
 
 			if (isCustomMethodInvocation(invocation)) {
 				Method actualMethod = repositoryInformation.getTargetClassMethod(method);
 				makeAccessible(actualMethod);
-				return executeMethodOn(customImplementation, actualMethod, invocation.getArguments());
+				return executeMethodOn(customImplementation, actualMethod, arguments);
 			}
 
 			if (hasQueryFor(method)) {
-				return queries.get(method).execute(invocation.getArguments());
+				return queries.get(method).execute(arguments);
 			}
 
 			// Lookup actual method as it might be redeclared in the interface
 			// and we have to use the repository instance nevertheless
 			Method actualMethod = repositoryInformation.getTargetClassMethod(method);
-			return executeMethodOn(target, actualMethod, invocation.getArguments());
+			return executeMethodOn(target, actualMethod, arguments);
 		}
 
 		/**
@@ -370,7 +408,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		 * @return
 		 */
 		private boolean hasQueryFor(Method method) {
-
 			return queries.containsKey(method);
 		}
 

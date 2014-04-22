@@ -15,9 +15,11 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Collection;
 
 import org.junit.Test;
@@ -27,6 +29,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ClassUtils;
+
+import com.google.common.base.Optional;
 
 /**
  * Unit tests for {@link DefaultRepositoryMetadata}.
@@ -101,6 +105,18 @@ public class DefaultRepositoryMetadataUnitTests {
 		assertEquals(Long.class, metadata.getIdType());
 	}
 
+	/**
+	 * @see DATACMNS-483
+	 */
+	@Test
+	public void discoversDomainTypeOnReturnTypeWrapper() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(OptionalRepository.class);
+
+		Method method = OptionalRepository.class.getMethod("findByEmailAddress", String.class);
+		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
+	}
+
 	@SuppressWarnings("unused")
 	private class User {
 
@@ -166,5 +182,10 @@ public class DefaultRepositoryMetadataUnitTests {
 
 	static interface ConcreteRepository extends IdTypeFixingRepository<User> {
 
+	}
+
+	static interface OptionalRepository extends Repository<User, Long> {
+
+		Optional<User> findByEmailAddress(String emailAddress);
 	}
 }

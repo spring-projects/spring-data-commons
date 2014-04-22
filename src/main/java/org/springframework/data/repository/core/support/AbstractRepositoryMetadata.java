@@ -21,6 +21,7 @@ import java.util.Arrays;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -60,7 +61,8 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		TypeInformation<?> returnTypeInfo = typeInformation.getReturnType(method);
 		Class<?> rawType = returnTypeInfo.getType();
 
-		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray();
+		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray()
+				|| QueryExecutionConverters.supports(rawType);
 
 		return needToUnwrap ? returnTypeInfo.getComponentType().getType() : rawType;
 	}
