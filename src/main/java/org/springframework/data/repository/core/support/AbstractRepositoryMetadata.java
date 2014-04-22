@@ -57,14 +57,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
 	 */
 	public Class<?> getReturnedDomainClass(Method method) {
-
-		TypeInformation<?> returnTypeInfo = typeInformation.getReturnType(method);
-		Class<?> rawType = returnTypeInfo.getType();
-
-		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray()
-				|| QueryExecutionConverters.supports(rawType);
-
-		return needToUnwrap ? returnTypeInfo.getComponentType().getType() : rawType;
+		return unwrapWrapperTypes(typeInformation.getReturnType(method));
 	}
 
 	/* 
@@ -103,5 +96,21 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		}
 
 		return Arrays.asList(findAllMethod.getParameterTypes()).contains(Pageable.class);
+	}
+
+	/**
+	 * Recursively unwraps well known wrapper types from the given {@link TypeInformation}.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static Class<?> unwrapWrapperTypes(TypeInformation<?> type) {
+
+		Class<?> rawType = type.getType();
+
+		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray()
+				|| QueryExecutionConverters.supports(rawType);
+
+		return needToUnwrap ? unwrapWrapperTypes(type.getComponentType()) : rawType;
 	}
 }

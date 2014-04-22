@@ -117,6 +117,18 @@ public class DefaultRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
+	/**
+	 * @see DATACMNS-483
+	 */
+	@Test
+	public void discoversDomainTypeOnNestedReturnTypeWrapper() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(OptionalRepository.class);
+
+		Method method = OptionalRepository.class.getMethod("findByLastname", String.class);
+		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
+	}
+
 	@SuppressWarnings("unused")
 	private class User {
 
@@ -187,5 +199,8 @@ public class DefaultRepositoryMetadataUnitTests {
 	static interface OptionalRepository extends Repository<User, Long> {
 
 		Optional<User> findByEmailAddress(String emailAddress);
+
+		// Contrived example but to make sure recursive wrapper resolution works
+		Optional<Optional<User>> findByLastname(String lastname);
 	}
 }
