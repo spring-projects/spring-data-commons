@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.NullHandling;
 import org.springframework.data.domain.Sort.Order;
 
 /**
@@ -129,5 +130,37 @@ public class SortUnitTests {
 
 		assertThat(foo, is(not(fooIgnoreCase)));
 		assertThat(foo.hashCode(), is(not(fooIgnoreCase.hashCode())));
+	}
+
+	/**
+	 * @see DATACMNS-491
+	 */
+	@Test
+	public void orderWithNullHandlingHintNullsFirst() {
+		assertThat(new Order("foo").nullsFirst().getNullHandlingHint(), is(NullHandling.NULLS_FIRST));
+	}
+
+	/**
+	 * @see DATACMNS-491
+	 */
+	@Test
+	public void orderWithNullHandlingHintNullsLast() {
+		assertThat(new Order("foo").nullsFirst().getNullHandlingHint(), is(NullHandling.NULLS_FIRST));
+	}
+
+	/**
+	 * @see DATACMNS-491
+	 */
+	@Test
+	public void orderWithNullHandlingHintNullsNative() {
+		assertThat(new Order("foo").nullsNative().getNullHandlingHint(), is(NullHandling.NATIVE));
+	}
+
+	/**
+	 * @see DATACMNS-491
+	 */
+	@Test
+	public void orderWithDefaultNullHandlingHint() {
+		assertThat(new Order("foo").getNullHandlingHint(), is(NullHandling.NATIVE));
 	}
 }
