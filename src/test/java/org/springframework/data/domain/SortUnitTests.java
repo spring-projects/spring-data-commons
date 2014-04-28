@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package org.springframework.data.domain;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.domain.Sort.NullHandling.*;
 
 import org.junit.Test;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.domain.Sort.NullHandling;
 import org.springframework.data.domain.Sort.Order;
 
 /**
@@ -28,6 +28,7 @@ import org.springframework.data.domain.Sort.Order;
  * 
  * @author Oliver Gierke
  * @author Kevin Raymond
+ * @author Thomas Darimont
  */
 public class SortUnitTests {
 
@@ -137,7 +138,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void orderWithNullHandlingHintNullsFirst() {
-		assertThat(new Order("foo").nullsFirst().getNullHandlingHint(), is(NullHandling.NULLS_FIRST));
+		assertThat(new Order("foo").nullsFirst().getNullHandling(), is(NULLS_FIRST));
 	}
 
 	/**
@@ -145,7 +146,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void orderWithNullHandlingHintNullsLast() {
-		assertThat(new Order("foo").nullsFirst().getNullHandlingHint(), is(NullHandling.NULLS_FIRST));
+		assertThat(new Order("foo").nullsLast().getNullHandling(), is(NULLS_LAST));
 	}
 
 	/**
@@ -153,7 +154,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void orderWithNullHandlingHintNullsNative() {
-		assertThat(new Order("foo").nullsNative().getNullHandlingHint(), is(NullHandling.NATIVE));
+		assertThat(new Order("foo").nullsNative().getNullHandling(), is(NATIVE));
 	}
 
 	/**
@@ -161,6 +162,6 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void orderWithDefaultNullHandlingHint() {
-		assertThat(new Order("foo").getNullHandlingHint(), is(NullHandling.NATIVE));
+		assertThat(new Order("foo").getNullHandling(), is(NATIVE));
 	}
 }

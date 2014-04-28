@@ -29,6 +29,7 @@ import org.springframework.util.StringUtils;
  * {@literal null} or empty strings. The direction defaults to {@link Sort#DEFAULT_DIRECTION}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class Sort implements Iterable<org.springframework.data.domain.Sort.Order>, Serializable {
 
@@ -233,24 +234,24 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 * Enumeration for null handling hints that can be used in {@link Order} expressions.
 	 * 
 	 * @author Thomas Darimont
-	 * @since 1.7
+	 * @since 1.8
 	 */
 	public static enum NullHandling {
 
 		/**
 		 * Lets the data store decide what to do with nulls.
 		 */
-		NATIVE, //
+		NATIVE,
 
 		/**
 		 * A hint to the used data store to order entries with null values before non null entries.
 		 */
-		NULLS_FIRST, //
+		NULLS_FIRST,
 
 		/**
 		 * A hint to the used data store to order entries with null values after non null entries.
 		 */
-		NULLS_LAST; //
+		NULLS_LAST;
 	}
 
 	/**
@@ -268,7 +269,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		private final Direction direction;
 		private final String property;
 		private final boolean ignoreCase;
-		private final NullHandling nullHandlingHint;
+		private final NullHandling nullHandling;
 
 		/**
 		 * Creates a new {@link Order} instance. if order is {@literal null} then order defaults to
@@ -278,7 +279,6 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @param property must not be {@literal null} or empty.
 		 */
 		public Order(Direction direction, String property) {
-
 			this(direction, property, DEFAULT_IGNORE_CASE, null);
 		}
 
@@ -288,10 +288,9 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * 
 		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
 		 * @param property must not be {@literal null} or empty.
-		 * @param nullHandlingHint can be {@literal null}, will default to {@link NullHandling#NATIVE}.
+		 * @param nullHandling can be {@literal null}, will default to {@link NullHandling#NATIVE}.
 		 */
 		public Order(Direction direction, String property, NullHandling nullHandlingHint) {
-
 			this(direction, property, DEFAULT_IGNORE_CASE, nullHandlingHint);
 		}
 
@@ -312,10 +311,10 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
 		 * @param property must not be {@literal null} or empty.
 		 * @param ignoreCase true if sorting should be case insensitive. false if sorting should be case sensitive.
-		 * @param nullHandlingHint can be {@literal null}, will default to {@link NullHandling#NATIVE}.
+		 * @param nullHandling can be {@literal null}, will default to {@link NullHandling#NATIVE}.
 		 * @since 1.7
 		 */
-		private Order(Direction direction, String property, boolean ignoreCase, NullHandling nullHandlingHint) {
+		private Order(Direction direction, String property, boolean ignoreCase, NullHandling nullHandling) {
 
 			if (!StringUtils.hasText(property)) {
 				throw new IllegalArgumentException("Property must not null or empty!");
@@ -324,7 +323,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 			this.direction = direction == null ? DEFAULT_DIRECTION : direction;
 			this.property = property;
 			this.ignoreCase = ignoreCase;
-			this.nullHandlingHint = nullHandlingHint == null ? NullHandling.NATIVE : nullHandlingHint;
+			this.nullHandling = nullHandling == null ? NullHandling.NATIVE : nullHandling;
 		}
 
 		/**
@@ -383,7 +382,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @return
 		 */
 		public Order with(Direction order) {
-			return new Order(order, this.property, nullHandlingHint);
+			return new Order(order, this.property, nullHandling);
 		}
 
 		/**
@@ -402,17 +401,17 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @return
 		 */
 		public Order ignoreCase() {
-			return new Order(direction, property, true, nullHandlingHint);
+			return new Order(direction, property, true, nullHandling);
 		}
 
 		/**
 		 * Returns a {@link Order} with the given {@link NullHandling}.
 		 * 
-		 * @param nullHandling
+		 * @param nullHandling can be {@literal null}.
 		 * @return
-		 * @since 1.7
+		 * @since 1.8
 		 */
-		public Order withNullHandling(NullHandling nullHandling) {
+		public Order with(NullHandling nullHandling) {
 			return new Order(direction, this.property, ignoreCase, nullHandling);
 		}
 
@@ -420,10 +419,10 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * Returns a {@link Order} with {@link NullHandling#NULLS_FIRST} as null handling hint.
 		 * 
 		 * @return
-		 * @since 1.7
+		 * @since 1.8
 		 */
 		public Order nullsFirst() {
-			return withNullHandling(NullHandling.NULLS_FIRST);
+			return with(NullHandling.NULLS_FIRST);
 		}
 
 		/**
@@ -433,7 +432,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @since 1.7
 		 */
 		public Order nullsLast() {
-			return withNullHandling(NullHandling.NULLS_LAST);
+			return with(NullHandling.NULLS_LAST);
 		}
 
 		/**
@@ -443,7 +442,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @since 1.7
 		 */
 		public Order nullsNative() {
-			return withNullHandling(NullHandling.NATIVE);
+			return with(NullHandling.NATIVE);
 		}
 
 		/**
@@ -452,8 +451,8 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @return
 		 * @since 1.7
 		 */
-		public NullHandling getNullHandlingHint() {
-			return nullHandlingHint;
+		public NullHandling getNullHandling() {
+			return nullHandling;
 		}
 
 		/*
@@ -468,7 +467,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 			result = 31 * result + direction.hashCode();
 			result = 31 * result + property.hashCode();
 			result = 31 * result + (ignoreCase ? 1 : 0);
-			result = 31 * result + (nullHandlingHint.hashCode());
+			result = 31 * result + nullHandling.hashCode();
 
 			return result;
 		}
@@ -491,7 +490,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 			Order that = (Order) obj;
 
 			return this.direction.equals(that.direction) && this.property.equals(that.property)
-					&& this.ignoreCase == that.ignoreCase && this.nullHandlingHint.equals(that.nullHandlingHint);
+					&& this.ignoreCase == that.ignoreCase && this.nullHandling.equals(that.nullHandling);
 		}
 
 		/*
@@ -503,8 +502,8 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 
 			String result = String.format("%s: %s", property, direction);
 
-			if (!NullHandling.NATIVE.equals(nullHandlingHint)) {
-				result += ", " + nullHandlingHint;
+			if (!NullHandling.NATIVE.equals(nullHandling)) {
+				result += ", " + nullHandling;
 			}
 
 			if (ignoreCase) {
