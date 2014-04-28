@@ -28,6 +28,9 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.EnvironmentCapable;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
@@ -151,9 +154,11 @@ public class RepositoryBeanDefinitionBuilder {
 		// Build pattern to lookup implementation class
 		String className = configuration.getImplementationClassName();
 		Pattern pattern = Pattern.compile(".*\\." + className);
+        Environment environment = (resourceLoader instanceof EnvironmentCapable) ?
+                ((EnvironmentCapable) resourceLoader).getEnvironment() : new StandardEnvironment();
 
-		// Build classpath scanner and lookup bean definition
-		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+        // Build classpath scanner and lookup bean definition
+        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false,environment);
 		provider.setResourceLoader(resourceLoader);
 		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
 		provider.setMetadataReaderFactory(metadataReaderFactory);
