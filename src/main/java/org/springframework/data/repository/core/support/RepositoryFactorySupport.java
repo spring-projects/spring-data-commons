@@ -176,7 +176,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	 * @param repositoryInterface
 	 * @return
 	 */
-	RepositoryMetadata getRepositoryMetadata(Class<?> repositoryInterface) {
+	protected RepositoryMetadata getRepositoryMetadata(Class<?> repositoryInterface) {
 		return Repository.class.isAssignableFrom(repositoryInterface) ? new DefaultRepositoryMetadata(repositoryInterface)
 				: new AnnotationRepositoryMetadata(repositoryInterface);
 	}
