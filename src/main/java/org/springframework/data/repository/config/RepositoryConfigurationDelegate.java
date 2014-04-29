@@ -25,6 +25,9 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.EnvironmentCapable;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 
@@ -42,6 +45,7 @@ public class RepositoryConfigurationDelegate {
 
 	private final RepositoryConfigurationSource configurationSource;
 	private final ResourceLoader resourceLoader;
+	private final Environment environment;
 	private final BeanNameGenerator generator;
 	private final boolean isXml;
 
@@ -51,9 +55,24 @@ public class RepositoryConfigurationDelegate {
 	 * 
 	 * @param configurationSource must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
+	 * @deprecated use constructor taking an {@link Environment}.
 	 */
+	@Deprecated
 	public RepositoryConfigurationDelegate(RepositoryConfigurationSource configurationSource,
 			ResourceLoader resourceLoader) {
+		this(configurationSource, resourceLoader, null);
+	}
+
+	/**
+	 * Creates a new {@link RepositoryConfigurationDelegate} for the given {@link RepositoryConfigurationSource} and
+	 * {@link ResourceLoader} and {@link Environment}.
+	 * 
+	 * @param configurationSource must not be {@literal null}.
+	 * @param resourceLoader must not be {@literal null}.
+	 * @param environment must not be {@literal null}.
+	 */
+	public RepositoryConfigurationDelegate(RepositoryConfigurationSource configurationSource,
+			ResourceLoader resourceLoader, Environment environment) {
 
 		this.isXml = configurationSource instanceof XmlRepositoryConfigurationSource;
 		boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
@@ -68,6 +87,25 @@ public class RepositoryConfigurationDelegate {
 		this.generator = generator;
 		this.configurationSource = configurationSource;
 		this.resourceLoader = resourceLoader;
+		this.environment = defaultEnvironment(environment, resourceLoader);
+	}
+
+	/**
+	 * Defaults the environment in case the given one is null. Used as fallback, in case the legacy constructor was
+	 * invoked.
+	 * 
+	 * @param environment can be {@literal null}.
+	 * @param resourceLoader can be {@literal null}.
+	 * @return
+	 */
+	private static Environment defaultEnvironment(Environment environment, ResourceLoader resourceLoader) {
+
+		if (environment != null) {
+			return environment;
+		}
+
+		return resourceLoader instanceof EnvironmentCapable ? ((EnvironmentCapable) resourceLoader).getEnvironment()
+				: new StandardEnvironment();
 	}
 
 	/**
@@ -82,7 +120,8 @@ public class RepositoryConfigurationDelegate {
 
 		extension.registerBeansForRoot(registry, configurationSource);
 
-		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader);
+		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader,
+				environment);
 		List<BeanComponentDefinition> definitions = new ArrayList<BeanComponentDefinition>();
 
 		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : extension

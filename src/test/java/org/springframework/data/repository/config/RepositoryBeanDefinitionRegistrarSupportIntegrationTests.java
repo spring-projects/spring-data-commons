@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,16 @@ package org.springframework.data.repository.config;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Integration tests for {@link RepositoryBeanDefinitionRegistrarSupport}.
+ * 
  * @author Oliver Gierke
  */
 public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
@@ -39,19 +43,36 @@ public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 
 	}
 
+	AnnotationConfigApplicationContext context;
+
+	@Before
+	public void setUp() {
+		this.context = new AnnotationConfigApplicationContext(TestConfig.class);
+	}
+
+	@After
+	public void tearDown() {
+
+		if (context != null) {
+			this.context.close();
+		}
+	}
+
+	/**
+	 * @see DATACMNS-47
+	 */
 	@Test
 	public void testBootstrappingWithInheritedConfigClasses() {
-
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfig.class);
 
 		assertThat(context.getBean(MyRepository.class), is(notNullValue()));
 		assertThat(context.getBean(MyOtherRepository.class), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-47
+	 */
 	@Test
 	public void beanDefinitionSourceIsSetForJavaConfigScannedBeans() {
-
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfig.class);
 
 		BeanDefinition definition = context.getBeanDefinition("myRepository");
 		assertThat(definition.getSource(), is(notNullValue()));
