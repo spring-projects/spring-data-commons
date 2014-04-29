@@ -40,6 +40,13 @@ public class ReflectionEntityInformationUnitTests {
 		assertThat(information.getIdType(), is(typeCompatibleWith(String.class)));
 	}
 
+  @Test
+  public void discoversAnnotationOnMethod() {
+
+    EntityInformation<AnnotatedMethodType, Serializable> information = getEntityInformation(AnnotatedMethodType.class);
+    assertThat(information.getIdType(), is(typeCompatibleWith(Long.class)));
+  }
+
 	/**
 	 * @see DATACMNS-170
 	 */
@@ -47,6 +54,11 @@ public class ReflectionEntityInformationUnitTests {
 	public void rejectsTypeWithoutAnnotatedField() {
 		getEntityInformation(Unannotated.class);
 	}
+
+  @Test(expected = IllegalArgumentException.class)
+  public void rejectsTypeWithAnnotatedFieldAndMethod() {
+    getEntityInformation(AnnotatedFieldMethodType.class);
+  }
 
 	/**
 	 * @see DATACMNS-357
@@ -82,4 +94,21 @@ public class ReflectionEntityInformationUnitTests {
 
 		@Id long id;
 	}
+
+  static class AnnotatedMethodType {
+
+    @Id Long getId() {
+      return 1l;
+    }
+  }
+
+  static class AnnotatedFieldMethodType {
+
+    @Id long id;
+
+    @Id String getId() {
+      return "1";
+    }
+  }
+
 }

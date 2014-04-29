@@ -19,6 +19,8 @@ import static org.junit.Assert.*;
 import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +33,7 @@ import org.springframework.data.repository.Repository;
  * Unit test for {@link ClassUtils}.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
 public class ClassUtilsUnitTests {
 
@@ -47,6 +50,18 @@ public class ClassUtilsUnitTests {
 		assertTrue(hasProperty(User.class, "Firstname"));
 		assertFalse(hasProperty(User.class, "address"));
 	}
+
+  @Test
+  public void testNullSafeGetFieldName() throws Exception {
+    assertNull(ClassUtils.nullSafeGetName((Field) null));
+    assertEquals("firstname", ClassUtils.nullSafeGetName(User.class.getDeclaredField("firstname")));
+  }
+
+  @Test
+  public void testNullSafeGetMethodName() throws Exception {
+    assertNull(ClassUtils.nullSafeGetName((Method) null));
+    assertEquals("getAddress", ClassUtils.nullSafeGetName(User.class.getMethod("getAddress")));
+  }
 
 	@SuppressWarnings("unused")
 	private class User {

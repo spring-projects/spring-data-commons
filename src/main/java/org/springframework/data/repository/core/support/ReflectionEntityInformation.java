@@ -18,25 +18,30 @@ package org.springframework.data.repository.core.support;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.support.AbstractEntityInformation;
+import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
+import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * {@link EntityInformation} implementation that inspects fields for an annotation and looks up this field's value to
  * retrieve the id.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
 public class ReflectionEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
 
 	private static final Class<Id> DEFAULT_ID_ANNOTATION = Id.class;
 
 	private Field field;
+
+  private Method method;
 
 	/**
 	 * Creates a new {@link ReflectionEntityInformation} inspecting the given domain class for a field carrying the
@@ -64,14 +69,34 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 			public void doWith(Field field) {
 				if (field.getAnnotation(annotation) != null) {
 					ReflectionEntityInformation.this.field = field;
-					return;
 				}
 			}
 		});
 
-		Assert.notNull(this.field, String.format("No field annotated with %s found!", annotation.toString()));
-		ReflectionUtils.makeAccessible(field);
-	}
+    ReflectionUtils.doWithMethods(domainClass, new MethodCallback() {
+      public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+        if (method.getAnnotation(annotation) != null) {
+          ReflectionEntityInformation.this.method = method;
+        }
+      }
+    });
+
+    // Assert that at least 1 and only 1 field or method is annotated with @Id...
+    Assert.isTrue(this.field == null || this.method == null, String.format(
+      "Either a field or method should be annotated with %1$s, but not both."
+        + "The offending field (%2$s) and method (%3$s) in class (%4$s).",
+          annotation, ClassUtils.nullSafeGetName(field), ClassUtils.nullSafeGetName(method), domainClass.getName()));
+
+    Assert.isTrue(this.field != null || this.method != null, String.format(
+      "No field or method annotated with %s was found!", annotation.toString()));
+
+    if (field != null) {
+      ReflectionUtils.makeAccessible(field);
+    }
+    else {
+      ReflectionUtils.makeAccessible(method);
+    }
+  }
 
 	/* 
 	 * (non-Javadoc)
@@ -79,7 +104,8 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 	 */
 	@SuppressWarnings("unchecked")
 	public ID getId(Object entity) {
-		return entity == null ? null : (ID) ReflectionUtils.getField(field, entity);
+		return (entity == null ? null : (ID) (field != null ? ReflectionUtils.getField(field, entity)
+      : ReflectionUtils.invokeMethod(method, entity)));
 	}
 
 	/* 
@@ -88,6 +114,6 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 	 */
 	@SuppressWarnings("unchecked")
 	public Class<ID> getIdType() {
-		return (Class<ID>) field.getType();
+		return (Class<ID>) (field != null ? field.getType() : method.getReturnType());
 	}
 }
