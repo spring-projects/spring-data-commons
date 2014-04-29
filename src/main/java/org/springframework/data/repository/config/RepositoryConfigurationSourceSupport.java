@@ -25,6 +25,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.util.Assert;
 
 /**
  * Base class to implement {@link RepositoryConfigurationSource}s.
@@ -42,10 +43,12 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 * Creates a new {@link RepositoryConfigurationSourceSupport} with the given environment. Defaults to a plain
 	 * {@link StandardEnvironment} in case the given argument is {@literal null}.
 	 * 
-	 * @param environment nullable, defaults to a {@link StandardEnvironment}.
+	 * @param environment must not be {@literal null}.
 	 */
 	public RepositoryConfigurationSourceSupport(Environment environment) {
-		this.environment = environment == null ? new StandardEnvironment() : environment;
+
+		Assert.notNull(environment, "Environment must not be null!");
+		this.environment = environment;
 	}
 
 	/* 

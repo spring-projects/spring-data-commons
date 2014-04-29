@@ -62,7 +62,8 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 			ResourceLoader resourceLoader = parser.getReaderContext().getResourceLoader();
 
 			XmlRepositoryConfigurationSource configSource = new XmlRepositoryConfigurationSource(element, parser, environment);
-			RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, resourceLoader);
+			RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, resourceLoader,
+					environment);
 
 			for (BeanComponentDefinition definition : delegate.registerRepositoriesIn(parser.getRegistry(), extension)) {
 				parser.registerBeanComponent(definition);

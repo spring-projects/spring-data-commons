@@ -28,6 +28,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
@@ -48,6 +49,7 @@ public class RepositoryBeanDefinitionBuilder {
 	private final BeanDefinitionRegistry registry;
 	private final RepositoryConfigurationExtension extension;
 	private final ResourceLoader resourceLoader;
+	private final Environment environment;
 
 	private final MetadataReaderFactory metadataReaderFactory;
 
@@ -58,16 +60,20 @@ public class RepositoryBeanDefinitionBuilder {
 	 * @param registry must not be {@literal null}.
 	 * @param extension must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
+	 * @param environment must not be {@literal null}.
 	 */
 	public RepositoryBeanDefinitionBuilder(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
-			ResourceLoader resourceLoader) {
+			ResourceLoader resourceLoader, Environment environment) {
 
-		Assert.notNull(extension);
+		Assert.notNull(extension, "RepositoryConfigurationExtension must not be null!");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+		Assert.notNull(environment, "Environement must not be null!");
 
 		this.registry = registry;
 		this.extension = extension;
 		this.resourceLoader = resourceLoader;
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
+		this.environment = environment;
 	}
 
 	/**
@@ -154,6 +160,7 @@ public class RepositoryBeanDefinitionBuilder {
 
 		// Build classpath scanner and lookup bean definition
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+		provider.setEnvironment(environment);
 		provider.setResourceLoader(resourceLoader);
 		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
 		provider.setMetadataReaderFactory(metadataReaderFactory);
