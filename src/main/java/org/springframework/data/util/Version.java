@@ -53,7 +53,7 @@ public class Version implements Comparable<Version> {
 		int[] intParts = new int[parts.length];
 
 		for (int i = 0; i < parts.length; i++) {
-			intParts[i] = Integer.parseInt(parts[i]);
+			intParts[i] = Integer.parseInt(parts[i].replaceAll("\\D.*", ""));
 		}
 
 		return new Version(intParts);

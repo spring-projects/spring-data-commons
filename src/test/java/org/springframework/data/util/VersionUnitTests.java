@@ -123,4 +123,12 @@ public class VersionUnitTests {
 		assertThat(new Version(2, 0, 1, 0).toString(), is("2.0.1"));
 		assertThat(new Version(2, 0, 0, 1).toString(), is("2.0.0.1"));
 	}
+
+	/**
+	 * @see DATACMNS-496
+	 */
+	@Test
+	public void parseShouldRemoveNonNumericVersionParts() {
+		assertThat(Version.parse("2.0.0-rc1"), is(new Version(2, 0, 0)));
+	}
 }
