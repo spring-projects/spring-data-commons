@@ -97,7 +97,6 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * 
 	 * @param type
 	 */
-	@SuppressWarnings("deprecation")
 	ClassTypeInformation(Class<S> type) {
 		this(type, GenericTypeResolver.getTypeVariableMap(type));
 	}

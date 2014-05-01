@@ -28,7 +28,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.EntityInformation;
 
@@ -149,14 +148,5 @@ public class DomainClassPropertyEditorUnitTests {
 
 			return getId() != null;
 		}
-	}
-
-	/**
-	 * Sample generic DAO interface.
-	 * 
-	 * @author Oliver Gierke
-	 */
-	private static interface UserRepository extends CrudRepository<User, Integer> {
-
 	}
 }

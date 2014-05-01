@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
-import java.io.Serializable;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,11 +33,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.support.DummyEntityInformation;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
-import org.springframework.data.repository.core.support.DummyRepositoryInformation;
 
 /**
  * Unit test for {@link DomainClassConverter}.
@@ -61,9 +55,6 @@ public class DomainClassConverterUnitTests {
 	@Before
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setUp() {
-
-		EntityInformation<User, Serializable> information = new DummyEntityInformation<User>(User.class);
-		RepositoryInformation repositoryInformation = new DummyRepositoryInformation(UserRepository.class);
 
 		converter = new DomainClassConverter(service);
 

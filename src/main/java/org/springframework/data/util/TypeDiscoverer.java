@@ -94,7 +94,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return new ClassTypeInformation((Class<?>) fieldType);
 		}
 
-		@SuppressWarnings("deprecation")
 		Map<TypeVariable, Type> variableMap = GenericTypeResolver.getTypeVariableMap(resolveType(fieldType));
 
 		if (fieldType instanceof ParameterizedType) {
@@ -136,7 +135,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param type
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "deprecation" })
+	@SuppressWarnings("unchecked")
 	protected Class<S> resolveType(Type type) {
 		return (Class<S>) GenericTypeResolver.resolveType(type, getTypeVariableMap());
 	}
