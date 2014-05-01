@@ -18,7 +18,6 @@
 
 	<properties>
 		<guava>16.0.1</guava>
-		<jackson1>1.9.7</jackson1>
 		<springhateoas>0.10.0.RELEASE</springhateoas>
 		<dist.key>DATACMNS</dist.key>
 	</properties>
@@ -56,12 +55,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-oxm</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-			<version>${jackson1}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
