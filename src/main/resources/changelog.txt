@@ -1,6 +1,20 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.8.0.RC1 (2014-05-02)
+-----------------------------------------
+* DATACMNS-500 - Remove Jackson 1 support.
+* DATACMNS-496 - Version.parse should not throw NumberFormatExecption when parsing version string containing non numeric parts.
+* DATACMNS-495 - Release 1.8 RC1.
+* DATACMNS-492 - Scanning for custom repository implementation classes does not use Environment.
+* DATACMNS-491 - Make null handling configurable in Sort.Order.
+* DATACMNS-489 - Add support for Future<T> as return type for repository methods.
+* DATACMNS-486 - Add functionality to easily transform camel case Strings.
+* DATACMNS-485 - Detected mapping ambiguity when using @TypeAlias on a class with generics type.
+* DATACMNS-484 - Invalid grammar in exception message in RepositoryFactorySupport.
+* DATACMNS-483 - Support for wrapper types as return type on query methods.
+
+
 Changes in version 1.7.2.RELEASE (2014-04-15)
 ---------------------------------------------
 ** Bug
