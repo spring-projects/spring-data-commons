@@ -1,6 +1,20 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.7.2.RELEASE (2014-04-15)
+---------------------------------------------
+** Bug
+    * [DATACMNS-477] - PageableHandlerMethodArgumentResolver.setFallbackPageable(null) does not work as specified
+    * [DATACMNS-479] - Regression in PersistentEntity detection for concrete Map types
+    * [DATACMNS-485] - Detected mapping ambiguity when using @TypeAlias on a class with generics type
+
+** Improvement
+    * [DATACMNS-478] - Spring Data Commons should be buildable using Java 8
+    * [DATACMNS-484] - Invalid grammar in exception message in RepositoryFactorySupport
+
+** Task
+    * [DATACMNS-488] - Release 1.7.2
+
 Changes in version 1.8.0.M1 (2014-03-30)
 ----------------------------------------
 ** Bug
