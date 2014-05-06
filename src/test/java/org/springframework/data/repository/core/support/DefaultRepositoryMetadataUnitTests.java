@@ -129,6 +129,18 @@ public class DefaultRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
+	/**
+	 * @see DATACMNS-501
+	 */
+	@Test
+	public void discoversDomainAndIdTypeForIntermediateRepository() {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(IdTypeFixingRepository.class);
+
+		assertThat(metadata.getDomainType(), is(typeCompatibleWith(Object.class)));
+		assertThat(metadata.getIdType(), is(typeCompatibleWith(Long.class)));
+	}
+
 	@SuppressWarnings("unused")
 	private class User {
 
