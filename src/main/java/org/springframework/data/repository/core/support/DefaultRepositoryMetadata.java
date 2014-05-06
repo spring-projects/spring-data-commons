@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.springframework.core.GenericTypeResolver.*;
-
 import java.io.Serializable;
+import java.util.List;
 
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
@@ -73,23 +74,25 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 	@SuppressWarnings("unchecked")
 	private Class<? extends Serializable> resolveIdType(Class<?> repositoryInterface) {
 
-		Class<?>[] arguments = resolveTypeArguments(repositoryInterface, Repository.class);
+		TypeInformation<?> information = ClassTypeInformation.from(repositoryInterface);
+		List<TypeInformation<?>> arguments = information.getSuperTypeInformation(Repository.class).getTypeArguments();
 
-		if (arguments == null || arguments[1] == null) {
+		if (arguments.size() < 2 || arguments.get(1) == null) {
 			throw new IllegalArgumentException(String.format("Could not resolve id type of %s!", repositoryInterface));
 		}
 
-		return (Class<? extends Serializable>) arguments[1];
+		return (Class<? extends Serializable>) arguments.get(1).getType();
 	}
 
 	private Class<?> resolveDomainType(Class<?> repositoryInterface) {
 
-		Class<?>[] arguments = resolveTypeArguments(repositoryInterface, Repository.class);
+		TypeInformation<?> information = ClassTypeInformation.from(repositoryInterface);
+		List<TypeInformation<?>> arguments = information.getSuperTypeInformation(Repository.class).getTypeArguments();
 
-		if (arguments == null || arguments[0] == null) {
+		if (arguments.isEmpty() || arguments.get(0) == null) {
 			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s!", repositoryInterface));
 		}
 
-		return arguments[0];
+		return arguments.get(0).getType();
 	}
 }

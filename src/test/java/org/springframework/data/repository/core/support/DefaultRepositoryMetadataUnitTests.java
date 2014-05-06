@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -99,6 +100,18 @@ public class DefaultRepositoryMetadataUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		assertEquals(Long.class, metadata.getIdType());
+	}
+
+	/**
+	 * @see DATACMNS-501
+	 */
+	@Test
+	public void discoversDomainAndIdTypeForIntermediateRepository() {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(IdTypeFixingRepository.class);
+
+		assertThat(metadata.getDomainType(), is(typeCompatibleWith(Object.class)));
+		assertThat(metadata.getIdType(), is(typeCompatibleWith(Long.class)));
 	}
 
 	@SuppressWarnings("unused")
