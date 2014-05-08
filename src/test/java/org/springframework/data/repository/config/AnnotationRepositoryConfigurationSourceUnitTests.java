@@ -120,6 +120,20 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(source.getAttribute("namedQueriesLocation"), is("bar"));
 	}
 
+	/**
+	 * @see DATACMNS-502
+	 */
+	@Test
+	public void returnsEmptyStringForBasePackage() throws Exception {
+
+		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(getClass().getClassLoader().loadClass(
+				"TypeInDefaultPackage"));
+		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
+				EnableRepositories.class, resourceLoader, environment);
+
+		assertThat(configurationSource.getBasePackages(), hasItem(""));
+	}
+
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(type);
