@@ -52,6 +52,9 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 				environment);
 	}
 
+	/**
+	 * @see DATACMNS-47
+	 */
 	@Test
 	public void findsBasePackagesForClasses() {
 
@@ -59,6 +62,9 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(basePackages, hasItem(AnnotationRepositoryConfigurationSourceUnitTests.class.getPackage().getName()));
 	}
 
+	/**
+	 * @see DATACMNS-47
+	 */
 	@Test
 	public void evaluatesExcludeFiltersCorrectly() {
 
@@ -69,26 +75,28 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(candidate.getBeanClassName(), is(MyRepository.class.getName()));
 	}
 
+	/**
+	 * @see DATACMNS-47
+	 */
 	@Test
 	public void defaultsToPackageOfAnnotatedClass() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(DefaultConfiguration.class);
-		AnnotationRepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
-				EnableRepositories.class, resourceLoader, environment);
-
+		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
 		Iterable<String> packages = source.getBasePackages();
+
 		assertThat(packages, hasItem(DefaultConfiguration.class.getPackage().getName()));
 		assertThat(source.shouldConsiderNestedRepositories(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-47
+	 */
 	@Test
 	public void returnsConfiguredBasePackage() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(DefaultConfigurationWithBasePackage.class);
-		AnnotationRepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
-				EnableRepositories.class, resourceLoader, environment);
-
+		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithBasePackage.class);
 		Iterable<String> packages = source.getBasePackages();
+
 		assertThat(packages, hasItem("foo"));
 	}
 
@@ -98,11 +106,28 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test
 	public void returnsConsiderNestedRepositories() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(DefaultConfigurationWithNestedRepositories.class);
-		AnnotationRepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
+		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithNestedRepositories.class);
+		assertThat(source.shouldConsiderNestedRepositories(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-502
+	 */
+	@Test
+	public void returnsEmptyStringForBasePackage() throws Exception {
+
+		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(getClass().getClassLoader().loadClass(
+				"TypeInDefaultPackage"));
+		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				EnableRepositories.class, resourceLoader, environment);
 
-		assertThat(source.shouldConsiderNestedRepositories(), is(true));
+		assertThat(configurationSource.getBasePackages(), hasItem(""));
+	}
+
+	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
+
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(type);
+		return new AnnotationRepositoryConfigurationSource(metadata, EnableRepositories.class, resourceLoader, environment);
 	}
 
 	public static class Person {}

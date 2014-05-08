@@ -95,7 +95,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		// Default configuration - return package of annotated class
 		if (value.length == 0 && basePackages.length == 0 && basePackageClasses.length == 0) {
 			String className = metadata.getClassName();
-			return Collections.singleton(className.substring(0, className.lastIndexOf('.')));
+			return Collections.singleton(ClassUtils.getPackageName(className));
 		}
 
 		Set<String> packages = new HashSet<String>();
