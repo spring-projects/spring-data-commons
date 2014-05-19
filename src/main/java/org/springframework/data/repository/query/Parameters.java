@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private static final String ALL_OR_NOTHING = String.format("Either use @%s "
 			+ "on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
 			Pageable.class.getSimpleName(), Sort.class.getSimpleName());
-	private static final ParameterNameDiscoverer discoverer = ReflectionUtils.createInstanceIfPresent(
+	private static final ParameterNameDiscoverer PARAMETER_DISCOVERER = ReflectionUtils.createInstanceIfPresent(
 			"org.springframework.core.DefaultParameterNameDiscoverer", new LocalVariableTableParameterNameDiscoverer());
 
 	private final int pageableIndex;
@@ -68,7 +68,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		for (int i = 0; i < types.size(); i++) {
 
 			MethodParameter methodParameter = new MethodParameter(method, i);
-			methodParameter.initParameterNameDiscovery(discoverer);
+			methodParameter.initParameterNameDiscovery(PARAMETER_DISCOVERER);
 
 			T parameter = createParameter(methodParameter);
 
