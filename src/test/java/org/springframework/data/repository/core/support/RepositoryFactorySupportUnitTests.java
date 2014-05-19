@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +35,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.core.SpringVersion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -145,9 +143,6 @@ public class RepositoryFactorySupportUnitTests {
 	 */
 	@Test
 	public void wrapsExecutionResultIntoFutureIfConfigured() throws Exception {
-
-		// TODO: Remove once Spring 3.2.9 is released.
-		Assume.assumeThat(SpringVersion.getVersion().startsWith("4"), is(true));
 
 		final Object reference = new Object();
 
