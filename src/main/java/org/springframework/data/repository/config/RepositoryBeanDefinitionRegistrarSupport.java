@@ -23,8 +23,6 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.EnvironmentCapable;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
@@ -73,32 +71,12 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 			return;
 		}
 
-		// TODO: remove once SPR-11744 gets fixed
-		Environment environment = defaultEnvironment(this.environment, resourceLoader);
-
 		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(
 				annotationMetadata, getAnnotation(), resourceLoader, environment);
 
 		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configurationSource, resourceLoader,
 				environment);
 		delegate.registerRepositoriesIn(registry, getExtension());
-	}
-
-	/**
-	 * Defaults the environment in case the given one is null. TODO: remove, once SPR-11744 gets fixed.
-	 * 
-	 * @param environment
-	 * @param resourceLoader
-	 * @return
-	 */
-	private static Environment defaultEnvironment(Environment environment, ResourceLoader resourceLoader) {
-
-		if (environment != null) {
-			return environment;
-		}
-
-		return resourceLoader instanceof EnvironmentCapable ? ((EnvironmentCapable) resourceLoader).getEnvironment()
-				: new StandardEnvironment();
 	}
 
 	/**

@@ -20,6 +20,7 @@ import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -34,7 +35,7 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 
 /**
  * Integration test for {@link RepositoryBeanDefinitionRegistrarSupport}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -42,11 +43,23 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 	@Mock BeanDefinitionRegistry registry;
 
+	StandardEnvironment environment;
+	DummyRegistrar registrar;
+
+	@Before
+	public void setUp() {
+
+		environment = new StandardEnvironment();
+
+		registrar = new DummyRegistrar();
+		registrar.setEnvironment(environment);
+	}
+
 	@Test
 	public void registersBeanDefinitionForFoundBean() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
-		DummyRegistrar registrar = new DummyRegistrar();
+
 		registrar.registerBeanDefinitions(metadata, registry);
 
 		assertBeanDefinitionRegisteredFor("myRepository");
@@ -60,8 +73,6 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	public void registeredProfileRepositoriesIfProfileActivated() {
 
 		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
-
-		StandardEnvironment environment = new StandardEnvironment();
 		environment.setActiveProfiles("profile");
 
 		DummyRegistrar registrar = new DummyRegistrar();
