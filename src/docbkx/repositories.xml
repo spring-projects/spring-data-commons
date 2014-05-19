@@ -456,6 +456,12 @@ OG Does that make sense with my comment above?-->To resolve this ambiguity you
 
         <programlisting language="java">List&lt;Person&gt; findByAddress_ZipCode(ZipCode zipCode);
 </programlisting>
+
+        <para>If your property names contain underscores (e.g.
+        <code>first_name</code>) you can escape the underscore in the method
+        name with a second underscore. For a <code>first_name</code> property
+        the query method would have to be named
+        <methodname>findByFirst__name(…)</methodname>.</para>
       </section>
 
       <section id="repositories.special-parameters">
@@ -471,7 +477,7 @@ OG Does that make sense with my comment above?-->To resolve this ambiguity you
         <example>
           <title>Using Pageable and Sort in query methods</title>
 
-          <programlisting>Page&lt;User&gt; findByLastname(String lastname, Pageable pageable);
+          <programlisting language="java">Page&lt;User&gt; findByLastname(String lastname, Pageable pageable);
 
 List&lt;User&gt; findByLastname(String lastname, Sort sort);
 
