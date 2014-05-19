@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 by the original author(s).
+ * Copyright 2011-2014 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
@@ -26,7 +27,9 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.CollectionUtils;
 
 /**
  * Helper class to find a {@link PreferredConstructor}.
@@ -35,7 +38,8 @@ import org.springframework.data.util.TypeInformation;
  */
 public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
 
-	private final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
+	private static final ParameterNameDiscoverer PARAMETER_DISCOVERER = ReflectionUtils.createInstanceIfPresent(
+			"org.springframework.core.DefaultParameterNameDiscoverer", new LocalVariableTableParameterNameDiscoverer());
 
 	private PreferredConstructor<T, P> constructor;
 
@@ -106,7 +110,8 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 			return new PreferredConstructor<T, P>((Constructor<T>) constructor);
 		}
 
-		String[] parameterNames = nameDiscoverer.getParameterNames(constructor);
+		String[] parameterNames = PARAMETER_DISCOVERER.getParameterNames(constructor);
+
 		Parameter<Object, P>[] parameters = new Parameter[parameterTypes.size()];
 		Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
 
