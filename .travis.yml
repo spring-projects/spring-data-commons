@@ -9,5 +9,5 @@ env:
     - PROFILE=spring4
     - PROFILE=spring32-next
     - PROFILE=spring4-next
-    - PROFILE=querydsl-next
+install: true
 script: "mvn clean dependency:list test -P${PROFILE} -Dsort"
