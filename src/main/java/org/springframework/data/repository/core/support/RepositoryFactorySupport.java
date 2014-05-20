@@ -30,6 +30,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -341,13 +342,21 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
 			Object result = doInvoke(invocation);
-			Class<?> expectedReturnType = invocation.getMethod().getReturnType();
+
+			Method method = invocation.getMethod();
+
+			// Looking up the TypeDescriptor for the return type - yes, this way o.O
+			MethodParameter parameter = new MethodParameter(method, -1);
+			TypeDescriptor methodReturnTypeDescriptor = TypeDescriptor.nested(parameter, 0);
+
+			Class<?> expectedReturnType = method.getReturnType();
 
 			if (result != null && expectedReturnType.isInstance(result)) {
 				return result;
 			}
 
-			if (conversionService.canConvert(NullableWrapper.class, expectedReturnType)
+			if (QueryExecutionConverters.supports(expectedReturnType)
+					&& conversionService.canConvert(WRAPPER_TYPE, methodReturnTypeDescriptor)
 					&& !conversionService.canBypassConvert(WRAPPER_TYPE, TypeDescriptor.valueOf(expectedReturnType))) {
 				return conversionService.convert(new NullableWrapper(result), expectedReturnType);
 			}

@@ -20,7 +20,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
@@ -42,29 +45,19 @@ public class QueryExecutionConverters {
 	private static final boolean JDK_PRESENT = ClassUtils.isPresent("java.util.Optional",
 			QueryExecutionConverters.class.getClassLoader());
 
-	private static final Set<Class<?>> WRAPPER_TYPES;
-	private static final Set<Converter<?, ?>> CONVERTERS;
+	private static Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
 
 	static {
 
-		Set<Class<?>> wrapperTypes = new HashSet<Class<?>>();
-		Set<Converter<?, ?>> converters = new HashSet<Converter<?, ?>>();
-
-		wrapperTypes.add(Future.class);
-		converters.add(ObjectToFutureConverter.INSTANCE);
+		WRAPPER_TYPES.add(Future.class);
 
 		if (GUAVA_PRESENT) {
-			wrapperTypes.add(ObjectToGuavaOptionalConverter.INSTANCE.getWrapperType());
-			converters.add(ObjectToGuavaOptionalConverter.INSTANCE);
+			WRAPPER_TYPES.add(NullableWrapperToGuavaOptionalConverter.getWrapperType());
 		}
 
 		if (JDK_PRESENT) {
-			wrapperTypes.add(ObjectToJdk8OptionalConverter.INSTANCE.getWrapperType());
-			converters.add(ObjectToJdk8OptionalConverter.INSTANCE);
+			WRAPPER_TYPES.add(NullableWrapperToJdk8OptionalConverter.getWrapperType());
 		}
-
-		WRAPPER_TYPES = Collections.unmodifiableSet(wrapperTypes);
-		CONVERTERS = Collections.unmodifiableSet(converters);
 	}
 
 	/**
@@ -88,9 +81,81 @@ public class QueryExecutionConverters {
 
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
-		for (Converter<?, ?> converter : CONVERTERS) {
-			conversionService.addConverter(converter);
+		if (GUAVA_PRESENT) {
+			conversionService.addConverter(new NullableWrapperToGuavaOptionalConverter(conversionService));
 		}
+
+		if (JDK_PRESENT) {
+			conversionService.addConverter(new NullableWrapperToJdk8OptionalConverter(conversionService));
+		}
+
+		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
+	}
+
+	/**
+	 * Base class for converters that create instances of wrapper types such as Google Guava's and JDK 8's
+	 * {@code Optional} types.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private static abstract class AbstractWrapperTypeConverter implements GenericConverter {
+
+		@SuppressWarnings("unused")//
+		private final ConversionService conversionService;
+		private final Class<?> wrapperType;
+
+		/**
+		 * Creates a new {@link AbstractWrapperTypeConverter} using the given {@link ConversionService} and wrapper type.
+		 * 
+		 * @param conversionService must not be {@literal null}.
+		 * @param wrapperType must not be {@literal null}.
+		 */
+		protected AbstractWrapperTypeConverter(ConversionService conversionService, Class<?> wrapperType) {
+
+			Assert.notNull(conversionService, "ConversionService must not be null!");
+			Assert.notNull(wrapperType, "Wrapper type must not be null!");
+
+			this.conversionService = conversionService;
+			this.wrapperType = wrapperType;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
+		 */
+		@Override
+		public Set<ConvertiblePair> getConvertibleTypes() {
+			return Collections.singleton(new ConvertiblePair(NullableWrapper.class, wrapperType));
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+		 */
+		@Override
+		public final Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+			NullableWrapper wrapper = (NullableWrapper) source;
+			Object value = wrapper.getValue();
+
+			// TODO: Add Recursive conversion once we move to Spring 4
+			return value == null ? getNullValue() : wrap(value);
+		}
+
+		/**
+		 * Return the object that shall be used as a replacement for {@literal null}.
+		 * 
+		 * @return must not be {@literal null}.
+		 */
+		protected abstract Object getNullValue();
+
+		/**
+		 * Wrap the given, non-{@literal null} value into the wrapper type.
+		 * 
+		 * @param source will never be {@literal null}.
+		 * @return must not be {@literal null}.
+		 */
+		protected abstract Object wrap(Object source);
 	}
 
 	/**
@@ -98,20 +163,36 @@ public class QueryExecutionConverters {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static enum ObjectToGuavaOptionalConverter implements Converter<NullableWrapper, Optional<Object>> {
+	private static class NullableWrapperToGuavaOptionalConverter extends AbstractWrapperTypeConverter {
 
-		INSTANCE;
+		/**
+		 * Creates a new {@link NullableWrapperToGuavaOptionalConverter} using the given {@link ConversionService}.
+		 * 
+		 * @param conversionService must not be {@literal null}.
+		 */
+		public NullableWrapperToGuavaOptionalConverter(ConversionService conversionService) {
+			super(conversionService, Optional.class);
+		}
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#getNullValue()
 		 */
 		@Override
-		public Optional<Object> convert(NullableWrapper source) {
-			return Optional.fromNullable(source.getValue());
+		protected Object getNullValue() {
+			return Optional.absent();
 		}
 
-		public Class<?> getWrapperType() {
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
+		 */
+		@Override
+		protected Object wrap(Object source) {
+			return Optional.of(source);
+		}
+
+		public static Class<?> getWrapperType() {
 			return Optional.class;
 		}
 	}
@@ -121,20 +202,36 @@ public class QueryExecutionConverters {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static enum ObjectToJdk8OptionalConverter implements Converter<NullableWrapper, java.util.Optional<Object>> {
+	private static class NullableWrapperToJdk8OptionalConverter extends AbstractWrapperTypeConverter {
 
-		INSTANCE;
+		/**
+		 * Creates a new {@link NullableWrapperToJdk8OptionalConverter} using the given {@link ConversionService}.
+		 * 
+		 * @param conversionService must not be {@literal null}.
+		 */
+		public NullableWrapperToJdk8OptionalConverter(ConversionService conversionService) {
+			super(conversionService, java.util.Optional.class);
+		}
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#getNullValue()
 		 */
 		@Override
-		public java.util.Optional<Object> convert(NullableWrapper source) {
-			return java.util.Optional.ofNullable(source.getValue());
+		protected Object getNullValue() {
+			return java.util.Optional.empty();
 		}
 
-		public Class<?> getWrapperType() {
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
+		 */
+		@Override
+		protected Object wrap(Object source) {
+			return java.util.Optional.of(source);
+		}
+
+		public static Class<?> getWrapperType() {
 			return java.util.Optional.class;
 		}
 	}
@@ -144,17 +241,35 @@ public class QueryExecutionConverters {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static enum ObjectToFutureConverter implements Converter<NullableWrapper, Future<Object>> {
+	private static class NullableWrapperToFutureConverter extends AbstractWrapperTypeConverter {
 
-		INSTANCE;
+		private final AsyncResult<Object> NULL_OBJECT = new AsyncResult<Object>(null);
+
+		/**
+		 * Creates a new {@link NullableWrapperToFutureConverter} using the given {@link ConversionService}.
+		 * 
+		 * @param conversionService must not be {@literal null}.
+		 */
+		public NullableWrapperToFutureConverter(ConversionService conversionService) {
+			super(conversionService, Future.class);
+		}
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#getNullValue()
 		 */
 		@Override
-		public Future<Object> convert(NullableWrapper source) {
-			return new AsyncResult<Object>(source.getValue());
+		protected Object getNullValue() {
+			return NULL_OBJECT;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
+		 */
+		@Override
+		protected Object wrap(Object source) {
+			return new AsyncResult<Object>(source);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.junit.Assume;
@@ -41,6 +44,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
+import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
@@ -70,6 +75,12 @@ public class RepositoryFactorySupportUnitTests {
 
 	@Test
 	public void invokesCustomQueryCreationListenerForSpecialRepositoryQueryOnly() throws Exception {
+
+		Mockito.reset(factory.strategy);
+
+		when(
+				factory.strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
+						Mockito.any(NamedQueries.class))).thenReturn(factory.queryOne, factory.queryTwo);
 
 		factory.addQueryCreationListener(listener);
 		factory.addQueryCreationListener(otherListener);
@@ -148,11 +159,11 @@ public class RepositoryFactorySupportUnitTests {
 			}
 		});
 
-		AsyncRepository repository = factory.getRepository(AsyncRepository.class);
+		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
 
 		AsyncAnnotationBeanPostProcessor processor = new AsyncAnnotationBeanPostProcessor();
 		processor.setBeanFactory(new DefaultListableBeanFactory());
-		repository = (AsyncRepository) processor.postProcessAfterInitialization(repository, null);
+		repository = (ConvertingRepository) processor.postProcessAfterInitialization(repository, null);
 
 		Future<Object> future = repository.findByFirstname("Foo");
 
@@ -165,6 +176,40 @@ public class RepositoryFactorySupportUnitTests {
 		assertThat(future.get(), is(reference));
 
 		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
+	}
+
+	/**
+	 * @see DATACMNS-509
+	 */
+	@Test
+	public void convertsWithSameElementType() {
+
+		List<String> names = Collections.singletonList("Dave");
+
+		when(factory.queryOne.execute(Mockito.any(Object[].class))).thenReturn(names);
+
+		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
+		Set<String> result = repository.convertListToStringSet();
+
+		assertThat(result, hasSize(1));
+		assertThat(result.iterator().next(), is("Dave"));
+	}
+
+	/**
+	 * @see DATACMNS-509
+	 */
+	@Test
+	public void convertsCollectionToOtherCollectionWithElementSuperType() {
+
+		List<String> names = Collections.singletonList("Dave");
+
+		when(factory.queryOne.execute(Mockito.any(Object[].class))).thenReturn(names);
+
+		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
+		Set<Object> result = repository.convertListToObjectSet();
+
+		assertThat(result, hasSize(1));
+		assertThat(result.iterator().next(), is((Object) "Dave"));
 	}
 
 	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {
@@ -217,7 +262,11 @@ public class RepositoryFactorySupportUnitTests {
 
 	}
 
-	interface AsyncRepository extends Repository<Object, Long> {
+	interface ConvertingRepository extends Repository<Object, Long> {
+
+		Set<String> convertListToStringSet();
+
+		Set<Object> convertListToObjectSet();
 
 		@Async
 		Future<Object> findByFirstname(String firstname);

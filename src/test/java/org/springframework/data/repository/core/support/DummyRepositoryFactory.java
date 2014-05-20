@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,27 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.RepositoryQuery;
 
+/**
+ * Dummy implementation for {@link RepositoryFactorySupport} that is equipped with mocks to simulate behavior for test
+ * cases.
+ *
+ * @author Oliver Gierke
+ */
 public class DummyRepositoryFactory extends RepositoryFactorySupport {
 
 	public final MyRepositoryQuery queryOne = mock(MyRepositoryQuery.class);
 	public final RepositoryQuery queryTwo = mock(RepositoryQuery.class);
+	public final QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
 
 	private final Object repository;
 
 	public DummyRepositoryFactory(Object repository) {
+
 		this.repository = repository;
+
+		when(
+				strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
+						Mockito.any(NamedQueries.class))).thenReturn(queryOne);
 	}
 
 	/*
@@ -74,13 +86,6 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
-
-		QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
-
-		when(
-				strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
-						Mockito.any(NamedQueries.class))).thenReturn(queryOne, queryTwo);
-
 		return strategy;
 	}
 }
