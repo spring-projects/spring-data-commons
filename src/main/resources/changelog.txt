@@ -1,6 +1,19 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.8.0.RELEASE (2014-05-20)
+---------------------------------------------
+* DATACMNS-509 - NullableWrapper Breaks JSON Conversion.
+* DATACMNS-508 - Add Travis configuration for matrix builds.
+* DATACMNS-507 - Release 1.8 GA.
+* DATACMNS-506 - PreferredConstructorDiscoverer should use Spring 4's ParameterNameDiscoverer if possible.
+* DATACMNS-505 - Documentation on property expressions should mention how to escape underscores.
+* DATACMNS-503 - Upgrade compile time dependency for Optional support to Guava 17.
+* DATACMNS-502 - AnnotationRepositoryConfigurationSource fails when the annotated class is in the default package.
+* DATACMNS-501 - ID type not detected for intermediate repository interface.
+* DATACMNS-494 - Remove defaulting of Environment from RepositoryBeanDefinitionRegistrarSupport.
+
+
 Changes in version 1.8.0.RC1 (2014-05-02)
 -----------------------------------------
 * DATACMNS-500 - Remove Jackson 1 support.
