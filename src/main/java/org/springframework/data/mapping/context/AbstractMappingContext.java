@@ -466,7 +466,22 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
-			for (TypeInformation<?> candidate : property.getPersistentEntityType()) {
+			outer: for (TypeInformation<?> candidate : property.getPersistentEntityType()) {
+
+				for (TypeInformation<?> typeInfo : persistentEntities.keySet()) {
+					if (typeInfo.getType().equals(candidate.getType())) {
+						/*
+						 *  The referenced entity is already registered as a persistentEntity thus we continue with next candidate.
+						 *  Note that we cannot use persistentEntities.contains(candidate) here since the VariableTypeInformation
+						 *  also uses the information about he owing type in hashcode / equals which could be different 
+						 *  dependening on the declaration of the type although it points to the same entity.
+						 *  
+						 *  Fix for DATACMNS-511.
+						 */
+						continue outer;
+					}
+				}
+
 				addPersistentEntity(candidate);
 			}
 		}
