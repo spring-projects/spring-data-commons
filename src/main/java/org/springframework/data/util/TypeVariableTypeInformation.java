@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,8 +55,7 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.data.document.mongodb.TypeDiscovererTest.TypeDiscoverer#getType()
+	 * @see org.springframework.data.util.TypeDiscoverer#getType()
 	 */
 	@Override
 	public Class<T> getType() {
@@ -92,38 +91,40 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see org.springframework.data.util.TypeDiscoverer#equals(java.lang.Object)
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 
-		if (!super.equals(obj)) {
+		if (obj == this) {
+			return true;
+		}
+
+		if (!(obj instanceof TypeVariableTypeInformation)) {
 			return false;
 		}
 
 		TypeVariableTypeInformation<?> that = (TypeVariableTypeInformation<?>) obj;
-		return nullSafeEquals(this.owningType, that.owningType) && nullSafeEquals(this.variable, that.variable);
+
+		return getType().equals(that.getType());
 	}
 
 	/*
-		 * (non-Javadoc)
-		 *
-		 * @see org.springframework.data.util.TypeDiscoverer#hashCode()
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 
-		int result = super.hashCode();
+		int result = 17;
 
-		result += 31 * nullSafeHashCode(this.owningType);
-		result += 31 * nullSafeHashCode(this.variable);
+		result += 31 * nullSafeHashCode(getType());
 
 		return result;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
