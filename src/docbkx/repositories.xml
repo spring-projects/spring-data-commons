@@ -1259,7 +1259,7 @@ class PersonController {
     http://www.springframework.org/schema/data/repository
     http://www.springframework.org/schema/data/repository/spring-repository.xsd"&gt;
 
-  &lt;repository:jackson-populator location="classpath:data.json" /&gt;
+  &lt;repository:jackson-populator locations="classpath:data.json" /&gt;
 
 &lt;/beans&gt;</programlisting>
       </example>
@@ -1296,7 +1296,7 @@ processing.-->The type to which the JSON object will be unmarshalled to will
     http://www.springframework.org/schema/oxm
     http://www.springframework.org/schema/oxm/spring-oxm.xsd"&gt;
 
-  &lt;repository:unmarshaller-populator location="classpath:data.json" unmarshaller-ref="unmarshaller" /&gt;
+  &lt;repository:unmarshaller-populator locations="classpath:data.json" unmarshaller-ref="unmarshaller" /&gt;
 
   &lt;oxm:jaxb2-marshaller contextPath="com.acme" /&gt;
 
