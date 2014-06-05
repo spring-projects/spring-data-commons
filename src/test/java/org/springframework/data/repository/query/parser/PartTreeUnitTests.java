@@ -553,6 +553,83 @@ public class PartTreeUnitTests {
 		assertThat(tree.isDelete(), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void disablesFindFirstKImplicitIfNotPresent() {
+
+		PartTree tree = new PartTree("findByLastname", User.class);
+		assertThat(tree.isFirstK(), is(false));
+		assertThat(tree.getMaxResults(), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindFirstImplicit() {
+
+		PartTree tree = new PartTree("findFirstByLastname", User.class);
+		assertThat(tree.isFirstK(), is(true));
+		assertThat(tree.getMaxResults(), is(1));
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindFirst1Explicit() {
+
+		PartTree tree = new PartTree("findFirstByLastname", User.class);
+		assertThat(tree.isFirstK(), is(true));
+		assertThat(tree.getMaxResults(), is(1));
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindFirstKExplicit() {
+
+		PartTree tree = new PartTree("findFirst10ByLastname", User.class);
+		assertThat(tree.isFirstK(), is(true));
+		assertThat(tree.getMaxResults(), is(10));
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindTopImplicit() {
+
+		PartTree tree = new PartTree("findTopByLastname", User.class);
+		assertThat(tree.isFirstK(), is(true));
+		assertThat(tree.getMaxResults(), is(1));
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindTop1Explicit() {
+
+		PartTree tree = new PartTree("findTop1ByLastname", User.class);
+		assertThat(tree.isFirstK(), is(true));
+		assertThat(tree.getMaxResults(), is(1));
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindTopKExplicit() {
+
+		PartTree tree = new PartTree("findTop10ByLastname", User.class);
+		assertThat(tree.isFirstK(), is(true));
+		assertThat(tree.getMaxResults(), is(10));
+	}
+
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
 	}
