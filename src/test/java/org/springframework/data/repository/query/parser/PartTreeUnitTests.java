@@ -553,6 +553,118 @@ public class PartTreeUnitTests {
 		assertThat(tree.isDelete(), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void disablesFindFirstKImplicitIfNotPresent() {
+		assertLimiting("findByLastname", User.class, false, null);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindFirstImplicit() {
+		assertLimiting("findFirstByLastname", User.class, true, 1);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindFirst1Explicit() {
+		assertLimiting("findFirstByLastname", User.class, true, 1);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindFirstKExplicit() {
+		assertLimiting("findFirst10ByLastname", User.class, true, 10);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindFirstKUsersExplicit() {
+		assertLimiting("findFirst10UsersByLastname", User.class, true, 10);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindFirstKDistinctUsersExplicit() {
+		assertLimiting("findFirst10DistinctUsersByLastname", User.class, true, 10, true);
+		assertLimiting("findDistinctFirst10UsersByLastname", User.class, true, 10, true);
+		assertLimiting("findFirst10UsersDistinctByLastname", User.class, true, 10, true);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindTopImplicit() {
+		assertLimiting("findTopByLastname", User.class, true, 1);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindTop1Explicit() {
+		assertLimiting("findTop1ByLastname", User.class, true, 1);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindTopKExplicit() {
+		assertLimiting("findTop10ByLastname", User.class, true, 10);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindTopKUsersExplicit() {
+		assertLimiting("findTop10UsersByLastname", User.class, true, 10);
+	}
+
+	/**
+	 * @see DATACMNS-516
+	 */
+	@Test
+	public void identifiesFindTopKDistinctUsersExplicit() {
+		assertLimiting("findTop10DistinctUsersByLastname", User.class, true, 10, true);
+		assertLimiting("findDistinctTop10UsersByLastname", User.class, true, 10, true);
+		assertLimiting("findTop10UsersDistinctByLastname", User.class, true, 10, true);
+	}
+
+	@Test
+	public void shouldNotSupportLimitingCountQueries() {
+		assertLimiting("countFirst10DistinctUsersByLastname", User.class, false, null, true);
+		assertLimiting("countTop10DistinctUsersByLastname", User.class, false, null, true);
+	}
+
+	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {
+		assertLimiting(methodName, entityType, limiting, maxResults, false);
+	}
+
+	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults,
+			boolean distinct) {
+
+		PartTree tree = new PartTree(methodName, entityType);
+
+		assertThat(tree.isLimiting(), is(limiting));
+		assertThat(tree.getMaxResults(), is(maxResults));
+		assertThat(tree.isDistinct(), is(distinct));
+	}
+
 	private static void assertType(Iterable<String> sources, Type type, String property) {
 		assertType(sources, type, property, 1, true);
 	}

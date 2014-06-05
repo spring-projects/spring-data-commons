@@ -50,9 +50,11 @@ public class PartTree implements Iterable<OrPart> {
 	 * @see http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#ubc
 	 */
 	private static final String KEYWORD_TEMPLATE = "(%s)(?=(\\p{Lu}|\\P{InBASIC_LATIN}))";
+	private static final String QUERY_PATTERN = "find|read|get|query";
+	private static final String COUNT_PATTERN = "count";
 	private static final String DELETE_PATTERN = "delete|remove";
-	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count|query|" + DELETE_PATTERN
-			+ ")(\\p{Lu}.*?)??By");
+	private static final Pattern PREFIX_TEMPLATE = Pattern.compile( //
+			"^(" + QUERY_PATTERN + "|" + COUNT_PATTERN + "|" + DELETE_PATTERN + ")((\\p{Lu}.*?))??By");
 
 	/**
 	 * The subject, for example "findDistinctUserByNameOrderByAge" would have the subject "DistinctUser".
@@ -131,6 +133,26 @@ public class PartTree implements Iterable<OrPart> {
 	 */
 	public Boolean isDelete() {
 		return subject.isDelete();
+	}
+
+	/**
+	 * Return {@literal true} if the create {@link PartTree} is meant to be used for a query with limited maximal results.
+	 * 
+	 * @return
+	 * @since 1.9
+	 */
+	public boolean isLimiting() {
+		return getMaxResults() != null;
+	}
+
+	/**
+	 * Return the number of maximal results to return or {@literal null} if not restricted.
+	 * 
+	 * @return
+	 * @since 1.9
+	 */
+	public Integer getMaxResults() {
+		return subject.getMaxResults();
 	}
 
 	/**
@@ -234,22 +256,48 @@ public class PartTree implements Iterable<OrPart> {
 	 * @author Phil Webb
 	 * @author Oliver Gierke
 	 * @author Christoph Strobl
+	 * @author Thomas Darimont
 	 */
 	private static class Subject {
 
 		private static final String DISTINCT = "Distinct";
 		private static final Pattern COUNT_BY_TEMPLATE = Pattern.compile("^count(\\p{Lu}.*?)??By");
 		private static final Pattern DELETE_BY_TEMPLATE = Pattern.compile("^(" + DELETE_PATTERN + ")(\\p{Lu}.*?)??By");
+		private static final String LIMITING_QUERY_PATTERN = "(First|Top)(\\d*)?";
+		private static final Pattern LIMITED_QUERY_TEMPLATE = Pattern.compile("^(" + QUERY_PATTERN + ")(" + DISTINCT + ")?"
+				+ LIMITING_QUERY_PATTERN + "(\\p{Lu}.*?)??By");
 
 		private final boolean distinct;
 		private final boolean count;
 		private final boolean delete;
+		private final Integer maxResults;
 
 		public Subject(String subject) {
 
 			this.distinct = subject == null ? false : subject.contains(DISTINCT);
 			this.count = matches(subject, COUNT_BY_TEMPLATE);
 			this.delete = matches(subject, DELETE_BY_TEMPLATE);
+			this.maxResults = returnMaxResultsIfFirstKSubjectOrNull(subject);
+		}
+
+		/**
+		 * @param subject
+		 * @return
+		 * @since 1.9
+		 */
+		private Integer returnMaxResultsIfFirstKSubjectOrNull(String subject) {
+
+			if (subject == null) {
+				return null;
+			}
+
+			Matcher grp = LIMITED_QUERY_TEMPLATE.matcher(subject);
+
+			if (!grp.find()) {
+				return null;
+			}
+
+			return StringUtils.hasText(grp.group(4)) ? Integer.valueOf(grp.group(4)) : 1;
 		}
 
 		/**
@@ -268,6 +316,10 @@ public class PartTree implements Iterable<OrPart> {
 
 		public boolean isDistinct() {
 			return distinct;
+		}
+
+		public Integer getMaxResults() {
+			return maxResults;
 		}
 
 		private final boolean matches(String subject, Pattern pattern) {
@@ -330,5 +382,4 @@ public class PartTree implements Iterable<OrPart> {
 			return orderBySource;
 		}
 	}
-
 }
