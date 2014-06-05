@@ -27,7 +27,9 @@ import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.util.UriComponents;
 
 /**
  * Unit tests for {@link PagedResourcesAssemblerArgumentResolver}.
@@ -140,6 +142,30 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		assertThat(result, is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-513
+	 */
+	@Test
+	public void detectsMappingOfInvokedSubType() throws Exception {
+
+		Method method = Controller.class.getMethod("methodWithMapping", PagedResourcesAssembler.class);
+
+		// Simulate HandlerMethod.HandlerMethodParameter.getDeclaringClass()
+		// as it's returning the invoked class as the declared one
+		MethodParameter methodParameter = new MethodParameter(method, 0) {
+			public java.lang.Class<?> getDeclaringClass() {
+				return SubController.class;
+			}
+		};
+
+		Object result = resolver.resolveArgument(methodParameter, null, null, null);
+
+		assertThat(result, is(instanceOf(PagedResourcesAssembler.class)));
+		UriComponents uriComponents = (UriComponents) ReflectionTestUtils.getField(result, "baseUri");
+
+		assertThat(uriComponents.getPath(), is("/foo/mapping"));
+	}
+
 	private void assertSelectsParameter(Method method, int expectedIndex) throws Exception {
 
 		MethodParameter parameter = new MethodParameter(method, 0);
@@ -190,5 +216,13 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 
 		@RequestMapping("/{variable}/foo")
 		void methodWithPathVariable(PagedResourcesAssembler<Object> assembler);
+
+		@RequestMapping("/mapping")
+		Object methodWithMapping(PagedResourcesAssembler<Object> pageable);
+	}
+
+	@RequestMapping("/foo")
+	interface SubController extends Controller {
+
 	}
 }

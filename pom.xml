@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
 	<version>1.7.3.BUILD-SNAPSHOT</version>
@@ -15,13 +15,13 @@
 		<version>1.3.3.BUILD-SNAPSHOT</version>
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
-	
+
 	<properties>
 		<jackson1>1.9.7</jackson1>
-		<springhateoas>0.9.0.RELEASE</springhateoas>
+		<springhateoas>0.13.0.BUILD-SNAPSHOT</springhateoas>
 		<dist.key>DATACMNS</dist.key>
 	</properties>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -74,7 +74,7 @@
 			<artifactId>spring-web</artifactId>
 			<optional>true</optional>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
@@ -109,7 +109,7 @@
 			<version>${querydsl}</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- EJB Transactions -->
 		<dependency>
 			<groupId>javax.ejb</groupId>
@@ -126,21 +126,21 @@
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>el-api</artifactId>
 			<version>${cdi}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.openwebbeans.test</groupId>
 			<artifactId>cditest-owb</artifactId>
 			<version>${webbeans}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
@@ -152,14 +152,14 @@
 			<artifactId>spring-webmvc</artifactId>
 			<optional>true</optional>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
 			<version>2.2.3U1</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>xmlunit</groupId>
 			<artifactId>xmlunit</artifactId>
@@ -175,10 +175,11 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
-			<plugin>
+
+<plugin>
 				<groupId>com.mysema.maven</groupId>
 				<artifactId>apt-maven-plugin</artifactId>
 				<version>${apt}</version>
@@ -205,14 +206,14 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<repositories>
 		<repository>
 			<id>spring-libs-snapshot</id>
 			<url>http://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
-	
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>spring-plugins-release</id>
