@@ -21,8 +21,10 @@ import static org.mockito.Mockito.*;
 import groovy.lang.MetaClass;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.junit.Before;
@@ -245,6 +247,16 @@ public class AbstractMappingContextUnitTests {
 		assertHasEntityFor(TreeMap.class, context, false);
 	}
 
+	/**
+	 * @see DATACMNS-511
+	 */
+	@Test(timeout = 1000)
+	public void shouldProcessPersistentEntitiesWithRecursiveGenericTypeDeclarations() {
+
+		// we expect this to finish quick (hence the timeout) otherwise we could have run into an infinite loop
+		assertThat(context.getPersistentEntity(AuditingEntity.class), is(notNullValue()));
+	}
+
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
 
 		boolean found = false;
@@ -282,5 +294,51 @@ public class AbstractMappingContextUnitTests {
 
 	static class Extension extends Base {
 		@Id String foo;
+	}
+
+	/**
+	 * @author Thomas Darimont
+	 * @see DATACMNS-511
+	 */
+	static class AbstractRole<USER extends AbstractUser<USER, ? extends AbstractRole<USER>>> extends AuditingEntity<USER> {
+
+		@SuppressWarnings("unused") private String name;
+	}
+
+	/**
+	 * @author Thomas Darimont
+	 * @see DATACMNS-511
+	 */
+	static abstract class AbstractUser<USER extends AbstractUser<USER, ROLE>, ROLE extends AbstractRole<USER>> {
+
+		@SuppressWarnings("unused") private Set<ROLE> roles = new HashSet<ROLE>();
+	}
+
+	/**
+	 * @author Thomas Darimont
+	 * @see DATACMNS-511
+	 */
+	static abstract class AuditingEntity<USER extends AbstractUser<USER, ?>> {
+
+		@SuppressWarnings("unused") private USER createdBy;
+		@SuppressWarnings("unused") private USER lastModifiedBy;
+	}
+
+	/**
+	 * @author Thomas Darimont
+	 * @see DATACMNS-511
+	 */
+	static class Role extends AbstractRole<User> {
+
+		@SuppressWarnings("unused") private long id;
+	}
+
+	/**
+	 * @author Thomas Darimont
+	 * @see DATACMNS-511
+	 */
+	static class User extends AbstractUser<User, Role> {
+
+		@SuppressWarnings("unused") private long id;
 	}
 }

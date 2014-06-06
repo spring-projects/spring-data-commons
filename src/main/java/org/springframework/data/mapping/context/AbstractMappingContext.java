@@ -467,7 +467,15 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			}
 
 			for (TypeInformation<?> candidate : property.getPersistentEntityType()) {
-				addPersistentEntity(candidate);
+
+				TypeInformation<?> ti = candidate;
+
+				// FIX for DATACMNS-511 we only use the concrete type information here.
+				if (!(ti instanceof ClassTypeInformation)) {
+					ti = ClassTypeInformation.from(ti.getType());
+				}
+
+				addPersistentEntity(ti);
 			}
 		}
 	}
