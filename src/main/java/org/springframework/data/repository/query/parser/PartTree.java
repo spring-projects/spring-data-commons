@@ -50,10 +50,11 @@ public class PartTree implements Iterable<OrPart> {
 	 * @see http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#ubc
 	 */
 	private static final String KEYWORD_TEMPLATE = "(%s)(?=(\\p{Lu}|\\P{InBASIC_LATIN}))";
+	private static final String QUERY_PATTERN = "find|read|get|query";
+	private static final String COUNT_PATTERN = "count";
 	private static final String DELETE_PATTERN = "delete|remove";
-	private static final String FIRST_K_PATTERN = "(First|Top)\\d*";
-	private static final Pattern PREFIX_TEMPLATE = Pattern.compile("^(find|read|get|count|query|" + DELETE_PATTERN
-			+ ")((" + FIRST_K_PATTERN + "|\\p{Lu}.*?))??By");
+	private static final Pattern PREFIX_TEMPLATE = Pattern.compile( //
+			"^(" + QUERY_PATTERN + "|" + COUNT_PATTERN + "|" + DELETE_PATTERN + ")((\\p{Lu}.*?))??By");
 
 	/**
 	 * The subject, for example "findDistinctUserByNameOrderByAge" would have the subject "DistinctUser".
@@ -135,15 +136,21 @@ public class PartTree implements Iterable<OrPart> {
 	}
 
 	/**
-	 * return true if the create {@link PartTree} is meant to be used for a find first k query.
+	 * Return {@literal true} if the create {@link PartTree} is meant to be used for a query with limited maximal results.
 	 * 
 	 * @return
 	 * @since 1.9
 	 */
-	public boolean isFirstK() {
+	public boolean isLimiting() {
 		return getMaxResults() != null;
 	}
 
+	/**
+	 * Return the number of maximal results to return or {@literal null} if not restricted.
+	 * 
+	 * @return
+	 * @since 1.9
+	 */
 	public Integer getMaxResults() {
 		return subject.getMaxResults();
 	}
@@ -256,7 +263,9 @@ public class PartTree implements Iterable<OrPart> {
 		private static final String DISTINCT = "Distinct";
 		private static final Pattern COUNT_BY_TEMPLATE = Pattern.compile("^count(\\p{Lu}.*?)??By");
 		private static final Pattern DELETE_BY_TEMPLATE = Pattern.compile("^(" + DELETE_PATTERN + ")(\\p{Lu}.*?)??By");
-		private static final Pattern FIRSTK_BY_TEMPLATE = Pattern.compile("^find(First|Top)(\\d*)?By");
+		private static final String LIMITING_QUERY_PATTERN = "(First|Top)(\\d*)?";
+		private static final Pattern LIMITED_QUERY_TEMPLATE = Pattern.compile("^(" + QUERY_PATTERN + ")(" + DISTINCT + ")?"
+				+ LIMITING_QUERY_PATTERN + "(\\p{Lu}.*?)??By");
 
 		private final boolean distinct;
 		private final boolean count;
@@ -282,13 +291,13 @@ public class PartTree implements Iterable<OrPart> {
 				return null;
 			}
 
-			Matcher grp = FIRSTK_BY_TEMPLATE.matcher(subject);
+			Matcher grp = LIMITED_QUERY_TEMPLATE.matcher(subject);
 
 			if (!grp.find()) {
 				return null;
 			}
 
-			return StringUtils.hasText(grp.group(2)) ? Integer.valueOf(grp.group(2)) : 1;
+			return StringUtils.hasText(grp.group(4)) ? Integer.valueOf(grp.group(4)) : 1;
 		}
 
 		/**
