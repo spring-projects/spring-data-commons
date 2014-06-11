@@ -122,14 +122,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	public Link appendPaginationParameterTemplates(Link link) {
 
 		Assert.notNull(link, "Link must not be null!");
-
-		String uri = link.getHref();
-		UriTemplate uriTemplate = new UriTemplate(uri);
-		UriComponents uriComponents = UriComponentsBuilder.fromUriString(uri).build();
-
-		TemplateVariables variables = pageableResolver.getPaginationTemplateVariables(getMethodParameter(), uriComponents);
-
-		return new Link(uriTemplate.with(variables), link.getRel());
+		return createLink(new UriTemplate(link.getHref()), null, link.getRel());
 	}
 
 	private <S, R extends ResourceSupport> PagedResources<R> createResource(Page<S> page,
@@ -144,35 +137,52 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			resources.add(assembler.toResource(element));
 		}
 
+		UriTemplate base = new UriTemplate(link == null ? getDefaultUriString() : link.getHref());
+
 		PagedResources<R> pagedResources = new PagedResources<R>(resources, asPageMetadata(page));
-		return addPaginationLinks(pagedResources, page, link == null ? getDefaultUriString().toUriString() : link.getHref());
-	}
-
-	private UriComponents getDefaultUriString() {
-		return baseUri == null ? ServletUriComponentsBuilder.fromCurrentRequest().build() : baseUri;
-	}
-
-	private <R extends ResourceSupport> PagedResources<R> addPaginationLinks(PagedResources<R> resources, Page<?> page,
-			String uri) {
+		pagedResources.add(createLink(base, null, Link.REL_SELF));
 
 		if (page.hasNext()) {
-			foo(resources, page.nextPageable(), uri, Link.REL_NEXT);
+			pagedResources.add(createLink(base, page.nextPageable(), Link.REL_NEXT));
 		}
 
 		if (page.hasPrevious()) {
-			foo(resources, page.previousPageable(), uri, Link.REL_PREVIOUS);
+			pagedResources.add(createLink(base, page.previousPageable(), Link.REL_PREVIOUS));
 		}
 
-		resources.add(appendPaginationParameterTemplates(new Link(uri)));
-
-		return resources;
+		return pagedResources;
 	}
 
-	private void foo(PagedResources<?> resources, Pageable pageable, String uri, String rel) {
+	/**
+	 * Returns a default URI string either from the one configured on assembler creatino or by looking it up from the
+	 * current request.
+	 * 
+	 * @return
+	 */
+	private String getDefaultUriString() {
+		return baseUri == null ? ServletUriComponentsBuilder.fromCurrentRequest().build().toString() : baseUri.toString();
+	}
 
-		UriComponentsBuilder builder = fromUriString(uri);
+	/**
+	 * Creates a {@link Link} with the given rel that will be based on the given {@link UriTemplate} but enriched with the
+	 * values of the given {@link Pageable} (if not {@literal null}) and the missing parameters added as template
+	 * variables.
+	 * 
+	 * @param base must not be {@literal null}.
+	 * @param pageable can be {@literal null}
+	 * @param rel must not be {@literal null} or empty.
+	 * @return
+	 */
+	private Link createLink(UriTemplate base, Pageable pageable, String rel) {
+
+		UriComponentsBuilder builder = fromUri(base.expand());
 		pageableResolver.enhance(builder, getMethodParameter(), pageable);
-		resources.add(new Link(builder.build().toUriString(), rel));
+
+		UriComponents components = builder.build();
+		TemplateVariables variables = new TemplateVariables(base.getVariables());
+		variables = variables.concat(pageableResolver.getPaginationTemplateVariables(getMethodParameter(), components));
+
+		return new Link(new UriTemplate(components.toString()).with(variables), rel);
 	}
 
 	/**

@@ -168,6 +168,21 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(assembler.appendPaginationParameterTemplates(link), is(new Link("/foo?page=0{&size,sort}")));
 	}
 
+	/**
+	 * @see DATACMNS-519
+	 */
+	@Test
+	public void keepsExistingTemplateVariablesFromBaseLink() {
+
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
+
+		Link link = new Link("/foo?page=0{&projection}");
+		Link result = assembler.appendPaginationParameterTemplates(link);
+
+		assertThat(result.getVariableNames(), hasSize(3));
+		assertThat(result.getVariableNames(), hasItems("projection", "size", "sort"));
+	}
+
 	private static Page<Person> createPage(int index) {
 
 		AbstractPageRequest request = new PageRequest(index, 1);

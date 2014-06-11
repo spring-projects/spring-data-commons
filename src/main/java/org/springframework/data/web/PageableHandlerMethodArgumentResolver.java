@@ -93,6 +93,17 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	}
 
 	/**
+	 * Returns whether the given {@link Pageable} is the fallback one.
+	 * 
+	 * @param pageable
+	 * @since 1.9
+	 * @return
+	 */
+	public boolean isFallbackPageable(Pageable pageable) {
+		return this.fallbackPageable.equals(pageable);
+	}
+
+	/**
 	 * Configures the maximum page size to be accepted. This allows to put an upper boundary of the page size to prevent
 	 * potential attacks trying to issue an {@link OutOfMemoryError}. Defaults to {@link #DEFAULT_MAX_PAGE_SIZE}.
 	 * 
