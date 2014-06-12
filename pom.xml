@@ -18,7 +18,7 @@
 
 	<properties>
 		<jackson1>1.9.7</jackson1>
-		<springhateoas>0.13.0.BUILD-SNAPSHOT</springhateoas>
+		<springhateoas>0.13.0.RELEASE</springhateoas>
 		<dist.key>DATACMNS</dist.key>
 	</properties>
 
@@ -179,7 +179,7 @@
 	<build>
 		<plugins>
 
-<plugin>
+			<plugin>
 				<groupId>com.mysema.maven</groupId>
 				<artifactId>apt-maven-plugin</artifactId>
 				<version>${apt}</version>
