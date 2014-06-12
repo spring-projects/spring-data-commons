@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -36,12 +37,14 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Jon Brisbin
+ * @author Thomas Darimont
  */
 public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 	private final Constructor<T> constructor;
 	private final List<Parameter<Object, P>> parameters;
 	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new HashMap<PersistentProperty<?>, Boolean>();
+	private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 
 	/**
 	 * Creates a new {@link PreferredConstructor} from the given {@link Constructor} and {@link Parameter}s.
@@ -117,21 +120,33 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 		Assert.notNull(property);
 
-		Boolean cached = isPropertyParameterCache.get(property);
+		rwLock.readLock().lock();
+		try {
 
-		if (cached != null) {
-			return cached;
-		}
+			Boolean cached = isPropertyParameterCache.get(property);
 
-		for (Parameter<?, P> parameter : parameters) {
-			if (parameter.maps(property)) {
-				isPropertyParameterCache.put(property, true);
-				return true;
+			if (cached != null) {
+				return cached;
 			}
+		} finally {
+			rwLock.readLock().unlock();
 		}
 
-		isPropertyParameterCache.put(property, false);
-		return false;
+		rwLock.writeLock().lock();
+		try {
+
+			for (Parameter<?, P> parameter : parameters) {
+				if (parameter.maps(property)) {
+					isPropertyParameterCache.put(property, true);
+					return true;
+				}
+			}
+
+			isPropertyParameterCache.put(property, false);
+			return false;
+		} finally {
+			rwLock.writeLock().unlock();
+		}
 	}
 
 	/**
