@@ -9,7 +9,6 @@ env:
     - PROFILE=spring4
     - PROFILE=spring32-next
     - PROFILE=spring4-next
-    - PROFILE=querydsl-next
 cache:
   directories:
     - $HOME/.m2
