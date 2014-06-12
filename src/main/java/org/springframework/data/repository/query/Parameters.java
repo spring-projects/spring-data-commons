@@ -258,15 +258,18 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private void assertEitherAllParamAnnotatedOrNone() {
 
 		boolean nameFound = false;
+		int index = 0;
 
 		for (T parameter : this.getBindableParameters()) {
 
 			if (parameter.isNamedParameter()) {
-				Assert.isTrue(nameFound || parameter.isFirst(), ALL_OR_NOTHING);
+				Assert.isTrue(nameFound || index == 0, ALL_OR_NOTHING);
 				nameFound = true;
 			} else {
 				Assert.isTrue(!nameFound, ALL_OR_NOTHING);
 			}
+
+			index++;
 		}
 	}
 

@@ -51,15 +51,6 @@ public class Parameter {
 	}
 
 	/**
-	 * Returns whether the {@link Parameter} is the first one.
-	 * 
-	 * @return
-	 */
-	boolean isFirst() {
-		return getIndex() == 0;
-	}
-
-	/**
 	 * Returns whether the parameter is a special parameter.
 	 * 
 	 * @return
