@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -115,6 +115,14 @@ public class ParametersUnitTests {
 		assertThat(parameters.getSortIndex(), is(1));
 	}
 
+	/**
+	 * @see DATACMNS-520
+	 */
+	@Test
+	public void doesNotRejectParameterIfPageableComesFirst() throws Exception {
+		getParametersFor("validWithPageableFirst", Pageable.class, String.class);
+	}
+
 	private Parameters<?, ?> getParametersFor(String methodName, Class<?>... parameterTypes) throws SecurityException,
 			NoSuchMethodException {
 
@@ -134,6 +142,8 @@ public class ParametersUnitTests {
 		User invalidParamMissing(@Param("username") String username, String lastname);
 
 		User validWithPageable(@Param("username") String username, Pageable pageable);
+
+		User validWithPageableFirst(Pageable pageable, @Param("username") String username);
 
 		User validWithSort(@Param("username") String username, Sort sort);
 
