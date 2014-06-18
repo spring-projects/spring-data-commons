@@ -1,6 +1,23 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.7.3.RELEASE (2014-06-18)
+---------------------------------------------
+* DATACMNS-522 - Release 1.7.3.
+* DATACMNS-521 - Disable Querydsl.next profile in Travis build.
+* DATACMNS-520 - Parameters incorrectly rejects query method signature.
+* DATACMNS-514 - Typo in Example 1.26. Declaring a Jackson repository populator.
+* DATACMNS-513 - ControllerLinkBuilder not detecting the right @RequestMapping from a controller.
+* DATACMNS-511 - AbstractMappingContext.addPersistentEntity causes infinite loop.
+* DATACMNS-506 - PreferredConstructorDiscoverer should use Spring 4's ParameterNameDiscoverer if possible.
+* DATACMNS-505 - Documentation on property expressions should mention how to escape underscores.
+* DATACMNS-502 - AnnotationRepositoryConfigurationSource fails when the annotated class is in the default package.
+* DATACMNS-501 - ID type not detected for intermediate repository interface.
+* DATACMNS-496 - Version.parse should not throw NumberFormatExecption when parsing version string containing non numeric parts.
+* DATACMNS-494 - Remove defaulting of Environment from RepositoryBeanDefinitionRegistrarSupport.
+* DATACMNS-492 - Scanning for custom repository implementation classes does not use Environment.
+
+
 Changes in version 1.8.0.RELEASE (2014-05-20)
 ---------------------------------------------
 * DATACMNS-509 - NullableWrapper Breaks JSON Conversion.
