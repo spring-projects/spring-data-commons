@@ -198,7 +198,7 @@
 							<goal>test-process</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>target/generated-sources/test-annotations</outputDirectory>
+							<outputDirectory>${project.build.directory}/generated-sources/test-annotations</outputDirectory>
 							<processor>com.mysema.query.apt.QuerydslAnnotationProcessor</processor>
 						</configuration>
 					</execution>
@@ -211,6 +211,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>wagon-maven-plugin</artifactId>
+				<version>1.0-beta-5</version>
 			</plugin>
 		</plugins>
 	</build>
