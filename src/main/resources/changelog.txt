@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.8.1.RELEASE (2014-06-30)
+---------------------------------------------
+* DATACMNS-528 - Upgrade to Spring HATEOAS 0.14.0.
+* DATACMNS-527 - Release 1.8.1.
+* DATACMNS-521 - Disable Querydsl.next profile in Travis build.
+* DATACMNS-520 - Parameters incorrectly rejects query method signature.
+* DATACMNS-518 - Spring Data Infinite Loop in HashMap in PreferredConstructor and CustomConversions.
+* DATACMNS-514 - Typo in Example 1.26. Declaring a Jackson repository populator.
+* DATACMNS-513 - ControllerLinkBuilder not detecting the right @RequestMapping from a controller.
+* DATACMNS-511 - AbstractMappingContext.addPersistentEntity causes infinite loop.
+
+
 Changes in version 1.7.3.RELEASE (2014-06-18)
 ---------------------------------------------
 * DATACMNS-522 - Release 1.7.3.
