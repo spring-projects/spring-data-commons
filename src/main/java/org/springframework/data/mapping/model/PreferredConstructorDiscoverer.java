@@ -17,19 +17,16 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.util.CollectionUtils;
 
 /**
  * Helper class to find a {@link PreferredConstructor}.
@@ -38,8 +35,7 @@ import org.springframework.util.CollectionUtils;
  */
 public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
 
-	private static final ParameterNameDiscoverer PARAMETER_DISCOVERER = ReflectionUtils.createInstanceIfPresent(
-			"org.springframework.core.DefaultParameterNameDiscoverer", new LocalVariableTableParameterNameDiscoverer());
+	private static final ParameterNameDiscoverer PARAMETER_DISCOVERER = new DefaultParameterNameDiscoverer();
 
 	private PreferredConstructor<T, P> constructor;
 

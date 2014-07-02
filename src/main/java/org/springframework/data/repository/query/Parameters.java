@@ -23,12 +23,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -45,8 +44,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private static final String ALL_OR_NOTHING = String.format("Either use @%s "
 			+ "on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
 			Pageable.class.getSimpleName(), Sort.class.getSimpleName());
-	private static final ParameterNameDiscoverer PARAMETER_DISCOVERER = ReflectionUtils.createInstanceIfPresent(
-			"org.springframework.core.DefaultParameterNameDiscoverer", new LocalVariableTableParameterNameDiscoverer());
+	private static final ParameterNameDiscoverer PARAMETER_DISCOVERER = new DefaultParameterNameDiscoverer();
 
 	private final int pageableIndex;
 	private final int sortIndex;
