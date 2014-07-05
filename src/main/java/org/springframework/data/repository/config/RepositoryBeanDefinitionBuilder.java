@@ -27,12 +27,14 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
+import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -115,6 +117,12 @@ class RepositoryBeanDefinitionBuilder {
 			builder.addPropertyReference("customImplementation", customImplementationBeanName);
 			builder.addDependsOn(customImplementationBeanName);
 		}
+
+		RootBeanDefinition evaluationContextProviderDefinition = new RootBeanDefinition(
+				ExtensionAwareEvaluationContextProvider.class);
+		evaluationContextProviderDefinition.setSource(configuration.getSource());
+
+		builder.addPropertyValue("evaluationContextProvider", evaluationContextProviderDefinition);
 
 		return builder;
 	}

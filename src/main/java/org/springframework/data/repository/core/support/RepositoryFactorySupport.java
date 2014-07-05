@@ -42,6 +42,8 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
+import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
@@ -72,6 +74,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	private List<QueryCreationListener<?>> queryPostProcessors = new ArrayList<QueryCreationListener<?>>();
 	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
 	private ClassLoader classLoader = org.springframework.util.ClassUtils.getDefaultClassLoader();
+	private EvaluationContextProvider evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
 
 	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
@@ -104,6 +107,17 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader == null ? org.springframework.util.ClassUtils.getDefaultClassLoader() : classLoader;
+	}
+
+	/**
+	 * Sets the {@link EvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined queries.
+	 * 
+	 * @param evaluationContextProvider can be {@literal null}, defaults to
+	 *          {@link DefaultEvaluationContextProvider#INSTANCE}.
+	 */
+	public void setEvaluationContextProvider(EvaluationContextProvider evaluationContextProvider) {
+		this.evaluationContextProvider = evaluationContextProvider == null ? DefaultEvaluationContextProvider.INSTANCE
+				: evaluationContextProvider;
 	}
 
 	/**
@@ -248,10 +262,23 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	/**
 	 * Returns the {@link QueryLookupStrategy} for the given {@link Key}.
 	 * 
+	 * @deprecated favor {@link #getQueryLookupStrategy(Key, EvaluationContextProvider)}
 	 * @param key can be {@literal null}
 	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
 	 */
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
+		return null;
+	}
+
+	/**
+	 * Returns the {@link QueryLookupStrategy} for the given {@link Key} and {@link EvaluationContextProvider}.
+	 * 
+	 * @param key can be {@literal null}.
+	 * @param evaluationContextProvider will never be {@literal null}.
+	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
+	 * @since 1.9
+	 */
+	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
 		return null;
 	}
 
@@ -311,7 +338,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 			this.customImplementation = customImplementation;
 			this.target = target;
 
-			QueryLookupStrategy lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey);
+			QueryLookupStrategy lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
+					RepositoryFactorySupport.this.evaluationContextProvider);
+			lookupStrategy = lookupStrategy == null ? getQueryLookupStrategy(queryLookupStrategyKey) : lookupStrategy;
 			Iterable<Method> queryMethods = repositoryInformation.getQueryMethods();
 
 			if (lookupStrategy == null) {
