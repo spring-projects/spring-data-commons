@@ -35,6 +35,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -172,7 +173,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 * @return
 	 */
 	private boolean isQueryMethodCandidate(Method method) {
-		return !method.isBridge() //
+		return !method.isBridge() && !ReflectionUtils.isDefaultMethod(method) //
 				&& (isQueryAnnotationPresentOn(method) || !isCustomMethod(method) && !isBaseClassMethod(method));
 	}
 

@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import static org.springframework.util.ReflectionUtils.*;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.aop.ProxyMethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.GenericTypeResolver;
@@ -59,6 +62,8 @@ import org.springframework.util.ObjectUtils;
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 	private static final TypeDescriptor WRAPPER_TYPE = TypeDescriptor.valueOf(NullableWrapper.class);
+	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
+			RepositoryFactorySupport.class.getClassLoader());
 
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> REPOSITORY_INFORMATION_CACHE = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
 
@@ -164,6 +169,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 		for (RepositoryProxyPostProcessor processor : postProcessors) {
 			processor.postProcess(result, information);
+		}
+
+		if (IS_JAVA_8) {
+			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, customImplementation, target));
@@ -434,6 +443,53 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 			}
 
 			return repositoryInformation.isCustomMethod(invocation.getMethod());
+		}
+	}
+
+	/**
+	 * Method interceptor to invoke default methods on the repository proxy.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private static class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor {
+
+		private final Constructor<MethodHandles.Lookup> constructor;
+
+		/**
+		 * Creates a new {@link DefaultMethodInvokingMethodInterceptor}.
+		 */
+		public DefaultMethodInvokingMethodInterceptor() {
+
+			try {
+				this.constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+
+				if (!constructor.isAccessible()) {
+					constructor.setAccessible(true);
+				}
+			} catch (Exception o_O) {
+				throw new IllegalStateException(o_O);
+			}
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
+		 */
+		@Override
+		public Object invoke(MethodInvocation invocation) throws Throwable {
+
+			Method method = invocation.getMethod();
+
+			if (!org.springframework.data.util.ReflectionUtils.isDefaultMethod(method)) {
+				return invocation.proceed();
+			}
+
+			Object[] arguments = invocation.getArguments();
+			Class<?> declaringClass = method.getDeclaringClass();
+			Object proxy = ((ProxyMethodInvocation) invocation).getProxy();
+
+			return constructor.newInstance(declaringClass, MethodHandles.Lookup.PRIVATE)
+					.unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(arguments);
 		}
 	}
 

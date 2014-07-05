@@ -17,6 +17,8 @@ package org.springframework.data.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -49,6 +51,18 @@ public class ReflectionUtils {
 		} catch (Exception e) {
 			return defaultInstance;
 		}
+	}
+
+	/**
+	 * Back-port of Java 8's {@code isDefault()} method on {@link Method}.
+	 * 
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	public static boolean isDefaultMethod(Method method) {
+
+		return ((method.getModifiers() & (Modifier.ABSTRACT | Modifier.PUBLIC | Modifier.STATIC)) == Modifier.PUBLIC)
+				&& method.getDeclaringClass().isInterface();
 	}
 
 	/**
