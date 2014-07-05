@@ -29,9 +29,11 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.util.Assert;
 
 /**
@@ -54,6 +56,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private MappingContext<?, ?> mappingContext;
 	private ClassLoader classLoader;
 	private boolean lazyInit = false;
+	private EvaluationContextProvider evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
 
 	private T repository;
 
@@ -106,6 +109,17 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
 		this.mappingContext = mappingContext;
+	}
+
+	/**
+	 * Sets the {@link EvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined queries.
+	 * 
+	 * @param evaluationContextProvider can be {@literal null}, defaults to
+	 *          {@link DefaultEvaluationContextProvider#INSTANCE}.
+	 */
+	public void setEvaluationContextProvider(EvaluationContextProvider evaluationContextProvider) {
+		this.evaluationContextProvider = evaluationContextProvider == null ? DefaultEvaluationContextProvider.INSTANCE
+				: evaluationContextProvider;
 	}
 
 	/**
@@ -203,6 +217,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
 		this.factory.setBeanClassLoader(classLoader);
+		this.factory.setEvaluationContextProvider(evaluationContextProvider);
 
 		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
 
