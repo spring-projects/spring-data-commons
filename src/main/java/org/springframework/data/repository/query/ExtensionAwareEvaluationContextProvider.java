@@ -42,6 +42,7 @@ import org.springframework.expression.spel.SpelMessage;
 import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.util.TypeUtils;
 
 /**
@@ -109,14 +110,51 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		// Add parameters for indexed access
 		ec.setRootObject(parameterValues);
 
-		// Add parameters as variables if named
-		for (Parameter param : parameters) {
-			if (param.isNamedParameter()) {
-				ec.setVariable(param.getName(), parameterValues[param.getIndex()]);
-			}
-		}
+		Map<String, Object> variables = collectVariables(parameters, parameterValues);
+
+		ec.setVariables(variables);
 
 		return ec;
+	}
+
+	protected <T extends Parameters<T, ? extends Parameter>> Map<String, Object> collectVariables(T parameters,
+			Object[] parameterValues) {
+
+		Map<String, Object> variables = new HashMap<String, Object>();
+
+		registerSpecialParameterVariablesIfPresent(parameters, parameterValues, variables);
+		registerNamedMethodParameterVariables(parameters, parameterValues, variables);
+
+		return variables;
+	}
+
+	protected <T extends Parameters<T, ? extends Parameter>> void registerNamedMethodParameterVariables(T parameters,
+			Object[] parameterValues, Map<String, Object> variables) {
+
+		for (Parameter param : parameters) {
+			if (param.isNamedParameter()) {
+				variables.put(param.getName(), parameterValues[param.getIndex()]);
+			}
+		}
+	}
+
+	protected <T extends Parameters<T, ? extends Parameter>> void registerSpecialParameterVariablesIfPresent(
+			T parameters, Object[] parameterValues, Map<String, Object> variables) {
+
+		if (parameters.hasSpecialParameter()) {
+
+			for (Parameter param : parameters) {
+				if (param.isSpecialParameter()) {
+
+					Object paramValue = parameterValues[param.getIndex()];
+					if (paramValue == null) {
+						continue;
+					}
+
+					variables.put(StringUtils.uncapitalize(param.getType().getSimpleName()), paramValue);
+				}
+			}
+		}
 	}
 
 	/**
@@ -250,6 +288,10 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 			final Method function = targetObject instanceof Map && ((Map<?, ?>) targetObject).containsKey(name) ? (Method) ((Map<?, ?>) targetObject)
 					.get(name) : (Method) functions.get(name);
+
+			if (function == null) {
+				return null;
+			}
 
 			Class<?>[] parameterTypes = function.getParameterTypes();
 			if (parameterTypes.length != argumentTypes.size()) {

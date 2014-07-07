@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Iterable<T> {
 
-	@SuppressWarnings("unchecked") public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
+	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
 	private static final String PARAM_ON_SPECIAL = format("You must not user @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
