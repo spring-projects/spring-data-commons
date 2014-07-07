@@ -36,6 +36,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * Unit tests {@link ExtensionAwareEvaluationContextProvider}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont.
  */
 public class ExtensibleEvaluationContextProviderUnitTests {
 
@@ -114,6 +115,8 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 
 		assertThat(evaluateExpression("aliasedMethod()", provider), is((Object) "methodResult"));
 		assertThat(evaluateExpression("extensionMethod()", provider), is((Object) "methodResult"));
+		assertThat(evaluateExpression("_first.extensionMethod()", provider), is((Object) "methodResult"));
+		assertThat(evaluateExpression("_first.aliasedMethod()", provider), is((Object) "methodResult"));
 	}
 
 	/**
