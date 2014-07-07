@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.query.spi;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
@@ -33,11 +35,34 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  */
 public abstract class EvaluationContextExtensionSupport implements EvaluationContextExtension {
 
+	private final Map<String, Object> declaredProperties;
 	private final Map<String, Method> declaredFunctions;
 
+	/**
+	 * Creates a new {@link EvaluationContextExtensionSupport}.
+	 */
 	public EvaluationContextExtensionSupport() {
 
+		this.declaredProperties = discoverDeclaredProperties();
 		this.declaredFunctions = discoverDeclaredFunctions();
+	}
+
+	private Map<String, Object> discoverDeclaredProperties() {
+
+		final Map<String, Object> map = new HashMap<String, Object>();
+
+		ReflectionUtils.doWithFields(getClass(), new FieldCallback() {
+
+			@Override
+			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+
+				if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
+					map.put(field.getName(), field.get(null));
+				}
+			}
+		});
+
+		return map.isEmpty() ? Collections.<String, Object> emptyMap() : Collections.unmodifiableMap(map);
 	}
 
 	private Map<String, Method> discoverDeclaredFunctions() {
@@ -64,7 +89,7 @@ public abstract class EvaluationContextExtensionSupport implements EvaluationCon
 	 */
 	@Override
 	public Map<String, Object> getProperties() {
-		return Collections.emptyMap();
+		return this.declaredProperties;
 	}
 
 	/*
