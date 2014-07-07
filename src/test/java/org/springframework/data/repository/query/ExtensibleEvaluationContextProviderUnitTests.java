@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * 
  * @author Oliver Gierke
  */
-public class ExtensibleEvaluationContextProviderUnitTests<T extends Parameters<T, ? extends Parameter>> {
+public class ExtensibleEvaluationContextProviderUnitTests {
 
 	DefaultParameters parameters;
 
@@ -110,7 +111,9 @@ public class ExtensibleEvaluationContextProviderUnitTests<T extends Parameters<T
 		extensions.add(new DummyExtension("_first", "first"));
 
 		EvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(extensions);
-		assertThat(evaluateExpression("method()", provider), is((Object) "methodResult"));
+
+		assertThat(evaluateExpression("aliasedMethod()", provider), is((Object) "methodResult"));
+		assertThat(evaluateExpression("extensionMethod()", provider), is((Object) "methodResult"));
 	}
 
 	static class DummyExtension extends EvaluationContextExtensionSupport {
@@ -152,8 +155,11 @@ public class ExtensibleEvaluationContextProviderUnitTests<T extends Parameters<T
 		@Override
 		public Map<String, Method> getFunctions() {
 
+			Map<String, Method> functions = new HashMap<String, Method>(super.getFunctions());
+
 			try {
-				return Collections.singletonMap("method", getClass().getMethod("extensionMethod"));
+				functions.put("aliasedMethod", getClass().getMethod("extensionMethod"));
+				return functions;
 			} catch (Exception o_O) {
 				throw new RuntimeException(o_O);
 			}

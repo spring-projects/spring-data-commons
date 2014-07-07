@@ -16,8 +16,13 @@
 package org.springframework.data.repository.query.spi;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * A base class for {@link EvaluationContextExtension}s.
@@ -27,6 +32,31 @@ import java.util.Map;
  * @see 1.9
  */
 public abstract class EvaluationContextExtensionSupport implements EvaluationContextExtension {
+
+	private final Map<String, Method> declaredFunctions;
+
+	public EvaluationContextExtensionSupport() {
+
+		this.declaredFunctions = discoverDeclaredFunctions();
+	}
+
+	private Map<String, Method> discoverDeclaredFunctions() {
+
+		final Map<String, Method> map = new HashMap<String, Method>();
+
+		ReflectionUtils.doWithMethods(getClass(), new MethodCallback() {
+
+			@Override
+			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+
+				if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers())) {
+					map.put(method.getName(), method);
+				}
+			}
+		});
+
+		return map.isEmpty() ? Collections.<String, Method> emptyMap() : Collections.unmodifiableMap(map);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -43,6 +73,6 @@ public abstract class EvaluationContextExtensionSupport implements EvaluationCon
 	 */
 	@Override
 	public Map<String, Method> getFunctions() {
-		return Collections.emptyMap();
+		return this.declaredFunctions;
 	}
 }
