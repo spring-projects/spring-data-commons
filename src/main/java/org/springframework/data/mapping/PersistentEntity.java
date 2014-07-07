@@ -27,6 +27,7 @@ import org.springframework.data.util.TypeInformation;
  * @author Graeme Rocher
  * @author Jon Brisbin
  * @author Patryk Wasik
+ * @author Christoph Strobl
  */
 public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
@@ -152,6 +153,22 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	void doWithProperties(PropertyHandler<P> handler);
 
 	void doWithProperties(SimplePropertyHandler handler);
+
+	/**
+	 * Applies the given {@link PropertyHandler} to all {@link PersistentProperty}s that shall be written to the store.
+	 * 
+	 * @param handler
+	 * @since 1.9
+	 */
+	void doWithWritingProperties(PropertyHandler<P> handler);
+
+	/**
+	 * Applies the given {@link PropertyHandler} to all {@link PersistentProperty}s that can be read from the store.
+	 * 
+	 * @param handler
+	 * @since 1.9
+	 */
+	void doWithReadingProperties(PropertyHandler<P> handler);
 
 	/**
 	 * Applies the given {@link AssociationHandler} to all {@link Association} contained in this {@link PersistentEntity}.

@@ -36,6 +36,7 @@ import org.springframework.util.ReflectionUtils;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>> implements PersistentProperty<P> {
 
@@ -204,7 +205,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#shallBePersisted()
 	 */
 	public boolean shallBePersisted() {
-		return !isTransient();
+		return isWriting();
 	}
 
 	/*
@@ -213,6 +214,24 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	public boolean isAssociation() {
 		return field == null ? false : AnnotationUtils.getAnnotation(field, Reference.class) != null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isReading()
+	 */
+	@Override
+	public boolean isReading() {
+		return !isTransient();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isWriting()
+	 */
+	@Override
+	public boolean isWriting() {
+		return !isTransient();
 	}
 
 	public Association<P> getAssociation() {

@@ -30,6 +30,9 @@ import org.junit.Test;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadingProperty;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.WritingProperty;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -38,6 +41,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Unit tests for {@link AnnotationBasedPersistentProperty}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBasedPersistentProperty<P>> {
 
@@ -158,6 +162,71 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		context.getPersistentEntity(AnotherInvalidSample.class);
 	}
 
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void treatsNoAnnotationAsReadProperty() {
+		assertThat(getProperty(ReadingWritingProperties.class, "noAnnotations").isReading(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void treatsNoAnnotationAsWriteProperty() {
+		assertThat(getProperty(ReadingWritingProperties.class, "noAnnotations").isWriting(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void treatsTransientAsNotExisting() {
+		assertThat(getProperty(ReadingWritingProperties.class, "transientAnnotated"), nullValue());
+	}
+
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void treatsReadingPropertyCorrectly() {
+
+		SamplePersistentProperty property = getProperty(ReadingWritingProperties.class, "readingProperty");
+		assertThat(property.isReading(), is(true));
+		assertThat(property.isWriting(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void treatsWritingPropertyCorrectly() {
+
+		SamplePersistentProperty property = getProperty(ReadingWritingProperties.class, "writingProperty");
+		assertThat(property.isReading(), is(false));
+		assertThat(property.isWriting(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void treatsRadingWritingPropertyCorrectly() {
+
+		SamplePersistentProperty property = getProperty(ReadingWritingProperties.class, "readWriteProperty");
+		assertThat(property.isReading(), is(true));
+		assertThat(property.isWriting(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void shallBePersistedShouldReturnFalseWhenPropertyIsReadingButNotWritingProperty() {
+		assertThat(getProperty(ReadingWritingProperties.class, "readingProperty").shallBePersisted(), is(false));
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -269,5 +338,19 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		public String getLastname() {
 			return lastname;
 		}
+	}
+
+	static class ReadingWritingProperties {
+
+		String noAnnotations;
+
+		@Transient String transientAnnotated;
+
+		@ReadingProperty String readingProperty;
+
+		@WritingProperty String writingProperty;
+
+		@ReadingProperty @WritingProperty String readWriteProperty;
+
 	}
 }

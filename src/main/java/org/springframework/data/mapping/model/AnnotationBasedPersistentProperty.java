@@ -29,9 +29,11 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadingProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.annotation.WritingProperty;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -41,6 +43,7 @@ import org.springframework.util.Assert;
  * Special {@link PersistentProperty} that takes annotations at a property into account.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>> extends
 		AbstractPersistentProperty<P> {
@@ -167,6 +170,46 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Override
 	public boolean isAssociation() {
 		return !isTransient() && isAnnotationPresent(Reference.class);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isReading()
+	 */
+	@Override
+	public boolean isReading() {
+
+		if (isTransient()) {
+			return false;
+		}
+
+		if (isAnnotationPresent(ReadingProperty.class)) {
+			return true;
+		} else if (isAnnotationPresent(WritingProperty.class)) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isWriting()
+	 */
+	@Override
+	public boolean isWriting() {
+
+		if (isTransient()) {
+			return false;
+		}
+
+		if (isAnnotationPresent(WritingProperty.class)) {
+			return true;
+		} else if (isAnnotationPresent(ReadingProperty.class)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

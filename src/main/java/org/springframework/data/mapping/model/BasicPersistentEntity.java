@@ -296,6 +296,36 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#doWithWritingProperties(org.springframework.data.mapping.PropertyHandler)
+	 */
+	@Override
+	public void doWithWritingProperties(PropertyHandler<P> handler) {
+
+		Assert.notNull(handler, "PropertyHandler must not be 'null'.");
+		for (P property : properties) {
+			if (property.isWriting()) {
+				handler.doWithPersistentProperty(property);
+			}
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#doWithReadingProperties(org.springframework.data.mapping.PropertyHandler)
+	 */
+	@Override
+	public void doWithReadingProperties(PropertyHandler<P> handler) {
+
+		Assert.notNull(handler, "PropertyHandler must not be 'null'.");
+		for (P property : properties) {
+			if (property.isReading()) {
+				handler.doWithPersistentProperty(property);
+			}
+		}
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#doWithProperties(org.springframework.data.mapping.PropertyHandler.Simple)
