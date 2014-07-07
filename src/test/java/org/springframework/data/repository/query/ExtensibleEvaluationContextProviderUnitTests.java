@@ -116,7 +116,24 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("extensionMethod()", provider), is((Object) "methodResult"));
 	}
 
-	static class DummyExtension extends EvaluationContextExtensionSupport {
+	/**
+	 * @see DATACMNS-533
+	 */
+	@Test
+	public void exposesPropertiesDefinedByExtension() {
+
+		List<EvaluationContextExtension> extensions = new ArrayList<EvaluationContextExtension>();
+		extensions.add(new DummyExtension("_first", "first"));
+
+		EvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(extensions);
+
+		assertThat(evaluateExpression("DUMMY_KEY", provider), is((Object) "dummy"));
+		assertThat(evaluateExpression("_first.DUMMY_KEY", provider), is((Object) "dummy"));
+	}
+
+	public static class DummyExtension extends EvaluationContextExtensionSupport {
+
+		public static String DUMMY_KEY = "dummy";
 
 		private final String key;
 		private final String value;
@@ -145,7 +162,12 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 		 */
 		@Override
 		public Map<String, Object> getProperties() {
-			return Collections.<String, Object> singletonMap("key", value);
+
+			Map<String, Object> properties = new HashMap<String, Object>(super.getProperties());
+
+			properties.put("key", value);
+
+			return properties;
 		}
 
 		/* 
