@@ -27,6 +27,10 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.EvaluationContextExtensionSupport;
 import org.springframework.expression.EvaluationContext;
@@ -134,6 +138,40 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("_first.DUMMY_KEY", provider), is((Object) "dummy"));
 	}
 
+	/**
+	 * @see DATACMNS-533
+	 */
+	@Test
+	public void exposesPageableParameter() throws Exception {
+
+		this.parameters = new DefaultParameters(SampleRepo.class.getMethod("findByFirstname", String.class, Pageable.class));
+		ExtensionAwareEvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.<EvaluationContextExtension> emptyList());
+
+		PageRequest pageable = new PageRequest(2, 3, new Sort(Direction.DESC, "lastname"));
+
+		assertThat(evaluateExpression("#pageable.offset", provider, new Object[] { "test", pageable }), is((Object) 6));
+		assertThat(evaluateExpression("#pageable.pageSize", provider, new Object[] { "test", pageable }), is((Object) 3));
+		assertThat(evaluateExpression("#pageable.sort.toString()", provider, new Object[] { "test", pageable }),
+				is((Object) "lastname: DESC"));
+	}
+
+	/**
+	 * @see DATACMNS-533
+	 */
+	@Test
+	public void exposesSortParameter() throws Exception {
+
+		this.parameters = new DefaultParameters(SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class));
+		ExtensionAwareEvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.<EvaluationContextExtension> emptyList());
+
+		Sort sort = new Sort(Direction.DESC, "lastname");
+
+		assertThat(evaluateExpression("#sort.toString()", provider, new Object[] { "test", sort }),
+				is((Object) "lastname: DESC"));
+	}
+
 	public static class DummyExtension extends EvaluationContextExtensionSupport {
 
 		public static String DUMMY_KEY = "dummy";
@@ -196,13 +234,21 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 	}
 
 	private Object evaluateExpression(String expression, EvaluationContextProvider provider) {
+		return evaluateExpression(expression, provider, new Object[] { "parameterValue" });
+	}
 
-		EvaluationContext evaluationContext = provider.getEvaluationContext(parameters, new Object[] { "parameterValue" });
+	private Object evaluateExpression(String expression, EvaluationContextProvider provider, Object[] args) {
+
+		EvaluationContext evaluationContext = provider.getEvaluationContext(parameters, args);
 		return new SpelExpressionParser().parseExpression(expression).getValue(evaluationContext);
 	}
 
 	interface SampleRepo {
 
 		List<Object> findByFirstname(@Param("firstname") String firstname);
+
+		List<Object> findByFirstname(@Param("firstname") String firstname, Pageable pageable);
+
+		List<Object> findByFirstname(@Param("firstname") String firstname, Sort sort);
 	}
 }
