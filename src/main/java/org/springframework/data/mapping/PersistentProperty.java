@@ -147,7 +147,20 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 */
 	boolean isTransient();
 
+	/**
+	 * @return
+	 * @deprecated use {@link #isWritable()} instead, will be removed in 1.9 RC1.
+	 */
+	@Deprecated
 	boolean shallBePersisted();
+
+	/**
+	 * Returns whether the current property is writable, i.e. if the value held for it shall be written to the data store.
+	 * 
+	 * @return
+	 * @since 1.9
+	 */
+	boolean isWritable();
 
 	/**
 	 * Returns whether the property is an {@link Association}.

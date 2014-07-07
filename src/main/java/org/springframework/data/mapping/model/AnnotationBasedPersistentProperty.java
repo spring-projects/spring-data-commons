@@ -29,6 +29,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
@@ -41,6 +42,7 @@ import org.springframework.util.Assert;
  * Special {@link PersistentProperty} that takes annotations at a property into account.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>> extends
 		AbstractPersistentProperty<P> {
@@ -167,6 +169,15 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Override
 	public boolean isAssociation() {
 		return !isTransient() && isAnnotationPresent(Reference.class);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#isWritable()
+	 */
+	@Override
+	public boolean isWritable() {
+		return !isTransient() && !isAnnotationPresent(ReadOnlyProperty.class);
 	}
 
 	/**

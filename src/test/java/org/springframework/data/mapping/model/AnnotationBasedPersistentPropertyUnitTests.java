@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -38,6 +40,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Unit tests for {@link AnnotationBasedPersistentProperty}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBasedPersistentProperty<P>> {
 
@@ -158,6 +161,38 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		context.getPersistentEntity(AnotherInvalidSample.class);
 	}
 
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void treatsNoAnnotationCorrectly() {
+		assertThat(getProperty(ClassWithReadOnlyProperties.class, "noAnnotations").isWritable(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void treatsTransientAsNotExisting() {
+		assertThat(getProperty(ClassWithReadOnlyProperties.class, "transientProperty"), nullValue());
+	}
+
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void treatsReadOnlyAsNonWritable() {
+		assertThat(getProperty(ClassWithReadOnlyProperties.class, "readOnlyProperty").isWritable(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-534
+	 */
+	@Test
+	public void considersPropertyWithReadOnlyMetaAnnotationReadOnly() {
+		assertThat(getProperty(ClassWithReadOnlyProperties.class, "customReadOnlyProperty").isWritable(), is(false));
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -269,5 +304,23 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		public String getLastname() {
 			return lastname;
 		}
+	}
+
+	static class ClassWithReadOnlyProperties {
+
+		String noAnnotations;
+
+		@Transient String transientProperty;
+
+		@ReadOnlyProperty String readOnlyProperty;
+
+		@CustomReadOnly String customReadOnlyProperty;
+	}
+
+	@ReadOnlyProperty
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(FIELD)
+	static @interface CustomReadOnly {
+
 	}
 }
