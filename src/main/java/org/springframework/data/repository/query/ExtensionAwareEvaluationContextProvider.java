@@ -168,11 +168,13 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 			for (EvaluationContextExtension ext : extensions) {
 
+				Map<String, Method> extFunctions = ext.getFunctions();
+
 				if (ext.getExtensionId() != null) {
-					functions.put(ext.getExtensionId(), ext.getFunctions());
+					functions.put(ext.getExtensionId(), extFunctions);
 				}
 
-				functions.putAll(ext.getFunctions());
+				functions.putAll(extFunctions);
 			}
 
 			this.functions = functions;
