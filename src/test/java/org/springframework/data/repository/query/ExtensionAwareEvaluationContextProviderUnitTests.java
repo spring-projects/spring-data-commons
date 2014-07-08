@@ -42,15 +42,16 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * @author Oliver Gierke
  * @author Thomas Darimont.
  */
-public class ExtensibleEvaluationContextProviderUnitTests {
+public class ExtensionAwareEvaluationContextProviderUnitTests {
 
-	DefaultParameters parameters;
+	Method method;
+	EvaluationContextProvider provider;
 
 	@Before
 	public void setUp() throws Exception {
 
-		Method method = SampleRepo.class.getMethod("findByFirstname", String.class);
-		this.parameters = new DefaultParameters(method);
+		this.method = SampleRepo.class.getMethod("findByFirstname", String.class);
+		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.<EvaluationContextExtension> emptyList());
 	}
 
 	/**
@@ -59,11 +60,10 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 	@Test
 	public void usesPropertyDefinedByExtension() {
 
-		List<EvaluationContextExtension> extensions = new ArrayList<EvaluationContextExtension>();
-		extensions.add(new DummyExtension("_first", "first"));
+		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList(new DummyExtension("_first",
+				"first")));
 
-		ExtensionAwareEvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(extensions);
-		assertThat(evaluateExpression("key", provider), is((Object) "first"));
+		assertThat(evaluateExpression("key"), is((Object) "first"));
 	}
 
 	/**
@@ -76,8 +76,9 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 		extensions.add(new DummyExtension("_first", "first"));
 		extensions.add(new DummyExtension("_second", "second"));
 
-		ExtensionAwareEvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(extensions);
-		assertThat(evaluateExpression("key", provider), is((Object) "second"));
+		this.provider = new ExtensionAwareEvaluationContextProvider(extensions);
+
+		assertThat(evaluateExpression("key"), is((Object) "second"));
 	}
 
 	/**
@@ -90,8 +91,8 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 		extensions.add(new DummyExtension("_first", "first"));
 		extensions.add(new DummyExtension("_second", "second"));
 
-		EvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(extensions);
-		assertThat(evaluateExpression("_first.key", provider), is((Object) "first"));
+		this.provider = new ExtensionAwareEvaluationContextProvider(extensions);
+		assertThat(evaluateExpression("_first.key"), is((Object) "first"));
 	}
 
 	/**
@@ -99,11 +100,7 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 	 */
 	@Test
 	public void exposesParametersAsVariables() {
-
-		ExtensionAwareEvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(
-				Collections.<EvaluationContextExtension> emptyList());
-
-		assertThat(evaluateExpression("#firstname", provider), is((Object) "parameterValue"));
+		assertThat(evaluateExpression("#firstname"), is((Object) "parameterValue"));
 	}
 
 	/**
@@ -112,15 +109,13 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 	@Test
 	public void exposesMethodDefinedByExtension() {
 
-		List<EvaluationContextExtension> extensions = new ArrayList<EvaluationContextExtension>();
-		extensions.add(new DummyExtension("_first", "first"));
+		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList(new DummyExtension("_first",
+				"first")));
 
-		EvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(extensions);
-
-		assertThat(evaluateExpression("aliasedMethod()", provider), is((Object) "methodResult"));
-		assertThat(evaluateExpression("extensionMethod()", provider), is((Object) "methodResult"));
-		assertThat(evaluateExpression("_first.extensionMethod()", provider), is((Object) "methodResult"));
-		assertThat(evaluateExpression("_first.aliasedMethod()", provider), is((Object) "methodResult"));
+		assertThat(evaluateExpression("aliasedMethod()"), is((Object) "methodResult"));
+		assertThat(evaluateExpression("extensionMethod()"), is((Object) "methodResult"));
+		assertThat(evaluateExpression("_first.extensionMethod()"), is((Object) "methodResult"));
+		assertThat(evaluateExpression("_first.aliasedMethod()"), is((Object) "methodResult"));
 	}
 
 	/**
@@ -129,13 +124,11 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 	@Test
 	public void exposesPropertiesDefinedByExtension() {
 
-		List<EvaluationContextExtension> extensions = new ArrayList<EvaluationContextExtension>();
-		extensions.add(new DummyExtension("_first", "first"));
+		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList(new DummyExtension("_first",
+				"first")));
 
-		EvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(extensions);
-
-		assertThat(evaluateExpression("DUMMY_KEY", provider), is((Object) "dummy"));
-		assertThat(evaluateExpression("_first.DUMMY_KEY", provider), is((Object) "dummy"));
+		assertThat(evaluateExpression("DUMMY_KEY"), is((Object) "dummy"));
+		assertThat(evaluateExpression("_first.DUMMY_KEY"), is((Object) "dummy"));
 	}
 
 	/**
@@ -144,15 +137,12 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 	@Test
 	public void exposesPageableParameter() throws Exception {
 
-		this.parameters = new DefaultParameters(SampleRepo.class.getMethod("findByFirstname", String.class, Pageable.class));
-		ExtensionAwareEvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(
-				Collections.<EvaluationContextExtension> emptyList());
-
+		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Pageable.class);
 		PageRequest pageable = new PageRequest(2, 3, new Sort(Direction.DESC, "lastname"));
 
-		assertThat(evaluateExpression("#pageable.offset", provider, new Object[] { "test", pageable }), is((Object) 6));
-		assertThat(evaluateExpression("#pageable.pageSize", provider, new Object[] { "test", pageable }), is((Object) 3));
-		assertThat(evaluateExpression("#pageable.sort.toString()", provider, new Object[] { "test", pageable }),
+		assertThat(evaluateExpression("#pageable.offset", new Object[] { "test", pageable }), is((Object) 6));
+		assertThat(evaluateExpression("#pageable.pageSize", new Object[] { "test", pageable }), is((Object) 3));
+		assertThat(evaluateExpression("#pageable.sort.toString()", new Object[] { "test", pageable }),
 				is((Object) "lastname: DESC"));
 	}
 
@@ -162,14 +152,21 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 	@Test
 	public void exposesSortParameter() throws Exception {
 
-		this.parameters = new DefaultParameters(SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class));
-		ExtensionAwareEvaluationContextProvider provider = new ExtensionAwareEvaluationContextProvider(
-				Collections.<EvaluationContextExtension> emptyList());
-
+		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class);
 		Sort sort = new Sort(Direction.DESC, "lastname");
 
-		assertThat(evaluateExpression("#sort.toString()", provider, new Object[] { "test", sort }),
-				is((Object) "lastname: DESC"));
+		assertThat(evaluateExpression("#sort.toString()", new Object[] { "test", sort }), is((Object) "lastname: DESC"));
+	}
+
+	/**
+	 * @see DATACMNS-533
+	 */
+	@Test
+	public void exposesSpecialParameterEvenIfItsNull() throws Exception {
+
+		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class);
+
+		assertThat(evaluateExpression("#sort?.toString()", new Object[] { "test", null }), is(nullValue()));
 	}
 
 	public static class DummyExtension extends EvaluationContextExtensionSupport {
@@ -179,9 +176,6 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 		private final String key;
 		private final String value;
 
-		/**
-		 * @param value
-		 */
 		public DummyExtension(String key, String value) {
 
 			this.key = key;
@@ -233,12 +227,13 @@ public class ExtensibleEvaluationContextProviderUnitTests {
 		}
 	}
 
-	private Object evaluateExpression(String expression, EvaluationContextProvider provider) {
-		return evaluateExpression(expression, provider, new Object[] { "parameterValue" });
+	private Object evaluateExpression(String expression) {
+		return evaluateExpression(expression, new Object[] { "parameterValue" });
 	}
 
-	private Object evaluateExpression(String expression, EvaluationContextProvider provider, Object[] args) {
+	private Object evaluateExpression(String expression, Object[] args) {
 
+		DefaultParameters parameters = new DefaultParameters(method);
 		EvaluationContext evaluationContext = provider.getEvaluationContext(parameters, args);
 		return new SpelExpressionParser().parseExpression(expression).getValue(evaluationContext);
 	}

@@ -109,52 +109,41 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		// Add parameters for indexed access
 		ec.setRootObject(parameterValues);
-
-		Map<String, Object> variables = collectVariables(parameters, parameterValues);
-
-		ec.setVariables(variables);
+		ec.setVariables(collectVariables(parameters, parameterValues));
 
 		return ec;
 	}
 
-	protected <T extends Parameters<T, ? extends Parameter>> Map<String, Object> collectVariables(T parameters,
-			Object[] parameterValues) {
+	/**
+	 * Exposes variables for all named parameters for the given arguments. Also exposes non-bindable parameters under the
+	 * names of their types.
+	 * 
+	 * @param parameters must not be {@literal null}.
+	 * @param arguments must not be {@literal null}.
+	 * @return
+	 */
+	private <T extends Parameters<T, ? extends Parameter>> Map<String, Object> collectVariables(T parameters,
+			Object[] arguments) {
 
 		Map<String, Object> variables = new HashMap<String, Object>();
 
-		registerSpecialParameterVariablesIfPresent(parameters, parameterValues, variables);
-		registerNamedMethodParameterVariables(parameters, parameterValues, variables);
+		for (Parameter param : parameters) {
+			if (param.isSpecialParameter()) {
 
-		return variables;
-	}
+				String key = StringUtils.uncapitalize(param.getType().getSimpleName());
+				Object value = arguments[param.getIndex()];
 
-	protected <T extends Parameters<T, ? extends Parameter>> void registerNamedMethodParameterVariables(T parameters,
-			Object[] parameterValues, Map<String, Object> variables) {
+				variables.put(key, value);
+			}
+		}
 
 		for (Parameter param : parameters) {
 			if (param.isNamedParameter()) {
-				variables.put(param.getName(), parameterValues[param.getIndex()]);
+				variables.put(param.getName(), arguments[param.getIndex()]);
 			}
 		}
-	}
 
-	protected <T extends Parameters<T, ? extends Parameter>> void registerSpecialParameterVariablesIfPresent(
-			T parameters, Object[] parameterValues, Map<String, Object> variables) {
-
-		if (parameters.hasSpecialParameter()) {
-
-			for (Parameter param : parameters) {
-				if (param.isSpecialParameter()) {
-
-					Object paramValue = parameterValues[param.getIndex()];
-					if (paramValue == null) {
-						continue;
-					}
-
-					variables.put(StringUtils.uncapitalize(param.getType().getSimpleName()), paramValue);
-				}
-			}
-		}
+		return variables;
 	}
 
 	/**
