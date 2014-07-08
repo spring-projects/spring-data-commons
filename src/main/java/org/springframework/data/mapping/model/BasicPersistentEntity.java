@@ -305,22 +305,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(handler, "PropertyHandler must not be 'null'.");
 		for (P property : properties) {
-			if (property.isWriting()) {
-				handler.doWithPersistentProperty(property);
-			}
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentEntity#doWithReadingProperties(org.springframework.data.mapping.PropertyHandler)
-	 */
-	@Override
-	public void doWithReadingProperties(PropertyHandler<P> handler) {
-
-		Assert.notNull(handler, "PropertyHandler must not be 'null'.");
-		for (P property : properties) {
-			if (property.isReading()) {
+			if (property.shallBePersisted()) {
 				handler.doWithPersistentProperty(property);
 			}
 		}

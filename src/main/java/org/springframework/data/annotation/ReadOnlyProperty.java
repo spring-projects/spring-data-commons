@@ -22,14 +22,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a field to be {@literal writing} for the mapping framework. Thus the property will not be read back unless
- * additionally marked as {@link ReadingProperty}.
+ * Marks a field to be {@literal read-only} for the mapping framework and will therefore not be persisted.
  * 
  * @author Christoph Strobl
  * @since 1.9
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
-public @interface WritingProperty {
+public @interface ReadOnlyProperty {
 
 }

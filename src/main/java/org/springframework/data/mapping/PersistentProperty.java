@@ -22,8 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.data.annotation.ReadingProperty;
-import org.springframework.data.annotation.WritingProperty;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -157,20 +156,12 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	boolean shallBePersisted();
 
 	/**
-	 * Returns whether the property is considered to be a {@link ReadingProperty}.
+	 * Returns whether the property is considered to be a {@link ReadOnlyProperty}.
 	 * 
 	 * @return
 	 * @since 1.9
 	 */
-	boolean isReading();
-
-	/**
-	 * Returns whether the property is considered to be a {@link WritingProperty}. <br />
-	 * 
-	 * @return
-	 * @since 1.9
-	 */
-	boolean isWriting();
+	boolean isReadOnly();
 
 	/**
 	 * Returns whether the property is an {@link Association}.

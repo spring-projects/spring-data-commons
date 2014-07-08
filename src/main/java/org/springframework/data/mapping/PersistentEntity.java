@@ -163,14 +163,6 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	void doWithWritingProperties(PropertyHandler<P> handler);
 
 	/**
-	 * Applies the given {@link PropertyHandler} to all {@link PersistentProperty}s that can be read from the store.
-	 * 
-	 * @param handler
-	 * @since 1.9
-	 */
-	void doWithReadingProperties(PropertyHandler<P> handler);
-
-	/**
 	 * Applies the given {@link AssociationHandler} to all {@link Association} contained in this {@link PersistentEntity}.
 	 * 
 	 * @param handler must not be {@literal null}.

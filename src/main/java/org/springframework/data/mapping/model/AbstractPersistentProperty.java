@@ -205,7 +205,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#shallBePersisted()
 	 */
 	public boolean shallBePersisted() {
-		return isWriting();
+		return !isTransient() && !isReadOnly();
 	}
 
 	/*
@@ -221,17 +221,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#isReading()
 	 */
 	@Override
-	public boolean isReading() {
-		return !isTransient();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#isWriting()
-	 */
-	@Override
-	public boolean isWriting() {
-		return !isTransient();
+	public boolean isReadOnly() {
+		return isTransient();
 	}
 
 	public Association<P> getAssociation() {
