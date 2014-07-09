@@ -19,7 +19,7 @@ This README as well as the [reference documentation](http://docs.spring.io/sprin
 
 The main project [website](http://www.springsource.org/spring-data) contains links to basic project information such as source code, JavaDocs, Issue tracking, etc.
 
-For more detailed questions, use the [forum](http://forum.spring.io/forum/spring-projects/data). If you are new to Spring as well as to Spring Data, look for information about [Spring projects](https://spring.io/projects). 
+For more detailed questions, please refer to [spring-data on stackoverflow](http://stackoverflow.com/questions/tagged/spring-data). If you are new to Spring as well as to Spring Data, look for information about [Spring projects](https://spring.io/projects). 
 
 
 ## Contributing to Spring Data Commons##
