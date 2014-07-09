@@ -10,5 +10,5 @@ The reference manual and javadoc are located in the 'docs' directory.
 
 ADDITIONAL RESOURCES:
 
-Spring Data Homepage: http://www.springsource.org/spring-data
-Spring Data Forum:    http://forum.springsource.org/forumdisplay.php?f=??
+Spring Data Homepage: http://projects.spring.io/spring-data
+Spring Data on Stackoverflow: http://stackoverflow.com/questions/tagged/spring-data
