@@ -198,7 +198,7 @@
 							<goal>test-process</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>target/generated-sources/test-annotations</outputDirectory>
+							<outputDirectory>${project.build.directory}/generated-sources/test-annotations</outputDirectory>
 							<processor>com.mysema.query.apt.QuerydslAnnotationProcessor</processor>
 						</configuration>
 					</execution>
