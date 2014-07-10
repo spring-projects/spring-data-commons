@@ -20,10 +20,12 @@ import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +35,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.EvaluationContextExtensionSupport;
+import org.springframework.data.repository.query.spi.Function;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
@@ -169,6 +172,88 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("#sort?.toString()", new Object[] { "test", null }), is(nullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-533
+	 */
+	@Test
+	public void shouldBeAbleToAccessCustomRootObjectPropertiesAndFunctions() {
+
+		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList( //
+				new DummyExtension("_first", "first") {
+					@Override
+					public CustomExtensionRootObject1 getRootObject() {
+						return new CustomExtensionRootObject1();
+					}
+				}));
+
+		assertThat(evaluateExpression("rootObjectInstanceField1"), is((Object) "rootObjectInstanceF1"));
+		assertThat(evaluateExpression("rootObjectInstanceMethod1()"), is((Object) true));
+		assertThat(evaluateExpression("getStringProperty()"), is((Object) "stringProperty"));
+		assertThat(evaluateExpression("stringProperty"), is((Object) "stringProperty"));
+
+		assertThat(evaluateExpression("_first.rootObjectInstanceField1"), is((Object) "rootObjectInstanceF1"));
+		assertThat(evaluateExpression("_first.rootObjectInstanceMethod1()"), is((Object) true));
+		assertThat(evaluateExpression("_first.getStringProperty()"), is((Object) "stringProperty"));
+		assertThat(evaluateExpression("_first.stringProperty"), is((Object) "stringProperty"));
+	}
+
+	/**
+	 * @see DATACMNS-533
+	 */
+	@Test
+	public void shouldBeAbleToAccessCustomRootObjectPropertiesAndFunctionsInMultipleExtensions() {
+
+		this.provider = new ExtensionAwareEvaluationContextProvider(Arrays.asList( //
+				new DummyExtension("_first", "first") {
+					@Override
+					public CustomExtensionRootObject1 getRootObject() {
+						return new CustomExtensionRootObject1();
+					}
+				}, //
+				new DummyExtension("_second", "second") {
+					@Override
+					public CustomExtensionRootObject2 getRootObject() {
+						return new CustomExtensionRootObject2();
+					}
+				}));
+
+		assertThat(evaluateExpression("rootObjectInstanceField1"), is((Object) "rootObjectInstanceF1"));
+		assertThat(evaluateExpression("rootObjectInstanceMethod1()"), is((Object) true));
+
+		assertThat(evaluateExpression("rootObjectInstanceField2"), is((Object) 42));
+		assertThat(evaluateExpression("rootObjectInstanceMethod2()"), is((Object) "rootObjectInstanceMethod2"));
+
+		assertThat(evaluateExpression("[0]"), is((Object) "parameterValue"));
+	}
+
+	/**
+	 * @see DATACMNS-533
+	 */
+	@Test
+	public void shouldBeAbleToAccessCustomRootObjectPropertiesAndFunctionsFromDynamicTargetSource() {
+
+		final AtomicInteger counter = new AtomicInteger();
+
+		this.provider = new ExtensionAwareEvaluationContextProvider(Arrays.asList( //
+				new DummyExtension("_first", "first") {
+
+					@Override
+					public CustomExtensionRootObject1 getRootObject() {
+						counter.incrementAndGet();
+						return new CustomExtensionRootObject1();
+					}
+				}) //
+		);
+
+		// inc counter / property access
+		assertThat(evaluateExpression("rootObjectInstanceField1"), is((Object) "rootObjectInstanceF1"));
+
+		// inc counter / function invocation
+		assertThat(evaluateExpression("rootObjectInstanceMethod1()"), is((Object) true));
+
+		assertThat(counter.get(), is(2));
+	}
+
 	public static class DummyExtension extends EvaluationContextExtensionSupport {
 
 		public static String DUMMY_KEY = "dummy";
@@ -177,7 +262,6 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		private final String value;
 
 		public DummyExtension(String key, String value) {
-
 			this.key = key;
 			this.value = value;
 		}
@@ -210,12 +294,12 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		 * @see org.springframework.data.repository.query.spi.EvaluationContextExtensionSupport#getFunctions()
 		 */
 		@Override
-		public Map<String, Method> getFunctions() {
+		public Map<String, Function> getFunctions() {
 
-			Map<String, Method> functions = new HashMap<String, Method>(super.getFunctions());
+			Map<String, Function> functions = new HashMap<String, Function>(super.getFunctions());
 
 			try {
-				functions.put("aliasedMethod", getClass().getMethod("extensionMethod"));
+				functions.put("aliasedMethod", new Function(getClass().getMethod("extensionMethod")));
 				return functions;
 			} catch (Exception o_O) {
 				throw new RuntimeException(o_O);
@@ -245,5 +329,27 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		List<Object> findByFirstname(@Param("firstname") String firstname, Pageable pageable);
 
 		List<Object> findByFirstname(@Param("firstname") String firstname, Sort sort);
+	}
+
+	public static class CustomExtensionRootObject1 {
+
+		public String rootObjectInstanceField1 = "rootObjectInstanceF1";
+
+		public boolean rootObjectInstanceMethod1() {
+			return true;
+		}
+
+		public String getStringProperty() {
+			return "stringProperty";
+		}
+	}
+
+	public static class CustomExtensionRootObject2 {
+
+		public Integer rootObjectInstanceField2 = 42;
+
+		public String rootObjectInstanceMethod2() {
+			return "rootObjectInstanceMethod2";
+		}
 	}
 }
