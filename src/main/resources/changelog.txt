@@ -1,6 +1,26 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.9.0.M1 (2014-07-10)
+----------------------------------------
+* DATACMNS-537 - Remove links to forum.spring.io..
+* DATACMNS-536 - Release 1.9 M1.
+* DATACMNS-535 - Upgrade build to use Java 7.
+* DATACMNS-534 - Add reading / writing property information to PersistentProperty.
+* DATACMNS-533 - Infrastructure for SpEL support in manually defined queries.
+* DATACMNS-532 - Add support for default methods on repository interfaces.
+* DATACMNS-529 - Adapt to Spring 4 upgrade.
+* DATACMNS-528 - Upgrade to Spring HATEOAS 0.14.0.
+* DATACMNS-523 - Pull up field naming strategies from MongoDB and Couchbase modules.
+* DATACMNS-520 - Parameters incorrectly rejects query method signature.
+* DATACMNS-519 - PagedResourcesAssembler should keep tempalte variables provided in base link.
+* DATACMNS-518 - Spring Data Infinite Loop in HashMap in PreferredConstructor and CustomConversions.
+* DATACMNS-516 - Add support for limiting the query result in the query derivation mechanism.
+* DATACMNS-514 - Typo in Example 1.26. Declaring a Jackson repository populator.
+* DATACMNS-513 - ControllerLinkBuilder not detecting the right @RequestMapping from a controller.
+* DATACMNS-511 - AbstractMappingContext.addPersistentEntity causes infinite loop.
+
+
 Changes in version 1.8.1.RELEASE (2014-06-30)
 ---------------------------------------------
 * DATACMNS-528 - Upgrade to Spring HATEOAS 0.14.0.
