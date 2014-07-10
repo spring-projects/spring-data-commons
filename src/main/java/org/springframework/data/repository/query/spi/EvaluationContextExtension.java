@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.query.spi;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
@@ -51,5 +50,14 @@ public interface EvaluationContextExtension {
 	 * 
 	 * @return the functions
 	 */
-	Map<String, Method> getFunctions();
+	Map<String, Function> getFunctions();
+
+	/**
+	 * Returns the root object to be exposed by the extension. It's strongly recommended to declare the most concrete type
+	 * possible as return type of the implementation method. This will allow us to obtain the necessary metadata once and
+	 * not for every evaluation.
+	 * 
+	 * @return
+	 */
+	Object getRootObject();
 }
