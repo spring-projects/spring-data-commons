@@ -15,16 +15,8 @@
  */
 package org.springframework.data.repository.query.spi;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
-import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * A base class for {@link EvaluationContextExtension}s.
@@ -35,61 +27,13 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  */
 public abstract class EvaluationContextExtensionSupport implements EvaluationContextExtension {
 
-	private final Map<String, Object> declaredProperties;
-	private final Map<String, Method> declaredFunctions;
-
-	/**
-	 * Creates a new {@link EvaluationContextExtensionSupport}.
-	 */
-	public EvaluationContextExtensionSupport() {
-
-		this.declaredProperties = discoverDeclaredProperties();
-		this.declaredFunctions = discoverDeclaredFunctions();
-	}
-
-	private Map<String, Object> discoverDeclaredProperties() {
-
-		final Map<String, Object> map = new HashMap<String, Object>();
-
-		ReflectionUtils.doWithFields(getClass(), new FieldCallback() {
-
-			@Override
-			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-
-				if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
-					map.put(field.getName(), field.get(null));
-				}
-			}
-		});
-
-		return map.isEmpty() ? Collections.<String, Object> emptyMap() : Collections.unmodifiableMap(map);
-	}
-
-	private Map<String, Method> discoverDeclaredFunctions() {
-
-		final Map<String, Method> map = new HashMap<String, Method>();
-
-		ReflectionUtils.doWithMethods(getClass(), new MethodCallback() {
-
-			@Override
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-
-				if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers())) {
-					map.put(method.getName(), method);
-				}
-			}
-		});
-
-		return map.isEmpty() ? Collections.<String, Method> emptyMap() : Collections.unmodifiableMap(map);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.EvaluationContextExtension#getProperties()
 	 */
 	@Override
 	public Map<String, Object> getProperties() {
-		return this.declaredProperties;
+		return Collections.emptyMap();
 	}
 
 	/*
@@ -97,7 +41,16 @@ public abstract class EvaluationContextExtensionSupport implements EvaluationCon
 	 * @see org.springframework.data.repository.query.EvaluationContextExtension#getFunctions()
 	 */
 	@Override
-	public Map<String, Method> getFunctions() {
-		return this.declaredFunctions;
+	public Map<String, Function> getFunctions() {
+		return Collections.emptyMap();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.spi.EvaluationContextExtension#getRootObject()
+	 */
+	@Override
+	public Object getRootObject() {
+		return null;
 	}
 }

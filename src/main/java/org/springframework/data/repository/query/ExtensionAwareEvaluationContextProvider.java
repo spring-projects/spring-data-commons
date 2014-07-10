@@ -15,8 +15,8 @@
  */
 package org.springframework.data.repository.query;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +30,10 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.repository.query.EvaluationContextExtensionInformation.ExtensionTypeInformation;
+import org.springframework.data.repository.query.EvaluationContextExtensionInformation.RootObjectInformation;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
+import org.springframework.data.repository.query.spi.Function;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.MethodExecutor;
@@ -43,7 +46,6 @@ import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.util.TypeUtils;
 
 /**
  * An {@link EvaluationContextProvider} that assembles an {@link EvaluationContext} from a list of
@@ -55,28 +57,28 @@ import org.springframework.util.TypeUtils;
  */
 public class ExtensionAwareEvaluationContextProvider implements EvaluationContextProvider, ApplicationContextAware {
 
-	private List<EvaluationContextExtension> extensions;
+	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new HashMap<Class<?>, EvaluationContextExtensionInformation>();
+
+	private List<? extends EvaluationContextExtension> extensions;
 	private ListableBeanFactory beanFactory;
 
 	/**
 	 * Creates a new {@link ExtensionAwareEvaluationContextProvider}. Extensions are being looked up lazily from the
 	 * {@link BeanFactory} configured.
 	 */
-	public ExtensionAwareEvaluationContextProvider() {}
+	public ExtensionAwareEvaluationContextProvider() {
+		this.extensions = null;
+	}
 
 	/**
 	 * Creates a new {@link ExtensionAwareEvaluationContextProvider} for the given {@link EvaluationContextExtension}s.
 	 * 
-	 * @param extensions must not be {@literal null}.
+	 * @param adapters must not be {@literal null}.
 	 */
 	public ExtensionAwareEvaluationContextProvider(List<? extends EvaluationContextExtension> extensions) {
 
 		Assert.notNull(extensions, "List of EvaluationContextExtensions must not be null!");
-
-		List<EvaluationContextExtension> extensionsToSet = new ArrayList<EvaluationContextExtension>(extensions);
-		Collections.sort(extensionsToSet, AnnotationAwareOrderComparator.INSTANCE);
-
-		this.extensions = Collections.unmodifiableList(extensionsToSet);
+		this.extensions = extensions;
 	}
 
 	/* 
@@ -152,7 +154,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * 
 	 * @return
 	 */
-	private List<EvaluationContextExtension> getExtensions() {
+	private List<? extends EvaluationContextExtension> getExtensions() {
 
 		if (this.extensions != null) {
 			return this.extensions;
@@ -163,12 +165,52 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			return this.extensions;
 		}
 
-		List<EvaluationContextExtension> extensions = new ArrayList<EvaluationContextExtension>(beanFactory.getBeansOfType(
+		this.extensions = new ArrayList<EvaluationContextExtension>(beanFactory.getBeansOfType(
 				EvaluationContextExtension.class, true, false).values());
-		Collections.sort(extensions, AnnotationAwareOrderComparator.INSTANCE);
-		this.extensions = extensions;
 
 		return extensions;
+	}
+
+	/**
+	 * Looks up the {@link EvaluationContextExtensionInformation} for the given {@link EvaluationContextExtension} from
+	 * the cache or creates a new one and caches that for later lookup.
+	 * 
+	 * @param extension must not be {@literal null}.
+	 * @return
+	 */
+	private EvaluationContextExtensionInformation getOrCreateInformation(EvaluationContextExtension extension) {
+
+		Class<? extends EvaluationContextExtension> extensionType = extension.getClass();
+		EvaluationContextExtensionInformation information = extensionInformationCache.get(extensionType);
+
+		if (information != null) {
+			return information;
+		}
+
+		information = new EvaluationContextExtensionInformation(extensionType);
+		extensionInformationCache.put(extensionType, information);
+		return information;
+	}
+
+	/**
+	 * Creates {@link EvaluationContextExtensionAdapter}s for the given {@link EvaluationContextExtension}s.
+	 * 
+	 * @param extensions
+	 * @return
+	 */
+	private List<EvaluationContextExtensionAdapter> toAdapters(Collection<? extends EvaluationContextExtension> extensions) {
+
+		List<EvaluationContextExtension> extensionsToSet = new ArrayList<EvaluationContextExtension>(extensions);
+		Collections.sort(extensionsToSet, AnnotationAwareOrderComparator.INSTANCE);
+
+		List<EvaluationContextExtensionAdapter> adapters = new ArrayList<EvaluationContextExtensionAdapter>(
+				extensions.size());
+
+		for (EvaluationContextExtension extension : extensionsToSet) {
+			adapters.add(new EvaluationContextExtensionAdapter(extension, getOrCreateInformation(extension)));
+		}
+
+		return adapters;
 	}
 
 	/**
@@ -176,44 +218,28 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @author Oliver Gierke
 	 * @see 1.9
 	 */
-	private static class ExtensionAwarePropertyAccessor implements PropertyAccessor, MethodResolver {
+	private class ExtensionAwarePropertyAccessor implements PropertyAccessor, MethodResolver {
 
-		private final Map<String, EvaluationContextExtension> extensionMap;
-		private final List<EvaluationContextExtension> extensions;
-		private final Map<String, Object> functions;
+		private final List<EvaluationContextExtensionAdapter> adapters;
+		private final Map<String, EvaluationContextExtensionAdapter> adapterMap;
 
 		/**
 		 * Creates a new {@link ExtensionAwarePropertyAccessor} for the given {@link EvaluationContextExtension}s.
 		 * 
-		 * @param extensions must not be {@literal null}.
+		 * @param adapters must not be {@literal null}.
 		 */
 		public ExtensionAwarePropertyAccessor(List<? extends EvaluationContextExtension> extensions) {
 
 			Assert.notNull(extensions, "Extensions must not be null!");
 
-			Map<String, Object> functions = new HashMap<String, Object>();
+			this.adapters = toAdapters(extensions);
+			this.adapterMap = new HashMap<String, EvaluationContextExtensionAdapter>(extensions.size());
 
-			for (EvaluationContextExtension ext : extensions) {
-
-				Map<String, Method> extFunctions = ext.getFunctions();
-
-				if (ext.getExtensionId() != null) {
-					functions.put(ext.getExtensionId(), extFunctions);
-				}
-
-				functions.putAll(extFunctions);
+			for (EvaluationContextExtensionAdapter adapter : adapters) {
+				this.adapterMap.put(adapter.getExtensionId(), adapter);
 			}
 
-			this.functions = functions;
-
-			this.extensions = new ArrayList<EvaluationContextExtension>(extensions);
-			Collections.reverse(this.extensions);
-
-			this.extensionMap = new HashMap<String, EvaluationContextExtension>(extensions.size());
-
-			for (EvaluationContextExtension extension : extensions) {
-				this.extensionMap.put(extension.getExtensionId(), extension);
-			}
+			Collections.reverse(this.adapters);
 		}
 
 		/*
@@ -227,11 +253,11 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 				return true;
 			}
 
-			if (extensionMap.containsKey(name)) {
+			if (adapterMap.containsKey(name)) {
 				return true;
 			}
 
-			for (EvaluationContextExtension extension : extensions) {
+			for (EvaluationContextExtensionAdapter extension : adapters) {
 				if (extension.getProperties().containsKey(name)) {
 					return true;
 				}
@@ -247,20 +273,20 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		@Override
 		public TypedValue read(EvaluationContext context, Object target, String name) throws AccessException {
 
-			if (target instanceof EvaluationContextExtension) {
-				return new TypedValue(((EvaluationContextExtension) target).getProperties().get(name));
+			if (target instanceof EvaluationContextExtensionAdapter) {
+				return lookupPropertyFrom(((EvaluationContextExtensionAdapter) target), name);
 			}
 
-			if (extensionMap.containsKey(name)) {
-				return new TypedValue(extensionMap.get(name));
+			if (adapterMap.containsKey(name)) {
+				return new TypedValue(adapterMap.get(name));
 			}
 
-			for (EvaluationContextExtension extension : extensions) {
+			for (EvaluationContextExtensionAdapter extension : adapters) {
 
 				Map<String, Object> properties = extension.getProperties();
 
 				if (properties.containsKey(name)) {
-					return new TypedValue(properties.get(name));
+					return lookupPropertyFrom(extension, name);
 				}
 			}
 
@@ -272,44 +298,23 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * @see org.springframework.expression.MethodResolver#resolve(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String, java.util.List)
 		 */
 		@Override
-		public MethodExecutor resolve(EvaluationContext context, Object targetObject, String name,
+		public MethodExecutor resolve(EvaluationContext context, Object target, final String name,
 				List<TypeDescriptor> argumentTypes) throws AccessException {
 
-			final Method function = targetObject instanceof Map && ((Map<?, ?>) targetObject).containsKey(name) ? (Method) ((Map<?, ?>) targetObject)
-					.get(name) : (Method) functions.get(name);
-
-			if (function == null) {
-				return null;
+			if (target instanceof EvaluationContextExtensionAdapter) {
+				return getMethodExecutor((EvaluationContextExtensionAdapter) target, name, argumentTypes);
 			}
 
-			Class<?>[] parameterTypes = function.getParameterTypes();
-			if (parameterTypes.length != argumentTypes.size()) {
-				return null;
-			}
+			for (EvaluationContextExtensionAdapter adapter : adapters) {
 
-			for (int i = 0; i < parameterTypes.length; i++) {
-				if (!TypeUtils.isAssignable(parameterTypes[i], argumentTypes.get(i).getType())) {
-					return null;
+				MethodExecutor executor = getMethodExecutor(adapter, name, argumentTypes);
+
+				if (executor != null) {
+					return executor;
 				}
 			}
 
-			return new MethodExecutor() {
-
-				/*
-				 * (non-Javadoc)
-				 * @see org.springframework.expression.MethodExecutor#execute(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.Object[])
-				 */
-				@Override
-				public TypedValue execute(EvaluationContext context, Object target, Object... arguments) throws AccessException {
-
-					try {
-						return new TypedValue(function.invoke(null, arguments));
-					} catch (Exception e) {
-						throw new SpelEvaluationException(e, SpelMessage.FUNCTION_REFERENCE_CANNOT_BE_INVOKED, function.getName(),
-								function.getDeclaringClass());
-					}
-				}
-			};
+			return null;
 		}
 
 		/*
@@ -337,6 +342,166 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		@Override
 		public Class<?>[] getSpecificTargetClasses() {
 			return null;
+		}
+
+		/**
+		 * Returns a {@link MethodExecutor}
+		 * 
+		 * @param adapter
+		 * @param name
+		 * @param argumentTypes
+		 * @return
+		 */
+		private MethodExecutor getMethodExecutor(EvaluationContextExtensionAdapter adapter, String name,
+				List<TypeDescriptor> argumentTypes) {
+
+			Map<String, Function> functions = adapter.getFunctions();
+
+			if (!functions.containsKey(name)) {
+				return null;
+			}
+
+			Function function = functions.get(name);
+
+			if (!function.supports(argumentTypes)) {
+				return null;
+			}
+
+			return new FunctionMethodExecutor(function);
+		}
+
+		/**
+		 * Looks up the property value for the property of the given name from the given extension. Takes care of resolving
+		 * {@link Function} values transitively.
+		 * 
+		 * @param extension must not be {@literal null}.
+		 * @param name must not be {@literal null} or empty.
+		 * @return
+		 */
+		private TypedValue lookupPropertyFrom(EvaluationContextExtensionAdapter extension, String name) {
+
+			Object value = extension.getProperties().get(name);
+
+			if (!(value instanceof Function)) {
+				return new TypedValue(value);
+			}
+
+			Function function = (Function) value;
+
+			try {
+				return new TypedValue(function.invoke(new Object[0]));
+			} catch (Exception e) {
+				throw new SpelEvaluationException(e, SpelMessage.FUNCTION_REFERENCE_CANNOT_BE_INVOKED, name,
+						function.getDeclaringClass());
+			}
+		}
+	}
+
+	/**
+	 * {@link MethodExecutor} to invoke {@link Function} instances.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.9
+	 */
+	private static class FunctionMethodExecutor implements MethodExecutor {
+
+		private final Function function;
+
+		/**
+		 * Creates a new {@link FunctionMethodExecutor} for the given {@link Function}.
+		 * 
+		 * @param function must not be {@literal null}.
+		 */
+		public FunctionMethodExecutor(Function function) {
+			this.function = function;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.expression.MethodExecutor#execute(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.Object[])
+		 */
+		@Override
+		public TypedValue execute(EvaluationContext context, Object target, Object... arguments) throws AccessException {
+
+			try {
+				return new TypedValue(function.invoke(arguments));
+			} catch (Exception e) {
+				throw new SpelEvaluationException(e, SpelMessage.FUNCTION_REFERENCE_CANNOT_BE_INVOKED, function.getName(),
+						function.getDeclaringClass());
+			}
+		}
+	}
+
+	/**
+	 * Adapter to expose a unified view on {@link EvaluationContextExtension} based on some reflective inspection of the
+	 * extension (see {@link EvaluationContextExtensionInformation}) as well as the values exposed by the extension
+	 * itself.
+	 * 
+	 * @author Oliver Gierke
+	 * @since 1.9
+	 */
+	private static class EvaluationContextExtensionAdapter {
+
+		private final EvaluationContextExtension extension;
+
+		private final Map<String, Function> functions;
+		private final Map<String, Object> properties;
+
+		/**
+		 * Creates a new {@link EvaluationContextExtensionAdapter} for the given {@link EvaluationContextExtension} and
+		 * {@link EvaluationContextExtensionInformation}.
+		 * 
+		 * @param extension must not be {@literal null}.
+		 * @param information must not be {@literal null}.
+		 */
+		public EvaluationContextExtensionAdapter(EvaluationContextExtension extension,
+				EvaluationContextExtensionInformation information) {
+
+			Assert.notNull(extension, "Extenstion must not be null!");
+			Assert.notNull(information, "Extension information must not be null!");
+
+			Object target = extension.getRootObject();
+			ExtensionTypeInformation extensionTypeInformation = information.getExtensionTypeInformation();
+			RootObjectInformation rootObjectInformation = information.getRootObjectInformation(target);
+
+			this.functions = new HashMap<String, Function>();
+			this.functions.putAll(extensionTypeInformation.getFunctions());
+			this.functions.putAll(rootObjectInformation.getFunctions(target));
+			this.functions.putAll(extension.getFunctions());
+
+			this.properties = new HashMap<String, Object>();
+			this.properties.putAll(extensionTypeInformation.getProperties());
+			this.properties.putAll(rootObjectInformation.getProperties(target));
+			this.properties.putAll(extension.getProperties());
+
+			this.extension = extension;
+		}
+
+		/**
+		 * Returns the extension identifier.
+		 * 
+		 * @return
+		 */
+		public String getExtensionId() {
+			return extension.getExtensionId();
+		}
+
+		/**
+		 * Returns all functions exposed.
+		 * 
+		 * @return
+		 */
+		public Map<String, Function> getFunctions() {
+			return this.functions;
+		}
+
+		/**
+		 * Returns all properties exposed. Note, the value of a property can be a {@link Function} in turn
+		 * 
+		 * @return
+		 */
+		public Map<String, Object> getProperties() {
+			return this.properties;
 		}
 	}
 }
