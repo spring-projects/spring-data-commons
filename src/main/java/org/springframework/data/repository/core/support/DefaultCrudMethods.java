@@ -103,7 +103,8 @@ class DefaultCrudMethods implements CrudMethods {
 	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableDeleteMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : Arrays.asList(metadata.getIdType(), Serializable.class, Iterable.class)) {
+		for (Class<?> type : Arrays.asList(metadata.getDomainType(), metadata.getIdType(), Serializable.class,
+				Iterable.class)) {
 			Method candidate = findMethod(metadata.getRepositoryInterface(), DELETE, type);
 			if (candidate != null) {
 				return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());

@@ -132,6 +132,16 @@ public class DefaultCrudMethodsUnitTests {
 		assertSaveMethodOn(RepositoryWithCustomSave.class, RepositoryWithCustomSave.class.getMethod("save", Domain.class));
 	}
 
+	/**
+	 * @see DATACMNS-539
+	 */
+	@Test
+	public void detectsOverriddenDeleteMethodForEntity() throws Exception {
+
+		assertDeleteMethodOn(RepositoryWithDeleteMethodForEntityOverloaded.class,
+				RepositoryWithDeleteMethodForEntityOverloaded.class.getMethod("delete", Domain.class));
+	}
+
 	private static CrudMethods getMethodsFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
@@ -250,8 +260,16 @@ public class DefaultCrudMethodsUnitTests {
 
 		Domain save(Serializable entity);
 
-		void delete(Domain o);
+		void delete(String o);
 
 		Domain findOne(Domain o);
+	}
+
+	/**
+	 * @see DATACMNS-539
+	 */
+	interface RepositoryWithDeleteMethodForEntityOverloaded extends CrudRepository<Domain, Long> {
+
+		void delete(Domain entity);
 	}
 }
