@@ -51,19 +51,6 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	}
 
 	/**
-	 * Creates a new {@link IsNewAwareAuditingHandler} using the given {@link IsNewStrategyFactory}.
-	 * 
-	 * @param isNewStrategyFactory must not be {@literal null}.
-	 * @deprecated use constructor taking a {@link MappingContext} directly. Will be removed in 1.9.
-	 */
-	@Deprecated
-	public IsNewAwareAuditingHandler(IsNewStrategyFactory isNewStrategyFactory) {
-
-		Assert.notNull(isNewStrategyFactory, "IsNewStrategyFactory must not be null!");
-		this.isNewStrategyFactory = isNewStrategyFactory;
-	}
-
-	/**
 	 * Marks the given object created or modified based on the {@link IsNewStrategy} returned by the
 	 * {@link IsNewStrategyFactory} configured. Will rout the calls to {@link #markCreated(Object)} and
 	 * {@link #markModified(Object)} accordingly.

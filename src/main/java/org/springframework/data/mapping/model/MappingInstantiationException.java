@@ -38,18 +38,6 @@ public class MappingInstantiationException extends RuntimeException {
 	private final List<Object> constructorArguments;
 
 	/**
-	 * Creates a {@link MappingInstantiationException} using the given message and cause.
-	 * 
-	 * @deprecated use {@link #MappingInstantiationException(PersistentEntity, List, String, Exception)} instead.
-	 * @param message
-	 * @param cause
-	 */
-	@Deprecated
-	public MappingInstantiationException(String message, Exception cause) {
-		this(null, null, message, cause);
-	}
-
-	/**
 	 * Creates a new {@link MappingInstantiationException} for the given {@link PersistentEntity}, constructor arguments
 	 * and the causing exception.
 	 * 

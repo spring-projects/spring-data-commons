@@ -16,8 +16,6 @@
 package org.springframework.data.repository.config;
 
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 
 /**
@@ -26,15 +24,6 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
  * @author Oliver Gierke
  */
 public interface RepositoryConfiguration<T extends RepositoryConfigurationSource> {
-
-	/**
-	 * Returns the id of the {@link BeanDefinition} the repository shall be registered under.
-	 * 
-	 * @return
-	 * @deprecated bean ids should be determined using a {@link BeanNameGenerator} during classpath scanning.
-	 */
-	@Deprecated
-	String getBeanId();
 
 	/**
 	 * Returns the base packages that the repository was scanned under.

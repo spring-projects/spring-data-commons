@@ -37,40 +37,4 @@ public interface Page<T> extends Slice<T> {
 	 * @return the total amount of elements
 	 */
 	long getTotalElements();
-
-	/**
-	 * Returns if there is a previous page.
-	 * 
-	 * @deprecated use {@link #hasPrevious()} instead.
-	 * @return if there is a previous page
-	 */
-	@Deprecated
-	boolean hasPreviousPage();
-
-	/**
-	 * Returns whether the current page is the first one.
-	 * 
-	 * @deprecated use {@link #isFirst()} instead.
-	 * @return
-	 */
-	@Deprecated
-	boolean isFirstPage();
-
-	/**
-	 * Returns if there is a next page.
-	 * 
-	 * @deprecated use {@link #hasNext()} instead.
-	 * @return if there is a next page
-	 */
-	@Deprecated
-	boolean hasNextPage();
-
-	/**
-	 * Returns whether the current page is the last one.
-	 * 
-	 * @deprecated use {@link #isLast()} instead.
-	 * @return
-	 */
-	@Deprecated
-	boolean isLastPage();
 }

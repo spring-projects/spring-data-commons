@@ -22,15 +22,12 @@ import static org.mockito.Mockito.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.SampleMappingContext;
-import org.springframework.data.support.IsNewStrategy;
-import org.springframework.data.support.IsNewStrategyFactory;
 
 /**
  * Unit test for {@code AuditingHandler}.
@@ -41,24 +38,21 @@ import org.springframework.data.support.IsNewStrategyFactory;
 @RunWith(MockitoJUnitRunner.class)
 public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
 
-	@Mock IsNewStrategyFactory factory;
-	@Mock IsNewStrategy strategy;
+	SampleMappingContext mappingContext;
 
 	@Before
 	public void init() {
-		when(factory.getIsNewStrategy(Mockito.any(Class.class))).thenReturn(strategy);
+		this.mappingContext = new SampleMappingContext();
 	}
 
 	@Override
-	@SuppressWarnings("deprecation")
 	protected IsNewAwareAuditingHandler getHandler() {
-		return new IsNewAwareAuditingHandler(factory);
+		return new IsNewAwareAuditingHandler(mock(SampleMappingContext.class));
 	}
 
 	@Test
 	public void delegatesToMarkCreatedForNewEntity() {
 
-		when(strategy.isNew(Mockito.any(Object.class))).thenReturn(true);
 		AuditedUser user = new AuditedUser();
 		getHandler().markAudited(user);
 
@@ -69,8 +63,8 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	@Test
 	public void delegatesToMarkModifiedForNonNewEntity() {
 
-		when(strategy.isNew(Mockito.any(Object.class))).thenReturn(false);
 		AuditedUser user = new AuditedUser();
+		user.id = 1L;
 		getHandler().markAudited(user);
 
 		assertThat(user.createdDate, is(nullValue()));
@@ -92,5 +86,10 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	@Test
 	public void setsUpHandlerWithMappingContext() {
 		new IsNewAwareAuditingHandler(new SampleMappingContext());
+	}
+
+	static class Domain {
+
+		@Id Long id;
 	}
 }

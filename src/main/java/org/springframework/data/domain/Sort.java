@@ -327,19 +327,6 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		}
 
 		/**
-		 * @deprecated use {@link Sort#Sort(Direction, List)} instead.
-		 */
-		@Deprecated
-		public static List<Order> create(Direction direction, Iterable<String> properties) {
-
-			List<Order> orders = new ArrayList<Sort.Order>();
-			for (String property : properties) {
-				orders.add(new Order(direction, property));
-			}
-			return orders;
-		}
-
-		/**
 		 * Returns the order the property shall be sorted for.
 		 * 
 		 * @return

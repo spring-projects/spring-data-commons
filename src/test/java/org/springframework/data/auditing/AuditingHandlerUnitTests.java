@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.mapping.context.SampleMappingContext;
 
 /**
  * Unit test for {@code AuditingHandler}.
@@ -46,9 +47,8 @@ public class AuditingHandlerUnitTests {
 		when(auditorAware.getCurrentAuditor()).thenReturn(user);
 	}
 
-	@SuppressWarnings("deprecation")
 	protected AuditingHandler getHandler() {
-		return new AuditingHandler();
+		return new AuditingHandler(new SampleMappingContext());
 	}
 
 	/**

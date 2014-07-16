@@ -46,16 +46,6 @@ public class AuditingHandler implements InitializingBean {
 	private boolean modifyOnCreation = true;
 
 	/**
-	 * Creates a new {@link AuditingHandler}.
-	 * 
-	 * @deprecated use the constructor taking a {@link MappingContext}.
-	 */
-	@Deprecated
-	public AuditingHandler() {
-		this.factory = new AuditableBeanWrapperFactory();
-	}
-
-	/**
 	 * Creates a new {@link AuditableBeanWrapper} using the given {@link MappingContext} when looking up auditing metadata
 	 * via reflection.
 	 * 

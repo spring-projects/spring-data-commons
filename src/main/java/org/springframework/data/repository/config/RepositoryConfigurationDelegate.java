@@ -51,20 +51,6 @@ public class RepositoryConfigurationDelegate {
 
 	/**
 	 * Creates a new {@link RepositoryConfigurationDelegate} for the given {@link RepositoryConfigurationSource} and
-	 * {@link ResourceLoader}.
-	 * 
-	 * @param configurationSource must not be {@literal null}.
-	 * @param resourceLoader must not be {@literal null}.
-	 * @deprecated use constructor taking an {@link Environment}.
-	 */
-	@Deprecated
-	public RepositoryConfigurationDelegate(RepositoryConfigurationSource configurationSource,
-			ResourceLoader resourceLoader) {
-		this(configurationSource, resourceLoader, null);
-	}
-
-	/**
-	 * Creates a new {@link RepositoryConfigurationDelegate} for the given {@link RepositoryConfigurationSource} and
 	 * {@link ResourceLoader} and {@link Environment}.
 	 * 
 	 * @param configurationSource must not be {@literal null}.

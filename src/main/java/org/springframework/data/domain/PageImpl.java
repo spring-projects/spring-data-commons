@@ -56,6 +56,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Page#getTotalPages()
 	 */
+	@Override
 	public int getTotalPages() {
 		return getSize() == 0 ? 1 : (int) Math.ceil((double) total / (double) getSize());
 	}
@@ -64,24 +65,9 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Page#getTotalElements()
 	 */
+	@Override
 	public long getTotalElements() {
 		return total;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#hasPreviousPage()
-	 */
-	public boolean hasPreviousPage() {
-		return hasPrevious();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#isFirstPage()
-	 */
-	public boolean isFirstPage() {
-		return isFirst();
 	}
 
 	/* 
@@ -90,14 +76,6 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 */
 	@Override
 	public boolean hasNext() {
-		return hasNextPage();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#hasNextPage()
-	 */
-	public boolean hasNextPage() {
 		return getNumber() + 1 < getTotalPages();
 	}
 
@@ -107,15 +85,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 */
 	@Override
 	public boolean isLast() {
-		return isLastPage();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#isLastPage()
-	 */
-	public boolean isLastPage() {
-		return !hasNextPage();
+		return !hasNext();
 	}
 
 	/*
