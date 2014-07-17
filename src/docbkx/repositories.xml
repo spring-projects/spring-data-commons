@@ -1459,8 +1459,8 @@ public class UserController {
         <para>The bottom line is that the controller should not have to handle
         the functionality of extracting pagination information from the
         request. So Spring Data ships with a
-        <classname>PageableHandlerArgumentResolver</classname> that will do
-        the work for you. The Spring MVC JavaConfig support exposes a
+        <classname>PageableHandlerMethodArgumentResolver</classname> that will
+        do the work for you. The Spring MVC JavaConfig support exposes a
         <classname>WebMvcConfigurationSupport</classname> helper class to
         customize the configuration as follows:</para>
 
@@ -1468,8 +1468,8 @@ public class UserController {
 public class WebConfig extends WebMvcConfigurationSupport {
 
   @Override
-  public void configureMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) {
-    converters.add(new PageableHandlerArgumentResolver());
+  protected void addArgumentResolvers(List&lt;HandlerMethodArgumentResolver&gt; argumentResolvers) {
+    argumentResolvers.add(new PageableHandlerMethodArgumentResolver());
   }
 }</programlisting>
 
@@ -1479,15 +1479,13 @@ public class WebConfig extends WebMvcConfigurationSupport {
         <programlisting language="xml">&lt;bean class="….web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"&gt;
   &lt;property name="customArgumentResolvers"&gt;
     &lt;list&gt;
-      &lt;bean class="org.springframework.data.web.PageableHandlerArgumentResolver" /&gt;
+      &lt;bean class="org.springframework.data.web.PageableHandlerMethodArgumentResolver" /&gt;
     &lt;/list&gt;
   &lt;/property&gt;
 &lt;/bean&gt;</programlisting>
 
-        <para>When using Spring 3.0.x versions use the
-        <classname>PageableArgumentResolver</classname> instead. Once you've
-        configured the resolver with Spring MVC it allows you to simplify
-        controllers down to something like this:</para>
+        <para>Once you've configured the resolver with Spring MVC it allows
+        you to simplify controllers down to something like this:</para>
 
         <programlisting lang="" language="java">@Controller
 @RequestMapping("/users")
@@ -1508,7 +1506,7 @@ public class UserController {
 
         <table>
           <title>Request parameters evaluated by
-          <classname>PageableArgumentResolver</classname></title>
+          <classname>PageableHandlerMethodArgumentResolver</classname></title>
 
           <tgroup cols="2">
             <colspec colwidth="1*"/>
@@ -1519,29 +1517,41 @@ public class UserController {
               <row>
                 <entry><code>page</code></entry>
 
-                <entry>Page you want to retrieve.</entry>
+                <entry>Page you want to retrieve, 0 indexed and defaults to
+                0.</entry>
               </row>
 
               <row>
-                <entry><code>page.size</code></entry>
+                <entry><code>size</code></entry>
 
-                <entry>Size of the page you want to retrieve.</entry>
+                <entry>Size of the page you want to retrieve, defaults to
+                20.</entry>
               </row>
 
               <row>
-                <entry><code>page.sort</code></entry>
+                <entry><code>sort</code></entry>
 
-                <entry>Property that should be sorted by.</entry>
-              </row>
-
-              <row>
-                <entry><code>page.sort.dir</code></entry>
-
-                <entry>Direction that should be used for sorting.</entry>
+                <entry>A collection of sort directives in the format
+                ($propertyname,)+[asc|desc]?.</entry>
               </row>
             </tbody>
           </tgroup>
         </table>
+
+        <example>
+          <title>Pagiination URL Parameter Examples</title>
+
+          <para>To retrieve the third page with a maximum page size of 100
+          with the data sorted by the email property in ascending order use
+          the following url parameter:</para>
+
+          <programlisting>?page=2&amp;size=100&amp;sort=email,asc</programlisting>
+
+          <para>To sort the data by multiple properties in different sort
+          order use the following url parameter</para>
+
+          <programlisting>?sort=foo,asc&amp;sort=bar,desc</programlisting>
+        </example>
 
         <para>In case you need multiple
         <interfacename>Pageable</interfacename>s to be resolved from the
