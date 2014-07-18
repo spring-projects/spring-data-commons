@@ -66,7 +66,7 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 					environment);
 
 			for (BeanComponentDefinition definition : delegate.registerRepositoriesIn(parser.getRegistry(), extension)) {
-				parser.registerBeanComponent(definition);
+				parser.getReaderContext().fireComponentRegistered(definition);
 			}
 
 		} catch (RuntimeException e) {
