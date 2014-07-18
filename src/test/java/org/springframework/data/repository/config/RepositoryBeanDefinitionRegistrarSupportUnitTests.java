@@ -118,17 +118,19 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		 */
 		@Override
 		protected RepositoryConfigurationExtension getExtension() {
-			return new RepositoryConfigurationExtensionSupport() {
+			return new DummyConfigurationExtension();
+		}
+	}
 
-				public String getRepositoryFactoryClassName() {
-					return RepositoryFactoryBeanSupport.class.getName();
-				}
+	static class DummyConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
-				@Override
-				protected String getModulePrefix() {
-					return "commons";
-				}
-			};
+		public String getRepositoryFactoryClassName() {
+			return RepositoryFactoryBeanSupport.class.getName();
+		}
+
+		@Override
+		protected String getModulePrefix() {
+			return "commons";
 		}
 	}
 }

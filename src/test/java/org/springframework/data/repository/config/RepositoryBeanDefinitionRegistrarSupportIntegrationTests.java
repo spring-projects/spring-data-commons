@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupportUnitTests.DummyConfigurationExtension;
 
 /**
  * Integration tests for {@link RepositoryBeanDefinitionRegistrarSupport}.
@@ -76,5 +77,13 @@ public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 
 		BeanDefinition definition = context.getBeanDefinition("myRepository");
 		assertThat(definition.getSource(), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-544
+	 */
+	@Test
+	public void registersExtensionAsBeanDefinition() {
+		assertThat(context.getBean(DummyConfigurationExtension.class), is(notNullValue()));
 	}
 }
