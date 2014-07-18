@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.config;
 
+import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +27,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
@@ -118,6 +121,8 @@ public class RepositoryConfigurationDelegate {
 	public List<BeanComponentDefinition> registerRepositoriesIn(BeanDefinitionRegistry registry,
 			RepositoryConfigurationExtension extension) {
 
+		exposeRegistration(extension, registry);
+
 		extension.registerBeansForRoot(registry, configurationSource);
 
 		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader,
@@ -150,5 +155,32 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		return definitions;
+	}
+
+	/**
+	 * Registeres the given {@link RepositoryConfigurationExtension} to indicate the repository configuration for a
+	 * particular store (expressed through the extension's concrete type) has appened. Useful for downstream components
+	 * that need to detect exactly that case. The bean definition is marked as lazy-init so that it doesn't get
+	 * instantiated if no one really cares.
+	 * 
+	 * @param extension
+	 * @param registry
+	 */
+	private void exposeRegistration(RepositoryConfigurationExtension extension, BeanDefinitionRegistry registry) {
+
+		Class<? extends RepositoryConfigurationExtension> extensionType = extension.getClass();
+		String beanName = extensionType.getName().concat(GENERATED_BEAN_NAME_SEPARATOR).concat("0");
+
+		if (registry.containsBeanDefinition(beanName)) {
+			return;
+		}
+
+		// Register extension as bean to indicate repository parsing and registration has happened
+		RootBeanDefinition definition = new RootBeanDefinition(extensionType);
+		definition.setSource(configurationSource.getSource());
+		definition.setRole(AbstractBeanDefinition.ROLE_INFRASTRUCTURE);
+		definition.setLazyInit(true);
+
+		registry.registerBeanDefinition(beanName, definition);
 	}
 }
