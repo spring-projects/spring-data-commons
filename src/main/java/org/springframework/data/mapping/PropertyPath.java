@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param owningType must not be {@literal null}.
 	 * @param base the {@link PropertyPath} previously found.
 	 */
-	PropertyPath(String name, TypeInformation<?> owningType, Stack<PropertyPath> base) {
+	PropertyPath(String name, TypeInformation<?> owningType, List<PropertyPath> base) {
 
 		Assert.hasText(name);
 		Assert.notNull(owningType);
@@ -303,7 +303,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param type
 	 * @return
 	 */
-	private static PropertyPath create(String source, TypeInformation<?> type, Stack<PropertyPath> base) {
+	private static PropertyPath create(String source, TypeInformation<?> type, List<PropertyPath> base) {
 		return create(source, type, "", base);
 	}
 
@@ -317,7 +317,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param addTail
 	 * @return
 	 */
-	private static PropertyPath create(String source, TypeInformation<?> type, String addTail, Stack<PropertyPath> base) {
+	private static PropertyPath create(String source, TypeInformation<?> type, String addTail, List<PropertyPath> base) {
 
 		PropertyReferenceException exception = null;
 		PropertyPath current = null;
@@ -327,13 +327,14 @@ public class PropertyPath implements Iterable<PropertyPath> {
 			current = new PropertyPath(source, type, base);
 
 			if (!base.isEmpty()) {
-				base.peek().next = current;
+				base.get(base.size() - 1).next = current;
 			}
 
-			base.push(current);
+			List<PropertyPath> newBase = new ArrayList<PropertyPath>(base);
+			newBase.add(current);
 
 			if (StringUtils.hasText(addTail)) {
-				current.next = create(addTail, current.type, base);
+				current.next = create(addTail, current.type, newBase);
 			}
 
 			return current;
@@ -356,7 +357,11 @@ public class PropertyPath implements Iterable<PropertyPath> {
 			String head = source.substring(0, position);
 			String tail = source.substring(position);
 
-			return create(head, type, tail + addTail, base);
+			try {
+				return create(head, type, tail + addTail, base);
+			} catch (PropertyReferenceException e) {
+				throw e.hasDeeperResolutionDepthThan(exception) ? e : exception;
+			}
 		}
 
 		throw exception;
