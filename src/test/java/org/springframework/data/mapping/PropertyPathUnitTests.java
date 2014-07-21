@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -310,6 +310,7 @@ public class PropertyPathUnitTests {
 	/**
 	 * @see DATACMNS-381
 	 */
+	@Test
 	public void exposesPreviouslyReferencedPathInExceptionMessage() {
 
 		exception.expect(PropertyReferenceException.class);
@@ -350,6 +351,26 @@ public class PropertyPathUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullTypeInformation() {
 		from("foo", (TypeInformation<?>) null);
+	}
+
+	@Test
+	public void returnsCompletePathIfResolutionFailedCompletely() {
+
+		exception.expect(PropertyReferenceException.class);
+		exception.expectMessage("somethingDifferent");
+
+		from("somethingDifferent", Foo.class);
+	}
+
+	@Test
+	public void foobar() {
+
+		exception.expect(PropertyReferenceException.class);
+		exception.expectMessage("fooName");
+		exception.expectMessage(FooBar.class.getSimpleName());
+		exception.expectMessage("Bar.user");
+
+		from("userFooName", Bar.class);
 	}
 
 	private class Foo {

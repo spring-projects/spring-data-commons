@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.mapping;
 
-import java.util.Stack;
+import java.util.List;
 
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -32,23 +32,23 @@ public class PropertyReferenceException extends RuntimeException {
 
 	private final String propertyName;
 	private final TypeInformation<?> type;
-	private final Stack<PropertyPath> base;
+	private final List<PropertyPath> alreadyResolvedPath;
 
 	/**
 	 * Creates a new {@link PropertyReferenceException}.
 	 * 
 	 * @param propertyName the name of the property not found on the given type.
 	 * @param type the type the property could not be found on.
-	 * @param base the previously calculated {@link PropertyPath}s.
+	 * @param alreadyResolvedPah the previously calculated {@link PropertyPath}s.
 	 */
-	public PropertyReferenceException(String propertyName, TypeInformation<?> type, Stack<PropertyPath> base) {
+	public PropertyReferenceException(String propertyName, TypeInformation<?> type, List<PropertyPath> alreadyResolvedPah) {
 
 		Assert.hasText(propertyName);
 		Assert.notNull(type);
 
 		this.propertyName = propertyName;
 		this.type = type;
-		this.base = base;
+		this.alreadyResolvedPath = alreadyResolvedPah;
 	}
 
 	/**
@@ -79,8 +79,8 @@ public class PropertyReferenceException extends RuntimeException {
 		StringBuilder builder = new StringBuilder(String.format(ERROR_TEMPLATE, propertyName, type.getType()
 				.getSimpleName()));
 
-		if (!base.isEmpty()) {
-			builder.append(" Traversed path: ").append(base.get(0).toString()).append(".");
+		if (!alreadyResolvedPath.isEmpty()) {
+			builder.append(" Traversed path: ").append(alreadyResolvedPath.get(0).toString()).append(".");
 		}
 
 		return builder.toString();
@@ -92,6 +92,17 @@ public class PropertyReferenceException extends RuntimeException {
 	 * @return
 	 */
 	public PropertyPath getBaseProperty() {
-		return base.isEmpty() ? null : base.peek();
+		return alreadyResolvedPath.isEmpty() ? null : alreadyResolvedPath.get(alreadyResolvedPath.size() - 1);
+	}
+
+	/**
+	 * Returns whether the given {@link PropertyReferenceException} has a deeper resolution depth (i.e. a longer path of
+	 * already resolved properties) than the current exception.
+	 * 
+	 * @param exception
+	 * @return
+	 */
+	public boolean hasDeeperResolutionDepthThan(PropertyReferenceException exception) {
+		return this.alreadyResolvedPath.size() > exception.alreadyResolvedPath.size();
 	}
 }
