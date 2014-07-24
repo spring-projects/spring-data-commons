@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 by the original author(s).
+ * Copyright 2011-2014 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.springframework.data.mapping.PersistentEntity;
 @Inherited
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
+@Persistent
 public @interface TypeAlias {
 
 	/**
