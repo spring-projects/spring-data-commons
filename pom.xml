@@ -18,7 +18,7 @@
 
 	<properties>
 		<guava>17.0</guava>
-		<springhateoas>0.14.0.RELEASE</springhateoas>
+		<springhateoas>0.16.0.RELEASE</springhateoas>
 		<dist.key>DATACMNS</dist.key>
 	</properties>
 
