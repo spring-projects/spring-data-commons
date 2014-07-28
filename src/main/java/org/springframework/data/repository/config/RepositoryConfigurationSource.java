@@ -88,4 +88,12 @@ public interface RepositoryConfigurationSource {
 	 * @since 1.8
 	 */
 	String getAttribute(String name);
+
+	/**
+	 * Returns whether the configuration uses explicit filtering to scan for repository types.
+	 * 
+	 * @return whether the configuration uses explicit filtering to scan for repository types.
+	 * @since 1.9
+	 */
+	boolean usesExplicitFilters();
 }

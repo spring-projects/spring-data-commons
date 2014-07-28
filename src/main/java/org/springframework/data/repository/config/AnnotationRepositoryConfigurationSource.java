@@ -58,6 +58,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private final AnnotationMetadata metadata;
 	private final AnnotationAttributes attributes;
 	private final ResourceLoader resourceLoader;
+	private final boolean hasExplicitFilters;
 
 	/**
 	 * Creates a new {@link AnnotationRepositoryConfigurationSource} from the given {@link AnnotationMetadata} and
@@ -80,6 +81,25 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		this.attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(annotation.getName()));
 		this.metadata = metadata;
 		this.resourceLoader = resourceLoader;
+		this.hasExplicitFilters = hasExplicitFilters(attributes);
+	}
+
+	/**
+	 * Returns whether there's explicit configuration of include- or exclude filters.
+	 * 
+	 * @param attributes must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean hasExplicitFilters(AnnotationAttributes attributes) {
+
+		for (String attribute : Arrays.asList("includeFilters", "excludeFilters")) {
+
+			if (attributes.getAnnotationArray(attribute).length > 0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/*
@@ -266,6 +286,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 		String attribute = attributes.getString(name);
 		return StringUtils.hasText(attribute) ? attribute : null;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#usesExplicitFilters()
+	 */
+	@Override
+	public boolean usesExplicitFilters() {
+		return hasExplicitFilters;
 	}
 
 	/**

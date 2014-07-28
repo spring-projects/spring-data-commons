@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
@@ -50,6 +51,21 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 		this.repositoryInterface = repositoryInterface;
 		this.typeInformation = ClassTypeInformation.from(repositoryInterface);
+	}
+
+	/**
+	 * Creates a new {@link RepositoryMetadata} for the given repsository interface.
+	 * 
+	 * @param repositoryInterface must not be {@literal null}.
+	 * @since 1.9
+	 * @return
+	 */
+	public static RepositoryMetadata getMetadata(Class<?> repositoryInterface) {
+
+		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
+
+		return Repository.class.isAssignableFrom(repositoryInterface) ? new DefaultRepositoryMetadata(repositoryInterface)
+				: new AnnotationRepositoryMetadata(repositoryInterface);
 	}
 
 	/* 

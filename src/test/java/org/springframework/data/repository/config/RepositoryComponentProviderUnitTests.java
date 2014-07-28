@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class RepositoryComponentProviderUnitTests {
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.config");
 		String nestedRepositoryClassName = "org.springframework.data.repository.config.RepositoryComponentProviderUnitTests$MyNestedRepository";
 
-		assertThat(components.size(), is(3));
+		assertThat(components.size(), is(greaterThanOrEqualTo(1)));
 		assertThat(components,
 				Matchers.<BeanDefinition> hasItem(hasProperty("beanClassName", is(nestedRepositoryClassName))));
 	}

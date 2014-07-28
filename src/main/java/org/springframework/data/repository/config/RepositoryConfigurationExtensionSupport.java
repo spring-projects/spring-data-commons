@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,24 @@ package org.springframework.data.repository.config;
 
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.*;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Base implementation of {@link RepositoryConfigurationExtension} to ease the implementation of the interface. Will
@@ -37,7 +45,20 @@ import org.springframework.util.Assert;
  */
 public abstract class RepositoryConfigurationExtensionSupport implements RepositoryConfigurationExtension {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryConfigurationExtensionSupport.class);
+	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s.";
+	private static final String MULTI_STORE_DROPPED = "Spring Data {} - Could not safely identify store assignment for repository candidate {}.";
+
 	protected static final String REPOSITORY_INTERFACE_POST_PROCESSOR = "org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor";
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getModuleName()
+	 */
+	@Override
+	public String getModuleName() {
+		return StringUtils.capitalize(getModulePrefix());
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -45,6 +66,16 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 */
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader) {
+		return getRepositoryConfigurations(configSource, loader, false);
+	}
+
+	/*
+	 * 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryConfigurations(org.springframework.data.repository.config.RepositoryConfigurationSource, org.springframework.core.io.ResourceLoader, boolean)
+	 */
+	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
+			T configSource, ResourceLoader loader, boolean strictMatchesOnly) {
 
 		Assert.notNull(configSource);
 		Assert.notNull(loader);
@@ -52,8 +83,21 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		Set<RepositoryConfiguration<T>> result = new HashSet<RepositoryConfiguration<T>>();
 
 		for (BeanDefinition candidate : configSource.getCandidates(loader)) {
-			result.add(getRepositoryConfiguration(candidate, configSource));
+
+			RepositoryConfiguration<T> configuration = getRepositoryConfiguration(candidate, configSource);
+
+			if (!strictMatchesOnly || configSource.usesExplicitFilters()) {
+				result.add(configuration);
+				continue;
+			}
+
+			Class<?> repositoryInterface = loadRepositoryInterface(configuration, loader);
+
+			if (repositoryInterface == null || isStrictRepositoryCandidate(repositoryInterface)) {
+				result.add(configuration);
+			}
 		}
+
 		return result;
 	}
 
@@ -88,24 +132,29 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.RepositoryConfigurationSource)
 	 */
-	public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {
-
-	}
+	public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource)
 	 */
-	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
-
-	}
+	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.XmlRepositoryConfigurationSource)
 	 */
-	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {
+	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {}
 
+	/**
+	 * Return the annotations to scan domain types for when evaluating repository interfaces for store assignment. Modules
+	 * should return the annotations that identify a domain type as managed by the store explicitly.
+	 * 
+	 * @return
+	 * @since 1.9
+	 */
+	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
+		return Collections.emptySet();
 	}
 
 	/**
@@ -154,5 +203,62 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	protected <T extends RepositoryConfigurationSource> RepositoryConfiguration<T> getRepositoryConfiguration(
 			BeanDefinition definition, T configSource) {
 		return new DefaultRepositoryConfiguration<T>(configSource, definition);
+	}
+
+	/**
+	 * Returns whether the given repository interface is a candidate for bean definition creation in the strict repository
+	 * detection mode. The default implementation inspects the domain type managed for a set of well-known annotations
+	 * (see {@link #getIdentifyingAnnotations()}). If none of them is found, the candidate is discarded. Implementations
+	 * should make sure, the only return {@literal true} if they're really sure the interface handed to the method is
+	 * really a store interface.
+	 * 
+	 * @param repositoryInterface
+	 * @return
+	 * @since 1.9
+	 */
+	protected boolean isStrictRepositoryCandidate(Class<?> repositoryInterface) {
+
+		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
+		Class<?> domainType = metadata.getDomainType();
+
+		Collection<Class<? extends Annotation>> annotations = getIdentifyingAnnotations();
+
+		if (annotations.isEmpty()) {
+			return true;
+		}
+
+		for (Class<? extends Annotation> annotationType : annotations) {
+			if (AnnotationUtils.findAnnotation(domainType, annotationType) != null) {
+				return true;
+			}
+		}
+
+		LOGGER.debug(MULTI_STORE_DROPPED, getModuleName(), repositoryInterface);
+
+		return false;
+	}
+
+	/**
+	 * Loads the repository interface contained in the given {@link RepositoryConfiguration} using the given
+	 * {@link ResourceLoader}.
+	 * 
+	 * @param configuration must not be {@literal null}.
+	 * @param loader must not be {@literal null}.
+	 * @return the repository interface or {@literal null} if it can't be loaded.
+	 */
+	private static Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
+
+		String repositoryInterface = configuration.getRepositoryInterface();
+		ClassLoader classLoader = loader.getClassLoader();
+
+		try {
+			return org.springframework.util.ClassUtils.forName(repositoryInterface, classLoader);
+		} catch (ClassNotFoundException e) {
+			LOGGER.warn(String.format(CLASS_LOADING_ERROR, repositoryInterface, classLoader), e);
+		} catch (LinkageError e) {
+			LOGGER.warn(String.format(CLASS_LOADING_ERROR, repositoryInterface, classLoader), e);
+		}
+
+		return null;
 	}
 }

@@ -23,6 +23,8 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -127,16 +129,26 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	public void returnsEmptyStringForBasePackage() throws Exception {
 
 		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(getClass().getClassLoader().loadClass(
-				"TypeInDefaultPackage"));
+				"TypeInDefaultPackage"), true);
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				EnableRepositories.class, resourceLoader, environment);
 
 		assertThat(configurationSource.getBasePackages(), hasItem(""));
 	}
 
+	/**
+	 * @see DATACMNS-526
+	 */
+	@Test
+	public void detectsExplicitFilterConfiguration() {
+
+		assertThat(getConfigSource(ConfigurationWithExplicitFilter.class).usesExplicitFilters(), is(true));
+		assertThat(getConfigSource(DefaultConfiguration.class).usesExplicitFilters(), is(false));
+	}
+
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(type);
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(type, true);
 		return new AnnotationRepositoryConfigurationSource(metadata, EnableRepositories.class, resourceLoader, environment);
 	}
 
@@ -150,4 +162,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	@EnableRepositories(considerNestedRepositories = true)
 	static class DefaultConfigurationWithNestedRepositories {}
+
+	@EnableRepositories(excludeFilters = { @Filter(Primary.class) })
+	static class ConfigurationWithExplicitFilter {}
 }

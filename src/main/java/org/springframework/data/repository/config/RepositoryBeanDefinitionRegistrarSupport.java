@@ -74,9 +74,13 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(
 				annotationMetadata, getAnnotation(), resourceLoader, environment);
 
+		RepositoryConfigurationExtension extension = getExtension();
+		RepositoryConfigurationUtils.exposeRegistration(extension, registry, configurationSource);
+
 		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configurationSource, resourceLoader,
 				environment);
-		delegate.registerRepositoriesIn(registry, getExtension());
+
+		delegate.registerRepositoriesIn(registry, extension);
 	}
 
 	/**

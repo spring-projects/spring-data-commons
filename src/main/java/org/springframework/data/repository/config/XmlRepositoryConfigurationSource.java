@@ -16,6 +16,7 @@
 package org.springframework.data.repository.config;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.env.Environment;
@@ -46,8 +47,8 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	private final Element element;
 	private final ParserContext context;
 
-	private final Iterable<TypeFilter> includeFilters;
-	private final Iterable<TypeFilter> excludeFilters;
+	private final Collection<TypeFilter> includeFilters;
+	private final Collection<TypeFilter> excludeFilters;
 
 	/**
 	 * Creates a new {@link XmlRepositoryConfigurationSource} using the given {@link Element} and {@link ParserContext}.
@@ -174,5 +175,14 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		String attribute = element.getAttribute(xmlAttributeName);
 
 		return StringUtils.hasText(attribute) ? attribute : null;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#usesExplicitFilters()
+	 */
+	@Override
+	public boolean usesExplicitFilters() {
+		return !(this.includeFilters.isEmpty() && this.excludeFilters.isEmpty());
 	}
 }

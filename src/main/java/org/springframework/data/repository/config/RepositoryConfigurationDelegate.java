@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.*;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,11 +26,15 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
 
 /**
@@ -46,11 +49,16 @@ public class RepositoryConfigurationDelegate {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryConfigurationDelegate.class);
 
+	private static final String REPOSITORY_REGISTRATION = "Spring Data {} - Registering repository: {} - Interface: {} - Factory: {}";
+	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode!";
+	private static final String MODULE_DETECTION_PACKAGE = "org.springframework.data.**.repository.support";
+
 	private final RepositoryConfigurationSource configurationSource;
 	private final ResourceLoader resourceLoader;
 	private final Environment environment;
 	private final BeanNameGenerator generator;
 	private final boolean isXml;
+	private final boolean inMultiStoreMode;
 
 	/**
 	 * Creates a new {@link RepositoryConfigurationDelegate} for the given {@link RepositoryConfigurationSource} and
@@ -77,6 +85,7 @@ public class RepositoryConfigurationDelegate {
 		this.configurationSource = configurationSource;
 		this.resourceLoader = resourceLoader;
 		this.environment = defaultEnvironment(environment, resourceLoader);
+		this.inMultiStoreMode = multipleStoresDetected();
 	}
 
 	/**
@@ -107,8 +116,6 @@ public class RepositoryConfigurationDelegate {
 	public List<BeanComponentDefinition> registerRepositoriesIn(BeanDefinitionRegistry registry,
 			RepositoryConfigurationExtension extension) {
 
-		exposeRegistration(extension, registry);
-
 		extension.registerBeansForRoot(registry, configurationSource);
 
 		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader,
@@ -116,7 +123,7 @@ public class RepositoryConfigurationDelegate {
 		List<BeanComponentDefinition> definitions = new ArrayList<BeanComponentDefinition>();
 
 		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : extension
-				.getRepositoryConfigurations(configurationSource, resourceLoader)) {
+				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode)) {
 
 			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
 
@@ -132,8 +139,8 @@ public class RepositoryConfigurationDelegate {
 			String beanName = generator.generateBeanName(beanDefinition, registry);
 
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Registering repository: " + beanName + " - Interface: " + configuration.getRepositoryInterface()
-						+ " - Factory: " + extension.getRepositoryFactoryClassName());
+				LOGGER.debug(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName,
+						configuration.getRepositoryInterface(), extension.getRepositoryFactoryClassName());
 			}
 
 			registry.registerBeanDefinition(beanName, beanDefinition);
@@ -144,29 +151,57 @@ public class RepositoryConfigurationDelegate {
 	}
 
 	/**
-	 * Registeres the given {@link RepositoryConfigurationExtension} to indicate the repository configuration for a
-	 * particular store (expressed through the extension's concrete type) has appened. Useful for downstream components
-	 * that need to detect exactly that case. The bean definition is marked as lazy-init so that it doesn't get
-	 * instantiated if no one really cares.
+	 * Scans {@code repository.support} packages for implementations of {@link RepositoryFactorySupport}. Finding more
+	 * than a single type is considered a multi-store configuration scenario which will trigger stricter repository
+	 * scanning.
 	 * 
-	 * @param extension
-	 * @param registry
+	 * @return
 	 */
-	private void exposeRegistration(RepositoryConfigurationExtension extension, BeanDefinitionRegistry registry) {
+	private boolean multipleStoresDetected() {
 
-		Class<? extends RepositoryConfigurationExtension> extensionType = extension.getClass();
-		String beanName = extensionType.getName().concat(GENERATED_BEAN_NAME_SEPARATOR).concat("0");
+		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false,
+				environment);
+		scanner.addIncludeFilter(new LenientAssignableTypeFilter(RepositoryFactorySupport.class));
+		int numberOfModulesFound = scanner.findCandidateComponents(MODULE_DETECTION_PACKAGE).size();
 
-		if (registry.containsBeanDefinition(beanName)) {
-			return;
+		if (numberOfModulesFound > 1) {
+			LOGGER.debug(MULTIPLE_MODULES);
+			return true;
 		}
 
-		// Register extension as bean to indicate repository parsing and registration has happened
-		RootBeanDefinition definition = new RootBeanDefinition(extensionType);
-		definition.setSource(configurationSource.getSource());
-		definition.setRole(AbstractBeanDefinition.ROLE_INFRASTRUCTURE);
-		definition.setLazyInit(true);
+		return false;
+	}
 
-		registry.registerBeanDefinition(beanName, definition);
+	/**
+	 * Special {@link AssignableTypeFilter} that generally considers exceptions during type matching indicating a
+	 * non-match. TODO: Remove after upgrade to Spring 4.0.7.
+	 * 
+	 * @see https://jira.spring.io/browse/SPR-12042
+	 * @author Oliver Gierke
+	 */
+	private static class LenientAssignableTypeFilter extends AssignableTypeFilter {
+
+		/**
+		 * Creates a new {@link LenientAssignableTypeFilter} for the given target type.
+		 * 
+		 * @param targetType must not be {@literal null}.
+		 */
+		public LenientAssignableTypeFilter(Class<?> targetType) {
+			super(targetType);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilter#match(org.springframework.core.type.classreading.MetadataReader, org.springframework.core.type.classreading.MetadataReaderFactory)
+		 */
+		@Override
+		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
+
+			try {
+				return super.match(metadataReader, metadataReaderFactory);
+			} catch (Exception o_O) {
+				return false;
+			}
+		}
 	}
 }
