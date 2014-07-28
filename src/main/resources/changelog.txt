@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.8.2.RELEASE (2014-07-28)
+---------------------------------------------
+* DATACMNS-549 - Release 1.8.2.
+* DATACMNS-548 - Add documentation of Slice for repository query methods.
+* DATACMNS-547 - @TypeAlias should be @Persistent.
+* DATACMNS-546 - Improve exception message for failed property lookups.
+* DATACMNS-544 - Expose BeanDefinition to allow detection of whether repository configuration has been activated.
+* DATACMNS-543 - Repository beans registered twice when using XML namespace.
+* DATACMNS-538 - Reference documentation on web pagination shows outdated parameter names.
+* DATACMNS-537 - Remove links to forum.spring.io..
+
+
 Changes in version 1.9.0.M1 (2014-07-10)
 ----------------------------------------
 * DATACMNS-537 - Remove links to forum.spring.io..
