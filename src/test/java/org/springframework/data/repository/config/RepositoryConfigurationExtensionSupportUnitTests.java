@@ -52,33 +52,34 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 		assertThat(extension.isStrictRepositoryCandidate(AnnotatedTypeRepository.class), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-526
+	 */
+	@Test
+	public void considersRepositoryInterfaceExtendingStoreInterfaceStrictMatch() {
+		assertThat(extension.isStrictRepositoryCandidate(ExtendingInterface.class), is(true));
+	}
+
 	static class SampleRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModulePrefix()
-		 */
 		@Override
 		protected String getModulePrefix() {
 			return "core";
 		}
 
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryFactoryClassName()
-		 */
 		@Override
 		public String getRepositoryFactoryClassName() {
 			return RepositoryFactorySupport.class.getName();
 		}
 
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getIdentifyingAnnotations()
-		 */
 		@Override
 		protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
 			return Collections.<Class<? extends Annotation>> singleton(Primary.class);
+		}
+
+		@Override
+		protected Collection<Class<?>> getIdentifyingTypes() {
+			return Collections.<Class<?>> singleton(StoreInterface.class);
 		}
 	}
 
@@ -90,4 +91,8 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 	interface AnnotatedTypeRepository extends Repository<AnnotatedType, Long> {}
 
 	interface PlainTypeRepository extends Repository<PlainType, Long> {}
+
+	interface StoreInterface {}
+
+	interface ExtendingInterface extends StoreInterface, Repository<PlainType, Long> {}
 }

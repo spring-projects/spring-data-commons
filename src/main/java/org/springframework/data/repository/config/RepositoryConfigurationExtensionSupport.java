@@ -158,6 +158,16 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	/**
+	 * Returns the types that indicate a store match when inspecting repositories for strict matches.
+	 * 
+	 * @return
+	 * @since 1.9
+	 */
+	protected Collection<Class<?>> getIdentifyingTypes() {
+		return Collections.emptySet();
+	}
+
+	/**
 	 * Sets the given source on the given {@link AbstractBeanDefinition} and registers it inside the given
 	 * {@link BeanDefinitionRegistry}.
 	 * 
@@ -219,8 +229,16 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	protected boolean isStrictRepositoryCandidate(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
-		Class<?> domainType = metadata.getDomainType();
 
+		Collection<Class<?>> types = getIdentifyingTypes();
+
+		for (Class<?> type : types) {
+			if (type.isAssignableFrom(repositoryInterface)) {
+				return true;
+			}
+		}
+
+		Class<?> domainType = metadata.getDomainType();
 		Collection<Class<? extends Annotation>> annotations = getIdentifyingAnnotations();
 
 		if (annotations.isEmpty()) {
