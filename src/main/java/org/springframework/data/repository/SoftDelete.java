@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation to enable soft-delete handling for entities of a given repository.
  * 
- * @since 1.6
+ * @since 1.9
  * @author Oliver Gierke
  */
 @Documented
@@ -52,7 +52,7 @@ public @interface SoftDelete {
 	/**
 	 * Various strategies of how to interpret the entity's property capturing the deleted state.
 	 * 
-	 * @since 1.6
+	 * @since 1.9
 	 * @author Oliver Gierke
 	 */
 	public enum FlagMode {

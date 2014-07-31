@@ -31,7 +31,7 @@ import org.springframework.data.repository.core.EntityMetadata;
  * {@link #prepareQuery(QueryContext, Annotation)} and {@link #prepareUpdate(UpdateContext, Annotation)} methods. Opts
  * out of augmentation in case the annotation cannot be found on the method invoked or in the type.
  * 
- * @since 1.6
+ * @since 1.9
  * @author Oliver Gierke
  */
 public abstract class AnnotationBasedQueryAugmentor<T extends Annotation, Q extends QueryContext<?>, N extends QueryContext<?>, U extends UpdateContext<?>>

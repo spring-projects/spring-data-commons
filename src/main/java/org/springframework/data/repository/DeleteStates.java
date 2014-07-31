@@ -19,7 +19,7 @@ package org.springframework.data.repository;
  * Interface to abstract value objects that represent the deleted state of an entity. SPI interface that allows
  * implementing a deletion strategy over muliple levels, e.g. active, trashed, eventually soft deleted.
  * 
- * @since 1.6
+ * @since 1.9
  * @author Oliver Gierke
  */
 public interface DeleteStates<T> {

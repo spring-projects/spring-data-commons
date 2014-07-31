@@ -21,7 +21,7 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
  * Injection interface to express the dependency to a {@link QueryAugmentationEngine}. Usually implemented by repository
  * implementations. The {@link RepositoryFactorySupport} base class will inject the {@link QueryAugmentationEngine}.
  * 
- * @since 1.6
+ * @since 1.9
  * @author Oliver Gierke
  */
 public interface QueryAugmentationEngineAware {

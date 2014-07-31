@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
  * The context of a query to be executed. Holding the actual query as well as a queryMode to express in which context
  * the query shall be executed.
  * 
- * @since 1.6
+ * @since 1.9
  * @author Oliver Gierke
  */
 public class QueryContext<T> {
@@ -29,7 +29,7 @@ public class QueryContext<T> {
 	/**
 	 * The mode of the query execution.
 	 * 
-	 * @since 1.6
+	 * @since 1.9
 	 * @author Oliver Gierke
 	 */
 	public static enum QueryMode {

@@ -22,7 +22,7 @@ import org.springframework.data.util.DirectFieldAccessFallbackBeanWrapper;
 /**
  * Base class to implement a {@link QueryAugmentor} to soft-delete entities.
  * 
- * @since 1.7
+ * @since 1.9
  * @author Oliver Gierke
  */
 public abstract class AbstractSoftDeleteQueryAugmentor<Q extends QueryContext<?>, N extends QueryContext<?>, U extends UpdateContext<?>>

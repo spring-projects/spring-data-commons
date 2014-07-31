@@ -20,7 +20,7 @@ import org.springframework.util.Assert;
 /**
  * Context to be handed around for update executions.
  * 
- * @since 1.6
+ * @since 1.9
  * @author Oliver Gierke
  */
 public class UpdateContext<T> {
@@ -28,7 +28,7 @@ public class UpdateContext<T> {
 	/**
 	 * The mode of the update execution.
 	 * 
-	 * @since 1.6
+	 * @since 1.9
 	 * @author Oliver Gierke
 	 */
 	public static enum UpdateMode {

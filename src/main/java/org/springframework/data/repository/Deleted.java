@@ -18,7 +18,7 @@ package org.springframework.data.repository;
 /**
  * Enum based implementation of {@link DeleteStates}.
  * 
- * @since 1.6
+ * @since 1.9
  * @author Oliver Gierke
  */
 public enum Deleted implements DeleteStates<Deleted> {

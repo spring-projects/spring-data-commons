@@ -23,7 +23,7 @@ import org.springframework.data.repository.CrudRepository;
 /**
  * Interface to abstract {@link MethodMetadata} to be looked up for the repository method invoked.
  * 
- * @see 1.6
+ * @see 1.9
  * @author Oliver Gierke
  */
 public interface MethodMetadata {

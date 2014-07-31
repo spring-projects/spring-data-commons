@@ -21,7 +21,7 @@ import org.springframework.data.repository.core.EntityMetadata;
 /**
  * SPI to abstract components that want to augment queries executed by the repositories.
  * 
- * @since 1.6
+ * @since 1.9
  * @author Oliver Gierke
  */
 public interface QueryAugmentor<Q extends QueryContext<?>, N extends QueryContext<?>, S extends UpdateContext<?>> {

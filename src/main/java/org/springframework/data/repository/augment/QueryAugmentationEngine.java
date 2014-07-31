@@ -33,7 +33,7 @@ import org.springframework.util.MultiValueMap;
  * Wrapper for a collection of {@link QueryAugmentor}s. Groups them by the context type they're referring to for the
  * appropriate invocation later on.
  * 
- * @since 1.6
+ * @since 1.9
  * @author Oliver Gierke
  */
 public class QueryAugmentationEngine {
