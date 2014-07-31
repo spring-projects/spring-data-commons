@@ -1,0 +1,64 @@
+[[auditing]]
+= Auditing
+
+[[auditing.basics]]
+== Basics
+Spring Data provides sophisticated support to transparently keep track of who created or changed an entity and the point in time this happened. To benefit from that functionality you have to equip your entity classes with auditing metadata that can be defined either using annotations or by implementing an interface.
+
+[[auditing.annotations]]
+=== Annotation based auditing metadata
+We provide `@CreatedBy`, `@LastModifiedBy` to capture the user who created or modified the entity as well as `@CreatedDate` and `@LastModifiedDate` to capture the point in time this happened.
+
+.An audited entity
+====
+[source, java]
+----
+class Customer {
+
+  @CreatedBy
+  private User user;
+
+  @CreatedDate
+  private DateTime createdDate;
+
+  // … further properties omitted
+}
+----
+====
+
+As you can see, the annotations can be applied selectively, depending on which information you'd like to capture. For the annotations capturing the points in time can be used on properties of type `org.joda.time.DateTime`, `java.util.Date` as well as `long`/`Long`.
+
+[[auditing.interfaces]]
+=== Interface-based auditing metadata
+In case you don't want to use annotations to define auditing metadata you can let your domain class implement the Auditable interface. It exposes setter methods for all of the auditing properties.
+
+There's also a convenience base class `AbstractAuditable` which you can extend to avoid the need to manually implement the interface methods. Be aware that this increases the coupling of your domain classes to Spring Data which might be something you want to avoid. Usually the annotation based way of defining auditing metadata is preferred as it is less invasive and more flexible.
+
+[[auditing.auditor-aware]]
+=== AuditorAware
+
+In case you use either `@CreatedBy` or `@LastModifiedBy`, the auditing infrastructure somehow needs to become aware of the current principal. To do so, we provide an `AuditorAware<T>` SPI interface that you have to implement to tell the infrastructure who the current user or system interacting with the application is. The generic type `T` defines of what type the properties annotated with `@CreatedBy` or `@LastModifiedBy` have to be.
+
+Here's an example implementation of the interface using Spring Security's `Authentication` object:
+
+.Implementation of `AuditorAware` based on Spring Security
+====
+[source, java]
+----
+class SpringSecurityAuditorAware implements AuditorAware<User> {
+
+  public User getCurrentAuditor() {
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authentication == null || !authentication.isAuthenticated()) {
+      return null;
+    }
+
+    return ((MyUserDetails) authentication.getPrincipal()).getUser();
+  }
+}
+----
+====
+
+The implementation is accessing the `Authentication` object provided by Spring Security and looks up the custom `UserDetails` instance from it that you have created in your `UserDetailsService` implementation. We're assuming here that you are exposing the domain user through that `UserDetails` implementation but you could also look it up from anywhere based on the `Authentication found.

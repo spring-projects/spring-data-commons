@@ -1,0 +1,1005 @@
+[[repositories]]
+= Working with Spring Data Repositories
+
+The goal of Spring Data repository abstraction is to significantly reduce the amount of boilerplate code required to implement data access layers for various persistence stores.
+
+[IMPORTANT]
+====
+_Spring Data repository documentation and your module_
+
+This chapter explains the core concepts and interfaces of Spring Data repositories. The information in this chapter is pulled from the Spring Data Commons module. It uses the configuration and code samples for the Java Persistence API (JPA) module. Adapt the XML namespace declaration and the types to be extended to the equivalents of the particular module that you are using. <<namespace-reference>> covers XML configuration which is supported across all Spring Data modules supporting the repository API, <<repository-query-keywords>> covers the query method keywords supported by the repository abstraction in general. For detailed information on the specific features of your module, consult the chapter on that module of this document.
+====
+
+[[repositories.core-concepts]]
+== Core concepts
+The central interface in Spring Data repository abstraction is `Repository` (probably not that much of a surprise). It takes the domain class to manage as well as the id type of the domain class as type arguments. This interface acts primarily as a marker interface to capture the types to work with and to help you to discover interfaces that extend this one. The `CrudRepository` provides sophisticated CRUD functionality for the entity class that is being managed.
+
+[[repositories.repository]]
+.CrudRepository interface
+====
+[source, java]
+----
+public interface CrudRepository<T, ID extends Serializable>
+    extends Repository<T, ID> {
+
+    <S extends T> S save(S entity); <1>
+
+    T findOne(ID primaryKey);       <2>
+
+    Iterable<T> findAll();          <3>
+
+    Long count();                   <4>
+
+    void delete(T entity);          <5>
+
+    boolean exists(ID primaryKey);  <6>
+
+    // … more functionality omitted.
+}
+----
+<1> Saves the given entity.
+<2> Returns the entity identified by the given id.
+<3> Returns all entities.
+<4> Returns the number of entities.
+<5> Deletes the given entity.
+<6> Indicates whether an entity with the given id exists.
+====
+
+NOTE: We also provide persistence technology-specific abstractions like e.g. `JpaRepository` or `MongoRepository`. Those interfaces extend    `CrudRepository` and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces like e.g. CrudRepository.
+
+On top of the `CrudRepository` there is a `PagingAndSortingRepository` abstraction that adds additional methods to ease paginated access to entities:
+
+.PagingAndSortingRepository
+====
+[source, java]
+----
+public interface PagingAndSortingRepository<T, ID extends Serializable>
+  extends CrudRepository<T, ID> {
+
+  Iterable<T> findAll(Sort sort);
+
+  Page<T> findAll(Pageable pageable);
+}
+----
+====
+
+Accessing the second page of `User` by a page size of 20 you could simply do something like this:
+
+[source, java]
+----
+PagingAndSortingRepository<User, Long> repository = // … get access to a bean
+Page<User> users = repository.findAll(new PageRequest(1, 20));
+----
+
+In addition to query methods, query derivation for both count and delete queries, is available.
+
+.Derived Count Query
+====
+[source, java]
+----
+public interface UserRepository extends CrudRepository<User, Long> {
+
+  Long countByLastname(String lastname);
+}
+----
+====
+
+.Derived Delete Query
+====
+[source, java]
+----
+public interface UserRepository extends CrudRepository<User, Long> {
+
+  Long deleteByLastname(String lastname);
+
+  List<User> removeByLastname(String lastname);
+
+}
+----
+====
+
+[[repositories.query-methods]]
+== Query methods
+
+Standard CRUD functionality repositories usually have queries on the underlying datastore. With Spring Data, declaring those queries becomes a four-step process:
+
+. Declare an interface extending Repository or one of its subinterfaces and type it to the domain class and ID type that it will handle.
++
+[source, java]
+----
+interface PersonRepository extends Repository<User, Long> { … }
+----
+
+. Declare query methods on the interface.
++
+[source, java]
+----
+interface PersonRepository extends Repository<User, Long> {
+  List<Person> findByLastname(String lastname);
+}
+----
+
+. Set up Spring to create proxy instances for those interfaces. Either via <<repositories.create-instances.java-config,JavaConfig>>:
++
+[source, java]
+----
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+@EnableJpaRepositories
+class Config {}
+----
++
+or via <<repositories.create-instances,XML configuration>>:
++
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans
+     http://www.springframework.org/schema/beans/spring-beans.xsd
+     http://www.springframework.org/schema/data/jpa
+     http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+
+   <jpa:repositories base-package="com.acme.repositories"/>
+
+</beans>
+----
++
+The JPA namespace is used in this example. If you are using the repository abstraction for any other store, you need to change this to the appropriate namespace declaration of your store module which should be exchanging `jpa` in favor of, for example, `mongodb`. Also, note that the JavaConfig variant doesn't configure a package explictly as the package of the annotated class is used by default. To customize the package to scan
+
+. Get the repository instance injected and use it.
++
+[source, java]
+----
+public class SomeClient {
+
+  @Autowired
+  private PersonRepository repository;
+
+  public void doSomething() {
+    List<Person> persons = repository.findByLastname("Matthews");
+  }
+}
+----
+
+The sections that follow explain each step in detail.
+
+[[repositories.definition]]
+== Defining repository interfaces
+
+As a first step you define a domain class-specific repository interface. The interface must extend Repository and be typed to the domain class and an ID type. If you want to expose CRUD methods for that domain type, extend `CrudRepository` instead of `Repository`.
+
+[[repositories.definition-tuning]]
+=== Fine-tuning repository definition
+
+Typically, your repository interface will extend `Repository`, `CrudRepository` or `PagingAndSortingRepository`. Alternatively, if you do not want to extend Spring Data interfaces, you can also annotate your repository interface with `@RepositoryDefinition`. Extending `CrudRepository` exposes a complete set of methods to manipulate your entities. If you prefer to be selective about the methods being exposed, simply copy the ones you want to expose from `CrudRepository` into your domain repository.
+
+NOTE: This allows you to define your own abstractions on top of the provided Spring Data Repositories functionality.
+
+.Selectively exposing CRUD methods
+====
+[source, java]
+----
+@NoRepositoryBean
+interface MyBaseRepository<T, ID extends Serializable> extends Repository<T, ID> {
+
+  T findOne(ID id);
+
+  T save(T entity);
+}
+
+interface UserRepository extends MyBaseRepository<User, Long> {
+  User findByEmailAddress(EmailAddress emailAddress);
+}
+----
+====
+
+In this first step you defined a common base interface for all your domain repositories and exposed `findOne(…)` as well as `save(…)`.These methods will be routed into the base repository implementation of the store of your choice provided by Spring Data ,e.g. in the case if JPA `SimpleJpaRepository`, because they are matching the method signatures in `CrudRepository`. So the `UserRepository` will now be able to save users, and find single ones by id, as well as triggering a query to find `Users` by their email address.
+
+NOTE: Note, that the intermediate repository interface is annotated with `@NoRepositoryBean`. Make sure you add that annotation to all repository interfaces that Spring Data should not create instances for at runtime.
+
+[[repositories.query-methods.details]]
+== Defining query methods
+
+The repository proxy has two ways to derive a store-specific query from the method name. It can derive the query from the method name directly, or by using an manually defined query. Available options depend on the actual store. However, there's got to be an strategy that decides what actual query is created. Let's have a look at the available options.
+
+[[repositories.query-methods.query-lookup-strategies]]
+=== Query lookup strategies
+
+The following strategies are available for the repository infrastructure to resolve the query. You can configure the strategy at the namespace through the `query-lookup-strategy` attribute in case of XML configuration or via the `queryLookupStrategy` attribute of the Enable${store}Repositories annotation in case of Java config. Some strategies may not be supported for particular datastores.
+
+- `CREATE` attempts to construct a store-specific query from the query method name. The general approach is to remove a given set of well-known prefixes from the method name and parse the rest of the method. Read more about query construction in <<repositories.query-methods.query-creation>>.
+
+- `USE_DECLARED_QUERY` tries to find a declared query and will throw an exception in case it can't find one. The query can be defined by an annotation somewhere or declared by other means. Consult the documentation of the specific store to find available options for that store. If the repository infrastructure does not find a declared query for the method at bootstrap time, it fails.
+
+- `CREATE_IF_NOT_FOUND` (default) combines `CREATE` and `USE_DECLARED_QUERY`. It looks up a declared query first, and if no declared query is found, it creates a custom method name-based query. This is the default lookup strategy and thus will be used if you do not configure anything explicitly. It allows quick query definition by method names but also custom-tuning of these queries by introducing declared queries as needed.
+
+[[repositories.query-methods.query-creation]]
+=== Query creation
+
+The query builder mechanism built into Spring Data repository infrastructure is useful for building constraining queries over entities of the repository. The mechanism strips the prefixes `find…By`, `read…By`, `query…By`, `count…By`, and `get…By` from the method and starts parsing the rest of it. The introducing clause can contain further expressions such as a `Distinct` to set a distinct flag on the query to be created. However, the first `By` acts as delimiter to indicate the start of the actual criteria. At a very basic level you can define conditions on entity properties and concatenate them with `And` and `Or`.
+
+.Query creation from method names
+====
+[source, java]
+----
+public interface PersonRepository extends Repository<User, Long> {
+
+  List<Person> findByEmailAddressAndLastname(EmailAddress emailAddress, String lastname);
+
+  // Enables the distinct flag for the query
+  List<Person> findDistinctPeopleByLastnameOrFirstname(String lastname, String firstname);
+  List<Person> findPeopleDistinctByLastnameOrFirstname(String lastname, String firstname);
+
+  // Enabling ignoring case for an individual property
+  List<Person> findByLastnameIgnoreCase(String lastname);
+  // Enabling ignoring case for all suitable properties
+  List<Person> findByLastnameAndFirstnameAllIgnoreCase(String lastname, String firstname);
+
+  // Enabling static ORDER BY for a query
+  List<Person> findByLastnameOrderByFirstnameAsc(String lastname);
+  List<Person> findByLastnameOrderByFirstnameDesc(String lastname);
+}
+----
+====
+
+The actual result of parsing the method depends on the persistence store for which you create the query. However, there are some general things to notice.
+
+- The expressions are usually property traversals combined with operators that can be concatenated. You can combine property expressions with `AND` and `OR`. You also get support for operators such as `Between`, `LessThan`, `GreaterThan`, `Like` for the property expressions. The supported operators can vary by datastore, so consult the appropriate part of your reference documentation.
+
+- The method parser supports setting an `IgnoreCase` flag for individual properties (for example, `findByLastnameIgnoreCase(…)`) or for all properties of a type that support ignoring case (usually `String` instances, for example, `findByLastnameAndFirstnameAllIgnoreCase(…)`). Whether ignoring cases is supported may vary by store, so consult the relevant sections in the reference documentation for the store-specific query method.
+
+- You can apply static ordering by appending an `OrderBy` clause to the query method that references a property and by providing a sorting direction (`Asc` or `Desc`). To create a query method that supports dynamic sorting, see <<repositories.special-parameters>>.
+
+[[repositories.query-methods.query-property-expressions]]
+=== Property expressions
+
+Property expressions can refer only to a direct property of the managed entity, as shown in the preceding example. At query creation time you already make sure that the parsed property is a property of the managed domain class. However, you can also define constraints by traversing nested properties. Assume a `Person` has an `Address` with a `ZipCode`. In that case a method name of
+
+[source, java]
+----
+List<Person> findByAddressZipCode(ZipCode zipCode);
+----
+
+creates the property traversal `x.address.zipCode`. The resolution algorithm starts with interpreting the entire part (`AddressZipCode`) as the property and checks the domain class for a property with that name (uncapitalized). If the algorithm succeeds it uses that property. If not, the algorithm splits up the source at the camel case parts from the right side into a head and a tail and tries to find the corresponding property, in our example, `AddressZip` and `Code`. If the algorithm finds a property with that head it takes the tail and continue building the tree down from there, splitting the tail up in the way just described. If the first split does not match, the algorithm move the split point to the left (`Address`, `ZipCode`) and continues.
+
+Although this should work for most cases, it is possible for the algorithm to select the wrong property. Suppose the `Person` class has an `addressZip` property as well. The algorithm would match in the first split round already and essentially choose the wrong property and finally fail (as the type of `addressZip` probably has no `code` property).
+
+To resolve this ambiguity you can use `_` inside your method name to manually define traversal points. So our method name would end up like so:
+
+[source, java]
+----
+List<Person> findByAddress_ZipCode(ZipCode zipCode);
+----
+
+If your property names contain underscores (e.g. `first_name`) you can escape the underscore in the method name with a second underscore. For a `first_name` property the query method would have to be named `findByFirst__name(…)`.
+
+[[repositories.special-parameters]]
+=== Special parameter handling
+To handle parameters in your query you simply define method parameters as already seen in the examples above. Besides that the infrastructure will recognize certain specific types like `Pageable` and `Sort` to apply pagination and sorting to your queries dynamically.
+
+.Using `Pageable` and Sort in query methods
+====
+[source, java]
+----
+Page<User> findByLastname(String lastname, Pageable pageable);
+
+List<User> findByLastname(String lastname, Sort sort);
+
+List<User> findByLastname(String lastname, Pageable pageable);
+----
+====
+
+The first method allows you to pass an `org.springframework.data.domain.Pageable` instance to the query method to dynamically add paging to your statically defined query. Sorting options are handled through the `Pageable` instance too. If you only need sorting, simply add an `org.springframework.data.domain.Sort` parameter to your method. As you also can see, simply returning a `List` is possible as well. In this case the additional metadata required to build the actual `Page` instance will not be created (which in turn means that the additional count query that would have been necessary not being issued) but rather simply restricts the query to look up only the given range of entities.
+
+NOTE: To find out how many pages you get for a query entirely you have to trigger an additional count query. By default this query will be derived from the query you actually trigger.
+
+[[repositories.create-instances]]
+=== Creating repository instances
+In this section you create instances and bean definitions for the repository interfaces defined. One way to do so is using the Spring namespace that is shipped with each Spring Data module that supports the repository mechanism although we generally recommend to use the Java-Config style configuration.
+
+[[repositories.create-instances.spring]]
+==== XML configuration
+Each Spring Data module includes a repositories element that allows you to simply define a base package that Spring scans for you.
+
+.Enabling Spring Data repositories via XML
+====
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.springframework.org/schema/data/jpa"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/data/jpa
+    http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+
+  <repositories base-package="com.acme.repositories" />
+
+</beans:beans>
+----
+====
+
+In the preceding example, Spring is instructed to scan `com.acme.repositories` and all its sub-packages for interfaces extending `Repository` or one of its sub-interfaces. For each interface found, the infrastructure registers the persistence technology-specific `FactoryBean` to create the appropriate proxies that handle invocations of the query methods. Each bean is registered under a bean name that is derived from the interface name, so an interface of `UserRepository` would be registered under `userRepository`. The `base-package` attribute allows wildcards, so that you can define a pattern of scanned packages.
+
+===== Using filters
+By default the infrastructure picks up every interface extending the persistence technology-specific `Repository` sub-interface located under the configured base package and creates a bean instance for it. However, you might want more fine-grained control over which interfaces bean instances get created for. To do this you use `<include-filter />` and `<exclude-filter />` elements inside `<repositories />`. The semantics are exactly equivalent to the elements in Spring's context namespace. For details, see link:{spring-framework-docs}/beans.html#beans-scanning-filters[Spring reference documentation] on these elements.
+
+For example, to exclude certain interfaces from instantiation as repository, you could use the following configuration:
+
+.Using exclude-filter element
+====
+[source, xml]
+----
+<repositories base-package="com.acme.repositories">
+  <context:exclude-filter type="regex" expression=".*SomeRepository" />
+</repositories>
+----
+====
+
+This example excludes all interfaces ending in `SomeRepository` from being instantiated.
+
+[[repositories.create-instances.java-config]]
+=== JavaConfig
+The repository infrastructure can also be triggered using a store-specific `@Enable${store}Repositories` annotation on a JavaConfig class. For an introduction into Java-based configuration of the Spring container, see the reference documentation.footnote:[JavaConfig in the Spring reference documentation - link:$${spring-framework-docs}/beans.html#beans-java$$[]]
+
+A sample configuration to enable Spring Data repositories looks something like this.
+
+.Sample annotation based repository configuration
+====
+[source, java]
+----
+@Configuration
+@EnableJpaRepositories("com.acme.repositories")
+class ApplicationConfiguration {
+
+  @Bean
+  public EntityManagerFactory entityManagerFactory() {
+    // …
+  }
+}
+----
+====
+
+NOTE: The sample uses the JPA-specific annotation, which you would change according to the store module you actually use. The same applies to the definition of the `EntityManagerFactory` bean. Consult the sections covering the store-specific configuration.
+
+[[repositories.create-instances.standalone]]
+==== Standalone usage
+You can also use the repository infrastructure outside of a Spring container, e.g. in CDI environments. You still need some Spring libraries in your classpath, but generally you can set up repositories programmatically as well. The Spring Data modules that provide repository support ship a persistence technology-specific RepositoryFactory that you can use as follows.
+
+.Standalone usage of repository factory
+====
+[source, java]
+----
+RepositoryFactorySupport factory = … // Instantiate factory here
+UserRepository repository = factory.getRepository(UserRepository.class);
+----
+====
+
+[[repositories.custom-implementations]]
+== Custom implementations for Spring Data repositories
+Often it is necessary to provide a custom implementation for a few repository methods. Spring Data repositories easily allow you to provide custom repository code and integrate it with generic CRUD abstraction and query method functionality.
+
+[[repositories.single-repository-behaviour]]
+=== Adding custom behavior to single repositories
+To enrich a repository with custom functionality you first define an interface and an implementation for the custom functionality. Use the repository interface you provided to extend the custom interface.
+
+.Interface for custom repository functionality
+====
+[source, java]
+----
+interface UserRepositoryCustom {
+  public void someCustomMethod(User user);
+}
+----
+====
+
+.Implementation of custom repository functionality
+====
+[source, java]
+----
+class UserRepositoryImpl implements UserRepositoryCustom {
+
+  public void someCustomMethod(User user) {
+    // Your custom implementation
+  }
+}
+----
+====
+
+The implementation itself does not depend on Spring Data and can be a regular Spring bean. So you can use standard dependency injection behavior to inject references to other beans like a JdbTemplate, take part in aspects, and so on.
+
+.Changes to the your basic repository interface
+====
+[source, java]
+----
+interface UserRepository extends CrudRepository<User, Long>, UserRepositoryCustom {
+
+  // Declare query methods here
+}
+----
+====
+
+Let your standard repository interface extend the custom one. Doing so combines the CRUD and custom functionality and makes it available to clients.
+
+==== Configuration
+If you use namespace configuration, the repository infrastructure tries to autodetect custom implementations by scanning for classes below the package we found a repository in. These classes need to follow the naming convention of appending the namespace element's attribute `repository-impl-postfix` to the found repository interface name. This postfix defaults to `Impl`.
+
+.Configuration example
+====
+[source, xml]
+----
+<repositories base-package="com.acme.repository" />
+
+<repositories base-package="com.acme.repository" repository-impl-postfix="FooBar" />
+----
+====
+
+The first configuration example will try to look up a class com.acme.repository.UserRepositoryImpl to act as custom repository implementation, whereas the second example will try to lookup com.acme.repository.UserRepositoryFooBar.
+
+Manual wiring The preceding approach works well if your custom implementation uses annotation-based configuration and autowiring only, as it will be treated as any other Spring bean. If your custom implementation bean needs special wiring, you simply declare the bean and name it after the conventions just described. The infrastructure will then refer to the manually defined bean definition by name instead of creating one itself.
+
+.Manual wiring of custom implementations (I)
+====
+[source, xml]
+----
+<repositories base-package="com.acme.repository" />
+
+<beans:bean id="userRepositoryImpl" class="…">
+  <!-- further configuration -->
+</beans:bean>
+----
+====
+
+[[repositories.custom-behaviour-for-all-repositories]]
+=== Adding custom behavior to all repositories
+
+The preceding approach is not feasible when you want to add a single method to all your repository interfaces.
+
+. To add custom behavior to all repositories, you first add an intermediate interface to declare the shared behavior.
++
+.An interface declaring custom shared behavior
+====
+[source, java]
+----
+public interface MyRepository<T, ID extends Serializable>
+  extends JpaRepository<T, ID> {
+
+  void sharedCustomMethod(ID id);
+}
+----
+====
+
+. Now your individual repository interfaces will extend this intermediate interface instead of the Repository interface to include the functionality declared.
+
+. Next, create an implementation of the intermediate interface that extends the persistence technology-specific repository base class. This class will then act as a custom base class for the repository proxies.
++
+.Custom repository base class
+====
+[source, java]
+----
+public class MyRepositoryImpl<T, ID extends Serializable>
+  extends SimpleJpaRepository<T, ID> implements MyRepository<T, ID> {
+
+  private EntityManager entityManager;
+
+  // There are two constructors to choose from, either can be used.
+  public MyRepositoryImpl(Class<T> domainClass, EntityManager entityManager) {
+    super(domainClass, entityManager);
+
+    // This is the recommended method for accessing inherited class dependencies.
+    this.entityManager = entityManager;
+  }
+
+  public void sharedCustomMethod(ID id) {
+    // implementation goes here
+  }
+}
+----
+====
++
+The default behavior of the Spring `<repositories />` namespace is to provide an implementation for all interfaces that fall under the `base-package`. This means that if left in its current state, an implementation instance of MyRepository will be created by Spring. This is of course not desired as it is just supposed to act as an intermediary between Repository and the actual repository interfaces you want to define for each entity. To exclude an interface that extends Repository from being instantiated as a repository instance, you can either annotate it with @NoRepositoryBean or move it outside of the configured `base-package`.
+
+. Then create a custom repository factory to replace the default RepositoryFactoryBean that will in turn produce a custom RepositoryFactory. The new repository factory will then provide your MyRepositoryImpl as the implementation of any interfaces that extend the Repository interface, replacing the SimpleJpaRepository implementation you just extended.
++
+.Custom repository factory bean
+====
+[source, java]
+----
+public class MyRepositoryFactoryBean<R extends JpaRepository<T, I>, T, I extends Serializable>
+  extends JpaRepositoryFactoryBean<R, T, I> {
+
+  protected RepositoryFactorySupport createRepositoryFactory(EntityManager entityManager) {
+
+    return new MyRepositoryFactory(entityManager);
+  }
+
+  private static class MyRepositoryFactory<T, I extends Serializable> extends JpaRepositoryFactory {
+
+    private EntityManager entityManager;
+
+    public MyRepositoryFactory(EntityManager entityManager) {
+      super(entityManager);
+
+      this.entityManager = entityManager;
+    }
+
+    protected Object getTargetRepository(RepositoryMetadata metadata) {
+
+      return new MyRepositoryImpl<T, I>((Class<T>) metadata.getDomainClass(), entityManager);
+    }
+
+    protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
+
+      // The RepositoryMetadata can be safely ignored, it is used by the JpaRepositoryFactory
+      //to check for QueryDslJpaRepository's which is out of scope.
+      return MyRepository.class;
+    }
+  }
+}
+----
+====
+
+. Finally, either declare beans of the custom factory directly or use the `factory-class` attribute of the Spring namespace to tell the repository infrastructure to use your custom factory implementation.
++
+.Using the custom factory with the namespace
+====
+[source, xml]
+----
+<repositories base-package="com.acme.repository"
+  factory-class="com.acme.MyRepositoryFactoryBean" />
+----
+====
+
+[[core.extensions]]
+== Spring Data extensions
+
+This section documents a set of Spring Data extensions that enable Spring Data usage in a variety of contexts. Currently most of the integration is targeted towards Spring MVC.
+
+[[core.web]]
+=== Web support
+
+NOTE: This section contains the documentation for the Spring Data web support as it is implemented as of Spring Data Commons in the 1.6 range. As it the newly introduced support changes quite a lot of things we kept the documentation of the former behavior in <<web.legacy>>.
+
+Spring Data modules ships with a variety of web support if the module supports the repository programming model. The web related stuff requires Spring MVC JARs on the classpath, some of them even provide integration with Spring HATEOAS footnote:[Spring HATEOAS - link:$$https://github.com/SpringSource/spring-hateoas$$[https://github.com/SpringSource/spring-hateoas]]. In general, the integration support is enabled by using the `@EnableSpringDataWebSupport annotation in your JavaConfig configuration class.
+
+.Enabling Spring Data web support
+====
+[source, java]
+----
+@Configuration
+@EnableWebMvc
+@EnableSpringDataWebSupport
+class WebConfiguration { }
+----
+====
+
+The `@EnableSpringDataWebSupport` annotation registers a few components we will discuss in a bit. It will also detect Spring HATEOAS on the classpath and register integration components for it as well if present.
+
+Alternatively, if you are using XML configuration, register either `SpringDataWebSupport` or `HateoasAwareSpringDataWebSupport` as Spring beans:
+
+.Enabling Spring Data web support in XML
+====
+[source, xml]
+----
+<bean class="org.springframework.data.web.config.SpringDataWebConfiguration" />
+
+<!-- If you're using Spring HATEOAS as well register this one *instead* of the former -->
+<bean class="org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration" />
+----
+====
+
+[[core.web.basic]]
+==== Basic web support
+The configuration setup shown above will register a few basic components:
+
+- A `DomainClassConverter` to enable Spring MVC to resolve instances of repository managed domain classes from request parameters or path variables.
+- `HandlerMethodArgumentResolver` implementations to let Spring MVC resolve Pageable and Sort instances from request parameters.
+
+===== DomainClassConverter
+The `DomainClassConverter` allows you to use domain types in your Spring MVC controller method signatures directly, so that you don't have to manually lookup the instances via the repository:
+
+.A Spring MVC controller using domain types in method signatures
+====
+[source, java]
+----
+@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  @RequestMapping("/{id}")
+  public String showUserForm(@PathVariable("id") User user, Model model) {
+
+    model.addAttribute("user", user);
+    return "userForm";
+  }
+}
+----
+====
+
+As you can see the method receives a User instance directly and no further lookup is necessary. The instance can be resolved by letting Spring MVC convert the path variable into the id type of the domain class first and eventually access the instance through calling `findOne(…)` on the repository instance registered for the domain type.
+
+NOTE: Currently the repository has to implement `CrudRepository` to be eligible to be discovered for conversion.
+
+===== HandlerMethodArgumentResolvers for Pageable and Sort
+The configuration snippet above also registers a `PageableHandlerMethodArgumentResolver` as well as an instance of `SortHandlerMethodArgumentResolver`. The registration enables `Pageable` and `Sort` being valid controller method arguments
+
+.Using Pageable as controller method argument
+====
+[source, java]
+----
+@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  @Autowired UserRepository repository;
+
+  @RequestMapping
+  public String showUsers(Model model, Pageable pageable) {
+
+    model.addAttribute("users", repository.findAll(pageable));
+    return "users";
+  }
+}
+----
+====
+
+This method signature will cause Spring MVC try to derive a Pageable instance from the request parameters using the following default configuration:
+
+.Request parameters evaluated for Pageable instances
+|===============
+|`page`|Page you want to retrieve.
+|`size`|Size of the page you want to retrieve.
+|`sort`|Properties that should be sorted by in the format `property,property(,ASC|DESC)`. Default sort direction is ascending. Use multiple sort` parameters if you want to switch directions, e.g. `?sort=firstname&amp;sort=lastname,asc`.
+|===============
+
+To customize this behavior extend either `SpringDataWebConfiguration` or the HATEOAS-enabled equivalent and override the `pageableResolver()` or `sortResolver()` methods and import your customized configuration file instead of using the `@Enable`-annotation.
+
+In case you need multiple `Pageable` or `Sort` instances to be resolved from the request (for multiple tables, for example) you can use Spring's `@Qualifier` annotation to distinguish one from another. The request parameters then have to be prefixed with `${qualifier}_`. So for a method signature like this:
+
+[source, java]
+----
+public String showUsers(Model model,
+      @Qualifier("foo") Pageable first,
+      @Qualifier("bar") Pageable second) { … }
+----
+
+you have to populate `foo_page` and `bar_page` etc.
+
+The default `Pageable` handed into the method is equivalent to a `new PageRequest(0, 20)` but can be customized using the `@PageableDefaults` annotation on the `Pageable` parameter.
+
+[[core.web.pageables]]
+==== Hypermedia support for Pageables
+Spring HATEOAS ships with a representation model class `PagedResources` that allows enrichting the content of a `Page` instance with the necessary `Page` metadata as well as links to let the clients easily navigate the pages. The conversion of a Page to a `PagedResources` is done by an implementation of the Spring HATEOAS `ResourceAssembler` interface, the `PagedResourcesAssembler`.
+
+.Using a PagedResourcesAssembler as controller method argument
+====
+[source, java]
+----
+@Controller
+class PersonController {
+
+  @Autowired PersonRepository repository;
+
+  @RequestMapping(value = "/persons", method = RequestMethod.GET)
+  HttpEntity<PagedResources<Person>> persons(Pageable pageable,
+    PagedResourcesAssembler assembler) {
+
+    Page<Person> persons = repository.findAll(pageable);
+    return new ResponseEntity<>(assembler.toResources(persons), HttpStatus.OK);
+  }
+}
+----
+====
+
+Enabling the configuration as shown above allows the `PagedResourcesAssembler` to be used as controller method argument. Calling `toResources(…)` on it will cause the following:
+
+- The content of the `Page` will become the content of the `PagedResources` instance.
+- The `PagedResources` will get a `PageMetadata` instance attached populated with information form the `Page` and the underlying `PageRequest`.
+- The `PagedResources` gets `prev` and `next` links attached depending on the page's state. The links will point to the URI the method invoked is mapped to. The pagination parameters added to the method will match the setup of the `PageableHandlerMethodArgumentResolver` to make sure the links can be resolved later on.
+
+Assume we have 30 Person instances in the database. You can now trigger a request `GET http://localhost:8080/persons` and you'll see something similar to this:
+
+[source, javascript]
+----
+{ "links" : [ { "rel" : "next",
+                "href" : "http://localhost:8080/persons?page=1&size=20 }
+  ],
+  "content" : [
+     … // 20 Person instances rendered here
+  ],
+  "pageMetadata" : {
+    "size" : 20,
+    "totalElements" : 30,
+    "totalPages" : 2,
+    "number" : 0
+  }
+}
+----
+
+You see that the assembler produced the correct URI and also picks up the default configuration present to resolve the parameters into a `Pageable` for an upcoming request. This means, if you change that configuration, the links will automatically adhere to the change. By default the assembler points to the controller method it was invoked in but that can be customized by handing in a custom `Link` to be used as base to build the pagination links to overloads of the `PagedResourcesAssembler.toResource(…)` method.
+
+[[core.repository-populators]]
+=== Repository populators
+If you work with the Spring JDBC module, you probably are familiar with the support to populate a `DataSource` using SQL scripts. A similar abstraction is available on the repositories level, although it does not use SQL as the data definition language because it must be store-independent. Thus the populators support XML (through Spring's OXM abstraction) and JSON (through Jackson) to define data with which to populate the repositories.
+
+Assume you have a file `data.json` with the following content:
+
+.Data defined in JSON
+====
+[source, javascript]
+----
+[ { "_class" : "com.acme.Person",
+ "firstname" : "Dave",
+  "lastname" : "Matthews" },
+  { "_class" : "com.acme.Person",
+ "firstname" : "Carter",
+  "lastname" : "Beauford" } ]
+----
+====
+
+You can easily populate your repositories by using the populator elements of the repository namespace provided in Spring Data Commons. To populate the preceding data to your PersonRepository , do the following:
+
+.Declaring a Jackson repository populator
+====
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:repository="http://www.springframework.org/schema/data/repository"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/data/repository
+    http://www.springframework.org/schema/data/repository/spring-repository.xsd">
+
+  <repository:jackson-populator locations="classpath:data.json" />
+
+</beans>
+----
+====
+
+This declaration causes the `data.json` file to
+be read and deserialized via a Jackson `ObjectMapper`.
+
+The type to which the JSON object will be unmarshalled to will be determined by inspecting the `_class` attribute of the JSON document. The infrastructure will eventually select the appropriate repository to handle the object just deserialized.
+
+To rather use XML to define the data the repositories shall be populated with, you can use the `unmarshaller-populator` element. You configure it to use one of the XML marshaller options Spring OXM provides you with. See the link:{spring-framework-docs}/oxm.html[Spring reference documentation] for details.
+
+.Declaring an unmarshalling repository populator (using JAXB)
+====
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:repository="http://www.springframework.org/schema/data/repository"
+  xmlns:oxm="http://www.springframework.org/schema/oxm"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/data/repository
+    http://www.springframework.org/schema/data/repository/spring-repository.xsd
+    http://www.springframework.org/schema/oxm
+    http://www.springframework.org/schema/oxm/spring-oxm.xsd">
+
+  <repository:unmarshaller-populator locations="classpath:data.json"
+    unmarshaller-ref="unmarshaller" />
+
+  <oxm:jaxb2-marshaller contextPath="com.acme" />
+
+</beans>
+----
+====
+
+[[web.legacy]]
+=== Legacy web support
+
+[[web-domain-class-binding]]
+==== Domain class web binding for Spring MVC
+
+Given you are developing a Spring MVC web application you typically have to resolve domain class ids from URLs. By default your task is to transform that request parameter or URL part into the domain class to hand it to layers below then or execute business logic on the entities directly. This would look something like this:
+
+[source, java]
+----
+@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  private final UserRepository userRepository;
+
+  @Autowired
+  public UserController(UserRepository userRepository) {
+    Assert.notNull(repository, "Repository must not be null!");
+    this.userRepository = userRepository;
+  }
+
+  @RequestMapping("/{id}")
+  public String showUserForm(@PathVariable("id") Long id, Model model) {
+
+    // Do null check for id
+    User user = userRepository.findOne(id);
+    // Do null check for user
+
+    model.addAttribute("user", user);
+    return "user";
+  }
+}
+----
+
+First you declare a repository dependency for each controller to look up the entity managed by the controller or repository respectively. Looking up the entity is boilerplate as well, as it's always a `findOne(…)` call. Fortunately Spring provides means to register custom components that allow conversion between a `String` value to an arbitrary type.
+
+===== PropertyEditors
+
+For Spring versions before 3.0 simple Java `PropertyEditors` had to be used. To integrate with that, Spring Data offers a `DomainClassPropertyEditorRegistrar`, which looks up all Spring Data repositories registered in the `ApplicationContext` and registers a custom `PropertyEditor` for the managed domain class.
+
+[source, xml]
+----
+<bean class="….web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+  <property name="webBindingInitializer">
+    <bean class="….web.bind.support.ConfigurableWebBindingInitializer">
+      <property name="propertyEditorRegistrars">
+        <bean class="org.springframework.data.repository.support.DomainClassPropertyEditorRegistrar" />
+      </property>
+    </bean>
+  </property>
+</bean>
+----
+
+If you have configured Spring MVC as in the preceding example, you can configure your controller as follows, which reduces a lot of the clutter and boilerplate.
+
+[source, java]
+----
+@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  @RequestMapping("/{id}")
+  public String showUserForm(@PathVariable("id") User user, Model model) {
+
+    model.addAttribute("user", user);
+    return "userForm";
+  }
+}
+----
+
+ConversionServiceIn Spring 3.0 and later the `PropertyEditor` support is superseded by a new conversion infrastructure that eliminates the drawbacks of `PropertyEditors` and uses a stateless X to Y conversion approach. Spring Data now ships with a `DomainClassConverter` that mimics the behavior of `DomainClassPropertyEditorRegistrar`. To configure, simply declare a bean instance and pipe the `ConversionService` being used into its constructor:
+
+[source, xml]
+----
+<mvc:annotation-driven conversion-service="conversionService" />
+
+<bean class="org.springframework.data.repository.support.DomainClassConverter">
+  <constructor-arg ref="conversionService" />
+</bean>
+----
+
+If you are using JavaConfig, you can simply extend Spring MVC's `WebMvcConfigurationSupport` and hand the `FormatingConversionService` that the configuration superclass provides into the `DomainClassConverter` instance you create.
+
+[source, java]
+----
+class WebConfiguration extends WebMvcConfigurationSupport {
+
+  // Other configuration omitted
+
+  @Bean
+  public DomainClassConverter<?> domainClassConverter() {
+    return new DomainClassConverter<FormattingConversionService>(mvcConversionService());
+  }
+}
+----
+
+[[web-pagination]]
+==== Web pagination
+
+When working with pagination in the web layer you usually have to write a lot of boilerplate code yourself to extract the necessary metadata from the request. The less desirable approach shown in the example below requires the method to contain an `HttpServletRequest` parameter that has to be parsed manually. This example also omits appropriate failure handling, which would make the code even more verbose.
+
+[source, java]
+----
+@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  // DI code omitted
+
+  @RequestMapping
+  public String showUsers(Model model, HttpServletRequest request) {
+
+    int page = Integer.parseInt(request.getParameter("page"));
+    int pageSize = Integer.parseInt(request.getParameter("pageSize"));
+
+    Pageable pageable = new PageRequest(page, pageSize);
+
+    model.addAttribute("users", userService.getUsers(pageable));
+    return "users";
+  }
+}
+----
+
+The bottom line is that the controller should not have to handle the functionality of extracting pagination information from the request. So Spring Data ships with a `PageableHandlerMethodArgumentResolver` that will do the work for you. The Spring MVC JavaConfig support exposes a `WebMvcConfigurationSupport` helper class to customize the configuration as follows:
+
+[source, java]
+----
+@Configuration
+public class WebConfig extends WebMvcConfigurationSupport {
+
+  @Override
+  protected void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+    argumentResolvers.add(new PageableHandlerMethodArgumentResolver());
+  }
+}
+----
+
+If you're stuck with XML configuration you can register the resolver as follows:
+
+[source, xml]
+----
+<bean class="….web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+  <property name="customArgumentResolvers">
+    <list>
+      <bean class="org.springframework.data.web.PageableHandlerMethodArgumentResolver" />
+    </list>
+  </property>
+</bean>
+----
+
+Once you've configured the resolver with Spring MVC it allows you to simplify controllers down to something like this:
+
+[source, java]
+----
+@Controller
+@RequestMapping("/users")
+public class UserController {
+
+  @RequestMapping
+  public String showUsers(Model model, Pageable pageable) {
+
+    model.addAttribute("users", userRepository.findAll(pageable));
+    return "users";
+  }
+}
+----
+
+The `PageableArgumentResolver` automatically resolves request parameters to build a `PageRequest` instance. By default it expects the following structure for the request parameters.
+
+.Request parameters evaluated by `PageableHandlerMethodArgumentResolver`
+
+|===============
+|`page`|Page you want to retrieve, 0 indexed and defaults to 0.
+|`size`|Size of the page you want to retrieve, defaults to 20.
+|`sort`|A collection of sort directives in the format `($propertyname,)[asc|desc]?`.
+|===============
+
+.Pagination URL Parameter Examples
+====
+To retrieve the third page with a maximum page size of 100 with the data sorted by the email property in ascending order use the following url parameter:
+----
+?page=2&size=100&sort=email,asc
+----
+To sort the data by multiple properties in different sort order use the following URL parameter:
+----
+?sort=foo,asc&sort=bar,desc
+----
+====
+
+In case you need multiple `Pageable` instances to be resolved from the request (for multiple tables, for example) you can use Spring's `@Qualifier` annotation to distinguish one from another. The request parameters then have to be prefixed with `${qualifier}_`. So for a method signature like this:
+
+[source, java]
+----
+public String showUsers(Model model,
+  @Qualifier("foo") Pageable first,
+  @Qualifier("bar") Pageable second) { … }
+----
+
+you have to populate `foo_page` and `bar_page` and the related subproperties.
+
+Configuring a global default on bean declaration the `PageableArgumentResolver` will use a `PageRequest` with the first page and a page size of 10 by default. It will use that value if it cannot resolve a `PageRequest` from the request (because of missing parameters, for example). You can configure a global default on the bean declaration directly. If you might need controller method specific defaults for the `Pageable`, annotate the method parameter with @PageableDefaults and specify page (through `pageNumber`), page size (through `value`), `sort` (list of properties to sort by), and `sortDir` (the direction to sort by) as annotation attributes:
+
+[source, java]
+----
+public String showUsers(Model model,
+  @PageableDefaults(pageNumber = 0, value = 30) Pageable pageable) { … }
+----
+

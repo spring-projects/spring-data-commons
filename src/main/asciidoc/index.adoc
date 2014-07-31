@@ -1,0 +1,29 @@
+= Spring Data Commons - Reference Documentation
+Oliver Gierke; Thomas Darimont; Christoph Strobl; Mark Pollack; Thomas Risberg;
+{version}
+:toc:
+:spring-framework-docs: http://docs.spring.io/spring-framework/docs/current/spring-framework-reference/html
+
+NOTE: Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically.
+
+[[preface]]
+[preface]
+= Preface
+The Spring Data Commons project applies core Spring concepts to the development of solutions using many relational and non-relational data stores.
+
+[[reference-documentation]]
+= Reference documentation
+:leveloffset: 1
+include::repositories.adoc[]
+include::auditing.adoc[]
+
+:leveloffset: 0
+[[appendix]]
+= Appendix
+
+:leveloffset: 1
+:numbered!:
+include::repository-namespace-reference.adoc[]
+include::repository-populator-namespace-reference.adoc[]
+include::repository-query-keywords-reference.adoc[]
+:leveloffset: 0
