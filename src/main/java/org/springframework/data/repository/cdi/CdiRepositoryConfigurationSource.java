@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.repository.cdi;
 
-import javax.inject.Inject;
-
 /**
- * 
- * @author Oliver Gierke
+ * Interface containing the configurable options for the Spring Data repository subsystem using CDI.
+ *
+ * @author Mark Paluch
  */
-class RepositoryClient {
+public interface CdiRepositoryConfigurationSource {
 
-	@Inject
-	SampleRepository repository;
-
-	@Inject
-	AnotherRepository anotherRepository;
+	/**
+	 * Returns the configured postfix to be used for looking up custom implementation classes.
+	 *
+	 * @return the postfix to use or {@literal null} in case none is configured.
+	 */
+	String getRepositoryImplementationPostfix();
 }

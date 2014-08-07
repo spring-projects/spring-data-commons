@@ -15,18 +15,21 @@
  */
 package org.springframework.data.repository.cdi;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import javax.enterprise.context.NormalScope;
+import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
+import org.apache.webbeans.context.AbstractContext;
+import org.apache.webbeans.context.creational.BeanInstanceBag;
 import org.mockito.Mockito;
 
 /**
@@ -37,10 +40,15 @@ import org.mockito.Mockito;
  */
 public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+		afterBeanDiscovery.addContext(new MyCustomScope());
 		for (Entry<Class<?>, Set<Annotation>> type : getRepositoryTypes()) {
-			DummyCdiRepositoryBean bean = new DummyCdiRepositoryBean(type.getValue(), type.getKey(), beanManager);
+
+			CdiRepositoryConfigurationSource configurationSource = lookupConfiguration(beanManager, type.getValue());
+			Object customImplementation = findCustomImplementation(type.getKey(), beanManager, type.getValue());
+
+			DummyCdiRepositoryBean bean = new DummyCdiRepositoryBean(type.getValue(), type.getKey(), beanManager, customImplementation);
 			registerBean(bean);
 			afterBeanDiscovery.addBean(bean);
 		}
@@ -50,6 +58,10 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 
 		public DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager) {
 			super(qualifiers, repositoryType, beanManager);
+		}
+
+		DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager, Object customImplementation) {
+			super(qualifiers, repositoryType, beanManager, customImplementation);
 		}
 
 		public Class<? extends Annotation> getScope() {
@@ -66,5 +78,23 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 	@Retention(RetentionPolicy.RUNTIME)
 	@interface MyScope {
 
+	}
+
+	static class MyCustomScope extends AbstractContext {
+
+		MyCustomScope() {
+			super(MyScope.class);
+			setActive(true);
+		}
+
+		@Override
+		protected void setComponentInstanceMap() {
+			componentInstanceMap = new HashMap<Contextual<?>, BeanInstanceBag<?>>();
+		}
+
+		@Override
+		public boolean isActive() {
+			return true;
+		}
 	}
 }
