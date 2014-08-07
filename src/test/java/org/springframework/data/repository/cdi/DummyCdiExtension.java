@@ -35,7 +35,7 @@ import org.mockito.Mockito;
 /**
  * Dummy extension of {@link CdiRepositoryExtensionSupport} to allow integration tests. Will create mocks for repository
  * interfaces being found.
- *
+ * 
  * @author Oliver Gierke
  */
 public class DummyCdiExtension extends CdiRepositoryExtensionSupport {

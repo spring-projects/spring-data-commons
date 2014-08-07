@@ -40,7 +40,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Base class for {@link Bean} wrappers.
- *
+ * 
  * @author Dirk Mahler
  * @author Oliver Gierke
  * @author Mark Paluch
@@ -59,7 +59,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates a new {@link CdiRepositoryBean}.
-	 *
+	 * 
 	 * @param qualifiers must not be {@literal null}.
 	 * @param repositoryType has to be an interface must not be {@literal null}.
 	 * @param beanManager the CDI {@link BeanManager}, must not be {@literal null}.
@@ -70,7 +70,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates a new {@link CdiRepositoryBean}.
-	 *
+	 * 
 	 * @param qualifiers must not be {@literal null}.
 	 * @param repositoryType has to be an interface must not be {@literal null}.
 	 * @param beanManager the CDI {@link BeanManager}, must not be {@literal null}.
@@ -92,7 +92,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates a unique identifier for the given repository type and the given annotations.
-	 *
+	 * 
 	 * @param qualifiers must not be {@literal null} or contain {@literal null} values.
 	 * @param repositoryType must not be {@literal null}.
 	 * @return
@@ -113,7 +113,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return builder.toString();
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getTypes()
 	 */
@@ -129,7 +129,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Returns an instance of an the given {@link Bean}.
-	 *
+	 * 
 	 * @param bean the {@link Bean} about to create an instance for.
 	 * @param type the expected type of the componentn instance created for that {@link Bean}.
 	 * @return the actual component instance.
@@ -147,7 +147,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		create(beanManager.createCreationalContext(this));
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.context.spi.Contextual#create(javax.enterprise.context.spi.CreationalContext)
 	 */
@@ -163,7 +163,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return repoInstance;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.context.spi.Contextual#destroy(java.lang.Object, javax.enterprise.context.spi.CreationalContext)
 	 */
@@ -177,7 +177,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		creationalContext.release();
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getQualifiers()
 	 */
@@ -185,7 +185,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return qualifiers;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getName()
 	 */
@@ -193,7 +193,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return repositoryType.getName();
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getStereotypes()
 	 */
@@ -211,7 +211,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return stereotypes;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getBeanClass()
 	 */
@@ -219,7 +219,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return repositoryType;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#isAlternative()
 	 */
@@ -227,7 +227,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return repositoryType.isAnnotationPresent(Alternative.class);
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#isNullable()
 	 */
@@ -235,7 +235,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return false;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getInjectionPoints()
 	 */
@@ -243,7 +243,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return Collections.emptySet();
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getScope()
 	 */
@@ -251,7 +251,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return ApplicationScoped.class;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.PassivationCapable#getId()
 	 */
@@ -261,7 +261,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates the actual component instance.
-	 *
+	 * 
 	 * @param creationalContext will never be {@literal null}.
 	 * @param repositoryType will never be {@literal null}.
 	 * @return
@@ -272,7 +272,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates the actual component instance.
-	 *
+	 * 
 	 * @param creationalContext will never be {@literal null}.
 	 * @param repositoryType will never be {@literal null}.
 	 * @param customImplementation can be {@literal null}.
@@ -283,10 +283,10 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 				"in order to use custom repository implementations");
 	}
 
-	/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return String.format("JpaRepositoryBean: type='%s', qualifiers=%s", repositoryType.getName(), qualifiers.toString());

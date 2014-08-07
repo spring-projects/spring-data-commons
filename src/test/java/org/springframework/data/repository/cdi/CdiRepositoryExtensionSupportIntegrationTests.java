@@ -22,7 +22,7 @@ import org.junit.Test;
 
 /**
  * Common integration tests for Spring Data repository CDI extension.
- *
+ * 
  * @author Oliver Gierke
  */
 public abstract class CdiRepositoryExtensionSupportIntegrationTests {
