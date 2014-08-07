@@ -113,7 +113,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return builder.toString();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getTypes()
 	 */
@@ -147,7 +147,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		create(beanManager.createCreationalContext(this));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.context.spi.Contextual#create(javax.enterprise.context.spi.CreationalContext)
 	 */
@@ -163,7 +163,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return repoInstance;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.context.spi.Contextual#destroy(java.lang.Object, javax.enterprise.context.spi.CreationalContext)
 	 */
@@ -185,7 +185,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return qualifiers;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getName()
 	 */
@@ -193,7 +193,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return repositoryType.getName();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getStereotypes()
 	 */
@@ -211,7 +211,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return stereotypes;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getBeanClass()
 	 */
@@ -219,7 +219,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return repositoryType;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#isAlternative()
 	 */
@@ -227,7 +227,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return repositoryType.isAnnotationPresent(Alternative.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#isNullable()
 	 */
@@ -235,7 +235,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getInjectionPoints()
 	 */
@@ -243,7 +243,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return Collections.emptySet();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getScope()
 	 */
