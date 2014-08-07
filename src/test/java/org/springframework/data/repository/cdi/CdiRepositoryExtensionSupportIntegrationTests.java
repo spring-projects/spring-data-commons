@@ -36,6 +36,9 @@ public abstract class CdiRepositoryExtensionSupportIntegrationTests {
 		assertThat(client.repository, is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-557
+	 */
 	@Test
 	public void createsSpringDataRepositoryWithCustimImplBean() {
 
