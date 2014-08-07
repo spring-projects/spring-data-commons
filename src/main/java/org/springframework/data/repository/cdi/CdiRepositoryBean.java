@@ -51,7 +51,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	private final Set<Annotation> qualifiers;
 	private final Class<T> repositoryType;
-	private final Object customImplementation;
+	private final Bean<?> customImplementationBean;
 	private final BeanManager beanManager;
 	private final String passivationId;
 
@@ -74,9 +74,11 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * @param qualifiers must not be {@literal null}.
 	 * @param repositoryType has to be an interface must not be {@literal null}.
 	 * @param beanManager the CDI {@link BeanManager}, must not be {@literal null}.
-	 * @param customImplementation the custom implementation of the {@link org.springframework.data.repository.Repository}, can be {@literal null}.
+	 * @param customImplementationBean the bean for the custom implementation of the
+	 *          {@link org.springframework.data.repository.Repository}, can be {@literal null}.
 	 */
-	public CdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager, Object customImplementation) {
+	public CdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
+			Bean<?> customImplementationBean) {
 
 		Assert.notNull(qualifiers);
 		Assert.notNull(beanManager);
@@ -86,7 +88,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		this.qualifiers = qualifiers;
 		this.repositoryType = repositoryType;
 		this.beanManager = beanManager;
-		this.customImplementation = customImplementation;
+		this.customImplementationBean = customImplementationBean;
 		this.passivationId = createPassivationId(qualifiers, repositoryType);
 	}
 
@@ -265,8 +267,15 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * @param creationalContext will never be {@literal null}.
 	 * @param repositoryType will never be {@literal null}.
 	 * @return
+	 * @deprecated overide {@link #create(CreationalContext, Class, Object)} instead.
 	 */
+	@Deprecated
 	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
+
+		Object customImplementation = customImplementationBean == null ? null : beanManager.getReference(
+				customImplementationBean, customImplementationBean.getBeanClass(),
+				beanManager.createCreationalContext(customImplementationBean));
+
 		return create(creationalContext, repositoryType, customImplementation);
 	}
 
@@ -279,8 +288,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * @return
 	 */
 	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType, Object customImplementation) {
-		throw new UnsupportedOperationException("You have to implement create(CreationalContext<T>, Class<T>, Object) " +
-				"in order to use custom repository implementations");
+		throw new UnsupportedOperationException("You have to implement create(CreationalContext<T>, Class<T>, Object) "
+				+ "in order to use custom repository implementations");
 	}
 
 	/* 
@@ -289,6 +298,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 */
 	@Override
 	public String toString() {
-		return String.format("JpaRepositoryBean: type='%s', qualifiers=%s", repositoryType.getName(), qualifiers.toString());
+		return String
+				.format("JpaRepositoryBean: type='%s', qualifiers=%s", repositoryType.getName(), qualifiers.toString());
 	}
 }

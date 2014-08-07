@@ -35,81 +35,82 @@ import org.springframework.util.StringUtils;
 /**
  * Detects the custom implementation for a {@link org.springframework.data.repository.Repository}
  * 
+ * @author Oliver Gierke
  * @author Mark Paluch
  */
 public class CustomRepositoryImplementationDetector {
 
-    private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
+	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
 
-    private MetadataReaderFactory metadataReaderFactory;
-    private Environment environment;
-    private ResourceLoader resourceLoader;
+	private final MetadataReaderFactory metadataReaderFactory;
+	private final Environment environment;
+	private final ResourceLoader resourceLoader;
 
 	/**
-	 *
-	 * Creates a new {@link CustomRepositoryImplementationDetector} from the given {@link org.springframework.core.type.classreading.MetadataReaderFactory},
+	 * Creates a new {@link CustomRepositoryImplementationDetector} from the given
+	 * {@link org.springframework.core.type.classreading.MetadataReaderFactory},
 	 * {@link org.springframework.core.env.Environment} and {@link org.springframework.core.io.ResourceLoader}.
 	 *
 	 * @param metadataReaderFactory must not be {@literal null}.
 	 * @param environment must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
 	 */
-    public CustomRepositoryImplementationDetector(MetadataReaderFactory metadataReaderFactory, Environment environment,
-            ResourceLoader resourceLoader) {
+	public CustomRepositoryImplementationDetector(MetadataReaderFactory metadataReaderFactory, Environment environment,
+			ResourceLoader resourceLoader) {
 
-        Assert.notNull(metadataReaderFactory, "MetadataReaderFactory must not be null!");
-        Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
-        Assert.notNull(environment, "Environment must not be null!");
+		Assert.notNull(metadataReaderFactory, "MetadataReaderFactory must not be null!");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+		Assert.notNull(environment, "Environment must not be null!");
 
-        this.metadataReaderFactory = metadataReaderFactory;
-        this.environment = environment;
-        this.resourceLoader = resourceLoader;
-    }
+		this.metadataReaderFactory = metadataReaderFactory;
+		this.environment = environment;
+		this.resourceLoader = resourceLoader;
+	}
 
-    /**
-     * Tries to detect a custom implementation for a repository bean by classpath scanning.
-     * 
-     * @param className must not be {@literal null}.
-     * @param basePackages must not be {@literal null}.
-     * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found
-     */
-    public AbstractBeanDefinition detectCustomImplementation(String className, Iterable<String> basePackages) {
+	/**
+	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
+	 * 
+	 * @param className must not be {@literal null}.
+	 * @param basePackages must not be {@literal null}.
+	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found
+	 */
+	public AbstractBeanDefinition detectCustomImplementation(String className, Iterable<String> basePackages) {
 
-        Assert.notNull(className, "ClassName must not be null!");
-        Assert.notNull(basePackages, "BasePackages must not be null!");
+		Assert.notNull(className, "ClassName must not be null!");
+		Assert.notNull(basePackages, "BasePackages must not be null!");
 
-        // Build pattern to lookup implementation class
-        Pattern pattern = Pattern.compile(".*\\." + className);
+		// Build pattern to lookup implementation class
+		Pattern pattern = Pattern.compile(".*\\." + className);
 
-        // Build classpath scanner and lookup bean definition
-        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-        provider.setEnvironment(environment);
-        provider.setResourceLoader(resourceLoader);
-        provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
-        provider.setMetadataReaderFactory(metadataReaderFactory);
-        provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
+		// Build classpath scanner and lookup bean definition
+		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+		provider.setEnvironment(environment);
+		provider.setResourceLoader(resourceLoader);
+		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
+		provider.setMetadataReaderFactory(metadataReaderFactory);
+		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
 
-        Set<BeanDefinition> definitions = new HashSet<BeanDefinition>();
+		Set<BeanDefinition> definitions = new HashSet<BeanDefinition>();
 
-        for (String basePackage : basePackages) {
-            definitions.addAll(provider.findCandidateComponents(basePackage));
-        }
+		for (String basePackage : basePackages) {
+			definitions.addAll(provider.findCandidateComponents(basePackage));
+		}
 
-        if (definitions.isEmpty()) {
-            return null;
-        }
+		if (definitions.isEmpty()) {
+			return null;
+		}
 
-        if (definitions.size() == 1) {
-            return (AbstractBeanDefinition) definitions.iterator().next();
-        }
+		if (definitions.size() == 1) {
+			return (AbstractBeanDefinition) definitions.iterator().next();
+		}
 
-        List<String> implementationClassNames = new ArrayList<String>();
-        for (BeanDefinition bean : definitions) {
-            implementationClassNames.add(bean.getBeanClassName());
-        }
+		List<String> implementationClassNames = new ArrayList<String>();
+		for (BeanDefinition bean : definitions) {
+			implementationClassNames.add(bean.getBeanClassName());
+		}
 
-        throw new IllegalStateException(String.format(
-                "Ambiguous custom implementations detected! Found %s but expected a single implementation!",
-                StringUtils.collectionToCommaDelimitedString(implementationClassNames)));
-    }
+		throw new IllegalStateException(String.format(
+				"Ambiguous custom implementations detected! Found %s but expected a single implementation!",
+				StringUtils.collectionToCommaDelimitedString(implementationClassNames)));
+	}
 }

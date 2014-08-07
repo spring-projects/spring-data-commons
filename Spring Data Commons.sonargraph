@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<context version="7.1.9.205">
+<context version="7.1.10.209">
     <scope type="Project" name="spring-data-commons">
         <architecture>
             <element type="Layer" name="Web">
@@ -66,6 +66,12 @@
                         <element type="IncludeTypePattern" name="**.history.**"/>
                     </element>
                 </element>
+                <element type="Subsystem" name="Configuration">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.config.**"/>
+                    </element>
+                    <stereotype name="Unrestricted"/>
+                </element>
                 <element type="Subsystem" name="CDI">
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.cdi.**"/>
@@ -73,6 +79,7 @@
                     <dependency toName="External|External::Subsystem|JavaEE" type="AllowedDependency"/>
                     <dependency toName="External|External::Subsystem|Logging" type="AllowedDependency"/>
                     <dependency toName="External|External::Subsystem|Reflection" type="AllowedDependency"/>
+                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Configuration" type="AllowedDependency"/>
                     <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
                 </element>
                 <element type="Subsystem" name="Init">
@@ -81,12 +88,6 @@
                     </element>
                     <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
                     <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Support" type="AllowedDependency"/>
-                </element>
-                <element type="Subsystem" name="Configuration">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.config.**"/>
-                    </element>
-                    <stereotype name="Unrestricted"/>
                 </element>
                 <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
                 <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>

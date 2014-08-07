@@ -21,7 +21,7 @@ package org.springframework.data.repository.cdi;
  *
  * @author Mark Paluch
  */
-public interface CdiRepositoryConfigurationSource {
+public interface CdiRepositoryConfiguration {
 
 	/**
 	 * Returns the configured postfix to be used for looking up custom implementation classes.
