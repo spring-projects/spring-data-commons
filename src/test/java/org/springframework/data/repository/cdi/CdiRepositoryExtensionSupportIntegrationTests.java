@@ -15,14 +15,14 @@
  */
 package org.springframework.data.repository.cdi;
 
-import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 /**
  * Common integration tests for Spring Data repository CDI extension.
- * 
+ *
  * @author Oliver Gierke
  */
 public abstract class CdiRepositoryExtensionSupportIntegrationTests {
@@ -34,6 +34,18 @@ public abstract class CdiRepositoryExtensionSupportIntegrationTests {
 
 		RepositoryClient client = getBean(RepositoryClient.class);
 		assertThat(client.repository, is(notNullValue()));
+	}
+
+	@Test
+	public void createsSpringDataRepositoryWithCustimImplBean() {
+
+		assertThat(getBean(AnotherRepository.class), is(notNullValue()));
+
+		RepositoryClient client = getBean(RepositoryClient.class);
+		assertThat(client.anotherRepository, is(notNullValue()));
+
+		// this will always return 0 since it's a mock
+		assertThat(client.anotherRepository.returnZero(), is(0));
 	}
 
 	protected abstract <T> T getBean(Class<T> type);

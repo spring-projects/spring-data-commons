@@ -15,25 +15,16 @@
  */
 package org.springframework.data.repository.config;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -46,14 +37,13 @@ import org.springframework.util.StringUtils;
 class RepositoryBeanDefinitionBuilder {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryBeanDefinitionBuilder.class);
-	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
 
 	private final BeanDefinitionRegistry registry;
 	private final RepositoryConfigurationExtension extension;
 	private final ResourceLoader resourceLoader;
-	private final Environment environment;
 
 	private final MetadataReaderFactory metadataReaderFactory;
+	private CustomRepositoryImplementationDetector implementationDetector;
 
 	/**
 	 * Creates a new {@link RepositoryBeanDefinitionBuilder} from the given {@link BeanDefinitionRegistry},
@@ -69,21 +59,20 @@ class RepositoryBeanDefinitionBuilder {
 
 		Assert.notNull(extension, "RepositoryConfigurationExtension must not be null!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
-		Assert.notNull(environment, "Environement must not be null!");
+		Assert.notNull(environment, "Environment must not be null!");
 
 		this.registry = registry;
 		this.extension = extension;
 		this.resourceLoader = resourceLoader;
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
-		this.environment = environment;
+		this.implementationDetector = new CustomRepositoryImplementationDetector(metadataReaderFactory, environment, resourceLoader);
 	}
 
 	/**
 	 * Builds a new {@link BeanDefinitionBuilder} from the given {@link BeanDefinitionRegistry} and {@link ResourceLoader}
 	 * .
 	 * 
-	 * @param registry must not be {@literal null}.
-	 * @param resourceLoader must not be {@literal null}.
+	 * @param configuration must not be {@literal null}.
 	 * @return
 	 */
 	public BeanDefinitionBuilder build(RepositoryConfiguration<?> configuration) {
@@ -136,7 +125,8 @@ class RepositoryBeanDefinitionBuilder {
 			return beanName;
 		}
 
-		AbstractBeanDefinition beanDefinition = detectCustomImplementation(configuration);
+		AbstractBeanDefinition beanDefinition = implementationDetector.detectCustomImplementation(
+				configuration.getImplementationClassName(), configuration.getBasePackages());
 
 		if (null == beanDefinition) {
 			return null;
@@ -154,47 +144,5 @@ class RepositoryBeanDefinitionBuilder {
 		return beanName;
 	}
 
-	/**
-	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
-	 * 
-	 * @param config must not be {@literal null}.
-	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found
-	 */
-	private AbstractBeanDefinition detectCustomImplementation(RepositoryConfiguration<?> configuration) {
 
-		// Build pattern to lookup implementation class
-		String className = configuration.getImplementationClassName();
-		Pattern pattern = Pattern.compile(".*\\." + className);
-
-		// Build classpath scanner and lookup bean definition
-		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-		provider.setEnvironment(environment);
-		provider.setResourceLoader(resourceLoader);
-		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
-		provider.setMetadataReaderFactory(metadataReaderFactory);
-		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
-
-		Set<BeanDefinition> definitions = new HashSet<BeanDefinition>();
-
-		for (String basePackage : configuration.getBasePackages()) {
-			definitions.addAll(provider.findCandidateComponents(basePackage));
-		}
-
-		if (definitions.isEmpty()) {
-			return null;
-		}
-
-		if (definitions.size() == 1) {
-			return (AbstractBeanDefinition) definitions.iterator().next();
-		}
-
-		List<String> implementationClassNames = new ArrayList<String>();
-		for (BeanDefinition bean : definitions) {
-			implementationClassNames.add(bean.getBeanClassName());
-		}
-
-		throw new IllegalStateException(String.format(
-				"Ambiguous custom implementations detected! Found %s but expected a single implementation!",
-				StringUtils.collectionToCommaDelimitedString(implementationClassNames)));
-	}
 }
