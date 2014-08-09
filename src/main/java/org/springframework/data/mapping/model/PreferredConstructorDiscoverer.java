@@ -69,9 +69,9 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 		int numberOfArgConstructors = 0;
 		Class<?> rawOwningType = type.getType();
 
-		for (Constructor<?> constructor : rawOwningType.getDeclaredConstructors()) {
+		for (Constructor<?> candidate : rawOwningType.getDeclaredConstructors()) {
 
-			PreferredConstructor<T, P> preferredConstructor = buildPreferredConstructor(constructor, type, entity);
+			PreferredConstructor<T, P> preferredConstructor = buildPreferredConstructor(candidate, type, entity);
 
 			// Explicitly defined constructor trumps all
 			if (preferredConstructor.isExplicitlyAnnotated()) {

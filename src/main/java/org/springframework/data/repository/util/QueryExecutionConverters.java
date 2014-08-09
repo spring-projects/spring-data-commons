@@ -60,6 +60,8 @@ public class QueryExecutionConverters {
 		}
 	}
 
+	private QueryExecutionConverters() {}
+
 	/**
 	 * Returns whether the given type is a supported wrapper type.
 	 * 
@@ -243,7 +245,7 @@ public class QueryExecutionConverters {
 	 */
 	private static class NullableWrapperToFutureConverter extends AbstractWrapperTypeConverter {
 
-		private final AsyncResult<Object> NULL_OBJECT = new AsyncResult<Object>(null);
+		private static final AsyncResult<Object> NULL_OBJECT = new AsyncResult<Object>(null);
 
 		/**
 		 * Creates a new {@link NullableWrapperToFutureConverter} using the given {@link ConversionService}.

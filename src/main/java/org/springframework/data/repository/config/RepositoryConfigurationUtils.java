@@ -30,6 +30,8 @@ import org.springframework.util.Assert;
  */
 public class RepositoryConfigurationUtils {
 
+	private RepositoryConfigurationUtils() {}
+
 	/**
 	 * Registeres the given {@link RepositoryConfigurationExtension} to indicate the repository configuration for a
 	 * particular store (expressed through the extension's concrete type) has appened. Useful for downstream components

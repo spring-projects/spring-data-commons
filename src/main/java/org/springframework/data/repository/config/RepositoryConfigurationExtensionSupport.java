@@ -264,7 +264,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * @param loader must not be {@literal null}.
 	 * @return the repository interface or {@literal null} if it can't be loaded.
 	 */
-	private static Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
+	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
 
 		String repositoryInterface = configuration.getRepositoryInterface();
 		ClassLoader classLoader = loader.getClassLoader();
@@ -272,9 +272,9 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		try {
 			return org.springframework.util.ClassUtils.forName(repositoryInterface, classLoader);
 		} catch (ClassNotFoundException e) {
-			LOGGER.warn(String.format(CLASS_LOADING_ERROR, repositoryInterface, classLoader), e);
+			LOGGER.warn(String.format(CLASS_LOADING_ERROR, getModuleName(), repositoryInterface, classLoader), e);
 		} catch (LinkageError e) {
-			LOGGER.warn(String.format(CLASS_LOADING_ERROR, repositoryInterface, classLoader), e);
+			LOGGER.warn(String.format(CLASS_LOADING_ERROR, getModuleName(), repositoryInterface, classLoader), e);
 		}
 
 		return null;

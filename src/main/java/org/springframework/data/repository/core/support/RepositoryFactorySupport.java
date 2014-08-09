@@ -67,9 +67,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
 			RepositoryFactorySupport.class.getClassLoader());
 
-	private final Map<RepositoryInformationCacheKey, RepositoryInformation> REPOSITORY_INFORMATION_CACHE = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
-
+	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
 	private final List<RepositoryProxyPostProcessor> postProcessors = new ArrayList<RepositoryProxyPostProcessor>();
+
 	private QueryLookupStrategy.Key queryLookupStrategyKey;
 	private List<QueryCreationListener<?>> queryPostProcessors = new ArrayList<QueryCreationListener<?>>();
 	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
@@ -215,7 +215,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 			Class<?> customImplementationClass) {
 
 		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, customImplementationClass);
-		RepositoryInformation repositoryInformation = REPOSITORY_INFORMATION_CACHE.get(cacheKey);
+		RepositoryInformation repositoryInformation = repositoryInformationCache.get(cacheKey);
 
 		if (repositoryInformation != null) {
 			return repositoryInformation;
@@ -223,7 +223,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 		repositoryInformation = new DefaultRepositoryInformation(metadata, getRepositoryBaseClass(metadata),
 				customImplementationClass);
-		REPOSITORY_INFORMATION_CACHE.put(cacheKey, repositoryInformation);
+		repositoryInformationCache.put(cacheKey, repositoryInformation);
 		return repositoryInformation;
 	}
 

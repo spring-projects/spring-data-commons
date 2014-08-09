@@ -31,7 +31,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.repository.query.EvaluationContextExtensionInformation.ExtensionTypeInformation.PublicMethodAndFieldFilter;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.Function;
-import org.springframework.expression.EvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -46,7 +45,7 @@ import org.springframework.util.ReflectionUtils.MethodFilter;
  * <p>
  * The type basically allows us to cache the type based information within
  * {@link ExtensionAwareEvaluationContextProvider} to avoid repeated reflection lookups for every creation of an
- * {@link EvaluationContext}.
+ * {@link org.springframework.expression.EvaluationContext}.
  * 
  * @author Oliver Gierke
  * @since 1.9
@@ -161,8 +160,8 @@ class EvaluationContextExtensionInformation {
 
 		static class PublicMethodAndFieldFilter implements MethodFilter, FieldFilter {
 
-			public static PublicMethodAndFieldFilter STATIC = new PublicMethodAndFieldFilter(true);
-			public static PublicMethodAndFieldFilter NON_STATIC = new PublicMethodAndFieldFilter(false);
+			public static final PublicMethodAndFieldFilter STATIC = new PublicMethodAndFieldFilter(true);
+			public static final PublicMethodAndFieldFilter NON_STATIC = new PublicMethodAndFieldFilter(false);
 
 			private final boolean staticOnly;
 
@@ -197,10 +196,6 @@ class EvaluationContextExtensionInformation {
 			@Override
 			public boolean matches(Field field) {
 
-				if (field.getDeclaringClass().equals(Object.class)) {
-
-				}
-
 				boolean fieldStatic = Modifier.isStatic(field.getModifiers());
 				boolean staticMatch = staticOnly ? fieldStatic : !fieldStatic;
 
@@ -214,9 +209,9 @@ class EvaluationContextExtensionInformation {
 	 *
 	 * @author Oliver Gierke
 	 */
-	public static class RootObjectInformation {
+	static class RootObjectInformation {
 
-		static RootObjectInformation NONE = new RootObjectInformation(Object.class);
+		private static final RootObjectInformation NONE = new RootObjectInformation(Object.class);
 
 		private final Map<String, Method> accessors;
 		private final Collection<Method> methods;
@@ -245,7 +240,7 @@ class EvaluationContextExtensionInformation {
 			ReflectionUtils.doWithMethods(type, new MethodCallback() {
 
 				@Override
-				public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+				public void doWith(Method method) {
 
 					RootObjectInformation.this.methods.add(method);
 
@@ -260,7 +255,7 @@ class EvaluationContextExtensionInformation {
 			ReflectionUtils.doWithFields(type, new FieldCallback() {
 
 				@Override
-				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+				public void doWith(Field field) {
 					RootObjectInformation.this.fields.add(field);
 				}
 			}, PublicMethodAndFieldFilter.NON_STATIC);
@@ -321,7 +316,7 @@ class EvaluationContextExtensionInformation {
 		ReflectionUtils.doWithFields(type, new FieldCallback() {
 
 			@Override
-			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+			public void doWith(Field field) throws IllegalAccessException {
 				map.put(field.getName(), field.get(null));
 			}
 		}, filter);

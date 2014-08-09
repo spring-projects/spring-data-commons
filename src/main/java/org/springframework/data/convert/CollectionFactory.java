@@ -30,6 +30,8 @@ import org.springframework.util.Assert;
  */
 public class CollectionFactory {
 
+	private CollectionFactory() {}
+
 	/**
 	 * Creates a new collection instance for the given collection type. Might also inspect the element type in case
 	 * special collections are requested (e.g. {@link EnumSet}).
