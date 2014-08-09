@@ -74,7 +74,7 @@ public class SliceImpl<T> extends Chunk<T> {
 			contentType = content.get(0).getClass().getName();
 		}
 
-		return String.format("Slice %s of %d containing %s instances", getNumber(), contentType);
+		return String.format("Slice %d containing %s instances", getNumber(), contentType);
 	}
 
 	/*

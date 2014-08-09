@@ -175,10 +175,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			propertyCache.put(property.getName(), property);
 		}
 
-		P idProperty = returnPropertyIfBetterIdPropertyCandidateOrNull(property);
+		P candidate = returnPropertyIfBetterIdPropertyCandidateOrNull(property);
 
-		if (idProperty != null) {
-			this.idProperty = idProperty;
+		if (candidate != null) {
+			this.idProperty = candidate;
 		}
 
 		if (property.isVersionProperty()) {

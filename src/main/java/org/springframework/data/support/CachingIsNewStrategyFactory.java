@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
  */
 public class CachingIsNewStrategyFactory implements IsNewStrategyFactory {
 
-	private final Map<Class<?>, IsNewStrategy> CACHE = new ConcurrentHashMap<Class<?>, IsNewStrategy>();
+	private final Map<Class<?>, IsNewStrategy> cache = new ConcurrentHashMap<Class<?>, IsNewStrategy>();
 	private final IsNewStrategyFactory delegate;
 
 	/**
@@ -48,7 +48,7 @@ public class CachingIsNewStrategyFactory implements IsNewStrategyFactory {
 	 */
 	public IsNewStrategy getIsNewStrategy(Class<?> type) {
 
-		IsNewStrategy strategy = CACHE.get(type);
+		IsNewStrategy strategy = cache.get(type);
 
 		if (strategy != null) {
 			return strategy;
@@ -56,7 +56,7 @@ public class CachingIsNewStrategyFactory implements IsNewStrategyFactory {
 
 		IsNewStrategy isNewStrategy = delegate.getIsNewStrategy(type);
 
-		CACHE.put(type, isNewStrategy);
+		cache.put(type, isNewStrategy);
 		return isNewStrategy;
 	}
 }

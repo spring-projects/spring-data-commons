@@ -32,6 +32,8 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  */
 public class ReflectionUtils {
 
+	private ReflectionUtils() {}
+
 	/**
 	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
 	 * class cannot be loaded or instantiated.

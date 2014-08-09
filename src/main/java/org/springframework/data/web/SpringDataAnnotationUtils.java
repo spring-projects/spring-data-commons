@@ -34,6 +34,8 @@ import org.springframework.util.ObjectUtils;
  */
 class SpringDataAnnotationUtils {
 
+	private SpringDataAnnotationUtils() {}
+
 	/**
 	 * Asserts uniqueness of all {@link Pageable} parameters of the method of the given {@link MethodParameter}.
 	 * 

@@ -117,7 +117,7 @@ class AuditableBeanWrapperFactory {
 	 */
 	static abstract class DateConvertingAuditableBeanWrapper implements AuditableBeanWrapper {
 
-		private static boolean IS_JODA_TIME_PRESENT = ClassUtils.isPresent("org.joda.time.DateTime",
+		private static final boolean IS_JODA_TIME_PRESENT = ClassUtils.isPresent("org.joda.time.DateTime",
 				ReflectionAuditingBeanWrapper.class.getClassLoader());
 
 		private final ConversionService conversionService;
