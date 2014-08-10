@@ -25,6 +25,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.AccessType;
@@ -153,9 +155,17 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	/**
 	 * @see DATACMNS-243
 	 */
-	@Test(expected = MappingException.class)
-	public void detectsAmbiguityCausedByFieldAnAccessorAnnotation() {
+	@Test
+	public void doesNotRejectSameAnnotationIfItsEqualOnBothFieldAndAccessor() {
 		context.getPersistentEntity(AnotherInvalidSample.class);
+	}
+
+	/**
+	 * @see DATACMNS-556
+	 */
+	@Test
+	public void doesNotRejectNonSpringDataAnnotationsUsedOnBothFieldAndAccessor() {
+		getProperty(TypeWithCustomAnnotationsOnBothFieldAndAccessor.class, "field");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -268,6 +278,16 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		@AccessType(Type.FIELD)
 		public String getLastname() {
 			return lastname;
+		}
+	}
+
+	static class TypeWithCustomAnnotationsOnBothFieldAndAccessor {
+
+		@Nullable String field;
+
+		@Nullable
+		public String getField() {
+			return field;
 		}
 	}
 }
