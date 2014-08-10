@@ -25,6 +25,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.AccessType;
@@ -156,8 +158,8 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	/**
 	 * @see DATACMNS-243
 	 */
-	@Test(expected = MappingException.class)
-	public void detectsAmbiguityCausedByFieldAnAccessorAnnotation() {
+	@Test
+	public void doesNotRejectSameAnnotationIfItsEqualOnBothFieldAndAccessor() {
 		context.getPersistentEntity(AnotherInvalidSample.class);
 	}
 
@@ -191,6 +193,14 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test
 	public void considersPropertyWithReadOnlyMetaAnnotationReadOnly() {
 		assertThat(getProperty(ClassWithReadOnlyProperties.class, "customReadOnlyProperty").isWritable(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-556
+	 */
+	@Test
+	public void doesNotRejectNonSpringDataAnnotationsUsedOnBothFieldAndAccessor() {
+		getProperty(TypeWithCustomAnnotationsOnBothFieldAndAccessor.class, "field");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -315,6 +325,16 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		@ReadOnlyProperty String readOnlyProperty;
 
 		@CustomReadOnly String customReadOnlyProperty;
+	}
+
+	static class TypeWithCustomAnnotationsOnBothFieldAndAccessor {
+
+		@Nullable String field;
+
+		@Nullable
+		public String getField() {
+			return field;
+		}
 	}
 
 	@ReadOnlyProperty

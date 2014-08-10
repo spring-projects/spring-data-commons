@@ -47,6 +47,8 @@ import org.springframework.util.Assert;
 public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>> extends
 		AbstractPersistentProperty<P> {
 
+	private static final String SPRING_DATA_PACKAGE = "org.springframework.data";
+
 	private final Value value;
 	private final Map<Class<? extends Annotation>, Annotation> annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
 
@@ -91,11 +93,9 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 				Class<? extends Annotation> annotationType = annotation.annotationType();
 
-				if (annotationCache.containsKey(annotationType) && !annotationCache.get(annotationType).equals(annotation)) {
-					throw new MappingException(String.format("Ambiguous mapping! Annotation %s configured "
-							+ "multiple times on accessor methods of property %s in class %s!", annotationType.getSimpleName(),
-							getName(), getOwner().getType().getSimpleName()));
-				}
+				validateAnnotation(annotation, "Ambiguous mapping! Annotation %s configured "
+						+ "multiple times on accessor methods of property %s in class %s!", annotationType.getSimpleName(),
+						getName(), getOwner().getType().getSimpleName());
 
 				annotationCache.put(annotationType, annotation);
 			}
@@ -109,13 +109,32 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 			Class<? extends Annotation> annotationType = annotation.annotationType();
 
-			if (annotationCache.containsKey(annotationType)) {
-				throw new MappingException(String.format("Ambiguous mapping! Annotation %s configured "
-						+ "on field %s and one of its accessor methods in class %s!", annotationType.getSimpleName(),
-						field.getName(), getOwner().getType().getSimpleName()));
-			}
+			validateAnnotation(annotation, "Ambiguous mapping! Annotation %s configured "
+					+ "on field %s and one of its accessor methods in class %s!", annotationType.getSimpleName(),
+					field.getName(), getOwner().getType().getSimpleName());
 
 			annotationCache.put(annotationType, annotation);
+		}
+	}
+
+	/**
+	 * Verifies the given annotation candidate detected. Will be rejected if it's a Spring Data annotation and we already
+	 * found another one with a different configuration setup (i.e. other attribute values).
+	 * 
+	 * @param candidate must not be {@literal null}.
+	 * @param message must not be {@literal null}.
+	 * @param arguments must not be {@literal null}.
+	 */
+	private void validateAnnotation(Annotation candidate, String message, Object... arguments) {
+
+		Class<? extends Annotation> annotationType = candidate.annotationType();
+
+		if (!annotationType.getName().startsWith(SPRING_DATA_PACKAGE)) {
+			return;
+		}
+
+		if (annotationCache.containsKey(annotationType) && !annotationCache.get(annotationType).equals(candidate)) {
+			throw new MappingException(String.format(message, arguments));
 		}
 	}
 
