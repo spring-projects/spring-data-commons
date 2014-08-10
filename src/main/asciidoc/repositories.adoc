@@ -414,6 +414,8 @@ class UserRepositoryImpl implements UserRepositoryCustom {
 ----
 ====
 
+NOTE: The most important bit for the class to be found is the `Impl` postfix of the name on it compared to the core repository interface (see below).
+
 The implementation itself does not depend on Spring Data and can be a regular Spring bean. So you can use standard dependency injection behavior to inject references to other beans like a JdbTemplate, take part in aspects, and so on.
 
 .Changes to the your basic repository interface
@@ -442,11 +444,13 @@ If you use namespace configuration, the repository infrastructure tries to autod
 ----
 ====
 
-The first configuration example will try to look up a class com.acme.repository.UserRepositoryImpl to act as custom repository implementation, whereas the second example will try to lookup com.acme.repository.UserRepositoryFooBar.
+The first configuration example will try to look up a class `com.acme.repository.UserRepositoryImpl` to act as custom repository implementation, whereas the second example will try to lookup `com.acme.repository.UserRepositoryFooBar`.
 
-Manual wiring The preceding approach works well if your custom implementation uses annotation-based configuration and autowiring only, as it will be treated as any other Spring bean. If your custom implementation bean needs special wiring, you simply declare the bean and name it after the conventions just described. The infrastructure will then refer to the manually defined bean definition by name instead of creating one itself.
+===== Manual wiring
 
-.Manual wiring of custom implementations (I)
+The approach just shown works well if your custom implementation uses annotation-based configuration and autowiring only, as it will be treated as any other Spring bean. If your custom implementation bean needs special wiring, you simply declare the bean and name it after the conventions just described. The infrastructure will then refer to the manually defined bean definition by name instead of creating one itself.
+
+.Manual wiring of custom implementations
 ====
 [source, xml]
 ----
