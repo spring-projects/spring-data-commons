@@ -7,7 +7,7 @@ The goal of Spring Data repository abstraction is to significantly reduce the am
 ====
 _Spring Data repository documentation and your module_
 
-This chapter explains the core concepts and interfaces of Spring Data repositories. The information in this chapter is pulled from the Spring Data Commons module. It uses the configuration and code samples for the Java Persistence API (JPA) module. Adapt the XML namespace declaration and the types to be extended to the equivalents of the particular module that you are using. <<namespace-reference>> covers XML configuration which is supported across all Spring Data modules supporting the repository API, <<repository-query-keywords>> covers the query method keywords supported by the repository abstraction in general. For detailed information on the specific features of your module, consult the chapter on that module of this document.
+This chapter explains the core concepts and interfaces of Spring Data repositories. The information in this chapter is pulled from the Spring Data Commons module. It uses the configuration and code samples for the Java Persistence API (JPA) module. Adapt the XML namespace declaration and the types to be extended to the equivalents of the particular module that you are using. <<repositories.namespace-reference>> covers XML configuration which is supported across all Spring Data modules supporting the repository API, <<repository-query-keywords>> covers the query method keywords supported by the repository abstraction in general. For detailed information on the specific features of your module, consult the chapter on that module of this document.
 ====
 
 [[repositories.core-concepts]]
@@ -348,7 +348,7 @@ This example excludes all interfaces ending in `SomeRepository` from being insta
 
 [[repositories.create-instances.java-config]]
 === JavaConfig
-The repository infrastructure can also be triggered using a store-specific `@Enable${store}Repositories` annotation on a JavaConfig class. For an introduction into Java-based configuration of the Spring container, see the reference documentation.footnote:[JavaConfig in the Spring reference documentation - link:$${spring-framework-docs}/beans.html#beans-java$$[]]
+The repository infrastructure can also be triggered using a store-specific `@Enable${store}Repositories` annotation on a JavaConfig class. For an introduction into Java-based configuration of the Spring container, see the reference documentation.footnote:[link:{spring-framework-docs}/beans.html#beans-java[JavaConfig in the Spring reference documentation]]
 
 A sample configuration to enable Spring Data repositories looks something like this.
 
