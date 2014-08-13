@@ -1,6 +1,25 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.9.0.RC1 (2014-08-13)
+-----------------------------------------
+* DATACMNS-561 - Release 1.9 RC1.
+* DATACMNS-558 - Some quality improvements according to the SonarQube report.
+* DATACMNS-557 - Add support for custom implementations in CDI.
+* DATACMNS-556 - Annotation duplication checks are too strict in AnnotationBasedPersistentProperty.
+* DATACMNS-552 - Improve documentation on naming conventions for custom repository implement.
+* DATACMNS-551 - Move to Asciidoctor for reference documentation.
+* DATACMNS-548 - Add documentation of Slice for repository query methods.
+* DATACMNS-547 - @TypeAlias should be @Persistent.
+* DATACMNS-546 - Improve exception message for failed property lookups.
+* DATACMNS-544 - Expose BeanDefinition to allow detection of whether repository configuration has been activated.
+* DATACMNS-543 - Repository beans registered twice when using XML namespace.
+* DATACMNS-539 - DefaultCrudMethods should detect delete(T entity) as well.
+* DATACMNS-538 - Reference documentation on web pagination shows outdated parameter names.
+* DATACMNS-526 - Improve multi-store behavior.
+* DATACMNS-469 - Remove deprecations introduced in 1.7.
+
+
 Changes in version 1.8.2.RELEASE (2014-07-28)
 ---------------------------------------------
 * DATACMNS-549 - Release 1.8.2.
