@@ -18,8 +18,7 @@ package org.springframework.data.mapping.model;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.core.annotation.AnnotationUtils;
@@ -118,23 +117,23 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityType() {
 
-		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
-		TypeInformation<?> type = getTypeInformation();
-
-		if (type.isCollectionLike() || isMap()) {
-			TypeInformation<?> nestedType = getTypeInformationIfNotSimpleType(getTypeInformation().getActualType());
-			if (nestedType != null) {
-				result.add(nestedType);
-			}
-		} else if (isEntity()) {
-			result.add(type);
+		if (!isEntity()) {
+			return Collections.emptySet();
 		}
 
-		return result;
+		TypeInformation<?> candidate = getTypeInformationIfEntityCandidate();
+		return candidate != null ? Collections.singleton(candidate) : Collections.<TypeInformation<?>> emptySet();
 	}
 
-	private TypeInformation<?> getTypeInformationIfNotSimpleType(TypeInformation<?> information) {
-		return information == null || simpleTypeHolder.isSimpleType(information.getType()) ? null : information;
+	private TypeInformation<?> getTypeInformationIfEntityCandidate() {
+
+		TypeInformation<?> candidate = information.getActualType();
+
+		if (candidate == null || simpleTypeHolder.isSimpleType(candidate.getType())) {
+			return null;
+		}
+
+		return candidate.isCollectionLike() || candidate.isMap() ? null : candidate;
 	}
 
 	/* 
@@ -248,10 +247,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#isEntity()
 	 */
 	public boolean isEntity() {
-
-		TypeInformation<?> actualType = information.getActualType();
-		boolean isComplexType = actualType == null ? false : !simpleTypeHolder.isSimpleType(actualType.getType());
-		return isComplexType && !isTransient();
+		return !isTransient() && getTypeInformationIfEntityCandidate() != null;
 	}
 
 	/*
