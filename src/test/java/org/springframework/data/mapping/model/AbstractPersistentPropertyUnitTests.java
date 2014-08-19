@@ -26,6 +26,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.junit.Before;
@@ -260,6 +261,17 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.isEntity(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-562
+	 */
+	@Test
+	public void doesNotConsiderPropertyWithTreeMapMapValueAnEntity() {
+
+		SamplePersistentProperty property = getProperty(TreeMapWrapper.class, "map");
+		assertThat(property.getPersistentEntityType(), is(emptyIterable()));
+		assertThat(property.isEntity(), is(false));
+	}
+
 	private <T> SamplePersistentProperty getProperty(Class<T> type, String name) {
 
 		BasicPersistentEntity<T, SamplePersistentProperty> entity = new BasicPersistentEntity<T, SamplePersistentProperty>(
@@ -400,5 +412,9 @@ public class AbstractPersistentPropertyUnitTests {
 		Person[] personArray;
 		Map<String, Person> personMap;
 		Collection<String> strings;
+	}
+
+	class TreeMapWrapper {
+		TreeMap<String, TreeMap<String, String>> map;
 	}
 }
