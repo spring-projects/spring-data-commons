@@ -39,7 +39,6 @@ import javax.inject.Qualifier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
@@ -51,9 +50,6 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
-import org.springframework.data.repository.config.DefaultRepositoryConfiguration;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * Base class for {@link Extension} implementations that create instances for Spring Data repositories.
@@ -65,7 +61,6 @@ import org.springframework.util.ClassUtils;
 public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CdiRepositoryExtensionSupport.class);
-	private static final CdiRepositoryConfiguration DEFAULT_CONFIGURATION = DefaultCdiRepositoryConfiguration.INSTANCE;
 
 	private final Map<Class<?>, Set<Annotation>> repositoryTypes = new HashMap<Class<?>, Set<Annotation>>();
 	private final Set<CdiRepositoryBean<?>> eagerRepositories = new HashSet<CdiRepositoryBean<?>>();
@@ -189,86 +184,11 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	}
 
 	/**
-	 * Looks up an instance of a {@link CdiRepositoryConfiguration}. In case the instance cannot be found within the CDI
-	 * scope, a default configuration is used.
-	 * 
-	 * @return an available CdiRepositoryConfiguration instance or a default configuration.
+	 *
+	 * @return the {@link CustomRepositoryImplementationDetector} to scan for the custom implementation
 	 */
-	protected CdiRepositoryConfiguration lookupConfiguration(BeanManager beanManager, Set<Annotation> qualifiers) {
-
-		Set<Bean<?>> beans = beanManager.getBeans(CdiRepositoryConfiguration.class, getQualifiersArray(qualifiers));
-
-		if (beans.isEmpty()) {
-			return DEFAULT_CONFIGURATION;
-		}
-
-		Bean<?> bean = beans.iterator().next();
-		CreationalContext<?> creationalContext = beanManager.createCreationalContext(bean);
-
-		return (CdiRepositoryConfiguration) beanManager.getReference(bean, CdiRepositoryConfiguration.class,
-				creationalContext);
-	}
-
-	private Annotation[] getQualifiersArray(Set<Annotation> qualifiers) {
-		return qualifiers.toArray(new Annotation[qualifiers.size()]);
-	}
-
-	/**
-	 * Try to lookup a custom implementation for a {@link org.springframework.data.repository.Repository}.
-	 * 
-	 * @param repositoryType
-	 * @param beanManager
-	 * @param qualifiers
-	 * @return the custom implementation instance or null
-	 */
-	protected Bean<?> getCustomImplementationBean(Class<?> repositoryType, BeanManager beanManager,
-			Set<Annotation> qualifiers) {
-
-		CdiRepositoryConfiguration cdiRepositoryConfiguration = lookupConfiguration(beanManager, qualifiers);
-		Class<?> customImplementationClass = getCustomImplementationClass(repositoryType, cdiRepositoryConfiguration);
-
-		if (customImplementationClass == null) {
-			return null;
-		}
-
-		Set<Bean<?>> beans = beanManager.getBeans(customImplementationClass, getQualifiersArray(qualifiers));
-		return beans.isEmpty() ? null : beans.iterator().next();
-	}
-
-	/**
-	 * Retrieves a custom repository interfaces from a repository type. This works for the whole class hierarchy and can
-	 * find also a custom repo which is inherieted over many levels.
-	 * 
-	 * @param repositoryType The class representing the repository.
-	 * @param cdiRepositoryConfiguration The configuration for CDI usage.
-	 * @return the interface class or {@literal null}.
-	 */
-	private Class<?> getCustomImplementationClass(Class<?> repositoryType,
-			CdiRepositoryConfiguration cdiRepositoryConfiguration) {
-
-		String className = getCustomImplementationClassName(repositoryType, cdiRepositoryConfiguration);
-		AbstractBeanDefinition beanDefinition = customImplementationDetector.detectCustomImplementation(className,
-				Collections.singleton(repositoryType.getPackage().getName()));
-
-		if (beanDefinition == null) {
-			return null;
-		}
-
-		try {
-			return Class.forName(beanDefinition.getBeanClassName());
-		} catch (ClassNotFoundException e) {
-			throw new UnsatisfiedResolutionException(String.format("Unable to resolve class for '%s'",
-					beanDefinition.getBeanClassName()), e);
-		}
-	}
-
-	private String getCustomImplementationClassName(Class<?> repositoryType,
-			CdiRepositoryConfiguration cdiRepositoryConfiguration) {
-
-		String configuredPostfix = cdiRepositoryConfiguration.getRepositoryImplementationPostfix();
-		Assert.hasText(configuredPostfix, "Configured repository postfix must not be null or empty!");
-
-		return ClassUtils.getShortName(repositoryType) + configuredPostfix;
+	protected CustomRepositoryImplementationDetector getCustomImplementationDetector() {
+		return customImplementationDetector;
 	}
 
 	@SuppressWarnings("all")
@@ -285,17 +205,4 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 		private static final AnyAnnotationLiteral INSTANCE = new AnyAnnotationLiteral();
 	}
 
-	static enum DefaultCdiRepositoryConfiguration implements CdiRepositoryConfiguration {
-
-		INSTANCE;
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.cdi.CdiRepositoryConfiguration#getRepositoryImplementationPostfix()
-		 */
-		@Override
-		public String getRepositoryImplementationPostfix() {
-			return DefaultRepositoryConfiguration.DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX;
-		}
-	}
 }
