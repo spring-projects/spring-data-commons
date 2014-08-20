@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Stereotype;
+import javax.enterprise.inject.UnsatisfiedResolutionException;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
@@ -35,7 +36,11 @@ import javax.enterprise.inject.spi.PassivationCapable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
+import org.springframework.data.repository.config.DefaultRepositoryConfiguration;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -48,10 +53,11 @@ import org.springframework.util.StringUtils;
 public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CdiRepositoryBean.class);
+	private static final CdiRepositoryConfiguration DEFAULT_CONFIGURATION = DefaultCdiRepositoryConfiguration.INSTANCE;
 
 	private final Set<Annotation> qualifiers;
 	private final Class<T> repositoryType;
-	private final Bean<?> customImplementationBean;
+	private final CustomRepositoryImplementationDetector detector;
 	private final BeanManager beanManager;
 	private final String passivationId;
 
@@ -74,11 +80,11 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * @param qualifiers must not be {@literal null}.
 	 * @param repositoryType has to be an interface must not be {@literal null}.
 	 * @param beanManager the CDI {@link BeanManager}, must not be {@literal null}.
-	 * @param customImplementationBean the bean for the custom implementation of the
-	 *          {@link org.springframework.data.repository.Repository}, can be {@literal null}.
+	 * @param detector detector for the custom repository implementations {@link CustomRepositoryImplementationDetector},
+	 *          can be {@literal null}.
 	 */
 	public CdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
-			Bean<?> customImplementationBean) {
+			CustomRepositoryImplementationDetector detector) {
 
 		Assert.notNull(qualifiers);
 		Assert.notNull(beanManager);
@@ -88,7 +94,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		this.qualifiers = qualifiers;
 		this.repositoryType = repositoryType;
 		this.beanManager = beanManager;
-		this.customImplementationBean = customImplementationBean;
+		this.detector = detector;
 		this.passivationId = createPassivationId(qualifiers, repositoryType);
 	}
 
@@ -179,7 +185,93 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		creationalContext.release();
 	}
 
-	/* 
+	/**
+	 * Looks up an instance of a {@link CdiRepositoryConfiguration}. In case the instance cannot be found within the CDI
+	 * scope, a default configuration is used.
+	 * 
+	 * @return an available CdiRepositoryConfiguration instance or a default configuration.
+	 */
+	@SuppressWarnings("unchecked")
+	protected CdiRepositoryConfiguration lookupConfiguration(BeanManager beanManager, Set<Annotation> qualifiers) {
+
+		Set<Bean<?>> beans = beanManager.getBeans(CdiRepositoryConfiguration.class, getQualifiersArray(qualifiers));
+
+		if (beans.isEmpty()) {
+			return DEFAULT_CONFIGURATION;
+		}
+
+		Bean<CdiRepositoryConfiguration> bean = (Bean<CdiRepositoryConfiguration>) beans.iterator().next();
+		return getDependencyInstance(bean, (Class<CdiRepositoryConfiguration>) bean.getBeanClass());
+	}
+
+	/**
+	 * Try to lookup a custom implementation for a {@link org.springframework.data.repository.Repository}. Can only be
+	 * used when a {@code CustomRepositoryImplementationDetector} is provided.
+	 * 
+	 * @param repositoryType
+	 * @param beanManager
+	 * @param qualifiers
+	 * @return the custom implementation instance or null
+	 */
+	private Bean<?> getCustomImplementationBean(Class<?> repositoryType, BeanManager beanManager,
+			Set<Annotation> qualifiers) {
+
+		if (detector == null) {
+			return null;
+		}
+
+		CdiRepositoryConfiguration cdiRepositoryConfiguration = lookupConfiguration(beanManager, qualifiers);
+		Class<?> customImplementationClass = getCustomImplementationClass(repositoryType, cdiRepositoryConfiguration);
+
+		if (customImplementationClass == null) {
+			return null;
+		}
+
+		Set<Bean<?>> beans = beanManager.getBeans(customImplementationClass, getQualifiersArray(qualifiers));
+		return beans.isEmpty() ? null : beans.iterator().next();
+	}
+
+	/**
+	 * Retrieves a custom repository interfaces from a repository type. This works for the whole class hierarchy and can
+	 * find also a custom repo which is inherieted over many levels.
+	 * 
+	 * @param repositoryType The class representing the repository.
+	 * @param cdiRepositoryConfiguration The configuration for CDI usage.
+	 * @return the interface class or {@literal null}.
+	 */
+	private Class<?> getCustomImplementationClass(Class<?> repositoryType,
+			CdiRepositoryConfiguration cdiRepositoryConfiguration) {
+
+		String className = getCustomImplementationClassName(repositoryType, cdiRepositoryConfiguration);
+		AbstractBeanDefinition beanDefinition = detector.detectCustomImplementation(className,
+				Collections.singleton(repositoryType.getPackage().getName()));
+
+		if (beanDefinition == null) {
+			return null;
+		}
+
+		try {
+			return Class.forName(beanDefinition.getBeanClassName());
+		} catch (ClassNotFoundException e) {
+			throw new UnsatisfiedResolutionException(String.format("Unable to resolve class for '%s'",
+					beanDefinition.getBeanClassName()), e);
+		}
+	}
+
+	private String getCustomImplementationClassName(Class<?> repositoryType,
+			CdiRepositoryConfiguration cdiRepositoryConfiguration) {
+
+		String configuredPostfix = cdiRepositoryConfiguration.getRepositoryImplementationPostfix();
+		Assert.hasText(configuredPostfix, "Configured repository postfix must not be null or empty!");
+
+		return ClassUtils.getShortName(repositoryType) + configuredPostfix;
+	}
+
+	private Annotation[] getQualifiersArray(Set<Annotation> qualifiers) {
+		return qualifiers.toArray(new Annotation[qualifiers.size()]);
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.Bean#getQualifiers()
 	 */
@@ -253,7 +345,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return ApplicationScoped.class;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.enterprise.inject.spi.PassivationCapable#getId()
 	 */
@@ -272,6 +364,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	@Deprecated
 	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
 
+		Bean<?> customImplementationBean = getCustomImplementationBean(repositoryType, beanManager, qualifiers);
 		Object customImplementation = customImplementationBean == null ? null : beanManager.getReference(
 				customImplementationBean, customImplementationBean.getBeanClass(),
 				beanManager.createCreationalContext(customImplementationBean));
@@ -292,13 +385,27 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 				+ "in order to use custom repository implementations");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return String
-				.format("JpaRepositoryBean: type='%s', qualifiers=%s", repositoryType.getName(), qualifiers.toString());
+				.format("CdiRepositoryBean: type='%s', qualifiers=%s", repositoryType.getName(), qualifiers.toString());
+	}
+
+	static enum DefaultCdiRepositoryConfiguration implements CdiRepositoryConfiguration {
+
+		INSTANCE;
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.cdi.CdiRepositoryConfiguration#getRepositoryImplementationPostfix()
+		 */
+		@Override
+		public String getRepositoryImplementationPostfix() {
+			return DefaultRepositoryConfiguration.DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX;
+		}
 	}
 }

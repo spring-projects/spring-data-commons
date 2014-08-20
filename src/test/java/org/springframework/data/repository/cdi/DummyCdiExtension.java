@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,29 +27,31 @@ import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.apache.webbeans.context.AbstractContext;
 import org.apache.webbeans.context.creational.BeanInstanceBag;
 import org.mockito.Mockito;
+import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 
 /**
  * Dummy extension of {@link CdiRepositoryExtensionSupport} to allow integration tests. Will create mocks for repository
  * interfaces being found.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+
 		afterBeanDiscovery.addContext(new MyCustomScope());
+
 		for (Entry<Class<?>, Set<Annotation>> type : getRepositoryTypes()) {
 
-			Bean<?> customImplementation = getCustomImplementationBean(type.getKey(), beanManager, type.getValue());
 			DummyCdiRepositoryBean bean = new DummyCdiRepositoryBean(type.getValue(), type.getKey(), beanManager,
-					customImplementation);
+					getCustomImplementationDetector());
 			registerBean(bean);
 			afterBeanDiscovery.addBean(bean);
 		}
@@ -62,8 +64,8 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		}
 
 		DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
-				Bean<?> customImplementation) {
-			super(qualifiers, repositoryType, beanManager, customImplementation);
+				CustomRepositoryImplementationDetector detector) {
+			super(qualifiers, repositoryType, beanManager, detector);
 		}
 
 		public Class<? extends Annotation> getScope() {
