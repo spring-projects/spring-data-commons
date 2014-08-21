@@ -12,3 +12,4 @@ The `<populator />` element allows to populate the a data store via the Spring D
 |Name|Description
 |`locations`|Where to find the files to read the objects from the repository shall be populated with.
 |===============
+

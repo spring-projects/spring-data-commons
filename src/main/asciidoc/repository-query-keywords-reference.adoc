@@ -36,3 +36,4 @@ The following table lists the keywords generally supported by the Spring Data re
 |`TRUE`|`True`, `IsTrue`
 |`WITHIN`|`Within`, `IsWithin`
 |===============
+

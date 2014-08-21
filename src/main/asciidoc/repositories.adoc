@@ -1,3 +1,5 @@
+:spring-framework-docs: http://docs.spring.io/spring-framework/docs/current/spring-framework-reference/html
+
 [[repositories]]
 = Working with Spring Data Repositories
 
@@ -280,7 +282,7 @@ If your property names contain underscores (e.g. `first_name`) you can escape th
 === Special parameter handling
 To handle parameters in your query you simply define method parameters as already seen in the examples above. Besides that the infrastructure will recognize certain specific types like `Pageable` and `Sort` to apply pagination and sorting to your queries dynamically.
 
-.Using `Pageable` and Sort in query methods
+.Using Pageable, Slice and Sort in query methods
 ====
 [source, java]
 ----
@@ -301,11 +303,11 @@ Sorting options are handled through the `Pageable` instance too. If you only nee
 NOTE: To find out how many pages you get for a query entirely you have to trigger an additional count query. By default this query will be derived from the query you actually trigger.
 
 [[repositories.create-instances]]
-=== Creating repository instances
+== Creating repository instances
 In this section you create instances and bean definitions for the repository interfaces defined. One way to do so is using the Spring namespace that is shipped with each Spring Data module that supports the repository mechanism although we generally recommend to use the Java-Config style configuration.
 
 [[repositories.create-instances.spring]]
-==== XML configuration
+=== XML configuration
 Each Spring Data module includes a repositories element that allows you to simply define a base package that Spring scans for you.
 
 .Enabling Spring Data repositories via XML
@@ -329,7 +331,7 @@ Each Spring Data module includes a repositories element that allows you to simpl
 
 In the preceding example, Spring is instructed to scan `com.acme.repositories` and all its sub-packages for interfaces extending `Repository` or one of its sub-interfaces. For each interface found, the infrastructure registers the persistence technology-specific `FactoryBean` to create the appropriate proxies that handle invocations of the query methods. Each bean is registered under a bean name that is derived from the interface name, so an interface of `UserRepository` would be registered under `userRepository`. The `base-package` attribute allows wildcards, so that you can define a pattern of scanned packages.
 
-===== Using filters
+==== Using filters
 By default the infrastructure picks up every interface extending the persistence technology-specific `Repository` sub-interface located under the configured base package and creates a bean instance for it. However, you might want more fine-grained control over which interfaces bean instances get created for. To do this you use `<include-filter />` and `<exclude-filter />` elements inside `<repositories />`. The semantics are exactly equivalent to the elements in Spring's context namespace. For details, see link:{spring-framework-docs}/beans.html#beans-scanning-filters[Spring reference documentation] on these elements.
 
 For example, to exclude certain interfaces from instantiation as repository, you could use the following configuration:
@@ -371,7 +373,7 @@ class ApplicationConfiguration {
 NOTE: The sample uses the JPA-specific annotation, which you would change according to the store module you actually use. The same applies to the definition of the `EntityManagerFactory` bean. Consult the sections covering the store-specific configuration.
 
 [[repositories.create-instances.standalone]]
-==== Standalone usage
+=== Standalone usage
 You can also use the repository infrastructure outside of a Spring container, e.g. in CDI environments. You still need some Spring libraries in your classpath, but generally you can set up repositories programmatically as well. The Spring Data modules that provide repository support ship a persistence technology-specific RepositoryFactory that you can use as follows.
 
 .Standalone usage of repository factory
@@ -572,7 +574,7 @@ This section documents a set of Spring Data extensions that enable Spring Data u
 
 NOTE: This section contains the documentation for the Spring Data web support as it is implemented as of Spring Data Commons in the 1.6 range. As it the newly introduced support changes quite a lot of things we kept the documentation of the former behavior in <<web.legacy>>.
 
-Spring Data modules ships with a variety of web support if the module supports the repository programming model. The web related stuff requires Spring MVC JARs on the classpath, some of them even provide integration with Spring HATEOAS footnote:[Spring HATEOAS - link:$$https://github.com/SpringSource/spring-hateoas$$[https://github.com/SpringSource/spring-hateoas]]. In general, the integration support is enabled by using the `@EnableSpringDataWebSupport annotation in your JavaConfig configuration class.
+Spring Data modules ships with a variety of web support if the module supports the repository programming model. The web related stuff requires Spring MVC JARs on the classpath, some of them even provide integration with Spring HATEOAS footnote:[Spring HATEOAS - link:$$https://github.com/SpringSource/spring-hateoas$$[https://github.com/SpringSource/spring-hateoas]]. In general, the integration support is enabled by using the `@EnableSpringDataWebSupport` annotation in your JavaConfig configuration class.
 
 .Enabling Spring Data web support
 ====
@@ -658,10 +660,11 @@ public class UserController {
 This method signature will cause Spring MVC try to derive a Pageable instance from the request parameters using the following default configuration:
 
 .Request parameters evaluated for Pageable instances
+[options = "autowidth"]
 |===============
 |`page`|Page you want to retrieve.
 |`size`|Size of the page you want to retrieve.
-|`sort`|Properties that should be sorted by in the format `property,property(,ASC|DESC)`. Default sort direction is ascending. Use multiple sort` parameters if you want to switch directions, e.g. `?sort=firstname&amp;sort=lastname,asc`.
+|`sort`|Properties that should be sorted by in the format `property,property(,ASC\|DESC)`. Default sort direction is ascending. Use multiple `sort` parameters if you want to switch directions, e.g. `?sort=firstname&sort=lastname,asc`.
 |===============
 
 To customize this behavior extend either `SpringDataWebConfiguration` or the HATEOAS-enabled equivalent and override the `pageableResolver()` or `sortResolver()` methods and import your customized configuration file instead of using the `@Enable`-annotation.
@@ -972,21 +975,24 @@ public class UserController {
 
 The `PageableArgumentResolver` automatically resolves request parameters to build a `PageRequest` instance. By default it expects the following structure for the request parameters.
 
-.Request parameters evaluated by `PageableHandlerMethodArgumentResolver`
-
+.Request parameters evaluated by PageableHandlerMethodArgumentResolver
+[options = "autowidth"]
 |===============
 |`page`|Page you want to retrieve, 0 indexed and defaults to 0.
 |`size`|Size of the page you want to retrieve, defaults to 20.
-|`sort`|A collection of sort directives in the format `($propertyname,)[asc|desc]?`.
+|`sort`|A collection of sort directives in the format `($propertyname,)[asc\|desc]?`.
 |===============
 
-.Pagination URL Parameter Examples
-====
+.Pagination URL parameter examples
+
 To retrieve the third page with a maximum page size of 100 with the data sorted by the email property in ascending order use the following url parameter:
+====
 ----
 ?page=2&size=100&sort=email,asc
 ----
+====
 To sort the data by multiple properties in different sort order use the following URL parameter:
+====
 ----
 ?sort=foo,asc&sort=bar,desc
 ----
@@ -1003,7 +1009,7 @@ public String showUsers(Model model,
 
 you have to populate `foo_page` and `bar_page` and the related subproperties.
 
-Configuring a global default on bean declaration the `PageableArgumentResolver` will use a `PageRequest` with the first page and a page size of 10 by default. It will use that value if it cannot resolve a `PageRequest` from the request (because of missing parameters, for example). You can configure a global default on the bean declaration directly. If you might need controller method specific defaults for the `Pageable`, annotate the method parameter with @PageableDefaults and specify page (through `pageNumber`), page size (through `value`), `sort` (list of properties to sort by), and `sortDir` (the direction to sort by) as annotation attributes:
+Configuring a global default on bean declaration the `PageableArgumentResolver` will use a `PageRequest` with the first page and a page size of 10 by default. It will use that value if it cannot resolve a `PageRequest` from the request (because of missing parameters, for example). You can configure a global default on the bean declaration directly. If you might need controller method specific defaults for the `Pageable`, annotate the method parameter with `@PageableDefaults` and specify page (through `pageNumber`), page size (through `value`), `sort` (list of properties to sort by), and `sortDir` (the direction to sort by) as annotation attributes:
 
 [source, java]
 ----

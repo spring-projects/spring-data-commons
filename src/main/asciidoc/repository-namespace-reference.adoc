@@ -16,3 +16,4 @@ The `<repositories />` element triggers the setup of the Spring Data repository 
 |`named-queries-location`|Defines the location to look for a Properties file containing externally defined queries.
 |`consider-nested-repositories`|Controls whether nested repository interface definitions should be considered. Defaults to `false`.
 |===============
+
