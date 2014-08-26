@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
 
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.OrderSpecifier;
+import com.mysema.query.types.Path;
 
 /**
  * Sort option for queries that wraps a querydsl {@link OrderSpecifier}.
@@ -86,7 +87,11 @@ public class QSort extends Sort implements Serializable {
 		Assert.notNull(orderSpecifier, "Order specifier must not be null!");
 
 		Expression<?> target = orderSpecifier.getTarget();
-		Object targetElement = ((com.mysema.query.types.Path<?>) target).getMetadata().getElement();
+
+		Object targetElement = target;
+		if (targetElement instanceof Path) {
+			targetElement = ((com.mysema.query.types.Path<?>) target).getMetadata().getElement();
+		}
 
 		Assert.notNull(targetElement, "Target element must not be null!");
 
