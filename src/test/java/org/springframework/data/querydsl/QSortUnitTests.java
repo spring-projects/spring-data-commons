@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package org.springframework.data.querydsl;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
@@ -145,5 +146,19 @@ public class QSortUnitTests {
 		Sort result = sort.and(new Sort(Direction.ASC, "lastname"));
 		assertThat(result, is(Matchers.<Order> iterableWithSize(2)));
 		assertThat(result, hasItems(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, "firstname")));
+	}
+	
+	/**
+	 * @see DATACMNS-566
+	 */
+	@Test
+	public void shouldSupportSortByOperatorExpressions() {
+
+		QUser user = QUser.user;
+		QSort sort = new QSort(user.dateOfBirth.yearMonth().asc());
+
+		Sort result = sort.and(new Sort(Direction.ASC, "lastname"));
+		assertThat(result, is(Matchers.<Order> iterableWithSize(2)));
+		assertThat(result, hasItems(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString())));
 	}
 }
