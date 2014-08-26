@@ -33,6 +33,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import org.apache.webbeans.context.AbstractContext;
 import org.apache.webbeans.context.creational.BeanInstanceBag;
 import org.mockito.Mockito;
+import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 
 /**
  * Dummy extension of {@link CdiRepositoryExtensionSupport} to allow integration tests. Will create mocks for repository
@@ -47,9 +48,8 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		afterBeanDiscovery.addContext(new MyCustomScope());
 		for (Entry<Class<?>, Set<Annotation>> type : getRepositoryTypes()) {
 
-			Bean<?> customImplementation = getCustomImplementationBean(type.getKey(), beanManager, type.getValue());
 			DummyCdiRepositoryBean bean = new DummyCdiRepositoryBean(type.getValue(), type.getKey(), beanManager,
-					customImplementation);
+					getCustomImplementationDetector());
 			registerBean(bean);
 			afterBeanDiscovery.addBean(bean);
 		}
@@ -62,8 +62,8 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		}
 
 		DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
-				Bean<?> customImplementation) {
-			super(qualifiers, repositoryType, beanManager, customImplementation);
+				CustomRepositoryImplementationDetector detector) {
+			super(qualifiers, repositoryType, beanManager, detector);
 		}
 
 		public Class<? extends Annotation> getScope() {
