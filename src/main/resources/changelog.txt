@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.8.4.RELEASE (2014-08-27)
+---------------------------------------------
+* DATACMNS-568 - Release 1.8.4.
+* DATACMNS-566 - Cannot sort on field operation with QueryDSL.
+* DATACMNS-562 - MappingContext fails to resolve TreeMap as Map value type.
+* DATACMNS-558 - Some quality improvements according to the SonarQube report.
+* DATACMNS-556 - Annotation duplication checks are too strict in AnnotationBasedPersistentProperty.
+* DATACMNS-552 - Improve documentation on naming conventions for custom repository implement.
+
+
 Changes in version 1.9.0.RC1 (2014-08-13)
 -----------------------------------------
 * DATACMNS-561 - Release 1.9 RC1.
