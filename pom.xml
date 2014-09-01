@@ -129,13 +129,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.data.build</groupId>
-			<artifactId>spring-data-java8-stub</artifactId>
-			<version>1.5.0.RC1</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>el-api</artifactId>
 			<version>${cdi}</version>
@@ -220,7 +213,7 @@
 				<configuration>
 					<rules>
 						<requireJavaVersion>
-							<version>[1.7,1.9)</version>
+							<version>[1.8,1.9)</version>
 						</requireJavaVersion>
 					</rules>
 				</configuration>
