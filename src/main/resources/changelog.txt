@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.9.0.RELEASE (2014-09-05)
+---------------------------------------------
+* DATACMNS-572 - Release 1.9 GA.
+* DATACMNS-571 - Move to JDK 8 for build.
+* DATACMNS-570 - Fix Travis build profile setup.
+* DATACMNS-566 - Cannot sort on field operation with QueryDSL.
+* DATACMNS-565 - Custom repository implementations are not picked up when using CDI.
+* DATACMNS-562 - MappingContext fails to resolve TreeMap as Map value type.
+
+
 Changes in version 1.8.4.RELEASE (2014-08-27)
 ---------------------------------------------
 * DATACMNS-568 - Release 1.8.4.
