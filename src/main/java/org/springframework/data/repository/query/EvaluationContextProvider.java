@@ -23,6 +23,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
  * 
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.9
  */
 public interface EvaluationContextProvider {
@@ -34,6 +35,5 @@ public interface EvaluationContextProvider {
 	 * @param parameterValues the values for the parameters.
 	 * @return
 	 */
-	<T extends Parameters<T, ? extends Parameter>> EvaluationContext getEvaluationContext(T parameters,
-			Object[] parameterValues);
+	<T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues);
 }

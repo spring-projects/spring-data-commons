@@ -17,12 +17,14 @@ package org.springframework.data.repository.query;
 
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Default implementation of {@link EvaluationContextProvider} that always creates a new {@link EvaluationContext}.
  * 
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.9
  */
 public enum DefaultEvaluationContextProvider implements EvaluationContextProvider {
@@ -34,8 +36,9 @@ public enum DefaultEvaluationContextProvider implements EvaluationContextProvide
 	 * @see org.springframework.data.repository.query.EvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[])
 	 */
 	@Override
-	public <T extends Parameters<T, ? extends Parameter>> EvaluationContext getEvaluationContext(T parameters,
-			Object[] parameterValues) {
-		return new StandardEvaluationContext();
+	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
+
+		return ObjectUtils.isEmpty(parameterValues) ? new StandardEvaluationContext() : new StandardEvaluationContext(
+				parameterValues);
 	}
 }
