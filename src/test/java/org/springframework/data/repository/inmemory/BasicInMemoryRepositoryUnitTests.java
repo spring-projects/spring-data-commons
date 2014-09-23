@@ -28,8 +28,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Persistent;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
+import org.springframework.expression.Expression;
 
+/**
+ * @author Christoph Strobl
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class BasicInMemoryRepositoryUnitTests {
 
@@ -55,6 +60,17 @@ public class BasicInMemoryRepositoryUnitTests {
 	}
 
 	@Test
+	public void saveNewWithNumericId() {
+
+		ReflectionEntityInformation<WithNumericId, Integer> ei = new ReflectionEntityInformation<WithNumericId, Integer>(
+				WithNumericId.class);
+		BasicInMemoryRepository<WithNumericId, Integer> temp = new BasicInMemoryRepository<WithNumericId, Integer>(ei,
+				opsMock);
+		WithNumericId foo = temp.save(new WithNumericId());
+		System.out.println(foo.id);
+	}
+
+	@Test
 	public void testDoubleSave() {
 
 		Foo foo = new Foo("one");
@@ -74,6 +90,39 @@ public class BasicInMemoryRepositoryUnitTests {
 		repo.save(Arrays.asList(one, two));
 		verify(opsMock, times(1)).create(eq(one.getId()), eq(one));
 		verify(opsMock, times(1)).create(eq(two.getId()), eq(two));
+	}
+
+	@Test
+	public void deleteEntity() {
+
+		Foo one = repo.save(new Foo("one"));
+		repo.delete(one);
+
+		verify(opsMock, times(1)).delete(eq(one.getId()), eq(Foo.class));
+	}
+
+	@Test
+	public void deleteById() {
+
+		repo.delete("one");
+
+		verify(opsMock, times(1)).delete(eq("one"), eq(Foo.class));
+	}
+
+	@Test
+	public void deleteAll() {
+
+		repo.deleteAll();
+
+		verify(opsMock, times(1)).delete(eq(Foo.class));
+	}
+
+	@Test
+	public void findAllIds() {
+
+		repo.findAll(Arrays.asList("one", "two", "three"));
+
+		verify(opsMock, times(1)).read(any(Expression.class), eq(Foo.class));
 	}
 
 	static class Foo {
@@ -136,6 +185,12 @@ public class BasicInMemoryRepositoryUnitTests {
 		public void setBar(String bar) {
 			this.bar = bar;
 		}
+	}
+
+	@Persistent
+	static class WithNumericId {
+
+		@Id Integer id;
 
 	}
 

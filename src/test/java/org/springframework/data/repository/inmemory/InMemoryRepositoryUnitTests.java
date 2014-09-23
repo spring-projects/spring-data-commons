@@ -25,6 +25,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Persistent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,9 +36,9 @@ import org.springframework.data.repository.CrudRepository;
  */
 public class InMemoryRepositoryUnitTests {
 
-	private static final Person EMMA = new Person("emma", 4);
-	private static final Person ARTHUR = new Person("arthur", 4);
-	private static final Person LINA = new Person("lina", 1);
+	private static final Person CERSEI = new Person("cersei", 19);
+	private static final Person JAIME = new Person("jaime", 19);
+	private static final Person TYRION = new Person("tyrion", 17);
 
 	private PersonRepository repository;
 
@@ -51,36 +52,44 @@ public class InMemoryRepositoryUnitTests {
 	@Test
 	public void findBy() {
 
-		this.repository.save(Arrays.asList(EMMA, ARTHUR, LINA));
-		assertThat(this.repository.findByAge(4), contains(EMMA, ARTHUR));
+		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
+		assertThat(this.repository.findByAge(19), contains(CERSEI, JAIME));
 	}
 
 	@Test
 	public void combindedFindUsingAnd() {
 
-		this.repository.save(Arrays.asList(EMMA, ARTHUR, LINA));
+		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
 
-		assertThat(this.repository.findByFirstnameAndAge(ARTHUR.firstname, 4), contains(ARTHUR));
+		assertThat(this.repository.findByFirstnameAndAge(JAIME.firstname, 19), contains(JAIME));
 	}
 
 	@Test
 	public void findPage() {
 
-		this.repository.save(Arrays.asList(EMMA, ARTHUR, LINA));
+		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
 
-		Page<Person> page = this.repository.findByAge(4, new PageRequest(0, 1));
+		Page<Person> page = this.repository.findByAge(19, new PageRequest(0, 1));
 		assertThat(page.hasNext(), is(true));
 		assertThat(page.getTotalElements(), is(2L));
-		assertThat(page.getContent(), contains(EMMA));
+		assertThat(page.getContent(), contains(CERSEI));
 
-		assertThat(this.repository.findByAge(4, page.nextPageable()), contains(ARTHUR));
+		assertThat(this.repository.findByAge(19, page.nextPageable()), contains(JAIME));
 	}
 
+	@Test
+	public void findByConnectingOr() {
+
+		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
+
+		assertThat(this.repository.findByAgeOrFirstname(19, TYRION.firstname), contains(CERSEI, JAIME, TYRION));
+	}
+
+	@Persistent
 	static class Person {
 
 		@Id String id;
 		private String firstname;
-		private String lastname;
 		int age;
 
 		public Person(String firstname, int age) {
@@ -95,14 +104,6 @@ public class InMemoryRepositoryUnitTests {
 
 		public void setId(String id) {
 			this.id = id;
-		}
-
-		public String getLastname() {
-			return lastname;
-		}
-
-		public void setLastname(String lastname) {
-			this.lastname = lastname;
 		}
 
 		public int getAge() {
@@ -123,7 +124,7 @@ public class InMemoryRepositoryUnitTests {
 
 		@Override
 		public String toString() {
-			return "Person [id=" + id + ", firstname=" + firstname + ", lastname=" + lastname + ", age=" + age + "]";
+			return "Person [id=" + id + ", firstname=" + firstname + ", age=" + age + "]";
 		}
 
 	}
@@ -137,6 +138,8 @@ public class InMemoryRepositoryUnitTests {
 		List<Person> findByFirstnameAndAge(String firstname, int age);
 
 		Page<Person> findByAge(int age, Pageable page);
+
+		List<Person> findByAgeOrFirstname(int age, String firstname);
 
 	}
 

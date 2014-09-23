@@ -26,35 +26,43 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
+ * {@link InMemoryAdapter} implementation for access to data stored in {@link Map}.
+ * 
  * @author Christoph Strobl
  */
-public class MapAbstraction {
+public class MapAdapter implements InMemoryAdapter {
 
 	private ConcurrentMap<Class<?>, Map<Serializable, Object>> data = new ConcurrentHashMap<Class<?>, Map<Serializable, Object>>();
 
-	public void put(Serializable id, Object item) {
-		getValues(item).put(id, item);
+	@Override
+	public Object put(Serializable id, Object item) {
+		return getValues(item).put(id, item);
 	}
 
+	@Override
 	public boolean contains(Serializable id, Class<?> type) {
 		return get(id, type) != null;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T get(Serializable id, Class<T> type) {
 		return (T) getValues(type).get(id);
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> Collection<T> getAllOf(Class<T> type) {
 		return (Collection<T>) getValues(type).values();
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T delete(Serializable id, Class<T> type) {
 		return (T) getValues(type).remove(id);
 	}
 
+	@Override
 	public void deleteAllOf(Class<?> type) {
 		getValues(type).clear();
 	}

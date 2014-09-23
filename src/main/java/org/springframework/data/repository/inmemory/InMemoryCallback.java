@@ -16,10 +16,12 @@
 package org.springframework.data.repository.inmemory;
 
 /**
+ * Callback interface for doing in memory operations.
+ * 
  * @author Christoph Strobl
  * @param <T>
  */
-public interface MapCallback<T> {
+public interface InMemoryCallback<T> {
 
-	T doInMap(MapAbstraction map);
+	T doInMemory(InMemoryAdapter adapter);
 }

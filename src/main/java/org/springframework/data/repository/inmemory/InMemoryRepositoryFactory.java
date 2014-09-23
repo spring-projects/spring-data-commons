@@ -41,6 +41,8 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.CollectionUtils;
 
 /**
+ * {@link RepositoryFactorySupport} implementation for creating {@link InMemoryRepository}.
+ * 
  * @author Christoph Strobl
  * @param <T>
  * @param <ID>

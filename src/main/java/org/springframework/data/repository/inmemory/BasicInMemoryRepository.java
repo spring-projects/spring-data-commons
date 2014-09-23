@@ -27,11 +27,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
+import org.springframework.expression.spel.standard.SpelExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
+ * Implementation of {@link InMemoryRepository}
+ * 
  * @author Christoph Strobl
  */
 public class BasicInMemoryRepository<T, ID extends Serializable> implements InMemoryRepository<T, ID> {
@@ -122,7 +127,13 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 
 	@Override
 	public Iterable<T> findAll(Iterable<ID> ids) {
-		throw new UnsupportedOperationException();
+
+		StandardEvaluationContext context = new StandardEvaluationContext();
+		context.setVariable("ids", ids);
+		SpelExpression e = (SpelExpression) new SpelExpressionParser().parseExpression("#ids.contains(#it."
+				+ entityInformation.getIdField().getName() + ")");
+		e.setEvaluationContext(context);
+		return operations.read(e, entityInformation.getJavaType());
 	}
 
 	@Override
@@ -142,7 +153,10 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 
 	@Override
 	public void delete(Iterable<? extends T> entities) {
-		throw new UnsupportedOperationException();
+
+		for (T entity : entities) {
+			delete(entity);
+		}
 	}
 
 	@Override

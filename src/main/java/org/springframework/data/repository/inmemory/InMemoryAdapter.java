@@ -16,37 +16,25 @@
 package org.springframework.data.repository.inmemory;
 
 import java.io.Serializable;
-import java.util.List;
-
-import org.springframework.expression.Expression;
+import java.util.Collection;
 
 /**
+ * Adapter interface to connect to in memory store.
+ * 
  * @author Christoph Strobl
  */
-public interface InMemoryOperations {
+public interface InMemoryAdapter {
 
-	void create(Serializable id, Object objectToInsert);
+	Object put(Serializable id, Object item);
 
-	<T> List<T> read(Class<T> type);
+	boolean contains(Serializable id, Class<?> type);
 
-	<T> T read(Serializable id, Class<T> type);
-
-	<T> T execute(InMemoryCallback<T> action);
-
-	<T> List<T> read(Expression filter, Class<T> type);
-
-	<T> List<T> read(int offset, int rows, Class<T> type);
-
-	<T> List<T> read(Expression filter, int offset, int rows, Class<T> type);
-
-	void update(Serializable id, Object objectToUpdate);
-
-	void delete(Class<?> type);
+	<T> T get(Serializable id, Class<T> type);
 
 	<T> T delete(Serializable id, Class<T> type);
 
-	long count(Class<?> type);
+	<T> Collection<T> getAllOf(Class<T> type);
 
-	long count(Expression filter, Class<?> type);
+	void deleteAllOf(Class<?> type);
 
 }
