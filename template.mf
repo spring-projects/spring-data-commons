@@ -14,6 +14,7 @@ Import-Template:
  javax.inject.*;version="[1.0.0,2.0.0)";resolution:=optional,
  javax.xml.bind.*;version="0";resolution:=optional,
  javax.xml.transform.*;version="0";resolution:=optional,
+ net.sf.ehcache.*;version="[2.8.0, 4.0.0)";resolution:=optional,
  org.springframework.aop.*;version="${spring:[=.=.=,+1.1.0)}";resolution:=optional,
  org.springframework.asm.*;version="${spring:[=.=.=,+1.1.0)}",
  org.springframework.beans.*;version="${spring:[=.=.=,+1.1.0)}",
