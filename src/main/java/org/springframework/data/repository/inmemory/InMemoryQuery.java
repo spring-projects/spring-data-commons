@@ -15,34 +15,17 @@
  */
 package org.springframework.data.repository.inmemory;
 
-import java.io.Serializable;
-import java.util.List;
-
 /**
  * @author Christoph Strobl
  */
-public interface InMemoryOperations {
+public interface InMemoryQuery {
 
-	void create(Serializable id, Object objectToInsert);
+	Object getCritieria();
 
-	<T> List<T> read(Class<T> type);
+	Object getSort();
 
-	<T> T read(Serializable id, Class<T> type);
+	int getOffset();
 
-	<T> T execute(InMemoryCallback<T> action);
-
-	<T> List<T> read(InMemoryQuery filter, Class<T> type);
-
-	<T> List<T> read(int offset, int rows, Class<T> type);
-
-	void update(Serializable id, Object objectToUpdate);
-
-	void delete(Class<?> type);
-
-	<T> T delete(Serializable id, Class<T> type);
-
-	long count(Class<?> type);
-
-	long count(InMemoryQuery filter, Class<?> type);
+	int getRows();
 
 }

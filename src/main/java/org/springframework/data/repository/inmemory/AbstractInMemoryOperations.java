@@ -28,7 +28,7 @@ import org.springframework.util.ClassUtils;
  * 
  * @author Christoph Strobl
  */
-public abstract class AbstractInMemoryOperations implements InMemoryOperations {
+public abstract class AbstractInMemoryOperations<Q extends InMemoryQuery> implements InMemoryOperations {
 
 	@Override
 	public void create(final Serializable id, final Object objectToInsert) {
@@ -136,5 +136,22 @@ public abstract class AbstractInMemoryOperations implements InMemoryOperations {
 		}
 	}
 
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> List<T> read(InMemoryQuery filter, Class<T> type) {
+		return doRead((Q) filter, type);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public long count(InMemoryQuery query, Class<?> type) {
+		return doCount((Q) query, type);
+	}
+
 	protected abstract InMemoryAdapter getAdapter();
+
+	protected abstract <T> List<T> doRead(Q query, Class<T> type);
+
+	protected abstract long doCount(Q query, Class<?> type);
+
 }

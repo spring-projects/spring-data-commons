@@ -186,25 +186,28 @@ public class InMemoryRepositoryFactory<T, ID extends Serializable> extends Repos
 		public Object execute(Object[] parameters) {
 
 			expression.setEvaluationContext(new StandardEvaluationContext(parameters));
+			MapQuery q = new MapQuery(expression);
 
 			if (queryMethod.isPageQuery() || queryMethod.isSliceQuery()) {
 
 				Pageable page = (Pageable) parameters[queryMethod.getParameters().getPageableIndex()];
+				q.skip(page.getOffset()).limit(page.getPageSize());
 
-				List<T> result = (List<T>) this.inMemoryOperations.read(expression, page.getOffset(), page.getPageSize(),
-						queryMethod.getEntityInformation().getJavaType());
+				List<T> result = (List<T>) this.inMemoryOperations.read(q, queryMethod.getEntityInformation().getJavaType());
 
-				long count = queryMethod.isSliceQuery() ? 0 : inMemoryOperations.count(expression, queryMethod
-						.getEntityInformation().getJavaType());
+				long count = queryMethod.isSliceQuery() ? 0 : inMemoryOperations.count(q, queryMethod.getEntityInformation()
+						.getJavaType());
 
 				return new PageImpl<T>(result, page, count);
 			}
 			if (queryMethod.isCollectionQuery()) {
-				return this.inMemoryOperations.read(expression, queryMethod.getEntityInformation().getJavaType());
+
+				return this.inMemoryOperations.read(new MapQuery(expression), queryMethod.getEntityInformation().getJavaType());
 			}
 			if (queryMethod.isQueryForEntity()) {
 
-				List<?> result = this.inMemoryOperations.read(expression, queryMethod.getEntityInformation().getJavaType());
+				List<?> result = this.inMemoryOperations.read(new MapQuery(expression), queryMethod.getEntityInformation()
+						.getJavaType());
 				return CollectionUtils.isEmpty(result) ? null : result.get(0);
 			}
 			throw new UnsupportedOperationException();

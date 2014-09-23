@@ -107,7 +107,9 @@ public class MapOperationsTests {
 
 		SpelExpressionParser parser = new SpelExpressionParser();
 
-		List<Foo> result = (List<Foo>) operations.read(parser.parseExpression("foo == 'two'"), Foo.class);
+		MapQuery q = new MapQuery(parser.parseExpression("foo == 'two'"));
+
+		List<Foo> result = (List<Foo>) operations.read(q, Foo.class);
 		assertThat(result, IsCollectionWithSize.hasSize(1));
 		assertThat(result.get(0), is(FOO2));
 	}

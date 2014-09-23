@@ -133,7 +133,7 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 		SpelExpression e = (SpelExpression) new SpelExpressionParser().parseExpression("#ids.contains(#it."
 				+ entityInformation.getIdField().getName() + ")");
 		e.setEvaluationContext(context);
-		return operations.read(e, entityInformation.getJavaType());
+		return operations.read((InMemoryQuery) new MapQuery(e), entityInformation.getJavaType());
 	}
 
 	@Override

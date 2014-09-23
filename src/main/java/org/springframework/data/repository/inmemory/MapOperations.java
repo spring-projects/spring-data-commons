@@ -16,9 +16,10 @@
 package org.springframework.data.repository.inmemory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-import org.springframework.expression.Expression;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpression;
 
@@ -27,54 +28,60 @@ import org.springframework.expression.spel.standard.SpelExpression;
  * 
  * @author Christoph Strobl
  */
-public class MapOperations extends AbstractInMemoryOperations {
+public class MapOperations extends AbstractInMemoryOperations<MapQuery> {
 
 	private final MapAdapter map = new MapAdapter();
 
 	@Override
-	public <T> List<T> read(Expression filter, final Class<T> type) {
-		return filterMatchingRange(read(type), filter, -1, -1);
+	protected <T> List<T> doRead(MapQuery filter, final Class<T> type) {
+		return sortAndFilterMatchingRange(read(type), filter);
+	}
+
+	@Override
+	protected long doCount(MapQuery query, Class<?> type) {
+		MapQuery q = new MapQuery(query.getCritieria());
+		return doRead(q, type).size();
 	}
 
 	@Override
 	public <T> List<T> read(int offset, int rows, final Class<T> type) {
-		return filterMatchingRange(read(type), null, offset, rows);
+		return filterMatchingRange(read(type), new MapQuery(null).skip(offset).limit(rows));
 	}
 
-	@Override
-	public <T> List<T> read(Expression filter, int offset, int rows, final Class<T> type) {
-		return filterMatchingRange(read(type), filter, offset, rows);
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private <T> List<T> sortAndFilterMatchingRange(List<T> source, MapQuery query) {
+
+		if (query.getSort() != null) {
+			Collections.sort((List) source, (Comparator) query.getSort());
+		}
+
+		return filterMatchingRange(source, query);
 	}
 
-	@Override
-	public long count(Expression filter, Class<?> type) {
-		return filterMatchingRange(read(type), filter, -1, -1).size();
-	}
-
-	private <T> List<T> filterMatchingRange(Iterable<T> source, Expression filterExpression, int offset, int rows) {
+	private <T> List<T> filterMatchingRange(Iterable<T> source, MapQuery filterExpression) {
 
 		List<T> result = new ArrayList<T>();
 
-		boolean compareOffsetAndRows = 0 <= offset || 0 <= rows;
-		int remainingRows = rows;
+		boolean compareOffsetAndRows = 0 < filterExpression.getOffset() || 0 <= filterExpression.getRows();
+		int remainingRows = filterExpression.getRows();
 		int curPos = 0;
 
 		for (T candidate : source) {
 
-			boolean matches = filterExpression == null;
+			boolean matches = filterExpression.getCritieria() == null;
 
 			if (!matches) {
 				try {
-					matches = filterExpression.getValue(candidate, Boolean.class);
+					matches = filterExpression.getCritieria().getValue(candidate, Boolean.class);
 				} catch (SpelEvaluationException e) {
-					((SpelExpression) filterExpression).getEvaluationContext().setVariable("it", candidate);
-					matches = ((SpelExpression) filterExpression).getValue(Boolean.class);
+					((SpelExpression) filterExpression.getCritieria()).getEvaluationContext().setVariable("it", candidate);
+					matches = ((SpelExpression) filterExpression.getCritieria()).getValue(Boolean.class);
 				}
 			}
 
 			if (matches) {
 				if (compareOffsetAndRows) {
-					if (curPos >= offset && rows > 0) {
+					if (curPos >= filterExpression.getOffset() && filterExpression.getRows() > 0) {
 						result.add(candidate);
 						remainingRows--;
 						if (remainingRows <= 0) {
@@ -88,7 +95,6 @@ public class MapOperations extends AbstractInMemoryOperations {
 			}
 		}
 		return result;
-
 	}
 
 	@Override
