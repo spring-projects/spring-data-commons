@@ -105,4 +105,9 @@ public class MapOperations extends AbstractInMemoryOperations<MapQuery> {
 		return this.map;
 	}
 
+	@Override
+	public void destroy() throws Exception {
+		this.map.clear();
+	}
+
 }

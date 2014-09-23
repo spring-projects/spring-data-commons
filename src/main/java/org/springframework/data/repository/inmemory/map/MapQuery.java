@@ -21,6 +21,8 @@ import org.springframework.data.repository.inmemory.InMemoryQuery;
 import org.springframework.expression.Expression;
 
 /**
+ * {@link InMemoryQuery} implementation to be used for executing {@link Expression} based queries.
+ * 
  * @author Christoph Strobl
  */
 public class MapQuery implements InMemoryQuery {
@@ -68,5 +70,4 @@ public class MapQuery implements InMemoryQuery {
 	public int getRows() {
 		return this.rows;
 	}
-
 }

@@ -25,16 +25,59 @@ import java.util.Collection;
  */
 public interface InMemoryAdapter {
 
+	/**
+	 * Add given object with id.
+	 * 
+	 * @param id must not be {@literal null}.
+	 * @param item must not be {@literal null}.
+	 * @return the item previously associated with the id.
+	 */
 	Object put(Serializable id, Object item);
 
+	/**
+	 * Check if a object of given type and id exists.
+	 * 
+	 * @param id must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return true if item of type with id exists.
+	 */
 	boolean contains(Serializable id, Class<?> type);
 
+	/**
+	 * Get the object with given type and id.
+	 * 
+	 * @param id must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return {@literal null} in case no matching item exists.
+	 */
 	<T> T get(Serializable id, Class<T> type);
 
+	/**
+	 * Delete and return the obect with given type and id.
+	 * 
+	 * @param id must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return null if object could not be found
+	 */
 	<T> T delete(Serializable id, Class<T> type);
 
+	/**
+	 * Get all elements of given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return empty colleciton if nothing found.
+	 */
 	<T> Collection<T> getAllOf(Class<T> type);
 
+	/**
+	 * Remove all objects of given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 */
 	void deleteAllOf(Class<?> type);
 
+	/**
+	 * Removes all objects.
+	 */
+	void clear();
 }

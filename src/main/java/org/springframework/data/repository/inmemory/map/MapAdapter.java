@@ -35,37 +35,76 @@ public class MapAdapter implements InMemoryAdapter {
 
 	private ConcurrentMap<Class<?>, Map<Serializable, Object>> data = new ConcurrentHashMap<Class<?>, Map<Serializable, Object>>();
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#put(java.io.Serializable, java.lang.Object)
+	 */
 	@Override
 	public Object put(Serializable id, Object item) {
+
+		Assert.notNull(id, "Cannot add item with 'null' id.");
 		return getValues(item).put(id, item);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#contains(java.io.Serializable, java.lang.Class)
+	 */
 	@Override
 	public boolean contains(Serializable id, Class<?> type) {
 		return get(id, type) != null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#get(java.io.Serializable, java.lang.Class)
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T get(Serializable id, Class<T> type) {
+
+		Assert.notNull(id, "Cannot get item with 'null' id.");
 		return (T) getValues(type).get(id);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#getAllOf(java.lang.Class)
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> Collection<T> getAllOf(Class<T> type) {
 		return (Collection<T>) getValues(type).values();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#delete(java.io.Serializable, java.lang.Class)
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T delete(Serializable id, Class<T> type) {
+
+		Assert.notNull(id, "Cannot delete item with 'null' id.");
 		return (T) getValues(type).remove(id);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#deleteAllOf(java.lang.Class)
+	 */
 	@Override
 	public void deleteAllOf(Class<?> type) {
 		getValues(type).clear();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#clear()
+	 */
+	@Override
+	public void clear() {
+		data.clear();
 	}
 
 	protected Map<Serializable, Object> getValues(Object item) {
@@ -83,5 +122,4 @@ public class MapAdapter implements InMemoryAdapter {
 		}
 		return data.get(userType);
 	}
-
 }

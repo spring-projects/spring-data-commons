@@ -18,31 +18,98 @@ package org.springframework.data.repository.inmemory;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.beans.factory.DisposableBean;
+
 /**
  * @author Christoph Strobl
  */
-public interface InMemoryOperations {
+public interface InMemoryOperations extends DisposableBean {
 
+	/**
+	 * Add object with given id.
+	 * 
+	 * @param id must not be {@literal null}.
+	 * @param objectToInsert must not be {@literal null}.
+	 */
 	void create(Serializable id, Object objectToInsert);
 
+	/**
+	 * Get all elements of given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return empty collection if no elements found.
+	 */
 	<T> List<T> read(Class<T> type);
 
+	/**
+	 * Get element of given type with given id.
+	 * 
+	 * @param id must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return null if not found.
+	 */
 	<T> T read(Serializable id, Class<T> type);
 
+	/**
+	 * Execute operation against underlying store.
+	 * 
+	 * @param action must not be {@literal null}.
+	 * @return
+	 */
 	<T> T execute(InMemoryCallback<T> action);
 
-	<T> List<T> read(InMemoryQuery filter, Class<T> type);
+	/**
+	 * @param query
+	 * @param type
+	 * @return empty collection if no match found.
+	 */
+	<T> List<T> read(InMemoryQuery query, Class<T> type);
 
+	/**
+	 * @param offset
+	 * @param rows
+	 * @param type
+	 * @return
+	 */
 	<T> List<T> read(int offset, int rows, Class<T> type);
 
+	/**
+	 * @param id must not be {@literal null}.
+	 * @param objectToUpdate must not be {@literal null}.
+	 */
 	void update(Serializable id, Object objectToUpdate);
 
+	/**
+	 * Remove items of given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 */
 	void delete(Class<?> type);
 
+	/**
+	 * Delete item of type with given id.
+	 * 
+	 * @param id
+	 * @param type
+	 * @return the deleted item or {@literal null} if no match found.
+	 */
 	<T> T delete(Serializable id, Class<T> type);
 
+	/**
+	 * Total number of elements with given type available.
+	 * 
+	 * @param type
+	 * @return
+	 */
 	long count(Class<?> type);
 
-	long count(InMemoryQuery filter, Class<?> type);
+	/**
+	 * Total number of elements matching given query.
+	 * 
+	 * @param query
+	 * @param type
+	 * @return
+	 */
+	long count(InMemoryQuery query, Class<?> type);
 
 }

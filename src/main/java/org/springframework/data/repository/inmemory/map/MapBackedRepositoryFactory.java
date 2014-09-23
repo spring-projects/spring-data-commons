@@ -20,11 +20,11 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.inmemory.InMemoryOperations;
 import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -39,6 +39,11 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.CollectionUtils;
 
+/**
+ * @author Christoph Strobl
+ * @param <T>
+ * @param <ID>
+ */
 public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMemoryRepositoryFactory<T, ID> {
 
 	private final MapOperations mapOps;
@@ -55,10 +60,10 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 	static class MapQueryLookupStrategy<T, ID extends Serializable> implements QueryLookupStrategy {
 
 		private EvaluationContextProvider evaluationContextProvider;
-		private InMemoryOperations inMemoryOperations;
+		private MapOperations inMemoryOperations;
 
 		public MapQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider,
-				InMemoryOperations inMemoryOperations) {
+				MapOperations inMemoryOperations) {
 			this.evaluationContextProvider = evaluationContextProvider;
 			this.inMemoryOperations = inMemoryOperations;
 		}
@@ -80,10 +85,10 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 		private QueryMethod queryMethod;
 		private SpelExpression expression;
 		private EvaluationContextProvider evaluationContextProvider;
-		private InMemoryOperations inMemoryOperations;
+		private MapOperations inMemoryOperations;
 
 		public ExpressionPartTreeQuery(QueryMethod queryMethod, EvaluationContextProvider evalContextProvider,
-				InMemoryOperations inMemoryOperations) {
+				MapOperations inMemoryOperations) {
 			this.queryMethod = queryMethod;
 			this.evaluationContextProvider = evalContextProvider;
 			this.expression = toPredicateExpression(queryMethod);
@@ -132,6 +137,9 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 						case GREATER_THAN_EQUAL:
 							partBuilder.append(">=").append("[").append(parameterIndex++).append("])");
 							break;
+						default:
+							throw new InvalidDataAccessApiUsageException(String.format("Found invalid part '%s' in query",
+									part.getType()));
 					}
 
 					if (partIter.hasNext()) {
