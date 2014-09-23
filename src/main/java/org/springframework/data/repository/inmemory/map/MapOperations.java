@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory;
+package org.springframework.data.repository.inmemory.map;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.data.repository.inmemory.AbstractInMemoryOperations;
+import org.springframework.data.repository.inmemory.InMemoryAdapter;
+import org.springframework.data.repository.inmemory.InMemoryOperations;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpression;
 

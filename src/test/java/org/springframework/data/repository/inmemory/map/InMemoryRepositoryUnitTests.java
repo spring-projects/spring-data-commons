@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory;
+package org.springframework.data.repository.inmemory.map;
 
 import static org.hamcrest.collection.IsIterableContainingInOrder.*;
 import static org.hamcrest.core.Is.*;
@@ -30,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.inmemory.InMemoryRepository;
 
 /**
  * @author Christoph Strobl
@@ -44,9 +45,8 @@ public class InMemoryRepositoryUnitTests {
 
 	@Before
 	public void setup() {
-
-		InMemoryOperations ops = new MapOperations();
-		this.repository = new InMemoryRepositoryFactory<Person, String>(ops).getRepository(PersonRepository.class);
+		this.repository = new MapBackedRepositoryFactory<Person, String>(new MapOperations())
+				.getRepository(PersonRepository.class);
 	}
 
 	@Test

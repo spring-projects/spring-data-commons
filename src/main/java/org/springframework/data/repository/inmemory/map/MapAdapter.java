@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory;
+package org.springframework.data.repository.inmemory.map;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.data.repository.inmemory.InMemoryAdapter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 

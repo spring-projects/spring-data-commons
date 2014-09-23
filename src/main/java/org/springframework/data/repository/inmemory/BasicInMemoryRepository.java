@@ -18,6 +18,8 @@ package org.springframework.data.repository.inmemory;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -27,9 +29,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
-import org.springframework.expression.spel.standard.SpelExpression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -128,12 +127,16 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 	@Override
 	public Iterable<T> findAll(Iterable<ID> ids) {
 
-		StandardEvaluationContext context = new StandardEvaluationContext();
-		context.setVariable("ids", ids);
-		SpelExpression e = (SpelExpression) new SpelExpressionParser().parseExpression("#ids.contains(#it."
-				+ entityInformation.getIdField().getName() + ")");
-		e.setEvaluationContext(context);
-		return operations.read((InMemoryQuery) new MapQuery(e), entityInformation.getJavaType());
+		List<T> result = new ArrayList<T>();
+
+		for (ID id : ids) {
+			T candidate = findOne(id);
+			if (candidate != null) {
+				result.add(candidate);
+			}
+		}
+
+		return result;
 	}
 
 	@Override

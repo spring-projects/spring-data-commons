@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory;
+package org.springframework.data.repository.inmemory.map;
 
 import static org.hamcrest.core.Is.*;
 import static org.hamcrest.core.IsNull.*;
@@ -25,6 +25,8 @@ import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.repository.inmemory.map.MapOperations;
+import org.springframework.data.repository.inmemory.map.MapQuery;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 public class MapOperationsTests {
