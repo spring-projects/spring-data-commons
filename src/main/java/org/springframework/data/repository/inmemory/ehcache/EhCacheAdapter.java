@@ -28,7 +28,9 @@ import net.sf.ehcache.config.SearchAttribute;
 import net.sf.ehcache.config.Searchable;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
+import org.springframework.data.util.ListConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -73,10 +75,11 @@ public class EhCacheAdapter implements InMemoryAdapter {
 		return (T) (element != null ? element.getObjectValue() : null);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Collection<T> getAllOf(Class<T> type) {
-		return (Collection<T>) getCache(type).getAll(getCache(type).getKeys());
+
+		Collection<Element> values = getCache(type).getAll(getCache(type).getKeys()).values();
+		return new ListConverter<Element, T>(new ElementConverter<T>()).convert(values);
 	}
 
 	@Override
@@ -125,5 +128,14 @@ public class EhCacheAdapter implements InMemoryAdapter {
 			cacheManager.addCache(new Cache(cacheConfig));
 		}
 		return cacheManager.getCache(userType.getName());
+	}
+
+	private class ElementConverter<T> implements Converter<Element, T> {
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public T convert(Element source) {
+			return (T) source.getObjectValue();
+		}
 	}
 }

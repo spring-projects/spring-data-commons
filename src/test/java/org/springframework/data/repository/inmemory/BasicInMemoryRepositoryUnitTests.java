@@ -65,6 +65,7 @@ public class BasicInMemoryRepositoryUnitTests {
 				WithNumericId.class);
 		BasicInMemoryRepository<WithNumericId, Integer> temp = new BasicInMemoryRepository<WithNumericId, Integer>(ei,
 				opsMock);
+
 		WithNumericId foo = temp.save(new WithNumericId());
 	}
 

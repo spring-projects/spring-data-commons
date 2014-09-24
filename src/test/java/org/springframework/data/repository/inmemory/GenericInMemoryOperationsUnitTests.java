@@ -15,25 +15,19 @@
  */
 package org.springframework.data.repository.inmemory;
 
+import static org.hamcrest.collection.IsCollectionWithSize.*;
+import static org.hamcrest.collection.IsIterableContainingInOrder.*;
 import static org.hamcrest.core.Is.*;
 import static org.hamcrest.core.IsNull.*;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
 import java.util.List;
 
-import net.sf.ehcache.search.expression.EqualTo;
-
-import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.annotation.Persistent;
-import org.springframework.data.repository.inmemory.ehcache.EhCacheOperations;
-import org.springframework.data.repository.inmemory.ehcache.EhCacheQuery;
-import org.springframework.data.repository.inmemory.map.MapOperations;
-import org.springframework.data.repository.inmemory.map.MapQuery;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * @author Christoph Strobl
@@ -42,6 +36,7 @@ public abstract class GenericInMemoryOperationsUnitTests {
 
 	private static final Foo FOO1 = new Foo("one");
 	private static final Foo FOO2 = new Foo("two");
+	private static final Bar BAR1 = new Bar("one");
 
 	private InMemoryOperations operations;
 
@@ -56,43 +51,109 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	}
 
 	@Test
-	public void foo() {
+	public void createShouldNotThorwErrorWhenExecutedHavingNonExistingIdAndNonNullValue() {
 		operations.create("1", FOO1);
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void createShouldThrowExceptionForNullId() {
+		operations.create(null, FOO1);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void createShouldThrowExceptionForNullObject() {
+		operations.create("some-id", null);
+	}
+
+	@Test(expected = InvalidDataAccessApiUsageException.class)
+	public void createShouldThrowExecptionWhenObjectOfSameTypeAlreadyExists() {
+
+		operations.create("1", FOO1);
+		operations.create("1", FOO2);
+	}
+
 	@Test
-	public void getNothing() {
+	public void createShouldWorkCorrectlyWhenObjectsOfDifferentTypesWithSameIdAreInserted() {
+
+		operations.create("1", FOO1);
+		operations.create("1", BAR1);
+	}
+
+	@Test
+	public void readShouldReturnNullWhenNoElementsPresent() {
 		assertNull(operations.read("1", Foo.class));
 	}
 
 	@Test
-	public void getOne() {
+	public void readShouldReturnEntireCollection() {
+
+		operations.create("1", FOO1);
+		operations.create("2", FOO2);
+
+		assertThat(operations.read(Foo.class), contains(FOO1, FOO2));
+	}
+
+	@Test
+	public void readShouldReturnObjectWithMatchingIdAndType() {
+
 		operations.create("1", FOO1);
 		assertThat(operations.read("1", Foo.class), is(FOO1));
 	}
 
 	@Test
-	public void getOneNoId() {
+	public void readSouldReturnNullIfNoMatchingIdFound() {
+
 		operations.create("1", FOO1);
 		assertThat(operations.read("2", Foo.class), nullValue());
 	}
 
 	@Test
-	public void getOneDifferntType() {
+	public void readSouldReturnNullIfNoMatchingTypeFound() {
+
 		operations.create("1", FOO1);
 		assertThat(operations.read("1", Bar.class), nullValue());
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void readShouldThrowExceptionWhenGivenNullType() {
+		operations.read(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void readShouldThrowExceptionWhenGivenNullId() {
+		operations.read((Serializable) null, Foo.class);
+	}
+
 	@Test
-	public void update() {
+	public void updateShouldReplaceExistingObject() {
 
 		operations.create("1", FOO1);
 		operations.update("1", FOO2);
 		assertThat(operations.read("1", Foo.class), is(FOO2));
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void updateShouldThrowExceptionWhenGivenNullId() {
+		operations.update(null, FOO1);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void updateShouldThrowExceptionWhenGivenNullObject() {
+		operations.update("1", null);
+	}
+
 	@Test
-	public void delete() {
+	public void updateShouldRespectTypeInformation() {
+
+		operations.create("1", FOO1);
+		operations.update("1", BAR1);
+
+		assertThat(operations.read("1", Foo.class), is(FOO1));
+	}
+
+	@Test
+	public void deleteShouldRemoveObjectCorrectly() {
+
 		operations.create("1", FOO1);
 		operations.delete("1", Foo.class);
 		assertThat(operations.read("1", Foo.class), nullValue());
@@ -100,20 +161,37 @@ public abstract class GenericInMemoryOperationsUnitTests {
 
 	@Test
 	public void deleteReturnsNullWhenNotExisting() {
+
 		operations.create("1", FOO1);
 		assertThat(operations.delete("2", Foo.class), nullValue());
 	}
 
 	@Test
-	public void returnsDeleted() {
+	public void deleteReturnsRemovedObject() {
+
 		operations.create("1", FOO1);
 		assertThat(operations.delete("1", Foo.class), is(FOO1));
 	}
 
-	@Test(expected = InvalidDataAccessApiUsageException.class)
-	public void throwsErrorOnDuplicateInsert() {
+	@Test
+	public void countShouldReturnZeroWhenNoElementsPresent() {
+		operations.count(Foo.class);
+	}
+
+	@Test
+	public void countShouldReturnCollectionSize() {
+
 		operations.create("1", FOO1);
-		operations.create("1", FOO2);
+		operations.create("2", FOO1);
+		operations.create("1", BAR1);
+
+		assertThat(operations.count(Foo.class), is(2L));
+		assertThat(operations.count(Bar.class), is(1L));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void countShouldThrowErrorOnNullType() {
+		operations.count(null);
 	}
 
 	@Test
@@ -122,27 +200,27 @@ public abstract class GenericInMemoryOperationsUnitTests {
 		operations.create("1", FOO1);
 		operations.create("2", FOO2);
 
-		SpelExpressionParser parser = new SpelExpressionParser();
-
-		InMemoryQuery q = null;
-
-		if (operations instanceof MapOperations) {
-			q = new MapQuery(parser.parseExpression("foo == 'two'"));
-		}
-		if (operations instanceof EhCacheOperations) {
-			q = new EhCacheQuery(new EqualTo("foo", "two"));
-		}
-
-		List<Foo> result = (List<Foo>) operations.read(q, Foo.class);
-		assertThat(result, IsCollectionWithSize.hasSize(1));
+		List<Foo> result = (List<Foo>) operations.read(getInMemoryQuery(), Foo.class);
+		assertThat(result, hasSize(1));
 		assertThat(result.get(0), is(FOO2));
+	}
+
+	@Test
+	public void countShouldReturnNumberMatchingElements() {
+
+		operations.create("1", FOO1);
+		operations.create("2", FOO2);
+
+		assertThat(operations.count(getInMemoryQuery(), Foo.class), is(1L));
 	}
 
 	protected abstract InMemoryOperations getInMemoryOperations();
 
+	protected abstract InMemoryQuery getInMemoryQuery();
+
 	static class Foo {
 
-		@Persistent String foo;
+		String foo;
 
 		public Foo(String foo) {
 			this.foo = foo;
@@ -167,26 +245,4 @@ public abstract class GenericInMemoryOperationsUnitTests {
 
 	}
 
-	static class FooBar {
-
-		Foo foo;
-		Bar bar;
-
-		public Foo getFoo() {
-			return foo;
-		}
-
-		public void setFoo(Foo foo) {
-			this.foo = foo;
-		}
-
-		public Bar getBar() {
-			return bar;
-		}
-
-		public void setBar(Bar bar) {
-			this.bar = bar;
-		}
-
-	}
 }

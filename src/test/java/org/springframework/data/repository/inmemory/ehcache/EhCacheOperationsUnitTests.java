@@ -15,8 +15,11 @@
  */
 package org.springframework.data.repository.inmemory.ehcache;
 
+import net.sf.ehcache.search.expression.EqualTo;
+
 import org.springframework.data.repository.inmemory.GenericInMemoryOperationsUnitTests;
 import org.springframework.data.repository.inmemory.InMemoryOperations;
+import org.springframework.data.repository.inmemory.InMemoryQuery;
 
 /**
  * @author Christoph Strobl
@@ -26,6 +29,11 @@ public class EhCacheOperationsUnitTests extends GenericInMemoryOperationsUnitTes
 	@Override
 	protected InMemoryOperations getInMemoryOperations() {
 		return new EhCacheOperations();
+	}
+
+	@Override
+	protected InMemoryQuery getInMemoryQuery() {
+		return new EhCacheQuery(new EqualTo("foo", "two"));
 	}
 
 }

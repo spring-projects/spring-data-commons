@@ -62,7 +62,7 @@ public abstract class AbstractInMemoryOperations<Q extends InMemoryQuery> implem
 	public void update(final Serializable id, final Object objectToUpdate) {
 
 		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
-		Assert.notNull(objectToUpdate, "Object to be updated must not be 'null'.");
+		Assert.notNull(objectToUpdate, "Object to be updated must not be 'null'. Use delete to remove.");
 
 		execute(new InMemoryCallback<Void>() {
 

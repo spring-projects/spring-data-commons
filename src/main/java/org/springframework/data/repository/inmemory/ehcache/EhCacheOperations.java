@@ -26,6 +26,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.inmemory.AbstractInMemoryOperations;
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
 import org.springframework.data.repository.inmemory.InMemoryCallback;
+import org.springframework.data.util.ListConverter;
 
 /**
  * @author Christoph Strobl
@@ -81,30 +82,6 @@ public class EhCacheOperations extends AbstractInMemoryOperations<EhCacheQuery> 
 		public T convert(Result source) {
 			return (T) source.getValue();
 		}
-	}
-
-	private class ListConverter<S, T> implements Converter<List<S>, List<T>> {
-
-		private Converter<S, T> itemConverter;
-
-		/**
-		 * @param itemConverter The {@link Converter} to use for converting individual List items
-		 */
-		public ListConverter(Converter<S, T> itemConverter) {
-			this.itemConverter = itemConverter;
-		}
-
-		public List<T> convert(List<S> source) {
-			if (source == null) {
-				return null;
-			}
-			List<T> results = new ArrayList<T>();
-			for (S result : source) {
-				results.add(itemConverter.convert(result));
-			}
-			return results;
-		}
-
 	}
 
 	@Override

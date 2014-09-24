@@ -17,6 +17,8 @@ package org.springframework.data.repository.inmemory.map;
 
 import org.springframework.data.repository.inmemory.GenericInMemoryOperationsUnitTests;
 import org.springframework.data.repository.inmemory.InMemoryOperations;
+import org.springframework.data.repository.inmemory.InMemoryQuery;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * @author Christoph Strobl
@@ -26,6 +28,11 @@ public class MapOperationsTests extends GenericInMemoryOperationsUnitTests {
 	@Override
 	protected InMemoryOperations getInMemoryOperations() {
 		return new MapOperations();
+	}
+
+	@Override
+	protected InMemoryQuery getInMemoryQuery() {
+		return new MapQuery(new SpelExpressionParser().parseExpression("foo == 'two'"));
 	}
 
 }
