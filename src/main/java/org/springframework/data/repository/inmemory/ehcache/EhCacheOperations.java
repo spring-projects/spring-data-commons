@@ -16,6 +16,7 @@
 package org.springframework.data.repository.inmemory.ehcache;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.sf.ehcache.search.Query;
@@ -50,7 +51,14 @@ public class EhCacheOperations extends AbstractInMemoryOperations<EhCacheQuery> 
 
 			@Override
 			public List<T> doInMemory(InMemoryAdapter adapter) {
-				return new ArrayList<T>(adapter.getAllOf(type)).subList(offset, offset + rows);
+
+				List<T> tmp = new ArrayList<T>(adapter.getAllOf(type));
+
+				if (offset > tmp.size()) {
+					return Collections.emptyList();
+				}
+				int rowsToUse = (offset + rows > tmp.size()) ? tmp.size() - offset : rows;
+				return new ArrayList<T>(adapter.getAllOf(type)).subList(offset, offset + rowsToUse);
 			}
 		});
 	}

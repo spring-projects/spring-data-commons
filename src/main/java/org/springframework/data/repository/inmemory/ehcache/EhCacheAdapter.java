@@ -37,6 +37,8 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
 /**
+ * {@link InMemoryAdapter} implementation using {@link CacheManager}.
+ * 
  * @author Christoph Strobl
  */
 public class EhCacheAdapter implements InMemoryAdapter {
@@ -47,6 +49,10 @@ public class EhCacheAdapter implements InMemoryAdapter {
 		cacheManager = CacheManager.create();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#put(java.io.Serializable, java.lang.Object)
+	 */
 	@Override
 	public Object put(Serializable id, Object item) {
 
@@ -55,11 +61,19 @@ public class EhCacheAdapter implements InMemoryAdapter {
 		return item;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#contains(java.io.Serializable, java.lang.Class)
+	 */
 	@Override
 	public boolean contains(Serializable id, Class<?> type) {
 		return get(id, type) != null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#get(java.io.Serializable, java.lang.Class)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T get(Serializable id, Class<T> type) {
@@ -67,6 +81,10 @@ public class EhCacheAdapter implements InMemoryAdapter {
 		return (T) (element != null ? element.getObjectValue() : null);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#delete(java.io.Serializable, java.lang.Class)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T delete(Serializable id, Class<T> type) {
@@ -75,6 +93,10 @@ public class EhCacheAdapter implements InMemoryAdapter {
 		return (T) (element != null ? element.getObjectValue() : null);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#getAllOf(java.lang.Class)
+	 */
 	@Override
 	public <T> Collection<T> getAllOf(Class<T> type) {
 
@@ -82,11 +104,19 @@ public class EhCacheAdapter implements InMemoryAdapter {
 		return new ListConverter<Element, T>(new ElementConverter<T>()).convert(values);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#deleteAllOf(java.lang.Class)
+	 */
 	@Override
 	public void deleteAllOf(Class<?> type) {
 		getCache(type).removeAll();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#clear()
+	 */
 	@Override
 	public void clear() {
 		cacheManager.clearAll();

@@ -16,6 +16,7 @@
 package org.springframework.data.repository.inmemory;
 
 import static org.hamcrest.collection.IsCollectionWithSize.*;
+import static org.hamcrest.collection.IsEmptyCollection.*;
 import static org.hamcrest.collection.IsIterableContainingInOrder.*;
 import static org.hamcrest.core.Is.*;
 import static org.hamcrest.core.IsNull.*;
@@ -36,6 +37,7 @@ public abstract class GenericInMemoryOperationsUnitTests {
 
 	private static final Foo FOO1 = new Foo("one");
 	private static final Foo FOO2 = new Foo("two");
+	private static final Foo FOO3 = new Foo("three");
 	private static final Bar BAR1 = new Bar("one");
 
 	private InMemoryOperations operations;
@@ -125,6 +127,37 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	}
 
 	@Test
+	public void readMatching() {
+
+		operations.create("1", FOO1);
+		operations.create("2", FOO2);
+
+		List<Foo> result = (List<Foo>) operations.read(getInMemoryQuery(), Foo.class);
+		assertThat(result, hasSize(1));
+		assertThat(result.get(0), is(FOO2));
+	}
+
+	@Test
+	public void readShouldRespectOffset() {
+
+		operations.create("1", FOO1);
+		operations.create("2", FOO2);
+		operations.create("3", FOO3);
+
+		assertThat(operations.read(1, 5, Foo.class), contains(FOO2, FOO3));
+	}
+
+	@Test
+	public void readShouldReturnEmptyCollectionIfOffsetOutOfRange() {
+
+		operations.create("1", FOO1);
+		operations.create("2", FOO2);
+		operations.create("3", FOO3);
+
+		assertThat(operations.read(5, 5, Foo.class), empty());
+	}
+
+	@Test
 	public void updateShouldReplaceExistingObject() {
 
 		operations.create("1", FOO1);
@@ -192,17 +225,6 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void countShouldThrowErrorOnNullType() {
 		operations.count(null);
-	}
-
-	@Test
-	public void readMatching() {
-
-		operations.create("1", FOO1);
-		operations.create("2", FOO2);
-
-		List<Foo> result = (List<Foo>) operations.read(getInMemoryQuery(), Foo.class);
-		assertThat(result, hasSize(1));
-		assertThat(result.get(0), is(FOO2));
 	}
 
 	@Test

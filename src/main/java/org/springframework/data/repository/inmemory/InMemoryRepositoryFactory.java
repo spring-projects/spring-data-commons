@@ -49,5 +49,8 @@ public abstract class InMemoryRepositoryFactory<T, ID extends Serializable> exte
 		return BasicInMemoryRepository.class;
 	}
 
+	/**
+	 * @return store specific implementation
+	 */
 	protected abstract InMemoryOperations getInMemoryOperations();
 }

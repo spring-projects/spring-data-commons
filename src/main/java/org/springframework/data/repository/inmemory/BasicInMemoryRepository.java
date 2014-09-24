@@ -75,6 +75,7 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 
 		if (entityInformation.isNew(entity)) {
 
+			// TODO: refactor this to some kind of IDStrategy
 			Serializable id = null;
 			if (ClassUtils.isAssignable(String.class, entityInformation.getIdType())) {
 				id = UUID.randomUUID().toString();

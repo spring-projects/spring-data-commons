@@ -25,7 +25,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Persistent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -85,7 +84,6 @@ public class InMemoryRepositoryUnitTests {
 		assertThat(this.repository.findByAgeOrFirstname(19, TYRION.firstname), contains(CERSEI, JAIME, TYRION));
 	}
 
-	@Persistent
 	static class Person {
 
 		@Id String id;

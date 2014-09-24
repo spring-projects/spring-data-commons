@@ -16,6 +16,8 @@
 package org.springframework.data.repository.inmemory;
 
 /**
+ * Store independent abstraction for a query using native query language.
+ * 
  * @author Christoph Strobl
  */
 public interface InMemoryQuery {

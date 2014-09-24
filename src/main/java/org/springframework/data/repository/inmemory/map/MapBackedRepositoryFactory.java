@@ -168,6 +168,7 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 		@SuppressWarnings("unchecked")
 		public Object execute(Object[] parameters) {
 
+			// TODO: check usage of this.evaluationContextProvider at this point
 			expression.setEvaluationContext(new StandardEvaluationContext(parameters));
 			MapQuery q = new MapQuery(expression);
 
