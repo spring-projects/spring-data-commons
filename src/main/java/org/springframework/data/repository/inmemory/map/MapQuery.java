@@ -42,12 +42,12 @@ public class MapQuery implements InMemoryQuery {
 	}
 
 	public MapQuery skip(int offset) {
-		this.offset = offset;
+		setOffset(offset);
 		return this;
 	}
 
 	public MapQuery limit(int rows) {
-		this.rows = rows;
+		setRows(rows);
 		return this;
 	}
 
@@ -69,5 +69,15 @@ public class MapQuery implements InMemoryQuery {
 	@Override
 	public int getRows() {
 		return this.rows;
+	}
+
+	@Override
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+
+	@Override
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 }

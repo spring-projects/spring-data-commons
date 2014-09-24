@@ -52,4 +52,14 @@ public class EhCacheQuery implements InMemoryQuery {
 		return this.rows;
 	}
 
+	@Override
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+
+	@Override
+	public void setRows(int rows) {
+		this.rows = rows;
+	}
+
 }

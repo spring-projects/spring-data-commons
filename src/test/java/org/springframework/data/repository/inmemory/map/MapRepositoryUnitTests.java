@@ -21,7 +21,7 @@ import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
 /**
  * @author Christoph Strobl
  */
-public class InMemoryRepositoryUnitTests extends GenericInMemoryRepositoryUnitTests {
+public class MapRepositoryUnitTests extends GenericInMemoryRepositoryUnitTests {
 
 	@Override
 	protected InMemoryRepositoryFactory<org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests.Person, String> getRepositoryFactory() {

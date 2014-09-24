@@ -28,6 +28,8 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.inmemory.InMemoryPartTreeQuery;
+import org.springframework.data.repository.inmemory.InMemoryQuery;
 import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.ParameterAccessor;
@@ -142,31 +144,18 @@ public class EhCacheBackedRepositoryFactory<T, ID extends Serializable> extends 
 		}
 	}
 
-	public static class EhCachePartTreeQuery<T, ID extends Serializable> implements RepositoryQuery {
-
-		private QueryMethod queryMethod;
-		private EhCacheOperations inMemoryOperations;
+	public static class EhCachePartTreeQuery<T, ID extends Serializable> extends InMemoryPartTreeQuery<T, ID> {
 
 		public EhCachePartTreeQuery(QueryMethod queryMethod, EhCacheOperations inMemoryOperations) {
-			super();
-			this.queryMethod = queryMethod;
-			this.inMemoryOperations = inMemoryOperations;
+			super(queryMethod, inMemoryOperations);
 		}
 
 		@Override
-		public Object execute(Object[] parameters) {
-
-			ParametersParameterAccessor accessor = new ParametersParameterAccessor(this.queryMethod.getParameters(),
+		public AbstractQueryCreator<? extends InMemoryQuery, ?> getQueryCreator(Object[] parameters) {
+			ParametersParameterAccessor accessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
 					parameters);
-			PartTree tree = new PartTree(queryMethod.getName(), queryMethod.getEntityInformation().getJavaType());
-			EhCacheQuery query = new EhCacheQueryCreator(tree, accessor).createQuery();
-
-			return this.inMemoryOperations.read(query, queryMethod.getEntityInformation().getJavaType());
-		}
-
-		@Override
-		public QueryMethod getQueryMethod() {
-			return queryMethod;
+			PartTree tree = new PartTree(getQueryMethod().getName(), getQueryMethod().getEntityInformation().getJavaType());
+			return new EhCacheQueryCreator(tree, accessor);
 		}
 
 	}

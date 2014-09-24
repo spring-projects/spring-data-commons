@@ -30,4 +30,8 @@ public interface InMemoryQuery {
 
 	int getRows();
 
+	void setOffset(int offset);
+
+	void setRows(int rows);
+
 }
