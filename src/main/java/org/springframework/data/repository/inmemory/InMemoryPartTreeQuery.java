@@ -22,7 +22,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
-import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -49,8 +48,7 @@ public abstract class InMemoryPartTreeQuery<T, ID extends Serializable> implemen
 	@SuppressWarnings("unchecked")
 	public Object execute(Object[] parameters) {
 
-		// TODO: check usage of this.evaluationContextProvider at this point
-		InMemoryQuery q = getQueryCreator(parameters).createQuery();
+		InMemoryQuery q = getQuery(parameters);
 
 		if (queryMethod.isPageQuery() || queryMethod.isSliceQuery()) {
 
@@ -77,5 +75,5 @@ public abstract class InMemoryPartTreeQuery<T, ID extends Serializable> implemen
 		throw new UnsupportedOperationException();
 	}
 
-	public abstract AbstractQueryCreator<? extends InMemoryQuery, ?> getQueryCreator(Object[] parameters);
+	public abstract InMemoryQuery getQuery(Object[] parameters);
 }

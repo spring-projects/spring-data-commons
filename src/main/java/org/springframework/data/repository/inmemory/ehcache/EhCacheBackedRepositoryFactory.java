@@ -151,11 +151,11 @@ public class EhCacheBackedRepositoryFactory<T, ID extends Serializable> extends 
 		}
 
 		@Override
-		public AbstractQueryCreator<? extends InMemoryQuery, ?> getQueryCreator(Object[] parameters) {
+		public InMemoryQuery getQuery(Object[] parameters) {
 			ParametersParameterAccessor accessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
 					parameters);
 			PartTree tree = new PartTree(getQueryMethod().getName(), getQueryMethod().getEntityInformation().getJavaType());
-			return new EhCacheQueryCreator(tree, accessor);
+			return new EhCacheQueryCreator(tree, accessor).createQuery();
 		}
 
 	}

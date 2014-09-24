@@ -18,26 +18,28 @@ package org.springframework.data.repository.inmemory.map;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Iterator;
-import java.util.List;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.inmemory.InMemoryPartTreeQuery;
+import org.springframework.data.repository.inmemory.InMemoryQuery;
 import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.ParameterAccessor;
+import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.util.CollectionUtils;
 
 /**
  * @author Christoph Strobl
@@ -80,24 +82,36 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 
 	}
 
-	public static class ExpressionPartTreeQuery<T, ID extends Serializable> implements RepositoryQuery {
+	public static class SpelQueryCreator extends AbstractQueryCreator<MapQuery, String> {
 
-		private QueryMethod queryMethod;
 		private SpelExpression expression;
-		private EvaluationContextProvider evaluationContextProvider;
-		private MapOperations inMemoryOperations;
 
-		public ExpressionPartTreeQuery(QueryMethod queryMethod, EvaluationContextProvider evalContextProvider,
-				MapOperations inMemoryOperations) {
-			this.queryMethod = queryMethod;
-			this.evaluationContextProvider = evalContextProvider;
-			this.expression = toPredicateExpression(queryMethod);
-			this.inMemoryOperations = inMemoryOperations;
+		public SpelQueryCreator(PartTree tree, ParameterAccessor parameters) {
+			super(tree, parameters);
+			this.expression = toPredicateExpression(tree);
 		}
 
-		protected SpelExpression toPredicateExpression(QueryMethod queryMethod) {
+		@Override
+		protected String create(Part part, Iterator<Object> iterator) {
+			return "";
+		}
 
-			PartTree tree = new PartTree(queryMethod.getName(), queryMethod.getEntityInformation().getJavaType());
+		@Override
+		protected String and(Part part, String base, Iterator<Object> iterator) {
+			return "";
+		}
+
+		@Override
+		protected String or(String base, String criteria) {
+			return "";
+		}
+
+		@Override
+		protected MapQuery complete(String criteria, Sort sort) {
+			return new MapQuery(this.expression);
+		}
+
+		protected SpelExpression toPredicateExpression(PartTree tree) {
 
 			int parameterIndex = 0;
 			StringBuilder sb = new StringBuilder();
@@ -164,43 +178,37 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 			return (SpelExpression) new SpelExpressionParser().parseExpression(sb.toString());
 		}
 
+	}
+
+	public static class ExpressionPartTreeQuery<T, ID extends Serializable> extends InMemoryPartTreeQuery<T, ID> {
+
+		private EvaluationContextProvider evaluationContextProvider;
+
+		public ExpressionPartTreeQuery(QueryMethod queryMethod, EvaluationContextProvider evalContextProvider,
+				MapOperations inMemoryOperations) {
+			super(queryMethod, inMemoryOperations);
+			this.evaluationContextProvider = evalContextProvider;
+		}
+
 		@Override
-		@SuppressWarnings("unchecked")
+		public InMemoryQuery getQuery(Object[] parameters) {
+
+			ParametersParameterAccessor accessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
+					parameters);
+			PartTree tree = new PartTree(getQueryMethod().getName(), getQueryMethod().getEntityInformation().getJavaType());
+
+			// TODO: check usage of evaluationContextProvider within the query creator
+			MapQuery query = new SpelQueryCreator(tree, accessor).createQuery();
+			((SpelExpression) query.getCritieria()).setEvaluationContext(new StandardEvaluationContext(parameters));
+			return query;
+		}
+
+		@Override
 		public Object execute(Object[] parameters) {
 
-			// TODO: check usage of this.evaluationContextProvider at this point
-			expression.setEvaluationContext(new StandardEvaluationContext(parameters));
-			MapQuery q = new MapQuery(expression);
-
-			if (queryMethod.isPageQuery() || queryMethod.isSliceQuery()) {
-
-				Pageable page = (Pageable) parameters[queryMethod.getParameters().getPageableIndex()];
-				q.skip(page.getOffset()).limit(page.getPageSize());
-
-				List<T> result = (List<T>) this.inMemoryOperations.read(q, queryMethod.getEntityInformation().getJavaType());
-
-				long count = queryMethod.isSliceQuery() ? 0 : inMemoryOperations.count(q, queryMethod.getEntityInformation()
-						.getJavaType());
-
-				return new PageImpl<T>(result, page, count);
-			}
-			if (queryMethod.isCollectionQuery()) {
-
-				return this.inMemoryOperations.read(new MapQuery(expression), queryMethod.getEntityInformation().getJavaType());
-			}
-			if (queryMethod.isQueryForEntity()) {
-
-				List<?> result = this.inMemoryOperations.read(new MapQuery(expression), queryMethod.getEntityInformation()
-						.getJavaType());
-				return CollectionUtils.isEmpty(result) ? null : result.get(0);
-			}
-			throw new UnsupportedOperationException();
+			return super.execute(parameters);
 		}
 
-		@Override
-		public QueryMethod getQueryMethod() {
-			return queryMethod;
-		}
 	}
 
 	@Override

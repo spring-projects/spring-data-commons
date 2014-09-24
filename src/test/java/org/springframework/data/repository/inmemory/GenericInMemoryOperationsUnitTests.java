@@ -35,10 +35,10 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
  */
 public abstract class GenericInMemoryOperationsUnitTests {
 
-	private static final Foo FOO1 = new Foo("one");
-	private static final Foo FOO2 = new Foo("two");
-	private static final Foo FOO3 = new Foo("three");
-	private static final Bar BAR1 = new Bar("one");
+	private static final Foo FOO_ONE = new Foo("one");
+	private static final Foo FOO_TWO = new Foo("two");
+	private static final Foo FOO_THREE = new Foo("three");
+	private static final Bar BAR_ONE = new Bar("one");
 
 	private InMemoryOperations operations;
 
@@ -54,12 +54,12 @@ public abstract class GenericInMemoryOperationsUnitTests {
 
 	@Test
 	public void createShouldNotThorwErrorWhenExecutedHavingNonExistingIdAndNonNullValue() {
-		operations.create("1", FOO1);
+		operations.create("1", FOO_ONE);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void createShouldThrowExceptionForNullId() {
-		operations.create(null, FOO1);
+		operations.create(null, FOO_ONE);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -70,15 +70,15 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void createShouldThrowExecptionWhenObjectOfSameTypeAlreadyExists() {
 
-		operations.create("1", FOO1);
-		operations.create("1", FOO2);
+		operations.create("1", FOO_ONE);
+		operations.create("1", FOO_TWO);
 	}
 
 	@Test
 	public void createShouldWorkCorrectlyWhenObjectsOfDifferentTypesWithSameIdAreInserted() {
 
-		operations.create("1", FOO1);
-		operations.create("1", BAR1);
+		operations.create("1", FOO_ONE);
+		operations.create("1", BAR_ONE);
 	}
 
 	@Test
@@ -89,30 +89,30 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	@Test
 	public void readShouldReturnEntireCollection() {
 
-		operations.create("1", FOO1);
-		operations.create("2", FOO2);
+		operations.create("1", FOO_ONE);
+		operations.create("2", FOO_TWO);
 
-		assertThat(operations.read(Foo.class), contains(FOO1, FOO2));
+		assertThat(operations.read(Foo.class), contains(FOO_ONE, FOO_TWO));
 	}
 
 	@Test
 	public void readShouldReturnObjectWithMatchingIdAndType() {
 
-		operations.create("1", FOO1);
-		assertThat(operations.read("1", Foo.class), is(FOO1));
+		operations.create("1", FOO_ONE);
+		assertThat(operations.read("1", Foo.class), is(FOO_ONE));
 	}
 
 	@Test
 	public void readSouldReturnNullIfNoMatchingIdFound() {
 
-		operations.create("1", FOO1);
+		operations.create("1", FOO_ONE);
 		assertThat(operations.read("2", Foo.class), nullValue());
 	}
 
 	@Test
 	public void readSouldReturnNullIfNoMatchingTypeFound() {
 
-		operations.create("1", FOO1);
+		operations.create("1", FOO_ONE);
 		assertThat(operations.read("1", Bar.class), nullValue());
 	}
 
@@ -129,30 +129,30 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	@Test
 	public void readMatching() {
 
-		operations.create("1", FOO1);
-		operations.create("2", FOO2);
+		operations.create("1", FOO_ONE);
+		operations.create("2", FOO_TWO);
 
 		List<Foo> result = (List<Foo>) operations.read(getInMemoryQuery(), Foo.class);
 		assertThat(result, hasSize(1));
-		assertThat(result.get(0), is(FOO2));
+		assertThat(result.get(0), is(FOO_TWO));
 	}
 
 	@Test
 	public void readShouldRespectOffset() {
 
-		operations.create("1", FOO1);
-		operations.create("2", FOO2);
-		operations.create("3", FOO3);
+		operations.create("1", FOO_ONE);
+		operations.create("2", FOO_TWO);
+		operations.create("3", FOO_THREE);
 
-		assertThat(operations.read(1, 5, Foo.class), contains(FOO2, FOO3));
+		assertThat(operations.read(1, 5, Foo.class), contains(FOO_TWO, FOO_THREE));
 	}
 
 	@Test
 	public void readShouldReturnEmptyCollectionIfOffsetOutOfRange() {
 
-		operations.create("1", FOO1);
-		operations.create("2", FOO2);
-		operations.create("3", FOO3);
+		operations.create("1", FOO_ONE);
+		operations.create("2", FOO_TWO);
+		operations.create("3", FOO_THREE);
 
 		assertThat(operations.read(5, 5, Foo.class), empty());
 	}
@@ -160,14 +160,14 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	@Test
 	public void updateShouldReplaceExistingObject() {
 
-		operations.create("1", FOO1);
-		operations.update("1", FOO2);
-		assertThat(operations.read("1", Foo.class), is(FOO2));
+		operations.create("1", FOO_ONE);
+		operations.update("1", FOO_TWO);
+		assertThat(operations.read("1", Foo.class), is(FOO_TWO));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void updateShouldThrowExceptionWhenGivenNullId() {
-		operations.update(null, FOO1);
+		operations.update(null, FOO_ONE);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -178,16 +178,16 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	@Test
 	public void updateShouldRespectTypeInformation() {
 
-		operations.create("1", FOO1);
-		operations.update("1", BAR1);
+		operations.create("1", FOO_ONE);
+		operations.update("1", BAR_ONE);
 
-		assertThat(operations.read("1", Foo.class), is(FOO1));
+		assertThat(operations.read("1", Foo.class), is(FOO_ONE));
 	}
 
 	@Test
 	public void deleteShouldRemoveObjectCorrectly() {
 
-		operations.create("1", FOO1);
+		operations.create("1", FOO_ONE);
 		operations.delete("1", Foo.class);
 		assertThat(operations.read("1", Foo.class), nullValue());
 	}
@@ -195,15 +195,15 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	@Test
 	public void deleteReturnsNullWhenNotExisting() {
 
-		operations.create("1", FOO1);
+		operations.create("1", FOO_ONE);
 		assertThat(operations.delete("2", Foo.class), nullValue());
 	}
 
 	@Test
 	public void deleteReturnsRemovedObject() {
 
-		operations.create("1", FOO1);
-		assertThat(operations.delete("1", Foo.class), is(FOO1));
+		operations.create("1", FOO_ONE);
+		assertThat(operations.delete("1", Foo.class), is(FOO_ONE));
 	}
 
 	@Test
@@ -214,9 +214,9 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	@Test
 	public void countShouldReturnCollectionSize() {
 
-		operations.create("1", FOO1);
-		operations.create("2", FOO1);
-		operations.create("1", BAR1);
+		operations.create("1", FOO_ONE);
+		operations.create("2", FOO_ONE);
+		operations.create("1", BAR_ONE);
 
 		assertThat(operations.count(Foo.class), is(2L));
 		assertThat(operations.count(Bar.class), is(1L));
@@ -230,8 +230,8 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	@Test
 	public void countShouldReturnNumberMatchingElements() {
 
-		operations.create("1", FOO1);
-		operations.create("2", FOO2);
+		operations.create("1", FOO_ONE);
+		operations.create("2", FOO_TWO);
 
 		assertThat(operations.count(getInMemoryQuery(), Foo.class), is(1L));
 	}
@@ -251,10 +251,10 @@ public abstract class GenericInMemoryOperationsUnitTests {
 		public String getFoo() {
 			return foo;
 		}
-
 	}
 
 	static class Bar {
+
 		String bar;
 
 		public Bar(String bar) {
@@ -264,7 +264,5 @@ public abstract class GenericInMemoryOperationsUnitTests {
 		public String getBar() {
 			return bar;
 		}
-
 	}
-
 }

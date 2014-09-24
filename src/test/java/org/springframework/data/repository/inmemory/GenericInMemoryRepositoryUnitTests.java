@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
@@ -69,9 +70,12 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 		Page<Person> page = this.repository.findByAge(19, new PageRequest(0, 1));
 		assertThat(page.hasNext(), is(true));
 		assertThat(page.getTotalElements(), is(2L));
-		assertThat(page.getContent(), containsInAnyOrder(CERSEI));
+		assertThat(page.getContent(), IsCollectionWithSize.hasSize(1));
 
-		assertThat(this.repository.findByAge(19, page.nextPageable()), containsInAnyOrder(JAIME));
+		Page<Person> next = this.repository.findByAge(19, page.nextPageable());
+		assertThat(next.hasNext(), is(false));
+		assertThat(next.getTotalElements(), is(2L));
+		assertThat(next.getContent(), IsCollectionWithSize.hasSize(1));
 	}
 
 	@Test
@@ -80,6 +84,15 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
 
 		assertThat(this.repository.findByAgeOrFirstname(19, TYRION.firstname), containsInAnyOrder(CERSEI, JAIME, TYRION));
+	}
+
+	@Test
+	public void singleEntityExecution() {
+
+		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
+
+		assertThat(this.repository.findByAgeAndFirstname(TYRION.getAge(), TYRION.getFirstname()), is(TYRION));
+
 	}
 
 	protected abstract InMemoryRepositoryFactory<Person, String> getRepositoryFactory();
@@ -138,6 +151,8 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 		Page<Person> findByAge(int age, Pageable page);
 
 		List<Person> findByAgeOrFirstname(int age, String firstname);
+
+		Person findByAgeAndFirstname(int age, String firstname);
 
 	}
 
