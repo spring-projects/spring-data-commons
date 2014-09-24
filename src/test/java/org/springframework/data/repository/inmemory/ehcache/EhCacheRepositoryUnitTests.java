@@ -13,26 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.map;
+package org.springframework.data.repository.inmemory.ehcache;
 
-import org.springframework.data.repository.inmemory.GenericInMemoryOperationsUnitTests;
-import org.springframework.data.repository.inmemory.InMemoryOperations;
-import org.springframework.data.repository.inmemory.InMemoryQuery;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests;
+import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
 
 /**
  * @author Christoph Strobl
  */
-public class MapOperationsUnitTests extends GenericInMemoryOperationsUnitTests {
+public class EhCacheRepositoryUnitTests extends GenericInMemoryRepositoryUnitTests {
 
 	@Override
-	protected InMemoryOperations getInMemoryOperations() {
-		return new MapOperations();
-	}
-
-	@Override
-	protected InMemoryQuery getInMemoryQuery() {
-		return new MapQuery(new SpelExpressionParser().parseExpression("foo == 'two'"));
+	protected InMemoryRepositoryFactory<Person, String> getRepositoryFactory() {
+		return new EhCacheBackedRepositoryFactory<Person, String>(new EhCacheOperations());
 	}
 
 }

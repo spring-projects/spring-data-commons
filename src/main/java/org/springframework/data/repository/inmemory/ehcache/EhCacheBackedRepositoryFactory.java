@@ -21,19 +21,24 @@ import java.util.Iterator;
 
 import net.sf.ehcache.search.expression.Criteria;
 import net.sf.ehcache.search.expression.EqualTo;
+import net.sf.ehcache.search.expression.GreaterThan;
+import net.sf.ehcache.search.expression.ILike;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.ParameterAccessor;
+import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
-import org.springframework.data.repository.query.parser.PartTree.OrPart;
 
 /**
  * @author Christoph Strobl
@@ -78,6 +83,65 @@ public class EhCacheBackedRepositoryFactory<T, ID extends Serializable> extends 
 
 	}
 
+	public static class EhCacheQueryCreator extends AbstractQueryCreator<EhCacheQuery, Criteria> {
+
+		public EhCacheQueryCreator(PartTree tree, ParameterAccessor parameters) {
+			super(tree, parameters);
+		}
+
+		public EhCacheQueryCreator(PartTree tree) {
+			super(tree);
+		}
+
+		@Override
+		protected Criteria create(Part part, Iterator<Object> iterator) {
+			return from(part, iterator);
+		}
+
+		@Override
+		protected Criteria and(Part part, Criteria base, Iterator<Object> iterator) {
+
+			if (base == null) {
+				return create(part, iterator);
+			}
+			return base.and(from(part, iterator));
+		}
+
+		@Override
+		protected Criteria or(Criteria base, Criteria criteria) {
+			return base.or(criteria);
+		}
+
+		@Override
+		protected EhCacheQuery complete(Criteria criteria, Sort sort) {
+			return new EhCacheQuery(criteria);
+		}
+
+		private Criteria from(Part part, Iterator<Object> iterator) {
+
+			// TODO: complete list of supported types
+			switch (part.getType()) {
+				case TRUE:
+					return new EqualTo(part.getProperty().toDotPath(), true);
+				case FALSE:
+					return new EqualTo(part.getProperty().toDotPath(), true);
+				case SIMPLE_PROPERTY:
+					return new EqualTo(part.getProperty().toDotPath(), iterator.next());
+				case IS_NULL:
+					return new EqualTo(part.getProperty().toDotPath(), null);
+				case STARTING_WITH:
+				case LIKE:
+					return new ILike(part.getProperty().toDotPath(), iterator.next() + "*");
+				case GREATER_THAN:
+					return new GreaterThan(part.getProperty().toDotPath(), iterator.next());
+
+				default:
+					throw new InvalidDataAccessApiUsageException(
+							String.format("Found invalid part '%s' in query", part.getType()));
+			}
+		}
+	}
+
 	public static class EhCachePartTreeQuery<T, ID extends Serializable> implements RepositoryQuery {
 
 		private QueryMethod queryMethod;
@@ -89,88 +153,15 @@ public class EhCacheBackedRepositoryFactory<T, ID extends Serializable> extends 
 			this.inMemoryOperations = inMemoryOperations;
 		}
 
-		protected Criteria toEhCacheCriteria(QueryMethod queryMethod) {
-
-			PartTree tree = new PartTree(queryMethod.getName(), queryMethod.getEntityInformation().getJavaType());
-
-			int parameterIndex = 0;
-			StringBuilder sb = new StringBuilder();
-
-			Criteria criteria = null;
-
-			for (Iterator<OrPart> orPartIter = tree.iterator(); orPartIter.hasNext();) {
-
-				OrPart orPart = orPartIter.next();
-
-				int partCnt = 0;
-				StringBuilder partBuilder = new StringBuilder();
-				for (Iterator<Part> partIter = orPart.iterator(); partIter.hasNext();) {
-
-					Part part = partIter.next();
-
-					Criteria c = null;
-					switch (part.getType()) {
-						case TRUE:
-							c = new EqualTo(part.getProperty().toDotPath(), true);
-							break;
-						case FALSE:
-							c = new EqualTo(part.getProperty().toDotPath(), true);
-							break;
-						case SIMPLE_PROPERTY:
-							partBuilder.append("?.equals(").append("[").append(parameterIndex++).append("])");
-							break;
-						case IS_NULL:
-							partBuilder.append(" == null");
-							break;
-						case STARTING_WITH:
-						case LIKE:
-							partBuilder.append("?.startsWith(").append("[").append(parameterIndex++).append("])");
-							break;
-						case GREATER_THAN:
-							partBuilder.append(">").append("[").append(parameterIndex++).append("])");
-							break;
-						case GREATER_THAN_EQUAL:
-							partBuilder.append(">=").append("[").append(parameterIndex++).append("])");
-							break;
-						default:
-							throw new InvalidDataAccessApiUsageException(String.format("Found invalid part '%s' in query",
-									part.getType()));
-					}
-
-					if (partIter.hasNext()) {
-						if (criteria == null) {
-							criteria = c;
-						} else {
-							criteria.and(c);
-						}
-					}
-
-					partCnt++;
-				}
-
-				if (partCnt > 1) {
-					sb.append("(").append(partBuilder).append(")");
-				} else {
-					sb.append(partBuilder);
-				}
-
-				if (orPartIter.hasNext()) {
-					if (criteria == null) {
-						// criteria.or(other)
-					} else {
-						// TODO:
-					}
-				}
-
-			}
-
-			return null;
-		}
-
 		@Override
 		public Object execute(Object[] parameters) {
-			// TODO Auto-generated method stub
-			return null;
+
+			ParametersParameterAccessor accessor = new ParametersParameterAccessor(this.queryMethod.getParameters(),
+					parameters);
+			PartTree tree = new PartTree(queryMethod.getName(), queryMethod.getEntityInformation().getJavaType());
+			EhCacheQuery query = new EhCacheQueryCreator(tree, accessor).createQuery();
+
+			return this.inMemoryOperations.read(query, queryMethod.getEntityInformation().getJavaType());
 		}
 
 		@Override
