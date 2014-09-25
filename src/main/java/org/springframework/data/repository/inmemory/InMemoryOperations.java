@@ -26,6 +26,14 @@ import org.springframework.beans.factory.DisposableBean;
 public interface InMemoryOperations extends DisposableBean {
 
 	/**
+	 * Add given object.
+	 * 
+	 * @param objectToInsert
+	 * @return
+	 */
+	<T> T create(T objectToInsert);
+
+	/**
 	 * Add object with given id.
 	 * 
 	 * @param id must not be {@literal null}.
@@ -74,6 +82,11 @@ public interface InMemoryOperations extends DisposableBean {
 	<T> List<T> read(int offset, int rows, Class<T> type);
 
 	/**
+	 * @param objectToUpdate
+	 */
+	void update(Object objectToUpdate);
+
+	/**
 	 * @param id must not be {@literal null}.
 	 * @param objectToUpdate must not be {@literal null}.
 	 */
@@ -85,6 +98,12 @@ public interface InMemoryOperations extends DisposableBean {
 	 * @param type must not be {@literal null}.
 	 */
 	void delete(Class<?> type);
+
+	/**
+	 * @param objectToDelete
+	 * @return
+	 */
+	<T> T delete(T objectToDelete);
 
 	/**
 	 * Delete item of type with given id.

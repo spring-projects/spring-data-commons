@@ -91,11 +91,4 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 		return (Class<ID>) field.getType();
 	}
 
-	/**
-	 * @return
-	 * @since 1.10
-	 */
-	public Field getIdField() {
-		return field;
-	}
 }

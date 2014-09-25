@@ -20,6 +20,7 @@ import static org.hamcrest.collection.IsEmptyCollection.*;
 import static org.hamcrest.collection.IsIterableContainingInOrder.*;
 import static org.hamcrest.core.Is.*;
 import static org.hamcrest.core.IsNull.*;
+import static org.hamcrest.core.IsSame.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -29,6 +30,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.annotation.Id;
 
 /**
  * @author Christoph Strobl
@@ -79,6 +81,39 @@ public abstract class GenericInMemoryOperationsUnitTests {
 
 		operations.create("1", FOO_ONE);
 		operations.create("1", BAR_ONE);
+	}
+
+	@Test
+	public void createShouldGenerateId() {
+
+		ClassWithStringId target = operations.create(new ClassWithStringId());
+
+		assertThat(target.id, notNullValue());
+	}
+
+	@Test(expected = InvalidDataAccessApiUsageException.class)
+	public void createShouldThrowErrorWhenIdCannotBeResolved() {
+		operations.create(FOO_ONE);
+	}
+
+	@Test
+	public void createShouldReturnSameInstanceGenerateId() {
+
+		ClassWithStringId source = new ClassWithStringId();
+		ClassWithStringId target = operations.create(source);
+
+		assertThat(target, sameInstance(source));
+	}
+
+	@Test
+	public void createShouldRespectExistingId() {
+
+		ClassWithStringId source = new ClassWithStringId();
+		source.id = "one";
+
+		operations.create(source);
+
+		assertThat(operations.read("one", ClassWithStringId.class), is(source));
 	}
 
 	@Test
@@ -185,6 +220,24 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	}
 
 	@Test
+	public void updateShouldUseExtractedIdInformation() {
+
+		ClassWithStringId source = new ClassWithStringId();
+
+		ClassWithStringId saved = operations.create(source);
+		saved.value = "foo";
+
+		operations.update(saved);
+
+		assertThat(operations.read(saved.id, ClassWithStringId.class), sameInstance(saved));
+	}
+
+	@Test(expected = InvalidDataAccessApiUsageException.class)
+	public void updateShouldThrowErrorWhenIdInformationCannotBeExtracted() {
+		operations.update(FOO_ONE);
+	}
+
+	@Test
 	public void deleteShouldRemoveObjectCorrectly() {
 
 		operations.create("1", FOO_ONE);
@@ -204,6 +257,20 @@ public abstract class GenericInMemoryOperationsUnitTests {
 
 		operations.create("1", FOO_ONE);
 		assertThat(operations.delete("1", Foo.class), is(FOO_ONE));
+	}
+
+	@Test
+	public void deleteRemovesObjectUsingExtractedId() {
+
+		ClassWithStringId source = new ClassWithStringId();
+		operations.create(source);
+
+		assertThat(operations.delete(source), is(source));
+	}
+
+	@Test(expected = InvalidDataAccessApiUsageException.class)
+	public void deleteThrowsExceptionWhenIdCannotBeExctracted() {
+		operations.delete(FOO_ONE);
 	}
 
 	@Test
@@ -264,5 +331,11 @@ public abstract class GenericInMemoryOperationsUnitTests {
 		public String getBar() {
 			return bar;
 		}
+	}
+
+	static class ClassWithStringId {
+
+		@Id String id;
+		String value;
 	}
 }

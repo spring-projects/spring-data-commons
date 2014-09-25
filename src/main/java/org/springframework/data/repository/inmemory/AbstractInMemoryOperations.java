@@ -16,10 +16,17 @@
 package org.springframework.data.repository.inmemory;
 
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -29,6 +36,38 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  */
 public abstract class AbstractInMemoryOperations<Q extends InMemoryQuery> implements InMemoryOperations {
+
+	@SuppressWarnings("rawtypes")//
+	private MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext;
+
+	protected AbstractInMemoryOperations() {
+		this(new BasicMappingContext());
+	}
+
+	@SuppressWarnings("rawtypes")
+	protected AbstractInMemoryOperations(
+			MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext) {
+
+		this.mappingContext = mappingContext;
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public <T> T create(T objectToInsert) {
+
+		PersistentEntity<?, ? extends PersistentProperty> entity = this.mappingContext.getPersistentEntity(ClassUtils
+				.getUserClass(objectToInsert));
+
+		Serializable id = getIdResolver().readId(objectToInsert, entity);
+
+		if (id == null) {
+			id = getIdResolver().createId(entity);
+			BeanWrapper.create(objectToInsert, null).setProperty(entity.getIdProperty(), id);
+		}
+
+		create(id, objectToInsert);
+		return objectToInsert;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -40,6 +79,7 @@ public abstract class AbstractInMemoryOperations<Q extends InMemoryQuery> implem
 		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
 		Assert.notNull(objectToInsert, "Object to be inserted must not be 'null'.");
 
+		// TODO: add transaction hook
 		execute(new InMemoryCallback<Void>() {
 
 			@Override
@@ -52,6 +92,22 @@ public abstract class AbstractInMemoryOperations<Q extends InMemoryQuery> implem
 				return null;
 			}
 		});
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void update(Object objectToUpdate) {
+
+		PersistentEntity<?, ? extends PersistentProperty> entity = this.mappingContext.getPersistentEntity(ClassUtils
+				.getUserClass(objectToUpdate));
+
+		if (!entity.hasIdProperty()) {
+			throw new InvalidDataAccessApiUsageException(String.format("Cannot determine id for type %s",
+					ClassUtils.getUserClass(objectToUpdate)));
+		}
+
+		Serializable id = BeanWrapper.create(objectToUpdate, null).getProperty(entity.getIdProperty(), Serializable.class);
+		update(id, objectToUpdate);
 	}
 
 	/*
@@ -129,6 +185,16 @@ public abstract class AbstractInMemoryOperations<Q extends InMemoryQuery> implem
 		});
 	}
 
+	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public <T> T delete(T objectToDelete) {
+
+		Class<T> type = (Class<T>) ClassUtils.getUserClass(objectToDelete);
+		PersistentEntity<?, ? extends PersistentProperty> entity = this.mappingContext.getPersistentEntity(type);
+
+		return delete(getIdResolver().readId(objectToDelete, entity), type);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#delete(java.io.Serializable, java.lang.Class)
@@ -192,10 +258,86 @@ public abstract class AbstractInMemoryOperations<Q extends InMemoryQuery> implem
 		return doCount((Q) query, type);
 	}
 
+	protected IdResolver getIdResolver() {
+		return DefaultIdResolver.INSTANCE;
+	}
+
 	protected abstract InMemoryAdapter getAdapter();
 
 	protected abstract <T> List<T> doRead(Q query, Class<T> type);
 
 	protected abstract long doCount(Q query, Class<?> type);
+
+	private static void verifyIdPropertyPresent(PersistentEntity<?, ? extends PersistentProperty> entity) {
+
+		if (!entity.hasIdProperty()) {
+			throw new InvalidDataAccessApiUsageException(String.format("Cannot determine id for type %s", entity.getType()));
+		}
+	}
+
+	/**
+	 * @author Christoph Strobl
+	 */
+	public static interface IdResolver {
+
+		/**
+		 * Generates a new id for the given {@link PersistentEntity}.
+		 * 
+		 * @param entity must not be {@literal null}.
+		 * @return
+		 */
+		@SuppressWarnings("rawtypes")
+		Serializable createId(PersistentEntity<?, ? extends PersistentProperty> entity);
+
+		/**
+		 * Reads the id value from the given source using information provided by {@link PersistentEntity}.
+		 * 
+		 * @param source must not be {@literal null}.
+		 * @param entity must not be {@literal null}.
+		 * @return
+		 */
+		@SuppressWarnings("rawtypes")
+		Serializable readId(Object source, PersistentEntity<?, ? extends PersistentProperty> entity);
+	}
+
+	/**
+	 * @author Christoph Strobl
+	 */
+	static enum DefaultIdResolver implements IdResolver {
+
+		INSTANCE;
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public Serializable createId(PersistentEntity<?, ? extends PersistentProperty> entity) {
+
+			if (!entity.hasIdProperty() || ClassUtils.isAssignable(String.class, entity.getIdProperty().getActualType())) {
+				return UUID.randomUUID().toString();
+			} else if (ClassUtils.isAssignable(Integer.class, entity.getIdProperty().getActualType())) {
+				try {
+					return SecureRandom.getInstanceStrong().nextInt();
+				} catch (NoSuchAlgorithmException e) {
+					throw new InvalidDataAccessApiUsageException("argh....", e);
+				}
+			} else if (ClassUtils.isAssignable(Long.class, entity.getIdProperty().getActualType())) {
+				try {
+					return SecureRandom.getInstanceStrong().nextLong();
+				} catch (NoSuchAlgorithmException e) {
+					throw new InvalidDataAccessApiUsageException("argh....", e);
+				}
+			}
+
+			throw new InvalidDataAccessApiUsageException("non gereratable id type....");
+		}
+
+		@Override
+		public Serializable readId(Object source, PersistentEntity<?, ? extends PersistentProperty> entity) {
+
+			verifyIdPropertyPresent(entity);
+
+			return BeanWrapper.create(source, null).getProperty(entity.getIdProperty(), Serializable.class);
+		}
+
+	}
 
 }

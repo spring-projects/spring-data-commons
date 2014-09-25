@@ -16,22 +16,15 @@
 package org.springframework.data.repository.inmemory;
 
 import java.io.Serializable;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.support.ReflectionEntityInformation;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Implementation of {@link InMemoryRepository}
@@ -41,15 +34,14 @@ import org.springframework.util.ReflectionUtils;
 public class BasicInMemoryRepository<T, ID extends Serializable> implements InMemoryRepository<T, ID> {
 
 	private final InMemoryOperations operations;
-	private final ReflectionEntityInformation<T, ID> entityInformation;
+	private final EntityInformation<T, ID> entityInformation;
 
 	public BasicInMemoryRepository(EntityInformation<T, ID> metadata, InMemoryOperations operations) {
 
 		Assert.notNull(metadata, "Cannot initialize repository for 'null' metadata");
-		Assert.notNull(metadata, "Cannot initialize repository for 'null' operations");
+		Assert.notNull(operations, "Cannot initialize repository for 'null' operations");
 
-		this.entityInformation = metadata instanceof ReflectionEntityInformation ? (ReflectionEntityInformation<T, ID>) metadata
-				: new ReflectionEntityInformation<T, ID>(metadata.getJavaType());
+		this.entityInformation = metadata;
 		this.operations = operations;
 	}
 
@@ -74,27 +66,7 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 		Assert.notNull(entity, "Entity must not be 'null' for save.");
 
 		if (entityInformation.isNew(entity)) {
-
-			// TODO: refactor this to some kind of IDStrategy
-			Serializable id = null;
-			if (ClassUtils.isAssignable(String.class, entityInformation.getIdType())) {
-				id = UUID.randomUUID().toString();
-			} else if (ClassUtils.isAssignable(Integer.class, entityInformation.getIdType())) {
-				try {
-					id = SecureRandom.getInstanceStrong().nextInt();
-				} catch (NoSuchAlgorithmException e) {
-					throw new InvalidDataAccessApiUsageException("argh....");
-				}
-			} else if (ClassUtils.isAssignable(Long.class, entityInformation.getIdType())) {
-				try {
-					id = SecureRandom.getInstanceStrong().nextLong();
-				} catch (NoSuchAlgorithmException e) {
-					throw new InvalidDataAccessApiUsageException("argh....");
-				}
-			}
-
-			ReflectionUtils.setField(entityInformation.getIdField(), entity, id);
-			operations.create(id, entity);
+			operations.create(entity);
 		} else {
 			operations.update(entityInformation.getId(entity), entity);
 		}

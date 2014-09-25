@@ -147,7 +147,7 @@ public class EhCacheAdapter implements InMemoryAdapter {
 
 					PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(type, field.getName());
 
-					if (pd.getReadMethod() != null) {
+					if (pd != null && pd.getReadMethod() != null) {
 						s.addSearchAttribute(new SearchAttribute().name(field.getName()).expression(
 								"value." + pd.getReadMethod().getName() + "()"));
 					}

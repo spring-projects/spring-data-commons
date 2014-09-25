@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.inmemory;
 
-import static org.hamcrest.core.IsNull.*;
-import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -48,16 +46,7 @@ public class BasicInMemoryRepositoryUnitTests {
 		repo = new BasicInMemoryRepository<Foo, String>(ei, opsMock);
 	}
 
-	@Test
-	public void testSaveNew() {
-
-		Foo foo = new Foo("one");
-
-		repo.save(foo);
-		assertThat(foo.getId(), notNullValue());
-		verify(opsMock, times(1)).create(eq(foo.getId()), eq(foo));
-	}
-
+	// TODO: move to template tests
 	@Test
 	public void saveNewWithNumericId() {
 
@@ -75,8 +64,10 @@ public class BasicInMemoryRepositoryUnitTests {
 		Foo foo = new Foo("one");
 
 		repo.save(foo);
+
+		foo.id = "1";
 		repo.save(foo);
-		verify(opsMock, times(1)).create(eq(foo.getId()), eq(foo));
+		verify(opsMock, times(1)).create(eq(foo));
 		verify(opsMock, times(1)).update(eq(foo.getId()), eq(foo));
 	}
 
@@ -87,8 +78,8 @@ public class BasicInMemoryRepositoryUnitTests {
 		Foo two = new Foo("one");
 
 		repo.save(Arrays.asList(one, two));
-		verify(opsMock, times(1)).create(eq(one.getId()), eq(one));
-		verify(opsMock, times(1)).create(eq(two.getId()), eq(two));
+		verify(opsMock, times(1)).create(eq(one));
+		verify(opsMock, times(1)).create(eq(two));
 	}
 
 	@Test
