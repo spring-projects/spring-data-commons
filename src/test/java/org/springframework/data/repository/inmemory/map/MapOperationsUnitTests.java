@@ -27,7 +27,7 @@ public class MapOperationsUnitTests extends GenericInMemoryOperationsUnitTests {
 
 	@Override
 	protected InMemoryOperations getInMemoryOperations() {
-		return new MapOperations();
+		return new MapTemplate();
 	}
 
 	@Override

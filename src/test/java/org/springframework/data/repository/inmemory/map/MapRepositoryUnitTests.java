@@ -25,7 +25,7 @@ public class MapRepositoryUnitTests extends GenericInMemoryRepositoryUnitTests {
 
 	@Override
 	protected InMemoryRepositoryFactory<org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests.Person, String> getRepositoryFactory() {
-		return new MapBackedRepositoryFactory<Person, String>(new MapOperations());
+		return new MapBackedRepositoryFactory<Person, String>(new MapTemplate());
 	}
 
 }

@@ -49,14 +49,14 @@ import org.springframework.data.repository.query.parser.PartTree;
  */
 public class EhCacheBackedRepositoryFactory<T, ID extends Serializable> extends InMemoryRepositoryFactory<T, ID> {
 
-	private EhCacheOperations cacheOps;
+	private EhCacheTemplate cacheOps;
 
-	public EhCacheBackedRepositoryFactory(EhCacheOperations cacheOperations) {
+	public EhCacheBackedRepositoryFactory(EhCacheTemplate cacheOperations) {
 		this.cacheOps = cacheOperations;
 	}
 
 	@Override
-	protected EhCacheOperations getInMemoryOperations() {
+	protected EhCacheTemplate getInMemoryOperations() {
 		return cacheOps;
 	}
 
@@ -67,9 +67,9 @@ public class EhCacheBackedRepositoryFactory<T, ID extends Serializable> extends 
 
 	static class EhCacheQueryLookupStrategy<T, ID extends Serializable> implements QueryLookupStrategy {
 
-		private EhCacheOperations inMemoryOperations;
+		private EhCacheTemplate inMemoryOperations;
 
-		public EhCacheQueryLookupStrategy(Key key, EhCacheOperations inMemoryOperations) {
+		public EhCacheQueryLookupStrategy(Key key, EhCacheTemplate inMemoryOperations) {
 			this.inMemoryOperations = inMemoryOperations;
 		}
 
@@ -146,7 +146,7 @@ public class EhCacheBackedRepositoryFactory<T, ID extends Serializable> extends 
 
 	public static class EhCachePartTreeQuery<T, ID extends Serializable> extends InMemoryPartTreeQuery<T, ID> {
 
-		public EhCachePartTreeQuery(QueryMethod queryMethod, EhCacheOperations inMemoryOperations) {
+		public EhCachePartTreeQuery(QueryMethod queryMethod, EhCacheTemplate inMemoryOperations) {
 			super(queryMethod, inMemoryOperations);
 		}
 

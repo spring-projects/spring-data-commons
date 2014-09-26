@@ -25,7 +25,7 @@ public class EhCacheRepositoryUnitTests extends GenericInMemoryRepositoryUnitTes
 
 	@Override
 	protected InMemoryRepositoryFactory<Person, String> getRepositoryFactory() {
-		return new EhCacheBackedRepositoryFactory<Person, String>(new EhCacheOperations());
+		return new EhCacheBackedRepositoryFactory<Person, String>(new EhCacheTemplate());
 	}
 
 }

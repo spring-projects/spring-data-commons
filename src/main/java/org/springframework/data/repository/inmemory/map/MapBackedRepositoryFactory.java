@@ -48,9 +48,9 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
  */
 public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMemoryRepositoryFactory<T, ID> {
 
-	private final MapOperations mapOps;
+	private final MapTemplate mapOps;
 
-	public MapBackedRepositoryFactory(MapOperations mapOperations) {
+	public MapBackedRepositoryFactory(MapTemplate mapOperations) {
 		this.mapOps = mapOperations;
 	}
 
@@ -62,10 +62,10 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 	static class MapQueryLookupStrategy<T, ID extends Serializable> implements QueryLookupStrategy {
 
 		private EvaluationContextProvider evaluationContextProvider;
-		private MapOperations inMemoryOperations;
+		private MapTemplate inMemoryOperations;
 
 		public MapQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider,
-				MapOperations inMemoryOperations) {
+				MapTemplate inMemoryOperations) {
 			this.evaluationContextProvider = evaluationContextProvider;
 			this.inMemoryOperations = inMemoryOperations;
 		}
@@ -185,7 +185,7 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 		private EvaluationContextProvider evaluationContextProvider;
 
 		public ExpressionPartTreeQuery(QueryMethod queryMethod, EvaluationContextProvider evalContextProvider,
-				MapOperations inMemoryOperations) {
+				MapTemplate inMemoryOperations) {
 			super(queryMethod, inMemoryOperations);
 			this.evaluationContextProvider = evalContextProvider;
 		}
@@ -212,7 +212,7 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 	}
 
 	@Override
-	protected MapOperations getInMemoryOperations() {
+	protected MapTemplate getInMemoryOperations() {
 		return this.mapOps;
 	}
 

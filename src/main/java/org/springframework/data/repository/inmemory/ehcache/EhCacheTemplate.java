@@ -24,6 +24,9 @@ import net.sf.ehcache.search.Result;
 import net.sf.ehcache.search.Results;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.inmemory.AbstractInMemoryOperations;
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
 import org.springframework.data.repository.inmemory.InMemoryCallback;
@@ -32,15 +35,28 @@ import org.springframework.data.util.ListConverter;
 /**
  * @author Christoph Strobl
  */
-public class EhCacheOperations extends AbstractInMemoryOperations<EhCacheQuery> {
+public class EhCacheTemplate extends AbstractInMemoryOperations<EhCacheQuery> {
 
 	private EhCacheAdapter adapter;
 
-	public EhCacheOperations() {
+	public EhCacheTemplate() {
 		this(new EhCacheAdapter());
 	}
 
-	public EhCacheOperations(EhCacheAdapter adapter) {
+	public EhCacheTemplate(EhCacheAdapter adapter) {
+		super();
+		this.adapter = adapter;
+	}
+
+	public EhCacheTemplate(
+			MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext) {
+		this(new EhCacheAdapter(), mappingContext);
+	}
+
+	public EhCacheTemplate(
+			EhCacheAdapter adapter,
+			MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext) {
+		super(mappingContext);
 		this.adapter = adapter;
 	}
 

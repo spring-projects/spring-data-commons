@@ -28,7 +28,7 @@ public class EhCacheOperationsUnitTests extends GenericInMemoryOperationsUnitTes
 
 	@Override
 	protected InMemoryOperations getInMemoryOperations() {
-		return new EhCacheOperations();
+		return new EhCacheTemplate();
 	}
 
 	@Override
