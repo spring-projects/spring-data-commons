@@ -20,6 +20,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.inmemory.AbstractInMemoryOperations;
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
 import org.springframework.data.repository.inmemory.InMemoryOperations;
@@ -31,9 +34,18 @@ import org.springframework.expression.spel.standard.SpelExpression;
  * 
  * @author Christoph Strobl
  */
-public class MapOperations extends AbstractInMemoryOperations<MapQuery> {
+public class MapTemplate extends AbstractInMemoryOperations<MapQuery> {
 
 	private final MapAdapter map = new MapAdapter();
+
+	public MapTemplate() {
+		super();
+	}
+
+	public MapTemplate(
+			MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext) {
+		super(mappingContext);
+	}
 
 	@Override
 	protected <T> List<T> doRead(MapQuery filter, final Class<T> type) {

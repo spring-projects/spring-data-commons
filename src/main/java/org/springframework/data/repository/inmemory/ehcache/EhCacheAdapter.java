@@ -46,7 +46,11 @@ public class EhCacheAdapter implements InMemoryAdapter {
 	private CacheManager cacheManager;
 
 	public EhCacheAdapter() {
-		cacheManager = CacheManager.create();
+		this(CacheManager.create());
+	}
+
+	public EhCacheAdapter(CacheManager cacheManager) {
+		this.cacheManager = cacheManager;
 	}
 
 	/*
@@ -135,7 +139,14 @@ public class EhCacheAdapter implements InMemoryAdapter {
 
 		if (!cacheManager.cacheExists(userType.getName())) {
 
-			CacheConfiguration cacheConfig = new CacheConfiguration(userType.getName(), 0);
+			CacheConfiguration cacheConfig = cacheManager.getConfiguration().getDefaultCacheConfiguration().clone();
+
+			if (!cacheConfig.isSearchable()) {
+
+				cacheConfig = new CacheConfiguration();
+				cacheConfig.setMaxEntriesLocalHeap(0);
+			}
+			cacheConfig.setName(userType.getName());
 			final Searchable s = new Searchable();
 
 			// TODO: maybe use mappingcontex information at this point or register generic type using some spel expression

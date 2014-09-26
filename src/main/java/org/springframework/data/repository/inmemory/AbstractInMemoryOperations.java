@@ -258,6 +258,11 @@ public abstract class AbstractInMemoryOperations<Q extends InMemoryQuery> implem
 		return doCount((Q) query, type);
 	}
 
+	@Override
+	public MappingContext<?, ?> getMappingContext() {
+		return this.mappingContext;
+	}
+
 	protected IdResolver getIdResolver() {
 		return DefaultIdResolver.INSTANCE;
 	}

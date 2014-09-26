@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.data.mapping.context.MappingContext;
 
 /**
  * @author Christoph Strobl
@@ -130,5 +131,7 @@ public interface InMemoryOperations extends DisposableBean {
 	 * @return
 	 */
 	long count(InMemoryQuery query, Class<?> type);
+
+	MappingContext<?, ?> getMappingContext();
 
 }
