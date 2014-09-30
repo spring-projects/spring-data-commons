@@ -15,14 +15,18 @@
  */
 package org.springframework.data.repository.inmemory.map;
 
+import static org.springframework.data.querydsl.QueryDslUtils.*;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
+import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.inmemory.InMemoryPartTreeQuery;
 import org.springframework.data.repository.inmemory.InMemoryQuery;
 import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
+import org.springframework.data.repository.inmemory.QueryDslInMemoryRepository;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -72,6 +76,26 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 			return new ExpressionPartTreeQuery<T, ID>(queryMethod, evaluationContextProvider, this.inMemoryOperations);
 		}
 
+	}
+
+	@Override
+	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
+
+		if (isQueryDslExecutor(metadata.getRepositoryInterface())) {
+			return QueryDslInMemoryRepository.class;
+		}
+		return super.getRepositoryBaseClass(metadata);
+	}
+
+	/**
+	 * Returns whether the given repository interface requires a QueryDsl specific implementation to be chosen.
+	 * 
+	 * @param repositoryInterface
+	 * @return
+	 */
+	private boolean isQueryDslExecutor(Class<?> repositoryInterface) {
+
+		return QUERY_DSL_PRESENT && QueryDslPredicateExecutor.class.isAssignableFrom(repositoryInterface);
 	}
 
 	public static class ExpressionPartTreeQuery<T, ID extends Serializable> extends InMemoryPartTreeQuery<T, ID> {

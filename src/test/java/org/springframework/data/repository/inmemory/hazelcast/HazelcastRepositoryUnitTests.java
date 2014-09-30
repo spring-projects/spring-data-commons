@@ -19,6 +19,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests;
 import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
+import org.springframework.data.repository.inmemory.Person;
 
 /**
  * @author Christoph Strobl

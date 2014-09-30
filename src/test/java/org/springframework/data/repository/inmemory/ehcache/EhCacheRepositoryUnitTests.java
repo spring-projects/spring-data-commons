@@ -17,6 +17,7 @@ package org.springframework.data.repository.inmemory.ehcache;
 
 import org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests;
 import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
+import org.springframework.data.repository.inmemory.Person;
 
 /**
  * @author Christoph Strobl

@@ -19,47 +19,46 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.*;
 import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.util.ObjectUtils;
 
 /**
  * @author Christoph Strobl
  */
 public abstract class GenericInMemoryRepositoryUnitTests {
 
-	private static final Person CERSEI = new Person("cersei", 19);
-	private static final Person JAIME = new Person("jaime", 19);
-	private static final Person TYRION = new Person("tyrion", 17);
+	protected static final Person CERSEI = new Person("cersei", 19);
+	protected static final Person JAIME = new Person("jaime", 19);
+	protected static final Person TYRION = new Person("tyrion", 17);
 
-	private PersonRepository repository;
+	protected static List<Person> LENNISTERS = Arrays.asList(CERSEI, JAIME, TYRION);
+
+	protected PersonRepository repository;
 
 	@Before
 	public void setup() {
-		this.repository = getRepositoryFactory().getRepository(PersonRepository.class);
+		this.repository = getRepositoryFactory().getRepository(getRepositoryClass());
 	}
 
 	@Test
 	public void findBy() {
 
-		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
+		this.repository.save(LENNISTERS);
 		assertThat(this.repository.findByAge(19), containsInAnyOrder(CERSEI, JAIME));
 	}
 
 	@Test
 	public void combindedFindUsingAnd() {
 
-		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
+		this.repository.save(LENNISTERS);
 
 		assertThat(this.repository.findByFirstnameAndAge(JAIME.firstname, 19), containsInAnyOrder(JAIME));
 	}
@@ -67,7 +66,7 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 	@Test
 	public void findPage() {
 
-		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
+		this.repository.save(LENNISTERS);
 
 		Page<Person> page = this.repository.findByAge(19, new PageRequest(0, 1));
 		assertThat(page.hasNext(), is(true));
@@ -83,7 +82,7 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 	@Test
 	public void findByConnectingOr() {
 
-		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
+		this.repository.save(LENNISTERS);
 
 		assertThat(this.repository.findByAgeOrFirstname(19, TYRION.firstname), containsInAnyOrder(CERSEI, JAIME, TYRION));
 	}
@@ -91,90 +90,17 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 	@Test
 	public void singleEntityExecution() {
 
-		this.repository.save(Arrays.asList(CERSEI, JAIME, TYRION));
+		this.repository.save(LENNISTERS);
 
 		assertThat(this.repository.findByAgeAndFirstname(TYRION.getAge(), TYRION.getFirstname()), is(TYRION));
 
 	}
 
-	protected abstract InMemoryRepositoryFactory<Person, String> getRepositoryFactory();
-
-	public static class Person implements Serializable {
-
-		@Id String id;
-		private String firstname;
-		int age;
-
-		public Person(String firstname, int age) {
-			super();
-			this.firstname = firstname;
-			this.age = age;
-		}
-
-		public String getId() {
-			return id;
-		}
-
-		public void setId(String id) {
-			this.id = id;
-		}
-
-		public int getAge() {
-			return age;
-		}
-
-		public void setAge(int age) {
-			this.age = age;
-		}
-
-		public String getFirstname() {
-			return firstname;
-		}
-
-		public void setFirstname(String firstname) {
-			this.firstname = firstname;
-		}
-
-		@Override
-		public String toString() {
-			return "Person [id=" + id + ", firstname=" + firstname + ", age=" + age + "]";
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + age;
-			result = prime * result + ObjectUtils.nullSafeHashCode(this.firstname);
-			result = prime * result + ObjectUtils.nullSafeHashCode(this.id);
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null) {
-				return false;
-			}
-			if (!(obj instanceof Person)) {
-				return false;
-			}
-			Person other = (Person) obj;
-			if (!ObjectUtils.nullSafeEquals(this.id, other.id)) {
-				return false;
-			}
-			if (!ObjectUtils.nullSafeEquals(this.firstname, other.firstname)) {
-				return false;
-			}
-			if (!ObjectUtils.nullSafeEquals(this.age, other.age)) {
-				return false;
-			}
-			return true;
-		}
-
+	protected Class<? extends PersonRepository> getRepositoryClass() {
+		return PersonRepository.class;
 	}
+
+	protected abstract InMemoryRepositoryFactory<Person, String> getRepositoryFactory();
 
 	public static interface PersonRepository extends CrudRepository<Person, String>, InMemoryRepository<Person, String> {
 

@@ -17,10 +17,12 @@ package org.springframework.data.repository.inmemory;
 
 import java.io.Serializable;
 
+import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.util.ClassUtils;
 
 /**
  * Abstract {@link RepositoryFactorySupport} implementation of {@link InMemoryRepository} holding basic type
@@ -40,7 +42,11 @@ public abstract class InMemoryRepositoryFactory<T, ID extends Serializable> exte
 	@Override
 	@SuppressWarnings("unchecked")
 	protected Object getTargetRepository(RepositoryMetadata metadata) {
+
 		EntityInformation<T, ID> entityInformation = this.<T, ID> getEntityInformation((Class<T>) metadata.getDomainType());
+		if (ClassUtils.isAssignable(QueryDslPredicateExecutor.class, metadata.getRepositoryInterface())) {
+			return new QueryDslInMemoryRepository<T, ID>(entityInformation, getInMemoryOperations());
+		}
 		return new BasicInMemoryRepository<T, ID>(entityInformation, getInMemoryOperations());
 	}
 

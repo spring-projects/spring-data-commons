@@ -17,6 +17,7 @@ package org.springframework.data.repository.inmemory.map;
 
 import org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests;
 import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
+import org.springframework.data.repository.inmemory.Person;
 
 /**
  * @author Christoph Strobl
@@ -24,7 +25,7 @@ import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
 public class MapRepositoryUnitTests extends GenericInMemoryRepositoryUnitTests {
 
 	@Override
-	protected InMemoryRepositoryFactory<org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests.Person, String> getRepositoryFactory() {
+	protected InMemoryRepositoryFactory<org.springframework.data.repository.inmemory.Person, String> getRepositoryFactory() {
 		return new MapBackedRepositoryFactory<Person, String>(new MapTemplate());
 	}
 

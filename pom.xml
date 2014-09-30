@@ -103,6 +103,12 @@
 			<version>${querydsl}</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.mysema.querydsl</groupId>
+			<artifactId>querydsl-collections</artifactId>
+			<version>${querydsl}</version>
+		</dependency>
 
 		<!-- EJB Transactions -->
 		<dependency>
