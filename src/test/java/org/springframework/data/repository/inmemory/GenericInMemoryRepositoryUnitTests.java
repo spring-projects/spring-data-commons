@@ -19,6 +19,7 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.*;
 import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Christoph Strobl
@@ -97,7 +99,7 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 
 	protected abstract InMemoryRepositoryFactory<Person, String> getRepositoryFactory();
 
-	public static class Person {
+	public static class Person implements Serializable {
 
 		@Id String id;
 		private String firstname;
@@ -136,6 +138,40 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 		@Override
 		public String toString() {
 			return "Person [id=" + id + ", firstname=" + firstname + ", age=" + age + "]";
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + age;
+			result = prime * result + ObjectUtils.nullSafeHashCode(this.firstname);
+			result = prime * result + ObjectUtils.nullSafeHashCode(this.id);
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof Person)) {
+				return false;
+			}
+			Person other = (Person) obj;
+			if (!ObjectUtils.nullSafeEquals(this.id, other.id)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(this.firstname, other.firstname)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(this.age, other.age)) {
+				return false;
+			}
+			return true;
 		}
 
 	}

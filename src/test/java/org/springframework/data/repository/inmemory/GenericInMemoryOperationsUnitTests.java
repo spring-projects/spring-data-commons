@@ -17,7 +17,7 @@ package org.springframework.data.repository.inmemory;
 
 import static org.hamcrest.collection.IsCollectionWithSize.*;
 import static org.hamcrest.collection.IsEmptyCollection.*;
-import static org.hamcrest.collection.IsIterableContainingInOrder.*;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.*;
 import static org.hamcrest.core.Is.*;
 import static org.hamcrest.core.IsNull.*;
 import static org.hamcrest.core.IsSame.*;
@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Christoph Strobl
@@ -127,7 +128,7 @@ public abstract class GenericInMemoryOperationsUnitTests {
 		operations.create("1", FOO_ONE);
 		operations.create("2", FOO_TWO);
 
-		assertThat(operations.read(Foo.class), contains(FOO_ONE, FOO_TWO));
+		assertThat(operations.read(Foo.class), containsInAnyOrder(FOO_ONE, FOO_TWO));
 	}
 
 	@Test
@@ -179,7 +180,7 @@ public abstract class GenericInMemoryOperationsUnitTests {
 		operations.create("2", FOO_TWO);
 		operations.create("3", FOO_THREE);
 
-		assertThat(operations.read(1, 5, Foo.class), contains(FOO_TWO, FOO_THREE));
+		assertThat(operations.read(1, 5, Foo.class), hasSize(2));
 	}
 
 	@Test
@@ -229,7 +230,7 @@ public abstract class GenericInMemoryOperationsUnitTests {
 
 		operations.update(saved);
 
-		assertThat(operations.read(saved.id, ClassWithStringId.class), sameInstance(saved));
+		assertThat(operations.read(saved.id, ClassWithStringId.class), is(saved));
 	}
 
 	@Test(expected = InvalidDataAccessApiUsageException.class)
@@ -307,7 +308,7 @@ public abstract class GenericInMemoryOperationsUnitTests {
 
 	protected abstract InMemoryQuery getInMemoryQuery();
 
-	static class Foo {
+	static class Foo implements Serializable {
 
 		String foo;
 
@@ -318,9 +319,30 @@ public abstract class GenericInMemoryOperationsUnitTests {
 		public String getFoo() {
 			return foo;
 		}
+
+		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHashCode(this.foo);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof Foo)) {
+				return false;
+			}
+			Foo other = (Foo) obj;
+			return ObjectUtils.nullSafeEquals(this.foo, other.foo);
+		}
+
 	}
 
-	static class Bar {
+	static class Bar implements Serializable {
 
 		String bar;
 
@@ -331,11 +353,63 @@ public abstract class GenericInMemoryOperationsUnitTests {
 		public String getBar() {
 			return bar;
 		}
+
+		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHashCode(this.bar);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof Bar)) {
+				return false;
+			}
+			Bar other = (Bar) obj;
+			return ObjectUtils.nullSafeEquals(this.bar, other.bar);
+		}
+
 	}
 
-	static class ClassWithStringId {
+	static class ClassWithStringId implements Serializable {
 
 		@Id String id;
 		String value;
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ObjectUtils.nullSafeHashCode(this.id);
+			result = prime * result + ObjectUtils.nullSafeHashCode(this.value);
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof ClassWithStringId)) {
+				return false;
+			}
+			ClassWithStringId other = (ClassWithStringId) obj;
+			if (!ObjectUtils.nullSafeEquals(this.id, other.id)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(this.value, other.value)) {
+				return false;
+			}
+			return true;
+		}
+
 	}
 }
