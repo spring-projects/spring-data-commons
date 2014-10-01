@@ -17,12 +17,15 @@ package org.springframework.data.repository.inmemory.map;
 
 import static org.hamcrest.collection.IsCollectionWithSize.*;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.*;
+import static org.hamcrest.collection.IsIterableContainingInOrder.*;
 import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.querydsl.QSort;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests;
 import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
@@ -39,7 +42,7 @@ public class QueryDslMapRepositoryUnitTests extends GenericInMemoryRepositoryUni
 
 		repository.save(LENNISTERS);
 
-		Person result = ((QPersonRepository) repository).findOne(QPerson.person.firstname.eq(CERSEI.getFirstname()));
+		Person result = getQPersonRepo().findOne(QPerson.person.firstname.eq(CERSEI.getFirstname()));
 		assertThat(result, is(CERSEI));
 	}
 
@@ -48,7 +51,7 @@ public class QueryDslMapRepositoryUnitTests extends GenericInMemoryRepositoryUni
 
 		repository.save(LENNISTERS);
 
-		Iterable<Person> result = ((QPersonRepository) repository).findAll(QPerson.person.age.eq(CERSEI.getAge()));
+		Iterable<Person> result = getQPersonRepo().findAll(QPerson.person.age.eq(CERSEI.getAge()));
 		assertThat(result, containsInAnyOrder(CERSEI, JAIME));
 	}
 
@@ -56,8 +59,7 @@ public class QueryDslMapRepositoryUnitTests extends GenericInMemoryRepositoryUni
 	public void findWithPaginationWorksCorrectly() {
 
 		repository.save(LENNISTERS);
-		Page<Person> page1 = ((QPersonRepository) repository).findAll(QPerson.person.age.eq(CERSEI.getAge()),
-				new PageRequest(0, 1));
+		Page<Person> page1 = getQPersonRepo().findAll(QPerson.person.age.eq(CERSEI.getAge()), new PageRequest(0, 1));
 
 		assertThat(page1.getTotalElements(), is(2L));
 		assertThat(page1.getContent(), hasSize(1));
@@ -71,6 +73,39 @@ public class QueryDslMapRepositoryUnitTests extends GenericInMemoryRepositoryUni
 		assertThat(page2.hasNext(), is(false));
 	}
 
+	@Test
+	public void findAllUsingOrderSpecifierWorksCorrectly() {
+
+		repository.save(LENNISTERS);
+
+		Iterable<Person> result = getQPersonRepo().findAll(QPerson.person.age.eq(CERSEI.getAge()),
+				QPerson.person.firstname.desc());
+
+		assertThat(result, contains(JAIME, CERSEI));
+	}
+
+	@Test
+	public void findAllUsingPageableWithSortWorksCorrectly() {
+
+		repository.save(LENNISTERS);
+
+		Iterable<Person> result = getQPersonRepo().findAll(QPerson.person.age.eq(CERSEI.getAge()),
+				new PageRequest(0, 10, Direction.DESC, "firstname"));
+
+		assertThat(result, contains(JAIME, CERSEI));
+	}
+
+	@Test
+	public void findAllUsingPagableWithQSortWorksCorrectly() {
+
+		repository.save(LENNISTERS);
+
+		Iterable<Person> result = getQPersonRepo().findAll(QPerson.person.age.eq(CERSEI.getAge()),
+				new PageRequest(0, 10, new QSort(QPerson.person.firstname.desc())));
+
+		assertThat(result, contains(JAIME, CERSEI));
+	}
+
 	@Override
 	protected Class<? extends PersonRepository> getRepositoryClass() {
 		return QPersonRepository.class;
@@ -79,6 +114,10 @@ public class QueryDslMapRepositoryUnitTests extends GenericInMemoryRepositoryUni
 	@Override
 	protected InMemoryRepositoryFactory<Person, String> getRepositoryFactory() {
 		return new MapBackedRepositoryFactory<Person, String>(new MapTemplate());
+	}
+
+	QPersonRepository getQPersonRepo() {
+		return ((QPersonRepository) repository);
 	}
 
 	static interface QPersonRepository extends PersonRepository, QueryDslPredicateExecutor<Person> {

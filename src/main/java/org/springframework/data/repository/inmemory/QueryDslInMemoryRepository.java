@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.inmemory;
 
+import static org.springframework.data.querydsl.QueryDslUtils.*;
+
 import java.io.Serializable;
 
 import org.springframework.data.domain.Page;
@@ -26,12 +28,16 @@ import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.repository.core.EntityInformation;
 
 import com.mysema.query.collections.CollQuery;
+import com.mysema.query.support.ProjectableQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.OrderSpecifier;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.PathBuilder;
 
 /**
+ * QueryDsl specific extension of {@link BasicInMemoryRepository} adding implementation for
+ * {@link QueryDslPredicateExecutor}.
+ * 
  * @author Christoph Strobl
  * @param <T>
  * @param <ID>
@@ -56,59 +62,85 @@ public class QueryDslInMemoryRepository<T, ID extends Serializable> extends Basi
 		this.builder = new PathBuilder<T>(path.getType(), path.getMetadata());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#findOne(com.mysema.query.types.Predicate)
+	 */
 	@Override
 	public T findOne(Predicate predicate) {
 
-		CollQuery cq = new CollQuery();
-		cq.from(builder, findAll());
-		cq.where(predicate);
-		return cq.uniqueResult(builder);
+		ProjectableQuery<?> query = prepareQuery(predicate);
+		return query.uniqueResult(builder);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#findAll(com.mysema.query.types.Predicate)
+	 */
 	@Override
 	public Iterable<T> findAll(Predicate predicate) {
 
-		CollQuery cq = prepareQuery(predicate);
-		return cq.list(builder);
+		ProjectableQuery<?> query = prepareQuery(predicate);
+		return query.list(builder);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#findAll(com.mysema.query.types.Predicate, com.mysema.query.types.OrderSpecifier[])
+	 */
 	@Override
 	public Iterable<T> findAll(Predicate predicate, OrderSpecifier<?>... orders) {
 
-		CollQuery cq = prepareQuery(predicate);
-		cq.orderBy(orders);
-		return cq.list(builder);
+		ProjectableQuery<?> query = prepareQuery(predicate);
+		query.orderBy(orders);
+		return query.list(builder);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#findAll(com.mysema.query.types.Predicate, org.springframework.data.domain.Pageable)
+	 */
 	@Override
 	public Page<T> findAll(Predicate predicate, Pageable pageable) {
 
-		CollQuery cq = prepareQuery(predicate);
-		cq.offset(pageable.getOffset());
-		cq.limit(pageable.getPageSize());
+		ProjectableQuery<?> query = prepareQuery(predicate);
 
-		if (pageable.getSort() != null) {
+		if (pageable != null) {
+			query.offset(pageable.getOffset());
+			query.limit(pageable.getPageSize());
 
-			// TODO: sorting
-			throw new UnsupportedOperationException("Sort has not been implemented yet. sorry!");
+			if (pageable.getSort() != null) {
+				query.orderBy(toOrderSpecifier(pageable.getSort(), builder));
+			}
 		}
-		return new PageImpl<T>(cq.list(builder), pageable, count(predicate));
+
+		return new PageImpl<T>(query.list(builder), pageable, count(predicate));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#count(com.mysema.query.types.Predicate)
+	 */
 	@Override
 	public long count(Predicate predicate) {
 
-		CollQuery cq = prepareQuery(predicate);
-		return cq.count();
+		ProjectableQuery<?> query = prepareQuery(predicate);
+		return query.count();
 	}
 
-	private CollQuery prepareQuery(Predicate predicate) {
+	/**
+	 * Creates executable query for given {@link Predicate}.
+	 * 
+	 * @param predicate
+	 * @return
+	 */
+	protected ProjectableQuery<?> prepareQuery(Predicate predicate) {
 
-		CollQuery cq = new CollQuery();
-		cq.from(builder, findAll());
-		cq.where(predicate);
+		CollQuery query = new CollQuery();
+		query.from(builder, findAll());
+		query.where(predicate);
 
-		return cq;
+		return query;
 	}
 
 }

@@ -36,6 +36,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.util.ClassUtils;
 
 /**
  * @author Christoph Strobl
@@ -95,7 +96,7 @@ public class MapBackedRepositoryFactory<T, ID extends Serializable> extends InMe
 	 */
 	private boolean isQueryDslExecutor(Class<?> repositoryInterface) {
 
-		return QUERY_DSL_PRESENT && QueryDslPredicateExecutor.class.isAssignableFrom(repositoryInterface);
+		return QUERY_DSL_PRESENT && ClassUtils.isAssignable(QueryDslPredicateExecutor.class, repositoryInterface);
 	}
 
 	public static class ExpressionPartTreeQuery<T, ID extends Serializable> extends InMemoryPartTreeQuery<T, ID> {
