@@ -15,17 +15,15 @@
  */
 package org.springframework.data.repository.inmemory.hazelcast;
 
-import org.springframework.data.repository.inmemory.InMemoryQuery;
+import org.springframework.data.repository.inmemory.BasicInMemoryQuery;
 
 import com.hazelcast.query.Predicate;
 
 /**
  * @author Christoph Strobl
  */
-public class HazelcastQuery implements InMemoryQuery {
+public class HazelcastQuery extends BasicInMemoryQuery {
 
-	private int offset = -1;
-	private int rows = -1;
 	private final Predicate<?, ?> predicate;
 
 	public HazelcastQuery(Predicate<?, ?> predicate) {
@@ -35,32 +33,6 @@ public class HazelcastQuery implements InMemoryQuery {
 	@Override
 	public Predicate<?, ?> getCritieria() {
 		return predicate;
-	}
-
-	@Override
-	public Object getSort() {
-		return null;
-	}
-
-	@Override
-	public int getOffset() {
-		return offset;
-	}
-
-	@Override
-	public int getRows() {
-		return rows;
-	}
-
-	@Override
-	public void setOffset(int offset) {
-		this.offset = offset;
-
-	}
-
-	@Override
-	public void setRows(int rows) {
-		this.rows = rows;
 	}
 
 }

@@ -19,11 +19,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sf.ehcache.search.Attribute;
+import net.sf.ehcache.search.Direction;
 import net.sf.ehcache.search.Query;
 import net.sf.ehcache.search.Result;
 import net.sf.ehcache.search.Results;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
@@ -80,6 +83,16 @@ public class EhCacheTemplate extends AbstractInMemoryOperations<EhCacheQuery> {
 	}
 
 	@Override
+	public <T> List<T> read(Sort sort, Class<T> type) {
+		return read(new EhCacheQuery(null).orderBy(sort), type);
+	}
+
+	@Override
+	public <T> List<T> read(int offset, int rows, Sort sort, Class<T> type) {
+		return read(new EhCacheQuery(null).skip(offset).limit(rows).orderBy(sort), type);
+	}
+
+	@Override
 	protected EhCacheAdapter getAdapter() {
 		return this.adapter;
 	}
@@ -88,6 +101,7 @@ public class EhCacheTemplate extends AbstractInMemoryOperations<EhCacheQuery> {
 	protected <T> List<T> doRead(EhCacheQuery query, Class<T> type) {
 
 		Query q = prepareQuery(query, type);
+
 		Results result = q.execute();
 
 		ResultConverter<T> conv = new ResultConverter<T>();
@@ -112,7 +126,6 @@ public class EhCacheTemplate extends AbstractInMemoryOperations<EhCacheQuery> {
 	protected long doCount(EhCacheQuery query, Class<?> type) {
 
 		Query q = prepareQuery(query, type);
-		q.end();
 		return q.execute().size();
 	}
 
@@ -124,7 +137,19 @@ public class EhCacheTemplate extends AbstractInMemoryOperations<EhCacheQuery> {
 	private <T> Query prepareQuery(EhCacheQuery query, Class<T> type) {
 
 		Query cacheQuery = getAdapter().getCache(type).createQuery().includeValues();
-		cacheQuery.addCriteria(query.getCritieria());
+
+		if (query.getCritieria() != null) {
+			cacheQuery.addCriteria(query.getCritieria());
+		}
+
+		if (query.getSort() != null) {
+
+			for (Sort.Order order : query.getSort()) {
+				cacheQuery.addOrderBy(new Attribute(order.getProperty()), org.springframework.data.domain.Sort.Direction.ASC
+						.equals(order.getDirection()) ? Direction.ASCENDING : Direction.DESCENDING);
+			}
+		}
+
 		cacheQuery.end();
 		return cacheQuery;
 	}

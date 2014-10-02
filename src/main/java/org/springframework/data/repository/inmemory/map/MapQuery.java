@@ -15,8 +15,8 @@
  */
 package org.springframework.data.repository.inmemory.map;
 
-import java.util.Comparator;
-
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.inmemory.BasicInMemoryQuery;
 import org.springframework.data.repository.inmemory.InMemoryQuery;
 import org.springframework.expression.Expression;
 
@@ -25,20 +25,12 @@ import org.springframework.expression.Expression;
  * 
  * @author Christoph Strobl
  */
-public class MapQuery implements InMemoryQuery {
+public class MapQuery extends BasicInMemoryQuery {
 
 	private final Expression criteria;
-	private Comparator<?> sort;
-	private int offset = -1;
-	private int rows = -1;
 
 	public MapQuery(Expression criteria) {
 		this.criteria = criteria;
-	}
-
-	public MapQuery orderBy(Comparator<?> comparator) {
-		this.sort = comparator;
-		return this;
 	}
 
 	public MapQuery skip(int offset) {
@@ -56,28 +48,9 @@ public class MapQuery implements InMemoryQuery {
 		return this.criteria;
 	}
 
-	@Override
-	public Comparator<?> getSort() {
-		return this.sort;
+	public MapQuery orderBy(Sort sort) {
+		super.orderBy(sort);
+		return this;
 	}
 
-	@Override
-	public int getOffset() {
-		return this.offset;
-	}
-
-	@Override
-	public int getRows() {
-		return this.rows;
-	}
-
-	@Override
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-
-	@Override
-	public void setRows(int rows) {
-		this.rows = rows;
-	}
 }

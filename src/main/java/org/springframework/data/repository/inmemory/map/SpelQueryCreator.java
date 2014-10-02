@@ -58,7 +58,12 @@ public class SpelQueryCreator extends AbstractQueryCreator<MapQuery, String> {
 
 	@Override
 	protected MapQuery complete(String criteria, Sort sort) {
-		return new MapQuery(this.expression);
+
+		MapQuery query = new MapQuery(this.expression);
+		if (sort != null) {
+			query.orderBy(sort);
+		}
+		return query;
 	}
 
 	protected SpelExpression toPredicateExpression(PartTree tree) {

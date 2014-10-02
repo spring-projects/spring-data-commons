@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.context.MappingContext;
 
 /**
@@ -75,12 +76,28 @@ public interface InMemoryOperations extends DisposableBean {
 	<T> List<T> read(InMemoryQuery query, Class<T> type);
 
 	/**
+	 * @param sort
+	 * @param type
+	 * @return
+	 */
+	<T> List<T> read(Sort sort, Class<T> type);
+
+	/**
 	 * @param offset
 	 * @param rows
 	 * @param type
 	 * @return
 	 */
 	<T> List<T> read(int offset, int rows, Class<T> type);
+
+	/**
+	 * @param offset
+	 * @param rows
+	 * @param sort
+	 * @param type
+	 * @return
+	 */
+	<T> List<T> read(int offset, int rows, Sort sort, Class<T> type);
 
 	/**
 	 * @param objectToUpdate

@@ -116,7 +116,12 @@ public class EhCacheBackedRepositoryFactory<T, ID extends Serializable> extends 
 
 		@Override
 		protected EhCacheQuery complete(Criteria criteria, Sort sort) {
-			return new EhCacheQuery(criteria);
+
+			EhCacheQuery query = new EhCacheQuery(criteria);
+			if (sort != null) {
+				query.orderBy(sort);
+			}
+			return query;
 		}
 
 		private Criteria from(Part part, Iterator<Object> iterator) {

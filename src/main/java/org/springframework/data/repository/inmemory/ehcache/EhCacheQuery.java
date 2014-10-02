@@ -17,16 +17,14 @@ package org.springframework.data.repository.inmemory.ehcache;
 
 import net.sf.ehcache.search.expression.Criteria;
 
-import org.springframework.data.repository.inmemory.InMemoryQuery;
+import org.springframework.data.repository.inmemory.BasicInMemoryQuery;
 
 /**
  * @author Christoph Strobl
  */
-public class EhCacheQuery implements InMemoryQuery {
+public class EhCacheQuery extends BasicInMemoryQuery {
 
 	private Criteria criteria;
-	private int offset = -1;
-	private int rows = -1;
 
 	public EhCacheQuery(Criteria criteria) {
 		this.criteria = criteria;
@@ -35,31 +33,6 @@ public class EhCacheQuery implements InMemoryQuery {
 	@Override
 	public Criteria getCritieria() {
 		return this.criteria;
-	}
-
-	@Override
-	public Object getSort() {
-		return null;
-	}
-
-	@Override
-	public int getOffset() {
-		return this.offset;
-	}
-
-	@Override
-	public int getRows() {
-		return this.rows;
-	}
-
-	@Override
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-
-	@Override
-	public void setRows(int rows) {
-		this.rows = rows;
 	}
 
 }

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.inmemory;
 
+import org.springframework.data.domain.Sort;
+
 /**
  * Store independent abstraction for a query using native query language.
  * 
@@ -24,7 +26,7 @@ public interface InMemoryQuery {
 
 	Object getCritieria();
 
-	Object getSort();
+	Sort getSort();
 
 	int getOffset();
 

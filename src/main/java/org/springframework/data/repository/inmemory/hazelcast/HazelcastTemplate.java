@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.inmemory.AbstractInMemoryOperations;
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
 import org.springframework.data.repository.inmemory.InMemoryCallback;
@@ -57,6 +58,16 @@ public class HazelcastTemplate extends AbstractInMemoryOperations<HazelcastQuery
 				return new ArrayList<T>(adapter.getAllOf(type)).subList(offset, offset + rowsToUse);
 			}
 		});
+	}
+
+	@Override
+	public <T> List<T> read(Sort sort, Class<T> type) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> List<T> read(int offset, int rows, Sort sort, Class<T> type) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

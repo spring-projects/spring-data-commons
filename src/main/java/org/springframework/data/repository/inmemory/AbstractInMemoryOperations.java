@@ -35,7 +35,7 @@ import org.springframework.util.ClassUtils;
  * 
  * @author Christoph Strobl
  */
-public abstract class AbstractInMemoryOperations<Q extends InMemoryQuery> implements InMemoryOperations {
+public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> implements InMemoryOperations {
 
 	@SuppressWarnings("rawtypes")//
 	private MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext;

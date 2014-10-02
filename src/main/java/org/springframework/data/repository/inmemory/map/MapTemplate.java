@@ -20,12 +20,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.inmemory.AbstractInMemoryOperations;
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
 import org.springframework.data.repository.inmemory.InMemoryOperations;
+import org.springframework.data.util.CompositeComperator;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpression;
 
@@ -54,20 +58,29 @@ public class MapTemplate extends AbstractInMemoryOperations<MapQuery> {
 
 	@Override
 	protected long doCount(MapQuery query, Class<?> type) {
-		MapQuery q = new MapQuery(query.getCritieria());
-		return doRead(q, type).size();
+		return doRead(new MapQuery(query.getCritieria()), type).size();
 	}
 
 	@Override
 	public <T> List<T> read(int offset, int rows, final Class<T> type) {
-		return filterMatchingRange(read(type), new MapQuery(null).skip(offset).limit(rows));
+		return read(new MapQuery(null).skip(offset).limit(rows), type);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public <T> List<T> read(Sort sort, Class<T> type) {
+		return read(new MapQuery(null).orderBy(sort), type);
+	}
+
+	@Override
+	public <T> List<T> read(int offset, int rows, Sort sort, Class<T> type) {
+		return read(new MapQuery(null).skip(offset).limit(rows).orderBy(sort), type);
+	}
+
+	@SuppressWarnings({ "unchecked" })
 	private <T> List<T> sortAndFilterMatchingRange(List<T> source, MapQuery query) {
 
 		if (query.getSort() != null) {
-			Collections.sort((List) source, (Comparator) query.getSort());
+			Collections.sort(source, createSort(query.getSort()));
 		}
 
 		return filterMatchingRange(source, query);
@@ -110,6 +123,22 @@ public class MapTemplate extends AbstractInMemoryOperations<MapQuery> {
 			}
 		}
 		return result;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	protected Comparator createSort(Sort sort) {
+
+		List<Comparator<?>> comparators = new ArrayList<Comparator<?>>();
+		for (Order order : sort) {
+
+			SpelComparator<?> comparator = new SpelComparator(order.getProperty());
+			if (Direction.DESC.equals(order.getDirection())) {
+				comparator.desc();
+			}
+			comparators.add(comparator);
+		}
+
+		return new CompositeComperator(comparators);
 	}
 
 	@Override

@@ -47,17 +47,21 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 
 	@Override
 	public Iterable<T> findAll(Sort sort) {
-		throw new UnsupportedOperationException("Sort currently not supported.");
+		return operations.read(sort, entityInformation.getJavaType());
 	}
 
 	@Override
 	public Page<T> findAll(Pageable pageable) {
 
+		List<T> content = null;
 		if (pageable.getSort() != null) {
-			throw new UnsupportedOperationException("sort currently not supported.");
+			content = operations.read(pageable.getOffset(), pageable.getPageSize(), pageable.getSort(),
+					entityInformation.getJavaType());
+		} else {
+			content = operations.read(pageable.getOffset(), pageable.getPageSize(), entityInformation.getJavaType());
 		}
-		return new PageImpl<T>(operations.read(pageable.getOffset(), pageable.getPageSize(),
-				entityInformation.getJavaType()), pageable, this.operations.count(entityInformation.getJavaType()));
+
+		return new PageImpl<T>(content, pageable, this.operations.count(entityInformation.getJavaType()));
 	}
 
 	@Override

@@ -39,4 +39,18 @@ public class HazelcastRepositoryUnitTests extends GenericInMemoryRepositoryUnitT
 		super.findPage();
 	}
 
+	@Ignore
+	@Test
+	@Override
+	public void findAllShouldRespectSort() {
+		super.findAllShouldRespectSort();
+	}
+
+	@Ignore
+	@Test
+	@Override
+	public void derivedFinderShouldRespectSort() {
+		super.derivedFinderShouldRespectSort();
+	}
+
 }

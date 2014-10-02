@@ -16,6 +16,7 @@
 package org.springframework.data.repository.inmemory;
 
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.*;
+import static org.hamcrest.collection.IsIterableContainingInOrder.*;
 import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
 
@@ -23,11 +24,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.collection.IsCollectionWithSize;
+import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.CrudRepository;
 
 /**
@@ -93,7 +97,25 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 		this.repository.save(LENNISTERS);
 
 		assertThat(this.repository.findByAgeAndFirstname(TYRION.getAge(), TYRION.getFirstname()), is(TYRION));
+	}
 
+	@Test
+	public void findAllShouldRespectSort() {
+
+		this.repository.save(LENNISTERS);
+
+		assertThat(this.repository.findAll(new Sort(new Sort.Order(Direction.ASC, "age"), new Sort.Order(Direction.DESC,
+				"firstname"))), IsIterableContainingInOrder.contains(TYRION, JAIME, CERSEI));
+	}
+
+	@Test
+	public void derivedFinderShouldRespectSort() {
+
+		repository.save(LENNISTERS);
+
+		List<Person> result = repository.findByAgeGreaterThanOrderByAgeAscFirstnameDesc(2);
+
+		assertThat(result, contains(TYRION, JAIME, CERSEI));
 	}
 
 	protected Class<? extends PersonRepository> getRepositoryClass() {
@@ -115,6 +137,8 @@ public abstract class GenericInMemoryRepositoryUnitTests {
 		List<Person> findByAgeOrFirstname(int age, String firstname);
 
 		Person findByAgeAndFirstname(int age, String firstname);
+
+		List<Person> findByAgeGreaterThanOrderByAgeAscFirstnameDesc(int age);
 
 	}
 
