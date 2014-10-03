@@ -29,9 +29,9 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.inmemory.AbstractInMemoryOperations;
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
 import org.springframework.data.repository.inmemory.InMemoryOperations;
-import org.springframework.data.util.CompositeComperator;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpression;
+import org.springframework.util.comparator.CompoundComparator;
 
 /**
  * {@link InMemoryOperations} implementation using delegating to {@link MapAdapter}.
@@ -149,17 +149,17 @@ public class MapTemplate extends AbstractInMemoryOperations<MapQuery> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Comparator createSort(Sort sort) {
 
-		List<Comparator<?>> comparators = new ArrayList<Comparator<?>>();
+		CompoundComparator compoundComperator = new CompoundComparator();
 		for (Order order : sort) {
 
 			SpelSort<?> spelSort = new SpelSort(order.getProperty());
 			if (Direction.DESC.equals(order.getDirection())) {
 				spelSort.desc();
 			}
-			comparators.add(spelSort);
+			compoundComperator.addComparator(spelSort);
 		}
 
-		return new CompositeComperator(comparators);
+		return compoundComperator;
 	}
 
 	/*

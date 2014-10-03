@@ -44,20 +44,24 @@ public class SpelSort<T> implements Comparator<T> {
 		this.expression = expression;
 	}
 
-	public void asc() {
+	public SpelSort<T> asc() {
 		this.asc = true;
+		return this;
 	}
 
-	public void desc() {
+	public SpelSort<T> desc() {
 		this.asc = false;
+		return this;
 	}
 
 	protected String buildExpressionForPath(String path) {
 
-		StringBuilder rawExpression = new StringBuilder();
+		StringBuilder rawExpression = new StringBuilder(
+				"new org.springframework.util.comparator.NullSafeComparator(new org.springframework.util.comparator.ComparableComparator(), true).compare(");
+
 		rawExpression.append("#arg1?.");
 		rawExpression.append(path != null ? path.replace(".", ".?") : "");
-		rawExpression.append("?.compareTo(");
+		rawExpression.append(",");
 		rawExpression.append("#arg2?.");
 		rawExpression.append(path != null ? path.replace(".", ".?") : "");
 		rawExpression.append(")");
