@@ -41,50 +41,70 @@ public class HazelcastAdapter implements InMemoryAdapter, DisposableBean {
 		this.hzInstance = hzInstance;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#put(java.io.Serializable, java.lang.Object, java.io.Serializable)
+	 */
 	@Override
-	public Object put(Serializable id, Object item) {
-		return getMap(item).put(id, item);
+	public Object put(Serializable id, Object item, Serializable collection) {
+		return getMap(collection).put(id, item);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#contains(java.io.Serializable, java.io.Serializable)
+	 */
 	@Override
-	public boolean contains(Serializable id, Class<?> type) {
-		return getMap(type).containsKey(id);
+	public boolean contains(Serializable id, Serializable collection) {
+		return getMap(collection).containsKey(id);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#get(java.io.Serializable, java.io.Serializable)
+	 */
 	@Override
-	public <T> T get(Serializable id, Class<T> type) {
-		return (T) getMap(type).get(id);
+	public Object get(Serializable id, Serializable collection) {
+		return getMap(collection).get(id);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#delete(java.io.Serializable, java.io.Serializable)
+	 */
 	@Override
-	public <T> T delete(Serializable id, Class<T> type) {
-		return (T) getMap(type).remove(id);
+	public Object delete(Serializable id, Serializable collection) {
+		return getMap(collection).remove(id);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#getAllOf(java.io.Serializable)
+	 */
 	@Override
-	public <T> Collection<T> getAllOf(Class<T> type) {
-		return getMap(type).values();
+	public Collection<?> getAllOf(Serializable collection) {
+		return getMap(collection).values();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#deleteAllOf(java.io.Serializable)
+	 */
 	@Override
-	public void deleteAllOf(Class<?> type) {
-		getMap(type).clear();
+	public void deleteAllOf(Serializable collection) {
+		getMap(collection).clear();
 	}
 
 	@Override
 	public void clear() {
-		// TODO
-
+		// TODO: clean haszelcase instance
 	}
 
-	protected IMap getMap(Object item) {
+	@SuppressWarnings("rawtypes")
+	protected IMap getMap(final Serializable collection) {
 
-		Assert.notNull(item, "Item must not be 'null' for lookup.");
-		return getMap(item.getClass());
-	}
-
-	protected IMap getMap(final Class<?> type) {
-		return hzInstance.getMap(type.getName());
+		Assert.isInstanceOf(String.class, collection, "Collection identifier must of of type String.");
+		return hzInstance.getMap((String) collection);
 	}
 
 	@Override

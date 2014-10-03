@@ -45,11 +45,19 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 		this.operations = operations;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.PagingAndSortingRepository#findAll(org.springframework.data.domain.Sort)
+	 */
 	@Override
 	public Iterable<T> findAll(Sort sort) {
 		return operations.read(sort, entityInformation.getJavaType());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.PagingAndSortingRepository#findAll(org.springframework.data.domain.Pageable)
+	 */
 	@Override
 	public Page<T> findAll(Pageable pageable) {
 
@@ -64,6 +72,10 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 		return new PageImpl<T>(content, pageable, this.operations.count(entityInformation.getJavaType()));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Object)
+	 */
 	@Override
 	public <S extends T> S save(S entity) {
 
@@ -77,6 +89,10 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 		return entity;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
+	 */
 	@Override
 	public <S extends T> Iterable<S> save(Iterable<S> entities) {
 
@@ -86,21 +102,37 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 		return entities;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
+	 */
 	@Override
 	public T findOne(ID id) {
 		return operations.read(id, entityInformation.getJavaType());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
+	 */
 	@Override
 	public boolean exists(ID id) {
 		return findOne(id) != null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll()
+	 */
 	@Override
 	public Iterable<T> findAll() {
 		return operations.read(entityInformation.getJavaType());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
+	 */
 	@Override
 	public Iterable<T> findAll(Iterable<ID> ids) {
 
@@ -116,21 +148,37 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#count()
+	 */
 	@Override
 	public long count() {
 		return operations.count(entityInformation.getJavaType());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.Serializable)
+	 */
 	@Override
 	public void delete(ID id) {
 		operations.delete(id, entityInformation.getJavaType());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
+	 */
 	@Override
 	public void delete(T entity) {
 		delete(entityInformation.getId(entity));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
+	 */
 	@Override
 	public void delete(Iterable<? extends T> entities) {
 
@@ -139,6 +187,10 @@ public class BasicInMemoryRepository<T, ID extends Serializable> implements InMe
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
+	 */
 	@Override
 	public void deleteAll() {
 		operations.delete(entityInformation.getJavaType());

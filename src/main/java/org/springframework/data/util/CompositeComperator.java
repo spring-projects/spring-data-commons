@@ -22,6 +22,9 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
+ * {@link Comparator} implementation that can combine more than one {@link Comparator} allowing to create more complex
+ * sorting.
+ * 
  * @author Christoph Strobl
  * @param <T>
  */
@@ -29,10 +32,20 @@ public class CompositeComperator<T> implements Comparator<T> {
 
 	private List<Comparator<T>> comparators;
 
+	/**
+	 * Creates new {@link CompositeComperator}.
+	 * 
+	 * @param comparators
+	 */
 	public CompositeComperator(Comparator<T>... comparators) {
 		this(Arrays.asList(comparators));
 	}
 
+	/**
+	 * Creates new {@link CompositeComperator}.
+	 * 
+	 * @param comparators
+	 */
 	public CompositeComperator(Collection<Comparator<T>> comparators) {
 		this.comparators = new ArrayList<Comparator<T>>(comparators);
 	}

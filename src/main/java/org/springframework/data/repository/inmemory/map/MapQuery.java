@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.inmemory.map;
 
-import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.inmemory.BasicInMemoryQuery;
 import org.springframework.data.repository.inmemory.InMemoryQuery;
 import org.springframework.expression.Expression;
@@ -29,28 +28,18 @@ public class MapQuery extends BasicInMemoryQuery {
 
 	private final Expression criteria;
 
+	/**
+	 * Create new {@link MapQuery}.
+	 * 
+	 * @param criteria
+	 */
 	public MapQuery(Expression criteria) {
 		this.criteria = criteria;
-	}
-
-	public MapQuery skip(int offset) {
-		setOffset(offset);
-		return this;
-	}
-
-	public MapQuery limit(int rows) {
-		setRows(rows);
-		return this;
 	}
 
 	@Override
 	public Expression getCritieria() {
 		return this.criteria;
-	}
-
-	public MapQuery orderBy(Sort sort) {
-		super.orderBy(sort);
-		return this;
 	}
 
 }

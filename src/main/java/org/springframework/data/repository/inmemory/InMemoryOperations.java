@@ -28,7 +28,8 @@ import org.springframework.data.mapping.context.MappingContext;
 public interface InMemoryOperations extends DisposableBean {
 
 	/**
-	 * Add given object.
+	 * Add given object. <br />
+	 * Object needs to have id property to which a generated value will be assigned.
 	 * 
 	 * @param objectToInsert
 	 * @return
@@ -44,7 +45,9 @@ public interface InMemoryOperations extends DisposableBean {
 	void create(Serializable id, Object objectToInsert);
 
 	/**
-	 * Get all elements of given type.
+	 * Get all elements of given type. <br />
+	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
+	 * matching the given alias that can be assigned to requested type.
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @return empty collection if no elements found.
@@ -52,7 +55,9 @@ public interface InMemoryOperations extends DisposableBean {
 	<T> List<T> read(Class<T> type);
 
 	/**
-	 * Get element of given type with given id.
+	 * Get element of given type with given id. <br />
+	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns only elements
+	 * matching the given alias that can be assigned to requested type.
 	 * 
 	 * @param id must not be {@literal null}.
 	 * @param type must not be {@literal null}.
@@ -69,6 +74,10 @@ public interface InMemoryOperations extends DisposableBean {
 	<T> T execute(InMemoryCallback<T> action);
 
 	/**
+	 * Get all elements matching the given query. <br />
+	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
+	 * matching the given alias that can be assigned to requested type.
+	 * 
 	 * @param query
 	 * @param type
 	 * @return empty collection if no match found.
@@ -76,6 +85,10 @@ public interface InMemoryOperations extends DisposableBean {
 	<T> List<T> read(InMemoryQuery query, Class<T> type);
 
 	/**
+	 * Get all elements ordered by sort. <br />
+	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
+	 * matching the given alias that can be assigned to requested type.
+	 * 
 	 * @param sort
 	 * @param type
 	 * @return
@@ -83,6 +96,10 @@ public interface InMemoryOperations extends DisposableBean {
 	<T> List<T> read(Sort sort, Class<T> type);
 
 	/**
+	 * Get all elements in given range. <br />
+	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
+	 * matching the given alias that can be assigned to requested type.
+	 * 
 	 * @param offset
 	 * @param rows
 	 * @param type
@@ -91,6 +108,10 @@ public interface InMemoryOperations extends DisposableBean {
 	<T> List<T> read(int offset, int rows, Class<T> type);
 
 	/**
+	 * Get all elements in given range ordered by sort. <br />
+	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
+	 * matching the given alias that can be assigned to requested type
+	 * 
 	 * @param offset
 	 * @param rows
 	 * @param sort
@@ -111,7 +132,9 @@ public interface InMemoryOperations extends DisposableBean {
 	void update(Serializable id, Object objectToUpdate);
 
 	/**
-	 * Remove items of given type.
+	 * Remove all elements of type. <br />
+	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore removes all elements
+	 * matching the alias. Remove items of given type.
 	 * 
 	 * @param type must not be {@literal null}.
 	 */
@@ -133,7 +156,9 @@ public interface InMemoryOperations extends DisposableBean {
 	<T> T delete(Serializable id, Class<T> type);
 
 	/**
-	 * Total number of elements with given type available.
+	 * Total number of elements with given type available. <br />
+	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore counts all elements
+	 * matching the alias.
 	 * 
 	 * @param type
 	 * @return
@@ -141,7 +166,9 @@ public interface InMemoryOperations extends DisposableBean {
 	long count(Class<?> type);
 
 	/**
-	 * Total number of elements matching given query.
+	 * Total number of elements matching given query.<br />
+	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore counts all elements
+	 * matching the alias.
 	 * 
 	 * @param query
 	 * @param type
@@ -149,6 +176,9 @@ public interface InMemoryOperations extends DisposableBean {
 	 */
 	long count(InMemoryQuery query, Class<?> type);
 
+	/**
+	 * @return mapping context in use.
+	 */
 	MappingContext<?, ?> getMappingContext();
 
 }

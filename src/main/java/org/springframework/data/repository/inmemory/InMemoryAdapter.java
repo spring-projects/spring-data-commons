@@ -26,55 +26,55 @@ import java.util.Collection;
 public interface InMemoryAdapter {
 
 	/**
-	 * Add given object with id.
+	 * Add object with given id to collection.
 	 * 
 	 * @param id must not be {@literal null}.
-	 * @param item must not be {@literal null}.
+	 * @param collection must not be {@literal null}.
 	 * @return the item previously associated with the id.
 	 */
-	Object put(Serializable id, Object item);
+	Object put(Serializable id, Object item, Serializable collection);
 
 	/**
-	 * Check if a object of given type and id exists.
+	 * Check if a object with given id exists in collection.
 	 * 
 	 * @param id must not be {@literal null}.
-	 * @param type must not be {@literal null}.
+	 * @param collection must not be {@literal null}.
 	 * @return true if item of type with id exists.
 	 */
-	boolean contains(Serializable id, Class<?> type);
+	boolean contains(Serializable id, Serializable collection);
 
 	/**
-	 * Get the object with given type and id.
+	 * Get the object with given id from collection.
 	 * 
 	 * @param id must not be {@literal null}.
-	 * @param type must not be {@literal null}.
+	 * @param collection must not be {@literal null}.
 	 * @return {@literal null} in case no matching item exists.
 	 */
-	<T> T get(Serializable id, Class<T> type);
+	Object get(Serializable id, Serializable collection);
 
 	/**
 	 * Delete and return the obect with given type and id.
 	 * 
 	 * @param id must not be {@literal null}.
-	 * @param type must not be {@literal null}.
+	 * @param collection must not be {@literal null}.
 	 * @return null if object could not be found
 	 */
-	<T> T delete(Serializable id, Class<T> type);
+	Object delete(Serializable id, Serializable collection);
 
 	/**
-	 * Get all elements of given type.
+	 * Get all elements for given collection.
 	 * 
-	 * @param type must not be {@literal null}.
+	 * @param collection must not be {@literal null}.
 	 * @return empty colleciton if nothing found.
 	 */
-	<T> Collection<T> getAllOf(Class<T> type);
+	Collection<?> getAllOf(Serializable collection);
 
 	/**
 	 * Remove all objects of given type.
 	 * 
 	 * @param type must not be {@literal null}.
 	 */
-	void deleteAllOf(Class<?> type);
+	void deleteAllOf(Serializable collection);
 
 	/**
 	 * Removes all objects.

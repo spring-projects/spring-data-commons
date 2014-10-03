@@ -23,7 +23,6 @@ import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.inmemory.AbstractInMemoryOperations;
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
-import org.springframework.data.repository.inmemory.InMemoryCallback;
 
 /**
  * @author Christoph Strobl
@@ -44,20 +43,14 @@ public class HazelcastTemplate extends AbstractInMemoryOperations<HazelcastQuery
 	@Override
 	public <T> List<T> read(final int offset, final int rows, final Class<T> type) {
 
-		return execute(new InMemoryCallback<List<T>>() {
+		List<T> tmp = read(type);
 
-			@Override
-			public List<T> doInMemory(InMemoryAdapter adapter) {
+		if (offset > tmp.size()) {
+			return Collections.emptyList();
+		}
+		int rowsToUse = (offset + rows > tmp.size()) ? tmp.size() - offset : rows;
+		return new ArrayList<T>(tmp).subList(offset, offset + rowsToUse);
 
-				List<T> tmp = new ArrayList<T>(adapter.getAllOf(type));
-
-				if (offset > tmp.size()) {
-					return Collections.emptyList();
-				}
-				int rowsToUse = (offset + rows > tmp.size()) ? tmp.size() - offset : rows;
-				return new ArrayList<T>(adapter.getAllOf(type)).subList(offset, offset + rowsToUse);
-			}
-		});
 	}
 
 	@Override
@@ -79,12 +72,13 @@ public class HazelcastTemplate extends AbstractInMemoryOperations<HazelcastQuery
 	@Override
 	protected <T> List<T> doRead(HazelcastQuery query, Class<T> type) {
 
-		Collection<T> results = adapter.getMap(type).values(query.getCritieria());
+		String typeAlias = resolveTypeAlias(type);
+		Collection<T> results = adapter.getMap(typeAlias).values(query.getCritieria());
 
 		if (query.getRows() > 0 && query.getOffset() >= 0) {
 			int rowsToUse = (query.getOffset() + query.getRows() > results.size()) ? results.size() - query.getOffset()
 					: query.getRows();
-			return new ArrayList<T>(adapter.getAllOf(type)).subList(query.getOffset(), query.getOffset() + rowsToUse);
+			return new ArrayList<T>(results).subList(query.getOffset(), query.getOffset() + rowsToUse);
 		}
 		return new ArrayList<T>(results);
 	}

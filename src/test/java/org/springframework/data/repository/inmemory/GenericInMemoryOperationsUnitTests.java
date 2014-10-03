@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -42,6 +43,8 @@ public abstract class GenericInMemoryOperationsUnitTests {
 	private static final Foo FOO_TWO = new Foo("two");
 	private static final Foo FOO_THREE = new Foo("three");
 	private static final Bar BAR_ONE = new Bar("one");
+	private static final ClassWithTypeAlias ALIASED = new ClassWithTypeAlias("super");
+	private static final SubclassOfAliasedType SUBCLASS_OF_ALIASED = new SubclassOfAliasedType("sub");
 
 	private InMemoryOperations operations;
 
@@ -304,6 +307,31 @@ public abstract class GenericInMemoryOperationsUnitTests {
 		assertThat(operations.count(getInMemoryQuery(), Foo.class), is(1L));
 	}
 
+	@Test
+	public void putShouldRespectTypeAlias() {
+
+		operations.create("1", ALIASED);
+		operations.create("2", SUBCLASS_OF_ALIASED);
+
+		assertThat(operations.read(ALIASED.getClass()), containsInAnyOrder(ALIASED, SUBCLASS_OF_ALIASED));
+	}
+
+	@Test
+	public void getAllOfShouldRespectTypeAliasAndFilterNonMatchingTypes() {
+
+		operations.create("1", ALIASED);
+		operations.create("2", SUBCLASS_OF_ALIASED);
+
+		assertThat(operations.read(SUBCLASS_OF_ALIASED.getClass()), containsInAnyOrder(SUBCLASS_OF_ALIASED));
+	}
+
+	@Test
+	public void getSouldRespectTypeAliasAndFilterNonMatching() {
+
+		operations.create("1", ALIASED);
+		assertThat(operations.read("1", SUBCLASS_OF_ALIASED.getClass()), nullValue());
+	}
+
 	protected abstract InMemoryOperations getInMemoryOperations();
 
 	protected abstract InMemoryQuery getInMemoryQuery();
@@ -409,6 +437,72 @@ public abstract class GenericInMemoryOperationsUnitTests {
 				return false;
 			}
 			return true;
+		}
+
+	}
+
+	@TypeAlias("aliased")
+	static class ClassWithTypeAlias implements Serializable {
+
+		@Id String id;
+		String name;
+
+		public ClassWithTypeAlias(String name) {
+			this.name = name;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ObjectUtils.nullSafeHashCode(this.id);
+			result = prime * result + ObjectUtils.nullSafeHashCode(this.name);
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof ClassWithTypeAlias)) {
+				return false;
+			}
+			ClassWithTypeAlias other = (ClassWithTypeAlias) obj;
+			if (!ObjectUtils.nullSafeEquals(this.id, other.id)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(this.name, other.name)) {
+				return false;
+			}
+			return true;
+		}
+
+	}
+
+	static class SubclassOfAliasedType extends ClassWithTypeAlias {
+
+		public SubclassOfAliasedType(String name) {
+			super(name);
 		}
 
 	}

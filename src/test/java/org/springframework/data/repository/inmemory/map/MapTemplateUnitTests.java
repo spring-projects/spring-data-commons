@@ -23,7 +23,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 /**
  * @author Christoph Strobl
  */
-public class MapOperationsUnitTests extends GenericInMemoryOperationsUnitTests {
+public class MapTemplateUnitTests extends GenericInMemoryOperationsUnitTests {
 
 	@Override
 	protected InMemoryOperations getInMemoryOperations() {

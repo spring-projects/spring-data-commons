@@ -39,11 +39,19 @@ public abstract class InMemoryPartTreeQuery<T, ID extends Serializable> implemen
 		this.inMemoryOps = inMemoryOps;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
+	 */
 	@Override
 	public QueryMethod getQueryMethod() {
 		return queryMethod;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public Object execute(Object[] parameters) {

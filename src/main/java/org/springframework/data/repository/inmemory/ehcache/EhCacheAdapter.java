@@ -19,6 +19,7 @@ import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -55,66 +56,89 @@ public class EhCacheAdapter implements InMemoryAdapter {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#put(java.io.Serializable, java.lang.Object)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#put(java.io.Serializable, java.lang.Object, java.io.Serializable)
 	 */
 	@Override
-	public Object put(Serializable id, Object item) {
+	public Object put(Serializable id, Object item, Serializable collection) {
+
+		Assert.notNull(id, "Id must not be 'null' for adding.");
+		Assert.notNull(item, "Item must not be 'null' for adding.");
 
 		Element element = new Element(id, item);
-		getCache(item).put(element);
+		getCache(collection, item.getClass()).put(element);
 		return item;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#contains(java.io.Serializable, java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#contains(java.io.Serializable, java.io.Serializable)
 	 */
 	@Override
-	public boolean contains(Serializable id, Class<?> type) {
-		return get(id, type) != null;
+	public boolean contains(Serializable id, Serializable collection) {
+		return get(id, collection) != null;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#get(java.io.Serializable, java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#get(java.io.Serializable, java.io.Serializable)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T get(Serializable id, Class<T> type) {
-		Element element = getCache(type).get(id);
-		return (T) (element != null ? element.getObjectValue() : null);
+	public Object get(Serializable id, Serializable collection) {
+
+		Cache cache = getCache(collection);
+		if (cache == null) {
+			return null;
+		}
+
+		Element element = cache.get(id);
+		return element != null ? element.getObjectValue() : null;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#delete(java.io.Serializable, java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#delete(java.io.Serializable, java.io.Serializable)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T delete(Serializable id, Class<T> type) {
+	public Object delete(Serializable id, Serializable collection) {
 
-		Element element = getCache(type).removeAndReturnElement(id);
-		return (T) (element != null ? element.getObjectValue() : null);
+		Cache cache = getCache(collection);
+		if (cache == null) {
+			return null;
+		}
+
+		Element element = cache.removeAndReturnElement(id);
+		return element != null ? element.getObjectValue() : null;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#getAllOf(java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#getAllOf(java.io.Serializable)
 	 */
 	@Override
-	public <T> Collection<T> getAllOf(Class<T> type) {
+	public Collection<?> getAllOf(Serializable collection) {
 
-		Collection<Element> values = getCache(type).getAll(getCache(type).getKeys()).values();
-		return new ListConverter<Element, T>(new ElementConverter<T>()).convert(values);
+		Cache cache = getCache(collection);
+		if (cache == null) {
+			return Collections.emptyList();
+		}
+
+		Collection<Element> values = cache.getAll(cache.getKeys()).values();
+		return new ListConverter<Element, Object>(new ElementConverter()).convert(values);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#deleteAllOf(java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#deleteAllOf(java.io.Serializable)
 	 */
 	@Override
-	public void deleteAllOf(Class<?> type) {
-		getCache(type).removeAll();
+	public void deleteAllOf(Serializable collection) {
+
+		Cache cache = getCache(collection);
+		if (cache == null) {
+			return;
+		}
+
+		getCache(collection).removeAll();
 	}
 
 	/*
@@ -126,18 +150,23 @@ public class EhCacheAdapter implements InMemoryAdapter {
 		cacheManager.clearAll();
 	}
 
-	protected Cache getCache(Object item) {
-
-		Assert.notNull(item, "Item must not be 'null' for lookup.");
-		return getCache(item.getClass());
+	protected Cache getCache(Serializable collection) {
+		return getCache(collection, null);
 	}
 
-	protected Cache getCache(final Class<?> type) {
+	protected Cache getCache(Serializable collection, final Class<?> type) {
 
-		Assert.notNull(type, "Type must not be 'null' for lookup.");
+		Assert.notNull(collection, "Collection must not be 'null' for lookup.");
+		Assert.isInstanceOf(String.class, collection, "Collection identifier must be of type String.");
+
 		Class<?> userType = ClassUtils.getUserClass(type);
+		String collectionName = (String) collection;
 
-		if (!cacheManager.cacheExists(userType.getName())) {
+		if (!cacheManager.cacheExists(collectionName)) {
+
+			if (type == null) {
+				return null;
+			}
 
 			CacheConfiguration cacheConfig = cacheManager.getConfiguration().getDefaultCacheConfiguration().clone();
 
@@ -146,7 +175,7 @@ public class EhCacheAdapter implements InMemoryAdapter {
 				cacheConfig = new CacheConfiguration();
 				cacheConfig.setMaxEntriesLocalHeap(0);
 			}
-			cacheConfig.setName(userType.getName());
+			cacheConfig.setName(collectionName);
 			final Searchable s = new Searchable();
 
 			// TODO: maybe use mappingcontex information at this point or register generic type using some spel expression
@@ -168,15 +197,14 @@ public class EhCacheAdapter implements InMemoryAdapter {
 			cacheConfig.addSearchable(s);
 			cacheManager.addCache(new Cache(cacheConfig));
 		}
-		return cacheManager.getCache(userType.getName());
+		return cacheManager.getCache(collectionName);
 	}
 
-	private class ElementConverter<T> implements Converter<Element, T> {
+	private class ElementConverter implements Converter<Element, Object> {
 
-		@SuppressWarnings("unchecked")
 		@Override
-		public T convert(Element source) {
-			return (T) source.getObjectValue();
+		public Object convert(Element source) {
+			return source.getObjectValue();
 		}
 	}
 }

@@ -31,8 +31,6 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.inmemory.AbstractInMemoryOperations;
-import org.springframework.data.repository.inmemory.InMemoryAdapter;
-import org.springframework.data.repository.inmemory.InMemoryCallback;
 import org.springframework.data.util.ListConverter;
 
 /**
@@ -66,20 +64,14 @@ public class EhCacheTemplate extends AbstractInMemoryOperations<EhCacheQuery> {
 	@Override
 	public <T> List<T> read(final int offset, final int rows, final Class<T> type) {
 
-		return execute(new InMemoryCallback<List<T>>() {
+		List<T> tmp = read(type);
 
-			@Override
-			public List<T> doInMemory(InMemoryAdapter adapter) {
+		if (offset > tmp.size()) {
+			return Collections.emptyList();
+		}
+		int rowsToUse = (offset + rows > tmp.size()) ? tmp.size() - offset : rows;
+		return new ArrayList<T>(tmp.subList(offset, offset + rowsToUse));
 
-				List<T> tmp = new ArrayList<T>(adapter.getAllOf(type));
-
-				if (offset > tmp.size()) {
-					return Collections.emptyList();
-				}
-				int rowsToUse = (offset + rows > tmp.size()) ? tmp.size() - offset : rows;
-				return new ArrayList<T>(adapter.getAllOf(type)).subList(offset, offset + rowsToUse);
-			}
-		});
 	}
 
 	@Override
@@ -136,7 +128,7 @@ public class EhCacheTemplate extends AbstractInMemoryOperations<EhCacheQuery> {
 
 	private <T> Query prepareQuery(EhCacheQuery query, Class<T> type) {
 
-		Query cacheQuery = getAdapter().getCache(type).createQuery().includeValues();
+		Query cacheQuery = getAdapter().getCache(resolveTypeAlias(type)).createQuery().includeValues();
 
 		if (query.getCritieria() != null) {
 			cacheQuery.addCriteria(query.getCritieria());

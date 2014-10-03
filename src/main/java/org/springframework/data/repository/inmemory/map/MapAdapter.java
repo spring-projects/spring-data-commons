@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * {@link InMemoryAdapter} implementation for access to data stored in {@link Map}.
@@ -33,69 +32,68 @@ import org.springframework.util.ClassUtils;
  */
 public class MapAdapter implements InMemoryAdapter {
 
-	private ConcurrentMap<Class<?>, Map<Serializable, Object>> data = new ConcurrentHashMap<Class<?>, Map<Serializable, Object>>();
+	private ConcurrentMap<Serializable, Map<Serializable, Object>> data = new ConcurrentHashMap<Serializable, Map<Serializable, Object>>();
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#put(java.io.Serializable, java.lang.Object)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#put(java.io.Serializable, java.lang.Object, java.io.Serializable)
 	 */
 	@Override
-	public Object put(Serializable id, Object item) {
+	public Object put(Serializable id, Object item, Serializable collection) {
 
 		Assert.notNull(id, "Cannot add item with 'null' id.");
-		return getValues(item).put(id, item);
+		Assert.notNull(collection, "Cannot add item for 'null' collection.");
+
+		return getValues(collection).put(id, item);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#contains(java.io.Serializable, java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#contains(java.io.Serializable, java.io.Serializable)
 	 */
 	@Override
-	public boolean contains(Serializable id, Class<?> type) {
-		return get(id, type) != null;
+	public boolean contains(Serializable id, Serializable collection) {
+		return get(id, collection) != null;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#get(java.io.Serializable, java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#get(java.io.Serializable, java.io.Serializable)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T get(Serializable id, Class<T> type) {
+	public Object get(Serializable id, Serializable collection) {
 
 		Assert.notNull(id, "Cannot get item with 'null' id.");
-		return (T) getValues(type).get(id);
+		return getValues(collection).get(id);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#getAllOf(java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#getAllOf(java.io.Serializable)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T> Collection<T> getAllOf(Class<T> type) {
-		return (Collection<T>) getValues(type).values();
+	public Collection<?> getAllOf(Serializable collection) {
+		return getValues(collection).values();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#delete(java.io.Serializable, java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#delete(java.io.Serializable, java.io.Serializable)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T delete(Serializable id, Class<T> type) {
+	public Object delete(Serializable id, Serializable collection) {
 
 		Assert.notNull(id, "Cannot delete item with 'null' id.");
-		return (T) getValues(type).remove(id);
+		return getValues(collection).remove(id);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#deleteAllOf(java.lang.Class)
+	 * @see org.springframework.data.repository.inmemory.InMemoryAdapter#deleteAllOf(java.io.Serializable)
 	 */
 	@Override
-	public void deleteAllOf(Class<?> type) {
-		getValues(type).clear();
+	public void deleteAllOf(Serializable collection) {
+		getValues(collection).clear();
 	}
 
 	/*
@@ -113,13 +111,13 @@ public class MapAdapter implements InMemoryAdapter {
 		return getValues(item.getClass());
 	}
 
-	protected Map<Serializable, Object> getValues(Class<?> type) {
+	protected Map<Serializable, Object> getValues(Serializable collection) {
 
-		Assert.notNull(type, "Type must not be 'null' for lookup.");
-		Class<?> userType = ClassUtils.getUserClass(type);
-		if (!data.containsKey(userType)) {
-			data.put(userType, new LinkedHashMap<Serializable, Object>());
+		Assert.notNull(collection, "Collection must not be 'null' for lookup.");
+
+		if (!data.containsKey(collection)) {
+			data.put(collection, new LinkedHashMap<Serializable, Object>());
 		}
-		return data.get(userType);
+		return data.get(collection);
 	}
 }

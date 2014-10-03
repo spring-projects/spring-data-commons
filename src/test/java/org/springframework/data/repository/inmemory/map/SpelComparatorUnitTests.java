@@ -30,7 +30,7 @@ public class SpelComparatorUnitTests {
 		SomeType t1 = new SomeType("one", Integer.valueOf(1), 1);
 		SomeType t2 = new SomeType("two", Integer.valueOf(2), 2);
 
-		Assert.assertThat(new SpelComparator<SomeType>("stringProperty").compare(t1, t2),
+		Assert.assertThat(new SpelSort<SomeType>("stringProperty").compare(t1, t2),
 				Is.is(t1.getStringProperty().compareTo(t2.getStringProperty())));
 
 	}

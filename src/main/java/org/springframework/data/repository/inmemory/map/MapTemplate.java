@@ -46,31 +46,52 @@ public class MapTemplate extends AbstractInMemoryOperations<MapQuery> {
 		super();
 	}
 
+	@SuppressWarnings("rawtypes")
 	public MapTemplate(
 			MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext) {
 		super(mappingContext);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.AbstractInMemoryOperations#doRead(org.springframework.data.repository.inmemory.BasicInMemoryQuery, java.lang.Class)
+	 */
 	@Override
-	protected <T> List<T> doRead(MapQuery filter, final Class<T> type) {
-		return sortAndFilterMatchingRange(read(type), filter);
+	protected <T> List<T> doRead(MapQuery query, final Class<T> type) {
+		return sortAndFilterMatchingRange(read(type), query);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.AbstractInMemoryOperations#doCount(org.springframework.data.repository.inmemory.BasicInMemoryQuery, java.lang.Class)
+	 */
 	@Override
 	protected long doCount(MapQuery query, Class<?> type) {
 		return doRead(new MapQuery(query.getCritieria()), type).size();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#read(int, int, java.lang.Class)
+	 */
 	@Override
 	public <T> List<T> read(int offset, int rows, final Class<T> type) {
 		return read(new MapQuery(null).skip(offset).limit(rows), type);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#read(org.springframework.data.domain.Sort, java.lang.Class)
+	 */
 	@Override
 	public <T> List<T> read(Sort sort, Class<T> type) {
 		return read(new MapQuery(null).orderBy(sort), type);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#read(int, int, org.springframework.data.domain.Sort, java.lang.Class)
+	 */
 	@Override
 	public <T> List<T> read(int offset, int rows, Sort sort, Class<T> type) {
 		return read(new MapQuery(null).skip(offset).limit(rows).orderBy(sort), type);
@@ -86,30 +107,30 @@ public class MapTemplate extends AbstractInMemoryOperations<MapQuery> {
 		return filterMatchingRange(source, query);
 	}
 
-	private <T> List<T> filterMatchingRange(Iterable<T> source, MapQuery filterExpression) {
+	private <T> List<T> filterMatchingRange(Iterable<T> source, MapQuery query) {
 
 		List<T> result = new ArrayList<T>();
 
-		boolean compareOffsetAndRows = 0 < filterExpression.getOffset() || 0 <= filterExpression.getRows();
-		int remainingRows = filterExpression.getRows();
+		boolean compareOffsetAndRows = 0 < query.getOffset() || 0 <= query.getRows();
+		int remainingRows = query.getRows();
 		int curPos = 0;
 
 		for (T candidate : source) {
 
-			boolean matches = filterExpression.getCritieria() == null;
+			boolean matches = query.getCritieria() == null;
 
 			if (!matches) {
 				try {
-					matches = filterExpression.getCritieria().getValue(candidate, Boolean.class);
+					matches = query.getCritieria().getValue(candidate, Boolean.class);
 				} catch (SpelEvaluationException e) {
-					((SpelExpression) filterExpression.getCritieria()).getEvaluationContext().setVariable("it", candidate);
-					matches = ((SpelExpression) filterExpression.getCritieria()).getValue(Boolean.class);
+					((SpelExpression) query.getCritieria()).getEvaluationContext().setVariable("it", candidate);
+					matches = ((SpelExpression) query.getCritieria()).getValue(Boolean.class);
 				}
 			}
 
 			if (matches) {
 				if (compareOffsetAndRows) {
-					if (curPos >= filterExpression.getOffset() && filterExpression.getRows() > 0) {
+					if (curPos >= query.getOffset() && query.getRows() > 0) {
 						result.add(candidate);
 						remainingRows--;
 						if (remainingRows <= 0) {
@@ -131,21 +152,29 @@ public class MapTemplate extends AbstractInMemoryOperations<MapQuery> {
 		List<Comparator<?>> comparators = new ArrayList<Comparator<?>>();
 		for (Order order : sort) {
 
-			SpelComparator<?> comparator = new SpelComparator(order.getProperty());
+			SpelSort<?> spelSort = new SpelSort(order.getProperty());
 			if (Direction.DESC.equals(order.getDirection())) {
-				comparator.desc();
+				spelSort.desc();
 			}
-			comparators.add(comparator);
+			comparators.add(spelSort);
 		}
 
 		return new CompositeComperator(comparators);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.inmemory.AbstractInMemoryOperations#getAdapter()
+	 */
 	@Override
 	protected InMemoryAdapter getAdapter() {
 		return this.map;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
 	@Override
 	public void destroy() throws Exception {
 		this.map.clear();

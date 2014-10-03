@@ -24,16 +24,34 @@ import org.springframework.data.domain.Sort;
  */
 public interface InMemoryQuery {
 
+	/**
+	 * @return {@literal null} if not set.
+	 */
 	Object getCritieria();
 
+	/**
+	 * @return {@literal null} if not set.
+	 */
 	Sort getSort();
 
+	/**
+	 * @return negative value in case no offset defined.
+	 */
 	int getOffset();
 
+	/**
+	 * @return negative value in case no row limit defined.
+	 */
 	int getRows();
 
+	/**
+	 * @param offset
+	 */
 	void setOffset(int offset);
 
+	/**
+	 * @param rows
+	 */
 	void setRows(int rows);
 
 }

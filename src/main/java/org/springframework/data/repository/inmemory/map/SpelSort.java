@@ -21,19 +21,26 @@ import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
+ * {@link Comparator} implementation using {@link SpelExpression}.
+ * 
  * @author Christoph Strobl
  * @param <T>
  */
-public class SpelComparator<T> implements Comparator<T> {
+public class SpelSort<T> implements Comparator<T> {
 
 	boolean asc = true;
 	SpelExpression expression;
 
-	public SpelComparator(String path) {
+	/**
+	 * Create new {@link SpelSort} comparing given property path.
+	 * 
+	 * @param path
+	 */
+	public SpelSort(String path) {
 		this.expression = new SpelExpressionParser().parseRaw(buildExpressionForPath(path));
 	}
 
-	public SpelComparator(SpelExpression expression) {
+	public SpelSort(SpelExpression expression) {
 		this.expression = expression;
 	}
 

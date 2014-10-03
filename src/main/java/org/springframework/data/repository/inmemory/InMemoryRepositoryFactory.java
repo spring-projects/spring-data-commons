@@ -36,6 +36,8 @@ public abstract class InMemoryRepositoryFactory<T, ID extends Serializable> exte
 
 	@Override
 	public <T, ID extends Serializable> ReflectionEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+
+		// TODO: can we read this from another place?
 		return new ReflectionEntityInformation<T, ID>(domainClass);
 	}
 
