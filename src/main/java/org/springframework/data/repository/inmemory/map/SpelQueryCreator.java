@@ -25,6 +25,8 @@ import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
+import org.springframework.data.util.SpelUtil;
+import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
@@ -167,6 +169,8 @@ public class SpelQueryCreator extends AbstractQueryCreator<MapQuery, String> {
 
 		}
 
-		return (SpelExpression) new SpelExpressionParser().parseExpression(sb.toString());
+		// not all SpEL queries can safely be compiled. To avoid crashes here we explicitly turn them off.
+		SpelParserConfiguration config = SpelUtil.silentlyCreateParserConfiguration("OFF");
+		return (SpelExpression) new SpelExpressionParser(config).parseExpression(sb.toString());
 	}
 }

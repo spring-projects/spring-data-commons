@@ -17,6 +17,8 @@ package org.springframework.data.repository.inmemory.map;
 
 import java.util.Comparator;
 
+import org.springframework.data.util.SpelUtil;
+import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
@@ -28,8 +30,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  */
 public class SpelSort<T> implements Comparator<T> {
 
-	boolean asc = true;
-	SpelExpression expression;
+	private boolean asc = true;
+	private SpelExpression expression;
 
 	/**
 	 * Create new {@link SpelSort} comparing given property path.
@@ -37,7 +39,9 @@ public class SpelSort<T> implements Comparator<T> {
 	 * @param path
 	 */
 	public SpelSort(String path) {
-		this.expression = new SpelExpressionParser().parseRaw(buildExpressionForPath(path));
+
+		SpelParserConfiguration config = SpelUtil.silentlyCreateParserConfiguration("IMMEDIATE");
+		this.expression = new SpelExpressionParser(config).parseRaw(buildExpressionForPath(path));
 	}
 
 	public SpelSort(SpelExpression expression) {
