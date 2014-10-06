@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.querydsl;
 
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -25,27 +26,31 @@ import com.mysema.query.types.Predicate;
  * Interface to allow execution of QueryDsl {@link Predicate} instances.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public interface QueryDslPredicateExecutor<T> {
 
 	/**
-	 * Returns a single entity matching the given {@link Predicate}.
+	 * Returns a single entity matching the given {@link Predicate} or {@literal null} if none was found.
+	 * If the predicate yields more than one result a {@link IncorrectResultSizeDataAccessException} is thrown.
 	 * 
-	 * @param spec
+	 * @param predicate
 	 * @return
 	 */
 	T findOne(Predicate predicate);
 
 	/**
 	 * Returns all entities matching the given {@link Predicate}.
+	 * In case no match could be found an empty {@link Iterable} is returned.
 	 * 
-	 * @param spec
+	 * @param predicate
 	 * @return
 	 */
 	Iterable<T> findAll(Predicate predicate);
 
 	/**
 	 * Returns all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s.
+	 * In case no match could be found an empty {@link Iterable} is returned.
 	 * 
 	 * @param predicate
 	 * @param orders
@@ -55,6 +60,7 @@ public interface QueryDslPredicateExecutor<T> {
 
 	/**
 	 * Returns a {@link Page} of entities matching the given {@link Predicate}.
+	 * In case no match could be found, an empty {@link Page} is returned.
 	 * 
 	 * @param predicate
 	 * @param pageable
