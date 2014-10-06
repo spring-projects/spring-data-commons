@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
@@ -40,8 +39,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	private final Environment environment;
 
 	/**
-	 * Creates a new {@link RepositoryConfigurationSourceSupport} with the given environment. Defaults to a plain
-	 * {@link StandardEnvironment} in case the given argument is {@literal null}.
+	 * Creates a new {@link RepositoryConfigurationSourceSupport} with the given environment.
 	 * 
 	 * @param environment must not be {@literal null}.
 	 */
