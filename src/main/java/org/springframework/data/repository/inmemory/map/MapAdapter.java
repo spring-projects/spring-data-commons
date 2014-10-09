@@ -22,8 +22,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.repository.inmemory.InMemoryAdapter;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.SerializationUtils;
 
 /**
  * {@link InMemoryAdapter} implementation for access to data stored in {@link Map}.
@@ -33,6 +36,17 @@ import org.springframework.util.Assert;
 public class MapAdapter implements InMemoryAdapter {
 
 	private ConcurrentMap<Serializable, Map<Serializable, Object>> data = new ConcurrentHashMap<Serializable, Map<Serializable, Object>>();
+
+	private static final MapPersistenceStrategy DEFAULT_PERSISTENCE_STRATEGY = new CloningPersistenceStragtegy();
+	private MapPersistenceStrategy persistenceStrategy;
+
+	public MapAdapter() {
+		this(DEFAULT_PERSISTENCE_STRATEGY);
+	}
+
+	public MapAdapter(MapPersistenceStrategy persistenceStrategy) {
+		this.persistenceStrategy = persistenceStrategy != null ? persistenceStrategy : DEFAULT_PERSISTENCE_STRATEGY;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -44,7 +58,7 @@ public class MapAdapter implements InMemoryAdapter {
 		Assert.notNull(id, "Cannot add item with 'null' id.");
 		Assert.notNull(collection, "Cannot add item for 'null' collection.");
 
-		return getValues(collection).put(id, item);
+		return getValues(collection).put(id, persistenceStrategy.getPersistentObject(item));
 	}
 
 	/*
@@ -120,4 +134,66 @@ public class MapAdapter implements InMemoryAdapter {
 		}
 		return data.get(collection);
 	}
+
+	/**
+	 * @author Christoph Strobl
+	 */
+	public static interface MapPersistenceStrategy {
+		Object getPersistentObject(Object o);
+	}
+
+	/**
+	 * Implementation of {@link MapPersistenceStrategy} using {@code clone()} or {@link SerializationUtils} for making a
+	 * copy. This allows to decouple pointers to values that exist in the map.
+	 * 
+	 * @author Christoph Strobl
+	 */
+	static class CloningPersistenceStragtegy implements MapPersistenceStrategy {
+
+		@Override
+		public Object getPersistentObject(Object o) {
+
+			if (o == null) {
+				return o;
+			}
+			if (o instanceof Cloneable) {
+				try {
+					return ReflectionUtils.findMethod(o.getClass(), "clone").invoke(o);
+				} catch (Exception o_O) {
+					//
+				}
+			}
+
+			if (o instanceof Serializable) {
+				try {
+					return SerializationUtils.deserialize(SerializationUtils.serialize(o));
+				} catch (Exception o_O) {
+					//
+				}
+			}
+
+			Object target;
+			try {
+				target = o.getClass().newInstance();
+				BeanUtils.copyProperties(o, target);
+				return target;
+			} catch (Exception e) {
+				//
+			}
+
+			throw new UnsupportedOperationException(String.format(
+					"Unable to create persistable object for %s. Please make sure it implements Cloneable or Serializable.",
+					o.getClass()));
+		}
+	}
+
+	public static class WriteThroughPersistenceStrategy implements MapPersistenceStrategy {
+
+		@Override
+		public Object getPersistentObject(Object o) {
+			return o;
+		}
+
+	}
+
 }
