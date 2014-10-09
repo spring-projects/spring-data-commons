@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.NullHandling;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -153,8 +154,15 @@ public class MapTemplate extends AbstractInMemoryOperations<MapQuery> {
 		for (Order order : sort) {
 
 			SpelSort<?> spelSort = new SpelSort(order.getProperty());
+
 			if (Direction.DESC.equals(order.getDirection())) {
+
 				spelSort.desc();
+
+				if (order.getNullHandling() != null && !NullHandling.NATIVE.equals(order.getNullHandling())) {
+					spelSort = NullHandling.NULLS_FIRST.equals(order.getNullHandling()) ? spelSort.nullsFirst() : spelSort
+							.nullsLast();
+				}
 			}
 			compoundComperator.addComparator(spelSort);
 		}

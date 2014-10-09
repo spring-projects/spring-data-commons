@@ -30,8 +30,11 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  */
 public class SpelSort<T> implements Comparator<T> {
 
-	private boolean asc = true;
+	private final String path;
 	private SpelExpression expression;
+
+	private boolean asc = true;
+	private boolean nullsFirst = true;
 
 	/**
 	 * Create new {@link SpelSort} comparing given property path.
@@ -39,29 +42,56 @@ public class SpelSort<T> implements Comparator<T> {
 	 * @param path
 	 */
 	public SpelSort(String path) {
-
-		SpelParserConfiguration config = SpelUtil.silentlyCreateParserConfiguration("IMMEDIATE");
-		this.expression = new SpelExpressionParser(config).parseRaw(buildExpressionForPath(path));
+		this.path = path;
 	}
 
-	public SpelSort(SpelExpression expression) {
-		this.expression = expression;
-	}
-
+	/**
+	 * @return
+	 */
 	public SpelSort<T> asc() {
 		this.asc = true;
 		return this;
 	}
 
+	/**
+	 * @return
+	 */
 	public SpelSort<T> desc() {
 		this.asc = false;
 		return this;
 	}
 
-	protected String buildExpressionForPath(String path) {
+	/**
+	 * @return
+	 */
+	public SpelSort<T> nullsFirst() {
+		this.nullsFirst = true;
+		return this;
+	}
+
+	/**
+	 * @return
+	 */
+	public SpelSort<T> nullsLast() {
+		this.nullsFirst = false;
+		return this;
+	}
+
+	protected SpelExpression getExpression() {
+
+		if (this.expression == null) {
+			SpelParserConfiguration config = SpelUtil.silentlyCreateParserConfiguration("IMMEDIATE");
+			this.expression = new SpelExpressionParser(config).parseRaw(buildExpressionForPath());
+		}
+
+		return this.expression;
+	}
+
+	protected String buildExpressionForPath() {
 
 		StringBuilder rawExpression = new StringBuilder(
-				"new org.springframework.util.comparator.NullSafeComparator(new org.springframework.util.comparator.ComparableComparator(), true).compare(");
+				"new org.springframework.util.comparator.NullSafeComparator(new org.springframework.util.comparator.ComparableComparator(), "
+						+ Boolean.toString(this.nullsFirst) + ").compare(");
 
 		rawExpression.append("#arg1?.");
 		rawExpression.append(path != null ? path.replace(".", ".?") : "");
@@ -69,16 +99,23 @@ public class SpelSort<T> implements Comparator<T> {
 		rawExpression.append("#arg2?.");
 		rawExpression.append(path != null ? path.replace(".", ".?") : "");
 		rawExpression.append(")");
+
 		return rawExpression.toString();
 	}
 
 	@Override
-	public int compare(T o1, T o2) {
+	public int compare(T arg1, T arg2) {
 
-		expression.getEvaluationContext().setVariable("arg1", o1);
-		expression.getEvaluationContext().setVariable("arg2", o2);
+		SpelExpression expressionToUse = getExpression();
 
-		return expression.getValue(Integer.class) * (asc ? 1 : -1);
+		expressionToUse.getEvaluationContext().setVariable("arg1", arg1);
+		expressionToUse.getEvaluationContext().setVariable("arg2", arg2);
+
+		return expressionToUse.getValue(Integer.class) * (asc ? 1 : -1);
+	}
+
+	public String getPath() {
+		return path;
 	}
 
 }

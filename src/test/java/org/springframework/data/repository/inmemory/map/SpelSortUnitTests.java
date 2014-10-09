@@ -15,8 +15,10 @@
  */
 package org.springframework.data.repository.inmemory.map;
 
-import org.hamcrest.core.Is;
-import org.junit.Assert;
+import static org.hamcrest.core.Is.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 /**
@@ -30,36 +32,36 @@ public class SpelSortUnitTests {
 	@Test
 	public void shouldCompareStringAscCorrectly() {
 
-		Assert.assertThat(new SpelSort<SomeType>("stringProperty").compare(ONE, TWO),
-				Is.is(ONE.getStringProperty().compareTo(TWO.getStringProperty())));
+		assertThat(new SpelSort<SomeType>("stringProperty").compare(ONE, TWO),
+				is(ONE.getStringProperty().compareTo(TWO.getStringProperty())));
 	}
 
 	@Test
 	public void shouldCompareStringDescCorrectly() {
 
-		Assert.assertThat(new SpelSort<SomeType>("stringProperty").desc().compare(ONE, TWO),
-				Is.is(TWO.getStringProperty().compareTo(ONE.getStringProperty())));
+		assertThat(new SpelSort<SomeType>("stringProperty").desc().compare(ONE, TWO),
+				is(TWO.getStringProperty().compareTo(ONE.getStringProperty())));
 	}
 
 	@Test
 	public void shouldCompareIntegerAscCorrectly() {
 
-		Assert.assertThat(new SpelSort<SomeType>("integerProperty").compare(ONE, TWO),
-				Is.is(ONE.getIntegerProperty().compareTo(TWO.getIntegerProperty())));
+		assertThat(new SpelSort<SomeType>("integerProperty").compare(ONE, TWO),
+				is(ONE.getIntegerProperty().compareTo(TWO.getIntegerProperty())));
 	}
 
 	@Test
 	public void shouldCompareIntegerDescCorrectly() {
 
-		Assert.assertThat(new SpelSort<SomeType>("integerProperty").desc().compare(ONE, TWO),
-				Is.is(TWO.getIntegerProperty().compareTo(ONE.getIntegerProperty())));
+		assertThat(new SpelSort<SomeType>("integerProperty").desc().compare(ONE, TWO), is(TWO.getIntegerProperty()
+				.compareTo(ONE.getIntegerProperty())));
 	}
 
 	@Test
 	public void shouldComparePrimitiveIntegerAscCorrectly() {
 
-		Assert.assertThat(new SpelSort<SomeType>("primitiveProperty").compare(ONE, TWO),
-				Is.is(Integer.valueOf(ONE.getPrimitiveProperty()).compareTo(Integer.valueOf(TWO.getPrimitiveProperty()))));
+		assertThat(new SpelSort<SomeType>("primitiveProperty").compare(ONE, TWO),
+				is(Integer.valueOf(ONE.getPrimitiveProperty()).compareTo(Integer.valueOf(TWO.getPrimitiveProperty()))));
 	}
 
 	@Test
@@ -70,8 +72,20 @@ public class SpelSortUnitTests {
 	@Test
 	public void shouldComparePrimitiveIntegerDescCorrectly() {
 
-		Assert.assertThat(new SpelSort<SomeType>("primitiveProperty").desc().compare(ONE, TWO),
-				Is.is(Integer.valueOf(TWO.getPrimitiveProperty()).compareTo(Integer.valueOf(ONE.getPrimitiveProperty()))));
+		assertThat(new SpelSort<SomeType>("primitiveProperty").desc().compare(ONE, TWO),
+				is(Integer.valueOf(TWO.getPrimitiveProperty()).compareTo(Integer.valueOf(ONE.getPrimitiveProperty()))));
+	}
+
+	@Test
+	public void shouldSortNullsFirstCorrectly() {
+		assertThat(new SpelSort<SomeType>("stringProperty").nullsFirst().compare(ONE, new SomeType(null, null, 2)),
+				equalTo(1));
+	}
+
+	@Test
+	public void shouldSortNullsLastCorrectly() {
+		assertThat(new SpelSort<SomeType>("stringProperty").nullsLast().compare(ONE, new SomeType(null, null, 2)),
+				equalTo(-1));
 	}
 
 	static class SomeType {
