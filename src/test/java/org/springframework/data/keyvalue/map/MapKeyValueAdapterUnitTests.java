@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.map;
+package org.springframework.data.keyvalue.map;
 
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.*;
 import static org.hamcrest.core.Is.*;
 import static org.hamcrest.core.IsEqual.*;
-import static org.hamcrest.core.IsNot.*;
 import static org.hamcrest.core.IsNull.*;
-import static org.hamcrest.core.IsSame.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -34,11 +32,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.util.ObjectUtils;
 
-/**
- * @author Christoph Strobl
- */
 @RunWith(Parameterized.class)
-public class MapAdapterUnitTests {
+public class MapKeyValueAdapterUnitTests {
 
 	private static final String COLLECTION_1 = "collection-1";
 	private static final String COLLECTION_2 = "collection-2";
@@ -47,7 +42,7 @@ public class MapAdapterUnitTests {
 	private Object object1;
 	private Object object2;
 
-	private MapAdapter adapter;
+	private MapKeyValueAdapter adapter;
 
 	@Parameters
 	public static Collection<Object[]> data() {
@@ -55,14 +50,14 @@ public class MapAdapterUnitTests {
 				{ new CloneableObject("one"), new CloneableObject("two") } });
 	}
 
-	public MapAdapterUnitTests(Object o1, Object o2) {
+	public MapKeyValueAdapterUnitTests(Object o1, Object o2) {
 		this.object1 = o1;
 		this.object2 = o2;
 	}
 
 	@Before
 	public void setUp() {
-		this.adapter = new MapAdapter();
+		this.adapter = new MapKeyValueAdapter();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -156,13 +151,6 @@ public class MapAdapterUnitTests {
 
 		adapter.put("1", object1, COLLECTION_1);
 		assertThat(adapter.delete("1", COLLECTION_1), is(object1));
-	}
-
-	@Test
-	public void objectInAdapterShouldNotBeSameInstanceAsSourceObject() {
-
-		adapter.put("1", object1, COLLECTION_1);
-		assertThat(adapter.get("1", COLLECTION_1), not(sameInstance(object1)));
 	}
 
 	static class SimpleObject implements Serializable {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.map;
+package org.springframework.data.keyvalue.map;
 
 import static org.hamcrest.collection.IsCollectionWithSize.*;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.*;
@@ -25,17 +25,15 @@ import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.keyvalue.Person;
+import org.springframework.data.keyvalue.QPerson;
 import org.springframework.data.querydsl.QSort;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
-import org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests;
-import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
-import org.springframework.data.repository.inmemory.Person;
-import org.springframework.data.repository.inmemory.QPerson;
 
 /**
  * @author Christoph Strobl
  */
-public class QueryDslMapRepositoryUnitTests extends GenericInMemoryRepositoryUnitTests {
+public class QueryDslMapRepositoryUnitTests extends MapBackedKeyValueRepositoryUnitTests {
 
 	@Test
 	public void findOneIsExecutedCorrectly() {
@@ -109,11 +107,6 @@ public class QueryDslMapRepositoryUnitTests extends GenericInMemoryRepositoryUni
 	@Override
 	protected Class<? extends PersonRepository> getRepositoryClass() {
 		return QPersonRepository.class;
-	}
-
-	@Override
-	protected InMemoryRepositoryFactory<Person, String> getRepositoryFactory() {
-		return new MapBackedRepositoryFactory<Person, String>(new MapTemplate());
 	}
 
 	QPersonRepository getQPersonRepo() {

@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.map;
+package org.springframework.data.keyvalue.repository;
 
-import org.springframework.data.repository.inmemory.GenericInMemoryRepositoryUnitTests;
-import org.springframework.data.repository.inmemory.InMemoryRepositoryFactory;
-import org.springframework.data.repository.inmemory.Person;
+import java.io.Serializable;
+
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  * @author Christoph Strobl
+ * @since 1.10
+ * @param <T>
+ * @param <ID>
  */
-public class MapRepositoryUnitTests extends GenericInMemoryRepositoryUnitTests {
-
-	@Override
-	protected InMemoryRepositoryFactory<org.springframework.data.repository.inmemory.Person, String> getRepositoryFactory() {
-		return new MapBackedRepositoryFactory<Person, String>(new MapTemplate());
-	}
+public interface KeyValueRepository<T, ID extends Serializable> extends PagingAndSortingRepository<T, ID> {
 
 }

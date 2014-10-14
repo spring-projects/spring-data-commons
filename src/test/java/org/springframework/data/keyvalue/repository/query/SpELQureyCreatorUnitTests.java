@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.map;
+package org.springframework.data.keyvalue.repository.query;
 
 import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
@@ -26,6 +26,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.keyvalue.core.query.KeyValueQuery;
+import org.springframework.data.keyvalue.repository.query.SpelQueryCreator;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryMethod;
@@ -232,8 +234,8 @@ public class SpELQureyCreatorUnitTests {
 		return new Evaluation((SpelExpression) createQueryForMethodWithArgs(methodName, args).getCritieria());
 	}
 
-	private MapQuery createQueryForMethodWithArgs(String methodName, Object... args) throws NoSuchMethodException,
-			SecurityException {
+	private KeyValueQuery<SpelExpression> createQueryForMethodWithArgs(String methodName, Object... args)
+			throws NoSuchMethodException, SecurityException {
 
 		Class<?>[] argTypes = new Class<?>[args.length];
 		if (!ObjectUtils.isEmpty(args)) {
@@ -249,8 +251,8 @@ public class SpELQureyCreatorUnitTests {
 		SpelQueryCreator creator = new SpelQueryCreator(partTree, new ParametersParameterAccessor(new QueryMethod(method,
 				metadataMock).getParameters(), args));
 
-		MapQuery q = creator.createQuery();
-		((SpelExpression) q.getCritieria()).setEvaluationContext(new StandardEvaluationContext(args));
+		KeyValueQuery<SpelExpression> q = creator.createQuery();
+		q.getCritieria().setEvaluationContext(new StandardEvaluationContext(args));
 		return q;
 	}
 

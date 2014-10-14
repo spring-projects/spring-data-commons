@@ -13,33 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.map;
+package org.springframework.data.keyvalue.core;
 
-import org.springframework.data.repository.inmemory.BasicInMemoryQuery;
-import org.springframework.data.repository.inmemory.InMemoryQuery;
-import org.springframework.expression.Expression;
+import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 
 /**
- * {@link InMemoryQuery} implementation to be used for executing {@link Expression} based queries.
- * 
  * @author Christoph Strobl
+ * @since 1.10
+ * @param <T>
  */
-public class MapQuery extends BasicInMemoryQuery {
+public interface SortAccessor<T> {
 
-	private final Expression criteria;
-
-	/**
-	 * Create new {@link MapQuery}.
-	 * 
-	 * @param criteria
-	 */
-	public MapQuery(Expression criteria) {
-		this.criteria = criteria;
-	}
-
-	@Override
-	public Expression getCritieria() {
-		return this.criteria;
-	}
+	T resolve(KeyValueQuery<?> query);
 
 }

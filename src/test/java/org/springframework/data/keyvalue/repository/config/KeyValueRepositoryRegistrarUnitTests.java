@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.config;
+package org.springframework.data.keyvalue.repository.config;
 
 import static org.hamcrest.core.IsNull.*;
 import static org.junit.Assert.*;
@@ -26,10 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.keyvalue.core.KeyValueOperations;
+import org.springframework.data.keyvalue.core.KeyValueTemplate;
+import org.springframework.data.keyvalue.map.MapKeyValueAdapter;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.inmemory.InMemoryOperations;
-import org.springframework.data.repository.inmemory.map.MapTemplate;
-import org.springframework.data.repository.inmemory.repository.config.EnableInMemoryRepositories;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -38,22 +38,22 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class InMemoryRepositoriesRegistrarUnitTests {
+public class KeyValueRepositoryRegistrarUnitTests {
 
 	@Configuration
-	@EnableInMemoryRepositories(considerNestedRepositories = true)
+	@EnableKeyValueRepositories(considerNestedRepositories = true)
 	static class Config {
 
 		@Bean
-		public InMemoryOperations inMemoryTemplate() {
-			return new MapTemplate();
+		public KeyValueOperations keyValueTemplate() {
+			return new KeyValueTemplate(new MapKeyValueAdapter());
 		}
 	}
 
 	@Autowired PersonRepository repo;
 
 	@Test
-	public void shouldEnableInMempryRepositoryCorrectly() {
+	public void shouldEnableKeyValueRepositoryCorrectly() {
 		assertThat(repo, notNullValue());
 	}
 

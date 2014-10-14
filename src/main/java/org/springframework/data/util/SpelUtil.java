@@ -20,7 +20,6 @@ import java.lang.reflect.Constructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.repository.inmemory.map.SpelSort;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -33,7 +32,7 @@ public abstract class SpelUtil {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SpelUtil.class);
 
 	private static final boolean IS_SPEL_COMPILER_PRESENT = ClassUtils.isPresent(
-			"org.springframework.expression.spel.standard.SpelCompiler", SpelSort.class.getClassLoader());
+			"org.springframework.expression.spel.standard.SpelCompiler", SpelUtil.class.getClassLoader());
 
 	private static final SpelParserConfiguration DEFAULT_PARSER_CONFIG = new SpelParserConfiguration(false, false);
 

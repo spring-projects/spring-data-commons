@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.repository.config;
+package org.springframework.data.keyvalue.repository.config;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -25,23 +25,24 @@ import java.lang.annotation.Target;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.repository.inmemory.InMemoryOperations;
-import org.springframework.data.repository.inmemory.repository.support.InMemoryRepositoryFactoryBean;
+import org.springframework.data.keyvalue.core.KeyValueOperations;
+import org.springframework.data.keyvalue.repository.support.KeyValueRepositoryFactoryBean;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
 /**
- * Annotation to activate InMemory repositories. If no base package is configured through either {@link #value()},
+ * Annotation to activate KeyValue repositories. If no base package is configured through either {@link #value()},
  * {@link #basePackages()} or {@link #basePackageClasses()} it will trigger scanning of the package of annotated class.
  * 
  * @author Christoph Strobl
+ * @since 1.10
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-@Import(InMemoryRepositoriesRegistrar.class)
-public @interface EnableInMemoryRepositories {
+@Import(KeyValueRepositoriesRegistrar.class)
+public @interface EnableKeyValueRepositories {
 
 	/**
 	 * Alias for the {@link #basePackages()} attribute. Allows for more concise annotation declarations e.g.:
@@ -99,25 +100,18 @@ public @interface EnableInMemoryRepositories {
 
 	/**
 	 * Returns the {@link FactoryBean} class to be used for each repository instance. Defaults to
-	 * {@link InMemoryRepositoryFactoryBean}.
+	 * {@link KeyValueRepositoryFactoryBean}.
 	 * 
 	 * @return
 	 */
-	Class<?> repositoryFactoryBeanClass() default InMemoryRepositoryFactoryBean.class;
+	Class<?> repositoryFactoryBeanClass() default KeyValueRepositoryFactoryBean.class;
 
 	/**
-	 * Configures the name of the {@link InMemoryOperations} bean to be used with the repositories detected.
+	 * Configures the name of the {@link KeyValueOperations} bean to be used with the repositories detected.
 	 * 
 	 * @return
 	 */
-	String inMemoryTemplateRef() default "inMemoryTemplate";
-
-	/**
-	 * Configure factory for creating in memory repository. Defaults to {@link MapBackedRepositoryFactory}.
-	 * 
-	 * @return
-	 */
-	// Class<?> repositoryFactory() default MapBackedRepositoryFactory.class;
+	String keyValueTemplateRef() default "keyValueTemplate";
 
 	/**
 	 * Configures whether nested repository-interfaces (e.g. defined as inner classes) should be discovered by the

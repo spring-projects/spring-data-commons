@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.map;
+package org.springframework.data.keyvalue.repository.query;
 
 import java.util.Iterator;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 import org.springframework.data.repository.query.parser.Part;
@@ -26,14 +27,17 @@ import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.data.util.SpelUtil;
-import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * @author Christoph Strobl
+ * @since 1.10
  */
-public class SpelQueryCreator extends AbstractQueryCreator<MapQuery, String> {
+public class SpelQueryCreator extends AbstractQueryCreator<KeyValueQuery<SpelExpression>, String> {
+
+	private static final SpelExpressionParser PARSER = new SpelExpressionParser(
+			SpelUtil.silentlyCreateParserConfiguration("OFF"));
 
 	private SpelExpression expression;
 
@@ -59,9 +63,9 @@ public class SpelQueryCreator extends AbstractQueryCreator<MapQuery, String> {
 	}
 
 	@Override
-	protected MapQuery complete(String criteria, Sort sort) {
+	protected KeyValueQuery<SpelExpression> complete(String criteria, Sort sort) {
 
-		MapQuery query = new MapQuery(this.expression);
+		KeyValueQuery<SpelExpression> query = new KeyValueQuery<SpelExpression>(this.expression);
 		if (sort != null) {
 			query.orderBy(sort);
 		}
@@ -83,7 +87,7 @@ public class SpelQueryCreator extends AbstractQueryCreator<MapQuery, String> {
 
 				Part part = partIter.next();
 				partBuilder.append("#it?.");
-				partBuilder.append(part.getProperty().toDotPath().replace(".", ".?"));
+				partBuilder.append(part.getProperty().toDotPath().replace(".", "?."));
 
 				// TODO: check if we can have caseinsensitive search
 				if (!part.shouldIgnoreCase().equals(IgnoreCaseType.NEVER)) {
@@ -137,7 +141,7 @@ public class SpelQueryCreator extends AbstractQueryCreator<MapQuery, String> {
 						partBuilder.append(">").append("[").append(parameterIndex++).append("]");
 						partBuilder.append("&&");
 						partBuilder.append("#it?.");
-						partBuilder.append(part.getProperty().toDotPath().replace(".", ".?"));
+						partBuilder.append(part.getProperty().toDotPath().replace(".", "?."));
 						partBuilder.append("<").append("[").append(parameterIndex++).append("]");
 						partBuilder.append(")");
 						break;
@@ -169,8 +173,6 @@ public class SpelQueryCreator extends AbstractQueryCreator<MapQuery, String> {
 
 		}
 
-		// not all SpEL queries can safely be compiled. To avoid crashes here we explicitly turn them off.
-		SpelParserConfiguration config = SpelUtil.silentlyCreateParserConfiguration("OFF");
-		return (SpelExpression) new SpelExpressionParser(config).parseExpression(sb.toString());
+		return PARSER.parseRaw(sb.toString());
 	}
 }

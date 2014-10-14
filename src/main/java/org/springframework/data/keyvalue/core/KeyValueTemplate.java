@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory;
+package org.springframework.data.keyvalue.core;
 
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
@@ -25,39 +25,50 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.repository.inmemory.BasicMappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * Base implementation of {@link InMemoryOperations} implementing common concerns.
+ * Basic implementation of {@link KeyValueOperations}.
  * 
  * @author Christoph Strobl
+ * @since 1.10
  */
-public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> implements InMemoryOperations {
+public class KeyValueTemplate implements KeyValueOperations {
 
+	private final KeyValueAdapter adapter;
 	private ConcurrentHashMap<Class<?>, String> typeAliasMap = new ConcurrentHashMap<Class<?>, String>();
 
 	@SuppressWarnings("rawtypes")//
 	private MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext;
 
-	protected AbstractInMemoryOperations() {
-		this(new BasicMappingContext());
+	public KeyValueTemplate(KeyValueAdapter adapter) {
+		this(adapter, new BasicMappingContext());
 	}
 
 	@SuppressWarnings("rawtypes")
-	protected AbstractInMemoryOperations(
+	public KeyValueTemplate(
+			KeyValueAdapter adapter,
 			MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext) {
 
+		this.adapter = adapter;
 		this.mappingContext = mappingContext;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#insert(java.lang.Object)
+	 */
 	@SuppressWarnings("rawtypes")
 	@Override
-	public <T> T create(T objectToInsert) {
+	public <T> T insert(T objectToInsert) {
 
 		PersistentEntity<?, ? extends PersistentProperty> entity = this.mappingContext.getPersistentEntity(ClassUtils
 				.getUserClass(objectToInsert));
@@ -69,25 +80,24 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 			BeanWrapper.create(objectToInsert, null).setProperty(entity.getIdProperty(), id);
 		}
 
-		create(id, objectToInsert);
+		insert(id, objectToInsert);
 		return objectToInsert;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#create(java.io.Serializable, java.lang.Object)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#insert(java.io.Serializable, java.lang.Object)
 	 */
 	@Override
-	public void create(final Serializable id, final Object objectToInsert) {
+	public void insert(final Serializable id, final Object objectToInsert) {
 
 		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
 		Assert.notNull(objectToInsert, "Object to be inserted must not be 'null'.");
 
-		// TODO: add transaction hook
-		execute(new InMemoryCallback<Void>() {
+		execute(new KeyValueCallback<Void>() {
 
 			@Override
-			public Void doInMemory(InMemoryAdapter adapter) {
+			public Void doInKeyValue(KeyValueAdapter adapter) {
 
 				String typeKey = resolveTypeAlias(objectToInsert.getClass());
 
@@ -101,6 +111,10 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 		});
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#update(java.lang.Object)
+	 */
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void update(Object objectToUpdate) {
@@ -119,7 +133,7 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#update(java.io.Serializable, java.lang.Object)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#update(java.io.Serializable, java.lang.Object)
 	 */
 	@Override
 	public void update(final Serializable id, final Object objectToUpdate) {
@@ -127,10 +141,10 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
 		Assert.notNull(objectToUpdate, "Object to be updated must not be 'null'. Use delete to remove.");
 
-		execute(new InMemoryCallback<Void>() {
+		execute(new KeyValueCallback<Void>() {
 
 			@Override
-			public Void doInMemory(InMemoryAdapter adapter) {
+			public Void doInKeyValue(KeyValueAdapter adapter) {
 				adapter.put(id, objectToUpdate, resolveTypeAlias(objectToUpdate.getClass()));
 				return null;
 			}
@@ -139,22 +153,22 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#read(java.lang.Class)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#findAllOf(java.lang.Class)
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
-	public <T> List<T> read(final Class<T> type) {
+	public <T> List<T> findAllOf(final Class<T> type) {
 
 		Assert.notNull(type, "Type to fetch must not be 'null'.");
 
 		final PersistentEntity<?, ? extends PersistentProperty> entity = mappingContext.getPersistentEntity(ClassUtils
 				.getUserClass(type));
 
-		return execute(new InMemoryCallback<List<T>>() {
+		return execute(new KeyValueCallback<List<T>>() {
 
 			@SuppressWarnings("unchecked")
 			@Override
-			public List<T> doInMemory(InMemoryAdapter adapter) {
+			public List<T> doInKeyValue(KeyValueAdapter adapter) {
 				Collection<?> x = adapter.getAllOf(resolveTypeAlias(type));
 
 				if (entity.getTypeAlias() == null) {
@@ -174,12 +188,12 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 	}
 
 	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#read(java.io.Serializable, java.lang.Class)
+	 *(non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#findById(java.io.Serializable, java.lang.Class)
 	 */
-	@Override
 	@SuppressWarnings("rawtypes")
-	public <T> T read(final Serializable id, final Class<T> type) {
+	@Override
+	public <T> T findById(final Serializable id, final Class<T> type) {
 
 		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
 		Assert.notNull(type, "Type to fetch must not be 'null'.");
@@ -187,11 +201,11 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 		final PersistentEntity<?, ? extends PersistentProperty> entity = mappingContext.getPersistentEntity(ClassUtils
 				.getUserClass(type));
 
-		return execute(new InMemoryCallback<T>() {
+		return execute(new KeyValueCallback<T>() {
 
 			@SuppressWarnings("unchecked")
 			@Override
-			public T doInMemory(InMemoryAdapter adapter) {
+			public T doInKeyValue(KeyValueAdapter adapter) {
 
 				Object result = adapter.get(id, resolveTypeAlias(type));
 
@@ -206,7 +220,7 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#delete(java.lang.Class)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#delete(java.lang.Class)
 	 */
 	@Override
 	public void delete(final Class<?> type) {
@@ -215,10 +229,10 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 
 		final String typeKey = resolveTypeAlias(type);
 
-		execute(new InMemoryCallback<Void>() {
+		execute(new KeyValueCallback<Void>() {
 
 			@Override
-			public Void doInMemory(InMemoryAdapter adapter) {
+			public Void doInKeyValue(KeyValueAdapter adapter) {
 
 				adapter.deleteAllOf(typeKey);
 				return null;
@@ -226,8 +240,12 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 		});
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#delete(java.lang.Object)
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
 	public <T> T delete(T objectToDelete) {
 
 		Class<T> type = (Class<T>) ClassUtils.getUserClass(objectToDelete);
@@ -238,7 +256,7 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#delete(java.io.Serializable, java.lang.Class)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#delete(java.io.Serializable, java.lang.Class)
 	 */
 	@Override
 	public <T> T delete(final Serializable id, final Class<T> type) {
@@ -246,11 +264,11 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
 		Assert.notNull(type, "Type to delete must not be 'null'.");
 
-		return execute(new InMemoryCallback<T>() {
+		return execute(new KeyValueCallback<T>() {
 
 			@SuppressWarnings("unchecked")
 			@Override
-			public T doInMemory(InMemoryAdapter adapter) {
+			public T doInKeyValue(KeyValueAdapter adapter) {
 				return (T) adapter.delete(id, resolveTypeAlias(type));
 			}
 		});
@@ -258,22 +276,26 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#count(java.lang.Class)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#count(java.lang.Class)
 	 */
 	@Override
 	public long count(Class<?> type) {
 
 		Assert.notNull(type, "Type for count must not be 'null'.");
-		return read(type).size();
+		return findAllOf(type).size();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#execute(org.springframework.data.keyvalue.core.KeyValueCallback)
+	 */
 	@Override
-	public <T> T execute(InMemoryCallback<T> action) {
+	public <T> T execute(KeyValueCallback<T> action) {
 
 		Assert.notNull(action, "InMemoryCallback must not be 'null'.");
 
 		try {
-			return action.doInMemory(this.getAdapter());
+			return action.doInKeyValue(this.adapter);
 		} catch (RuntimeException e) {
 
 			// TODO: potentially convert runtime exception?
@@ -283,24 +305,88 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#read(org.springframework.data.repository.inmemory.InMemoryQuery, java.lang.Class)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#find(org.springframework.data.keyvalue.core.query.KeyValueQuery, java.lang.Class)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T> List<T> read(InMemoryQuery query, Class<T> type) {
-		return doRead((Q) query, type);
+	public <T> List<T> find(final KeyValueQuery<?> query, final Class<T> type) {
+
+		final PersistentEntity<?, ? extends PersistentProperty> entity = mappingContext.getPersistentEntity(ClassUtils
+				.getUserClass(type));
+
+		return execute(new KeyValueCallback<List<T>>() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public List<T> doInKeyValue(KeyValueAdapter adapter) {
+
+				Collection<?> result = adapter.find(query, resolveTypeAlias(type));
+
+				if (entity.getTypeAlias() == null) {
+					return new ArrayList<T>((Collection<T>) result);
+				}
+
+				ArrayList<T> filtered = new ArrayList<T>();
+				for (Object candidate : result) {
+					if (typeCheck(type, candidate)) {
+						filtered.add((T) candidate);
+					}
+				}
+
+				return filtered;
+			}
+		});
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.inmemory.InMemoryOperations#count(org.springframework.data.repository.inmemory.InMemoryQuery, java.lang.Class)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#findAllOf(org.springframework.data.domain.Sort, java.lang.Class)
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	@Override
-	public long count(InMemoryQuery query, Class<?> type) {
-		return doCount((Q) query, type);
+	public <T> List<T> findAllOf(Sort sort, Class<T> type) {
+		return find(new KeyValueQuery(sort), type);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#findInRange(int, int, java.lang.Class)
+	 */
+	@SuppressWarnings("rawtypes")
+	@Override
+	public <T> List<T> findInRange(int offset, int rows, Class<T> type) {
+		return find(new KeyValueQuery().skip(offset).limit(rows), type);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#findInRange(int, int, org.springframework.data.domain.Sort, java.lang.Class)
+	 */
+	@SuppressWarnings("rawtypes")
+	@Override
+	public <T> List<T> findInRange(int offset, int rows, Sort sort, Class<T> type) {
+		return find(new KeyValueQuery(sort).skip(offset).limit(rows), type);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#count(org.springframework.data.keyvalue.core.query.KeyValueQuery, java.lang.Class)
+	 */
+	@Override
+	public long count(final KeyValueQuery<?> query, final Class<?> type) {
+
+		return execute(new KeyValueCallback<Long>() {
+
+			@Override
+			public Long doInKeyValue(KeyValueAdapter adapter) {
+				return adapter.count(query, resolveTypeAlias(type));
+			}
+		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#getMappingContext()
+	 */
 	@Override
 	public MappingContext<?, ?> getMappingContext() {
 		return this.mappingContext;
@@ -327,18 +413,13 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 		return alias;
 	}
 
-	protected abstract InMemoryAdapter getAdapter();
-
-	protected abstract <T> List<T> doRead(Q query, Class<T> type);
-
-	protected abstract long doCount(Q query, Class<?> type);
-
-	@SuppressWarnings("rawtypes")
-	private static void verifyIdPropertyPresent(PersistentEntity<?, ? extends PersistentProperty> entity) {
-
-		if (!entity.hasIdProperty()) {
-			throw new InvalidDataAccessApiUsageException(String.format("Cannot determine id for type %s", entity.getType()));
-		}
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
+	@Override
+	public void destroy() throws Exception {
+		this.adapter.clear();
 	}
 
 	private boolean typeCheck(Class<?> requiredType, Object candidate) {
@@ -413,6 +494,14 @@ public abstract class AbstractInMemoryOperations<Q extends BasicInMemoryQuery> i
 			return BeanWrapper.create(source, null).getProperty(entity.getIdProperty(), Serializable.class);
 		}
 
+	}
+
+	@SuppressWarnings("rawtypes")
+	private static void verifyIdPropertyPresent(PersistentEntity<?, ? extends PersistentProperty> entity) {
+
+		if (!entity.hasIdProperty()) {
+			throw new InvalidDataAccessApiUsageException(String.format("Cannot determine id for type %s", entity.getType()));
+		}
 	}
 
 }
