@@ -15,9 +15,9 @@
  */
 package org.springframework.data.convert;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class EntityInstantiatorsUnitTests {
 	public void usesReflectionEntityInstantiatorAsDefaultFallback() {
 
 		EntityInstantiators instantiators = new EntityInstantiators();
-		assertThat(instantiators.getInstantiatorFor(entity), is((EntityInstantiator) ReflectionEntityInstantiator.INSTANCE));
+		assertThat(instantiators.getInstantiatorFor(entity), is((EntityInstantiator) BytecodeGeneratingEntityInstantiator.INSTANCE));
 	}
 
 	@Test
