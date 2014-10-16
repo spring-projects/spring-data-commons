@@ -43,8 +43,8 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.PartTree;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpression;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -136,6 +136,7 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 		private EvaluationContextProvider evaluationContextProvider;
 		private final QueryMethod queryMethod;
 		private final KeyValueOperations keyValueOperations;
+		private KeyValueQuery<SpelExpression> query;
 
 		public ExpressionPartTreeQuery(QueryMethod queryMethod, EvaluationContextProvider evalContextProvider,
 				KeyValueOperations keyValueOperations) {
@@ -150,48 +151,74 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 			return queryMethod;
 		}
 
-		public KeyValueQuery<SpelExpression> getQuery(Object[] parameters) {
-
-			ParametersParameterAccessor accessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
-					parameters);
-			PartTree tree = new PartTree(getQueryMethod().getName(), getQueryMethod().getEntityInformation().getJavaType());
-
-			// TODO: check usage of evaluationContextProvider within the query creator
-			KeyValueQuery<SpelExpression> query = new SpelQueryCreator(tree, accessor).createQuery();
-			query.getCritieria().setEvaluationContext(new StandardEvaluationContext(parameters));
-			return query;
-		}
-
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
 		public Object execute(Object[] parameters) {
 
-			KeyValueQuery<SpelExpression> q = getQuery(parameters);
+			KeyValueQuery<SpelExpression> query = prepareQuery(parameters);
 
 			if (queryMethod.isPageQuery() || queryMethod.isSliceQuery()) {
 
 				Pageable page = (Pageable) parameters[queryMethod.getParameters().getPageableIndex()];
-				q.setOffset(page.getOffset());
-				q.setRows(page.getPageSize());
+				query.setOffset(page.getOffset());
+				query.setRows(page.getPageSize());
 
-				List<?> result = this.keyValueOperations.find(q, queryMethod.getEntityInformation().getJavaType());
+				List<?> result = this.keyValueOperations.find(query, queryMethod.getEntityInformation().getJavaType());
 
-				long count = queryMethod.isSliceQuery() ? 0 : keyValueOperations.count(q, queryMethod.getEntityInformation()
-						.getJavaType());
+				long count = queryMethod.isSliceQuery() ? 0 : keyValueOperations.count(query, queryMethod
+						.getEntityInformation().getJavaType());
 
 				return new PageImpl(result, page, count);
 			}
 			if (queryMethod.isCollectionQuery()) {
 
-				return this.keyValueOperations.find(q, queryMethod.getEntityInformation().getJavaType());
+				return this.keyValueOperations.find(query, queryMethod.getEntityInformation().getJavaType());
 			}
 			if (queryMethod.isQueryForEntity()) {
 
-				List<?> result = this.keyValueOperations.find(q, queryMethod.getEntityInformation().getJavaType());
+				List<?> result = this.keyValueOperations.find(query, queryMethod.getEntityInformation().getJavaType());
 				return CollectionUtils.isEmpty(result) ? null : result.get(0);
 			}
 			throw new UnsupportedOperationException("Query method not supported.");
 		}
 
+		private KeyValueQuery<SpelExpression> prepareQuery(Object[] parameters) {
+
+			ParametersParameterAccessor accessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
+					parameters);
+
+			if (this.query == null) {
+				this.query = createQuery(accessor);
+			}
+
+			KeyValueQuery<SpelExpression> q = new KeyValueQuery<SpelExpression>(this.query.getCritieria());
+			if (accessor.getPageable() != null) {
+				q.setOffset(accessor.getPageable().getOffset());
+				q.setRows(accessor.getPageable().getPageSize());
+			} else {
+				q.setOffset(-1);
+				q.setRows(-1);
+			}
+
+			EvaluationContext context = this.evaluationContextProvider.getEvaluationContext(getQueryMethod().getParameters(),
+					parameters);
+
+			if (accessor.getSort() != null) {
+				q.setSort(accessor.getSort());
+			} else {
+				q.setSort(this.query.getSort());
+			}
+
+			q.getCritieria().setEvaluationContext(context);
+			return q;
+		}
+
+		public KeyValueQuery<SpelExpression> createQuery(ParametersParameterAccessor accessor) {
+
+			PartTree tree = new PartTree(getQueryMethod().getName(), getQueryMethod().getEntityInformation().getJavaType());
+			return new SpelQueryCreator(tree, accessor).createQuery();
+		}
+
 	}
+
 }

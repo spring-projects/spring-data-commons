@@ -63,6 +63,10 @@ public class KeyValueQuery<T> {
 		this.rows = rows;
 	}
 
+	public void setSort(Sort sort) {
+		this.sort = sort;
+	}
+
 	public KeyValueQuery<T> orderBy(Sort sort) {
 
 		if (this.sort != null) {
