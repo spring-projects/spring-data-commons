@@ -16,12 +16,9 @@
 package org.springframework.data.keyvalue.core;
 
 import java.io.Serializable;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -73,12 +70,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 		PersistentEntity<?, ? extends PersistentProperty> entity = this.mappingContext.getPersistentEntity(ClassUtils
 				.getUserClass(objectToInsert));
 
-		Serializable id = getIdResolver().readId(objectToInsert, entity);
-
-		if (id == null) {
-			id = getIdResolver().createId(entity);
-			BeanWrapper.create(objectToInsert, null).setProperty(entity.getIdProperty(), id);
-		}
+		Serializable id = new IdAccessor(entity, BeanWrapper.create(objectToInsert, null)).getId();
 
 		insert(id, objectToInsert);
 		return objectToInsert;
@@ -251,7 +243,8 @@ public class KeyValueTemplate implements KeyValueOperations {
 		Class<T> type = (Class<T>) ClassUtils.getUserClass(objectToDelete);
 		PersistentEntity<?, ? extends PersistentProperty> entity = this.mappingContext.getPersistentEntity(type);
 
-		return delete(getIdResolver().readId(objectToDelete, entity), type);
+		Serializable id = new IdAccessor(entity, BeanWrapper.create(objectToDelete, null)).getId();
+		return delete(id, type);
 	}
 
 	/*
@@ -392,10 +385,6 @@ public class KeyValueTemplate implements KeyValueOperations {
 		return this.mappingContext;
 	}
 
-	protected IdResolver getIdResolver() {
-		return DefaultIdResolver.INSTANCE;
-	}
-
 	@SuppressWarnings({ "rawtypes" })
 	protected String resolveTypeAlias(Class<?> type) {
 
@@ -428,80 +417,6 @@ public class KeyValueTemplate implements KeyValueOperations {
 			return true;
 		}
 		return ClassUtils.isAssignable(requiredType, candidate.getClass());
-	}
-
-	/**
-	 * @author Christoph Strobl
-	 */
-	public static interface IdResolver {
-
-		/**
-		 * Generates a new id for the given {@link PersistentEntity}.
-		 * 
-		 * @param entity must not be {@literal null}.
-		 * @return
-		 */
-		@SuppressWarnings("rawtypes")
-		Serializable createId(PersistentEntity<?, ? extends PersistentProperty> entity);
-
-		/**
-		 * Reads the id value from the given source using information provided by {@link PersistentEntity}.
-		 * 
-		 * @param source must not be {@literal null}.
-		 * @param entity must not be {@literal null}.
-		 * @return
-		 */
-		@SuppressWarnings("rawtypes")
-		Serializable readId(Object source, PersistentEntity<?, ? extends PersistentProperty> entity);
-	}
-
-	/**
-	 * @author Christoph Strobl
-	 */
-	static enum DefaultIdResolver implements IdResolver {
-
-		INSTANCE;
-
-		@SuppressWarnings("rawtypes")
-		@Override
-		public Serializable createId(PersistentEntity<?, ? extends PersistentProperty> entity) {
-
-			if (!entity.hasIdProperty() || ClassUtils.isAssignable(String.class, entity.getIdProperty().getActualType())) {
-				return UUID.randomUUID().toString();
-			} else if (ClassUtils.isAssignable(Integer.class, entity.getIdProperty().getActualType())) {
-				try {
-					return SecureRandom.getInstanceStrong().nextInt();
-				} catch (NoSuchAlgorithmException e) {
-					throw new InvalidDataAccessApiUsageException("argh....", e);
-				}
-			} else if (ClassUtils.isAssignable(Long.class, entity.getIdProperty().getActualType())) {
-				try {
-					return SecureRandom.getInstanceStrong().nextLong();
-				} catch (NoSuchAlgorithmException e) {
-					throw new InvalidDataAccessApiUsageException("argh....", e);
-				}
-			}
-
-			throw new InvalidDataAccessApiUsageException("non gereratable id type....");
-		}
-
-		@SuppressWarnings("rawtypes")
-		@Override
-		public Serializable readId(Object source, PersistentEntity<?, ? extends PersistentProperty> entity) {
-
-			verifyIdPropertyPresent(entity);
-
-			return BeanWrapper.create(source, null).getProperty(entity.getIdProperty(), Serializable.class);
-		}
-
-	}
-
-	@SuppressWarnings("rawtypes")
-	private static void verifyIdPropertyPresent(PersistentEntity<?, ? extends PersistentProperty> entity) {
-
-		if (!entity.hasIdProperty()) {
-			throw new InvalidDataAccessApiUsageException(String.format("Cannot determine id for type %s", entity.getType()));
-		}
 	}
 
 }
