@@ -13,36 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.util;
+package org.springframework.data.keyvalue.core.spel;
 
 import java.lang.reflect.Constructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.expression.ExpressionException;
 import org.springframework.expression.spel.SpelParserConfiguration;
+import org.springframework.expression.spel.standard.SpelExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 /**
+ * Factory capable of parsing raw expression strings taking Spring 4.1 compiled expressions into concern. Will fall back
+ * to non compiled ones in case lower than 4.1 Spring version is detected or expression compilation fails.
+ * 
  * @author Christoph Strobl
+ * @since 1.10
  */
-public abstract class SpelUtil {
+public class SpelExpressionFactory {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SpelUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SpelExpressionFactory.class);
 
 	private static final boolean IS_SPEL_COMPILER_PRESENT = ClassUtils.isPresent(
-			"org.springframework.expression.spel.standard.SpelCompiler", SpelUtil.class.getClassLoader());
+			"org.springframework.expression.spel.standard.SpelCompiler", SpelExpressionFactory.class.getClassLoader());
 
 	private static final SpelParserConfiguration DEFAULT_PARSER_CONFIG = new SpelParserConfiguration(false, false);
 
-	public static SpelParserConfiguration silentlyCreateParserConfiguration(String mode) {
+	private static SpelExpressionParser compiledModeExpressionParser;
+	private static SpelExpressionParser expressionParser;
 
-		if (!IS_SPEL_COMPILER_PRESENT) {
-			return DEFAULT_PARSER_CONFIG;
+	static {
+
+		expressionParser = new SpelExpressionParser(DEFAULT_PARSER_CONFIG);
+
+		if (IS_SPEL_COMPILER_PRESENT) {
+			compiledModeExpressionParser = new SpelExpressionParser(silentlyInitializeCompiledMode("IMMEDIATE"));
+		}
+	}
+
+	/**
+	 * @param expressionString
+	 * @return
+	 */
+	public static SpelExpression parseRaw(String expressionString) {
+
+		if (compiledModeExpressionParser != null) {
+			try {
+				return compiledModeExpressionParser.parseRaw(expressionString);
+			} catch (ExpressionException ex) {
+				LOGGER.info(String.format("Could parse expression %s in compiked mode. Using fallback.", expressionString), ex);
+			}
 		}
 
-		return silentlyInitializeCompiledMode(StringUtils.hasText(mode) ? mode : "OFF");
+		return expressionParser.parseRaw(expressionString);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -50,13 +76,13 @@ public abstract class SpelUtil {
 
 		try {
 			Class compilerMode = ClassUtils.forName("org.springframework.expression.spel.SpelCompilerMode",
-					SpelUtil.class.getClassLoader());
+					SpelExpressionFactory.class.getClassLoader());
 
 			Constructor<SpelParserConfiguration> constructor = ClassUtils.getConstructorIfAvailable(
 					SpelParserConfiguration.class, compilerMode, ClassLoader.class);
 			if (constructor != null) {
 				return BeanUtils.instantiateClass(constructor, Enum.valueOf(compilerMode, mode.toUpperCase()),
-						SpelUtil.class.getClassLoader());
+						SpelExpressionFactory.class.getClassLoader());
 			}
 		} catch (Exception e) {
 			LOGGER.info(String.format("Could not create SpelParserConfiguration for mode '%s'.", mode), e);

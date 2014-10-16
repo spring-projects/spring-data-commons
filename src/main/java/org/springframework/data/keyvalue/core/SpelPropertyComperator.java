@@ -17,10 +17,8 @@ package org.springframework.data.keyvalue.core;
 
 import java.util.Comparator;
 
-import org.springframework.data.util.SpelUtil;
-import org.springframework.expression.spel.SpelParserConfiguration;
+import org.springframework.data.keyvalue.core.spel.SpelExpressionFactory;
 import org.springframework.expression.spel.standard.SpelExpression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * {@link Comparator} implementation using {@link SpelExpression}.
@@ -81,8 +79,7 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	protected SpelExpression getExpression() {
 
 		if (this.expression == null) {
-			SpelParserConfiguration config = SpelUtil.silentlyCreateParserConfiguration("IMMEDIATE");
-			this.expression = new SpelExpressionParser(config).parseRaw(buildExpressionForPath());
+			this.expression = SpelExpressionFactory.parseRaw(buildExpressionForPath());
 		}
 
 		return this.expression;
