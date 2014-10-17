@@ -35,5 +35,7 @@ The following table lists the keywords generally supported by the Spring Data re
 |`STARTING_WITH`|`StartingWith`, `IsStartingWith`, `StartsWith`
 |`TRUE`|`True`, `IsTrue`
 |`WITHIN`|`Within`, `IsWithin`
+|`TOP`|`Top`
+|`FIRST`|`First`
 |===============
 
