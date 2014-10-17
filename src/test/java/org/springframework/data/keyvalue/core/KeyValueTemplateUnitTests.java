@@ -15,18 +15,22 @@
  */
 package org.springframework.data.keyvalue.core;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.*;
-import static org.hamcrest.core.Is.*;
-import static org.hamcrest.core.IsNull.*;
-import static org.hamcrest.core.IsSame.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +39,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.KeySpace;
+import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.util.ObjectUtils;
@@ -288,6 +294,36 @@ public class KeyValueTemplateUnitTests {
 		assertThat(template.findById("1", SUBCLASS_OF_ALIASED.getClass()), nullValue());
 	}
 
+	@Test
+	public void shouldResolveKeySpaceDefaultValueCorrectly() {
+		assertThat(template.getKeySpace(EntityWithDefaultKeySpace.class), Is.<Object> is("daenerys"));
+	}
+
+	@Test
+	public void shouldResolveKeySpaceCorrectly() {
+		assertThat(template.getKeySpace(EntityWithSetKeySpace.class), Is.<Object> is("viserys"));
+	}
+
+	@Test
+	public void shouldReturnNullWhenNoKeySpaceFoundOnComposedPersistentAnnotation() {
+		assertThat(template.getKeySpace(AliasedEntity.class), nullValue());
+	}
+
+	@Test
+	public void shouldReturnNullWhenPersistentIsFoundOnNonComposedAnnotation() {
+		assertThat(template.getKeySpace(EntityWithPersistentAnnotation.class), nullValue());
+	}
+
+	@Test
+	public void shouldReturnNullWhenPersistentIsNotFound() {
+		assertThat(template.getKeySpace(Foo.class), nullValue());
+	}
+
+	@Test
+	public void shouldResolveInheritedKeySpaceCorrectly() {
+		assertThat(template.getKeySpace(EntityWithInheritedKeySpace.class), Is.<Object> is("viserys"));
+	}
+
 	static class Foo implements Serializable {
 
 		String foo;
@@ -393,7 +429,7 @@ public class KeyValueTemplateUnitTests {
 
 	}
 
-	@TypeAlias("aliased")
+	@ExplicitKeySpace(name = "aliased")
 	static class ClassWithTypeAlias implements Serializable {
 
 		@Id String id;
@@ -456,6 +492,53 @@ public class KeyValueTemplateUnitTests {
 		public SubclassOfAliasedType(String name) {
 			super(name);
 		}
+
+	}
+
+	@Persistent
+	static class EntityWithPersistentAnnotation {
+
+	}
+
+	@PersistentAnnotationWithExplicitKeySpace
+	private static class EntityWithDefaultKeySpace {
+
+	}
+
+	@PersistentAnnotationWithExplicitKeySpace(firstname = "viserys")
+	private static class EntityWithSetKeySpace {
+
+	}
+
+	private static class EntityWithInheritedKeySpace extends EntityWithSetKeySpace {
+
+	}
+
+	@TypeAlias("foo")
+	static class AliasedEntity {
+
+	}
+
+	@Documented
+	@Persistent
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ ElementType.TYPE })
+	private static @interface PersistentAnnotationWithExplicitKeySpace {
+
+		@KeySpace
+		String firstname() default "daenerys";
+
+		String lastnamne() default "targaryen";
+	}
+
+	@Documented
+	@Persistent
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ ElementType.TYPE })
+	private static @interface ExplicitKeySpace {
+
+		@KeySpace
+		String name() default "";
 
 	}
 }

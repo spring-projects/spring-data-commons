@@ -47,6 +47,7 @@ import org.springframework.util.StringUtils;
  * @author Jon Brisbin
  * @author Patryk Wasik
  * @author Thomas Darimont
+ * @author Christoph Strobl
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 

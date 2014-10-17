@@ -48,6 +48,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Unit test for {@link BasicPersistentEntity}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @RunWith(MockitoJUnitRunner.class)
 public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
@@ -58,7 +59,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 	@Test
 	public void assertInvariants() {
-		PersistentEntitySpec.assertInvariants(createEntity(null));
+		PersistentEntitySpec.assertInvariants(createEntity(Person.class));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -68,21 +69,20 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullProperty() {
-		createEntity(null).addPersistentProperty(null);
+		createEntity(Person.class, null).addPersistentProperty(null);
 	}
 
 	@Test
 	public void returnsNullForTypeAliasIfNoneConfigured() {
 
-		PersistentEntity<Entity, T> entity = new BasicPersistentEntity<Entity, T>(ClassTypeInformation.from(Entity.class));
+		PersistentEntity<Entity, T> entity = createEntity(Entity.class);
 		assertThat(entity.getTypeAlias(), is(nullValue()));
 	}
 
 	@Test
 	public void returnsTypeAliasIfAnnotated() {
 
-		PersistentEntity<AliasedEntity, T> entity = new BasicPersistentEntity<AliasedEntity, T>(
-				ClassTypeInformation.from(AliasedEntity.class));
+		PersistentEntity<AliasedEntity, T> entity = createEntity(AliasedEntity.class);
 		assertThat(entity.getTypeAlias(), is((Object) "foo"));
 	}
 
@@ -93,7 +93,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@SuppressWarnings("unchecked")
 	public void considersComparatorForPropertyOrder() {
 
-		BasicPersistentEntity<Person, T> entity = createEntity(new Comparator<T>() {
+		BasicPersistentEntity<Person, T> entity = createEntity(Person.class, new Comparator<T>() {
 			public int compare(T o1, T o2) {
 				return o1.getName().compareTo(o2.getName());
 			}
@@ -127,7 +127,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test
 	public void addingAndIdPropertySetsIdPropertyInternally() {
 
-		MutablePersistentEntity<Person, T> entity = createEntity(null);
+		MutablePersistentEntity<Person, T> entity = createEntity(Person.class);
 		assertThat(entity.getIdProperty(), is(nullValue()));
 
 		when(property.isIdProperty()).thenReturn(true);
@@ -141,7 +141,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test
 	public void rejectsIdPropertyIfAlreadySet() {
 
-		MutablePersistentEntity<Person, T> entity = createEntity(null);
+		MutablePersistentEntity<Person, T> entity = createEntity(Person.class);
 
 		when(property.isIdProperty()).thenReturn(true);
 
@@ -222,8 +222,12 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getPropertyAccessor(new Subtype()), is(notNullValue()));
 	}
 
-	private BasicPersistentEntity<Person, T> createEntity(Comparator<T> comparator) {
-		return new BasicPersistentEntity<Person, T>(ClassTypeInformation.from(Person.class), comparator);
+	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
+		return createEntity(type, null);
+	}
+
+	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type, Comparator<T> comparator) {
+		return new BasicPersistentEntity<S, T>(ClassTypeInformation.from(type), comparator);
 	}
 
 	@TypeAlias("foo")

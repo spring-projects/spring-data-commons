@@ -27,6 +27,7 @@ import org.springframework.data.util.TypeInformation;
  * @author Graeme Rocher
  * @author Jon Brisbin
  * @author Patryk Wasik
+ * @author Christoph Strobl
  */
 public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 

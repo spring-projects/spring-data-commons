@@ -16,12 +16,17 @@
 package org.springframework.data.keyvalue.core;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.annotation.KeySpace;
+import org.springframework.data.annotation.Persistent;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.mapping.PersistentEntity;
@@ -29,8 +34,11 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.inmemory.BasicMappingContext;
+import org.springframework.data.util.MetaAnnotationUtils;
+import org.springframework.data.util.MetaAnnotationUtils.AnnotationDescriptor;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Basic implementation of {@link KeyValueOperations}.
@@ -41,7 +49,7 @@ import org.springframework.util.ClassUtils;
 public class KeyValueTemplate implements KeyValueOperations {
 
 	private final KeyValueAdapter adapter;
-	private ConcurrentHashMap<Class<?>, String> typeAliasMap = new ConcurrentHashMap<Class<?>, String>();
+	private ConcurrentHashMap<Class<?>, String> keySpaceCache = new ConcurrentHashMap<Class<?>, String>();
 
 	@SuppressWarnings("rawtypes")//
 	private MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext;
@@ -91,7 +99,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 			@Override
 			public Void doInKeyValue(KeyValueAdapter adapter) {
 
-				String typeKey = resolveTypeAlias(objectToInsert.getClass());
+				String typeKey = resolveKeySpace(objectToInsert.getClass());
 
 				if (adapter.contains(id, typeKey)) {
 					throw new InvalidDataAccessApiUsageException("Cannot insert existing object. Please use update.");
@@ -137,7 +145,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 			@Override
 			public Void doInKeyValue(KeyValueAdapter adapter) {
-				adapter.put(id, objectToUpdate, resolveTypeAlias(objectToUpdate.getClass()));
+				adapter.put(id, objectToUpdate, resolveKeySpace(objectToUpdate.getClass()));
 				return null;
 			}
 		});
@@ -153,17 +161,15 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 		Assert.notNull(type, "Type to fetch must not be 'null'.");
 
-		final PersistentEntity<?, ? extends PersistentProperty> entity = mappingContext.getPersistentEntity(ClassUtils
-				.getUserClass(type));
-
 		return execute(new KeyValueCallback<List<T>>() {
 
 			@SuppressWarnings("unchecked")
 			@Override
 			public List<T> doInKeyValue(KeyValueAdapter adapter) {
-				Collection<?> x = adapter.getAllOf(resolveTypeAlias(type));
 
-				if (entity.getTypeAlias() == null) {
+				Collection<?> x = adapter.getAllOf(resolveKeySpace(type));
+
+				if (getKeySpace(type) == null) {
 					return new ArrayList<T>((Collection<T>) x);
 				}
 
@@ -190,18 +196,15 @@ public class KeyValueTemplate implements KeyValueOperations {
 		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
 		Assert.notNull(type, "Type to fetch must not be 'null'.");
 
-		final PersistentEntity<?, ? extends PersistentProperty> entity = mappingContext.getPersistentEntity(ClassUtils
-				.getUserClass(type));
-
 		return execute(new KeyValueCallback<T>() {
 
 			@SuppressWarnings("unchecked")
 			@Override
 			public T doInKeyValue(KeyValueAdapter adapter) {
 
-				Object result = adapter.get(id, resolveTypeAlias(type));
+				Object result = adapter.get(id, resolveKeySpace(type));
 
-				if (result == null || entity.getTypeAlias() == null || typeCheck(type, result)) {
+				if (result == null || getKeySpace(type) == null || typeCheck(type, result)) {
 					return (T) result;
 				}
 
@@ -219,7 +222,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 		Assert.notNull(type, "Type to delete must not be 'null'.");
 
-		final String typeKey = resolveTypeAlias(type);
+		final String typeKey = resolveKeySpace(type);
 
 		execute(new KeyValueCallback<Void>() {
 
@@ -262,7 +265,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 			@SuppressWarnings("unchecked")
 			@Override
 			public T doInKeyValue(KeyValueAdapter adapter) {
-				return (T) adapter.delete(id, resolveTypeAlias(type));
+				return (T) adapter.delete(id, resolveKeySpace(type));
 			}
 		});
 	}
@@ -303,18 +306,15 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public <T> List<T> find(final KeyValueQuery<?> query, final Class<T> type) {
 
-		final PersistentEntity<?, ? extends PersistentProperty> entity = mappingContext.getPersistentEntity(ClassUtils
-				.getUserClass(type));
-
 		return execute(new KeyValueCallback<List<T>>() {
 
 			@SuppressWarnings("unchecked")
 			@Override
 			public List<T> doInKeyValue(KeyValueAdapter adapter) {
 
-				Collection<?> result = adapter.find(query, resolveTypeAlias(type));
+				Collection<?> result = adapter.find(query, resolveKeySpace(type));
 
-				if (entity.getTypeAlias() == null) {
+				if (getKeySpace(type) == null) {
 					return new ArrayList<T>((Collection<T>) result);
 				}
 
@@ -371,7 +371,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 			@Override
 			public Long doInKeyValue(KeyValueAdapter adapter) {
-				return adapter.count(query, resolveTypeAlias(type));
+				return adapter.count(query, resolveKeySpace(type));
 			}
 		});
 	}
@@ -386,20 +386,56 @@ public class KeyValueTemplate implements KeyValueOperations {
 	}
 
 	@SuppressWarnings({ "rawtypes" })
-	protected String resolveTypeAlias(Class<?> type) {
+	protected String resolveKeySpace(Class<?> type) {
 
 		Class<?> userClass = ClassUtils.getUserClass(type);
 
-		String potentialAlias = typeAliasMap.get(userClass);
+		String potentialAlias = keySpaceCache.get(userClass);
+
 		if (potentialAlias != null) {
 			return potentialAlias;
 		}
 
-		PersistentEntity<?, ? extends PersistentProperty> entity = this.mappingContext.getPersistentEntity(userClass);
+		String keySpaceString = null;
+		Object keySpace = getKeySpace(type);
+		if (keySpace != null) {
+			keySpaceString = keySpace.toString();
+		}
 
-		String alias = entity.getTypeAlias() != null ? entity.getTypeAlias().toString() : userClass.getName();
-		typeAliasMap.put(userClass, alias);
-		return alias;
+		if (!StringUtils.hasText(keySpaceString)) {
+			keySpaceString = userClass.getName();
+		}
+
+		keySpaceCache.put(userClass, keySpaceString);
+		return keySpaceString;
+	}
+
+	/**
+	 * Looks up {@link Persistent} when used as meta annotation to find the {@link KeySpace} attribute.
+	 * 
+	 * @return
+	 * @since 1.10
+	 */
+
+	Object getKeySpace(Class<?> type) {
+
+		// TODO: should we consider caching here as this is a rather expensive lookup
+		AnnotationDescriptor<Persistent> descriptor = MetaAnnotationUtils.findAnnotationDescriptor(type, Persistent.class);
+
+		if (descriptor != null && descriptor.getComposedAnnotation() != null) {
+
+			Annotation composed = descriptor.getComposedAnnotation();
+
+			for (Method method : descriptor.getComposedAnnotationType().getDeclaredMethods()) {
+
+				KeySpace ks = AnnotationUtils.findAnnotation(method, KeySpace.class);
+
+				if (ks != null) {
+					return AnnotationUtils.getValue(composed, method.getName());
+				}
+			}
+		}
+		return null;
 	}
 
 	/*

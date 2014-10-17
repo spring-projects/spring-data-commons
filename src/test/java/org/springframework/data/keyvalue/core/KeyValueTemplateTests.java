@@ -24,6 +24,11 @@ import static org.hamcrest.core.IsSame.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.List;
 
 import org.junit.After;
@@ -31,7 +36,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.annotation.KeySpace;
+import org.springframework.data.annotation.Persistent;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.keyvalue.map.MapKeyValueAdapter;
 import org.springframework.util.ObjectUtils;
@@ -316,7 +322,7 @@ public class KeyValueTemplateTests {
 
 	}
 
-	@TypeAlias("aliased")
+	@ExplicitKeySpace(name = "aliased")
 	static class ClassWithTypeAlias implements Serializable {
 
 		@Id String id;
@@ -379,6 +385,17 @@ public class KeyValueTemplateTests {
 		public SubclassOfAliasedType(String name) {
 			super(name);
 		}
+
+	}
+
+	@Documented
+	@Persistent
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ ElementType.TYPE })
+	private static @interface ExplicitKeySpace {
+
+		@KeySpace
+		String name() default "";
 
 	}
 }
