@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,6 +160,9 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
+	/**
+	 * @see DATACMNS-578
+	 */
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtorDefault() {
@@ -176,6 +179,9 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
+	/**
+	 * @see DATACMNS-578
+	 */
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtorNoArgs() {
@@ -193,6 +199,9 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
+	/**
+	 * @see DATACMNS-578
+	 */
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtor1ParamString() {
@@ -213,6 +222,9 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
+	/**
+	 * @see DATACMNS-578
+	 */
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtor2ParamStringString() {
@@ -233,7 +245,57 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 			assertThat(((ObjCtor2ParamStringString) instance).param2, is("BAR"));
 		}
 	}
+	
+	/**
+	 * @see DATACMNS-578
+	 */
+	@Test
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void instantiateObjectCtor1ParamInt() {
 
+		PreferredConstructor constructor = new PreferredConstructorDiscoverer<ObjectCtor1ParamInt, P>(
+				ObjectCtor1ParamInt.class).getConstructor();
+
+		when(entity.getType()).thenReturn((Class) ObjectCtor1ParamInt.class);
+		when(entity.getPersistenceConstructor()).thenReturn(constructor);
+
+		for (int i = 0; i < 2; i++) {
+			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn(42);
+			
+			Object instance = INSTANCE.createInstance(entity, provider);
+			assertTrue(instance instanceof ObjectCtor1ParamInt);
+			assertTrue("matches", ((ObjectCtor1ParamInt) instance).param1 == 42);
+		}
+	}
+	
+	/**
+	 * @see DATACMNS-578
+	 */
+	@Test
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void instantiateObjectCtor7ParamsString5IntsString() {
+
+		PreferredConstructor constructor = new PreferredConstructorDiscoverer<ObjectCtor7ParamsString5IntsString, P>(
+				ObjectCtor7ParamsString5IntsString.class).getConstructor();
+
+		when(entity.getType()).thenReturn((Class) ObjectCtor7ParamsString5IntsString.class);
+		when(entity.getPersistenceConstructor()).thenReturn(constructor);
+
+		for (int i = 0; i < 2; i++) {
+			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("A").thenReturn(1).thenReturn(2).thenReturn(3).thenReturn(4).thenReturn(5).thenReturn("B");
+			
+			Object instance = INSTANCE.createInstance(entity, provider);
+			assertTrue(instance instanceof ObjectCtor7ParamsString5IntsString);
+			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param1, is("A"));
+			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param2, is(1));
+			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param3, is(2));
+			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param4, is(3));
+			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param5, is(4));
+			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param6, is(5));
+			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param7, is("B"));
+		}
+	}
+	
 	static class Foo {
 
 		Foo(String foo) {
@@ -260,8 +322,16 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
+	/**
+	 * @author Thomas Darimont
+	 *
+	 */
 	public static class ObjCtorDefault {}
 
+	/**
+	 * @author Thomas Darimont
+	 *
+	 */
 	public static class ObjCtorNoArgs {
 
 		public boolean ctorInvoked;
@@ -271,6 +341,10 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
+	/**
+	 * @author Thomas Darimont
+	 *
+	 */
 	public static class ObjCtor1ParamString {
 
 		public boolean ctorInvoked;
@@ -282,6 +356,10 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
+	/**
+	 * @author Thomas Darimont
+	 *
+	 */
 	public static class ObjCtor2ParamStringString {
 
 		public boolean ctorInvoked;
@@ -292,6 +370,45 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 			this.ctorInvoked = true;
 			this.param1 = param1;
 			this.param2 = param2;
+		}
+	}
+	
+	/**
+	 * @author Thomas Darimont
+	 *
+	 */
+	public static class ObjectCtor1ParamInt{
+
+		public int param1;
+
+		public ObjectCtor1ParamInt(int param1) {
+			this.param1 = param1;
+		}
+	}
+	
+	/**
+	 * @author Thomas Darimont
+	 *
+	 */
+	public static class ObjectCtor7ParamsString5IntsString{
+
+		public String param1;
+		public int param2;
+		public int param3;
+		public int param4;
+		public int param5;
+		public int param6;
+		public String param7;
+
+		public ObjectCtor7ParamsString5IntsString(String param1, int param2, int param3, int param4, int param5,
+				int param6, String param7) {
+			this.param1 = param1;
+			this.param2 = param2;
+			this.param3 = param3;
+			this.param4 = param4;
+			this.param5 = param5;
+			this.param6 = param6;
+			this.param7 = param7;
 		}
 	}
 }
