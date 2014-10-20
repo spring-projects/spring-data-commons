@@ -25,10 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
@@ -45,8 +42,9 @@ import org.springframework.util.ClassUtils;
  * An {@link EntityInstantiator} that can generate byte code to speed-up dynamic object instantiation.
  * <p>
  * Uses the {@link PersistentEntity}'s {@link PreferredConstructor} to instantiate an instance of the entity by
- * dynamically generating factory methods with appropriate constructor invocations via ASM. Since we cannot support
- * every use case with byte code generation we gracefully fall-back to the {@link ReflectionEntityInstantiator}.
+ * dynamically generating factory methods with appropriate constructor invocations via ASM.
+ * <p>
+ * If we cannot generate byte code for a type, we gracefully fall-back to the {@link ReflectionEntityInstantiator}.
  * 
  * @author Thomas Darimont
  * @since 1.10
@@ -55,15 +53,15 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 
 	INSTANCE;
 
-	private static final Logger LOG = LoggerFactory.getLogger(BytecodeGeneratingEntityInstantiator.class);
+	private static final String JAVA_LANG = "java.lang";
 	private static final Object[] EMPTY_ARRAY = new Object[0];
 
 	private final ObjectInstantiatorClassGenerator classGenerator = ObjectInstantiatorClassGenerator.INSTANCE;
+
 	private final Object instantiatorsLock = new Object();
 
 	private volatile Map<InstantiatorKey, ObjectInstantiator> instantiators = new HashMap<InstantiatorKey, ObjectInstantiator>(
-			32); //
-	private final CopyOnWriteArraySet<Class<?>> badInstantiatorsTypes = new CopyOnWriteArraySet<Class<?>>();
+			32);
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
@@ -118,14 +116,13 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 			E entity) {
 
 		Class<? extends T> type = entity.getType();
+
 		if (type.isInterface() //
 				|| type.isArray() //
 				|| !Modifier.isPublic(type.getModifiers()) //
-				|| type.getName().startsWith("java.lang") //
+				|| type.getName().startsWith(JAVA_LANG) //
 				|| (type.isMemberClass() && !Modifier.isStatic(type.getModifiers())) //
-				|| ClassUtils.isCglibProxyClass(type) //
-				// beware COWAS.contains(..) takes O(n) time but is thread-safe, we expect a very small list.
-				|| badInstantiatorsTypes.contains(entity.getType())) { //
+				|| ClassUtils.isCglibProxyClass(type)) { //
 			return true;
 		}
 
@@ -186,9 +183,6 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link InstantiatorKey}. There will always
 	 * be exactly one {@link ObjectInstantiator} instance per {@link InstantiatorKey}.
 	 * <p>
-	 * Transparently handles the case when an {@link ObjectInstantiator} for the type of the given {@link InstantiatorKey}
-	 * couldn't be created. Further attempts to create an instance of this type will be routed to
-	 * {@link ReflectionEntityInstantiator} as well.
 	 * 
 	 * @param key
 	 * @return
@@ -200,14 +194,6 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 		try {
 			return (ObjectInstantiator) classGenerator.generateCustomInstantiatorClass(key).newInstance();
 		} catch (Exception e) {
-
-			if (LOG.isWarnEnabled()) {
-				LOG.warn(
-						"Couldn't create a custom ObjectInstantiator for {}. We'll continue to use an ReflectiveEntityInstantiator for this type now. Problem was: {}",
-						key, e.getMessage());
-			}
-			badInstantiatorsTypes.add(key.getType());
-
 			throw new CouldNotCreateObjectInstantiatorException(e);
 		}
 	}
@@ -271,7 +257,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	 * 
 	 * @author Thomas Darimont
 	 */
-	static class ByteArrayClassLoader extends ClassLoader {
+	private static class ByteArrayClassLoader extends ClassLoader {
 
 		public ByteArrayClassLoader(ClassLoader parent) {
 			super(parent);
@@ -475,6 +461,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 		 *          org.springframework.expression.spel.CodeFlow#insertUnboxInsns.
 		 */
 		private static void insertUnboxInsns(MethodVisitor mv, char ch, String stackDescriptor) {
+
 			switch (ch) {
 				case 'Z':
 					if (!stackDescriptor.equals("Ljava/lang/Boolean")) {
