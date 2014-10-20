@@ -176,6 +176,7 @@ public class Part {
 	 * The type of a method name part. Used to create query parts in various ways.
 	 * 
 	 * @author Oliver Gierke
+	 * @author Thomas Darimont
 	 */
 	public static enum Type {
 
@@ -183,16 +184,17 @@ public class Part {
 				"IsLessThan", "LessThan"), LESS_THAN_EQUAL("IsLessThanEqual", "LessThanEqual"), GREATER_THAN("IsGreaterThan",
 				"GreaterThan"), GREATER_THAN_EQUAL("IsGreaterThanEqual", "GreaterThanEqual"), BEFORE("IsBefore", "Before"), AFTER(
 				"IsAfter", "After"), NOT_LIKE("IsNotLike", "NotLike"), LIKE("IsLike", "Like"), STARTING_WITH("IsStartingWith",
-				"StartingWith", "StartsWith"), ENDING_WITH("IsEndingWith", "EndingWith", "EndsWith"), CONTAINING(
-				"IsContaining", "Containing", "Contains"), NOT_IN("IsNotIn", "NotIn"), IN("IsIn", "In"), NEAR("IsNear", "Near"), WITHIN(
-				"IsWithin", "Within"), REGEX("MatchesRegex", "Matches", "Regex"), EXISTS(0, "Exists"), TRUE(0, "IsTrue", "True"), FALSE(
-				0, "IsFalse", "False"), NEGATING_SIMPLE_PROPERTY("IsNot", "Not"), SIMPLE_PROPERTY("Is", "Equals");
+				"StartingWith", "StartsWith"), ENDING_WITH("IsEndingWith", "EndingWith", "EndsWith"), NOT_CONTAINING(
+				"IsNotContaining", "NotContaining", "NotContains"), CONTAINING("IsContaining", "Containing", "Contains"), NOT_IN(
+				"IsNotIn", "NotIn"), IN("IsIn", "In"), NEAR("IsNear", "Near"), WITHIN("IsWithin", "Within"), REGEX(
+				"MatchesRegex", "Matches", "Regex"), EXISTS(0, "Exists"), TRUE(0, "IsTrue", "True"), FALSE(0, "IsFalse",
+				"False"), NEGATING_SIMPLE_PROPERTY("IsNot", "Not"), SIMPLE_PROPERTY("Is", "Equals");
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)
 		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN, LESS_THAN_EQUAL,
-				GREATER_THAN, GREATER_THAN_EQUAL, BEFORE, AFTER, NOT_LIKE, LIKE, STARTING_WITH, ENDING_WITH, CONTAINING,
-				NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, TRUE, FALSE, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+				GREATER_THAN, GREATER_THAN_EQUAL, BEFORE, AFTER, NOT_LIKE, LIKE, STARTING_WITH, ENDING_WITH, NOT_CONTAINING,
+				CONTAINING, NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, TRUE, FALSE, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
 
 		public static final Collection<String> ALL_KEYWORDS;
 
@@ -221,7 +223,6 @@ public class Part {
 		}
 
 		private Type(String... keywords) {
-
 			this(1, keywords);
 		}
 
@@ -281,7 +282,6 @@ public class Part {
 		 * @return
 		 */
 		public int getNumberOfArguments() {
-
 			return numberOfArguments;
 		}
 
@@ -295,12 +295,23 @@ public class Part {
 		public String extractProperty(String part) {
 
 			String candidate = StringUtils.uncapitalize(part);
+
 			for (String keyword : keywords) {
 				if (candidate.endsWith(keyword)) {
 					return candidate.substring(0, candidate.indexOf(keyword));
 				}
 			}
+
 			return candidate;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Enum#toString()
+		 */
+		@Override
+		public String toString() {
+			return String.format("%s (%s): %s", name(), getNumberOfArguments(), getKeywords());
 		}
 	}
 

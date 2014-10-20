@@ -150,7 +150,7 @@ public class PartTreeUnitTests {
 	@Test
 	public void supportToStringWithSortOrder() throws Exception {
 		PartTree tree = partTree("firstnameOrderByLastnameDesc");
-		assertThat(tree.toString(), is(equalTo("firstname SIMPLE_PROPERTY Order By lastname: DESC")));
+		assertThat(tree.toString(), is(equalTo("firstname SIMPLE_PROPERTY (1): [Is, Equals] Order By lastname: DESC")));
 	}
 
 	@Test
@@ -650,7 +650,25 @@ public class PartTreeUnitTests {
 		assertLimiting("countFirst10DistinctUsersByLastname", User.class, false, null, true);
 		assertLimiting("countTop10DistinctUsersByLastname", User.class, false, null, true);
 	}
-
+	
+	/**
+	 * @see DATACMNS-581
+	 */
+	@Test
+	public void parsesIsNotContainingCorrectly() throws Exception {
+		assertType(asList("firstnameIsNotContaining", "firstnameNotContaining", "firstnameNotContains"), NOT_CONTAINING, "firstname");
+	}
+	
+	/**
+	 * @see DATACMNS-581
+	 */
+	@Test
+	public void buildsPartTreeForNotContainingCorrectly() throws Exception {
+		
+		PartTree tree = new PartTree("findAllByLegalNameNotContaining", Organization.class);
+		assertPart(tree, new Part[] { new Part("legalNameNotContaining", Organization.class) });
+	}
+	
 	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {
 		assertLimiting(methodName, entityType, limiting, maxResults, false);
 	}
