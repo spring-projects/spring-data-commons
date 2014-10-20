@@ -22,6 +22,7 @@ import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,9 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -53,80 +56,86 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 
 	INSTANCE;
 
-	private static final String JAVA_LANG = "java.lang";
-	private static final Object[] EMPTY_ARRAY = new Object[0];
-
 	private final ObjectInstantiatorClassGenerator classGenerator = ObjectInstantiatorClassGenerator.INSTANCE;
 
-	private final Object instantiatorsLock = new Object();
-
-	private volatile Map<InstantiatorKey, ObjectInstantiator> instantiators = new HashMap<InstantiatorKey, ObjectInstantiator>(
+	private volatile Map<TypeInformation<?>, EntityInstantiator> entityInstantiators = new HashMap<TypeInformation<?>, EntityInstantiator>(
 			32);
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		if (shouldUseReflectiveEntityInstantiator(entity)) {
-			return ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider);
+		EntityInstantiator ei = this.entityInstantiators.get(entity.getTypeInformation());
+
+		if (ei != null) {
+			return ei.createInstance(entity, provider);
 		}
 
-		Object[] args = extractInvocationArguments(provider, entity.getPersistenceConstructor());
+		ei = potentiallyCreateAndRegisterEntityInstantiator(entity);
+
+		return ei.createInstance(entity, provider);
+	}
+
+	/**
+	 * @param entity
+	 * @return
+	 */
+	private synchronized EntityInstantiator potentiallyCreateAndRegisterEntityInstantiator(PersistentEntity<?, ?> entity) {
+
+		Map<TypeInformation<?>, EntityInstantiator> map = this.entityInstantiators;
+
+		EntityInstantiator ei = map.get(entity.getTypeInformation());
+		if (ei != null) {
+			return ei;
+		}
+
+		ei = createEntityInstantiator(entity);
+
+		map = new HashMap<TypeInformation<?>, EntityInstantiator>(map);
+		map.put(entity.getTypeInformation(), ei);
+
+		this.entityInstantiators = map;
+
+		return ei;
+	}
+
+	/**
+	 * @param entity
+	 * @return
+	 */
+	private EntityInstantiator createEntityInstantiator(PersistentEntity<?, ?> entity) {
+
+		if (shoudUseReflectionEntityInstantiator(entity)) {
+			return ReflectionEntityInstantiator.INSTANCE;
+		}
 
 		try {
-			return (T) createInternal(entity, args);
-		} catch (CouldNotCreateObjectInstantiatorException ex) {
-			return ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider);
+			return new EntityInstantiatorAdapter(createObjectInstantiator(entity));
+		} catch (Throwable ex) {
+			return ReflectionEntityInstantiator.INSTANCE;
 		}
 	}
 
 	/**
-	 * @param provider
-	 * @param prefCtor
-	 * @return
-	 */
-	private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(ParameterValueProvider<P> provider,
-			PreferredConstructor<? extends T, P> prefCtor) {
-
-		if (provider == null || prefCtor == null || !prefCtor.hasParameters()) {
-			return EMPTY_ARRAY;
-		}
-
-		List<Object> params = new ArrayList<Object>();
-		for (Parameter<?, P> parameter : prefCtor.getParameters()) {
-			params.add(provider.getParameterValue(parameter));
-		}
-
-		return params.toArray();
-	}
-
-	/**
-	 * Determines whether we should fall back to the {@link ReflectionEntityInstantiator} for the given
-	 * {@link PersistentEntity}.
-	 * 
 	 * @param entity
-	 * @param constructor
 	 * @return
 	 */
-	private <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> boolean shouldUseReflectiveEntityInstantiator(
-			E entity) {
+	private boolean shoudUseReflectionEntityInstantiator(PersistentEntity<?, ?> entity) {
 
-		Class<? extends T> type = entity.getType();
+		Class<?> type = entity.getType();
 
 		if (type.isInterface() //
 				|| type.isArray() //
 				|| !Modifier.isPublic(type.getModifiers()) //
-				|| type.getName().startsWith(JAVA_LANG) //
 				|| (type.isMemberClass() && !Modifier.isStatic(type.getModifiers())) //
 				|| ClassUtils.isCglibProxyClass(type)) { //
 			return true;
 		}
 
-		PreferredConstructor<? extends T, P> persistenceConstructor = entity.getPersistenceConstructor();
+		PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
 		if (persistenceConstructor == null || !Modifier.isPublic(persistenceConstructor.getConstructor().getModifiers())) {
 			return true;
 		}
@@ -135,120 +144,18 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	}
 
 	/**
-	 * Crates a new instance for the given {@link PersistentEntity} with the given
-	 * 
-	 * @param args .
-	 * @param entity
-	 * @param args
-	 * @return
-	 */
-	private <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> Object createInternal(
-			E entity, Object... args) {
-
-		Class<? extends T> type = entity.getType();
-		Constructor<? extends T> constructor = entity.getPersistenceConstructor().getConstructor();
-		InstantiatorKey key = new InstantiatorKey(type, constructor);
-
-		return getOrCreateInstantiator(key).create(args);
-	}
-
-	private ObjectInstantiator getOrCreateInstantiator(InstantiatorKey key) {
-
-		Map<InstantiatorKey, ObjectInstantiator> map = this.instantiators;
-
-		ObjectInstantiator instantiator = map.get(key);
-
-		if (instantiator == null) {
-			synchronized (instantiatorsLock) {
-
-				map = this.instantiators;
-				instantiator = map.get(key);
-
-				if (instantiator == null) {
-
-					instantiator = createObjectInstantiator(key);
-
-					map = new HashMap<InstantiatorKey, ObjectInstantiator>(map);
-					map.put(key, instantiator);
-
-					this.instantiators = map;
-				}
-			}
-		}
-
-		return instantiator;
-	}
-
-	/**
 	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link InstantiatorKey}. There will always
-	 * be exactly one {@link ObjectInstantiator} instance per {@link InstantiatorKey}.
+	 * be exactly one {@link ObjectInstantiator} instance per {@link PersistentEntity}.
 	 * <p>
 	 * 
-	 * @param key
+	 * @param entity
 	 * @return
-	 * @throws CouldNotCreateObjectInstantiatorException if the {@link ObjectInstantiator} couldn't be created.
 	 */
-	private ObjectInstantiator createObjectInstantiator(InstantiatorKey key)
-			throws CouldNotCreateObjectInstantiatorException {
-
+	private ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity) {
 		try {
-			return (ObjectInstantiator) classGenerator.generateCustomInstantiatorClass(key).newInstance();
-		} catch (Exception e) {
-			throw new CouldNotCreateObjectInstantiatorException(e);
-		}
-	}
-
-	/**
-	 * A key that forms a unique tuple for a type and constructor combination.
-	 * <p>
-	 * 
-	 * @author Thomas Darimont
-	 */
-	static class InstantiatorKey {
-
-		private final Class<?> type;
-		private final Constructor<?> constructor;
-
-		InstantiatorKey(Class<?> type, Constructor<?> constructor) {
-			this.type = type;
-			this.constructor = constructor;
-		}
-
-		public Class<?> getType() {
-			return type;
-		}
-
-		public Constructor<?> getConstructor() {
-			return constructor;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o)
-				return true;
-			if (o == null || getClass() != o.getClass())
-				return false;
-
-			InstantiatorKey that = (InstantiatorKey) o;
-
-			if (constructor != null ? !constructor.equals(that.constructor) : that.constructor != null)
-				return false;
-			if (!type.equals(that.type))
-				return false;
-
-			return true;
-		}
-
-		@Override
-		public int hashCode() {
-			int result = type.hashCode();
-			result = 31 * result + (constructor != null ? constructor.hashCode() : 0);
-			return result;
-		}
-
-		@Override
-		public String toString() {
-			return "InstantiatorKey [type=" + type + ", constructor=" + constructor + "]";
+			return (ObjectInstantiator) classGenerator.generateCustomInstantiatorClass(entity).newInstance();
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -289,9 +196,59 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	/**
 	 * @author Thomas Darimont
 	 */
+	private static class EntityInstantiatorAdapter implements EntityInstantiator {
+
+		private static final Object[] EMPTY_ARRAY = new Object[0];
+
+		private final ObjectInstantiator instantiator;
+
+		/**
+		 * @param instantiator
+		 */
+		public EntityInstantiatorAdapter(ObjectInstantiator instantiator) {
+			this.instantiator = instantiator;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
+				ParameterValueProvider<P> provider) {
+
+			Object[] params = extractInvocationArguments(provider, entity.getPersistenceConstructor());
+			try {
+				return (T) instantiator.newInstance(params);
+			} catch (Exception e) {
+				throw new MappingInstantiationException(entity, Arrays.asList(params), e);
+			}
+		}
+
+		/**
+		 * @param provider
+		 * @param prefCtor
+		 * @return
+		 */
+		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
+				ParameterValueProvider<P> provider, PreferredConstructor<? extends T, P> prefCtor) {
+
+			if (provider == null || prefCtor == null || !prefCtor.hasParameters()) {
+				return EMPTY_ARRAY;
+			}
+
+			List<Object> params = new ArrayList<Object>();
+			for (Parameter<?, P> parameter : prefCtor.getParameters()) {
+				params.add(provider.getParameterValue(parameter));
+			}
+
+			return params.toArray();
+		}
+	}
+
+	/**
+	 * @author Thomas Darimont
+	 */
 	public static interface ObjectInstantiator {
 
-		Object create(Object... args);
+		Object newInstance(Object... args);
 	}
 
 	/**
@@ -323,7 +280,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	 * 	&#064;code
 	 * 	public class ObjCtor1ParamString_Instantiator_asdf implements ObjectInstantiator {
 	 * 
-	 * 		public Object create(Object... args) {
+	 * 		public Object newInstance(Object... args) {
 	 * 			return new ObjCtor1ParamString((String) args[0]);
 	 * 		}
 	 * 	}
@@ -339,7 +296,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 		private static final String INIT = "<init>";
 		private static final String TAG = "_Instantiator_";
 		private static final String JAVA_LANG_OBJECT = "java/lang/Object";
-		private static final String CREATE_METHOD_NAME = "create";
+		private static final String CREATE_METHOD_NAME = "newInstance";
 
 		private static final String[] IMPLEMENTED_INTERFACES = new String[] { Type
 				.getInternalName(ObjectInstantiator.class) };
@@ -361,10 +318,10 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @param key
 		 * @return
 		 */
-		public Class<?> generateCustomInstantiatorClass(InstantiatorKey key) {
+		public Class<?> generateCustomInstantiatorClass(PersistentEntity<?, ?> entity) {
 
-			String className = generateClassName(key);
-			byte[] bytecode = generateBytecode(className, key);
+			String className = generateClassName(entity);
+			byte[] bytecode = generateBytecode(className, entity);
 
 			return classLoader.loadClass(className, bytecode);
 		}
@@ -373,8 +330,8 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @param key
 		 * @return
 		 */
-		private String generateClassName(InstantiatorKey key) {
-			return key.getType().getName() + TAG + Integer.toString(key.hashCode(), 36);
+		private String generateClassName(PersistentEntity<?, ?> entity) {
+			return entity.getType().getName() + TAG + Integer.toString(entity.hashCode(), 36);
 		}
 
 		/**
@@ -383,7 +340,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @param key
 		 * @return
 		 */
-		public byte[] generateBytecode(String internalClassName, InstantiatorKey key) {
+		public byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity) {
 
 			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
@@ -392,7 +349,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 
 			visitDefaultConstructor(cw);
 
-			visitCreateMethod(cw, key);
+			visitCreateMethod(cw, entity);
 
 			cw.visitEnd();
 
@@ -410,17 +367,23 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 			mv.visitEnd();
 		}
 
-		private void visitCreateMethod(ClassWriter cw, InstantiatorKey key) {
+		/**
+		 * Inserts the bytecode definition for the create method for the given {@link PersistentEntity}.
+		 * 
+		 * @param cw
+		 * @param entity
+		 */
+		private void visitCreateMethod(ClassWriter cw, PersistentEntity<?, ?> entity) {
 
-			String objectClassResourcePath = Type.getInternalName(key.getType());
+			String entityTypeResourcePath = Type.getInternalName(entity.getType());
 
 			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, CREATE_METHOD_NAME,
 					"([Ljava/lang/Object;)Ljava/lang/Object;", null, null);
 			mv.visitCode();
-			mv.visitTypeInsn(NEW, objectClassResourcePath);
+			mv.visitTypeInsn(NEW, entityTypeResourcePath);
 			mv.visitInsn(DUP);
 
-			Constructor<?> ctor = key.getConstructor();
+			Constructor<?> ctor = entity.getPersistenceConstructor().getConstructor();
 			Class<?>[] parameterTypes = ctor.getParameterTypes();
 			for (int i = 0; i < parameterTypes.length; i++) {
 				mv.visitVarInsn(ALOAD, 1);
@@ -435,13 +398,19 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(parameterTypes[i]));
 				}
 			}
-			mv.visitMethodInsn(INVOKESPECIAL, objectClassResourcePath, INIT, Type.getConstructorDescriptor(ctor), false);
+			mv.visitMethodInsn(INVOKESPECIAL, entityTypeResourcePath, INIT, Type.getConstructorDescriptor(ctor), false);
 
 			mv.visitInsn(ARETURN);
 			mv.visitMaxs(0, 0); // (0, 0) = computed via ClassWriter.COMPUTE_MAXS
 			mv.visitEnd();
 		}
 
+		/**
+		 * Insert an appropriate value on the stack for the given index value {@code idx}.
+		 * 
+		 * @param mv
+		 * @param idx
+		 */
 		private static void visitArrayIndex(MethodVisitor mv, int idx) {
 
 			if (idx >= 0 && idx < 6) {
@@ -453,12 +422,13 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 
 		/**
-		 * Insert any necessary cast and value call to convert from a boxed type to a primitive value
+		 * Insert any necessary cast and value call to convert from a boxed type to a primitive value.
+		 * <p>
+		 * Taken from Spring Expression 4.1.2 {@code org.springframework.expression.spel.CodeFlow#insertUnboxInsns}.
 		 * 
 		 * @param mv the method visitor into which instructions should be inserted
 		 * @param ch the primitive type desired as output
-		 * @param stackDescriptor the descriptor of the type on top of the stack copied from
-		 *          org.springframework.expression.spel.CodeFlow#insertUnboxInsns.
+		 * @param stackDescriptor the descriptor of the type on top of the stack
 		 */
 		private static void insertUnboxInsns(MethodVisitor mv, char ch, String stackDescriptor) {
 
@@ -514,18 +484,6 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 				default:
 					throw new IllegalArgumentException("Unboxing should not be attempted for descriptor '" + ch + "'");
 			}
-		}
-	}
-
-	/**
-	 * @author Thomas Darimont
-	 */
-	public static class CouldNotCreateObjectInstantiatorException extends RuntimeException {
-
-		private static final long serialVersionUID = 1L;
-
-		public CouldNotCreateObjectInstantiatorException(Throwable cause) {
-			super(cause);
 		}
 	}
 }
