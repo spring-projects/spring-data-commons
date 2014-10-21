@@ -42,14 +42,13 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * An {@link EntityInstantiator} that can generate byte code to speed-up dynamic object instantiation.
- * <p>
- * Uses the {@link PersistentEntity}'s {@link PreferredConstructor} to instantiate an instance of the entity by
- * dynamically generating factory methods with appropriate constructor invocations via ASM.
- * <p>
- * If we cannot generate byte code for a type, we gracefully fall-back to the {@link ReflectionEntityInstantiator}.
+ * An {@link EntityInstantiator} that can generate byte code to speed-up dynamic object instantiation. Uses the
+ * {@link PersistentEntity}'s {@link PreferredConstructor} to instantiate an instance of the entity by dynamically
+ * generating factory methods with appropriate constructor invocations via ASM. If we cannot generate byte code for a
+ * type, we gracefully fall-back to the {@link ReflectionEntityInstantiator}.
  * 
  * @author Thomas Darimont
+ * @author Oliver Gierke
  * @since 1.10
  */
 public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
@@ -68,15 +67,13 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		EntityInstantiator ei = this.entityInstantiators.get(entity.getTypeInformation());
+		EntityInstantiator instantiator = this.entityInstantiators.get(entity.getTypeInformation());
 
-		if (ei != null) {
-			return ei.createInstance(entity, provider);
+		if (instantiator == null) {
+			instantiator = potentiallyCreateAndRegisterEntityInstantiator(entity);
 		}
 
-		ei = potentiallyCreateAndRegisterEntityInstantiator(entity);
-
-		return ei.createInstance(entity, provider);
+		return instantiator.createInstance(entity, provider);
 	}
 
 	/**
@@ -86,20 +83,20 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	private synchronized EntityInstantiator potentiallyCreateAndRegisterEntityInstantiator(PersistentEntity<?, ?> entity) {
 
 		Map<TypeInformation<?>, EntityInstantiator> map = this.entityInstantiators;
+		EntityInstantiator instantiator = map.get(entity.getTypeInformation());
 
-		EntityInstantiator ei = map.get(entity.getTypeInformation());
-		if (ei != null) {
-			return ei;
+		if (instantiator != null) {
+			return instantiator;
 		}
 
-		ei = createEntityInstantiator(entity);
+		instantiator = createEntityInstantiator(entity);
 
 		map = new HashMap<TypeInformation<?>, EntityInstantiator>(map);
-		map.put(entity.getTypeInformation(), ei);
+		map.put(entity.getTypeInformation(), instantiator);
 
 		this.entityInstantiators = map;
 
-		return ei;
+		return instantiator;
 	}
 
 	/**
@@ -194,7 +191,10 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	}
 
 	/**
+	 * Adapter to forward an invocation of the {@link EntityInstantiator} API to an {@link ObjectInstantiator}.
+	 * 
 	 * @author Thomas Darimont
+	 * @author Oliver Gierke
 	 */
 	private static class EntityInstantiatorAdapter implements EntityInstantiator {
 
@@ -203,18 +203,25 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 		private final ObjectInstantiator instantiator;
 
 		/**
-		 * @param instantiator
+		 * Creates a new {@link EntityInstantiatorAdapter} for the given {@link ObjectInstantiator}.
+		 * 
+		 * @param instantiator must not be {@literal null}.
 		 */
 		public EntityInstantiatorAdapter(ObjectInstantiator instantiator) {
 			this.instantiator = instantiator;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
+		 */
 		@Override
 		@SuppressWarnings("unchecked")
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			Object[] params = extractInvocationArguments(provider, entity.getPersistenceConstructor());
+			Object[] params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+
 			try {
 				return (T) instantiator.newInstance(params);
 			} catch (Exception e) {
@@ -223,19 +230,22 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 
 		/**
-		 * @param provider
-		 * @param prefCtor
+		 * Extracts the arguments required to invoce the given constructor from the given {@link ParameterValueProvider}.
+		 * 
+		 * @param constructor can be {@literal null}.
+		 * @param provider can be {@literal null}.
 		 * @return
 		 */
 		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				ParameterValueProvider<P> provider, PreferredConstructor<? extends T, P> prefCtor) {
+				PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
 
-			if (provider == null || prefCtor == null || !prefCtor.hasParameters()) {
+			if (provider == null || constructor == null || !constructor.hasParameters()) {
 				return EMPTY_ARRAY;
 			}
 
 			List<Object> params = new ArrayList<Object>();
-			for (Parameter<?, P> parameter : prefCtor.getParameters()) {
+
+			for (Parameter<?, P> parameter : constructor.getParameters()) {
 				params.add(provider.getParameterValue(parameter));
 			}
 

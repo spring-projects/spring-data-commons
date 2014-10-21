@@ -47,6 +47,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
  * Unit tests for {@link BytecodeGeneratingEntityInstantiator}.
  * 
  * @author Thomas Darimont
+ * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
@@ -88,7 +89,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 	}
 
 	/**
-	 * @see DATACMNS-300
+	 * @see DATACMNS-300, DATACMNS-578
 	 */
 	@Test(expected = MappingInstantiationException.class)
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -101,7 +102,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 	}
 
 	/**
-	 * @see DATACMNS-134
+	 * @see DATACMNS-134, DATACMNS-578
 	 */
 	@Test
 	public void createsInnerClassInstanceCorrectly() {
@@ -129,7 +130,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 	}
 
 	/**
-	 * @see DATACMNS-283
+	 * @see DATACMNS-283, DATACMNS-578
 	 */
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -237,7 +238,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 
 		for (int i = 0; i < 2; i++) {
 			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("FOO").thenReturn("BAR");
-			
+
 			Object instance = INSTANCE.createInstance(entity, provider);
 			assertTrue(instance instanceof ObjCtor2ParamStringString);
 			assertTrue(((ObjCtor2ParamStringString) instance).ctorInvoked);
@@ -245,7 +246,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 			assertThat(((ObjCtor2ParamStringString) instance).param2, is("BAR"));
 		}
 	}
-	
+
 	/**
 	 * @see DATACMNS-578
 	 */
@@ -260,14 +261,15 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		when(entity.getPersistenceConstructor()).thenReturn(constructor);
 
 		for (int i = 0; i < 2; i++) {
+
 			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn(42);
-			
+
 			Object instance = INSTANCE.createInstance(entity, provider);
 			assertTrue(instance instanceof ObjectCtor1ParamInt);
 			assertTrue("matches", ((ObjectCtor1ParamInt) instance).param1 == 42);
 		}
 	}
-	
+
 	/**
 	 * @see DATACMNS-578
 	 */
@@ -282,8 +284,9 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		when(entity.getPersistenceConstructor()).thenReturn(constructor);
 
 		for (int i = 0; i < 2; i++) {
-			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("A").thenReturn(1).thenReturn(2).thenReturn(3).thenReturn(4).thenReturn(5).thenReturn("B");
-			
+			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("A").thenReturn(1).thenReturn(2)
+					.thenReturn(3).thenReturn(4).thenReturn(5).thenReturn("B");
+
 			Object instance = INSTANCE.createInstance(entity, provider);
 			assertTrue(instance instanceof ObjectCtor7ParamsString5IntsString);
 			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param1, is("A"));
@@ -295,7 +298,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param7, is("B"));
 		}
 	}
-	
+
 	static class Foo {
 
 		Foo(String foo) {
@@ -324,13 +327,11 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 
 	/**
 	 * @author Thomas Darimont
-	 *
 	 */
 	public static class ObjCtorDefault {}
 
 	/**
 	 * @author Thomas Darimont
-	 *
 	 */
 	public static class ObjCtorNoArgs {
 
@@ -343,7 +344,6 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 
 	/**
 	 * @author Thomas Darimont
-	 *
 	 */
 	public static class ObjCtor1ParamString {
 
@@ -358,7 +358,6 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 
 	/**
 	 * @author Thomas Darimont
-	 *
 	 */
 	public static class ObjCtor2ParamStringString {
 
@@ -372,12 +371,11 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 			this.param2 = param2;
 		}
 	}
-	
+
 	/**
 	 * @author Thomas Darimont
-	 *
 	 */
-	public static class ObjectCtor1ParamInt{
+	public static class ObjectCtor1ParamInt {
 
 		public int param1;
 
@@ -385,12 +383,11 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 			this.param1 = param1;
 		}
 	}
-	
+
 	/**
 	 * @author Thomas Darimont
-	 *
 	 */
-	public static class ObjectCtor7ParamsString5IntsString{
+	public static class ObjectCtor7ParamsString5IntsString {
 
 		public String param1;
 		public int param2;
