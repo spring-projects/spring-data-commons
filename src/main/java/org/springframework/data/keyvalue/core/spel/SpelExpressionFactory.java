@@ -16,6 +16,7 @@
 package org.springframework.data.keyvalue.core.spel;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.MethodInvoker;
 
 /**
  * Factory capable of parsing raw expression strings taking Spring 4.1 compiled expressions into concern. Will fall back
@@ -50,7 +52,12 @@ public class SpelExpressionFactory {
 		expressionParser = new SpelExpressionParser(DEFAULT_PARSER_CONFIG);
 
 		if (IS_SPEL_COMPILER_PRESENT) {
-			compiledModeExpressionParser = new SpelExpressionParser(silentlyInitializeCompiledMode("IMMEDIATE"));
+			SpelExpressionParser parser = new SpelExpressionParser(silentlyInitializeCompiledMode("IMMEDIATE"));
+
+			if (usesPatchedSpelCompilerThatAllowsReferenceToContextVariables(parser)) {
+				compiledModeExpressionParser = parser;
+			}
+
 		}
 	}
 
@@ -62,9 +69,9 @@ public class SpelExpressionFactory {
 
 		if (compiledModeExpressionParser != null) {
 			try {
-				return compiledModeExpressionParser.parseRaw(expressionString);
-			} catch (ExpressionException ex) {
-				LOGGER.info(String.format("Could parse expression %s in compiked mode. Using fallback.", expressionString), ex);
+				return compileSpelExpression(compiledModeExpressionParser.parseRaw(expressionString));
+			} catch (ExpressionException e) {
+				LOGGER.info(e.getMessage(), e);
 			}
 		}
 
@@ -89,6 +96,54 @@ public class SpelExpressionFactory {
 		}
 
 		return DEFAULT_PARSER_CONFIG;
+	}
+
+	private static SpelExpression compileSpelExpression(SpelExpression compilableExpression) {
+
+		try {
+
+			MethodInvoker mi = new MethodInvoker();
+			mi.setTargetObject(compilableExpression);
+			mi.setTargetMethod("compileExpression");
+			mi.prepare();
+			mi.invoke();
+
+			return compilableExpression;
+
+		} catch (ExpressionException ex) {
+
+			throw new ExpressionException(String.format("Could parse expression %s in compiled mode. Using fallback.",
+					compilableExpression.getExpressionString()), ex);
+		} catch (IllegalAccessException ex) {
+			throw new ExpressionException("o_O failed to invoke compileExpression. Are you using at least Spring 4.1?", ex);
+		} catch (NoSuchMethodException ex) {
+			throw new ExpressionException("o_O missing method compileExpression. Using fallback.", ex);
+		} catch (ClassNotFoundException ex) {
+			throw new ExpressionException("o_O missing class SpelExpression.", ex);
+		} catch (InvocationTargetException ex) {
+			throw new ExpressionException("o_O failed to invoke compileExpression. Are you using at least Spring 4.1?", ex);
+		}
+	}
+
+	/**
+	 * @see SPR-12326, SPR-12359
+	 * @param parser
+	 * @return
+	 */
+	private static boolean usesPatchedSpelCompilerThatAllowsReferenceToContextVariables(SpelExpressionParser parser) {
+
+		SpelExpression ex = parser.parseRaw("#foo == 1");
+		ex.getEvaluationContext().setVariable("foo", 1);
+
+		try {
+			for (int i = 0; i < 3; i++) {
+				ex.getValue(Boolean.class);
+			}
+			return true;
+		} catch (Exception e) {
+			LOGGER.info("Compiled SpEL sanity check failed. Falling back to non compiled mode");
+		}
+		return false;
 	}
 
 }
