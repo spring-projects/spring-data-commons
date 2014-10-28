@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,12 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link org.springframework.core.convert.converter.Converter} to convert arbitrary input into domain classes managed
- * by Spring Data {@link CrudRepository} s. The implementation uses a {@link ConversionService} in turn to convert the
+ * by Spring Data {@link CrudRepository}s. The implementation uses a {@link ConversionService} in turn to convert the
  * source type into the domain class' id type which is then converted into a domain class object by using a
  * {@link CrudRepository}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class DomainClassConverter<T extends ConversionService & ConverterRegistry> implements
 		ConditionalGenericConverter, ApplicationContextAware {
@@ -65,6 +66,10 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			return null;
 		}
 
+		if (sourceType.equals(targetType)) {
+			return source;
+		}
+
 		Class<?> domainType = targetType.getType();
 
 		RepositoryInformation info = repositories.getRepositoryInformationFor(domainType);
@@ -81,6 +86,10 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 		if (!repositories.hasRepositoryFor(targetType.getType())) {
 			return false;
+		}
+
+		if (sourceType.equals(targetType)) {
+			return true;
 		}
 
 		return conversionService.canConvert(sourceType.getType(),
