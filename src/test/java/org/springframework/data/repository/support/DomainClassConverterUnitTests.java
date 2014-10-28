@@ -39,6 +39,7 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
  * Unit test for {@link DomainClassConverter}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainClassConverterUnitTests {
@@ -141,6 +142,19 @@ public class DomainClassConverterUnitTests {
 
 		converter.setApplicationContext(context);
 		assertThat(converter.matches(sourceDescriptor, targetDescriptor), is(true));
+	}
+
+	/**
+	 * @DATACMNS-583
+	 */
+	@Test
+	public void shouldReturnSourceObjectIfSourceAndTargetTypesAreTheSame() {
+
+		ApplicationContext context = initContextWithRepo();
+		converter.setApplicationContext(context);
+
+		assertThat(converter.matches(targetDescriptor, targetDescriptor), is(true));
+		assertThat((User) converter.convert(USER, targetDescriptor, targetDescriptor), is(USER));
 	}
 
 	private ApplicationContext initContextWithRepo() {
