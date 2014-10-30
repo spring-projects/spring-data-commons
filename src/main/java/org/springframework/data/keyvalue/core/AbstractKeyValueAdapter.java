@@ -43,11 +43,19 @@ public abstract class AbstractKeyValueAdapter implements KeyValueAdapter {
 		return engine;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueAdapter#find(org.springframework.data.keyvalue.core.query.KeyValueQuery, java.io.Serializable)
+	 */
 	@Override
 	public Collection<?> find(KeyValueQuery<?> query, Serializable keyspace) {
 		return engine.execute(query, keyspace);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueAdapter#count(org.springframework.data.keyvalue.core.query.KeyValueQuery, java.io.Serializable)
+	 */
 	@Override
 	public long count(KeyValueQuery<?> query, Serializable keyspace) {
 		return engine.count(query, keyspace);

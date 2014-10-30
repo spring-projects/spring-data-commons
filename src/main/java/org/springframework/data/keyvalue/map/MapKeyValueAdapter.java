@@ -19,11 +19,12 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.core.CollectionFactory;
 import org.springframework.data.keyvalue.core.AbstractKeyValueAdapter;
 import org.springframework.data.keyvalue.core.KeyValueAdapter;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * {@link KeyValueAdapter} implementation for {@link Map}.
@@ -33,72 +34,115 @@ import org.springframework.util.Assert;
  */
 public class MapKeyValueAdapter extends AbstractKeyValueAdapter {
 
-	private ConcurrentMap<Serializable, Map<Serializable, Object>> data = new ConcurrentHashMap<Serializable, Map<Serializable, Object>>();
+	private final Map<Serializable, Map<Serializable, Object>> data;
+
+	@SuppressWarnings("rawtypes")//
+	private final Class<? extends Map> mapType;
 
 	public MapKeyValueAdapter() {
-		super();
+		this(new ConcurrentHashMap<Serializable, Map<Serializable, Object>>());
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public MapKeyValueAdapter(Map<Serializable, Map<Serializable, Object>> dataStore) {
+
+		Assert.notNull(dataStore, "Cannot initilalize adapter with 'null' datastore.");
+
+		this.data = dataStore;
+		this.mapType = (Class<? extends Map>) ClassUtils.getUserClass(dataStore);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueAdapter#put(java.io.Serializable, java.lang.Object, java.io.Serializable)
+	 */
 	@Override
 	public Object put(Serializable id, Object item, Serializable keyspace) {
 
 		Assert.notNull(id, "Cannot add item with 'null' id.");
 		Assert.notNull(keyspace, "Cannot add item for 'null' collection.");
 
-		return getValues(keyspace).put(id, item);
+		return getKeySpaceMap(keyspace).put(id, item);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueAdapter#contains(java.io.Serializable, java.io.Serializable)
+	 */
 	@Override
 	public boolean contains(Serializable id, Serializable keyspace) {
 		return get(id, keyspace) != null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueAdapter#get(java.io.Serializable, java.io.Serializable)
+	 */
 	@Override
 	public Object get(Serializable id, Serializable keyspace) {
 
 		Assert.notNull(id, "Cannot get item with 'null' id.");
-		return getValues(keyspace).get(id);
+		return getKeySpaceMap(keyspace).get(id);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueAdapter#delete(java.io.Serializable, java.io.Serializable)
+	 */
 	@Override
 	public Object delete(Serializable id, Serializable keyspace) {
 
 		Assert.notNull(id, "Cannot delete item with 'null' id.");
-		return getValues(keyspace).remove(id);
+		return getKeySpaceMap(keyspace).remove(id);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueAdapter#getAllOf(java.io.Serializable)
+	 */
 	@Override
 	public Collection<?> getAllOf(Serializable keyspace) {
-		return getValues(keyspace).values();
+		return getKeySpaceMap(keyspace).values();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueAdapter#deleteAllOf(java.io.Serializable)
+	 */
 	@Override
 	public void deleteAllOf(Serializable keyspace) {
-		getValues(keyspace).clear();
+		getKeySpaceMap(keyspace).clear();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.KeyValueAdapter#clear()
+	 */
 	@Override
 	public void clear() {
 		data.clear();
 	}
 
-	protected Map<Serializable, Object> getValues(Object item) {
+	protected Map<Serializable, Object> getKeyspaceMap(Object item) {
 
 		Assert.notNull(item, "Item must not be 'null' for lookup.");
-		return getValues(item.getClass());
+		return getKeySpaceMap(item.getClass());
 	}
 
-	protected Map<Serializable, Object> getValues(Serializable collection) {
+	protected Map<Serializable, Object> getKeySpaceMap(Serializable keyspace) {
 
-		Assert.notNull(collection, "Collection must not be 'null' for lookup.");
+		Assert.notNull(keyspace, "Collection must not be 'null' for lookup.");
 
-		Map<Serializable, Object> map = data.get(collection);
+		Map<Serializable, Object> map = data.get(keyspace);
 		if (map != null) {
 			return map;
 		}
 
-		data.put(collection, new ConcurrentHashMap<Serializable, Object>());
-		return data.get(collection);
+		addMapForKeySpace(keyspace);
+		return data.get(keyspace);
 	}
 
+	private void addMapForKeySpace(Serializable keyspace) {
+		data.put(keyspace, CollectionFactory.<Serializable, Object> createMap(mapType, 1000));
+	}
 }

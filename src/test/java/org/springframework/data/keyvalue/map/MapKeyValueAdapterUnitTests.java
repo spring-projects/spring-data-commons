@@ -32,6 +32,9 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.util.ObjectUtils;
 
+/**
+ * @author Christoph Strobl
+ */
 @RunWith(Parameterized.class)
 public class MapKeyValueAdapterUnitTests {
 
