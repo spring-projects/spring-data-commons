@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.9.1.RELEASE (2014-10-30)
+---------------------------------------------
+* DATACMNS-585 - Release 1.9.1.
+* DATACMNS-583 - DomainClassConverter.matches(…) should return false when source- and target type are equal.
+* DATACMNS-580 - Add section on limiting the query results to reference documentation.
+* DATACMNS-577 - Improve JavaDoc on QueryDslPredicateExecutor.
+* DATACMNS-530 - JavaDoc should be updated to reflect change of requiring an environment.
+
+
 Changes in version 1.9.0.RELEASE (2014-09-05)
 ---------------------------------------------
 * DATACMNS-572 - Release 1.9 GA.
