@@ -123,6 +123,11 @@ public class MapKeyValueAdapter extends AbstractKeyValueAdapter {
 		data.clear();
 	}
 
+	@Override
+	public void destroy() throws Exception {
+		clear();
+	}
+
 	protected Map<Serializable, Object> getKeyspaceMap(Object item) {
 
 		Assert.notNull(item, "Item must not be 'null' for lookup.");
@@ -145,4 +150,5 @@ public class MapKeyValueAdapter extends AbstractKeyValueAdapter {
 	private void addMapForKeySpace(Serializable keyspace) {
 		data.put(keyspace, CollectionFactory.<Serializable, Object> createMap(mapType, 1000));
 	}
+
 }

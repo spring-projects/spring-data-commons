@@ -18,13 +18,14 @@ package org.springframework.data.keyvalue.core;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 
 /**
  * @author Christoph Strobl
  * @since 1.10
  */
-public interface KeyValueAdapter {
+public interface KeyValueAdapter extends DisposableBean {
 
 	/**
 	 * Add object with given id to keyspace.

@@ -194,4 +194,9 @@ public class EhCacheKeyValueAdapter extends AbstractKeyValueAdapter {
 		}
 	}
 
+	@Override
+	public void destroy() throws Exception {
+		this.cacheManager.shutdown();
+	}
+
 }
