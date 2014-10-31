@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.inmemory.hazelcast;
 
+import org.springframework.data.keyvalue.hazelcast.HazelcastKeyValueAdapter;
+
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 
@@ -35,6 +37,10 @@ public class HazelcastUtils {
 
 	static HazelcastAdapter preconfiguredHazelcastAdapter() {
 		return new HazelcastAdapter(Hazelcast.newHazelcastInstance(hazelcastConfig()));
+	}
+
+	public static HazelcastKeyValueAdapter preconfiguredHazelcastKeyValueAdapter() {
+		return new HazelcastKeyValueAdapter(Hazelcast.newHazelcastInstance(hazelcastConfig()));
 	}
 
 }
