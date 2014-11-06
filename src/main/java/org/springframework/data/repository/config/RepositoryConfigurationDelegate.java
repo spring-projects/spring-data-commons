@@ -157,7 +157,7 @@ public class RepositoryConfigurationDelegate {
 	 * 
 	 * @return
 	 */
-	private boolean multipleStoresDetected() {
+	protected boolean multipleStoresDetected() {
 
 		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false,
 				environment);
