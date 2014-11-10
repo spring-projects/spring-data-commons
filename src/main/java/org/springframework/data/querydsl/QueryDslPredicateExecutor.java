@@ -32,7 +32,7 @@ public interface QueryDslPredicateExecutor<T> {
 	/**
 	 * Returns a single entity matching the given {@link Predicate} or {@literal null} if none was found.
 	 * 
-	 * @param predicate
+	 * @param predicate can be {@literal null}.
 	 * @return a single entity matching the given {@link Predicate} or {@literal null} if none was found.
 	 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if the predicate yields more than one
 	 *           result.
@@ -43,7 +43,7 @@ public interface QueryDslPredicateExecutor<T> {
 	 * Returns all entities matching the given {@link Predicate}. In case no match could be found an empty
 	 * {@link Iterable} is returned.
 	 * 
-	 * @param predicate
+	 * @param predicate can be {@literal null}.
 	 * @return all entities matching the given {@link Predicate}.
 	 */
 	Iterable<T> findAll(Predicate predicate);
@@ -52,27 +52,35 @@ public interface QueryDslPredicateExecutor<T> {
 	 * Returns all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s. In case no
 	 * match could be found an empty {@link Iterable} is returned.
 	 * 
-	 * @param predicate
-	 * @param orders
+	 * @param predicate can be {@literal null}.
+	 * @param orders the {@link OrderSpecifier}s to sort the results by
 	 * @return all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s.
 	 */
 	Iterable<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
 
 	/**
+	 * Returns all entities ordered by the given {@link OrderSpecifier}s.
+	 * 
+	 * @param orders the {@link OrderSpecifier}s to sort the results by.
+	 * @return all entities ordered by the given {@link OrderSpecifier}s.
+	 */
+	Iterable<T> findAll(OrderSpecifier<?>... orders);
+
+	/**
 	 * Returns a {@link Page} of entities matching the given {@link Predicate}. In case no match could be found, an empty
 	 * {@link Page} is returned.
 	 * 
-	 * @param predicate
-	 * @param pageable
+	 * @param predicate can be {@literal null}.
+	 * @param pageable can be {@literal null}.
 	 * @return a {@link Page} of entities matching the given {@link Predicate}.
 	 */
 	Page<T> findAll(Predicate predicate, Pageable pageable);
 
 	/**
-	 * Returns the number of instances that the given {@link Predicate} will return.
+	 * Returns the number of instances matching the given {@link Predicate}.
 	 * 
-	 * @param predicate the {@link Predicate} to count instances for
-	 * @return the number of instances
+	 * @param predicate the {@link Predicate} to count instances for, can be {@literal null}.
+	 * @return the number of instances matching the {@link Predicate}.
 	 */
 	long count(Predicate predicate);
 }
