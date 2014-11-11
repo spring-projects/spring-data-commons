@@ -175,6 +175,15 @@
 			<version>1.8.6</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Spring Sync -->
+		<dependency>
+			<groupId>org.springframework.sync</groupId>
+			<artifactId>spring-sync</artifactId>
+			<version>1.0.0.M1</version>
+			<optional>true</optional>
+		</dependency>
+
 	</dependencies>
 
 	<build>
