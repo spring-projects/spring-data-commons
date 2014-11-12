@@ -17,6 +17,7 @@ package org.springframework.data.util;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.StringUtils;
 
 /**
@@ -44,8 +44,10 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @param type must not be {@literal null}
 	 * @param parent must not be {@literal null}
 	 */
-	public ParameterizedTypeInformation(ParameterizedType type, TypeDiscoverer<?> parent) {
-		super(type, parent, null);
+	public ParameterizedTypeInformation(ParameterizedType type, TypeDiscoverer<?> parent,
+			Map<TypeVariable<?>, Type> typeVariableMap) {
+
+		super(type, parent, typeVariableMap);
 		this.type = type;
 	}
 
@@ -72,8 +74,11 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		supertypes.addAll(Arrays.asList(rawType.getGenericInterfaces()));
 
 		for (Type supertype : supertypes) {
-			Class<?> rawSuperType = GenericTypeResolver.resolveType(supertype, getTypeVariableMap());
+
+			Class<?> rawSuperType = resolveType(supertype);
+
 			if (Map.class.isAssignableFrom(rawSuperType)) {
+
 				ParameterizedType parameterizedSupertype = (ParameterizedType) supertype;
 				Type[] arguments = parameterizedSupertype.getActualTypeArguments();
 				return createInfo(arguments[1]);

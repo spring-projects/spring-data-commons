@@ -23,8 +23,10 @@ import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -98,12 +100,26 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @param type
 	 */
 	ClassTypeInformation(Class<S> type) {
-		this(type, GenericTypeResolver.getTypeVariableMap(type));
+		super(ClassUtils.getUserClass(type), getTypeVariableMap(type));
+		this.type = type;
 	}
 
-	ClassTypeInformation(Class<S> type, Map<TypeVariable, Type> typeVariableMap) {
-		super(ClassUtils.getUserClass(type), typeVariableMap);
-		this.type = type;
+	/**
+	 * Little helper to allow us to create a generified map, actually just to satisfy the compiler.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static Map<TypeVariable<?>, Type> getTypeVariableMap(Class<?> type) {
+
+		Map<TypeVariable, Type> source = GenericTypeResolver.getTypeVariableMap(type);
+		Map<TypeVariable<?>, Type> map = new HashMap<TypeVariable<?>, Type>(source.size());
+
+		for (Entry<TypeVariable, Type> entry : source.entrySet()) {
+			map.put(entry.getKey(), entry.getValue());
+		}
+
+		return map;
 	}
 
 	/*
