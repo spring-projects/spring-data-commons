@@ -93,7 +93,7 @@ public class ClassTypeInformationUnitTests {
 		TypeInformation<StringCollectionContainer> information = ClassTypeInformation.from(StringCollectionContainer.class);
 
 		TypeInformation<?> property = information.getProperty("array");
-		assertEquals(property.getComponentType().getType(), String.class);
+		assertThat(property.getComponentType().getType(), is((Object) String.class));
 
 		Class<?> type = property.getType();
 		assertEquals(String[].class, type);
@@ -327,6 +327,20 @@ public class ClassTypeInformationUnitTests {
 				is("org.springframework.data.util.ClassTypeInformationUnitTests$SpecialPerson"));
 	}
 
+	/**
+	 * @see DATACMNS-590
+	 */
+	@Test
+	public void resolvesNestedGenericsToConcreteType() {
+
+		ClassTypeInformation<ConcreteRoot> rootType = from(ConcreteRoot.class);
+		TypeInformation<?> subsPropertyType = rootType.getProperty("subs");
+		TypeInformation<?> subsElementType = subsPropertyType.getActualType();
+		TypeInformation<?> subSubType = subsElementType.getProperty("subSub");
+
+		assertThat(subSubType.getType(), is((Object) ConcreteSubSub.class));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -460,5 +474,25 @@ public class ClassTypeInformationUnitTests {
 	static class SuperGenerics {
 
 		SortedMap<String, ? extends SortedMap<String, List<Person>>> seriously;
+	}
+
+	// DATACMNS-590
+
+	static abstract class GenericRoot<T extends GenericSub<?>> {
+		List<T> subs;
+	}
+
+	static abstract class GenericSub<T extends GenericSubSub> {
+		T subSub;
+	}
+
+	static abstract class GenericSubSub {}
+
+	static class ConcreteRoot extends GenericRoot<ConcreteSub> {}
+
+	static class ConcreteSub extends GenericSub<ConcreteSubSub> {}
+
+	static class ConcreteSubSub extends GenericSubSub {
+		String content;
 	}
 }
