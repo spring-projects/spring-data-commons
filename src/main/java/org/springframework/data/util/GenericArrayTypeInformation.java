@@ -18,6 +18,8 @@ package org.springframework.data.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Map;
 
 /**
  * Special {@link TypeDiscoverer} handling {@link GenericArrayType}s.
@@ -26,18 +28,20 @@ import java.lang.reflect.Type;
  */
 class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 
-	private GenericArrayType type;
+	private final GenericArrayType type;
 
 	/**
 	 * Creates a new {@link GenericArrayTypeInformation} for the given {@link GenericArrayTypeInformation} and
 	 * {@link TypeDiscoverer}.
 	 * 
-	 * @param type
-	 * @param parent
+	 * @param type must not be {@literal null}.
+	 * @param parent must not be {@literal null}.
+	 * @param typeVariableMap must not be {@literal null}.
 	 */
-	protected GenericArrayTypeInformation(GenericArrayType type, TypeDiscoverer<?> parent) {
+	protected GenericArrayTypeInformation(GenericArrayType type, TypeDiscoverer<?> parent,
+			Map<TypeVariable<?>, Type> typeVariableMap) {
 
-		super(type, parent, parent.getTypeVariableMap());
+		super(type, parent, typeVariableMap);
 		this.type = type;
 	}
 

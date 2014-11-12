@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +48,7 @@ import org.springframework.util.ReflectionUtils;
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private final Type type;
-	@SuppressWarnings("rawtypes") private final Map<TypeVariable, Type> typeVariableMap;
+	private final Map<TypeVariable<?>, Type> typeVariableMap;
 	private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
 
 	private Class<S> resolvedType;
@@ -55,25 +56,24 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	/**
 	 * Creates a ne {@link TypeDiscoverer} for the given type, type variable map and parent.
 	 * 
-	 * @param type must not be null.
-	 * @param typeVariableMap
+	 * @param type must not be {@literal null}.
+	 * @param typeVariableMap must not be {@literal null}.
 	 */
-	@SuppressWarnings("rawtypes")
-	protected TypeDiscoverer(Type type, Map<TypeVariable, Type> typeVariableMap) {
+	protected TypeDiscoverer(Type type, Map<TypeVariable<?>, Type> typeVariableMap) {
 
 		Assert.notNull(type);
+		Assert.notNull(typeVariableMap);
+
 		this.type = type;
 		this.typeVariableMap = typeVariableMap;
 	}
 
 	/**
-	 * Returns the type variable map. Will traverse the parents up to the root on and use it's map.
+	 * Returns the type variable map.
 	 * 
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	protected Map<TypeVariable, Type> getTypeVariableMap() {
-
+	protected Map<TypeVariable<?>, Type> getTypeVariableMap() {
 		return typeVariableMap;
 	}
 
@@ -98,7 +98,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		if (fieldType instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) fieldType;
-			return new ParameterizedTypeInformation(parameterizedType, this);
+			return new ParameterizedTypeInformation(parameterizedType, this, variableMap);
 		}
 
 		if (fieldType instanceof TypeVariable) {
@@ -107,7 +107,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		if (fieldType instanceof GenericArrayType) {
-			return new GenericArrayTypeInformation((GenericArrayType) fieldType, this);
+			return new GenericArrayTypeInformation((GenericArrayType) fieldType, this, variableMap);
 		}
 
 		if (fieldType instanceof WildcardType) {
@@ -135,9 +135,13 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param type
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected Class<S> resolveType(Type type) {
-		return (Class<S>) GenericTypeResolver.resolveType(type, getTypeVariableMap());
+
+		Map<TypeVariable, Type> map = new HashMap<TypeVariable, Type>();
+		map.putAll(getTypeVariableMap());
+
+		return (Class<S>) GenericTypeResolver.resolveType(type, map);
 	}
 
 	/*

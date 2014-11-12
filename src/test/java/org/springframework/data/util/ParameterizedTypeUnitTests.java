@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,11 @@ import static org.springframework.data.util.ClassTypeInformation.*;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +42,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ParameterizedTypeUnitTests {
 
+	static final Map<TypeVariable<?>, Type> EMPTY_MAP = Collections.emptyMap();
+
 	@Mock ParameterizedType one;
 
 	@Before
@@ -49,22 +54,22 @@ public class ParameterizedTypeUnitTests {
 	@Test
 	public void considersTypeInformationsWithDifferingParentsNotEqual() {
 
-		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, null);
-		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<Object>(Object.class, null);
+		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, EMPTY_MAP);
+		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<Object>(Object.class, EMPTY_MAP);
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, objectParent);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent, EMPTY_MAP);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, objectParent, EMPTY_MAP);
 
-		assertFalse(first.equals(second));
+		assertThat(first, is(not(second)));
 	}
 
 	@Test
 	public void considersTypeInformationsWithSameParentsNotEqual() {
 
-		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, null);
+		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, EMPTY_MAP);
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, stringParent);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent, EMPTY_MAP);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, stringParent, EMPTY_MAP);
 
 		assertTrue(first.equals(second));
 	}
