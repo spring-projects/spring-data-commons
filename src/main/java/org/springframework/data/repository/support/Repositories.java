@@ -27,8 +27,6 @@ import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
@@ -191,20 +189,6 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, "Domain class must not be null!");
 		return getRepositoryFactoryInfoFor(domainClass).getQueryMethods();
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T> CrudInvoker<T> getCrudInvoker(Class<T> domainClass) {
-
-		Object repository = getRepositoryFor(domainClass);
-
-		Assert.notNull(repository, String.format("No repository found for domain class: %s", domainClass));
-
-		if (repository instanceof CrudRepository) {
-			return new CrudRepositoryInvoker<T>((CrudRepository<T, Serializable>) repository);
-		} else {
-			return new ReflectionRepositoryInvoker<T>(repository, getRepositoryInformationFor(domainClass).getCrudMethods());
-		}
 	}
 
 	/* 

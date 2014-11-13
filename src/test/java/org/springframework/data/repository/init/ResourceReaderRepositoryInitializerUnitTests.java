@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,50 +21,62 @@ import static org.mockito.Mockito.*;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
-import org.springframework.data.repository.core.CrudInvoker;
+import org.springframework.data.repository.sample.Product;
+import org.springframework.data.repository.sample.ProductRepository;
+import org.springframework.data.repository.sample.SampleConfiguration;
+import org.springframework.data.repository.sample.User;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Unit tests for {@link UnmarshallingRepositoryInitializer}.
  * 
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = SampleConfiguration.class)
 public class ResourceReaderRepositoryInitializerUnitTests {
 
-	@Mock ResourceReader reader;
-	@Mock Repositories repositories;
-	@Mock Resource resource;
-	@Mock CrudInvoker<Object> invoker;
+	@Autowired ProductRepository productRepository;
+	@Autowired Repositories repositories;
 
-	@Mock ApplicationEventPublisher publisher;
+	ApplicationEventPublisher publisher;
+	ResourceReader reader;
+	Resource resource;
+
+	@Before
+	public void setUp() {
+
+		this.reader = mock(ResourceReader.class);
+		this.publisher = mock(ApplicationEventPublisher.class);
+		this.resource = mock(Resource.class);
+	}
 
 	@Test
 	public void storesSingleObjectCorrectly() throws Exception {
-
-		Object reference = new Object();
-
+		Product reference = new Product();
 		setUpReferenceAndInititalize(reference);
 
-		verify(invoker, times(1)).invokeSave(reference);
+		verify(productRepository).save(reference);
 	}
 
 	@Test
 	public void storesCollectionOfObjectsCorrectly() throws Exception {
 
-		Object object = new Object();
-		Collection<Object> reference = Collections.singletonList(object);
+		Product product = new Product();
+		Collection<Product> reference = Collections.singletonList(product);
 
 		setUpReferenceAndInititalize(reference);
 
-		verify(invoker, times(1)).invokeSave(object);
+		verify(productRepository, times(1)).save(product);
 	}
 
 	/**
@@ -73,7 +85,7 @@ public class ResourceReaderRepositoryInitializerUnitTests {
 	@Test
 	public void emitsRepositoriesPopulatedEventIfPublisherConfigured() throws Exception {
 
-		RepositoryPopulator populator = setUpReferenceAndInititalize(new Object(), publisher);
+		RepositoryPopulator populator = setUpReferenceAndInititalize(new User(), publisher);
 
 		ApplicationEvent event = new RepositoriesPopulatedEvent(populator, repositories);
 		verify(publisher, times(1)).publishEvent(event);
@@ -83,7 +95,6 @@ public class ResourceReaderRepositoryInitializerUnitTests {
 			throws Exception {
 
 		when(reader.readFrom(any(Resource.class), any(ClassLoader.class))).thenReturn(reference);
-		when(repositories.getCrudInvoker(Object.class)).thenReturn(invoker);
 
 		ResourceReaderRepositoryPopulator populator = new ResourceReaderRepositoryPopulator(reader);
 		populator.setResources(resource);

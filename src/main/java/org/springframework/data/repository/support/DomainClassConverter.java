@@ -25,8 +25,10 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.invoker.DefaultRepositoryInvokerFactory;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
+import org.springframework.data.repository.invoker.RepositoryInvokerFactory;
 import org.springframework.util.StringUtils;
 
 /**
@@ -43,6 +45,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 	private final T conversionService;
 	private Repositories repositories = Repositories.NONE;
+	private RepositoryInvokerFactory repositoryInvokerFactory;
 
 	public DomainClassConverter(T conversionService) {
 		this.conversionService = conversionService;
@@ -73,7 +76,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		Class<?> domainType = targetType.getType();
 
 		RepositoryInformation info = repositories.getRepositoryInformationFor(domainType);
-		CrudInvoker<?> invoker = repositories.getCrudInvoker(domainType);
+		RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(domainType);
 
 		return invoker.invokeFindOne(conversionService.convert(source, info.getIdType()));
 	}
@@ -104,5 +107,6 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 		this.repositories = new Repositories(context);
 		this.conversionService.addConverter(this);
+		this.repositoryInvokerFactory = new DefaultRepositoryInvokerFactory(repositories, conversionService);
 	}
 }

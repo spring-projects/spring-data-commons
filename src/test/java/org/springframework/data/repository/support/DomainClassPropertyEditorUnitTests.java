@@ -28,8 +28,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
 
 /**
  * Unit test for {@link DomainClassPropertyEditor}.
@@ -42,14 +42,14 @@ public class DomainClassPropertyEditorUnitTests {
 	DomainClassPropertyEditor<User, Integer> editor;
 
 	@Mock PropertyEditorRegistry registry;
-	@Mock CrudInvoker<User> userRepository;
+	@Mock RepositoryInvoker invoker;
 	@Mock EntityInformation<User, Integer> information;
 
 	@Before
 	public void setUp() {
 
 		when(information.getIdType()).thenReturn(Integer.class);
-		editor = new DomainClassPropertyEditor<User, Integer>(userRepository, information, registry);
+		editor = new DomainClassPropertyEditor<User, Integer>(invoker, information, registry);
 	}
 
 	@Test
@@ -57,11 +57,11 @@ public class DomainClassPropertyEditorUnitTests {
 
 		User user = new User(1);
 		when(information.getId(user)).thenReturn(user.getId());
-		when(userRepository.invokeFindOne(1)).thenReturn(user);
+		when(invoker.invokeFindOne(1)).thenReturn(user);
 
 		editor.setAsText("1");
 
-		verify(userRepository, times(1)).invokeFindOne(1);
+		verify(invoker, times(1)).invokeFindOne(1);
 	}
 
 	@Test

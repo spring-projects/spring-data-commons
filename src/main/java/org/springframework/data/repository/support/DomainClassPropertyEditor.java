@@ -22,8 +22,8 @@ import java.io.Serializable;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -34,7 +34,7 @@ import org.springframework.util.StringUtils;
  */
 public class DomainClassPropertyEditor<T, ID extends Serializable> extends PropertyEditorSupport {
 
-	private final CrudInvoker<?> invoker;
+	private final RepositoryInvoker invoker;
 	private final EntityInformation<T, ID> information;
 	private final PropertyEditorRegistry registry;
 
@@ -46,7 +46,7 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 	 * @param information must not be {@literal null}.
 	 * @param registry must not be {@literal null}.
 	 */
-	public DomainClassPropertyEditor(CrudInvoker<?> invoker, EntityInformation<T, ID> information,
+	public DomainClassPropertyEditor(RepositoryInvoker invoker, EntityInformation<T, ID> information,
 			PropertyEditorRegistry registry) {
 
 		Assert.notNull(invoker);

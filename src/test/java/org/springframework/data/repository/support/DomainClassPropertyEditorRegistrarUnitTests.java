@@ -38,6 +38,7 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("deprecation")
 public class DomainClassPropertyEditorRegistrarUnitTests {
 
 	@Mock PropertyEditorRegistry registry;

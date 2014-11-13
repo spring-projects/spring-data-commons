@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -46,8 +48,8 @@ public class RepositoryComponentProviderUnitTests {
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.<TypeFilter> emptyList());
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.sample");
 
-		assertThat(components.size(), is(1));
-		assertThat(components.iterator().next().getBeanClassName(), is(SampleAnnotatedRepository.class.getName()));
+		assertThat(components.size(), is(3));
+		assertThat(components, hasItem(BeanDefinitionOfTypeMatcher.beanDefinitionOfType(SampleAnnotatedRepository.class)));
 	}
 
 	@Test
@@ -59,7 +61,7 @@ public class RepositoryComponentProviderUnitTests {
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository");
 
 		assertThat(components.size(), is(1));
-		assertThat(components.iterator().next().getBeanClassName(), is(MyOtherRepository.class.getName()));
+		assertThat(components, hasItem(BeanDefinitionOfTypeMatcher.beanDefinitionOfType(MyOtherRepository.class)));
 	}
 
 	/**
@@ -77,6 +79,41 @@ public class RepositoryComponentProviderUnitTests {
 		assertThat(components.size(), is(greaterThanOrEqualTo(1)));
 		assertThat(components,
 				Matchers.<BeanDefinition> hasItem(hasProperty("beanClassName", is(nestedRepositoryClassName))));
+	}
+
+	static class BeanDefinitionOfTypeMatcher extends BaseMatcher<BeanDefinition> {
+
+		private final Class<?> expectedType;
+
+		private BeanDefinitionOfTypeMatcher(Class<?> expectedType) {
+			this.expectedType = expectedType;
+		}
+
+		public static BeanDefinitionOfTypeMatcher beanDefinitionOfType(Class<?> expectedType) {
+			return new BeanDefinitionOfTypeMatcher(expectedType);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.hamcrest.Matcher#matches(java.lang.Object)
+		 */
+		@Override
+		public boolean matches(Object item) {
+
+			if (!(item instanceof BeanDefinition)) {
+				return false;
+			}
+
+			BeanDefinition definition = (BeanDefinition) item;
+			return definition.getBeanClassName().equals(expectedType.getName());
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.hamcrest.SelfDescribing#describeTo(org.hamcrest.Description)
+		 */
+		@Override
+		public void describeTo(Description description) {}
 	}
 
 	public interface MyNestedRepository extends Repository<Person, Long> {}

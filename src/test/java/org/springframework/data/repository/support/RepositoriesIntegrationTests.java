@@ -21,16 +21,11 @@ import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.core.CrudInvoker;
-import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
-import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
+import org.springframework.data.repository.sample.Product;
+import org.springframework.data.repository.sample.ProductRepository;
+import org.springframework.data.repository.sample.SampleConfiguration;
+import org.springframework.data.repository.sample.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -41,44 +36,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Thomas Darimont
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = SampleConfiguration.class)
 public class RepositoriesIntegrationTests {
-
-	@Configuration
-	static class Config {
-
-		@Autowired ApplicationContext context;
-
-		@Bean
-		public Repositories repositories() {
-			return new Repositories(context);
-		}
-
-		@Bean
-		public RepositoryFactoryBeanSupport<Repository<User, Long>, User, Long> userRepositoryFactory() {
-
-			DummyRepositoryFactoryBean<Repository<User, Long>, User, Long> factory = new DummyRepositoryFactoryBean<Repository<User, Long>, User, Long>();
-			factory.setRepositoryInterface(UserRepository.class);
-
-			return factory;
-		}
-
-		@Bean
-		public RepositoryFactoryBeanSupport<Repository<Product, Long>, Product, Long> productRepositoryFactory(
-				ProductRepository productRepository) {
-
-			DummyRepositoryFactoryBean<Repository<Product, Long>, Product, Long> factory = new DummyRepositoryFactoryBean<Repository<Product, Long>, Product, Long>();
-			factory.setRepositoryInterface(ProductRepository.class);
-			factory.setCustomImplementation(productRepository);
-
-			return factory;
-		}
-
-		@Bean
-		public ProductRepository productRepository() {
-			return mock(ProductRepository.class);
-		}
-	}
 
 	@Autowired Repositories repositories;
 	@Autowired ProductRepository productRepository;
@@ -91,14 +50,6 @@ public class RepositoriesIntegrationTests {
 		assertThat(repositories.hasRepositoryFor(Product.class), is(true));
 	}
 
-	@Test
-	public void createsCrudInvokersCorrectly() {
-
-		assertThat(repositories, is(notNullValue()));
-		assertThat(repositories.getCrudInvoker(User.class), is(instanceOf(CrudRepositoryInvoker.class)));
-		assertThat(repositories.getCrudInvoker(Product.class), is(instanceOf(ReflectionRepositoryInvoker.class)));
-	}
-
 	/**
 	 * @see DATACMNS-376
 	 */
@@ -107,37 +58,5 @@ public class RepositoriesIntegrationTests {
 
 		User user = mock(User.class);
 		assertThat(repositories.getPersistentEntity(user.getClass()), is(notNullValue()));
-	}
-
-	/**
-	 * @see DATACMNS-410
-	 */
-	@Test
-	public void findOneShouldDelegateToAppropriateRepository() {
-
-		Mockito.reset(productRepository);
-		Product product = new Product();
-		when(productRepository.findOne(4711L)).thenReturn(product);
-
-		CrudInvoker<Product> crudInvoker = repositories.getCrudInvoker(Product.class);
-
-		assertThat(crudInvoker.invokeFindOne(4711L), is(product));
-	}
-
-	static class User {
-
-	}
-
-	interface UserRepository extends CrudRepository<User, Long> {
-
-	}
-
-	public static class Product {}
-
-	public static interface ProductRepository extends Repository<Product, Long> {
-
-		Product findOne(Long id);
-
-		Product save(Product product);
 	}
 }

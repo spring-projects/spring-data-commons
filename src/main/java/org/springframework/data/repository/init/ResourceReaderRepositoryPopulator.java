@@ -26,7 +26,9 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.data.repository.core.CrudInvoker;
+import org.springframework.data.repository.invoker.DefaultRepositoryInvokerFactory;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
+import org.springframework.data.repository.invoker.RepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.util.Assert;
 
@@ -107,6 +109,8 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 */
 	public void populate(Repositories repositories) {
 
+		RepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories);
+
 		for (Resource resource : resources) {
 
 			LOGGER.info(String.format("Reading resource: %s", resource));
@@ -116,13 +120,13 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 			if (result instanceof Collection) {
 				for (Object element : (Collection<?>) result) {
 					if (element != null) {
-						persist(element, repositories);
+						persist(element, invokerFactory);
 					} else {
 						LOGGER.info("Skipping null element found in unmarshal result!");
 					}
 				}
 			} else {
-				persist(result, repositories);
+				persist(result, invokerFactory);
 			}
 		}
 
@@ -151,12 +155,10 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * @param object must not be {@literal null}.
 	 * @param repositories must not be {@literal null}.
 	 */
-	@SuppressWarnings({ "unchecked" })
-	private void persist(Object object, Repositories repositories) {
+	private void persist(Object object, RepositoryInvokerFactory invokerFactory) {
 
-		CrudInvoker<Object> invoker = (CrudInvoker<Object>) repositories.getCrudInvoker(object.getClass());
+		RepositoryInvoker invoker = invokerFactory.getInvokerFor(object.getClass());
 		LOGGER.debug(String.format("Persisting %s using repository %s", object, invoker));
-
 		invoker.invokeSave(object);
 	}
 }

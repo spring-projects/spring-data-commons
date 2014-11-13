@@ -21,8 +21,10 @@ import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.invoker.DefaultRepositoryInvokerFactory;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
+import org.springframework.data.repository.invoker.RepositoryInvokerFactory;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
@@ -44,10 +46,13 @@ import org.springframework.web.servlet.DispatcherServlet;
  * {@link org.springframework.web.context.WebApplicationContext}.
  * 
  * @author Oliver Gierke
+ * @deprecated use {@link DomainClassConverter} instead, will be removed in 1.10
  */
+@Deprecated
 public class DomainClassPropertyEditorRegistrar implements PropertyEditorRegistrar, ApplicationContextAware {
 
 	private Repositories repositories = Repositories.NONE;
+	private RepositoryInvokerFactory repositoryInvokerFactory;
 
 	/*
 	 * (non-Javadoc)
@@ -58,7 +63,7 @@ public class DomainClassPropertyEditorRegistrar implements PropertyEditorRegistr
 		for (Class<?> domainClass : repositories) {
 
 			RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(domainClass);
-			CrudInvoker<?> invoker = repositories.getCrudInvoker(domainClass);
+			RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(domainClass);
 
 			DomainClassPropertyEditor<Object, Serializable> editor = new DomainClassPropertyEditor<Object, Serializable>(
 					invoker, repositories.getEntityInformationFor(repositoryInformation.getDomainType()), registry);
@@ -72,6 +77,8 @@ public class DomainClassPropertyEditorRegistrar implements PropertyEditorRegistr
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
 	 */
 	public void setApplicationContext(ApplicationContext context) {
+
 		this.repositories = new Repositories(context);
+		this.repositoryInvokerFactory = new DefaultRepositoryInvokerFactory(repositories);
 	}
 }
