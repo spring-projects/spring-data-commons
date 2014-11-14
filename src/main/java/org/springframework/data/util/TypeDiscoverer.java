@@ -51,6 +51,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private final Map<TypeVariable<?>, Type> typeVariableMap;
 	private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
 
+	private boolean componentTypeResolved = false;
+	private TypeInformation<?> componentType;
+
+	private boolean valueTypeResolved = false;
+	private TypeInformation<?> valueType;
+
 	private Class<S> resolvedType;
 
 	/**
@@ -83,7 +89,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param fieldType
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes", "unchecked", "deprecation" })
 	protected TypeInformation<?> createInfo(Type fieldType) {
 
 		if (fieldType.equals(this.type)) {
@@ -135,7 +141,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param type
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked", "rawtypes", "deprecation" })
 	protected Class<S> resolveType(Type type) {
 
 		Map<TypeVariable, Type> map = new HashMap<TypeVariable, Type>();
@@ -313,6 +319,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public TypeInformation<?> getMapValueType() {
 
+		if (!valueTypeResolved) {
+			this.valueType = doGetMapValueType();
+			this.valueTypeResolved = true;
+		}
+
+		return this.valueType;
+	}
+
+	protected TypeInformation<?> doGetMapValueType() {
+
 		if (isMap()) {
 			return getTypeArgument(Map.class, 1);
 		}
@@ -345,7 +361,17 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getComponentType()
 	 */
-	public TypeInformation<?> getComponentType() {
+	public final TypeInformation<?> getComponentType() {
+
+		if (!componentTypeResolved) {
+			this.componentType = doGetComponentType();
+			this.componentTypeResolved = true;
+		}
+
+		return this.componentType;
+	}
+
+	protected TypeInformation<?> doGetComponentType() {
 
 		Class<S> rawType = getType();
 

@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -111,12 +112,29 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @return
 	 */
 	private static Map<TypeVariable<?>, Type> getTypeVariableMap(Class<?> type) {
+		return getTypeVariableMap(type, new HashSet<Type>());
+	}
+
+	@SuppressWarnings("deprecation")
+	private static Map<TypeVariable<?>, Type> getTypeVariableMap(Class<?> type, Collection<Type> visited) {
+
+		if (visited.contains(type)) {
+			return Collections.emptyMap();
+		} else {
+			visited.add(type);
+		}
 
 		Map<TypeVariable, Type> source = GenericTypeResolver.getTypeVariableMap(type);
 		Map<TypeVariable<?>, Type> map = new HashMap<TypeVariable<?>, Type>(source.size());
 
 		for (Entry<TypeVariable, Type> entry : source.entrySet()) {
+
+			Type value = entry.getValue();
 			map.put(entry.getKey(), entry.getValue());
+
+			if (value instanceof Class) {
+				map.putAll(getTypeVariableMap((Class<?>) value, visited));
+			}
 		}
 
 		return map;

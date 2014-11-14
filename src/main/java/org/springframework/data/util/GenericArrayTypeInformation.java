@@ -57,10 +57,10 @@ class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
+	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
 	 */
 	@Override
-	public TypeInformation<?> getComponentType() {
+	protected TypeInformation<?> doGetComponentType() {
 
 		Type componentType = type.getGenericComponentType();
 		return createInfo(componentType);
