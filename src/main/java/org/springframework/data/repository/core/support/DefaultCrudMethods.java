@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.6
  */
-class DefaultCrudMethods implements CrudMethods {
+public class DefaultCrudMethods implements CrudMethods {
 
 	private static final String FIND_ONE = "findOne";
 	private static final String SAVE = "save";

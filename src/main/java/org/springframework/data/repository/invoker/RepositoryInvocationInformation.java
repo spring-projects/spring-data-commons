@@ -19,6 +19,7 @@ package org.springframework.data.repository.invoker;
  * Meta-information about the methods a repository exposes.
  * 
  * @author Oliver Gierke
+ * @since 1.10
  */
 public interface RepositoryInvocationInformation {
 

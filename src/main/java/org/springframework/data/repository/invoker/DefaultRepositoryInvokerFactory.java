@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * invocations over reflection ones.
  * 
  * @author Oliver Gierke
+ * @since 1.10
  */
 public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory {
 

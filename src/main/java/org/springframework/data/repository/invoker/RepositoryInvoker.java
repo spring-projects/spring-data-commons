@@ -30,6 +30,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  * {@link RepositoryInvocationInformation}.
  * 
  * @author Oliver Gierke
+ * @since 1.10
  */
 public interface RepositoryInvoker extends RepositoryInvocationInformation {
 

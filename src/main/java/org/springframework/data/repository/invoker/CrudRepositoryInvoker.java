@@ -31,6 +31,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * to avoid reflection overhead introduced by the base class if we know we work with a {@link CrudRepository}.
  * 
  * @author Oliver Gierke
+ * @since 1.10
  */
 class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 

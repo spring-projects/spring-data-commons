@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
  * Base {@link RepositoryInvoker} using reflection to invoke methods on Spring Data Repositories.
  * 
  * @author Oliver Gierke
+ * @since 1.10
  */
 class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
