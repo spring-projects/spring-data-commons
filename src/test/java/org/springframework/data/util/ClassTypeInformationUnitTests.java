@@ -341,6 +341,18 @@ public class ClassTypeInformationUnitTests {
 		assertThat(subSubType.getType(), is((Object) ConcreteSubSub.class));
 	}
 
+	/**
+	 * @see DATACMNS-594
+	 */
+	@Test
+	public void considersGenericsOfTypeBounds() {
+
+		ClassTypeInformation<ConcreteRootIntermediate> customer = ClassTypeInformation.from(ConcreteRootIntermediate.class);
+		TypeInformation<?> leafType = customer.getProperty("intermediate.content.intermediate.content");
+
+		assertThat(leafType.getType(), is((Object) Leaf.class));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -495,4 +507,24 @@ public class ClassTypeInformationUnitTests {
 	static class ConcreteSubSub extends GenericSubSub {
 		String content;
 	}
+
+	// DATACMNS-594
+
+	static class Intermediate<T> {
+		T content;
+	}
+
+	static abstract class GenericRootIntermediate<T> {
+		Intermediate<T> intermediate;
+	}
+
+	static abstract class GenericInnerIntermediate<T> {
+		Intermediate<T> intermediate;
+	}
+
+	static class ConcreteRootIntermediate extends GenericRootIntermediate<ConcreteInnerIntermediate> {}
+
+	static class ConcreteInnerIntermediate extends GenericInnerIntermediate<Leaf> {}
+
+	static class Leaf {}
 }
