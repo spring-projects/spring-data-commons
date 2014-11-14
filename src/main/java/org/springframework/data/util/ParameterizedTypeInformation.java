@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
 class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
 	private final ParameterizedType type;
-	private TypeInformation<?> componentType;
+	private Boolean resolved;
 
 	/**
 	 * Creates a new {@link ParameterizedTypeInformation} for the given {@link Type} and parent {@link TypeDiscoverer}.
@@ -51,12 +51,12 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		this.type = type;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#getMapValueType()
+	 * @see org.springframework.data.util.TypeDiscoverer#doGetMapValueType()
 	 */
 	@Override
-	public TypeInformation<?> getMapValueType() {
+	protected TypeInformation<?> doGetMapValueType() {
 
 		if (Map.class.isAssignableFrom(getType())) {
 
@@ -141,18 +141,13 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return true;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#getComponentType()
+	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
 	 */
 	@Override
-	public TypeInformation<?> getComponentType() {
-
-		if (componentType == null) {
-			this.componentType = createInfo(type.getActualTypeArguments()[0]);
-		}
-
-		return this.componentType;
+	protected TypeInformation<?> doGetComponentType() {
+		return createInfo(type.getActualTypeArguments()[0]);
 	}
 
 	/* 
@@ -201,10 +196,14 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 
 	private boolean isResolvedCompletely() {
 
+		if (resolved != null) {
+			return resolved;
+		}
+
 		Type[] types = type.getActualTypeArguments();
 
 		if (types.length == 0) {
-			return false;
+			return cacheAndReturn(false);
 		}
 
 		for (Type type : types) {
@@ -213,15 +212,21 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 
 			if (info instanceof ParameterizedTypeInformation) {
 				if (!((ParameterizedTypeInformation<?>) info).isResolvedCompletely()) {
-					return false;
+					return cacheAndReturn(false);
 				}
 			}
 
 			if (!(info instanceof ClassTypeInformation)) {
-				return false;
+				return cacheAndReturn(false);
 			}
 		}
 
-		return true;
+		return cacheAndReturn(true);
+	}
+
+	private boolean cacheAndReturn(boolean resolved) {
+
+		this.resolved = resolved;
+		return resolved;
 	}
 }
