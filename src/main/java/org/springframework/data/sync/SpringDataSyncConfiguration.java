@@ -23,25 +23,30 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.repository.core.CrudInvoker;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
+import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.sync.diffsync.Equivalency;
 import org.springframework.sync.diffsync.PersistenceCallbackRegistry;
+import org.springframework.sync.diffsync.config.DiffSyncConfigurerAdapter;
 
 /**
  * Configuration class to register the Spring Data specific integration components for Spring Sync.
  * 
  * @author Oliver Gierke
+ * @since 1.10
  */
 @Configuration
-public class SpringDataSyncConfiguration {
+public class SpringDataSyncConfiguration extends DiffSyncConfigurerAdapter {
 
 	@Autowired List<MappingContext<?, ?>> mappingContexts;
 	@Autowired(required = false) ConversionService conversionService;
+	@Autowired ListableBeanFactory beanFactory;
 
 	/**
 	 * Creates a {@link Repositories} instance with meta-information about all Spring Data repositories available in the
@@ -51,8 +56,8 @@ public class SpringDataSyncConfiguration {
 	 * @return
 	 */
 	@Bean
-	public Repositories repositories(ListableBeanFactory factory) {
-		return new Repositories(factory);
+	public Repositories repositories() {
+		return new Repositories(beanFactory);
 	}
 
 	/**
@@ -66,26 +71,27 @@ public class SpringDataSyncConfiguration {
 		return new PersistentEntitiesEquivalency(new PersistentEntities(mappingContexts));
 	}
 
-	/**
-	 * Registers a {@link RepositoryPersistenceCallback} for each of the repositories found in {@link Repositories}.
-	 * 
-	 * @param repositories
-	 * @return
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.sync.diffsync.config.DiffSyncConfigurerAdapter#addPersistenceCallbacks(org.springframework.sync.diffsync.PersistenceCallbackRegistry)
 	 */
-	@Bean
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public PersistenceCallbackRegistry persistenceCallbackRegistry(Repositories repositories) {
+	@Override
+	@SuppressWarnings({ "rawtypes" })
+	public void addPersistenceCallbacks(PersistenceCallbackRegistry registry) {
 
-		PersistenceCallbackRegistry registry = new PersistenceCallbackRegistry();
-		ConversionService service = conversionService == null ? new GenericConversionService() : conversionService;
+		Repositories repositories = repositories();
+		ConversionService service = conversionService == null ? new DefaultFormattingConversionService()
+				: conversionService;
+
+		RepositoryInvokerFactory factory = new DefaultRepositoryInvokerFactory(repositories, service);
 
 		for (Class<?> domainType : repositories) {
 
-			CrudInvoker<?> invoker = repositories.getCrudInvoker(domainType);
 			RepositoryMetadata metadata = repositories.getRepositoryInformationFor(domainType);
-			registry.addPersistenceCallback(new RepositoryPersistenceCallback(invoker, metadata, service));
-		}
+			RepositoryInvoker invoker = factory.getInvokerFor(domainType);
 
-		return registry;
+			registry.addPersistenceCallback(new RepositoryPersistenceCallback(invoker, metadata, new PersistentEntities(
+					mappingContexts)));
+		}
 	}
 }

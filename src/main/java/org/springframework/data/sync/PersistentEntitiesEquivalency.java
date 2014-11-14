@@ -16,7 +16,6 @@
 package org.springframework.data.sync;
 
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.sync.diffsync.Equivalency;
@@ -28,6 +27,7 @@ import org.springframework.util.Assert;
  * actual identifier values for final comaprison.
  * 
  * @author Oliver Gierke
+ * @since 1.10
  */
 class PersistentEntitiesEquivalency implements Equivalency {
 
@@ -64,17 +64,6 @@ class PersistentEntitiesEquivalency implements Equivalency {
 	private Object getIdProperty(Object object) {
 
 		PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
-
-		if (entity == null) {
-			return null;
-		}
-
-		PersistentProperty<?> property = entity.getIdProperty();
-
-		if (property == null) {
-			return null;
-		}
-
-		return BeanWrapper.create(object, null).getProperty(property);
+		return entity.getIdentifierAccessor(object).getIdentifier();
 	}
 }

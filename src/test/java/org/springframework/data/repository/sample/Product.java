@@ -1,3 +1,8 @@
 package org.springframework.data.repository.sample;
 
-public class Product {}
+import org.springframework.data.annotation.Id;
+
+public class Product {
+
+	public @Id Long id;
+}
