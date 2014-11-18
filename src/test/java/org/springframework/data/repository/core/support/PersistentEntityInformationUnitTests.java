@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
+
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.PersistentEntity;
@@ -50,8 +52,26 @@ public class PersistentEntityInformationUnitTests {
 		assertThat(information.getId(sample), is(5L));
 	}
 
+	/**
+	 * @see DATACMNS-596
+	 */
+	@Test
+	public void returnsNullIfNoIdPropertyPresent() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(EntityWithoutId.class);
+
+		PersistentEntityInformation<Object, Serializable> information = new PersistentEntityInformation<Object, Serializable>(
+				entity);
+		assertThat(information.getId(new EntityWithoutId()), is(nullValue()));
+	}
+
 	static class Sample {
 
 		@Id Long id;
+	}
+
+	static class EntityWithoutId {
+
 	}
 }
