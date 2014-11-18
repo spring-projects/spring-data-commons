@@ -49,7 +49,7 @@ public class PersistentEntityInformation<T, ID extends Serializable> extends Abs
 	 */
 	@Override
 	public ID getId(T entity) {
-		return (ID) BeanWrapper.create(entity, null).getProperty(this.persistentEntity.getIdProperty());
+		return (ID) persistentEntity.getPropertyAccessor(entity).getProperty(this.persistentEntity.getIdProperty());
 	}
 
 	/* 

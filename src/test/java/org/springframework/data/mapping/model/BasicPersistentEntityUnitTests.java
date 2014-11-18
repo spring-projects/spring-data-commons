@@ -37,6 +37,7 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentEntitySpec;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.Person;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
@@ -167,6 +168,46 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(property.getName(), is("property"));
 
 		assertThat(entity.getPersistentProperty(CreatedDate.class), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-596
+	 */
+	@Test
+	public void returnsBeanWrapperForPropertyAccessor() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+
+		Entity value = new Entity();
+		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
+
+		assertThat(accessor, is(instanceOf(BeanWrapper.class)));
+		assertThat(accessor.getBean(), is((Object) value));
+	}
+
+	/**
+	 * @see DATACMNS-596
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullBeanForPropertyAccessor() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+
+		entity.getPropertyAccessor(null);
+	}
+
+	/**
+	 * @see DATACMNS-596
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNonMatchingBeanForPropertyAccessor() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+
+		entity.getPropertyAccessor("foo");
 	}
 
 	private BasicPersistentEntity<Person, T> createEntity(Comparator<T> comparator) {

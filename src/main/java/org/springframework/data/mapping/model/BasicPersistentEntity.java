@@ -30,6 +30,7 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.SimpleAssociationHandler;
@@ -357,11 +358,23 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return annotation;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.MutablePersistentEntity#verify()
 	 */
-	public void verify() {
+	public void verify() {}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(java.lang.Object)
+	 */
+	@Override
+	public PersistentPropertyAccessor getPropertyAccessor(Object bean) {
+
+		Assert.notNull(bean, "Target bean must not be null!");
+		Assert.isTrue(getType().equals(bean.getClass()), "Target bean is not of type of the persistent entity!");
+
+		return new BeanWrapper<Object>(bean);
 	}
 
 	/**

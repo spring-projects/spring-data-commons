@@ -26,6 +26,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.util.Assert;
@@ -82,7 +83,8 @@ class MappingAuditableBeanWrapperFactory extends AuditableBeanWrapperFactory {
 			metadataCache.put(type, metadata);
 		}
 
-		return metadata.isAuditable() ? new MappingMetadataAuditableBeanWrapper(source, metadata) : null;
+		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(source);
+		return metadata.isAuditable() ? new MappingMetadataAuditableBeanWrapper(accessor, metadata) : null;
 	}
 
 	/**
@@ -132,7 +134,7 @@ class MappingAuditableBeanWrapperFactory extends AuditableBeanWrapperFactory {
 	 */
 	static class MappingMetadataAuditableBeanWrapper extends DateConvertingAuditableBeanWrapper {
 
-		private final BeanWrapper<Object> wrapper;
+		private final PersistentPropertyAccessor accessor;
 		private final MappingAuditingMetadata metadata;
 
 		/**
@@ -142,12 +144,12 @@ class MappingAuditableBeanWrapperFactory extends AuditableBeanWrapperFactory {
 		 * @param target must not be {@literal null}.
 		 * @param metadata must not be {@literal null}.
 		 */
-		public MappingMetadataAuditableBeanWrapper(Object target, MappingAuditingMetadata metadata) {
+		public MappingMetadataAuditableBeanWrapper(PersistentPropertyAccessor accessor, MappingAuditingMetadata metadata) {
 
-			Assert.notNull(target, "Target object must not be null!");
+			Assert.notNull(accessor, "Target object must not be null!");
 			Assert.notNull(metadata, "Auditing metadata must not be null!");
 
-			this.wrapper = BeanWrapper.create(target, null);
+			this.accessor = accessor;
 			this.metadata = metadata;
 		}
 
@@ -159,7 +161,7 @@ class MappingAuditableBeanWrapperFactory extends AuditableBeanWrapperFactory {
 		public void setCreatedBy(Object value) {
 
 			if (metadata.createdByProperty != null) {
-				this.wrapper.setProperty(metadata.createdByProperty, value);
+				this.accessor.setProperty(metadata.createdByProperty, value);
 			}
 		}
 
@@ -173,7 +175,7 @@ class MappingAuditableBeanWrapperFactory extends AuditableBeanWrapperFactory {
 			PersistentProperty<?> property = metadata.createdDateProperty;
 
 			if (property != null) {
-				this.wrapper.setProperty(property, getDateValueToSet(value, property.getType(), property));
+				this.accessor.setProperty(property, getDateValueToSet(value, property.getType(), property));
 			}
 		}
 
@@ -185,7 +187,7 @@ class MappingAuditableBeanWrapperFactory extends AuditableBeanWrapperFactory {
 		public void setLastModifiedBy(Object value) {
 
 			if (metadata.lastModifiedByProperty != null) {
-				this.wrapper.setProperty(metadata.lastModifiedByProperty, value);
+				this.accessor.setProperty(metadata.lastModifiedByProperty, value);
 			}
 		}
 
@@ -199,7 +201,7 @@ class MappingAuditableBeanWrapperFactory extends AuditableBeanWrapperFactory {
 			PersistentProperty<?> property = metadata.lastModifiedDateProperty;
 
 			if (property != null) {
-				this.wrapper.setProperty(property, getDateValueToSet(value, property.getType(), property));
+				this.accessor.setProperty(property, getDateValueToSet(value, property.getType(), property));
 			}
 		}
 	}

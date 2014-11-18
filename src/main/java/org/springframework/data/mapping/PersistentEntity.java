@@ -170,4 +170,13 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @since 1.8
 	 */
 	<A extends Annotation> A findAnnotation(Class<A> annotationType);
+
+	/**
+	 * Returns a {@link PersistentPropertyAccessor} to access property values of the given bean.
+	 * 
+	 * @param bean must not be {@literal null}.
+	 * @return
+	 * @since 1.10
+	 */
+	PersistentPropertyAccessor getPropertyAccessor(Object bean);
 }

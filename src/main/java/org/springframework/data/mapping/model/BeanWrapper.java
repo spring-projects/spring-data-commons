@@ -19,48 +19,48 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Value object to allow creation of objects using the metamodel, setting and getting properties.
+ * Domain service to allow accessing the values of {@link PersistentProperty}s on a given bean.
  * 
  * @author Oliver Gierke
  */
-public class BeanWrapper<T> {
+public class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 	private final T bean;
-	private final ConversionService conversionService;
 
 	/**
-	 * Creates a new {@link BeanWrapper} for the given bean instance and {@link ConversionService}. If
-	 * {@link ConversionService} is {@literal null} no property type conversion will take place.
+	 * Creates a new {@link BeanWrapper} for the given bean and {@link ConversionService}.TODO: remove!
 	 * 
-	 * @param <T>
 	 * @param bean must not be {@literal null}.
 	 * @param conversionService can be {@literal null}.
 	 * @return
+	 * @deprecated use {@link PersistentEntity#getPropertyAccessor(Object)} instead. Will be removed in 1.10 RC1.
 	 */
+	@Deprecated
 	public static <T> BeanWrapper<T> create(T bean, ConversionService conversionService) {
-
-		Assert.notNull(bean, "Wrapped instance must not be null!");
-		return new BeanWrapper<T>(bean, conversionService);
-	}
-
-	private BeanWrapper(T bean, ConversionService conversionService) {
-
-		this.bean = bean;
-		this.conversionService = conversionService;
+		return new BeanWrapper<T>(bean);
 	}
 
 	/**
-	 * Sets the given {@link PersistentProperty} to the given value. Will do type conversion if a
-	 * {@link ConversionService} is configured.
+	 * Creates a new {@link BeanWrapper} for the given bean.
 	 * 
-	 * @param property must not be {@literal null}.
-	 * @param value can be {@literal null}.
-	 * @throws MappingException in case an exception occurred when setting the property value.
+	 * @param bean must not be {@literal null}.
+	 */
+	protected BeanWrapper(T bean) {
+
+		Assert.notNull(bean, "Bean must not be null!");
+		this.bean = bean;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentProperty, java.lang.Object)
 	 */
 	public void setProperty(PersistentProperty<?> property, Object value) {
 
@@ -72,16 +72,13 @@ public class BeanWrapper<T> {
 
 			if (!property.usePropertyAccess()) {
 
-				Object valueToSet = getPotentiallyConvertedValue(value, property.getType());
 				ReflectionUtils.makeAccessible(property.getField());
-				ReflectionUtils.setField(property.getField(), bean, valueToSet);
+				ReflectionUtils.setField(property.getField(), bean, value);
 
 			} else if (property.usePropertyAccess() && setter != null) {
 
-				Class<?>[] paramTypes = setter.getParameterTypes();
-				Object valueToSet = getPotentiallyConvertedValue(value, paramTypes[0]);
 				ReflectionUtils.makeAccessible(setter);
-				ReflectionUtils.invokeMethod(setter, bean, valueToSet);
+				ReflectionUtils.invokeMethod(setter, bean, value);
 			}
 
 		} catch (IllegalStateException e) {
@@ -89,12 +86,9 @@ public class BeanWrapper<T> {
 		}
 	}
 
-	/**
-	 * Returns the value of the given {@link PersistentProperty} of the underlying bean instance.
-	 * 
-	 * @param <S>
-	 * @param property must not be {@literal null}.
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
 	public Object getProperty(PersistentProperty<?> property) {
 		return getProperty(property, property.getType());
@@ -109,28 +103,28 @@ public class BeanWrapper<T> {
 	 * @return
 	 * @throws MappingException in case an exception occured when accessing the property.
 	 */
+	@SuppressWarnings("unchecked")
 	public <S> S getProperty(PersistentProperty<?> property, Class<? extends S> type) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
 		try {
 
-			Object obj = null;
 			Method getter = property.getGetter();
 
 			if (!property.usePropertyAccess()) {
 
 				Field field = property.getField();
 				ReflectionUtils.makeAccessible(field);
-				obj = ReflectionUtils.getField(field, bean);
+				return (S) ReflectionUtils.getField(field, bean);
 
 			} else if (property.usePropertyAccess() && getter != null) {
 
 				ReflectionUtils.makeAccessible(getter);
-				obj = ReflectionUtils.invokeMethod(getter, bean);
+				return (S) ReflectionUtils.invokeMethod(getter, bean);
+			} else {
+				return null;
 			}
-
-			return getPotentiallyConvertedValue(obj, type);
 
 		} catch (IllegalStateException e) {
 			throw new MappingException(String.format("Could not read property %s of %s!", property.toString(),
@@ -138,30 +132,9 @@ public class BeanWrapper<T> {
 		}
 	}
 
-	/**
-	 * Converts the given source value if it is not assignable to the given target type.
-	 * 
-	 * @param source can be {@literal null}.
-	 * @param targetType can be {@literal null}.
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	private <S> S getPotentiallyConvertedValue(Object source, Class<S> targetType) {
-
-		boolean conversionServiceAvailable = conversionService != null;
-		boolean conversionNeeded = source == null || !targetType.isAssignableFrom(source.getClass());
-
-		if (conversionServiceAvailable && conversionNeeded) {
-			return conversionService.convert(source, targetType);
-		}
-
-		return (S) source;
-	}
-
-	/**
-	 * Returns the underlying bean instance.
-	 * 
-	 * @return will never be {@literal null}.
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getBean()
 	 */
 	public T getBean() {
 		return bean;

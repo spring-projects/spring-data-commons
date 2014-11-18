@@ -17,7 +17,7 @@ package org.springframework.data.mapping.context;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
@@ -95,8 +95,8 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		 */
 		public boolean isNew(Object entity) {
 
-			BeanWrapper<Object> wrapper = BeanWrapper.create(entity, null);
-			Object propertyValue = wrapper.getProperty(property);
+			PersistentPropertyAccessor accessor = property.getOwner().getPropertyAccessor(entity);
+			Object propertyValue = accessor.getProperty(property);
 
 			return decideIsNew(propertyValue);
 		}
