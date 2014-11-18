@@ -18,7 +18,7 @@ package org.springframework.data.repository.config;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.NamespaceHandler;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
-import org.springframework.data.repository.inmemory.repository.config.InMemoryRepositoryConfigurationExtension;
+import org.springframework.data.keyvalue.repository.config.KeyValueRepositoryConfigurationExtension;
 
 /**
  * {@link NamespaceHandler} to register {@link BeanDefinitionParser}s for repository initializers.
@@ -41,7 +41,7 @@ public class RepositoryNameSpaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("jackson-populator", PARSER);
 		registerBeanDefinitionParser("jackson2-populator", PARSER);
 
-		RepositoryConfigurationExtension extension = new InMemoryRepositoryConfigurationExtension();
+		KeyValueRepositoryConfigurationExtension extension = new KeyValueRepositoryConfigurationExtension();
 		RepositoryBeanDefinitionParser repositoryBeanDefinitionParser = new RepositoryBeanDefinitionParser(extension);
 		registerBeanDefinitionParser("repositories", repositoryBeanDefinitionParser);
 	}

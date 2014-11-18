@@ -17,9 +17,11 @@ package org.springframework.data.keyvalue.ehcache;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import net.sf.ehcache.Cache;
 import net.sf.ehcache.search.Attribute;
 import net.sf.ehcache.search.Direction;
 import net.sf.ehcache.search.Query;
@@ -50,6 +52,10 @@ public class EhCacheQueryEngine extends QueryEngine<EhCacheKeyValueAdapter, Crit
 			Serializable keyspace) {
 
 		Query cacheQuery = prepareQuery(criteria, sort, keyspace);
+		if (cacheQuery == null) {
+			return Collections.emptyList();
+		}
+
 		Results result = cacheQuery.execute();
 
 		ListConverter<Result, Object> listConc = new ListConverter<Result, Object>(ResultConverter.INSTANCE);
@@ -64,12 +70,21 @@ public class EhCacheQueryEngine extends QueryEngine<EhCacheKeyValueAdapter, Crit
 	public long count(Criteria criteria, Serializable keyspace) {
 
 		Query q = prepareQuery(criteria, null, keyspace);
+		if (q == null) {
+			return 0;
+		}
+
 		return q.execute().size();
 	}
 
 	private Query prepareQuery(Criteria criteria, Map<Attribute<?>, Direction> sort, Serializable keyspace) {
 
-		Query cacheQuery = getAdapter().getCache(keyspace).createQuery().includeValues();
+		Cache cache = getAdapter().getCache(keyspace);
+		if (cache == null) {
+			return null;
+		}
+
+		Query cacheQuery = cache.createQuery().includeValues();
 
 		if (criteria != null) {
 			cacheQuery.addCriteria(criteria);

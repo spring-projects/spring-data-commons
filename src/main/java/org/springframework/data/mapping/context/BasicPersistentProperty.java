@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory;
+package org.springframework.data.mapping.context;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -28,6 +28,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  * Most trivial implementation of {@link PersistentProperty}.
  * 
  * @author Christoph Strobl
+ * @since 1.10
  */
 public class BasicPersistentProperty extends AnnotationBasedPersistentProperty<BasicPersistentProperty> {
 

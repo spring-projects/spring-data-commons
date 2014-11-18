@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.inmemory.hazelcast;
+package org.springframework.data.keyvalue.hazelcast;
 
 import org.springframework.data.keyvalue.hazelcast.HazelcastKeyValueAdapter;
 
@@ -33,10 +33,6 @@ public class HazelcastUtils {
 		hazelcastConfig.getNetworkConfig().getJoin().getAwsConfig().setEnabled(false);
 
 		return hazelcastConfig;
-	}
-
-	static HazelcastAdapter preconfiguredHazelcastAdapter() {
-		return new HazelcastAdapter(Hazelcast.newHazelcastInstance(hazelcastConfig()));
 	}
 
 	public static HazelcastKeyValueAdapter preconfiguredHazelcastKeyValueAdapter() {

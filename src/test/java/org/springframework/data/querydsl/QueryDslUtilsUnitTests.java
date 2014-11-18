@@ -24,8 +24,8 @@ import org.junit.Test;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.NullHandling;
-import org.springframework.data.repository.inmemory.Person;
-import org.springframework.data.repository.inmemory.QPerson;
+import org.springframework.data.keyvalue.Person;
+import org.springframework.data.keyvalue.QPerson;
 
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.OrderSpecifier;

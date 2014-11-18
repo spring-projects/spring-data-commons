@@ -31,9 +31,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.BasicMappingContext;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.BeanWrapper;
-import org.springframework.data.repository.inmemory.BasicMappingContext;
 import org.springframework.data.util.MetaAnnotationUtils;
 import org.springframework.data.util.MetaAnnotationUtils.AnnotationDescriptor;
 import org.springframework.util.Assert;
@@ -288,7 +288,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public <T> T execute(KeyValueCallback<T> action) {
 
-		Assert.notNull(action, "InMemoryCallback must not be 'null'.");
+		Assert.notNull(action, "KeyValueCallback must not be 'null'.");
 
 		try {
 			return action.doInKeyValue(this.adapter);

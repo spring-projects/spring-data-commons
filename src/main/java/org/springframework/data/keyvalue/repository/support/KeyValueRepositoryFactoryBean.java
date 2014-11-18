@@ -23,6 +23,7 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 
 /**
  * {@link org.springframework.beans.factory.FactoryBean} to create {@link KeyValueRepository}.
@@ -35,6 +36,7 @@ public class KeyValueRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ex
 
 	private KeyValueOperations operations;
 	private boolean mappingContextAvailable = false;
+	private Class<? extends AbstractQueryCreator<?, ?>> queryCreator;
 
 	public void setKeyValueOperations(KeyValueOperations operations) {
 		this.operations = operations;
@@ -51,13 +53,17 @@ public class KeyValueRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ex
 		this.mappingContextAvailable = mappingContext != null;
 	}
 
+	public void setQueryCreator(Class<? extends AbstractQueryCreator<?, ?>> queryCreator) {
+		this.queryCreator = queryCreator;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#createRepositoryFactory()
 	 */
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
-		return new KeyValueRepositoryFactory(this.operations);
+		return new KeyValueRepositoryFactory(this.operations, this.queryCreator);
 	}
 
 	/*

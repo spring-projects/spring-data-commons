@@ -21,7 +21,7 @@ import org.springframework.data.repository.config.RepositoryBeanDefinitionRegist
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 
 /**
- * In memory specific {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
+ * KeyValue specific {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
  * 
  * @author Christoph Strobl
  * @since 1.10

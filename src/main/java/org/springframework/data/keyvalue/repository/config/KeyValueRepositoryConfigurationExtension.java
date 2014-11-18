@@ -27,7 +27,6 @@ import org.springframework.data.repository.config.AnnotationRepositoryConfigurat
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
-import org.springframework.data.repository.inmemory.InMemoryRepository;
 
 /**
  * {@link RepositoryConfigurationExtension} for {@link KeyValueRepository}.
@@ -72,7 +71,7 @@ public class KeyValueRepositoryConfigurationExtension extends RepositoryConfigur
 	 */
 	@Override
 	protected Collection<Class<?>> getIdentifyingTypes() {
-		return Collections.<Class<?>> singleton(InMemoryRepository.class);
+		return Collections.<Class<?>> singleton(KeyValueRepository.class);
 	}
 
 	/*
@@ -84,6 +83,7 @@ public class KeyValueRepositoryConfigurationExtension extends RepositoryConfigur
 
 		AnnotationAttributes attributes = config.getAttributes();
 		builder.addPropertyReference("keyValueOperations", attributes.getString("keyValueTemplateRef"));
+		builder.addPropertyValue("queryCreator", attributes.getClass("queryCreator"));
 
 		if (mappingContextAvailable) {
 			builder.addPropertyReference("mappingContext", "keyValueMappingContext");

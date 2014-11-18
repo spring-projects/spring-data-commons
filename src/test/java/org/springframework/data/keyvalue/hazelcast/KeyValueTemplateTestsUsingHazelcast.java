@@ -40,7 +40,6 @@ import org.springframework.data.annotation.KeySpace;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.keyvalue.core.KeyValueTemplate;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
-import org.springframework.data.repository.inmemory.hazelcast.HazelcastUtils;
 import org.springframework.util.ObjectUtils;
 
 import com.hazelcast.query.Predicate;
