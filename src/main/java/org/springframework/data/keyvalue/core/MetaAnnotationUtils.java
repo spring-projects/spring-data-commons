@@ -49,7 +49,7 @@ import org.springframework.util.ObjectUtils;
  * @see AnnotationUtils
  * @see AnnotationDescriptor
  */
-public abstract class MetaAnnotationUtils {
+abstract class MetaAnnotationUtils {
 
 	private MetaAnnotationUtils() {
 		/* no-op */
@@ -158,7 +158,6 @@ public abstract class MetaAnnotationUtils {
 	 * @see AnnotationUtils#findAnnotationDeclaringClassForTypes(java.util.List, Class)
 	 * @see #findAnnotationDescriptor(Class, Class)
 	 */
-	@SuppressWarnings("unchecked")
 	public static UntypedAnnotationDescriptor findAnnotationDescriptorForTypes(Class<?> clazz,
 			Class<? extends Annotation>... annotationTypes) {
 		return findAnnotationDescriptorForTypes(clazz, new HashSet<Annotation>(), annotationTypes);
@@ -173,7 +172,6 @@ public abstract class MetaAnnotationUtils {
 	 * @param annotationTypes the types of annotations to look for
 	 * @return the corresponding annotation descriptor if one of the annotations was found; otherwise {@code null}
 	 */
-	@SuppressWarnings("unchecked")
 	private static UntypedAnnotationDescriptor findAnnotationDescriptorForTypes(Class<?> clazz, Set<Annotation> visited,
 			Class<? extends Annotation>... annotationTypes) {
 

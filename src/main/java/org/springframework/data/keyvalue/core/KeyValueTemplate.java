@@ -34,7 +34,6 @@ import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -43,15 +42,15 @@ import org.springframework.util.StringUtils;
  * Basic implementation of {@link KeyValueOperations}.
  * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.10
  */
 public class KeyValueTemplate implements KeyValueOperations {
 
 	private final KeyValueAdapter adapter;
-	private ConcurrentHashMap<Class<?>, String> keySpaceCache = new ConcurrentHashMap<Class<?>, String>();
-
-	@SuppressWarnings("rawtypes")//
-	private MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext;
+	private final ConcurrentHashMap<Class<?>, String> keySpaceCache = new ConcurrentHashMap<Class<?>, String>();
+	private final MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty<?>>, ? extends PersistentProperty<?>> mappingContext;
+	private final IdentifierGenerator identifierGenerator;
 
 	/**
 	 * Create new {@link KeyValueTemplate} using the given {@link KeyValueAdapter} with a default
@@ -79,22 +78,23 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 		this.adapter = adapter;
 		this.mappingContext = mappingContext;
+		this.identifierGenerator = DefaultIdentifierGenerator.INSTANCE;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#insert(java.lang.Object)
 	 */
-	@SuppressWarnings("rawtypes")
 	@Override
 	public <T> T insert(T objectToInsert) {
 
-		PersistentEntity<?, ? extends PersistentProperty> entity = this.mappingContext.getPersistentEntity(ClassUtils
-				.getUserClass(objectToInsert));
+		PersistentEntity<?, ?> entity = this.mappingContext.getPersistentEntity(ClassUtils.getUserClass(objectToInsert));
 
-		Serializable id = new IdAccessor(entity, BeanWrapper.create(objectToInsert, null)).getId();
+		GeneratingIdAccessor generatingIdAccessor = new GeneratingIdAccessor(entity.getPropertyAccessor(objectToInsert),
+				entity.getIdProperty(), identifierGenerator);
+		Object id = generatingIdAccessor.getOrGenerateId();
 
-		insert(id, objectToInsert);
+		insert((Serializable) id, objectToInsert);
 		return objectToInsert;
 	}
 
@@ -141,8 +141,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 					ClassUtils.getUserClass(objectToUpdate)));
 		}
 
-		Serializable id = BeanWrapper.create(objectToUpdate, null).getProperty(entity.getIdProperty(), Serializable.class);
-		update(id, objectToUpdate);
+		update((Serializable) entity.getIdentifierAccessor(objectToUpdate).getIdentifier(), objectToUpdate);
 	}
 
 	/*
@@ -169,7 +168,6 @@ public class KeyValueTemplate implements KeyValueOperations {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#findAllOf(java.lang.Class)
 	 */
-	@SuppressWarnings("rawtypes")
 	@Override
 	public <T> List<T> findAllOf(final Class<T> type) {
 
@@ -200,10 +198,9 @@ public class KeyValueTemplate implements KeyValueOperations {
 	}
 
 	/*
-	 *(non-Javadoc)
+	 * (non-Javadoc)
 	 * @see org.springframework.data.keyvalue.core.KeyValueOperations#findById(java.io.Serializable, java.lang.Class)
 	 */
-	@SuppressWarnings("rawtypes")
 	@Override
 	public <T> T findById(final Serializable id, final Class<T> type) {
 
@@ -260,8 +257,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 		Class<T> type = (Class<T>) ClassUtils.getUserClass(objectToDelete);
 		PersistentEntity<?, ? extends PersistentProperty> entity = this.mappingContext.getPersistentEntity(type);
 
-		Serializable id = new IdAccessor(entity, BeanWrapper.create(objectToDelete, null)).getId();
-		return delete(id, type);
+		return delete((Serializable) entity.getIdentifierAccessor(objectToDelete).getIdentifier(), type);
 	}
 
 	/*
