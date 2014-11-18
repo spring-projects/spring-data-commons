@@ -108,7 +108,7 @@ public class KeyValueTemplateUnitTests {
 		assertThat(target.id, notNullValue());
 	}
 
-	@Test(expected = InvalidDataAccessApiUsageException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void insertShouldThrowErrorWhenIdCannotBeResolved() {
 		template.insert(FOO_ONE);
 	}
@@ -238,7 +238,7 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).delete("some-id", ClassWithStringId.class.getName());
 	}
 
-	@Test(expected = InvalidDataAccessApiUsageException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void deleteThrowsExceptionWhenIdCannotBeExctracted() {
 		template.delete(FOO_ONE);
 	}

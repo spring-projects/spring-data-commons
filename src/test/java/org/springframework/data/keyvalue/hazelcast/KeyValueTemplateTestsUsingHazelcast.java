@@ -202,7 +202,7 @@ public class KeyValueTemplateTestsUsingHazelcast {
 		assertThat(operations.delete("1", Foo.class), is(FOO_ONE));
 	}
 
-	@Test(expected = InvalidDataAccessApiUsageException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void deleteThrowsExceptionWhenIdCannotBeExctracted() {
 		operations.delete(FOO_ONE);
 	}
