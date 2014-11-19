@@ -46,6 +46,7 @@ import org.springframework.util.StringUtils;
  * @author Jon Brisbin
  * @author Patryk Wasik
  * @author Thomas Darimont
+ * @author John Blum
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
@@ -372,7 +373,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public PersistentPropertyAccessor getPropertyAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
-		Assert.isTrue(getType().equals(bean.getClass()), "Target bean is not of type of the persistent entity!");
+		Assert.isTrue(getType().isAssignableFrom(bean.getClass()), "Target bean is not of type of the persistent entity!");
 
 		return new BeanWrapper<Object>(bean);
 	}

@@ -210,6 +210,19 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		entity.getPropertyAccessor("foo");
 	}
 
+  @Test
+  public void acceptsInheritedBeanForPropertyAccessor() {
+
+    SampleMappingContext context = new SampleMappingContext();
+    PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+
+    SubEntity value = new SubEntity();
+    PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
+
+    assertThat(accessor, is(instanceOf(BeanWrapper.class)));
+    assertThat(accessor.getBean(), is((Object) value));
+  }
+
 	private BasicPersistentEntity<Person, T> createEntity(Comparator<T> comparator) {
 		return new BasicPersistentEntity<Person, T>(ClassTypeInformation.from(Person.class), comparator);
 	}
@@ -232,4 +245,8 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 			return property;
 		}
 	}
+
+  static class SubEntity extends Entity {
+  }
+
 }
