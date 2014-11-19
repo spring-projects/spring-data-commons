@@ -210,6 +210,18 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		entity.getPropertyAccessor("foo");
 	}
 
+	/**
+	 * @see DATACMNS-597
+	 */
+	@Test
+	public void supportsSubtypeInstancesOnPropertyAccessorLookup() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+
+		assertThat(entity.getPropertyAccessor(new Subtype()), is(notNullValue()));
+	}
+
 	private BasicPersistentEntity<Person, T> createEntity(Comparator<T> comparator) {
 		return new BasicPersistentEntity<Person, T>(ClassTypeInformation.from(Person.class), comparator);
 	}
@@ -232,4 +244,6 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 			return property;
 		}
 	}
+
+	static class Subtype extends Entity {}
 }
