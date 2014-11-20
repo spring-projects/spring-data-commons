@@ -385,7 +385,6 @@ public class KeyValueTemplate implements KeyValueOperations {
 		return this.mappingContext;
 	}
 
-	@SuppressWarnings({ "rawtypes" })
 	protected String resolveKeySpace(Class<?> type) {
 
 		Class<?> userClass = ClassUtils.getUserClass(type);
@@ -419,7 +418,11 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 	Object getKeySpace(Class<?> type) {
 
-		// TODO: should we consider caching here as this is a rather expensive lookup
+		KeySpace keyspace = AnnotationUtils.findAnnotation(type, KeySpace.class);
+		if (keyspace != null) {
+			return AnnotationUtils.getValue(keyspace);
+		}
+
 		AnnotationDescriptor<Persistent> descriptor = MetaAnnotationUtils.findAnnotationDescriptor(type, Persistent.class);
 
 		if (descriptor != null && descriptor.getComposedAnnotation() != null) {
@@ -428,9 +431,9 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 			for (Method method : descriptor.getComposedAnnotationType().getDeclaredMethods()) {
 
-				KeySpace ks = AnnotationUtils.findAnnotation(method, KeySpace.class);
+				keyspace = AnnotationUtils.findAnnotation(method, KeySpace.class);
 
-				if (ks != null) {
+				if (keyspace != null) {
 					return AnnotationUtils.getValue(composed, method.getName());
 				}
 			}

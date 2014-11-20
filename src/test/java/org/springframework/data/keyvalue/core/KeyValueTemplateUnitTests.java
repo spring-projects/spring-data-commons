@@ -324,6 +324,11 @@ public class KeyValueTemplateUnitTests {
 		assertThat(template.getKeySpace(EntityWithInheritedKeySpace.class), Is.<Object> is("viserys"));
 	}
 
+	@Test
+	public void shouldResolveDirectKeySpaceAnnotationCorrectly() {
+		assertThat(template.getKeySpace(ClassWithDirectKeySpaceAnnotation.class), Is.<Object> is("rhaegar"));
+	}
+
 	static class Foo implements Serializable {
 
 		String foo;
@@ -516,6 +521,11 @@ public class KeyValueTemplateUnitTests {
 
 	@TypeAlias("foo")
 	static class AliasedEntity {
+
+	}
+
+	@KeySpace("rhaegar")
+	static class ClassWithDirectKeySpaceAnnotation {
 
 	}
 

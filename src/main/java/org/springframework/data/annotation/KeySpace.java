@@ -46,7 +46,8 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = { METHOD })
+@Target(value = { METHOD, TYPE })
 public @interface KeySpace {
 
+	String value() default "";
 }
