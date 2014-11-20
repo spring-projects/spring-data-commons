@@ -66,6 +66,25 @@ public class KeyValueTemplateUnitTests {
 		this.template = new KeyValueTemplate(adapterMock);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldThrowExceptionWhenCreatingNewTempateWithNullAdapter() {
+		new KeyValueTemplate(null);
+	}
+
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldThrowExceptionWhenCreatingNewTempateWithNullMappingContext() {
+		new KeyValueTemplate(adapterMock, null);
+	}
+
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldLookUpValuesBeforeInserting() {
 
@@ -74,6 +93,9 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).contains("1", Foo.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldInsertUseClassNameAsDefaultKeyspace() {
 
@@ -82,6 +104,9 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).put("1", FOO_ONE, Foo.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void insertShouldThrowExceptionWhenObectWithIdAlreadyExists() {
 
@@ -90,16 +115,25 @@ public class KeyValueTemplateUnitTests {
 		template.insert("1", FOO_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void insertShouldThrowExceptionForNullId() {
 		template.insert(null, FOO_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void insertShouldThrowExceptionForNullObject() {
 		template.insert("some-id", null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldGenerateId() {
 
@@ -108,11 +142,17 @@ public class KeyValueTemplateUnitTests {
 		assertThat(target.id, notNullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void insertShouldThrowErrorWhenIdCannotBeResolved() {
 		template.insert(FOO_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldReturnSameInstanceGenerateId() {
 
@@ -122,6 +162,9 @@ public class KeyValueTemplateUnitTests {
 		assertThat(target, sameInstance(source));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldRespectExistingId() {
 
@@ -133,11 +176,17 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).put("one", source, ClassWithStringId.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findByIdShouldReturnNullWhenNoElementsPresent() {
 		assertNull(template.findById("1", Foo.class));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findByIdShouldReturnObjectWithMatchingIdAndType() {
 
@@ -146,11 +195,17 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).get("1", Foo.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void findByIdShouldThrowExceptionWhenGivenNullId() {
 		template.findById((Serializable) null, Foo.class);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findAllOfShouldReturnEntireCollection() {
 
@@ -159,11 +214,17 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).getAllOf(Foo.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void findAllOfShouldThrowExceptionWhenGivenNullType() {
 		template.findAllOf(null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findShouldCallFindOnAdapterToResolveMatching() {
 
@@ -172,7 +233,11 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).find(STRING_QUERY, Foo.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void findInRangeShouldRespectOffset() {
 
 		ArgumentCaptor<KeyValueQuery> captor = ArgumentCaptor.forClass(KeyValueQuery.class);
@@ -185,6 +250,9 @@ public class KeyValueTemplateUnitTests {
 		assertThat(captor.getValue().getCritieria(), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void updateShouldReplaceExistingObject() {
 
@@ -193,16 +261,25 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).put("1", FOO_TWO, Foo.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void updateShouldThrowExceptionWhenGivenNullId() {
 		template.update(null, FOO_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void updateShouldThrowExceptionWhenGivenNullObject() {
 		template.update("1", null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void updateShouldUseExtractedIdInformation() {
 
@@ -214,11 +291,17 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).put(source.id, source, ClassWithStringId.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void updateShouldThrowErrorWhenIdInformationCannotBeExtracted() {
 		template.update(FOO_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteShouldRemoveObjectCorrectly() {
 
@@ -227,6 +310,9 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).delete("1", Foo.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteRemovesObjectUsingExtractedId() {
 
@@ -238,17 +324,27 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).delete("some-id", ClassWithStringId.class.getName());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void deleteThrowsExceptionWhenIdCannotBeExctracted() {
 		template.delete(FOO_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void countShouldReturnZeroWhenNoElementsPresent() {
 		template.count(Foo.class);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void countShouldReturnCollectionSize() {
 
 		Collection foo = Arrays.asList(FOO_ONE, FOO_ONE);
@@ -257,11 +353,17 @@ public class KeyValueTemplateUnitTests {
 		assertThat(template.count(Foo.class), is(2L));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void countShouldThrowErrorOnNullType() {
 		template.count(null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldRespectTypeAlias() {
 
@@ -270,6 +372,9 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).put("1", ALIASED, "aliased");
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldRespectTypeAliasOnSubClass() {
 
@@ -278,6 +383,10 @@ public class KeyValueTemplateUnitTests {
 		verify(adapterMock, times(1)).put("1", SUBCLASS_OF_ALIASED, "aliased");
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void findAllOfShouldRespectTypeAliasAndFilterNonMatchingTypes() {
 
@@ -287,6 +396,9 @@ public class KeyValueTemplateUnitTests {
 		assertThat(template.findAllOf(SUBCLASS_OF_ALIASED.getClass()), containsInAnyOrder(SUBCLASS_OF_ALIASED));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertSouldRespectTypeAliasAndFilterNonMatching() {
 
@@ -294,42 +406,63 @@ public class KeyValueTemplateUnitTests {
 		assertThat(template.findById("1", SUBCLASS_OF_ALIASED.getClass()), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldResolveKeySpaceDefaultValueCorrectly() {
 		assertThat(template.getKeySpace(EntityWithDefaultKeySpace.class), Is.<Object> is("daenerys"));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldResolveKeySpaceCorrectly() {
 		assertThat(template.getKeySpace(EntityWithSetKeySpace.class), Is.<Object> is("viserys"));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldReturnNullWhenNoKeySpaceFoundOnComposedPersistentAnnotation() {
 		assertThat(template.getKeySpace(AliasedEntity.class), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldReturnNullWhenPersistentIsFoundOnNonComposedAnnotation() {
 		assertThat(template.getKeySpace(EntityWithPersistentAnnotation.class), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldReturnNullWhenPersistentIsNotFound() {
 		assertThat(template.getKeySpace(Foo.class), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldResolveInheritedKeySpaceCorrectly() {
 		assertThat(template.getKeySpace(EntityWithInheritedKeySpace.class), Is.<Object> is("viserys"));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldResolveDirectKeySpaceAnnotationCorrectly() {
 		assertThat(template.getKeySpace(ClassWithDirectKeySpaceAnnotation.class), Is.<Object> is("rhaegar"));
 	}
 
-	static class Foo implements Serializable {
+	static class Foo {
 
 		String foo;
 
@@ -363,7 +496,7 @@ public class KeyValueTemplateUnitTests {
 
 	}
 
-	static class Bar implements Serializable {
+	static class Bar {
 
 		String bar;
 
@@ -397,7 +530,7 @@ public class KeyValueTemplateUnitTests {
 
 	}
 
-	static class ClassWithStringId implements Serializable {
+	static class ClassWithStringId {
 
 		@Id String id;
 		String value;
@@ -435,7 +568,7 @@ public class KeyValueTemplateUnitTests {
 	}
 
 	@ExplicitKeySpace(name = "aliased")
-	static class ClassWithTypeAlias implements Serializable {
+	static class ClassWithTypeAlias {
 
 		@Id String id;
 		String name;

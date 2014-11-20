@@ -46,16 +46,25 @@ public class QueryDslUtilsUnitTests {
 		this.builder = new PathBuilder<Person>(path.getType(), path.getMetadata());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void toOrderSpecifierThrowsExceptioOnNullPathBuilder() {
 		QueryDslUtils.toOrderSpecifier(new Sort("firstname"), null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void toOrderSpecifierReturnsEmptyArrayWhenSortIsNull() {
 		assertThat(QueryDslUtils.toOrderSpecifier(null, builder), arrayWithSize(0));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void toOrderSpecifierConvertsSimpleAscSortCorrectly() {
 
@@ -66,6 +75,9 @@ public class QueryDslUtilsUnitTests {
 		assertThat(specifiers, IsArrayContainingInOrder.<OrderSpecifier<?>> arrayContaining(QPerson.person.firstname.asc()));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void toOrderSpecifierConvertsSimpleDescSortCorrectly() {
 
@@ -77,6 +89,9 @@ public class QueryDslUtilsUnitTests {
 				IsArrayContainingInOrder.<OrderSpecifier<?>> arrayContaining(QPerson.person.firstname.desc()));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void toOrderSpecifierConvertsSortCorrectlyAndRetainsArgumentOrder() {
 
@@ -88,6 +103,9 @@ public class QueryDslUtilsUnitTests {
 				QPerson.person.firstname.desc(), QPerson.person.age.asc()));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void toOrderSpecifierConvertsSortWithNullHandlingCorrectly() {
 

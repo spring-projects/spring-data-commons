@@ -33,6 +33,9 @@ import org.springframework.core.CollectionFactory;
  */
 public class MapKeyValueAdapterFactoryUnitTests {
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldDefaultToConcurrentHashMapWhenTypeIsNull() {
 
@@ -40,6 +43,9 @@ public class MapKeyValueAdapterFactoryUnitTests {
 				instanceOf(ConcurrentHashMap.class));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldDefaultToCollecitonUtilsDefaultForInterfaceTypes() {
 
@@ -47,6 +53,9 @@ public class MapKeyValueAdapterFactoryUnitTests {
 				instanceOf(CollectionFactory.createMap(Map.class, 0).getClass()));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldUseConcreteMapTypeWhenInstantiable() {
 
@@ -54,6 +63,9 @@ public class MapKeyValueAdapterFactoryUnitTests {
 				instanceOf(CollectionFactory.createMap(ConcurrentSkipListMap.class, 0).getClass()));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldPopulateAdapterWithValues() {
 
@@ -65,11 +77,17 @@ public class MapKeyValueAdapterFactoryUnitTests {
 		assertThat((String) factory.getAdapter().get("1", "bar"), equalTo("ROBERT"));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void shouldThrowExceptionWhenSettingValuesForNullKeySpace() {
 		new MapKeyValueAdapterFactory().setInitialValuesForKeyspace(null, Collections.<Serializable, Object> emptyMap());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void shouldThrowExceptionWhenSettingNullValuesForKeySpace() {
 		new MapKeyValueAdapterFactory().setInitialValuesForKeyspace("foo", null);

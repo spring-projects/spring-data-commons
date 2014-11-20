@@ -52,6 +52,9 @@ public class KeyValueRepositoryRegistrarUnitTests {
 
 	@Autowired PersonRepository repo;
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldEnableKeyValueRepositoryCorrectly() {
 		assertThat(repo, notNullValue());

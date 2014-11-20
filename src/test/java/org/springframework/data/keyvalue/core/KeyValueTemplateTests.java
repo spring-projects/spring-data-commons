@@ -68,21 +68,33 @@ public class KeyValueTemplateTests {
 		this.operations.destroy();
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldNotThorwErrorWhenExecutedHavingNonExistingIdAndNonNullValue() {
 		operations.insert("1", FOO_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void insertShouldThrowExceptionForNullId() {
 		operations.insert(null, FOO_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void insertShouldThrowExceptionForNullObject() {
 		operations.insert("some-id", null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void insertShouldThrowExecptionWhenObjectOfSameTypeAlreadyExists() {
 
@@ -90,6 +102,9 @@ public class KeyValueTemplateTests {
 		operations.insert("1", FOO_TWO);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldWorkCorrectlyWhenObjectsOfDifferentTypesWithSameIdAreInserted() {
 
@@ -97,6 +112,9 @@ public class KeyValueTemplateTests {
 		operations.insert("1", BAR_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void createShouldReturnSameInstanceGenerateId() {
 
@@ -106,6 +124,9 @@ public class KeyValueTemplateTests {
 		assertThat(target, sameInstance(source));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void createShouldRespectExistingId() {
 
@@ -117,6 +138,9 @@ public class KeyValueTemplateTests {
 		assertThat(operations.findById("one", ClassWithStringId.class), is(source));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findByIdShouldReturnObjectWithMatchingIdAndType() {
 
@@ -124,6 +148,9 @@ public class KeyValueTemplateTests {
 		assertThat(operations.findById("1", Foo.class), is(FOO_ONE));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findByIdSouldReturnNullIfNoMatchingIdFound() {
 
@@ -131,6 +158,9 @@ public class KeyValueTemplateTests {
 		assertThat(operations.findById("2", Foo.class), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findByIdShouldReturnNullIfNoMatchingTypeFound() {
 
@@ -138,6 +168,9 @@ public class KeyValueTemplateTests {
 		assertThat(operations.findById("1", Bar.class), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findShouldExecuteQueryCorrectly() {
 
@@ -149,6 +182,9 @@ public class KeyValueTemplateTests {
 		assertThat(result.get(0), is(FOO_TWO));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void readShouldReturnEmptyCollectionIfOffsetOutOfRange() {
 
@@ -159,6 +195,9 @@ public class KeyValueTemplateTests {
 		assertThat(operations.findInRange(5, 5, Foo.class), empty());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void updateShouldReplaceExistingObject() {
 
@@ -167,6 +206,9 @@ public class KeyValueTemplateTests {
 		assertThat(operations.findById("1", Foo.class), is(FOO_TWO));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void updateShouldRespectTypeInformation() {
 
@@ -176,6 +218,9 @@ public class KeyValueTemplateTests {
 		assertThat(operations.findById("1", Foo.class), is(FOO_ONE));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteShouldRemoveObjectCorrectly() {
 
@@ -184,6 +229,9 @@ public class KeyValueTemplateTests {
 		assertThat(operations.findById("1", Foo.class), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteReturnsNullWhenNotExisting() {
 
@@ -191,6 +239,9 @@ public class KeyValueTemplateTests {
 		assertThat(operations.delete("2", Foo.class), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteReturnsRemovedObject() {
 
@@ -198,16 +249,25 @@ public class KeyValueTemplateTests {
 		assertThat(operations.delete("1", Foo.class), is(FOO_ONE));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void deleteThrowsExceptionWhenIdCannotBeExctracted() {
 		operations.delete(FOO_ONE);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void countShouldReturnZeroWhenNoElementsPresent() {
 		assertThat(operations.count(Foo.class), is(0L));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void insertShouldRespectTypeAlias() {
 
@@ -218,6 +278,8 @@ public class KeyValueTemplateTests {
 	}
 
 	static class Foo implements Serializable {
+
+		private static final long serialVersionUID = -8912754229220128922L;
 
 		String foo;
 
@@ -253,6 +315,7 @@ public class KeyValueTemplateTests {
 
 	static class Bar implements Serializable {
 
+		private static final long serialVersionUID = 196011921826060210L;
 		String bar;
 
 		public Bar(String bar) {
@@ -287,6 +350,7 @@ public class KeyValueTemplateTests {
 
 	static class ClassWithStringId implements Serializable {
 
+		private static final long serialVersionUID = -7481030649267602830L;
 		@Id String id;
 		String value;
 
@@ -325,6 +389,7 @@ public class KeyValueTemplateTests {
 	@ExplicitKeySpace(name = "aliased")
 	static class ClassWithTypeAlias implements Serializable {
 
+		private static final long serialVersionUID = -5921943364908784571L;
 		@Id String id;
 		String name;
 
@@ -381,6 +446,8 @@ public class KeyValueTemplateTests {
 	}
 
 	static class SubclassOfAliasedType extends ClassWithTypeAlias {
+
+		private static final long serialVersionUID = -468809596668871479L;
 
 		public SubclassOfAliasedType(String name) {
 			super(name);

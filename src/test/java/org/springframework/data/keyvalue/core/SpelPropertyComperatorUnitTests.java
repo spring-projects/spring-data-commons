@@ -32,6 +32,9 @@ public class SpelPropertyComperatorUnitTests {
 	private static final WrapperType WRAPPER_ONE = new WrapperType("w-one", ONE);
 	private static final WrapperType WRAPPER_TWO = new WrapperType("w-two", TWO);
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldCompareStringAscCorrectly() {
 
@@ -39,6 +42,9 @@ public class SpelPropertyComperatorUnitTests {
 				.compareTo(TWO.getStringProperty())));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldCompareStringDescCorrectly() {
 
@@ -46,6 +52,9 @@ public class SpelPropertyComperatorUnitTests {
 				.getStringProperty().compareTo(ONE.getStringProperty())));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldCompareIntegerAscCorrectly() {
 
@@ -53,6 +62,9 @@ public class SpelPropertyComperatorUnitTests {
 				.compareTo(TWO.getIntegerProperty())));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldCompareIntegerDescCorrectly() {
 
@@ -60,6 +72,9 @@ public class SpelPropertyComperatorUnitTests {
 				.getIntegerProperty().compareTo(ONE.getIntegerProperty())));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldComparePrimitiveIntegerAscCorrectly() {
 
@@ -67,11 +82,17 @@ public class SpelPropertyComperatorUnitTests {
 				is(Integer.valueOf(ONE.getPrimitiveProperty()).compareTo(Integer.valueOf(TWO.getPrimitiveProperty()))));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldNotFailOnNullValues() {
 		new SpelPropertyComperator<SomeType>("stringProperty").compare(ONE, new SomeType(null, null, 2));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldComparePrimitiveIntegerDescCorrectly() {
 
@@ -79,6 +100,9 @@ public class SpelPropertyComperatorUnitTests {
 				is(Integer.valueOf(TWO.getPrimitiveProperty()).compareTo(Integer.valueOf(ONE.getPrimitiveProperty()))));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldSortNullsFirstCorrectly() {
 		assertThat(
@@ -86,6 +110,9 @@ public class SpelPropertyComperatorUnitTests {
 				equalTo(1));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldSortNullsLastCorrectly() {
 		assertThat(
@@ -93,6 +120,9 @@ public class SpelPropertyComperatorUnitTests {
 				equalTo(-1));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldCompareNestedTypesCorrectly() {
 
@@ -100,6 +130,9 @@ public class SpelPropertyComperatorUnitTests {
 				is(WRAPPER_ONE.getNestedType().getStringProperty().compareTo(WRAPPER_TWO.getNestedType().getStringProperty())));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void shouldCompareNestedTypesCorrectlyWhenOneOfThemHasNullValue() {
 

@@ -19,11 +19,14 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.data.annotation.KeySpace;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.mapping.context.MappingContext;
 
 /**
+ * Interface that specifies a basic set of key/value operations. Implemented by {@link KeyValueTemplate}.
+ * 
  * @author Christoph Strobl
  * @since 1.10
  */
@@ -48,8 +51,7 @@ public interface KeyValueOperations extends DisposableBean {
 
 	/**
 	 * Get all elements of given type. <br />
-	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
-	 * matching the given alias that can be assigned to requested type.
+	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @return empty collection if no elements found.
@@ -58,8 +60,7 @@ public interface KeyValueOperations extends DisposableBean {
 
 	/**
 	 * Get element of given type with given id. <br />
-	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns only elements
-	 * matching the given alias that can be assigned to requested type.
+	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
 	 * 
 	 * @param id must not be {@literal null}.
 	 * @param type must not be {@literal null}.
@@ -77,42 +78,38 @@ public interface KeyValueOperations extends DisposableBean {
 
 	/**
 	 * Get all elements matching the given query. <br />
-	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
-	 * matching the given alias that can be assigned to requested type.
+	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type..
 	 * 
-	 * @param query
-	 * @param type
+	 * @param query must not be {@literal null}.
+	 * @param type must not be {@literal null}.
 	 * @return empty collection if no match found.
 	 */
 	<T> List<T> find(KeyValueQuery<?> query, Class<T> type);
 
 	/**
 	 * Get all elements ordered by sort. <br />
-	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
-	 * matching the given alias that can be assigned to requested type.
+	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
 	 * 
-	 * @param sort
-	 * @param type
+	 * @param sort must not be {@literal null}.
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	<T> List<T> findAllOf(Sort sort, Class<T> type);
 
 	/**
 	 * Get all elements in given range. <br />
-	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
-	 * matching the given alias that can be assigned to requested type.
+	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
 	 * 
 	 * @param offset
 	 * @param rows
-	 * @param type
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	<T> List<T> findInRange(int offset, int rows, Class<T> type);
 
 	/**
 	 * Get all elements in given range ordered by sort. <br />
-	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore returns all elements
-	 * matching the given alias that can be assigned to requested type
+	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
 	 * 
 	 * @param offset
 	 * @param rows
@@ -123,7 +120,7 @@ public interface KeyValueOperations extends DisposableBean {
 	<T> List<T> findInRange(int offset, int rows, Sort sort, Class<T> type);
 
 	/**
-	 * @param objectToUpdate
+	 * @param objectToUpdate must not be {@literal null}.
 	 */
 	void update(Object objectToUpdate);
 
@@ -135,15 +132,14 @@ public interface KeyValueOperations extends DisposableBean {
 
 	/**
 	 * Remove all elements of type. <br />
-	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore removes all elements
-	 * matching the alias. Remove items of given type.
+	 * Respects {@link KeySpace} if present and therefore removes all elements that can be assigned to requested type.
 	 * 
 	 * @param type must not be {@literal null}.
 	 */
 	void delete(Class<?> type);
 
 	/**
-	 * @param objectToDelete
+	 * @param objectToDelete must not be {@literal null}.
 	 * @return
 	 */
 	<T> T delete(T objectToDelete);
@@ -151,26 +147,24 @@ public interface KeyValueOperations extends DisposableBean {
 	/**
 	 * Delete item of type with given id.
 	 * 
-	 * @param id
-	 * @param type
+	 * @param id must not be {@literal null}.
+	 * @param type must not be {@literal null}.
 	 * @return the deleted item or {@literal null} if no match found.
 	 */
 	<T> T delete(Serializable id, Class<T> type);
 
 	/**
 	 * Total number of elements with given type available. <br />
-	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore counts all elements
-	 * matching the alias.
+	 * Respects {@link KeySpace} if present and therefore counts all elements that can be assigned to requested type.
 	 * 
-	 * @param type
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	long count(Class<?> type);
 
 	/**
 	 * Total number of elements matching given query.<br />
-	 * Respects {@link org.springframework.data.annotation.TypeAlias} if present and therefore counts all elements
-	 * matching the alias.
+	 * Respects {@link KeySpace} if present and therefore counts all elements that can be assigned to requested type.
 	 * 
 	 * @param query
 	 * @param type

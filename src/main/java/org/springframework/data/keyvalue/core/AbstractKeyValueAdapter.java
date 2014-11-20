@@ -21,7 +21,8 @@ import java.util.Collection;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 
 /**
- * Base implementation of {@link KeyValueAdapter} holds {@link QueryEngine} to delegate find execution to.
+ * Base implementation of {@link KeyValueAdapter} holds {@link QueryEngine} to delegate {@literal find} and
+ * {@literal count} execution to.
  * 
  * @author Christoph Strobl
  * @since 1.10
@@ -30,15 +31,28 @@ public abstract class AbstractKeyValueAdapter implements KeyValueAdapter {
 
 	private final QueryEngine<? extends KeyValueAdapter, ?, ?> engine;
 
-	public AbstractKeyValueAdapter() {
+	/**
+	 * Creates new {@link AbstractKeyValueAdapter} with using the default query engine.
+	 */
+	protected AbstractKeyValueAdapter() {
 		this(null);
 	}
 
-	public AbstractKeyValueAdapter(QueryEngine<? extends KeyValueAdapter, ?, ?> engine) {
+	/**
+	 * Creates new {@link AbstractKeyValueAdapter} with using the default query engine.
+	 * 
+	 * @param engine will be defaulted to {@link SpelQueryEngine} if {@literal null}.
+	 */
+	protected AbstractKeyValueAdapter(QueryEngine<? extends KeyValueAdapter, ?, ?> engine) {
 		this.engine = engine != null ? engine : new SpelQueryEngine<KeyValueAdapter>();
 		this.engine.registerAdapter(this);
 	}
 
+	/**
+	 * Get the {@link QueryEngine} used.
+	 * 
+	 * @return
+	 */
 	protected QueryEngine<? extends KeyValueAdapter, ?, ?> getQueryEngine() {
 		return engine;
 	}

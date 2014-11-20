@@ -24,8 +24,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marker interface for methods with {@link Persistent} annotations indicating the presence of a dedicated keyspace the
- * entity should reside in. If present the value will be picked up for resolving
- * {@link org.springframework.data.mapping.PersistentEntity#getKeySpace()}
+ * entity should reside in. If present the value will be picked up for resolving the keyspace.
  * 
  * <pre>
  * <code>
@@ -37,6 +36,17 @@ import java.lang.annotation.Target;
  * 
  * 		&#64;KeySpace
  * 		String collection() default "person";
+ * } 
+ * </code>
+ * </pre>
+ * 
+ * Can also be directly used on types to indicate the keyspace.
+ * 
+ * <pre>
+ * <code>
+ * &#64;KeySpace("persons")
+ * public class Foo {
+ * 
  * } 
  * </code>
  * </pre>

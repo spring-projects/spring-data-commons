@@ -35,6 +35,9 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
  */
 public class QueryDslMapRepositoryUnitTests extends MapBackedKeyValueRepositoryUnitTests {
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findOneIsExecutedCorrectly() {
 
@@ -44,6 +47,9 @@ public class QueryDslMapRepositoryUnitTests extends MapBackedKeyValueRepositoryU
 		assertThat(result, is(CERSEI));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findAllIsExecutedCorrectly() {
 
@@ -53,6 +59,9 @@ public class QueryDslMapRepositoryUnitTests extends MapBackedKeyValueRepositoryU
 		assertThat(result, containsInAnyOrder(CERSEI, JAIME));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findWithPaginationWorksCorrectly() {
 
@@ -71,6 +80,9 @@ public class QueryDslMapRepositoryUnitTests extends MapBackedKeyValueRepositoryU
 		assertThat(page2.hasNext(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findAllUsingOrderSpecifierWorksCorrectly() {
 
@@ -82,6 +94,9 @@ public class QueryDslMapRepositoryUnitTests extends MapBackedKeyValueRepositoryU
 		assertThat(result, contains(JAIME, CERSEI));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findAllUsingPageableWithSortWorksCorrectly() {
 
@@ -93,6 +108,9 @@ public class QueryDslMapRepositoryUnitTests extends MapBackedKeyValueRepositoryU
 		assertThat(result, contains(JAIME, CERSEI));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findAllUsingPagableWithQSortWorksCorrectly() {
 

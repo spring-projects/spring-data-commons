@@ -42,6 +42,13 @@ public abstract class QueryEngine<ADAPTER extends KeyValueAdapter, CRITERIA, SOR
 		this.sortAccessor = sortAccessor;
 	}
 
+	/**
+	 * Extract query attributes and delegate to concrete execution.
+	 * 
+	 * @param query
+	 * @param keyspace
+	 * @return
+	 */
 	public Collection<?> execute(KeyValueQuery<?> query, Serializable keyspace) {
 
 		CRITERIA criteria = this.criteriaAccessor != null ? this.criteriaAccessor.resolve(query) : null;
@@ -50,16 +57,41 @@ public abstract class QueryEngine<ADAPTER extends KeyValueAdapter, CRITERIA, SOR
 		return execute(criteria, sort, query.getOffset(), query.getRows(), keyspace);
 	}
 
+	/**
+	 * Extract query attributes and delegate to concrete execution.
+	 * 
+	 * @param query
+	 * @param keyspace
+	 * @return
+	 */
 	public long count(KeyValueQuery<?> query, Serializable keyspace) {
 
 		CRITERIA criteria = this.criteriaAccessor != null ? this.criteriaAccessor.resolve(query) : null;
 		return count(criteria, keyspace);
 	}
 
+	/**
+	 * @param criteria
+	 * @param sort
+	 * @param offset
+	 * @param rows
+	 * @param keyspace
+	 * @return
+	 */
 	public abstract Collection<?> execute(CRITERIA criteria, SORT sort, int offset, int rows, Serializable keyspace);
 
+	/**
+	 * @param criteria
+	 * @param keyspace
+	 * @return
+	 */
 	public abstract long count(CRITERIA criteria, Serializable keyspace);
 
+	/**
+	 * Get the {@link KeyValueAdapter} used.
+	 * 
+	 * @return
+	 */
 	protected ADAPTER getAdapter() {
 		return this.adapter;
 	}
@@ -67,6 +99,7 @@ public abstract class QueryEngine<ADAPTER extends KeyValueAdapter, CRITERIA, SOR
 	/**
 	 * @param adapter
 	 */
+	@SuppressWarnings("unchecked")
 	public void registerAdapter(KeyValueAdapter adapter) {
 
 		if (this.adapter == null) {

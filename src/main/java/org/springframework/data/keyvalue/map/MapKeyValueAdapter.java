@@ -39,10 +39,18 @@ public class MapKeyValueAdapter extends AbstractKeyValueAdapter {
 	@SuppressWarnings("rawtypes")//
 	private final Class<? extends Map> mapType;
 
+	/**
+	 * Create new instance of {@link MapKeyValueAdapter} using {@link ConcurrentHashMap}.
+	 */
 	public MapKeyValueAdapter() {
 		this(new ConcurrentHashMap<Serializable, Map<Serializable, Object>>());
 	}
 
+	/**
+	 * Create new instance of {@link MapKeyValueAdapter} using given dataStore for persistence.
+	 * 
+	 * @param dataStore must not be {@literal null}.
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public MapKeyValueAdapter(Map<Serializable, Map<Serializable, Object>> dataStore) {
 
@@ -123,17 +131,21 @@ public class MapKeyValueAdapter extends AbstractKeyValueAdapter {
 		data.clear();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
 	@Override
 	public void destroy() throws Exception {
 		clear();
 	}
 
-	protected Map<Serializable, Object> getKeyspaceMap(Object item) {
-
-		Assert.notNull(item, "Item must not be 'null' for lookup.");
-		return getKeySpaceMap(item.getClass());
-	}
-
+	/**
+	 * Get map associated with given keyspace.
+	 * 
+	 * @param keyspace must not be {@literal null}.
+	 * @return
+	 */
 	protected Map<Serializable, Object> getKeySpaceMap(Serializable keyspace) {
 
 		Assert.notNull(keyspace, "Collection must not be 'null' for lookup.");

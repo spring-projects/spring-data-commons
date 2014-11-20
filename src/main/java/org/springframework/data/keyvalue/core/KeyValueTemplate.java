@@ -54,14 +54,29 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@SuppressWarnings("rawtypes")//
 	private MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext;
 
+	/**
+	 * Create new {@link KeyValueTemplate} using the given {@link KeyValueAdapter} with a default
+	 * {@link BasicMappingContext}.
+	 * 
+	 * @param adapter must not be {@literal null}.
+	 */
 	public KeyValueTemplate(KeyValueAdapter adapter) {
 		this(adapter, new BasicMappingContext());
 	}
 
+	/**
+	 * Create new {@link KeyValueTemplate} using the given {@link KeyValueAdapter} and {@link MappingContext}.
+	 * 
+	 * @param adapter must not be {@literal null}.
+	 * @param mappingContext must not be {@literal null}.
+	 */
 	@SuppressWarnings("rawtypes")
 	public KeyValueTemplate(
 			KeyValueAdapter adapter,
 			MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext) {
+
+		Assert.notNull(adapter, "Adapter must not be 'null' when intializing KeyValueTemplate.");
+		Assert.notNull(mappingContext, "MappingContext must not be 'null' when intializing KeyValueTemplate.");
 
 		this.adapter = adapter;
 		this.mappingContext = mappingContext;

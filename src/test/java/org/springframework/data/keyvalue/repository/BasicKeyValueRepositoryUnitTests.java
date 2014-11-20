@@ -28,7 +28,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.keyvalue.core.KeyValueOperations;
-import org.springframework.data.keyvalue.repository.BasicKeyValueRepository;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
 
 /**
@@ -47,6 +46,9 @@ public class BasicKeyValueRepositoryUnitTests {
 		repo = new BasicKeyValueRepository<Foo, String>(ei, opsMock);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void saveNewWithNumericId() {
 
@@ -58,6 +60,9 @@ public class BasicKeyValueRepositoryUnitTests {
 		WithNumericId foo = temp.save(new WithNumericId());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void testDoubleSave() {
 
@@ -71,6 +76,9 @@ public class BasicKeyValueRepositoryUnitTests {
 		verify(opsMock, times(1)).update(eq(foo.getId()), eq(foo));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void multipleSave() {
 
@@ -82,6 +90,9 @@ public class BasicKeyValueRepositoryUnitTests {
 		verify(opsMock, times(1)).insert(eq(two));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteEntity() {
 
@@ -91,6 +102,9 @@ public class BasicKeyValueRepositoryUnitTests {
 		verify(opsMock, times(1)).delete(eq(one.getId()), eq(Foo.class));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteById() {
 
@@ -99,6 +113,9 @@ public class BasicKeyValueRepositoryUnitTests {
 		verify(opsMock, times(1)).delete(eq("one"), eq(Foo.class));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteAll() {
 
@@ -107,12 +124,15 @@ public class BasicKeyValueRepositoryUnitTests {
 		verify(opsMock, times(1)).delete(eq(Foo.class));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findAllIds() {
 
 		repo.findAll(Arrays.asList("one", "two", "three"));
 
-		// verify(opsMock, times(1)).read(any(Expression.class), eq(Foo.class));
+		verify(opsMock, times(3)).findById(anyString(), eq(Foo.class));
 	}
 
 	static class Foo {

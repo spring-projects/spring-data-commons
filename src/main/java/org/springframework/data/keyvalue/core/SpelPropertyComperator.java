@@ -45,6 +45,8 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	}
 
 	/**
+	 * Sort {@literal ascending}.
+	 * 
 	 * @return
 	 */
 	public SpelPropertyComperator<T> asc() {
@@ -53,6 +55,8 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	}
 
 	/**
+	 * Sort {@literal descending}.
+	 * 
 	 * @return
 	 */
 	public SpelPropertyComperator<T> desc() {
@@ -61,6 +65,8 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	}
 
 	/**
+	 * Sort {@literal null} values first.
+	 * 
 	 * @return
 	 */
 	public SpelPropertyComperator<T> nullsFirst() {
@@ -69,6 +75,8 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	}
 
 	/**
+	 * Sort {@literal null} values last.
+	 * 
 	 * @return
 	 */
 	public SpelPropertyComperator<T> nullsLast() {
@@ -76,6 +84,11 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 		return this;
 	}
 
+	/**
+	 * Parse values to {@link SpelExpression}
+	 * 
+	 * @return
+	 */
 	protected SpelExpression getExpression() {
 
 		if (this.expression == null) {
@@ -85,6 +98,11 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 		return this.expression;
 	}
 
+	/**
+	 * Create the expression raw value.
+	 * 
+	 * @return
+	 */
 	protected String buildExpressionForPath() {
 
 		StringBuilder rawExpression = new StringBuilder(
@@ -101,6 +119,10 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 		return rawExpression.toString();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+	 */
 	@Override
 	public int compare(T arg1, T arg2) {
 
@@ -112,6 +134,11 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 		return expressionToUse.getValue(Integer.class) * (asc ? 1 : -1);
 	}
 
+	/**
+	 * Get dot path to property.
+	 * 
+	 * @return
+	 */
 	public String getPath() {
 		return path;
 	}

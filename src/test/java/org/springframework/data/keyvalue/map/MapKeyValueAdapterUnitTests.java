@@ -21,63 +21,56 @@ import static org.hamcrest.core.IsEqual.*;
 import static org.hamcrest.core.IsNull.*;
 import static org.junit.Assert.*;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.springframework.util.ObjectUtils;
 
 /**
  * @author Christoph Strobl
  */
-@RunWith(Parameterized.class)
 public class MapKeyValueAdapterUnitTests {
 
 	private static final String COLLECTION_1 = "collection-1";
 	private static final String COLLECTION_2 = "collection-2";
 	private static final String STRING_1 = new String("1");
 
-	private Object object1;
-	private Object object2;
+	private Object object1 = new SimpleObject("one");
+	private Object object2 = new SimpleObject("two");
 
 	private MapKeyValueAdapter adapter;
-
-	@Parameters
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] { { new SimpleObject("one"), new SimpleObject("two") },
-				{ new CloneableObject("one"), new CloneableObject("two") } });
-	}
-
-	public MapKeyValueAdapterUnitTests(Object o1, Object o2) {
-		this.object1 = o1;
-		this.object2 = o2;
-	}
 
 	@Before
 	public void setUp() {
 		this.adapter = new MapKeyValueAdapter();
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void putShouldThrowExceptionWhenAddingNullId() {
 		adapter.put(null, object1, COLLECTION_1);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void putShouldThrowExceptionWhenCollectionIsNullValue() {
 		adapter.put("1", object1, null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void putReturnsNullWhenNoObjectForIdPresent() {
 		assertThat(adapter.put("1", object1, COLLECTION_1), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void putShouldReturnPreviousObjectForIdWhenAddingNewOneWithSameIdPresent() {
 
@@ -85,21 +78,33 @@ public class MapKeyValueAdapterUnitTests {
 		assertThat(adapter.put("1", object2, COLLECTION_1), equalTo(object1));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void containsShouldThrowExceptionWhenIdIsNull() {
 		adapter.contains(null, COLLECTION_1);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void containsShouldThrowExceptionWhenTypeIsNull() {
 		adapter.contains("", null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void containsShouldReturnFalseWhenNoElementsPresent() {
 		assertThat(adapter.contains("1", COLLECTION_1), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void containShouldReturnTrueWhenElementWithIdPresent() {
 
@@ -107,11 +112,17 @@ public class MapKeyValueAdapterUnitTests {
 		assertThat(adapter.contains("1", COLLECTION_1), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void getShouldReturnNullWhenNoElementWithIdPresent() {
 		assertThat(adapter.get("1", COLLECTION_1), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void getShouldReturnElementWhenMatchingIdPresent() {
 
@@ -119,16 +130,25 @@ public class MapKeyValueAdapterUnitTests {
 		assertThat(adapter.get("1", COLLECTION_1), is(object1));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void getShouldThrowExceptionWhenIdIsNull() {
 		adapter.get(null, COLLECTION_1);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void getShouldThrowExceptionWhenTypeIsNull() {
 		adapter.get("1", null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void getAllOfShouldReturnAllValuesOfGivenCollection() {
 
@@ -139,16 +159,25 @@ public class MapKeyValueAdapterUnitTests {
 		assertThat(adapter.getAllOf(COLLECTION_1), containsInAnyOrder(object1, object2));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void getAllOfShouldThrowExceptionWhenTypeIsNull() {
 		adapter.getAllOf(null);
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteShouldReturnNullWhenGivenIdThatDoesNotExist() {
 		assertThat(adapter.delete("1", COLLECTION_1), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void deleteShouldReturnDeletedObject() {
 
@@ -156,9 +185,8 @@ public class MapKeyValueAdapterUnitTests {
 		assertThat(adapter.delete("1", COLLECTION_1), is(object1));
 	}
 
-	static class SimpleObject implements Serializable {
+	static class SimpleObject {
 
-		private static final long serialVersionUID = -5360757012079566797L;
 		protected String stringValue;
 
 		public SimpleObject() {}
@@ -188,25 +216,6 @@ public class MapKeyValueAdapterUnitTests {
 			}
 			SimpleObject that = (SimpleObject) obj;
 			return ObjectUtils.nullSafeEquals(this.stringValue, that.stringValue);
-		}
-	}
-
-	static class CloneableObject extends SimpleObject implements Cloneable {
-
-		private static final long serialVersionUID = -3584760574822342754L;
-
-		public CloneableObject() {}
-
-		public CloneableObject(String value) {
-			super(value);
-		}
-
-		@Override
-		protected Object clone() throws CloneNotSupportedException {
-
-			CloneableObject o = new CloneableObject();
-			o.stringValue = this.stringValue;
-			return o;
 		}
 	}
 

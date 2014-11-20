@@ -36,6 +36,8 @@ import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.PathBuilder;
 
 /**
+ * {@link KeyValueRepository} implementation capable of executing {@link Predicate}s using {@link CollQuery}.
+ * 
  * @author Christoph Strobl
  * @since 1.10
  * @param <T>
@@ -49,10 +51,19 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 	private final EntityPath<T> path;
 	private final PathBuilder<T> builder;
 
+	/**
+	 * @param entityInformation
+	 * @param operations
+	 */
 	public QueryDslKeyValueRepository(EntityInformation<T, ID> entityInformation, KeyValueOperations operations) {
 		this(entityInformation, operations, DEFAULT_ENTITY_PATH_RESOLVER);
 	}
 
+	/**
+	 * @param entityInformation
+	 * @param operations
+	 * @param resolver
+	 */
 	public QueryDslKeyValueRepository(EntityInformation<T, ID> entityInformation, KeyValueOperations operations,
 			EntityPathResolver resolver) {
 
@@ -61,6 +72,10 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 		this.builder = new PathBuilder<T>(path.getType(), path.getMetadata());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#findOne(com.mysema.query.types.Predicate)
+	 */
 	@Override
 	public T findOne(Predicate predicate) {
 
@@ -68,6 +83,10 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 		return query.uniqueResult(builder);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#findAll(com.mysema.query.types.Predicate)
+	 */
 	@Override
 	public Iterable<T> findAll(Predicate predicate) {
 
@@ -75,6 +94,10 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 		return query.list(builder);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#findAll(com.mysema.query.types.Predicate, com.mysema.query.types.OrderSpecifier[])
+	 */
 	@Override
 	public Iterable<T> findAll(Predicate predicate, OrderSpecifier<?>... orders) {
 
@@ -83,6 +106,10 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 		return query.list(builder);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#findAll(com.mysema.query.types.Predicate, org.springframework.data.domain.Pageable)
+	 */
 	@Override
 	public Page<T> findAll(Predicate predicate, Pageable pageable) {
 
@@ -100,6 +127,10 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 		return new PageImpl<T>(query.list(builder), pageable, count(predicate));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.QueryDslPredicateExecutor#count(com.mysema.query.types.Predicate)
+	 */
 	@Override
 	public long count(Predicate predicate) {
 

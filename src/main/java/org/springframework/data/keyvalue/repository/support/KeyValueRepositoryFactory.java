@@ -54,10 +54,11 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 
 /**
+ * {@link RepositoryFactorySupport} specific of handing
+ * {@link org.springframework.data.keyvalue.repository.KeyValueRepository}.
+ * 
  * @author Christoph Strobl
  * @since 1.10
- * @param <T>
- * @param <ID>
  */
 public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 
@@ -67,10 +68,17 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 
 	private final Class<? extends AbstractQueryCreator<?, ?>> queryCreator;
 
+	/**
+	 * @param keyValueOperations must not be {@literal null}.
+	 */
 	public KeyValueRepositoryFactory(KeyValueOperations keyValueOperations) {
 		this(keyValueOperations, DEFAULT_QUERY_CREATOR);
 	}
 
+	/**
+	 * @param keyValueOperations must not be {@literal null}.
+	 * @param queryCreator defaulted to {@link #DEFAULT_QUERY_CREATOR} if {@literal null}.
+	 */
 	public KeyValueRepositoryFactory(KeyValueOperations keyValueOperations,
 			Class<? extends AbstractQueryCreator<?, ?>> queryCreator) {
 
@@ -80,6 +88,10 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 		this.context = keyValueOperations.getMappingContext();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
@@ -89,6 +101,10 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 		return entityInformation;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryMetadata)
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	protected Object getTargetRepository(RepositoryMetadata metadata) {
@@ -100,6 +116,10 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 		return new BasicKeyValueRepository(entityInformation, keyValueOperations);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
+	 */
 	@Override
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 		return isQueryDslRepository(metadata.getRepositoryInterface()) ? QueryDslKeyValueRepository.class
@@ -116,11 +136,19 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 		return QUERY_DSL_PRESENT && QueryDslPredicateExecutor.class.isAssignableFrom(repositoryInterface);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key, org.springframework.data.repository.query.EvaluationContextProvider)
+	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
 		return new KeyValueQueryLookupStrategy(key, evaluationContextProvider, this.keyValueOperations, this.queryCreator);
 	}
 
+	/**
+	 * @author Christoph Strobl
+	 * @since 1.10
+	 */
 	static class KeyValueQueryLookupStrategy implements QueryLookupStrategy {
 
 		private EvaluationContextProvider evaluationContextProvider;
@@ -152,6 +180,13 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 		}
 	}
 
+	/**
+	 * {@link RepositoryQuery} implementation deriving queries from {@link PartTree} using a predefined
+	 * {@link AbstractQueryCreator}.
+	 * 
+	 * @author Christoph Strobl
+	 * @since 1.10
+	 */
 	public static class KeyValuePartTreeQuery implements RepositoryQuery {
 
 		private EvaluationContextProvider evaluationContextProvider;
@@ -225,9 +260,6 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 				q.setRows(-1);
 			}
 
-			EvaluationContext context = this.evaluationContextProvider.getEvaluationContext(getQueryMethod().getParameters(),
-					parameters);
-
 			if (accessor.getSort() != null) {
 				q.setSort(accessor.getSort());
 			} else {
@@ -235,6 +267,9 @@ public class KeyValueRepositoryFactory extends RepositoryFactorySupport {
 			}
 
 			if (q.getCritieria() instanceof SpelExpression) {
+
+				EvaluationContext context = this.evaluationContextProvider.getEvaluationContext(getQueryMethod()
+						.getParameters(), parameters);
 				((SpelExpression) q.getCritieria()).setEvaluationContext(context);
 			}
 			return q;

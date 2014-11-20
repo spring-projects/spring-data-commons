@@ -57,6 +57,9 @@ public class MapBackedKeyValueRepositoryUnitTests {
 		this.repository = new KeyValueRepositoryFactory(template).getRepository(getRepositoryClass());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findBy() {
 
@@ -64,6 +67,9 @@ public class MapBackedKeyValueRepositoryUnitTests {
 		assertThat(this.repository.findByAge(19), containsInAnyOrder(CERSEI, JAIME));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void combindedFindUsingAnd() {
 
@@ -72,6 +78,9 @@ public class MapBackedKeyValueRepositoryUnitTests {
 		assertThat(this.repository.findByFirstnameAndAge(JAIME.getFirstname(), 19), containsInAnyOrder(JAIME));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findPage() {
 
@@ -88,6 +97,9 @@ public class MapBackedKeyValueRepositoryUnitTests {
 		assertThat(next.getContent(), IsCollectionWithSize.hasSize(1));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findByConnectingOr() {
 
@@ -97,6 +109,9 @@ public class MapBackedKeyValueRepositoryUnitTests {
 				containsInAnyOrder(CERSEI, JAIME, TYRION));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void singleEntityExecution() {
 
@@ -105,6 +120,9 @@ public class MapBackedKeyValueRepositoryUnitTests {
 		assertThat(this.repository.findByAgeAndFirstname(TYRION.getAge(), TYRION.getFirstname()), is(TYRION));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void findAllShouldRespectSort() {
 
@@ -114,6 +132,9 @@ public class MapBackedKeyValueRepositoryUnitTests {
 				"firstname"))), IsIterableContainingInOrder.contains(TYRION, JAIME, CERSEI));
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
 	@Test
 	public void derivedFinderShouldRespectSort() {
 
