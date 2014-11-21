@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping.context;
+package org.springframework.data.keyvalue.core.mapping;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;

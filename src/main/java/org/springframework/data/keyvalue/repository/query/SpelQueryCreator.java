@@ -145,6 +145,11 @@ public class SpelQueryCreator extends AbstractQueryCreator<KeyValueQuery<SpelExp
 
 						partBuilder.append(" matches ").append("[").append(parameterIndex++).append("]");
 						break;
+					case IN:
+					case CONTAINING:
+					case NOT_CONTAINING:
+					case NEGATING_SIMPLE_PROPERTY:
+					case EXISTS:
 					default:
 						throw new InvalidDataAccessApiUsageException(String.format("Found invalid part '%s' in query",
 								part.getType()));

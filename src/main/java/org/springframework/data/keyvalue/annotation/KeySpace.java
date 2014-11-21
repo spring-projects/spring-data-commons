@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.annotation;
+package org.springframework.data.keyvalue.annotation;
 
 import static java.lang.annotation.ElementType.*;
 
@@ -21,6 +21,8 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.springframework.data.annotation.Persistent;
 
 /**
  * Marker interface for methods with {@link Persistent} annotations indicating the presence of a dedicated keyspace the

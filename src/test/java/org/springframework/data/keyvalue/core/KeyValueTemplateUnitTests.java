@@ -39,9 +39,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.KeySpace;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.keyvalue.annotation.KeySpace;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.util.ObjectUtils;
 

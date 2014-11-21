@@ -35,7 +35,6 @@ import org.springframework.data.keyvalue.core.CriteriaAccessor;
 import org.springframework.data.keyvalue.core.QueryEngine;
 import org.springframework.data.keyvalue.core.SortAccessor;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
-import org.springframework.data.util.ListConverter;
 import org.springframework.util.CollectionUtils;
 
 /**

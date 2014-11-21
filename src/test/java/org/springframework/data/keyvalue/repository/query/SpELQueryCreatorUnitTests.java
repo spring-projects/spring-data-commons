@@ -19,7 +19,10 @@ import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
+import java.util.Date;
 
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -39,12 +42,18 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SpELQureyCreatorUnitTests {
+public class SpELQueryCreatorUnitTests {
+
+	private static final DateTimeFormatter FORMATTER = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC();
 
 	private static final Person RICKON = new Person("rickon", 4);
-	private static final Person BRAN = new Person("bran", 9).skinChanger(true);
+	private static final Person BRAN = new Person("bran", 9)//
+			.skinChanger(true)//
+			.bornAt(FORMATTER.parseDateTime("2013-01-31T06:00:00Z").toDate());
 	private static final Person ARYA = new Person("arya", 13);
-	private static final Person ROBB = new Person("robb", 16).named("stark");
+	private static final Person ROBB = new Person("robb", 16)//
+			.named("stark")//
+			.bornAt(FORMATTER.parseDateTime("2010-09-20T06:00:00Z").toDate());
 	private static final Person JON = new Person("jon", 17).named("snow");
 
 	private @Mock RepositoryMetadata metadataMock;
@@ -205,6 +214,22 @@ public class SpELQureyCreatorUnitTests {
 	 * @see DATACMNS-525
 	 */
 	@Test
+	public void afterReturnsTrueForHigherValues() throws Exception {
+		assertThat(evaluate("findByBirthdayAfter", ROBB.birthday).against(BRAN), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test
+	public void afterReturnsFalseForLowerValues() throws Exception {
+		assertThat(evaluate("findByBirthdayAfter", BRAN.birthday).against(ROBB), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test
 	public void greaterThanEaualsReturnsTrueForHigherValues() throws Exception {
 		assertThat(evaluate("findByAgeGreaterThanEqual", BRAN.age).against(ROBB), is(true));
 	}
@@ -239,6 +264,22 @@ public class SpELQureyCreatorUnitTests {
 	@Test
 	public void lessThanReturnsFalseForLowerValues() throws Exception {
 		assertThat(evaluate("findByAgeLessThan", BRAN.age).against(RICKON), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test
+	public void beforeReturnsTrueForLowerValues() throws Exception {
+		assertThat(evaluate("findByBirthdayBefore", BRAN.birthday).against(ROBB), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test
+	public void beforeReturnsFalseForHigherValues() throws Exception {
+		assertThat(evaluate("findByBirthdayBefore", ROBB.birthday).against(BRAN), is(false));
 	}
 
 	/**
@@ -365,38 +406,58 @@ public class SpELQureyCreatorUnitTests {
 
 	static interface PersonRepository {
 
+		// Type.SIMPLE_PROPERTY
 		Person findByFirstname(String firstname);
 
+		// Type.TRUE
 		Person findBySkinChangerIsTrue();
 
+		// Type.FALSE
 		Person findBySkinChangerIsFalse();
 
+		// Type.IS_NULL
 		Person findByLastnameIsNull();
 
+		// Type.IS_NOT_NULL
 		Person findByLastnameIsNotNull();
 
+		// Type.STARTING_WITH
 		Person findByFirstnameStartingWith(String firstanme);
 
 		Person findByFirstnameIgnoreCase(String firstanme);
 
+		// Type.AFTER
+		Person findByBirthdayAfter(Date date);
+
+		// Type.GREATHER_THAN
 		Person findByAgeGreaterThan(Integer age);
 
+		// Type.GREATER_THAN_EQUAL
 		Person findByAgeGreaterThanEqual(Integer age);
 
+		// Type.BEFORE
+		Person findByBirthdayBefore(Date date);
+
+		// Type.LESS_THAN
 		Person findByAgeLessThan(Integer age);
 
+		// Type.LESS_THAN_EQUAL
 		Person findByAgeLessThanEqual(Integer age);
 
+		// Type.BETWEEN
 		Person findByAgeBetween(Integer low, Integer high);
 
+		// Type.LIKE
 		Person findByFirstnameLike(String firstname);
 
+		// Type.ENDING_WITH
 		Person findByFirstnameEndingWith(String firstname);
 
 		Person findByAgeGreaterThanAndLastname(Integer age, String lastname);
 
 		Person findByAgeGreaterThanOrLastname(Integer age, String lastname);
 
+		// Type.REGEX
 		Person findByLastnameMatches(String lastname);
 
 	}
@@ -428,6 +489,7 @@ public class SpELQureyCreatorUnitTests {
 		private String firstname, lastname;
 		private int age;
 		private boolean isSkinChanger = false;
+		private Date birthday;
 
 		public Person() {}
 
@@ -469,6 +531,14 @@ public class SpELQureyCreatorUnitTests {
 			this.age = age;
 		}
 
+		public Date getBirthday() {
+			return birthday;
+		}
+
+		public void setBirthday(Date birthday) {
+			this.birthday = birthday;
+		}
+
 		public boolean isSkinChanger() {
 			return isSkinChanger;
 		}
@@ -484,6 +554,11 @@ public class SpELQureyCreatorUnitTests {
 
 		public Person named(String lastname) {
 			this.lastname = lastname;
+			return this;
+		}
+
+		public Person bornAt(Date date) {
+			this.birthday = date;
 			return this;
 		}
 

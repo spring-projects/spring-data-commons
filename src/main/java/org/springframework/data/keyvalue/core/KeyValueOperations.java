@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.data.annotation.KeySpace;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.keyvalue.annotation.KeySpace;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.mapping.context.MappingContext;
 

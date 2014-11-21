@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.util;
+package org.springframework.data.keyvalue.core;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
