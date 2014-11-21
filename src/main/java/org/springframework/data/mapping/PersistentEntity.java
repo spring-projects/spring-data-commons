@@ -179,4 +179,13 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @since 1.10
 	 */
 	PersistentPropertyAccessor getPropertyAccessor(Object bean);
+
+	/**
+	 * Returns the {@link IdentifierAccessor} for the given bean.
+	 * 
+	 * @param bean must not be {@literal null}.
+	 * @return
+	 * @since 1.10
+	 */
+	IdentifierAccessor getIdentifierAccessor(Object bean);
 }

@@ -18,7 +18,6 @@ package org.springframework.data.repository.core.support;
 import java.io.Serializable;
 
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.core.EntityInformation;
 
@@ -50,14 +49,7 @@ public class PersistentEntityInformation<T, ID extends Serializable> extends Abs
 	 */
 	@Override
 	public ID getId(T entity) {
-
-		PersistentProperty<?> property = persistentEntity.getIdProperty();
-
-		if (property == null) {
-			return null;
-		}
-
-		return (ID) persistentEntity.getPropertyAccessor(entity).getProperty(property);
+		return (ID) persistentEntity.getIdentifierAccessor(entity).getIdentifier();
 	}
 
 	/* 

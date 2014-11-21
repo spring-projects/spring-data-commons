@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 by the original author(s).
+ * Copyright 2011-2014 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -375,6 +376,39 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		Assert.isTrue(getType().isInstance(bean), "Target bean is not of type of the persistent entity!");
 
 		return new BeanWrapper<Object>(bean);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getIdentifierAccessor(java.lang.Object)
+	 */
+	@Override
+	public IdentifierAccessor getIdentifierAccessor(Object bean) {
+
+		Assert.notNull(bean, "Targte bean must not be null!");
+		Assert.isTrue(getType().isInstance(bean), "Target bean is not of type of the persistent entity!");
+
+		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : NullReturningIdentifierAccessor.INSTANCE;
+	}
+
+	/**
+	 * A null-object implementation of {@link IdentifierAccessor} to be able to return an accessor for entities that do
+	 * not have an identifier property.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private static enum NullReturningIdentifierAccessor implements IdentifierAccessor {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.mapping.IdentifierAccessor#getIdentifier()
+		 */
+		@Override
+		public Object getIdentifier() {
+			return null;
+		}
 	}
 
 	/**
