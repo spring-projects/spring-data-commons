@@ -159,12 +159,13 @@ public class RepositoryConfigurationDelegate {
 	 */
 	private boolean multipleStoresDetected() {
 
-		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false,
-				environment);
+		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+		scanner.setEnvironment(environment);
+		scanner.setResourceLoader(resourceLoader);
 		scanner.addIncludeFilter(new LenientAssignableTypeFilter(RepositoryFactorySupport.class));
-		int numberOfModulesFound = scanner.findCandidateComponents(MODULE_DETECTION_PACKAGE).size();
 
-		if (numberOfModulesFound > 1) {
+		if (scanner.findCandidateComponents(MODULE_DETECTION_PACKAGE).size() > 1) {
+
 			LOGGER.debug(MULTIPLE_MODULES);
 			return true;
 		}
