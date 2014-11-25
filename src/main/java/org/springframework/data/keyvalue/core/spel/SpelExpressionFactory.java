@@ -16,7 +16,7 @@
 package org.springframework.data.keyvalue.core.spel;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +26,13 @@ import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.MethodInvoker;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Factory capable of parsing raw expression strings taking Spring 4.1 compiled expressions into concern. Will fall back
  * to non compiled ones in case lower than 4.1 Spring version is detected or expression compilation fails.
+ * <p>
+ * TODO: Do we need these guards here as we're basically requiring a "working" Spring version.
  * 
  * @author Christoph Strobl
  * @since 1.10
@@ -52,12 +54,12 @@ public class SpelExpressionFactory {
 		expressionParser = new SpelExpressionParser(DEFAULT_PARSER_CONFIG);
 
 		if (IS_SPEL_COMPILER_PRESENT) {
+
 			SpelExpressionParser parser = new SpelExpressionParser(silentlyInitializeCompiledMode("IMMEDIATE"));
 
 			if (usesPatchedSpelCompilerThatAllowsReferenceToContextVariables(parser)) {
 				compiledModeExpressionParser = parser;
 			}
-
 		}
 	}
 
@@ -102,25 +104,20 @@ public class SpelExpressionFactory {
 
 		try {
 
-			MethodInvoker mi = new MethodInvoker();
-			mi.setTargetObject(compilableExpression);
-			mi.setTargetMethod("compileExpression");
-			mi.prepare();
-			mi.invoke();
+			Method method = ReflectionUtils.findMethod(SpelExpression.class, "compileExpression");
+
+			if (method == null) {
+				throw new ExpressionException("Missing method SpelExpression.compileExpression(…). Using fallback.");
+			}
+
+			ReflectionUtils.invokeMethod(method, compilableExpression);
 
 			return compilableExpression;
 
 		} catch (ExpressionException ex) {
-
 			throw new ExpressionException(String.format("Could parse expression %s in compiled mode. Using fallback.",
 					compilableExpression.getExpressionString()), ex);
-		} catch (IllegalAccessException ex) {
-			throw new ExpressionException("o_O failed to invoke compileExpression. Are you using at least Spring 4.1?", ex);
-		} catch (NoSuchMethodException ex) {
-			throw new ExpressionException("o_O missing method compileExpression. Using fallback.", ex);
-		} catch (ClassNotFoundException ex) {
-			throw new ExpressionException("o_O missing class SpelExpression.", ex);
-		} catch (InvocationTargetException ex) {
+		} catch (RuntimeException ex) {
 			throw new ExpressionException("o_O failed to invoke compileExpression. Are you using at least Spring 4.1?", ex);
 		}
 	}
@@ -145,5 +142,4 @@ public class SpelExpressionFactory {
 		}
 		return false;
 	}
-
 }

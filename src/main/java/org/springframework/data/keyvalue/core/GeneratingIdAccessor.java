@@ -23,7 +23,11 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
 
 /**
+ * {@link IdentifierAccessor} adding a {@link #getOrGenerateIdentifier()} to automatically generate an identifier and
+ * set it on the underling bean instance.
+ * 
  * @author Oliver Gierke
+ * @see #getOrGenerateIdentifier()
  */
 public class GeneratingIdAccessor implements IdentifierAccessor {
 
@@ -32,6 +36,9 @@ public class GeneratingIdAccessor implements IdentifierAccessor {
 	private final IdentifierGenerator generator;
 
 	/**
+	 * Creates a new {@link GeneratingIdAccessor} using the given {@link PersistentPropertyAccessor}, identifier property
+	 * and {@link IdentifierGenerator}.
+	 * 
 	 * @param accessor must not be {@literal null}.
 	 * @param identifierProperty must not be {@literal null}.
 	 * @param generator must not be {@literal null}.
@@ -63,7 +70,7 @@ public class GeneratingIdAccessor implements IdentifierAccessor {
 	 * 
 	 * @return
 	 */
-	public Object getOrGenerateId() {
+	public Object getOrGenerateIdentifier() {
 
 		Serializable existingIdentifier = (Serializable) getIdentifier();
 

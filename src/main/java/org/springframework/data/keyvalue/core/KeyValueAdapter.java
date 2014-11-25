@@ -102,5 +102,4 @@ public interface KeyValueAdapter extends DisposableBean {
 	 * @return
 	 */
 	long count(KeyValueQuery<?> query, Serializable keyspace);
-
 }

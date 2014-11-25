@@ -27,21 +27,26 @@ import org.springframework.data.util.TypeInformation;
  * @author Christoph Strobl
  * @since 1.10
  */
-public class BasicMappingContext extends
-		AbstractMappingContext<BasicPersistentEntity<?, BasicPersistentProperty>, BasicPersistentProperty> {
+public class KeyValueMappingContext extends
+		AbstractMappingContext<BasicPersistentEntity<?, KeyValuePersistentProperty>, KeyValuePersistentProperty> {
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation)
+	 */
 	@Override
-	protected <T> BasicPersistentEntity<?, BasicPersistentProperty> createPersistentEntity(
+	protected <T> BasicPersistentEntity<?, KeyValuePersistentProperty> createPersistentEntity(
 			TypeInformation<T> typeInformation) {
-
-		return new BasicPersistentEntity<T, BasicPersistentProperty>(typeInformation);
+		return new BasicPersistentEntity<T, KeyValuePersistentProperty>(typeInformation);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(java.lang.reflect.Field, java.beans.PropertyDescriptor, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
+	 */
 	@Override
-	protected BasicPersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
-			BasicPersistentEntity<?, BasicPersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
-
-		return new BasicPersistentProperty(field, descriptor, owner, simpleTypeHolder);
+	protected KeyValuePersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
+			BasicPersistentEntity<?, KeyValuePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
+		return new KeyValuePersistentProperty(field, descriptor, owner, simpleTypeHolder);
 	}
-
 }

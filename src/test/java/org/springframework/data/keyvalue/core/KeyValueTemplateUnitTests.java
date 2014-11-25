@@ -22,7 +22,6 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,7 +29,6 @@ import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -406,62 +404,6 @@ public class KeyValueTemplateUnitTests {
 		assertThat(template.findById("1", SUBCLASS_OF_ALIASED.getClass()), nullValue());
 	}
 
-	/**
-	 * @see DATACMNS-525
-	 */
-	@Test
-	public void shouldResolveKeySpaceDefaultValueCorrectly() {
-		assertThat(template.getKeySpace(EntityWithDefaultKeySpace.class), Is.<Object> is("daenerys"));
-	}
-
-	/**
-	 * @see DATACMNS-525
-	 */
-	@Test
-	public void shouldResolveKeySpaceCorrectly() {
-		assertThat(template.getKeySpace(EntityWithSetKeySpace.class), Is.<Object> is("viserys"));
-	}
-
-	/**
-	 * @see DATACMNS-525
-	 */
-	@Test
-	public void shouldReturnNullWhenNoKeySpaceFoundOnComposedPersistentAnnotation() {
-		assertThat(template.getKeySpace(AliasedEntity.class), nullValue());
-	}
-
-	/**
-	 * @see DATACMNS-525
-	 */
-	@Test
-	public void shouldReturnNullWhenPersistentIsFoundOnNonComposedAnnotation() {
-		assertThat(template.getKeySpace(EntityWithPersistentAnnotation.class), nullValue());
-	}
-
-	/**
-	 * @see DATACMNS-525
-	 */
-	@Test
-	public void shouldReturnNullWhenPersistentIsNotFound() {
-		assertThat(template.getKeySpace(Foo.class), nullValue());
-	}
-
-	/**
-	 * @see DATACMNS-525
-	 */
-	@Test
-	public void shouldResolveInheritedKeySpaceCorrectly() {
-		assertThat(template.getKeySpace(EntityWithInheritedKeySpace.class), Is.<Object> is("viserys"));
-	}
-
-	/**
-	 * @see DATACMNS-525
-	 */
-	@Test
-	public void shouldResolveDirectKeySpaceAnnotationCorrectly() {
-		assertThat(template.getKeySpace(ClassWithDirectKeySpaceAnnotation.class), Is.<Object> is("rhaegar"));
-	}
-
 	static class Foo {
 
 		String foo;
@@ -638,20 +580,6 @@ public class KeyValueTemplateUnitTests {
 
 	}
 
-	@PersistentAnnotationWithExplicitKeySpace
-	private static class EntityWithDefaultKeySpace {
-
-	}
-
-	@PersistentAnnotationWithExplicitKeySpace(firstname = "viserys")
-	private static class EntityWithSetKeySpace {
-
-	}
-
-	private static class EntityWithInheritedKeySpace extends EntityWithSetKeySpace {
-
-	}
-
 	@TypeAlias("foo")
 	static class AliasedEntity {
 
@@ -662,19 +590,6 @@ public class KeyValueTemplateUnitTests {
 
 	}
 
-	@Documented
-	@Persistent
-	@Retention(RetentionPolicy.RUNTIME)
-	@Target({ ElementType.TYPE })
-	private static @interface PersistentAnnotationWithExplicitKeySpace {
-
-		@KeySpace
-		String firstname() default "daenerys";
-
-		String lastnamne() default "targaryen";
-	}
-
-	@Documented
 	@Persistent
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ ElementType.TYPE })
@@ -682,6 +597,5 @@ public class KeyValueTemplateUnitTests {
 
 		@KeySpace
 		String name() default "";
-
 	}
 }

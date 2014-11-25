@@ -45,5 +45,4 @@ public class KeyValueRepositoriesRegistrar extends RepositoryBeanDefinitionRegis
 	protected RepositoryConfigurationExtension getExtension() {
 		return new KeyValueRepositoryConfigurationExtension();
 	}
-
 }

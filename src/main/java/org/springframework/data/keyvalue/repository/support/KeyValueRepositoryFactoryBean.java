@@ -79,5 +79,4 @@ public class KeyValueRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ex
 
 		super.afterPropertiesSet();
 	}
-
 }

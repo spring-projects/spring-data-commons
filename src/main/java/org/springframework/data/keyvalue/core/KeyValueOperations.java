@@ -33,8 +33,7 @@ import org.springframework.data.mapping.context.MappingContext;
 public interface KeyValueOperations extends DisposableBean {
 
 	/**
-	 * Add given object. <br />
-	 * Object needs to have id property to which a generated value will be assigned.
+	 * Add given object. Object needs to have id property to which a generated value will be assigned.
 	 * 
 	 * @param objectToInsert
 	 * @return
@@ -50,8 +49,8 @@ public interface KeyValueOperations extends DisposableBean {
 	void insert(Serializable id, Object objectToInsert);
 
 	/**
-	 * Get all elements of given type. <br />
-	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
+	 * Get all elements of given type. Respects {@link KeySpace} if present and therefore returns all elements that can be
+	 * assigned to requested type.
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @return empty collection if no elements found.
@@ -59,8 +58,8 @@ public interface KeyValueOperations extends DisposableBean {
 	<T> List<T> findAllOf(Class<T> type);
 
 	/**
-	 * Get element of given type with given id. <br />
-	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
+	 * Get element of given type with given id. Respects {@link KeySpace} if present and therefore returns all elements
+	 * that can be assigned to requested type.
 	 * 
 	 * @param id must not be {@literal null}.
 	 * @param type must not be {@literal null}.
@@ -87,8 +86,8 @@ public interface KeyValueOperations extends DisposableBean {
 	<T> List<T> find(KeyValueQuery<?> query, Class<T> type);
 
 	/**
-	 * Get all elements ordered by sort. <br />
-	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
+	 * Get all elements ordered by sort. Respects {@link KeySpace} if present and therefore returns all elements that can
+	 * be assigned to requested type.
 	 * 
 	 * @param sort must not be {@literal null}.
 	 * @param type must not be {@literal null}.
@@ -97,8 +96,8 @@ public interface KeyValueOperations extends DisposableBean {
 	<T> List<T> findAllOf(Sort sort, Class<T> type);
 
 	/**
-	 * Get all elements in given range. <br />
-	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
+	 * Get all elements in given range. Respects {@link KeySpace} if present and therefore returns all elements that can
+	 * be assigned to requested type.
 	 * 
 	 * @param offset
 	 * @param rows
@@ -108,8 +107,8 @@ public interface KeyValueOperations extends DisposableBean {
 	<T> List<T> findInRange(int offset, int rows, Class<T> type);
 
 	/**
-	 * Get all elements in given range ordered by sort. <br />
-	 * Respects {@link KeySpace} if present and therefore returns all elements that can be assigned to requested type.
+	 * Get all elements in given range ordered by sort. Respects {@link KeySpace} if present and therefore returns all
+	 * elements that can be assigned to requested type.
 	 * 
 	 * @param offset
 	 * @param rows
@@ -131,8 +130,8 @@ public interface KeyValueOperations extends DisposableBean {
 	void update(Serializable id, Object objectToUpdate);
 
 	/**
-	 * Remove all elements of type. <br />
-	 * Respects {@link KeySpace} if present and therefore removes all elements that can be assigned to requested type.
+	 * Remove all elements of type. Respects {@link KeySpace} if present and therefore removes all elements that can be
+	 * assigned to requested type.
 	 * 
 	 * @param type must not be {@literal null}.
 	 */
@@ -154,8 +153,8 @@ public interface KeyValueOperations extends DisposableBean {
 	<T> T delete(Serializable id, Class<T> type);
 
 	/**
-	 * Total number of elements with given type available. <br />
-	 * Respects {@link KeySpace} if present and therefore counts all elements that can be assigned to requested type.
+	 * Total number of elements with given type available. Respects {@link KeySpace} if present and therefore counts all
+	 * elements that can be assigned to requested type.
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @return
@@ -163,8 +162,8 @@ public interface KeyValueOperations extends DisposableBean {
 	long count(Class<?> type);
 
 	/**
-	 * Total number of elements matching given query.<br />
-	 * Respects {@link KeySpace} if present and therefore counts all elements that can be assigned to requested type.
+	 * Total number of elements matching given query. Respects {@link KeySpace} if present and therefore counts all
+	 * elements that can be assigned to requested type.
 	 * 
 	 * @param query
 	 * @param type

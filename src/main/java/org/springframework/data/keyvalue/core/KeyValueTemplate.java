@@ -15,21 +15,17 @@
  */
 package org.springframework.data.keyvalue.core;
 
+import static org.springframework.data.keyvalue.core.KeySpaceUtils.*;
+
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.annotation.Persistent;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.keyvalue.annotation.KeySpace;
-import org.springframework.data.keyvalue.core.MetaAnnotationUtils.AnnotationDescriptor;
-import org.springframework.data.keyvalue.core.mapping.BasicMappingContext;
+import org.springframework.data.keyvalue.core.mapping.KeyValueMappingContext;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -54,12 +50,12 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 	/**
 	 * Create new {@link KeyValueTemplate} using the given {@link KeyValueAdapter} with a default
-	 * {@link BasicMappingContext}.
+	 * {@link KeyValueMappingContext}.
 	 * 
 	 * @param adapter must not be {@literal null}.
 	 */
 	public KeyValueTemplate(KeyValueAdapter adapter) {
-		this(adapter, new BasicMappingContext());
+		this(adapter, new KeyValueMappingContext());
 	}
 
 	/**
@@ -73,8 +69,8 @@ public class KeyValueTemplate implements KeyValueOperations {
 			KeyValueAdapter adapter,
 			MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty>, ? extends PersistentProperty<?>> mappingContext) {
 
-		Assert.notNull(adapter, "Adapter must not be 'null' when intializing KeyValueTemplate.");
-		Assert.notNull(mappingContext, "MappingContext must not be 'null' when intializing KeyValueTemplate.");
+		Assert.notNull(adapter, "Adapter must not be null!");
+		Assert.notNull(mappingContext, "MappingContext must not be null!");
 
 		this.adapter = adapter;
 		this.mappingContext = mappingContext;
@@ -92,7 +88,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 		GeneratingIdAccessor generatingIdAccessor = new GeneratingIdAccessor(entity.getPropertyAccessor(objectToInsert),
 				entity.getIdProperty(), identifierGenerator);
-		Object id = generatingIdAccessor.getOrGenerateId();
+		Object id = generatingIdAccessor.getOrGenerateIdentifier();
 
 		insert((Serializable) id, objectToInsert);
 		return objectToInsert;
@@ -105,8 +101,8 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public void insert(final Serializable id, final Object objectToInsert) {
 
-		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
-		Assert.notNull(objectToInsert, "Object to be inserted must not be 'null'.");
+		Assert.notNull(id, "Id for object to be inserted must not be null!");
+		Assert.notNull(objectToInsert, "Object to be inserted must not be null!");
 
 		execute(new KeyValueCallback<Void>() {
 
@@ -151,8 +147,8 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public void update(final Serializable id, final Object objectToUpdate) {
 
-		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
-		Assert.notNull(objectToUpdate, "Object to be updated must not be 'null'. Use delete to remove.");
+		Assert.notNull(id, "Id for object to be inserted must not be null!");
+		Assert.notNull(objectToUpdate, "Object to be updated must not be null!");
 
 		execute(new KeyValueCallback<Void>() {
 
@@ -171,7 +167,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public <T> List<T> findAllOf(final Class<T> type) {
 
-		Assert.notNull(type, "Type to fetch must not be 'null'.");
+		Assert.notNull(type, "Type to fetch must not be null!");
 
 		return execute(new KeyValueCallback<List<T>>() {
 
@@ -204,8 +200,8 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public <T> T findById(final Serializable id, final Class<T> type) {
 
-		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
-		Assert.notNull(type, "Type to fetch must not be 'null'.");
+		Assert.notNull(id, "Id for object to be inserted must not be null!");
+		Assert.notNull(type, "Type to fetch must not be null!");
 
 		return execute(new KeyValueCallback<T>() {
 
@@ -231,7 +227,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public void delete(final Class<?> type) {
 
-		Assert.notNull(type, "Type to delete must not be 'null'.");
+		Assert.notNull(type, "Type to delete must not be null!");
 
 		final String typeKey = resolveKeySpace(type);
 
@@ -267,8 +263,8 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public <T> T delete(final Serializable id, final Class<T> type) {
 
-		Assert.notNull(id, "Id for object to be inserted must not be 'null'.");
-		Assert.notNull(type, "Type to delete must not be 'null'.");
+		Assert.notNull(id, "Id for object to be inserted must not be null!");
+		Assert.notNull(type, "Type to delete must not be null!");
 
 		return execute(new KeyValueCallback<T>() {
 
@@ -287,7 +283,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public long count(Class<?> type) {
 
-		Assert.notNull(type, "Type for count must not be 'null'.");
+		Assert.notNull(type, "Type for count must not be null!");
 		return findAllOf(type).size();
 	}
 
@@ -298,13 +294,13 @@ public class KeyValueTemplate implements KeyValueOperations {
 	@Override
 	public <T> T execute(KeyValueCallback<T> action) {
 
-		Assert.notNull(action, "KeyValueCallback must not be 'null'.");
+		Assert.notNull(action, "KeyValueCallback must not be null!");
 
 		try {
 			return action.doInKeyValue(this.adapter);
 		} catch (RuntimeException e) {
 
-			// TODO: potentially convert runtime exception?
+			// TODO: Use PersistenceExceptionTranslator to translate exception
 			throw e;
 		}
 	}
@@ -328,7 +324,8 @@ public class KeyValueTemplate implements KeyValueOperations {
 					return new ArrayList<T>((Collection<T>) result);
 				}
 
-				ArrayList<T> filtered = new ArrayList<T>();
+				List<T> filtered = new ArrayList<T>();
+
 				for (Object candidate : result) {
 					if (typeCheck(type, candidate)) {
 						filtered.add((T) candidate);
@@ -395,6 +392,15 @@ public class KeyValueTemplate implements KeyValueOperations {
 		return this.mappingContext;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
+	@Override
+	public void destroy() throws Exception {
+		this.adapter.clear();
+	}
+
 	protected String resolveKeySpace(Class<?> type) {
 
 		Class<?> userClass = ClassUtils.getUserClass(type);
@@ -407,6 +413,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 		String keySpaceString = null;
 		Object keySpace = getKeySpace(type);
+
 		if (keySpace != null) {
 			keySpaceString = keySpace.toString();
 		}
@@ -419,53 +426,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 		return keySpaceString;
 	}
 
-	/**
-	 * Looks up {@link Persistent} when used as meta annotation to find the {@link KeySpace} attribute.
-	 * 
-	 * @return
-	 * @since 1.10
-	 */
-
-	Object getKeySpace(Class<?> type) {
-
-		KeySpace keyspace = AnnotationUtils.findAnnotation(type, KeySpace.class);
-		if (keyspace != null) {
-			return AnnotationUtils.getValue(keyspace);
-		}
-
-		AnnotationDescriptor<Persistent> descriptor = MetaAnnotationUtils.findAnnotationDescriptor(type, Persistent.class);
-
-		if (descriptor != null && descriptor.getComposedAnnotation() != null) {
-
-			Annotation composed = descriptor.getComposedAnnotation();
-
-			for (Method method : descriptor.getComposedAnnotationType().getDeclaredMethods()) {
-
-				keyspace = AnnotationUtils.findAnnotation(method, KeySpace.class);
-
-				if (keyspace != null) {
-					return AnnotationUtils.getValue(composed, method.getName());
-				}
-			}
-		}
-		return null;
+	private static boolean typeCheck(Class<?> requiredType, Object candidate) {
+		return candidate == null ? true : ClassUtils.isAssignable(requiredType, candidate.getClass());
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
-	 */
-	@Override
-	public void destroy() throws Exception {
-		this.adapter.clear();
-	}
-
-	private boolean typeCheck(Class<?> requiredType, Object candidate) {
-
-		if (candidate == null) {
-			return true;
-		}
-		return ClassUtils.isAssignable(requiredType, candidate.getClass());
-	}
-
 }

@@ -82,6 +82,7 @@ public class KeyValueRepositoryConfigurationExtension extends RepositoryConfigur
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
 
 		AnnotationAttributes attributes = config.getAttributes();
+
 		builder.addPropertyReference("keyValueOperations", attributes.getString("keyValueTemplateRef"));
 		builder.addPropertyValue("queryCreator", attributes.getClass("queryCreator"));
 
@@ -100,5 +101,4 @@ public class KeyValueRepositoryConfigurationExtension extends RepositoryConfigur
 		super.registerBeansForRoot(registry, configurationSource);
 		this.mappingContextAvailable = registry.containsBeanDefinition("keyValueMappingContext");
 	}
-
 }

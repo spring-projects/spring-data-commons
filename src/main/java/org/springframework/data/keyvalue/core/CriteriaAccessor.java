@@ -26,6 +26,11 @@ import org.springframework.data.keyvalue.core.query.KeyValueQuery;
  */
 public interface CriteriaAccessor<T> {
 
+	/**
+	 * TODO: JavaDoc.
+	 * 
+	 * @param query
+	 * @return
+	 */
 	T resolve(KeyValueQuery<?> query);
-
 }

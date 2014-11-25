@@ -128,5 +128,4 @@ public @interface EnableKeyValueRepositories {
 	 * @return
 	 */
 	Class<? extends AbstractQueryCreator<?, ?>> queryCreator() default SpelQueryCreator.class;
-
 }

@@ -41,11 +41,19 @@ public class SpelQueryEngine<T extends KeyValueAdapter> extends
 		super(SpelCriteriaAccessor.INSTANCE, SpelSortAccessor.INSTNANCE);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.QueryEngine#execute(java.lang.Object, java.lang.Object, int, int, java.io.Serializable)
+	 */
 	@Override
 	public Collection<?> execute(SpelExpression criteria, Comparator<?> sort, int offset, int rows, Serializable keyspace) {
 		return sortAndFilterMatchingRange(getAdapter().getAllOf(keyspace), criteria, sort, offset, rows);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.QueryEngine#count(java.lang.Object, java.io.Serializable)
+	 */
 	@Override
 	public long count(SpelExpression criteria, Serializable keyspace) {
 		return filterMatchingRange(getAdapter().getAllOf(keyspace), criteria, -1, -1).size();

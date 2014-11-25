@@ -27,6 +27,7 @@ import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.util.Assert;
 
 import com.mysema.query.collections.CollQuery;
 import com.mysema.query.support.ProjectableQuery;
@@ -43,7 +44,7 @@ import com.mysema.query.types.path.PathBuilder;
  * @param <T>
  * @param <ID>
  */
-public class QueryDslKeyValueRepository<T, ID extends Serializable> extends BasicKeyValueRepository<T, ID> implements
+public class QueryDslKeyValueRepository<T, ID extends Serializable> extends SimpleKeyValueRepository<T, ID> implements
 		QueryDslPredicateExecutor<T> {
 
 	private static final EntityPathResolver DEFAULT_ENTITY_PATH_RESOLVER = SimpleEntityPathResolver.INSTANCE;
@@ -52,22 +53,31 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 	private final PathBuilder<T> builder;
 
 	/**
-	 * @param entityInformation
-	 * @param operations
+	 * Creates a new {@link QueryDslKeyValueRepository} for the given {@link EntityInformation} and
+	 * {@link KeyValueOperations}.
+	 * 
+	 * @param entityInformation must not be {@literal null}.
+	 * @param operations must not be {@literal null}.
 	 */
 	public QueryDslKeyValueRepository(EntityInformation<T, ID> entityInformation, KeyValueOperations operations) {
 		this(entityInformation, operations, DEFAULT_ENTITY_PATH_RESOLVER);
 	}
 
 	/**
-	 * @param entityInformation
-	 * @param operations
-	 * @param resolver
+	 * Creates a new {@link QueryDslKeyValueRepository} for the given {@link EntityInformation},
+	 * {@link KeyValueOperations} and {@link EntityPathResolver}.
+	 * 
+	 * @param entityInformation must not be {@literal null}.
+	 * @param operations must not be {@literal null}.
+	 * @param resolver must not be {@literal null}.
 	 */
 	public QueryDslKeyValueRepository(EntityInformation<T, ID> entityInformation, KeyValueOperations operations,
 			EntityPathResolver resolver) {
 
 		super(entityInformation, operations);
+
+		Assert.notNull(resolver, "EntityPathResolver must not be null!");
+
 		this.path = resolver.createPath(entityInformation.getJavaType());
 		this.builder = new PathBuilder<T>(path.getType(), path.getMetadata());
 	}
@@ -78,9 +88,7 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 	 */
 	@Override
 	public T findOne(Predicate predicate) {
-
-		ProjectableQuery<?> query = prepareQuery(predicate);
-		return query.uniqueResult(builder);
+		return prepareQuery(predicate).uniqueResult(builder);
 	}
 
 	/*
@@ -89,9 +97,7 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 	 */
 	@Override
 	public Iterable<T> findAll(Predicate predicate) {
-
-		ProjectableQuery<?> query = prepareQuery(predicate);
-		return query.list(builder);
+		return prepareQuery(predicate).list(builder);
 	}
 
 	/*
@@ -103,6 +109,7 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 
 		ProjectableQuery<?> query = prepareQuery(predicate);
 		query.orderBy(orders);
+
 		return query.list(builder);
 	}
 
@@ -116,6 +123,7 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 		ProjectableQuery<?> query = prepareQuery(predicate);
 
 		if (pageable != null) {
+
 			query.offset(pageable.getOffset());
 			query.limit(pageable.getPageSize());
 
@@ -133,9 +141,7 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 	 */
 	@Override
 	public long count(Predicate predicate) {
-
-		ProjectableQuery<?> query = prepareQuery(predicate);
-		return query.count();
+		return prepareQuery(predicate).count();
 	}
 
 	/**
@@ -147,10 +153,10 @@ public class QueryDslKeyValueRepository<T, ID extends Serializable> extends Basi
 	protected ProjectableQuery<?> prepareQuery(Predicate predicate) {
 
 		CollQuery query = new CollQuery();
+
 		query.from(builder, findAll());
 		query.where(predicate);
 
 		return query;
 	}
-
 }

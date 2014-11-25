@@ -42,21 +42,21 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SpELQueryCreatorUnitTests {
+public class SpelQueryCreatorUnitTests {
 
-	private static final DateTimeFormatter FORMATTER = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC();
+	static final DateTimeFormatter FORMATTER = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC();
 
-	private static final Person RICKON = new Person("rickon", 4);
-	private static final Person BRAN = new Person("bran", 9)//
+	static final Person RICKON = new Person("rickon", 4);
+	static final Person BRAN = new Person("bran", 9)//
 			.skinChanger(true)//
 			.bornAt(FORMATTER.parseDateTime("2013-01-31T06:00:00Z").toDate());
-	private static final Person ARYA = new Person("arya", 13);
-	private static final Person ROBB = new Person("robb", 16)//
+	static final Person ARYA = new Person("arya", 13);
+	static final Person ROBB = new Person("robb", 16)//
 			.named("stark")//
 			.bornAt(FORMATTER.parseDateTime("2010-09-20T06:00:00Z").toDate());
-	private static final Person JON = new Person("jon", 17).named("snow");
+	static final Person JON = new Person("jon", 17).named("snow");
 
-	private @Mock RepositoryMetadata metadataMock;
+	@Mock RepositoryMetadata metadataMock;
 
 	/**
 	 * @see DATACMNS-525
@@ -378,7 +378,7 @@ public class SpELQueryCreatorUnitTests {
 		assertThat(evaluate("findByLastnameMatches", "^s.*w$").against(ROBB), is(false));
 	}
 
-	Evaluation evaluate(String methodName, Object... args) throws Exception {
+	private Evaluation evaluate(String methodName, Object... args) throws Exception {
 		return new Evaluation((SpelExpression) createQueryForMethodWithArgs(methodName, args).getCritieria());
 	}
 
@@ -391,8 +391,8 @@ public class SpELQueryCreatorUnitTests {
 			for (int i = 0; i < args.length; i++) {
 				argTypes[i] = args[i].getClass();
 			}
-
 		}
+
 		Method method = PersonRepository.class.getMethod(methodName, argTypes);
 
 		PartTree partTree = new PartTree(method.getName(), method.getReturnType());
@@ -401,6 +401,7 @@ public class SpELQueryCreatorUnitTests {
 
 		KeyValueQuery<SpelExpression> q = creator.createQuery();
 		q.getCritieria().setEvaluationContext(new StandardEvaluationContext(args));
+
 		return q;
 	}
 
@@ -561,7 +562,5 @@ public class SpELQueryCreatorUnitTests {
 			this.birthday = date;
 			return this;
 		}
-
 	}
-
 }

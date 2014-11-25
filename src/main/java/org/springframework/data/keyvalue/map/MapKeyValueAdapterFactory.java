@@ -38,6 +38,8 @@ public class MapKeyValueAdapterFactory {
 	private Map<Serializable, Map<? extends Serializable, ?>> initialValues;
 
 	/**
+	 * Creates a new {@link MapKeyValueAdapterFactory}.
+	 * 
 	 * @see MapKeyValueAdapterFactory#MapKeyValueAdapterFactory(Class)
 	 */
 	public MapKeyValueAdapterFactory() {
@@ -45,6 +47,8 @@ public class MapKeyValueAdapterFactory {
 	}
 
 	/**
+	 * Creates a new MKVAF with the given {@link Map} type to be used to hold the values in.
+	 * 
 	 * @param type any {@link Class} of type {@link Map}. Can be {@literal null} and will be defaulted to
 	 *          {@link ConcurrentHashMap}.
 	 */
@@ -58,18 +62,27 @@ public class MapKeyValueAdapterFactory {
 	/**
 	 * Set values for a given {@literal keyspace} that to populate the adapter after creation.
 	 * 
-	 * @param keyspace
-	 * @param values
+	 * @param keyspace must not be {@literal null}.
+	 * @param values must not be {@literal null}.
 	 */
 	public void setInitialValuesForKeyspace(Serializable keyspace, Map<? extends Serializable, ?> values) {
 
-		Assert.notNull(keyspace, "KeySpace must not be 'null'.");
-		Assert.notNull(values, "Values must not be 'null'.");
+		Assert.notNull(keyspace, "KeySpace must not be null!");
+		Assert.notNull(values, "Values must not be null!");
+
 		initialValues.put(keyspace, values);
 	}
 
+	/**
+	 * Configures the {@link Map} type to be used as backing store.
+	 * 
+	 * @param mapType must not be {@literal null}.
+	 */
 	@SuppressWarnings("rawtypes")
 	public void setMapType(Class<? extends Map> mapType) {
+
+		Assert.notNull(mapType, "May type must not be null!");
+
 		this.mapType = mapType;
 	}
 
@@ -82,6 +95,7 @@ public class MapKeyValueAdapterFactory {
 
 		MapKeyValueAdapter adapter = createAdapter();
 		populateAdapter(adapter);
+
 		return adapter;
 	}
 
