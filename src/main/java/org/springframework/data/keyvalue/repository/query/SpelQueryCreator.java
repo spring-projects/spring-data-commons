@@ -20,7 +20,6 @@ import java.util.Iterator;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
-import org.springframework.data.keyvalue.core.spel.SpelExpressionFactory;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 import org.springframework.data.repository.query.parser.Part;
@@ -28,6 +27,7 @@ import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.expression.spel.standard.SpelExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * {@link AbstractQueryCreator} to create {@link SpelExpression} based {@link KeyValueQuery}s.
@@ -37,6 +37,8 @@ import org.springframework.expression.spel.standard.SpelExpression;
  * @since 1.10
  */
 public class SpelQueryCreator extends AbstractQueryCreator<KeyValueQuery<SpelExpression>, String> {
+
+	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
 	private final SpelExpression expression;
 
@@ -199,6 +201,6 @@ public class SpelQueryCreator extends AbstractQueryCreator<KeyValueQuery<SpelExp
 			}
 		}
 
-		return SpelExpressionFactory.parseRaw(sb.toString());
+		return PARSER.parseRaw(sb.toString());
 	}
 }

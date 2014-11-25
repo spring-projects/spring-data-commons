@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.keyvalue.repository.config;
+package org.springframework.data.keyvalue.hazelcast.repository.config;
 
+import static org.hamcrest.collection.IsCollectionWithSize.*;
+import static org.hamcrest.core.Is.*;
 import static org.hamcrest.core.IsNull.*;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.junit.Test;
@@ -28,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.keyvalue.core.KeyValueOperations;
 import org.springframework.data.keyvalue.core.KeyValueTemplate;
-import org.springframework.data.keyvalue.map.MapKeyValueAdapter;
+import org.springframework.data.keyvalue.hazelcast.HazelcastUtils;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -38,29 +41,36 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class KeyValueRepositoryRegistrarUnitTests {
+public class EnableHazelcastRepositoriesIntegrationTests {
 
 	@Configuration
-	@EnableKeyValueRepositories(considerNestedRepositories = true)
+	@EnableHazelcastRepositories(considerNestedRepositories = true)
 	static class Config {
 
 		@Bean
 		public KeyValueOperations keyValueTemplate() {
-			return new KeyValueTemplate(new MapKeyValueAdapter());
+			return new KeyValueTemplate(HazelcastUtils.preconfiguredHazelcastKeyValueAdapter());
 		}
 	}
 
 	@Autowired PersonRepository repo;
 
-	/**
-	 * @see DATACMNS-525
-	 */
 	@Test
 	public void shouldEnableKeyValueRepositoryCorrectly() {
 		assertThat(repo, notNullValue());
+
+		Person person = new Person();
+		person.setFirstname("foo");
+		repo.save(person);
+
+		List<Person> result = repo.findByFirstname("foo");
+		assertThat(result, hasSize(1));
+		assertThat(result.get(0).firstname, is("foo"));
 	}
 
-	static class Person {
+	static class Person implements Serializable {
+
+		private static final long serialVersionUID = -1654603912377346292L;
 
 		@Id String id;
 		String firstname;

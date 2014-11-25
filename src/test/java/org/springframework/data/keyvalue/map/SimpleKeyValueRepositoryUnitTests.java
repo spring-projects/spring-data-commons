@@ -41,7 +41,7 @@ import org.springframework.data.repository.CrudRepository;
 /**
  * @author Christoph Strobl
  */
-public class MapBackedKeyValueRepositoryUnitTests {
+public class SimpleKeyValueRepositoryUnitTests {
 
 	protected static final Person CERSEI = new Person("cersei", 19);
 	protected static final Person JAIME = new Person("jaime", 19);

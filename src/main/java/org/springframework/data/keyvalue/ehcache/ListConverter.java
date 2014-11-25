@@ -24,7 +24,6 @@ import org.springframework.core.convert.converter.Converter;
  * @author Christoph Strobl
  * @param <S>
  * @param <T>
- * @since 1.10
  */
 public class ListConverter<S, T> implements Converter<Iterable<S>, List<T>> {
 

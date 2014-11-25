@@ -44,7 +44,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class EnableEhCacheRepositoriesUnitTests {
+public class EnableEhCacheRepositoriesIntegrationTests {
 
 	@Configuration
 	@EnableEhCacheRepositories(considerNestedRepositories = true)

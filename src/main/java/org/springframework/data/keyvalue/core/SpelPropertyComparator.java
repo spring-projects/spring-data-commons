@@ -17,31 +17,36 @@ package org.springframework.data.keyvalue.core;
 
 import java.util.Comparator;
 
-import org.springframework.data.keyvalue.core.spel.SpelExpressionFactory;
 import org.springframework.expression.spel.standard.SpelExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * {@link Comparator} implementation using {@link SpelExpression}.
  *
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.10
  * @param <T>
  */
-public class SpelPropertyComperator<T> implements Comparator<T> {
+public class SpelPropertyComparator<T> implements Comparator<T> {
 
 	private final String path;
-	private SpelExpression expression;
+	private final SpelExpressionParser parser;
 
 	private boolean asc = true;
 	private boolean nullsFirst = true;
+	private SpelExpression expression;
 
 	/**
-	 * Create new {@link SpelPropertyComperator} comparing given property path.
+	 * Create new {@link SpelPropertyComparator} for the given property path an {@link SpelExpressionParser}..
 	 * 
-	 * @param path
+	 * @param path must not be {@literal null} or empty.
+	 * @param parser must not be {@literal null}.
 	 */
-	public SpelPropertyComperator(String path) {
+	public SpelPropertyComparator(String path, SpelExpressionParser parser) {
+
 		this.path = path;
+		this.parser = parser;
 	}
 
 	/**
@@ -49,7 +54,7 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	 * 
 	 * @return
 	 */
-	public SpelPropertyComperator<T> asc() {
+	public SpelPropertyComparator<T> asc() {
 		this.asc = true;
 		return this;
 	}
@@ -59,7 +64,7 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	 * 
 	 * @return
 	 */
-	public SpelPropertyComperator<T> desc() {
+	public SpelPropertyComparator<T> desc() {
 		this.asc = false;
 		return this;
 	}
@@ -69,7 +74,7 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	 * 
 	 * @return
 	 */
-	public SpelPropertyComperator<T> nullsFirst() {
+	public SpelPropertyComparator<T> nullsFirst() {
 		this.nullsFirst = true;
 		return this;
 	}
@@ -79,7 +84,7 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	 * 
 	 * @return
 	 */
-	public SpelPropertyComperator<T> nullsLast() {
+	public SpelPropertyComparator<T> nullsLast() {
 		this.nullsFirst = false;
 		return this;
 	}
@@ -92,7 +97,7 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	protected SpelExpression getExpression() {
 
 		if (this.expression == null) {
-			this.expression = SpelExpressionFactory.parseRaw(buildExpressionForPath());
+			this.expression = parser.parseRaw(buildExpressionForPath());
 		}
 
 		return this.expression;
@@ -142,5 +147,4 @@ public class SpelPropertyComperator<T> implements Comparator<T> {
 	public String getPath() {
 		return path;
 	}
-
 }

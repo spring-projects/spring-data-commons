@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @see #getOrGenerateIdentifier()
  */
-public class GeneratingIdAccessor implements IdentifierAccessor {
+class GeneratingIdAccessor implements IdentifierAccessor {
 
 	private final PersistentPropertyAccessor accessor;
 	private final PersistentProperty<?> identifierProperty;

@@ -32,7 +32,6 @@ import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * @author Christoph Strobl
- * @since 1.10
  */
 public class EhCacheQueryCreator extends AbstractQueryCreator<KeyValueQuery<Criteria>, Criteria> {
 

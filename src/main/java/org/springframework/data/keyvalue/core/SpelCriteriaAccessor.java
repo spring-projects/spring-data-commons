@@ -16,18 +16,29 @@
 package org.springframework.data.keyvalue.core;
 
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
-import org.springframework.data.keyvalue.core.spel.SpelExpressionFactory;
 import org.springframework.expression.spel.standard.SpelExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.util.Assert;
 
 /**
  * {@link CriteriaAccessor} implementation capable of {@link SpelExpression}s.
  * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.10
  */
-public enum SpelCriteriaAccessor implements CriteriaAccessor<SpelExpression> {
+class SpelCriteriaAccessor implements CriteriaAccessor<SpelExpression> {
 
-	INSTANCE;
+	private final SpelExpressionParser parser;
+
+	/**
+	 * @param parser must not be {@literal null}.
+	 */
+	public SpelCriteriaAccessor(SpelExpressionParser parser) {
+
+		Assert.notNull(parser, "SpelExpressionParser must not be null!");
+		this.parser = parser;
+	}
 
 	@Override
 	public SpelExpression resolve(KeyValueQuery<?> query) {
@@ -41,10 +52,9 @@ public enum SpelCriteriaAccessor implements CriteriaAccessor<SpelExpression> {
 		}
 
 		if (query.getCritieria() instanceof String) {
-			return SpelExpressionFactory.parseRaw((String) query.getCritieria());
+			return parser.parseRaw((String) query.getCritieria());
 		}
 
 		throw new IllegalArgumentException("Cannot create SpelCriteria for " + query.getCritieria());
 	}
-
 }

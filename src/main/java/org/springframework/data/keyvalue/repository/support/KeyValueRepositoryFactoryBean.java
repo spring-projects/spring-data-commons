@@ -35,7 +35,6 @@ public class KeyValueRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ex
 		RepositoryFactoryBeanSupport<T, S, ID> {
 
 	private KeyValueOperations operations;
-	private boolean mappingContextAvailable = false;
 	private Class<? extends AbstractQueryCreator<?, ?>> queryCreator;
 
 	public void setKeyValueOperations(KeyValueOperations operations) {
@@ -48,9 +47,7 @@ public class KeyValueRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ex
 	 */
 	@Override
 	public void setMappingContext(MappingContext<?, ?> mappingContext) {
-
 		super.setMappingContext(mappingContext);
-		this.mappingContextAvailable = mappingContext != null;
 	}
 
 	public void setQueryCreator(Class<? extends AbstractQueryCreator<?, ?>> queryCreator) {
@@ -72,11 +69,6 @@ public class KeyValueRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ex
 	 */
 	@Override
 	public void afterPropertiesSet() {
-
-		if (!mappingContextAvailable) {
-			super.setMappingContext(operations.getMappingContext());
-		}
-
 		super.afterPropertiesSet();
 	}
 }

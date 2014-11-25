@@ -21,17 +21,34 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.NullHandling;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.util.Assert;
 import org.springframework.util.comparator.CompoundComparator;
 
 /**
- * {@link SortAccessor} implementation capable of creating {@link SpelPropertyComperator}.
+ * {@link SortAccessor} implementation capable of creating {@link SpelPropertyComparator}.
  * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
+ * @since 1.10
  */
-public enum SpelSortAccessor implements SortAccessor<Comparator<?>> {
+class SpelSortAccessor implements SortAccessor<Comparator<?>> {
 
-	INSTNANCE;
+	private final SpelExpressionParser parser;
 
+	/**
+	 * @param parser must not be {@literal null}.
+	 */
+	public SpelSortAccessor(SpelExpressionParser parser) {
+
+		Assert.notNull(parser, "SpelExpressionParser must not be null!");
+		this.parser = parser;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.SortAccessor#resolve(org.springframework.data.keyvalue.core.query.KeyValueQuery)
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Comparator<?> resolve(KeyValueQuery<?> query) {
@@ -43,7 +60,7 @@ public enum SpelSortAccessor implements SortAccessor<Comparator<?>> {
 		CompoundComparator compoundComperator = new CompoundComparator();
 		for (Order order : query.getSort()) {
 
-			SpelPropertyComperator<?> spelSort = new SpelPropertyComperator(order.getProperty());
+			SpelPropertyComparator<?> spelSort = new SpelPropertyComparator(order.getProperty(), parser);
 
 			if (Direction.DESC.equals(order.getDirection())) {
 

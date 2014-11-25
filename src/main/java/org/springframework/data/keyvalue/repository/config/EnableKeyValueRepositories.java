@@ -30,7 +30,6 @@ import org.springframework.data.keyvalue.repository.query.SpelQueryCreator;
 import org.springframework.data.keyvalue.repository.support.KeyValueRepositoryFactoryBean;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
-import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 
 /**
  * Annotation to activate KeyValue repositories. If no base package is configured through either {@link #value()},
@@ -44,6 +43,7 @@ import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 @Documented
 @Inherited
 @Import(KeyValueRepositoriesRegistrar.class)
+@QueryCreatorType(SpelQueryCreator.class)
 public @interface EnableKeyValueRepositories {
 
 	/**
@@ -120,12 +120,4 @@ public @interface EnableKeyValueRepositories {
 	 * repositories infrastructure.
 	 */
 	boolean considerNestedRepositories() default false;
-
-	/**
-	 * Configures the query creator to be used for deriving queries from
-	 * {@link org.springframework.data.repository.query.parser.PartTree}.
-	 * 
-	 * @return
-	 */
-	Class<? extends AbstractQueryCreator<?, ?>> queryCreator() default SpelQueryCreator.class;
 }

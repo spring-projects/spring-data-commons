@@ -33,7 +33,7 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 /**
  * @author Christoph Strobl
  */
-public class QueryDslMapRepositoryUnitTests extends MapBackedKeyValueRepositoryUnitTests {
+public class QueryDslMapRepositoryUnitTests extends SimpleKeyValueRepositoryUnitTests {
 
 	/**
 	 * @see DATACMNS-525
