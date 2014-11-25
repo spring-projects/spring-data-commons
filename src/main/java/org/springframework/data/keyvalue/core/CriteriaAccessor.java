@@ -27,10 +27,13 @@ import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 public interface CriteriaAccessor<T> {
 
 	/**
-	 * TODO: JavaDoc.
+	 * Checks and reads {@link KeyValueQuery#getCritieria()} of given {@link KeyValueQuery}. Might also apply additional
+	 * transformation to match the desired type.
 	 * 
 	 * @param query
-	 * @return
+	 * @return the criteria extracted from the query.
+	 * @throws IllegalArgumentException in case the criteria is not valid for usage with specific {@link CriteriaAccessor}
+	 *           .
 	 */
 	T resolve(KeyValueQuery<?> query);
 }

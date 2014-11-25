@@ -27,6 +27,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Persistent;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.keyvalue.core.KeyValueOperations;
 import org.springframework.data.keyvalue.repository.support.SimpleKeyValueRepository;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
@@ -35,7 +38,7 @@ import org.springframework.data.repository.core.support.ReflectionEntityInformat
  * @author Christoph Strobl
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BasicKeyValueRepositoryUnitTests {
+public class SimpleKeyValueRepositoryUnitTests {
 
 	private SimpleKeyValueRepository<Foo, String> repo;
 	private @Mock KeyValueOperations opsMock;
@@ -58,7 +61,10 @@ public class BasicKeyValueRepositoryUnitTests {
 		SimpleKeyValueRepository<WithNumericId, Integer> temp = new SimpleKeyValueRepository<WithNumericId, Integer>(ei,
 				opsMock);
 
-		WithNumericId foo = temp.save(new WithNumericId());
+		WithNumericId withNumericId = new WithNumericId();
+		temp.save(withNumericId);
+
+		verify(opsMock, times(1)).insert(eq(withNumericId));
 	}
 
 	/**
@@ -134,6 +140,40 @@ public class BasicKeyValueRepositoryUnitTests {
 		repo.findAll(Arrays.asList("one", "two", "three"));
 
 		verify(opsMock, times(3)).findById(anyString(), eq(Foo.class));
+	}
+
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test
+	public void findAllWithPageableShouldDelegateToOperationsCorrectlyWhenPageableDoesNotContainSort() {
+
+		repo.findAll(new PageRequest(10, 15));
+
+		verify(opsMock, times(1)).findInRange(eq(150), eq(15), isNull(Sort.class), eq(Foo.class));
+	}
+
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test
+	public void findAllWithPageableShouldDelegateToOperationsCorrectlyWhenPageableContainsSort() {
+
+		Sort sort = new Sort("for", "bar");
+		repo.findAll(new PageRequest(10, 15, sort));
+
+		verify(opsMock, times(1)).findInRange(eq(150), eq(15), eq(sort), eq(Foo.class));
+	}
+
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test
+	public void findAllShouldFallbackToFindAllOfWhenGivenNullPageable() {
+
+		repo.findAll((Pageable) null);
+
+		verify(opsMock, times(1)).findAllOf(eq(Foo.class));
 	}
 
 	static class Foo {
