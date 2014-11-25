@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.invoker;
+package org.springframework.data.repository.support;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -23,7 +23,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.support.Repositories;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.Assert;
 

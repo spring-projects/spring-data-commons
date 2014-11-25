@@ -26,9 +26,6 @@ import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.invoker.DefaultRepositoryInvokerFactory;
-import org.springframework.data.repository.invoker.RepositoryInvoker;
-import org.springframework.data.repository.invoker.RepositoryInvokerFactory;
 import org.springframework.util.StringUtils;
 
 /**

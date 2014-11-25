@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.invoker;
+package org.springframework.data.repository.support;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -25,6 +25,7 @@ import java.util.List;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.data.repository.support.RepositoryInvoker;
 
 /**
  * Utility methods to create {@link RepositoryInvoker} instances that get a verifying proxy attached so that the

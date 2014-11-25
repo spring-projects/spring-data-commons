@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.invoker;
+package org.springframework.data.repository.support;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -30,7 +30,13 @@ import org.springframework.data.repository.sample.Product;
 import org.springframework.data.repository.sample.ProductRepository;
 import org.springframework.data.repository.sample.SampleConfiguration;
 import org.springframework.data.repository.sample.User;
+import org.springframework.data.repository.support.CrudRepositoryInvoker;
+import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
+import org.springframework.data.repository.support.PagingAndSortingRepositoryInvoker;
+import org.springframework.data.repository.support.ReflectionRepositoryInvoker;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 

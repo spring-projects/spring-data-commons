@@ -13,22 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.invoker;
+package org.springframework.data.repository.support;
 
 /**
- * Interface for a factory to create {@link RepositoryInvoker} instances for repositories managing a particular domain
- * type.
+ * Meta-information about the methods a repository exposes.
  * 
  * @author Oliver Gierke
  * @since 1.10
  */
-public interface RepositoryInvokerFactory {
+public interface RepositoryInvocationInformation {
 
 	/**
-	 * Returns the {@link RepositoryInvoker} for a repository managing the given domain type.
+	 * Returns whether the repository has a method to save objects.
 	 * 
-	 * @param domainType must not be {@literal null}.
 	 * @return
 	 */
-	RepositoryInvoker getInvokerFor(Class<?> domainType);
+	boolean hasSaveMethod();
+
+	/**
+	 * Returns whether the repository has a method to delete objects.
+	 * 
+	 * @return
+	 */
+	boolean hasDeleteMethod();
+
+	/**
+	 * Returns whether the repository has a method to find a single object.
+	 * 
+	 * @return
+	 */
+	boolean hasFindOneMethod();
+
+	/**
+	 * Returns whether the repository has a method to find all objects.
+	 * 
+	 * @return
+	 */
+	boolean hasFindAllMethod();
 }

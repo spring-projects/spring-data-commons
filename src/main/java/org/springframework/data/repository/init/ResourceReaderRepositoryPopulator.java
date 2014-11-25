@@ -26,10 +26,10 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.data.repository.invoker.DefaultRepositoryInvokerFactory;
-import org.springframework.data.repository.invoker.RepositoryInvoker;
-import org.springframework.data.repository.invoker.RepositoryInvokerFactory;
+import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.util.Assert;
 
 /**

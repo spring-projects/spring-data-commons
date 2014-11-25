@@ -29,7 +29,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.invoker.RepositoryInvoker;
 
 /**
  * Unit test for {@link DomainClassPropertyEditor}.

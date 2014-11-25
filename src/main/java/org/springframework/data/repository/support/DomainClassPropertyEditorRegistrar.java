@@ -22,9 +22,6 @@ import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.invoker.DefaultRepositoryInvokerFactory;
-import org.springframework.data.repository.invoker.RepositoryInvoker;
-import org.springframework.data.repository.invoker.RepositoryInvokerFactory;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**

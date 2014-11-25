@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.invoker;
+package org.springframework.data.repository.support;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.repository.invoker.RepositoryInvocationTestUtils.*;
+import static org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -41,9 +41,11 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
-import org.springframework.data.repository.invoker.CrudRepositoryInvokerUnitTests.Person;
-import org.springframework.data.repository.invoker.CrudRepositoryInvokerUnitTests.PersonRepository;
-import org.springframework.data.repository.invoker.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
+import org.springframework.data.repository.support.ReflectionRepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.Person;
+import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.PersonRepository;
+import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
 import org.springframework.format.support.DefaultFormattingConversionService;
 
 /**
