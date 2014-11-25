@@ -23,7 +23,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
@@ -43,10 +45,13 @@ import org.springframework.util.StringUtils;
  */
 public class KeyValueTemplate implements KeyValueOperations {
 
+	private static final PersistenceExceptionTranslator DEFAULT_PERSISTENCE_EXCEPTION_TRANSLATOR = new KeyValuePersistenceExceptionTranslator();
+
 	private final KeyValueAdapter adapter;
 	private final ConcurrentHashMap<Class<?>, String> keySpaceCache = new ConcurrentHashMap<Class<?>, String>();
 	private final MappingContext<? extends PersistentEntity<?, ? extends PersistentProperty<?>>, ? extends PersistentProperty<?>> mappingContext;
 	private final IdentifierGenerator identifierGenerator;
+	private PersistenceExceptionTranslator exceptionTranslator = DEFAULT_PERSISTENCE_EXCEPTION_TRANSLATOR;
 
 	/**
 	 * Create new {@link KeyValueTemplate} using the given {@link KeyValueAdapter} with a default
@@ -299,9 +304,7 @@ public class KeyValueTemplate implements KeyValueOperations {
 		try {
 			return action.doInKeyValue(this.adapter);
 		} catch (RuntimeException e) {
-
-			// TODO: Use PersistenceExceptionTranslator to translate exception
-			throw e;
+			throw resolveExceptionIfPossible(e);
 		}
 	}
 
@@ -401,6 +404,17 @@ public class KeyValueTemplate implements KeyValueOperations {
 		this.adapter.clear();
 	}
 
+	/**
+	 * Set the {@link PersistenceExceptionTranslator} used for converting {@link RuntimeException}.
+	 * 
+	 * @param exceptionTranslator must not be {@literal null}.
+	 */
+	public void setExceptionTranslator(PersistenceExceptionTranslator exceptionTranslator) {
+
+		Assert.notNull(exceptionTranslator, "ExceptionTranslator must not be null.");
+		this.exceptionTranslator = exceptionTranslator;
+	}
+
 	protected String resolveKeySpace(Class<?> type) {
 
 		Class<?> userClass = ClassUtils.getUserClass(type);
@@ -428,5 +442,11 @@ public class KeyValueTemplate implements KeyValueOperations {
 
 	private static boolean typeCheck(Class<?> requiredType, Object candidate) {
 		return candidate == null ? true : ClassUtils.isAssignable(requiredType, candidate.getClass());
+	}
+
+	private RuntimeException resolveExceptionIfPossible(RuntimeException e) {
+
+		DataAccessException translatedException = exceptionTranslator.translateExceptionIfPossible(e);
+		return translatedException != null ? translatedException : e;
 	}
 }

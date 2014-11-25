@@ -72,15 +72,15 @@ public class SimpleKeyValueRepository<T, ID extends Serializable> implements Key
 	@Override
 	public Page<T> findAll(Pageable pageable) {
 
+		if (pageable == null) {
+			List<T> result = findAll();
+			return new PageImpl<T>(result, null, result.size());
+		}
+
 		List<T> content = null;
 
-		// TODO: do we need that guard? Can't findInRange(…) be able to deal with null sorts?
-		if (pageable.getSort() != null) {
-			content = operations.findInRange(pageable.getOffset(), pageable.getPageSize(), pageable.getSort(),
-					entityInformation.getJavaType());
-		} else {
-			content = operations.findInRange(pageable.getOffset(), pageable.getPageSize(), entityInformation.getJavaType());
-		}
+		content = operations.findInRange(pageable.getOffset(), pageable.getPageSize(), pageable.getSort(),
+				entityInformation.getJavaType());
 
 		return new PageImpl<T>(content, pageable, this.operations.count(entityInformation.getJavaType()));
 	}
