@@ -28,6 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.keyvalue.core.KeyValueOperations;
+import org.springframework.data.keyvalue.repository.support.SimpleKeyValueRepository;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
 
 /**

@@ -21,8 +21,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import org.springframework.data.keyvalue.core.KeyValueOperations;
-import org.springframework.data.keyvalue.repository.QueryDslKeyValueRepository;
-import org.springframework.data.keyvalue.repository.SimpleKeyValueRepository;
 import org.springframework.data.keyvalue.repository.query.KeyValuePartTreeQuery;
 import org.springframework.data.keyvalue.repository.query.SpelQueryCreator;
 import org.springframework.data.mapping.PersistentEntity;

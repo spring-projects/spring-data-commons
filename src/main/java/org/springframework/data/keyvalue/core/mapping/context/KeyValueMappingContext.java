@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.keyvalue.core.mapping;
+package org.springframework.data.keyvalue.core.mapping.context;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.SimpleTypeHolder;

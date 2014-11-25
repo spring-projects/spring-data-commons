@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.config;
+package org.springframework.data.keyvalue.repository.config;
 
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.NamespaceHandler;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.data.repository.config.RepositoryBeanDefinitionParser;
 
 /**
- * {@link NamespaceHandler} to register {@link BeanDefinitionParser}s for repository initializers.
+ * {@link NamespaceHandler} to register {@link BeanDefinitionParser}s for key-value repositories.
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -28,16 +29,14 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
  */
 public class RepositoryNameSpaceHandler extends NamespaceHandlerSupport {
 
-	private static final BeanDefinitionParser PARSER = new ResourceReaderRepositoryPopulatorBeanDefinitionParser();
-
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.NamespaceHandler#init()
 	 */
 	public void init() {
 
-		registerBeanDefinitionParser("unmarshaller-populator", PARSER);
-		registerBeanDefinitionParser("jackson-populator", PARSER);
-		registerBeanDefinitionParser("jackson2-populator", PARSER);
+		KeyValueRepositoryConfigurationExtension extension = new KeyValueRepositoryConfigurationExtension();
+		RepositoryBeanDefinitionParser repositoryBeanDefinitionParser = new RepositoryBeanDefinitionParser(extension);
+		registerBeanDefinitionParser("repositories", repositoryBeanDefinitionParser);
 	}
 }
