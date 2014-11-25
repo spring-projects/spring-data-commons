@@ -404,6 +404,14 @@ public class KeyValueTemplateUnitTests {
 		assertThat(template.findById("1", SUBCLASS_OF_ALIASED.getClass()), nullValue());
 	}
 
+	/**
+	 * @see DATACMNS-525
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void setttingNullPersistenceExceptionTranslatorShouldThrowException() {
+		template.setExceptionTranslator(null);
+	}
+
 	static class Foo {
 
 		String foo;
