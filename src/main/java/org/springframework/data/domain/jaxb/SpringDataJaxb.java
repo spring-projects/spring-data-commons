@@ -44,9 +44,11 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class SpringDataJaxb {
+public abstract class SpringDataJaxb {
 
 	public static final String NAMESPACE = "http://www.springframework.org/schema/data/jaxb";
+
+	private SpringDataJaxb() {}
 
 	/**
 	 * The DTO for {@link Pageable}s/{@link PageRequest}s.

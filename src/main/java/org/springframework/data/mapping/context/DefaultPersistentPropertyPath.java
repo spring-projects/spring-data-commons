@@ -158,7 +158,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 			return this;
 		}
 
-		List<T> properties = new ArrayList<T>();
+		List<T> result = new ArrayList<T>();
 		Iterator<T> iterator = iterator();
 
 		for (int i = 0; i < base.getLength(); i++) {
@@ -166,10 +166,10 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		}
 
 		while (iterator.hasNext()) {
-			properties.add(iterator.next());
+			result.add(iterator.next());
 		}
 
-		return new DefaultPersistentPropertyPath<T>(properties);
+		return new DefaultPersistentPropertyPath<T>(result);
 	}
 
 	/*

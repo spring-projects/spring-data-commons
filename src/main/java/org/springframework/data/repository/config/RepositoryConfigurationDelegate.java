@@ -56,7 +56,7 @@ public class RepositoryConfigurationDelegate {
 	private final RepositoryConfigurationSource configurationSource;
 	private final ResourceLoader resourceLoader;
 	private final Environment environment;
-	private final BeanNameGenerator generator;
+	private final BeanNameGenerator beanNameGenerator;
 	private final boolean isXml;
 	private final boolean inMultiStoreMode;
 
@@ -81,7 +81,7 @@ public class RepositoryConfigurationDelegate {
 		RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
 		generator.setBeanClassLoader(resourceLoader.getClassLoader());
 
-		this.generator = generator;
+		this.beanNameGenerator = generator;
 		this.configurationSource = configurationSource;
 		this.resourceLoader = resourceLoader;
 		this.environment = defaultEnvironment(environment, resourceLoader);
@@ -136,7 +136,7 @@ public class RepositoryConfigurationDelegate {
 			}
 
 			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
-			String beanName = generator.generateBeanName(beanDefinition, registry);
+			String beanName = beanNameGenerator.generateBeanName(beanDefinition, registry);
 
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName,

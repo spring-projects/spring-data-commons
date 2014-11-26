@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class RepositoryConfigurationUtils {
+public abstract class RepositoryConfigurationUtils {
 
 	private RepositoryConfigurationUtils() {}
 

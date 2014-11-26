@@ -18,6 +18,7 @@ package org.springframework.data.geo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Custom {@link Page} to carry the average distance retrieved from the {@link GeoResults} the {@link GeoPage} is set up
@@ -65,5 +66,34 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 	 */
 	public Distance getAverageDistance() {
 		return averageDistance;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.PageImpl#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+
+		if (this == obj) {
+			return true;
+		}
+
+		if (!(obj instanceof GeoPage)) {
+			return false;
+		}
+
+		GeoPage<?> that = (GeoPage<?>) obj;
+
+		return super.equals(obj) && ObjectUtils.nullSafeEquals(this.averageDistance, that.averageDistance);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.PageImpl#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return super.hashCode() + ObjectUtils.nullSafeHashCode(this.averageDistance);
 	}
 }

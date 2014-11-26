@@ -158,9 +158,10 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Override
 	public boolean isTransient() {
 
-		if (isTransient == null) {
-			boolean isTransient = super.isTransient() || isAnnotationPresent(Transient.class);
-			this.isTransient = isTransient || isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class);
+		if (this.isTransient == null) {
+			boolean potentiallyTransient = super.isTransient() || isAnnotationPresent(Transient.class);
+			this.isTransient = potentiallyTransient || isAnnotationPresent(Value.class)
+					|| isAnnotationPresent(Autowired.class);
 		}
 
 		return this.isTransient;

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.querydsl;
 
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -35,7 +34,8 @@ public interface QueryDslPredicateExecutor<T> {
 	 * 
 	 * @param predicate
 	 * @return a single entity matching the given {@link Predicate} or {@literal null} if none was found.
-	 * @throws IncorrectResultSizeDataAccessException if the predicate yields more than one result.
+	 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if the predicate yields more than one
+	 *           result.
 	 */
 	T findOne(Predicate predicate);
 

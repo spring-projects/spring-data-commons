@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
 public class SimpleTypeInformationMapper implements TypeInformationMapper {
 
 	public static final SimpleTypeInformationMapper INSTANCE = new SimpleTypeInformationMapper();
-	private static final Map<String, ClassTypeInformation<?>> cache = new ConcurrentHashMap<String, ClassTypeInformation<?>>();
+	private static final Map<String, ClassTypeInformation<?>> CACHE = new ConcurrentHashMap<String, ClassTypeInformation<?>>();
 
 	/**
 	 * Returns the {@link TypeInformation} that shall be used when the given {@link String} value is found as type hint.
@@ -56,7 +56,7 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 			return null;
 		}
 
-		ClassTypeInformation<?> information = cache.get(value);
+		ClassTypeInformation<?> information = CACHE.get(value);
 
 		if (information != null) {
 			return information;
@@ -69,7 +69,7 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 		}
 
 		if (information != null) {
-			cache.put(value, information);
+			CACHE.put(value, information);
 		}
 
 		return information;

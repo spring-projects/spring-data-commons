@@ -38,14 +38,14 @@ import com.google.common.base.Optional;
  * @author Oliver Gierke
  * @since 1.8
  */
-public class QueryExecutionConverters {
+public abstract class QueryExecutionConverters {
 
 	private static final boolean GUAVA_PRESENT = ClassUtils.isPresent("com.google.common.base.Optional",
 			QueryExecutionConverters.class.getClassLoader());
 	private static final boolean JDK_PRESENT = ClassUtils.isPresent("java.util.Optional",
 			QueryExecutionConverters.class.getClassLoader());
 
-	private static Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
+	private static final Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
 
 	static {
 

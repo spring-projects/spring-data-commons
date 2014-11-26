@@ -23,7 +23,7 @@ import org.springframework.data.repository.core.EntityInformation;
 
 /**
  * {@link EntityInformation} implementation that uses a {@link PersistentEntity} to obtain id type information and uses
- * a {@link BeanWrapper} to access the property value if requested.
+ * a {@link org.springframework.data.mapping.IdentifierAccessor} to access the property value if requested.
  * 
  * @author Oliver Gierke
  */

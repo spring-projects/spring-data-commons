@@ -77,7 +77,7 @@ public class DirectFieldAccessFallbackBeanWrapper extends BeanWrapperImpl {
 
 			if (field == null) {
 				throw new NotWritablePropertyException(getWrappedClass(), propertyName,
-						"Could not find field for property during fallback access!");
+						"Could not find field for property during fallback access!", e);
 			}
 
 			makeAccessible(field);

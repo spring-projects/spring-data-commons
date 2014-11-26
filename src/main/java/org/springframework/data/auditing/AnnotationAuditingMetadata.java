@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.5
  */
-class AnnotationAuditingMetadata {
+final class AnnotationAuditingMetadata {
 
 	private static final AnnotationFieldFilter CREATED_BY_FILTER = new AnnotationFieldFilter(CreatedBy.class);
 	private static final AnnotationFieldFilter CREATED_DATE_FILTER = new AnnotationFieldFilter(CreatedDate.class);
