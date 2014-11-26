@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.lang.reflect.Field;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.support.AbstractEntityInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -31,6 +30,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
  * retrieve the id.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class ReflectionEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
 
@@ -90,4 +90,5 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 	public Class<ID> getIdType() {
 		return (Class<ID>) field.getType();
 	}
+
 }

@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>1.10.0.BUILD-SNAPSHOT</version>
+	<version>1.10.0.IN-MEMORY-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 
@@ -103,6 +103,12 @@
 			<version>${querydsl}</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.mysema.querydsl</groupId>
+			<artifactId>querydsl-collections</artifactId>
+			<version>${querydsl}</version>
+		</dependency>
 
 		<!-- EJB Transactions -->
 		<dependency>
@@ -175,7 +181,23 @@
 			<version>1.8.6</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>2.8.3</version>
+			<optional>true</optional>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+			<version>3.3</version>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
+	
+	
 
 	<build>
 		<plugins>

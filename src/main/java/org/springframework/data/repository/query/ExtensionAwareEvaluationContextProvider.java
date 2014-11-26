@@ -94,7 +94,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @see org.springframework.data.jpa.repository.support.EvaluationContextProvider#getEvaluationContext()
 	 */
 	@Override
-	public <T extends Parameters<T, ? extends Parameter>> StandardEvaluationContext getEvaluationContext(T parameters,
+	public <T extends Parameters<?, ?>> StandardEvaluationContext getEvaluationContext(T parameters,
 			Object[] parameterValues) {
 
 		StandardEvaluationContext ec = new StandardEvaluationContext();
@@ -124,8 +124,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @param arguments must not be {@literal null}.
 	 * @return
 	 */
-	private <T extends Parameters<T, ? extends Parameter>> Map<String, Object> collectVariables(T parameters,
-			Object[] arguments) {
+	private <T extends Parameters<?, ?>> Map<String, Object> collectVariables(T parameters, Object[] arguments) {
 
 		Map<String, Object> variables = new HashMap<String, Object>();
 

@@ -1,0 +1,148 @@
+:spring-framework-docs: http://docs.spring.io/spring-framework/docs/current/spring-framework-reference/html
+
+[[key-value]]
+= Key Value Repositories
+
+This chapter explains concepts and usage patterns when working with the key value abstraction and the `java.util.Map` based implementation provided by Spring Data Commons.
+
+[[key-value.core-concepts]]
+== Core Concepts
+
+The Key/Value abstraction within Spring Data Commons requires an `Adapter` shielding the native store implementation freeing up `KeyValueTemplate` to work on top of any key/value pair like structure. Keys are distributed across <<key-value.keyspaces>>. Unless otherwise specified the class name is used as the default keyspace for an entity.
+
+[source, java]
+----
+interface KeyValueOperations {
+
+    <T> T insert(T objectToInsert);                             <1>
+    
+    void update(Object objectToUpdate);                         <2>
+    
+    void delete(Class<?> type);                                 <3>
+    
+    <T> T findById(Serializable id, Class<T> type);             <4>
+    
+    <T> List<T> findAllOf(Class<T> type);                       <5>
+    
+    <T> List<T> find(KeyValueQuery<?> query, Class<T> type);    <6>
+    
+    //... more functionality omitted.
+    
+}
+----
+<1> Inserts the given entity and assigns id if required.
+<2> Updates the given entity.
+<3> Removes all entities of matching type.
+<4> Returns the entity of given type with matching id.
+<5> Returns all entities of matching type.
+<6> Returns a List of all entities of given type matching the criteria of the query.
+
+[[key-value.template-configuration]]
+== Configuring The KeyValueTemplate
+
+In its very basic shape the `KeyValueTemplate` uses a `MapAdaper` wrapping a `ConcurrentHashMap` using link:{spring-framework-docs}/expressions.html[Spring Expression Language] to perform queries and sorting.
+
+NOTE: The used `KeyValueAdapter` does the heavy lifting when it comes to storing and retrieving data. The data structure used will influence performance and/or multi threading behavior.
+
+One may choose to use a different type or preinitialize the adapter with some values, and can do so using `MapKeyValueAdapterFactory`.
+
+
+
+[source, java]
+----
+@Bean
+public KeyValueOperations keyValueTemplate() {
+    return new KeyValueTemplate(keyValueAdapter());
+}
+
+@Bean
+public KeyValueAdapter keyValueAdapter() {
+
+    MapKeyValueAdapterFactory factory = new MapKeyValueAdapterFactory();
+    factory.setMapType(ConcurrentSkipListMap.class);
+    factory.setInitialValuesForKeyspace("lennister", singletonMap("1", "tyrion"));
+    factory.setInitialValuesForKeyspace("stark", singletonMap("1", "sansa"));
+
+    return factory.getAdapter();
+}
+----
+
+[[key-value.keyspaces]]
+== Keyspaces
+
+Keyspaces define in which part of the data structure the entity should be kept. So this is a rather similar concept as collections in MongoDB and Elasticsearch, Cores in Solr, Tables in JPA.
+By default the keyspace of an entity is extracted form its type, but one can also choose to store entities of different types within one keyspace. In that case any find operation will type check results.
+
+[source, java]
+----
+@KeySpace("persons")
+class Person {
+  @Id String id;
+  String firstname;
+  String lastname;
+}
+
+class User extends Person {
+  String username;
+}
+
+template.findAllOf(Person.class); <1>
+template.findAllOf(User.class);   <2>
+----
+<1> Returns all entities for keyspace "persons".
+<2> Returns only elements of type `User` stored in keyspace "persons".
+
+[[key-value.template-query]]
+== Querying 
+
+Query execution is managed by the `QueryEngine`. As mentioned before it is possible to instruct the `KeyValueAdapter` to use an implementation specific `QueryEngine` that allows access to native functionality.
+When used without further customization queries are be executed using a `SpELQueryEngine`. 
+
+NOTE: We highly recommend to have at least Spring 4.1.2 or better to make use of link:{spring-framework-docs}/expressions.html#expressions-spel-compilation[compiled SpEL Expressions].
+
+[source, java]
+----
+KeyValueQuery<String> query = new KeyValueQuery<String>("lastname == 'targaryen'");
+List<Person> targaryens = template.find(query, Person.class);
+----
+
+WARNING: Please note that you need to have getters/setters present to query properties using SpEL.
+
+[[key-value.template-sort]]
+== Sorting
+
+Depending on the store implementation provided by the adapter entities might already be stored in some sorted way but do not necessarily have to be. Again the underlying `QueryEngine` is capable of performing sort operations.
+When used without further customization sorting is done using a `SpelPropertyComperator` extracted from the `Sort` clause provided 
+
+[source, java]
+----
+KeyValueQuery<String> query = new KeyValueQuery<String>("lastname == 'baratheon'");
+query.setSort(new Sort(DESC, "age"));
+List<Person> targaryens = template.find(query, Person.class);
+----
+
+WARNING: Please note that you need to have getters/setters present to sort using SpEL.
+
+[[key-value.repositories]]
+== Key Value Repositories
+
+KeyValue Repositories reside on top of the _KeyValaueTemplate_. Using the default `SpelQueryCreator` allows deriving query and sort expressions from the given methodname.
+
+[source, java]
+----
+@Configuration
+@EnableKeyValueRepositories
+class KeyValueConfig {
+
+    @Bean
+    public KeyValueOperations keyValueTemplate() {
+        return new KeyValueTemplate(new MapKeyValueAdapter());
+    }
+
+}
+
+interface PersonRepository implements CrudRepository<Person, String> {
+    List<Person> findByLastname(String lastname);
+}	
+----
+
