@@ -119,9 +119,7 @@ public class QueryMethod {
 	 * @return
 	 */
 	public String getNamedQueryName() {
-
-		Class<?> domainClass = getDomainClass();
-		return String.format("%s.%s", domainClass.getSimpleName(), method.getName());
+		return String.format("%s.%s", getDomainClass().getSimpleName(), method.getName());
 	}
 
 	/**
@@ -181,7 +179,7 @@ public class QueryMethod {
 	 * 
 	 * @return
 	 */
-	public boolean isPageQuery() {
+	public final boolean isPageQuery() {
 
 		Class<?> returnType = method.getReturnType();
 		return org.springframework.util.ClassUtils.isAssignable(Page.class, returnType);

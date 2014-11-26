@@ -32,7 +32,7 @@ import org.springframework.util.ObjectUtils;
  * 
  * @author Oliver Gierke
  */
-class SpringDataAnnotationUtils {
+abstract class SpringDataAnnotationUtils {
 
 	private SpringDataAnnotationUtils() {}
 

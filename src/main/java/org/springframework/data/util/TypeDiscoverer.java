@@ -159,8 +159,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.notNull(constructor);
 		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
 
-		for (Type type : constructor.getGenericParameterTypes()) {
-			result.add(createInfo(type));
+		for (Type parameterType : constructor.getGenericParameterTypes()) {
+			result.add(createInfo(parameterType));
 		}
 
 		return result;
@@ -201,14 +201,14 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	private TypeInformation<?> getPropertyInformation(String fieldname) {
 
-		Class<?> type = getType();
-		Field field = ReflectionUtils.findField(type, fieldname);
+		Class<?> rawType = getType();
+		Field field = ReflectionUtils.findField(rawType, fieldname);
 
 		if (field != null) {
 			return createInfo(field.getGenericType());
 		}
 
-		PropertyDescriptor descriptor = findPropertyDescriptor(type, fieldname);
+		PropertyDescriptor descriptor = findPropertyDescriptor(rawType, fieldname);
 		return descriptor == null ? null : createInfo(getGenericType(descriptor));
 	}
 
@@ -417,8 +417,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Type[] parameterTypes = method.getGenericParameterTypes();
 		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>(parameterTypes.length);
 
-		for (Type type : parameterTypes) {
-			result.add(createInfo(type));
+		for (Type parameterType : parameterTypes) {
+			result.add(createInfo(parameterType));
 		}
 
 		return result;
@@ -430,9 +430,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public TypeInformation<?> getSuperTypeInformation(Class<?> superType) {
 
-		Class<?> type = getType();
+		Class<?> rawType = getType();
 
-		if (!superType.isAssignableFrom(type)) {
+		if (!superType.isAssignableFrom(rawType)) {
 			return null;
 		}
 
@@ -442,11 +442,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		List<Type> candidates = new ArrayList<Type>();
 
-		Type genericSuperclass = type.getGenericSuperclass();
+		Type genericSuperclass = rawType.getGenericSuperclass();
 		if (genericSuperclass != null) {
 			candidates.add(genericSuperclass);
 		}
-		candidates.addAll(Arrays.asList(type.getGenericInterfaces()));
+		candidates.addAll(Arrays.asList(rawType.getGenericInterfaces()));
 
 		for (Type candidate : candidates) {
 

@@ -45,7 +45,9 @@ import org.springframework.util.ClassUtils;
 public class Repositories implements Iterable<Class<?>> {
 
 	static final Repositories NONE = new Repositories();
+
 	private static final RepositoryFactoryInformation<Object, Serializable> EMPTY_REPOSITORY_FACTORY_INFO = EmptyRepositoryFactoryInformation.INSTANCE;
+	private static final String DOMAIN_TYPE_MUST_NOT_BE_NULL = "Domain type must not be null!";
 
 	private final BeanFactory beanFactory;
 	private final Map<Class<?>, String> repositoryBeanNames;
@@ -102,7 +104,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public boolean hasRepositoryFor(Class<?> domainClass) {
 
-		Assert.notNull(domainClass, "Domain class must not be null!");
+		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
 		return repositoryFactoryInfos.containsKey(domainClass);
 	}
@@ -115,7 +117,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public Object getRepositoryFor(Class<?> domainClass) {
 
-		Assert.notNull(domainClass, "Domain class must not be null!");
+		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
 		String repositoryBeanName = repositoryBeanNames.get(domainClass);
 		return repositoryBeanName == null || beanFactory == null ? null : beanFactory.getBean(repositoryBeanName);
@@ -131,7 +133,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	private RepositoryFactoryInformation<Object, Serializable> getRepositoryFactoryInfoFor(Class<?> domainClass) {
 
-		Assert.notNull(domainClass, "Domain class must not be null!");
+		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
 		RepositoryFactoryInformation<Object, Serializable> repositoryInfo = repositoryFactoryInfos.get(ClassUtils
 				.getUserClass(domainClass));
@@ -147,7 +149,7 @@ public class Repositories implements Iterable<Class<?>> {
 	@SuppressWarnings("unchecked")
 	public <T, S extends Serializable> EntityInformation<T, S> getEntityInformationFor(Class<?> domainClass) {
 
-		Assert.notNull(domainClass, "Domain class must not be null!");
+		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
 		return (EntityInformation<T, S>) getRepositoryFactoryInfoFor(domainClass).getEntityInformation();
 	}
@@ -161,7 +163,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public RepositoryInformation getRepositoryInformationFor(Class<?> domainClass) {
 
-		Assert.notNull(domainClass, "Domain class must not be null!");
+		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
 		RepositoryFactoryInformation<Object, Serializable> information = getRepositoryFactoryInfoFor(domainClass);
 		return information == EMPTY_REPOSITORY_FACTORY_INFO ? null : information.getRepositoryInformation();
@@ -177,7 +179,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public PersistentEntity<?, ?> getPersistentEntity(Class<?> domainClass) {
 
-		Assert.notNull(domainClass, "Domain class must not be null!");
+		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 		return getRepositoryFactoryInfoFor(domainClass).getPersistentEntity();
 	}
 
@@ -189,7 +191,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public List<QueryMethod> getQueryMethodsFor(Class<?> domainClass) {
 
-		Assert.notNull(domainClass, "Domain class must not be null!");
+		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 		return getRepositoryFactoryInfoFor(domainClass).getQueryMethods();
 	}
 
