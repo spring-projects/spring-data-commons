@@ -25,27 +25,41 @@ import java.util.List;
 import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * {@link QueryEngine} implementation specific for executing {@link SpelExpression} based {@link KeyValueQuery} against
  * {@link KeyValueAdapter}.
  * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.10
  * @param <T>
  */
-public class SpelQueryEngine<T extends KeyValueAdapter> extends
-		QueryEngine<KeyValueAdapter, SpelExpression, Comparator<?>> {
+class SpelQueryEngine<T extends KeyValueAdapter> extends QueryEngine<KeyValueAdapter, SpelExpression, Comparator<?>> {
 
+	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
+
+	/**
+	 * Creates a new {@link SpelQueryEngine}.
+	 */
 	public SpelQueryEngine() {
-		super(SpelCriteriaAccessor.INSTANCE, SpelSortAccessor.INSTNANCE);
+		super(new SpelCriteriaAccessor(PARSER), new SpelSortAccessor(PARSER));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.QueryEngine#execute(java.lang.Object, java.lang.Object, int, int, java.io.Serializable)
+	 */
 	@Override
 	public Collection<?> execute(SpelExpression criteria, Comparator<?> sort, int offset, int rows, Serializable keyspace) {
 		return sortAndFilterMatchingRange(getAdapter().getAllOf(keyspace), criteria, sort, offset, rows);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.keyvalue.core.QueryEngine#count(java.lang.Object, java.io.Serializable)
+	 */
 	@Override
 	public long count(SpelExpression criteria, Serializable keyspace) {
 		return filterMatchingRange(getAdapter().getAllOf(keyspace), criteria, -1, -1).size();
@@ -63,7 +77,7 @@ public class SpelQueryEngine<T extends KeyValueAdapter> extends
 		return filterMatchingRange(tmp, criteria, offset, rows);
 	}
 
-	private <S> List<S> filterMatchingRange(Iterable<S> source, SpelExpression criteria, int offset, int rows) {
+	private static <S> List<S> filterMatchingRange(Iterable<S> source, SpelExpression criteria, int offset, int rows) {
 
 		List<S> result = new ArrayList<S>();
 
@@ -99,7 +113,7 @@ public class SpelQueryEngine<T extends KeyValueAdapter> extends
 				}
 			}
 		}
+
 		return result;
 	}
-
 }

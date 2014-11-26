@@ -15,14 +15,22 @@
  */
 package org.springframework.data.keyvalue.core;
 
-import java.io.Serializable;
+import org.springframework.data.util.TypeInformation;
 
 /**
+ * API for components generating identifiers.
+ * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.10
  */
-public interface IdGenerator {
+public interface IdentifierGenerator {
 
-	Serializable newIdForType(Class<?> actualType);
-
+	/**
+	 * Creates an identifier of the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return an identifier of the given type.
+	 */
+	<T> T generateIdentifierOfType(TypeInformation<T> type);
 }

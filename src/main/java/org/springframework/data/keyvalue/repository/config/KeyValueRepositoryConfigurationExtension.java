@@ -17,11 +17,16 @@ package org.springframework.data.keyvalue.repository.config;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.keyvalue.repository.KeyValueRepository;
+import org.springframework.data.keyvalue.repository.query.SpelQueryCreator;
 import org.springframework.data.keyvalue.repository.support.KeyValueRepositoryFactoryBean;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
@@ -36,7 +41,7 @@ import org.springframework.data.repository.config.RepositoryConfigurationSource;
  */
 public class KeyValueRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
-	private boolean mappingContextAvailable = false;
+	private static final String MAPPING_CONTEXT_BEAN_NAME = "keyValueMappingContext";
 
 	/*
 	 * (non-Javadoc)
@@ -82,12 +87,31 @@ public class KeyValueRepositoryConfigurationExtension extends RepositoryConfigur
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
 
 		AnnotationAttributes attributes = config.getAttributes();
-		builder.addPropertyReference("keyValueOperations", attributes.getString("keyValueTemplateRef"));
-		builder.addPropertyValue("queryCreator", attributes.getClass("queryCreator"));
 
-		if (mappingContextAvailable) {
-			builder.addPropertyReference("mappingContext", "keyValueMappingContext");
+		builder.addPropertyReference("keyValueOperations", attributes.getString("keyValueTemplateRef"));
+		builder.addPropertyValue("queryCreator", getQueryCreatorType(config));
+		builder.addPropertyReference("mappingContext", MAPPING_CONTEXT_BEAN_NAME);
+	}
+
+	/**
+	 * Detects the query creator type to be used for the factory to set. Will lookup a {@link QueryCreatorType} annotation
+	 * on the {@code @Enable}-annotation or use {@link SpelQueryCreator} if not found.
+	 * 
+	 * @param config
+	 * @return
+	 */
+	private static Class<?> getQueryCreatorType(AnnotationRepositoryConfigurationSource config) {
+
+		AnnotationMetadata metadata = config.getEnableAnnotationMetadata();
+
+		Map<String, Object> queryCreatorFoo = metadata.getAnnotationAttributes(QueryCreatorType.class.getName());
+
+		if (queryCreatorFoo == null) {
+			return SpelQueryCreator.class;
 		}
+
+		AnnotationAttributes queryCreatorAttributes = new AnnotationAttributes(queryCreatorFoo);
+		return queryCreatorAttributes.getClass("value");
 	}
 
 	/* 
@@ -98,7 +122,12 @@ public class KeyValueRepositoryConfigurationExtension extends RepositoryConfigur
 	public void registerBeansForRoot(BeanDefinitionRegistry registry, RepositoryConfigurationSource configurationSource) {
 
 		super.registerBeansForRoot(registry, configurationSource);
-		this.mappingContextAvailable = registry.containsBeanDefinition("keyValueMappingContext");
-	}
 
+		if (!registry.containsBeanDefinition(MAPPING_CONTEXT_BEAN_NAME)) {
+
+			RootBeanDefinition mappingContextDefinition = new RootBeanDefinition(KeyValueMappingContext.class);
+			mappingContextDefinition.setSource(configurationSource.getSource());
+			registry.registerBeanDefinition(MAPPING_CONTEXT_BEAN_NAME, mappingContextDefinition);
+		}
+	}
 }

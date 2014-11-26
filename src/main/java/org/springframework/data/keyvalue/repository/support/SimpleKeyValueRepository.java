@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.keyvalue.repository;
+package org.springframework.data.keyvalue.repository.support;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,24 +24,33 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.keyvalue.core.KeyValueOperations;
+import org.springframework.data.keyvalue.repository.KeyValueRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
 
 /**
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.10
  * @param <T>
  * @param <ID>
  */
-public class BasicKeyValueRepository<T, ID extends Serializable> implements KeyValueRepository<T, ID> {
+public class SimpleKeyValueRepository<T, ID extends Serializable> implements KeyValueRepository<T, ID> {
 
 	private final KeyValueOperations operations;
 	private final EntityInformation<T, ID> entityInformation;
 
-	public BasicKeyValueRepository(EntityInformation<T, ID> metadata, KeyValueOperations operations) {
+	/**
+	 * Creates a new {@link SimpleKeyValueRepository} for the given {@link EntityInformation} and
+	 * {@link KeyValueOperations}.
+	 * 
+	 * @param metadata must not be {@literal null}.
+	 * @param operations must not be {@literal null}.
+	 */
+	public SimpleKeyValueRepository(EntityInformation<T, ID> metadata, KeyValueOperations operations) {
 
-		Assert.notNull(metadata, "Cannot initialize repository for 'null' metadata");
-		Assert.notNull(operations, "Cannot initialize repository for 'null' operations");
+		Assert.notNull(metadata, "EntityInformation must not be null!");
+		Assert.notNull(operations, "KeyValueOperations must not be null!");
 
 		this.entityInformation = metadata;
 		this.operations = operations;
@@ -64,6 +73,8 @@ public class BasicKeyValueRepository<T, ID extends Serializable> implements KeyV
 	public Page<T> findAll(Pageable pageable) {
 
 		List<T> content = null;
+
+		// TODO: do we need that guard? Can't findInRange(…) be able to deal with null sorts?
 		if (pageable.getSort() != null) {
 			content = operations.findInRange(pageable.getOffset(), pageable.getPageSize(), pageable.getSort(),
 					entityInformation.getJavaType());
@@ -81,7 +92,7 @@ public class BasicKeyValueRepository<T, ID extends Serializable> implements KeyV
 	@Override
 	public <S extends T> S save(S entity) {
 
-		Assert.notNull(entity, "Entity must not be 'null' for save.");
+		Assert.notNull(entity, "Entity must not be null!");
 
 		if (entityInformation.isNew(entity)) {
 			operations.insert(entity);
@@ -101,6 +112,7 @@ public class BasicKeyValueRepository<T, ID extends Serializable> implements KeyV
 		for (S entity : entities) {
 			save(entity);
 		}
+
 		return entities;
 	}
 
@@ -141,7 +153,9 @@ public class BasicKeyValueRepository<T, ID extends Serializable> implements KeyV
 		List<T> result = new ArrayList<T>();
 
 		for (ID id : ids) {
+
 			T candidate = findOne(id);
+
 			if (candidate != null) {
 				result.add(candidate);
 			}

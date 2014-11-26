@@ -31,12 +31,11 @@ import com.hazelcast.query.PredicateBuilder;
 
 /**
  * @author Christoph Strobl
- * @since 1.10
  */
 public class HazelcastQueryEngine extends QueryEngine<HazelcastKeyValueAdapter, Predicate<?, ?>, Comparator<Entry>> {
 
 	public HazelcastQueryEngine() {
-		super(HazelcastCriteriaAccessor.INSTANCE, HazelcastSortAccessor.INSTNANCE);
+		super(HazelcastCriteriaAccessor.INSTANCE, HazelcastSortAccessor.INSTANCE);
 	}
 
 	@Override
@@ -91,7 +90,7 @@ public class HazelcastQueryEngine extends QueryEngine<HazelcastKeyValueAdapter, 
 
 	static enum HazelcastSortAccessor implements SortAccessor<Comparator<Entry>> {
 
-		INSTNANCE;
+		INSTANCE;
 
 		@Override
 		public Comparator<Entry> resolve(KeyValueQuery<?> query) {

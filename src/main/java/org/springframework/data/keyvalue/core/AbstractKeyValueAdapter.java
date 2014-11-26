@@ -44,6 +44,7 @@ public abstract class AbstractKeyValueAdapter implements KeyValueAdapter {
 	 * @param engine will be defaulted to {@link SpelQueryEngine} if {@literal null}.
 	 */
 	protected AbstractKeyValueAdapter(QueryEngine<? extends KeyValueAdapter, ?, ?> engine) {
+
 		this.engine = engine != null ? engine : new SpelQueryEngine<KeyValueAdapter>();
 		this.engine.registerAdapter(this);
 	}
@@ -74,5 +75,4 @@ public abstract class AbstractKeyValueAdapter implements KeyValueAdapter {
 	public long count(KeyValueQuery<?> query, Serializable keyspace) {
 		return engine.count(query, keyspace);
 	}
-
 }

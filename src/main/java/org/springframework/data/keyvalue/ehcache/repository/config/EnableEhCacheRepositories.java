@@ -27,26 +27,23 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.keyvalue.core.KeyValueOperations;
 import org.springframework.data.keyvalue.ehcache.repository.query.EhCacheQueryCreator;
-import org.springframework.data.keyvalue.repository.config.EnableKeyValueRepositories;
-import org.springframework.data.keyvalue.repository.config.KeyValueRepositoriesRegistrar;
+import org.springframework.data.keyvalue.repository.config.QueryCreatorType;
 import org.springframework.data.keyvalue.repository.support.KeyValueRepositoryFactoryBean;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
-import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 
 /**
  * Annotation to activate EhCache repositories. If no base package is configured through either {@link #value()},
  * {@link #basePackages()} or {@link #basePackageClasses()} it will trigger scanning of the package of annotated class.
  * 
  * @author Christoph Strobl
- * @since 1.10
  */
-@EnableKeyValueRepositories
-@Target({ ElementType.TYPE })
+@Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-@Import(KeyValueRepositoriesRegistrar.class)
+@Import(EhCacheRepositoriesRegistrar.class)
+@QueryCreatorType(EhCacheQueryCreator.class)
 public @interface EnableEhCacheRepositories {
 
 	/**
@@ -123,13 +120,4 @@ public @interface EnableEhCacheRepositories {
 	 * repositories infrastructure.
 	 */
 	boolean considerNestedRepositories() default false;
-
-	/**
-	 * Configures the query creator to be used for deriving queries from
-	 * {@link org.springframework.data.repository.query.parser.PartTree}.
-	 * 
-	 * @return
-	 */
-	Class<? extends AbstractQueryCreator<?, ?>> queryCreator() default EhCacheQueryCreator.class;
-
 }

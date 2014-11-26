@@ -151,6 +151,7 @@ public class MapKeyValueAdapter extends AbstractKeyValueAdapter {
 		Assert.notNull(keyspace, "Collection must not be 'null' for lookup.");
 
 		Map<Serializable, Object> map = data.get(keyspace);
+
 		if (map != null) {
 			return map;
 		}
@@ -162,5 +163,4 @@ public class MapKeyValueAdapter extends AbstractKeyValueAdapter {
 	private void addMapForKeySpace(Serializable keyspace) {
 		data.put(keyspace, CollectionFactory.<Serializable, Object> createMap(mapType, 1000));
 	}
-
 }

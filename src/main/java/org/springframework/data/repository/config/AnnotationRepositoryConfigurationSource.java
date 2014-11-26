@@ -30,6 +30,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AspectJTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
@@ -55,7 +56,8 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS = "repositoryFactoryBeanClass";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "considerNestedRepositories";
 
-	private final AnnotationMetadata metadata;
+	private final AnnotationMetadata configMetadata;
+	private final AnnotationMetadata enableAnnotationMetadata;
 	private final AnnotationAttributes attributes;
 	private final ResourceLoader resourceLoader;
 	private final boolean hasExplicitFilters;
@@ -64,7 +66,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * Creates a new {@link AnnotationRepositoryConfigurationSource} from the given {@link AnnotationMetadata} and
 	 * annotation.
 	 * 
-	 * @param metadata must not be {@literal null}.
+	 * @param configMetadata must not be {@literal null}.
 	 * @param annotation must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
 	 * @param environment
@@ -79,7 +81,8 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		Assert.notNull(resourceLoader);
 
 		this.attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(annotation.getName()));
-		this.metadata = metadata;
+		this.enableAnnotationMetadata = new StandardAnnotationMetadata(annotation);
+		this.configMetadata = metadata;
 		this.resourceLoader = resourceLoader;
 		this.hasExplicitFilters = hasExplicitFilters(attributes);
 	}
@@ -114,7 +117,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 		// Default configuration - return package of annotated class
 		if (value.length == 0 && basePackages.length == 0 && basePackageClasses.length == 0) {
-			String className = metadata.getClassName();
+			String className = configMetadata.getClassName();
 			return Collections.singleton(ClassUtils.getPackageName(className));
 		}
 
@@ -158,7 +161,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getSource()
 	 */
 	public Object getSource() {
-		return metadata;
+		return configMetadata;
 	}
 
 	/*
@@ -217,6 +220,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	public AnnotationAttributes getAttributes() {
 		return attributes;
+	}
+
+	/**
+	 * Returns the {@link AnnotationMetadata} for the {@code @Enable} annotation that triggered the configuration.
+	 * 
+	 * @return the enableAnnotationMetadata
+	 */
+	public AnnotationMetadata getEnableAnnotationMetadata() {
+		return enableAnnotationMetadata;
 	}
 
 	/**

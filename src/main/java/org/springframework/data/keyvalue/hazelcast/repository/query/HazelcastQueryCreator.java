@@ -32,7 +32,6 @@ import com.hazelcast.query.PredicateBuilder;
 
 /**
  * @author Christoph Strobl
- * @since 1.10
  */
 public class HazelcastQueryCreator extends AbstractQueryCreator<KeyValueQuery<Predicate<?, ?>>, Predicate<?, ?>> {
 

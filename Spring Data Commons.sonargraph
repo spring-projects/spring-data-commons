@@ -1,216 +1,112 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <context version="7.1.10.209">
     <scope type="Project" name="spring-data-commons">
+        <element type="TypeFilterReferenceOverridden" name="Filter">
+            <element type="IncludeTypePattern" name="**"/>
+        </element>
         <architecture>
-            <element type="Layer" name="Web">
-                <element type="TypeFilter" name="Assignment">
-                    <element type="IncludeTypePattern" name="**.web.**"/>
-                </element>
-                <element type="Subsystem" name="Config">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.config.**"/>
-                    </element>
-                    <dependency toName="Project|spring-data-commons::Layer|Core::Subsystem|Geo" type="AllowedDependency"/>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Support" type="AllowedDependency"/>
-                    <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
-                </element>
-                <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
-                <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
-                <dependency toName="Project|spring-data-commons::Layer|Repositories" type="AllowedDependency"/>
-                <dependency toName="External|External::Subsystem|Logging" type="AllowedDependency"/>
-                <dependency toName="External|External::Subsystem|Reflection" type="AllowedDependency"/>
-                <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
-            </element>
-            <element type="Layer" name="Repositories">
-                <element type="TypeFilter" name="Assignment">
+            <element type="LayerReference" name="Repositories">
+                <element type="TypeFilterReferenceOverridden" name="Assignment">
                     <element type="IncludeTypePattern" name="**.repository.**"/>
-                </element>
-                <element type="Subsystem" name="API">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.repository.*"/>
-                    </element>
-                    <stereotype name="Public"/>
-                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
-                </element>
-                <element type="Subsystem" name="Core">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.util.**"/>
-                        <element type="IncludeTypePattern" name="**.core.*"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Query">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.query.**"/>
-                    </element>
-                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
-                </element>
-                <element type="Subsystem" name="Implementation">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.core.support.**"/>
-                    </element>
-                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Query" type="AllowedDependency"/>
-                </element>
-                <element type="Subsystem" name="Support">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.support.**"/>
-                    </element>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Implementation" type="AllowedDependency"/>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Query" type="AllowedDependency"/>
-                </element>
-                <element type="Subsystem" name="History">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.history.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Configuration">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.config.**"/>
-                    </element>
-                    <stereotype name="Unrestricted"/>
-                </element>
-                <element type="Subsystem" name="CDI">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.cdi.**"/>
-                    </element>
-                    <dependency toName="External|External::Subsystem|JavaEE" type="AllowedDependency"/>
-                    <dependency toName="External|External::Subsystem|Logging" type="AllowedDependency"/>
-                    <dependency toName="External|External::Subsystem|Reflection" type="AllowedDependency"/>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Configuration" type="AllowedDependency"/>
-                    <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
-                </element>
-                <element type="Subsystem" name="Init">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.init.**"/>
-                    </element>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
-                    <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Support" type="AllowedDependency"/>
-                </element>
-                <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
-                <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
-                <dependency toName="Project|spring-data-commons::Layer|Mapping" type="AllowedDependency"/>
-            </element>
-            <element type="Layer" name="Conversion">
-                <element type="TypeFilter" name="Assignment">
-                    <element type="IncludeTypePattern" name="**.convert.**"/>
-                </element>
-                <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
-                <dependency toName="Project|spring-data-commons::Layer|Mapping" type="AllowedDependency"/>
-            </element>
-            <element type="Layer" name="Auditing">
-                <element type="TypeFilter" name="Assignment">
-                    <element type="IncludeTypePattern" name="**.auditing.**"/>
-                </element>
-                <element type="Subsystem" name="Configuration">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.config.**"/>
-                    </element>
-                </element>
-                <dependency toName="External|External" type="AllowedDependency"/>
-                <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
-                <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
-                <dependency toName="Project|spring-data-commons::Layer|Mapping" type="AllowedDependency"/>
-            </element>
-            <element type="Layer" name="Mapping">
-                <element type="TypeFilter" name="Assignment">
-                    <element type="IncludeTypePattern" name="**.mapping.**"/>
-                </element>
-                <element type="Subsystem" name="Model">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.model.**"/>
-                        <element type="IncludeTypePattern" name="**.mapping.*"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Context">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.context.**"/>
-                    </element>
-                    <dependency toName="Project|spring-data-commons::Layer|Mapping::Subsystem|Model" type="AllowedDependency"/>
-                </element>
-                <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
-            </element>
-            <element type="Layer" name="Core">
-                <element type="TypeFilter" name="Assignment"/>
-                <element type="Subsystem" name="Types">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.util.**"/>
-                    </element>
-                    <stereotype name="Public"/>
-                </element>
-                <element type="Subsystem" name="Annotations">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.annotation.**"/>
-                    </element>
-                    <stereotype name="Public"/>
-                </element>
-                <element type="Subsystem" name="Geo">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.geo.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Authentication">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.authentication.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="History">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.history.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Support">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.support.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Transactions">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.transaction.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Configuration">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.config.**"/>
-                    </element>
-                </element>
-                <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
-            </element>
-            <element type="Layer" name="Application">
-                <element type="TypeFilter" name="Assignment"/>
-                <element type="Subsystem" name="Domain">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.domain.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="JAXB">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.domain.jaxb.**"/>
-                    </element>
-                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
-                    <dependency toName="External|External::Subsystem|JAXB" type="AllowedDependency"/>
-                    <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
-                </element>
-                <element type="Subsystem" name="Querydsl">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.querydsl.**"/>
-                    </element>
-                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
-                </element>
-                <element type="Subsystem" name="Cross store">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.crossstore.**"/>
-                    </element>
+                    <element type="IncludeTypePattern" name="**.querydsl.**"/>
                 </element>
             </element>
         </architecture>
         <workspace>
-            <element type="JavaRootDirectory" name="src/main/java">
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/annotation">
                 <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
             </element>
-            <element type="JavaRootDirectory" name="target/classes">
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/auditing">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/web">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/util">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/authentication">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/config">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/convert">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/crossstore">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/domain/jaxb">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/geo">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/history">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/mapping">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/querydsl">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/repository">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/support">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/transaction">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/annotation">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/auditing">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/authentication">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/config">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/convert">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/crossstore">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/domain">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/geo">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/history">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/mapping">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/querydsl">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/repository">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/support">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/transaction">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/util">
+                <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/web">
                 <reference name="Project|spring-data-commons::BuildUnit|spring-data-commons"/>
             </element>
         </workspace>
@@ -239,6 +135,22 @@
         </itemDefinition>
         <physical>
             <element type="BuildUnit" name="spring-data-commons"/>
+        </physical>
+    </scope>
+    <scope type="Project" name="spring-data-commons-keyvalue">
+        <stereotype name="Unrestricted"/>
+        <workspace>
+            <element type="JavaRootDirectory" name="src/main/java/org/springframework/data/keyvalue">
+                <reference name="Project|spring-data-commons-keyvalue::BuildUnit|spring-data-keyvalue"/>
+            </element>
+            <element type="JavaRootDirectory" name="target/classes/org/springframework/data/keyvalue">
+                <reference name="Project|spring-data-commons-keyvalue::BuildUnit|spring-data-keyvalue"/>
+            </element>
+        </workspace>
+        <physical>
+            <element type="BuildUnit" name="spring-data-keyvalue">
+                <stereotype name="Unrestricted"/>
+            </element>
         </physical>
     </scope>
     <scope type="External" name="External">
@@ -331,6 +243,206 @@
         <element type="TypeFilter" name="Filter">
             <element type="IncludeTypePattern" name="**"/>
         </element>
+        <architecture>
+            <element type="Layer" name="Web">
+                <element type="TypeFilter" name="Assignment">
+                    <element type="IncludeTypePattern" name="**.web.**"/>
+                </element>
+                <element type="Subsystem" name="Config">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.config.**"/>
+                    </element>
+                    <dependency toName="Global|Global::Layer|Core::Subsystem|Geo" type="AllowedDependency"/>
+                </element>
+                <dependency toName="Global|Global::Layer|Application" type="AllowedDependency"/>
+                <dependency toName="Global|Global::Layer|Repositories" type="AllowedDependency"/>
+            </element>
+            <element type="Layer" name="Repositories">
+                <element type="TypeFilter" name="Assignment">
+                    <element type="IncludeTypePattern" name="**.repository.**"/>
+                </element>
+                <element type="Subsystem" name="API">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.repository.*"/>
+                    </element>
+                    <stereotype name="Public"/>
+                    <dependency toName="Global|Global::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="Core">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.util.**"/>
+                        <element type="IncludeTypePattern" name="**.core.*"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Query">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.query.**"/>
+                    </element>
+                    <dependency toName="Global|Global::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="Implementation">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.core.support.**"/>
+                    </element>
+                    <dependency toName="Global|Global::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Query" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="Querydsl">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.querydsl.**"/>
+                    </element>
+                    <dependency toName="Global|Global::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="Support">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.support.**"/>
+                    </element>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Implementation" type="AllowedDependency"/>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Query" type="AllowedDependency"/>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Querydsl" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="History">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.history.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Configuration">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.config.**"/>
+                    </element>
+                    <stereotype name="Unrestricted"/>
+                </element>
+                <element type="Subsystem" name="CDI">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.cdi.**"/>
+                    </element>
+                    <dependency toName="External|External::Subsystem|JavaEE" type="AllowedDependency"/>
+                    <dependency toName="External|External::Subsystem|Logging" type="AllowedDependency"/>
+                    <dependency toName="External|External::Subsystem|Reflection" type="AllowedDependency"/>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Configuration" type="AllowedDependency"/>
+                    <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="Init">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.init.**"/>
+                    </element>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
+                    <dependency toName="Global|Global::Layer|Repositories::Subsystem|Support" type="AllowedDependency"/>
+                </element>
+                <dependency toName="Global|Global::Layer|Application" type="AllowedDependency"/>
+                <dependency toName="Global|Global::Layer|Core" type="AllowedDependency"/>
+                <dependency toName="Global|Global::Layer|Mapping" type="AllowedDependency"/>
+            </element>
+            <element type="Layer" name="Conversion">
+                <element type="TypeFilter" name="Assignment">
+                    <element type="IncludeTypePattern" name="**.convert.**"/>
+                </element>
+                <dependency toName="Global|Global::Layer|Core" type="AllowedDependency"/>
+                <dependency toName="Global|Global::Layer|Mapping" type="AllowedDependency"/>
+            </element>
+            <element type="Layer" name="Auditing">
+                <element type="TypeFilter" name="Assignment">
+                    <element type="IncludeTypePattern" name="**.auditing.**"/>
+                </element>
+                <element type="Subsystem" name="Configuration">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.config.**"/>
+                    </element>
+                </element>
+                <dependency toName="External|External" type="AllowedDependency"/>
+                <dependency toName="Global|Global::Layer|Application" type="AllowedDependency"/>
+                <dependency toName="Global|Global::Layer|Core" type="AllowedDependency"/>
+                <dependency toName="Global|Global::Layer|Mapping" type="AllowedDependency"/>
+            </element>
+            <element type="Layer" name="Mapping">
+                <element type="TypeFilter" name="Assignment">
+                    <element type="IncludeTypePattern" name="**.mapping.**"/>
+                </element>
+                <element type="Subsystem" name="Model">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.model.**"/>
+                        <element type="IncludeTypePattern" name="**.mapping.*"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Context">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.context.**"/>
+                    </element>
+                    <dependency toName="Global|Global::Layer|Mapping::Subsystem|Model" type="AllowedDependency"/>
+                </element>
+                <dependency toName="Global|Global::Layer|Core" type="AllowedDependency"/>
+            </element>
+            <element type="Layer" name="Core">
+                <element type="TypeFilter" name="Assignment"/>
+                <element type="Subsystem" name="Types">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.util.**"/>
+                    </element>
+                    <stereotype name="Public"/>
+                </element>
+                <element type="Subsystem" name="Annotations">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.annotation.**"/>
+                    </element>
+                    <stereotype name="Public"/>
+                </element>
+                <element type="Subsystem" name="Geo">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.geo.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Authentication">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.authentication.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="History">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.history.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Support">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.support.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Transactions">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.transaction.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Configuration">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.config.**"/>
+                    </element>
+                </element>
+                <dependency toName="Global|Global::Layer|Application" type="AllowedDependency"/>
+            </element>
+            <element type="Layer" name="Application">
+                <element type="TypeFilter" name="Assignment"/>
+                <element type="Subsystem" name="Domain">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.domain.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="JAXB">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.domain.jaxb.**"/>
+                    </element>
+                    <dependency toName="Global|Global::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
+                    <dependency toName="External|External::Subsystem|JAXB" type="AllowedDependency"/>
+                    <dependency toName="External|External::Subsystem|Spring" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="Cross store">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.crossstore.**"/>
+                    </element>
+                </element>
+            </element>
+        </architecture>
         <itemDefinition>
             <item type="ThresholdItem">
                 <property value="NumberOfNotAssignedTypes" name="AttributeId"/>

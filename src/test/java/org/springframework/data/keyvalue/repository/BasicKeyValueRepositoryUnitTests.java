@@ -28,6 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.keyvalue.core.KeyValueOperations;
+import org.springframework.data.keyvalue.repository.support.SimpleKeyValueRepository;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
 
 /**
@@ -36,14 +37,14 @@ import org.springframework.data.repository.core.support.ReflectionEntityInformat
 @RunWith(MockitoJUnitRunner.class)
 public class BasicKeyValueRepositoryUnitTests {
 
-	private BasicKeyValueRepository<Foo, String> repo;
+	private SimpleKeyValueRepository<Foo, String> repo;
 	private @Mock KeyValueOperations opsMock;
 
 	@Before
 	public void setUp() {
 
 		ReflectionEntityInformation<Foo, String> ei = new ReflectionEntityInformation<Foo, String>(Foo.class);
-		repo = new BasicKeyValueRepository<Foo, String>(ei, opsMock);
+		repo = new SimpleKeyValueRepository<Foo, String>(ei, opsMock);
 	}
 
 	/**
@@ -54,7 +55,7 @@ public class BasicKeyValueRepositoryUnitTests {
 
 		ReflectionEntityInformation<WithNumericId, Integer> ei = new ReflectionEntityInformation<WithNumericId, Integer>(
 				WithNumericId.class);
-		BasicKeyValueRepository<WithNumericId, Integer> temp = new BasicKeyValueRepository<WithNumericId, Integer>(ei,
+		SimpleKeyValueRepository<WithNumericId, Integer> temp = new SimpleKeyValueRepository<WithNumericId, Integer>(ei,
 				opsMock);
 
 		WithNumericId foo = temp.save(new WithNumericId());

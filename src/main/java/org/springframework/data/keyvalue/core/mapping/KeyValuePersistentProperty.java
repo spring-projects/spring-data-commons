@@ -30,16 +30,19 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  * @author Christoph Strobl
  * @since 1.10
  */
-public class BasicPersistentProperty extends AnnotationBasedPersistentProperty<BasicPersistentProperty> {
+public class KeyValuePersistentProperty extends AnnotationBasedPersistentProperty<KeyValuePersistentProperty> {
 
-	public BasicPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
-			PersistentEntity<?, BasicPersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
+	public KeyValuePersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
+			PersistentEntity<?, KeyValuePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#createAssociation()
+	 */
 	@Override
-	protected Association<BasicPersistentProperty> createAssociation() {
-		return new Association<BasicPersistentProperty>(this, null);
+	protected Association<KeyValuePersistentProperty> createAssociation() {
+		return new Association<KeyValuePersistentProperty>(this, null);
 	}
-
 }

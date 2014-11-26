@@ -24,7 +24,6 @@ import static org.hamcrest.core.IsSame.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -44,19 +43,19 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * @author Christoph Strobl
+ * @author Oliver Gierke
  */
 public class KeyValueTemplateTests {
 
-	private static final Foo FOO_ONE = new Foo("one");
-	private static final Foo FOO_TWO = new Foo("two");
-	private static final Foo FOO_THREE = new Foo("three");
-	private static final Bar BAR_ONE = new Bar("one");
-	private static final ClassWithTypeAlias ALIASED = new ClassWithTypeAlias("super");
-	private static final SubclassOfAliasedType SUBCLASS_OF_ALIASED = new SubclassOfAliasedType("sub");
+	static final Foo FOO_ONE = new Foo("one");
+	static final Foo FOO_TWO = new Foo("two");
+	static final Foo FOO_THREE = new Foo("three");
+	static final Bar BAR_ONE = new Bar("one");
+	static final ClassWithTypeAlias ALIASED = new ClassWithTypeAlias("super");
+	static final SubclassOfAliasedType SUBCLASS_OF_ALIASED = new SubclassOfAliasedType("sub");
+	static final KeyValueQuery<String> STRING_QUERY = new KeyValueQuery<String>("foo == 'two'");
 
-	private static final KeyValueQuery<String> STRING_QUERY = new KeyValueQuery<String>("foo == 'two'");
-
-	private KeyValueTemplate operations;
+	KeyValueTemplate operations;
 
 	@Before
 	public void setUp() throws InstantiationException, IllegalAccessException {
@@ -252,7 +251,7 @@ public class KeyValueTemplateTests {
 	/**
 	 * @see DATACMNS-525
 	 */
-	@Test(expected = InvalidDataAccessApiUsageException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void deleteThrowsExceptionWhenIdCannotBeExctracted() {
 		operations.delete(FOO_ONE);
 	}
@@ -455,11 +454,10 @@ public class KeyValueTemplateTests {
 
 	}
 
-	@Documented
 	@Persistent
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ ElementType.TYPE })
-	private static @interface ExplicitKeySpace {
+	static @interface ExplicitKeySpace {
 
 		@KeySpace
 		String name() default "";
