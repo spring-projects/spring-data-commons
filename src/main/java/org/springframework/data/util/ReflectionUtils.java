@@ -32,7 +32,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Oliver Gierke
  * @since 1.5
  */
-public class ReflectionUtils {
+public abstract class ReflectionUtils {
 
 	private ReflectionUtils() {}
 

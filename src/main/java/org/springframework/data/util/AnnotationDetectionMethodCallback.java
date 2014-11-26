@@ -94,16 +94,16 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 			return;
 		}
 
-		A annotation = AnnotationUtils.findAnnotation(method, annotationType);
+		A foundAnnotation = AnnotationUtils.findAnnotation(method, annotationType);
 
-		if (annotation != null) {
+		if (foundAnnotation != null) {
 
 			if (foundMethod != null && enforceUniqueness) {
-				throw new IllegalStateException(String.format(MULTIPLE_FOUND, annotation.getClass().getName(), foundMethod,
+				throw new IllegalStateException(String.format(MULTIPLE_FOUND, foundAnnotation.getClass().getName(), foundMethod,
 						method));
 			}
 
-			this.annotation = annotation;
+			this.annotation = foundAnnotation;
 			this.foundMethod = method;
 		}
 	}

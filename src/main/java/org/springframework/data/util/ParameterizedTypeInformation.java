@@ -200,15 +200,15 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 			return resolved;
 		}
 
-		Type[] types = type.getActualTypeArguments();
+		Type[] typeArguments = type.getActualTypeArguments();
 
-		if (types.length == 0) {
+		if (typeArguments.length == 0) {
 			return cacheAndReturn(false);
 		}
 
-		for (Type type : types) {
+		for (Type typeArgument : typeArguments) {
 
-			TypeInformation<?> info = createInfo(type);
+			TypeInformation<?> info = createInfo(typeArgument);
 
 			if (info instanceof ParameterizedTypeInformation) {
 				if (!((ParameterizedTypeInformation<?>) info).isResolvedCompletely()) {

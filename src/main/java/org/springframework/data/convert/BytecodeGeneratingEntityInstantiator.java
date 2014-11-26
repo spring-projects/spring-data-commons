@@ -55,7 +55,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 
 	INSTANCE;
 
-	private final ObjectInstantiatorClassGenerator classGenerator = ObjectInstantiatorClassGenerator.INSTANCE;
+	private static final ObjectInstantiatorClassGenerator GENERATOR = ObjectInstantiatorClassGenerator.INSTANCE;
 
 	private volatile Map<TypeInformation<?>, EntityInstantiator> entityInstantiators = new HashMap<TypeInformation<?>, EntityInstantiator>(
 			32);
@@ -149,44 +149,11 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	private ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity) {
+
 		try {
-			return (ObjectInstantiator) classGenerator.generateCustomInstantiatorClass(entity).newInstance();
-		} catch (Throwable e) {
+			return (ObjectInstantiator) GENERATOR.generateCustomInstantiatorClass(entity).newInstance();
+		} catch (Exception e) {
 			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * A {@link ClassLoader} that can load classes from {@code byte[]} representations.
-	 * 
-	 * @author Thomas Darimont
-	 */
-	private static class ByteArrayClassLoader extends ClassLoader {
-
-		public ByteArrayClassLoader(ClassLoader parent) {
-			super(parent);
-		}
-
-		/**
-		 * Tries to load a class given {@code byte[]}.
-		 * 
-		 * @param name must not be {@literal null}
-		 * @param bytes must not be {@literal null}
-		 * @return
-		 */
-		public Class<?> loadClass(String name, byte[] bytes) {
-
-			Assert.notNull(name, "name must not be null");
-			Assert.notNull(bytes, "bytes must not be null");
-
-			try {
-				Class<?> clazz = findClass(name);
-				if (clazz != null) {
-					return clazz;
-				}
-			} catch (ClassNotFoundException ignore) {}
-
-			return defineClass(name, bytes, 0, bytes.length);
 		}
 	}
 
@@ -256,7 +223,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	/**
 	 * @author Thomas Darimont
 	 */
-	public static interface ObjectInstantiator {
+	interface ObjectInstantiator {
 
 		Object newInstance(Object... args);
 	}
@@ -493,6 +460,40 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 					break;
 				default:
 					throw new IllegalArgumentException("Unboxing should not be attempted for descriptor '" + ch + "'");
+			}
+		}
+
+		/**
+		 * A {@link ClassLoader} that can load classes from {@code byte[]} representations.
+		 * 
+		 * @author Thomas Darimont
+		 */
+		private class ByteArrayClassLoader extends ClassLoader {
+
+			public ByteArrayClassLoader(ClassLoader parent) {
+				super(parent);
+			}
+
+			/**
+			 * Tries to load a class given {@code byte[]}.
+			 * 
+			 * @param name must not be {@literal null}
+			 * @param bytes must not be {@literal null}
+			 * @return
+			 */
+			public Class<?> loadClass(String name, byte[] bytes) {
+
+				Assert.notNull(name, "name must not be null");
+				Assert.notNull(bytes, "bytes must not be null");
+
+				try {
+					Class<?> clazz = findClass(name);
+					if (clazz != null) {
+						return clazz;
+					}
+				} catch (ClassNotFoundException ignore) {}
+
+				return defineClass(name, bytes, 0, bytes.length);
 			}
 		}
 	}

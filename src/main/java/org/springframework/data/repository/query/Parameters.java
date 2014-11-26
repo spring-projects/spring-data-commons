@@ -253,7 +253,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * 
 	 * @param method
 	 */
-	private void assertEitherAllParamAnnotatedOrNone() {
+	private final void assertEitherAllParamAnnotatedOrNone() {
 
 		boolean nameFound = false;
 		int index = 0;

@@ -27,7 +27,6 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.CrudMethods;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.hateoas.core.AnnotationAttribute;
@@ -52,7 +51,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	private final ConversionService conversionService;
 
 	/**
-	 * Creates a new {@link ReflectionRepositoryInvoker} for the given repository, {@link RepositoryInformation} and
+	 * Creates a new {@link ReflectionRepositoryInvoker} for the given repository, {@link RepositoryMetadata} and
 	 * {@link ConversionService}.
 	 * 
 	 * @param repository must not be {@literal null}.

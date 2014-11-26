@@ -19,7 +19,6 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
 
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.LazyInitTargetSource;
-import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -110,8 +109,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
 	 */
 	@Override
-	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
-			throws BeanDefinitionStoreException {
+	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext) {
 
 		this.resolvedBeanName = super.resolveId(element, definition, parserContext);
 		return resolvedBeanName;

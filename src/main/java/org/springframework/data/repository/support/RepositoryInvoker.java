@@ -21,8 +21,6 @@ import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  * API to invoke (CRUD) methods on Spring Data repository instances independently of the base interface they expose.
@@ -35,7 +33,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 public interface RepositoryInvoker extends RepositoryInvocationInformation {
 
 	/**
-	 * Invokes the method equivalent to {@link CrudRepository#save(Object)} on the repository.
+	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#save(Object)} on the
+	 * repository.
 	 * 
 	 * @param object
 	 * @return the result of the invocation of the save method
@@ -44,7 +43,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	<T> T invokeSave(T object);
 
 	/**
-	 * Invokes the method equivalent to {@link CrudRepository#findOne(Serializable)}.
+	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#findOne(Serializable)}.
 	 * 
 	 * @param id must not be {@literal null}.
 	 * @return the entity with the given id.
@@ -54,10 +53,12 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 
 	/**
 	 * Invokes the find-all method of the underlying repository using the method taking a {@link Pageable} as parameter if
-	 * available (i.e. the equivalent to {@link PagingAndSortingRepository#findAll(Pageable)}), using the method taking a
-	 * {@link Sort} if available (i.e. the equivalent to {@link PagingAndSortingRepository#findAll(Sort)} by extracting
-	 * the {@link Sort} contained in the given {@link Pageable}) or the plain equivalent to
-	 * {@link CrudRepository#findAll()}.
+	 * available (i.e. the equivalent to
+	 * {@link org.springframework.data.repository.PagingAndSortingRepository#findAll(Pageable)}), using the method taking
+	 * a {@link Sort} if available (i.e. the equivalent to
+	 * {@link org.springframework.data.repository.PagingAndSortingRepository#findAll(Sort)} by extracting the {@link Sort}
+	 * contained in the given {@link Pageable}) or the plain equivalent to
+	 * {@link org.springframework.data.repository.CrudRepository#findAll()}.
 	 * 
 	 * @param pageable can be {@literal null}.
 	 * @return the result of the invocation of the find-all method.
@@ -67,8 +68,9 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 
 	/**
 	 * Invokes the find-all method of the underlying repository using the method taking a {@link Sort} as parameter if
-	 * available (i.e. the equivalent to {@link PagingAndSortingRepository#findAll(Sort)}) or the plain equivalent to
-	 * {@link CrudRepository#findAll()}.
+	 * available (i.e. the equivalent to
+	 * {@link org.springframework.data.repository.PagingAndSortingRepository#findAll(Sort)}) or the plain equivalent to
+	 * {@link org.springframework.data.repository.CrudRepository#findAll()}.
 	 * 
 	 * @param pageable can be {@literal null}.
 	 * @return the result of the invocation of the find-all method.
@@ -77,8 +79,8 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	Iterable<Object> invokeFindAll(Sort sort);
 
 	/**
-	 * Invokes the method equivalent to {@link CrudRepository#delete(Serializable)}. The given id is assumed to be of a
-	 * type convertable into the actual identifier type of the backing repository.
+	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#delete(Serializable)}.
+	 * The given id is assumed to be of a type convertable into the actual identifier type of the backing repository.
 	 * 
 	 * @param id must not be {@literal null}. throws {@link IllegalStateException} if the repository does not expose a
 	 *          delete-method.

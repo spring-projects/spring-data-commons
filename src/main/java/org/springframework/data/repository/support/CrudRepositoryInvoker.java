@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.CrudMethods;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
 /**
@@ -36,7 +35,6 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
 	private final CrudRepository<Object, Serializable> repository;
-	private final CrudMethods crudMethods;
 
 	private final boolean customSaveMethod;
 	private final boolean customFindOneMethod;
@@ -44,7 +42,7 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 	private final boolean customDeleteMethod;
 
 	/**
-	 * Creates a new {@link CrudRepositoryInvoker} for the given {@link CrudRepository}, {@link RepositoryInformation} and
+	 * Creates a new {@link CrudRepositoryInvoker} for the given {@link CrudRepository}, {@link RepositoryMetadata} and
 	 * {@link ConversionService}.
 	 * 
 	 * @param repository must not be {@literal null}.
@@ -56,13 +54,13 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
 		super(repository, metadata, conversionService);
 
-		this.repository = repository;
-		this.crudMethods = metadata.getCrudMethods();
+		CrudMethods crudMethods = metadata.getCrudMethods();
 
 		this.customSaveMethod = isRedeclaredMethod(crudMethods.getSaveMethod());
 		this.customFindOneMethod = isRedeclaredMethod(crudMethods.getFindOneMethod());
 		this.customDeleteMethod = isRedeclaredMethod(crudMethods.getDeleteMethod());
 		this.customFindAllMethod = isRedeclaredMethod(crudMethods.getFindAllMethod());
+		this.repository = repository;
 	}
 
 	/* 

@@ -15,9 +15,6 @@
  */
 package org.springframework.data.mapping;
 
-import org.springframework.core.convert.ConversionService;
-import org.springframework.data.mapping.model.MappingException;
-
 /**
  * Domain service to allow accessing and setting {@link PersistentProperty}s of an entity.
  * 
@@ -27,11 +24,12 @@ public interface PersistentPropertyAccessor {
 
 	/**
 	 * Sets the given {@link PersistentProperty} to the given value. Will do type conversion if a
-	 * {@link ConversionService} is configured.
+	 * {@link org.springframework.core.convert.ConversionService} is configured.
 	 * 
 	 * @param property must not be {@literal null}.
 	 * @param value can be {@literal null}.
-	 * @throws MappingException in case an exception occurred when setting the property value.
+	 * @throws org.springframework.data.mapping.model.MappingException in case an exception occurred when setting the
+	 *           property value.
 	 */
 	void setProperty(PersistentProperty<?> property, Object value);
 

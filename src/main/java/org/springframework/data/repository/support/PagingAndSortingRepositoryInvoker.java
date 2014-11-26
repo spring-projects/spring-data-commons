@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.CrudMethods;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
 /**
@@ -40,8 +39,8 @@ class PagingAndSortingRepositoryInvoker extends CrudRepositoryInvoker {
 	private final boolean customFindAll;
 
 	/**
-	 * Creates a new {@link PagingAndSortingRepositoryInvoker} using the given repository, {@link RepositoryInformation}
-	 * and {@link ConversionService}.
+	 * Creates a new {@link PagingAndSortingRepositoryInvoker} using the given repository, {@link RepositoryMetadata} and
+	 * {@link ConversionService}.
 	 * 
 	 * @param repository must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.

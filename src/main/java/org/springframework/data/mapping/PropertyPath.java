@@ -69,15 +69,15 @@ public class PropertyPath implements Iterable<PropertyPath> {
 		Assert.notNull(owningType);
 
 		String propertyName = name.matches(ALL_UPPERCASE) ? name : StringUtils.uncapitalize(name);
-		TypeInformation<?> type = owningType.getProperty(propertyName);
+		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
 
-		if (type == null) {
+		if (propertyType == null) {
 			throw new PropertyReferenceException(propertyName, owningType, base);
 		}
 
 		this.owningType = owningType;
-		this.isCollection = type.isCollectionLike();
-		this.type = type.getActualType();
+		this.isCollection = propertyType.isCollectionLike();
+		this.type = propertyType.getActualType();
 		this.name = propertyName;
 	}
 

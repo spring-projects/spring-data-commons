@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
@@ -40,7 +39,8 @@ public class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 * @param bean must not be {@literal null}.
 	 * @param conversionService can be {@literal null}.
 	 * @return
-	 * @deprecated use {@link PersistentEntity#getPropertyAccessor(Object)} instead. Will be removed in 1.10 RC1.
+	 * @deprecated use {@link org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(Object)} instead. Will
+	 *             be removed in 1.10 RC1.
 	 */
 	@Deprecated
 	public static <T> BeanWrapper<T> create(T bean, ConversionService conversionService) {
