@@ -29,8 +29,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
-import org.springframework.hateoas.core.AnnotationAttribute;
-import org.springframework.hateoas.core.MethodParameters;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
