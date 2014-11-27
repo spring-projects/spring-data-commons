@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.querydsl;
+package org.springframework.data.keyvalue.repository.support;
 
 import static org.hamcrest.collection.IsArrayWithSize.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.keyvalue.repository.support.KeyValueQueryDslUtils.*;
 
 import org.hamcrest.collection.IsArrayContainingInOrder;
 import org.junit.Before;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.NullHandling;
 import org.springframework.data.keyvalue.Person;
 import org.springframework.data.keyvalue.QPerson;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
 
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.OrderSpecifier;
@@ -33,6 +35,7 @@ import com.mysema.query.types.path.PathBuilder;
 
 /**
  * @author Christoph Strobl
+ * @author Thomas Darimont
  */
 public class QueryDslUtilsUnitTests {
 
@@ -51,7 +54,7 @@ public class QueryDslUtilsUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void toOrderSpecifierThrowsExceptioOnNullPathBuilder() {
-		QueryDslUtils.toOrderSpecifier(new Sort("firstname"), null);
+		toOrderSpecifier(new Sort("firstname"), null);
 	}
 
 	/**
@@ -59,7 +62,7 @@ public class QueryDslUtilsUnitTests {
 	 */
 	@Test
 	public void toOrderSpecifierReturnsEmptyArrayWhenSortIsNull() {
-		assertThat(QueryDslUtils.toOrderSpecifier(null, builder), arrayWithSize(0));
+		assertThat(toOrderSpecifier(null, builder), arrayWithSize(0));
 	}
 
 	/**
@@ -70,7 +73,7 @@ public class QueryDslUtilsUnitTests {
 
 		Sort sort = new Sort(Direction.ASC, "firstname");
 
-		OrderSpecifier<?>[] specifiers = QueryDslUtils.toOrderSpecifier(sort, builder);
+		OrderSpecifier<?>[] specifiers = toOrderSpecifier(sort, builder);
 
 		assertThat(specifiers, IsArrayContainingInOrder.<OrderSpecifier<?>> arrayContaining(QPerson.person.firstname.asc()));
 	}
@@ -83,7 +86,7 @@ public class QueryDslUtilsUnitTests {
 
 		Sort sort = new Sort(Direction.DESC, "firstname");
 
-		OrderSpecifier<?>[] specifiers = QueryDslUtils.toOrderSpecifier(sort, builder);
+		OrderSpecifier<?>[] specifiers = toOrderSpecifier(sort, builder);
 
 		assertThat(specifiers,
 				IsArrayContainingInOrder.<OrderSpecifier<?>> arrayContaining(QPerson.person.firstname.desc()));
@@ -97,7 +100,7 @@ public class QueryDslUtilsUnitTests {
 
 		Sort sort = new Sort(Direction.DESC, "firstname").and(new Sort(Direction.ASC, "age"));
 
-		OrderSpecifier<?>[] specifiers = QueryDslUtils.toOrderSpecifier(sort, builder);
+		OrderSpecifier<?>[] specifiers = toOrderSpecifier(sort, builder);
 
 		assertThat(specifiers, IsArrayContainingInOrder.<OrderSpecifier<?>> arrayContaining(
 				QPerson.person.firstname.desc(), QPerson.person.age.asc()));
@@ -111,10 +114,9 @@ public class QueryDslUtilsUnitTests {
 
 		Sort sort = new Sort(new Sort.Order(Direction.DESC, "firstname", NullHandling.NULLS_LAST));
 
-		OrderSpecifier<?>[] specifiers = QueryDslUtils.toOrderSpecifier(sort, builder);
+		OrderSpecifier<?>[] specifiers = toOrderSpecifier(sort, builder);
 
 		assertThat(specifiers,
 				IsArrayContainingInOrder.<OrderSpecifier<?>> arrayContaining(QPerson.person.firstname.desc().nullsLast()));
 	}
-
 }

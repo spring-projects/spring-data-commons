@@ -15,7 +15,7 @@
  */
 package org.springframework.data.keyvalue.repository.support;
 
-import static org.springframework.data.querydsl.QueryDslUtils.*;
+import static org.springframework.data.keyvalue.repository.support.KeyValueQueryDslUtils.*;
 
 import java.io.Serializable;
 
