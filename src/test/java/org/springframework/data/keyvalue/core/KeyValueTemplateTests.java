@@ -33,7 +33,7 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.keyvalue.annotation.KeySpace;
@@ -94,7 +94,7 @@ public class KeyValueTemplateTests {
 	/**
 	 * @see DATACMNS-525
 	 */
-	@Test(expected = InvalidDataAccessApiUsageException.class)
+	@Test(expected = DuplicateKeyException.class)
 	public void insertShouldThrowExecptionWhenObjectOfSameTypeAlreadyExists() {
 
 		operations.insert("1", FOO_ONE);
