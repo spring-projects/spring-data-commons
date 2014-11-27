@@ -30,11 +30,14 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Persistent;
@@ -48,6 +51,8 @@ import org.springframework.util.ObjectUtils;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class KeyValueTemplateUnitTests {
+
+	public @Rule ExpectedException expectedException = ExpectedException.none();
 
 	private static final Foo FOO_ONE = new Foo("one");
 	private static final Foo FOO_TWO = new Foo("two");
@@ -105,8 +110,11 @@ public class KeyValueTemplateUnitTests {
 	/**
 	 * @see DATACMNS-525
 	 */
-	@Test(expected = InvalidDataAccessApiUsageException.class)
+	@Test
 	public void insertShouldThrowExceptionWhenObectWithIdAlreadyExists() {
+
+		expectedException.expect(DuplicateKeyException.class);
+		expectedException.expectMessage("id '1'");
 
 		when(adapterMock.contains(anyString(), anyString())).thenReturn(true);
 

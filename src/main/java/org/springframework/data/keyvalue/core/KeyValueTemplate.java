@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.domain.Sort;
@@ -117,7 +118,8 @@ public class KeyValueTemplate implements KeyValueOperations {
 				String typeKey = resolveKeySpace(objectToInsert.getClass());
 
 				if (adapter.contains(id, typeKey)) {
-					throw new InvalidDataAccessApiUsageException("Cannot insert existing object. Please use update.");
+					throw new DuplicateKeyException(String.format(
+							"Cannot insert existing object with id '%s'. Please use update.", id));
 				}
 
 				adapter.put(id, objectToInsert, typeKey);
