@@ -118,7 +118,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		AbstractBeanDefinition definition = BeanDefinitionBuilder.rootBeanDefinition(REPOSITORY_INTERFACE_POST_PROCESSOR)
 				.getBeanDefinition();
 
-		registerWithSourceAndGeneratedBeanName(registry, definition, configurationSource.getSource());
+		registerIfNotAlreadyRegistered(definition, registry, REPOSITORY_INTERFACE_POST_PROCESSOR, configurationSource);
 	}
 
 	/**
@@ -169,12 +169,15 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	/**
 	 * Sets the given source on the given {@link AbstractBeanDefinition} and registers it inside the given
-	 * {@link BeanDefinitionRegistry}.
+	 * {@link BeanDefinitionRegistry}. For {@link BeanDefinition}s to be registerd once-and-only-once for all
+	 * configuration elements (annotation or XML), prefer calling
+	 * {@link #registerIfNotAlreadyRegistered(AbstractBeanDefinition, BeanDefinitionRegistry, String, Object)} with a
+	 * dedicated bean name to avoid the bead definition being registered multiple times. *
 	 * 
-	 * @param registry
-	 * @param bean
-	 * @param source
-	 * @return
+	 * @param registry must not be {@literal null}.
+	 * @param bean must not be {@literal null}.
+	 * @param source must not be {@literal null}.
+	 * @return the bean name generated for the given {@link BeanDefinition}
 	 */
 	public static String registerWithSourceAndGeneratedBeanName(BeanDefinitionRegistry registry,
 			AbstractBeanDefinition bean, Object source) {
@@ -185,6 +188,26 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		registry.registerBeanDefinition(beanName, bean);
 
 		return beanName;
+	}
+
+	/**
+	 * Registers the given {@link AbstractBeanDefinition} with the given registry with the given bean name unless the
+	 * registry already contains a bean with that name.
+	 * 
+	 * @param bean must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
+	 * @param beanName must not be {@literal null} or empty.
+	 * @param source must not be {@literal null}.
+	 */
+	public static void registerIfNotAlreadyRegistered(AbstractBeanDefinition bean, BeanDefinitionRegistry registry,
+			String beanName, Object source) {
+
+		if (registry.containsBeanDefinition(beanName)) {
+			return;
+		}
+
+		bean.setSource(source);
+		registry.registerBeanDefinition(beanName, bean);
 	}
 
 	/**
