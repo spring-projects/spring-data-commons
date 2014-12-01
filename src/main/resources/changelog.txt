@@ -1,6 +1,33 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.10.0.M1 (2014-12-01)
+-----------------------------------------
+* DATACMNS-609 - Multiple usage of repository setup means (XML or annotation) creates multiple bean definitions for RepositoryInterfaceAwareBeanPostProcessor.
+* DATACMNS-608 - Release 1.10 M1.
+* DATACMNS-607 - Inline AnnotationAttributes and MethodParameters to cut dependency to Spring HATEOAS for ReflectionRepositoryInvoker.
+* DATACMNS-606 - Provide converter between legacy Date instances an JDK 8 date/time types.
+* DATACMNS-605 - Move key-value infrastructure to dedicated project.
+* DATACMNS-604 - Move QueryDsl helper methods from QueryDslUtils to Map specific structure.
+* DATACMNS-601 - Work on SonarQube warnings.
+* DATACMNS-600 - Remove package cycle introduced by the invoker package.
+* DATACMNS-599 - Introduce IdentifierAccessor API.
+* DATACMNS-597 - BasicPersistentEntity.getPropertyAccessor for target bean does not properly handle inheritance when PersistentEntity instances are interface or abstract class based.
+* DATACMNS-596 - Expose PersistenPropertyAccessor API via PersistentEntity.
+* DATACMNS-594 - Strange generics behaviour for multiply nested generic types.
+* DATACMNS-591 - RepositoryConfigurationDelegate should use ResourceLoader provided by the infrastructure.
+* DATACMNS-590 - Bug in generics detection for multiply nested generic types.
+* DATACMNS-589 - Unify abstractions to invoke repositories with Spring Data REST.
+* DATACMNS-587 - Add findAll variant with QueryDSL OrderSpecifier without a Predicate.
+* DATACMNS-583 - DomainClassConverter#matches should return false when source- and targetType are equal.
+* DATACMNS-581 - Spring Data support for NOT Containing expression.
+* DATACMNS-580 - Add section on limiting the query results to reference documentation.
+* DATACMNS-578 - Improve entity instantiation performance by using ASM byte-code generation.
+* DATACMNS-577 - Improve javadoc on QueryDslPredicateExecutor.
+* DATACMNS-530 - JavaDoc should be updated to reflect change of requiring an environment.
+* DATACMNS-525 - In-Memory Repository infrastructure.
+
+
 Changes in version 1.9.1.RELEASE (2014-10-30)
 ---------------------------------------------
 * DATACMNS-585 - Release 1.9.1.
