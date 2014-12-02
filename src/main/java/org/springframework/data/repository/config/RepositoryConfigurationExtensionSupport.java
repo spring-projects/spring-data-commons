@@ -29,6 +29,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -115,10 +116,8 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 */
 	public void registerBeansForRoot(BeanDefinitionRegistry registry, RepositoryConfigurationSource configurationSource) {
 
-		AbstractBeanDefinition definition = BeanDefinitionBuilder.rootBeanDefinition(REPOSITORY_INTERFACE_POST_PROCESSOR)
-				.getBeanDefinition();
-
-		registerIfNotAlreadyRegistered(definition, registry, REPOSITORY_INTERFACE_POST_PROCESSOR, configurationSource);
+		registerIfNotAlreadyRegistered(new RootBeanDefinition(REPOSITORY_INTERFACE_POST_PROCESSOR), registry,
+				REPOSITORY_INTERFACE_POST_PROCESSOR, configurationSource.getSource());
 	}
 
 	/**
