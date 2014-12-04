@@ -35,8 +35,6 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
@@ -49,8 +47,6 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ClassUtils;
-import org.springframework.data.repository.util.NullableWrapper;
-import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -63,7 +59,6 @@ import org.springframework.util.ObjectUtils;
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
-	private static final TypeDescriptor WRAPPER_TYPE = TypeDescriptor.valueOf(NullableWrapper.class);
 	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
 			RepositoryFactorySupport.class.getClassLoader());
 
@@ -316,7 +311,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 		private final Object customImplementation;
 		private final RepositoryInformation repositoryInformation;
-		private final GenericConversionService conversionService;
+		private final QueryExecutionResultHandler resultHandler;
 		private final Object target;
 
 		/**
@@ -329,10 +324,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 			Assert.notNull(repositoryInformation, "RepositoryInformation must not be null!");
 			Assert.notNull(target, "Target must not be null!");
 
-			DefaultConversionService conversionService = new DefaultConversionService();
-			QueryExecutionConverters.registerConvertersIn(conversionService);
-			this.conversionService = conversionService;
-
+			this.resultHandler = new QueryExecutionResultHandler();
 			this.repositoryInformation = repositoryInformation;
 			this.customImplementation = customImplementation;
 			this.target = target;
@@ -380,30 +372,12 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 			Object result = doInvoke(invocation);
 
-			Method method = invocation.getMethod();
-
 			// Looking up the TypeDescriptor for the return type - yes, this way o.O
+			Method method = invocation.getMethod();
 			MethodParameter parameter = new MethodParameter(method, -1);
 			TypeDescriptor methodReturnTypeDescriptor = TypeDescriptor.nested(parameter, 0);
 
-			Class<?> expectedReturnType = method.getReturnType();
-
-			if (result != null && expectedReturnType.isInstance(result)) {
-				return result;
-			}
-
-			if (QueryExecutionConverters.supports(expectedReturnType)
-					&& conversionService.canConvert(WRAPPER_TYPE, methodReturnTypeDescriptor)
-					&& !conversionService.canBypassConvert(WRAPPER_TYPE, TypeDescriptor.valueOf(expectedReturnType))) {
-				return conversionService.convert(new NullableWrapper(result), expectedReturnType);
-			}
-
-			if (result == null) {
-				return null;
-			}
-
-			return conversionService.canConvert(result.getClass(), expectedReturnType) ? conversionService.convert(result,
-					expectedReturnType) : result;
+			return resultHandler.postProcessInvocationResult(result, methodReturnTypeDescriptor);
 		}
 
 		private Object doInvoke(MethodInvocation invocation) throws Throwable {
