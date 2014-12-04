@@ -1,0 +1,78 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.repository.core.support;
+
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.repository.util.NullableWrapper;
+import org.springframework.data.repository.util.QueryExecutionConverters;
+
+/**
+ * Simple domain service to convert query results into a dedicated type.
+ *
+ * @author Oliver Gierke
+ */
+class QueryExecutionResultHandler {
+
+	private static final TypeDescriptor WRAPPER_TYPE = TypeDescriptor.valueOf(NullableWrapper.class);
+
+	private final GenericConversionService conversionService;
+
+	/**
+	 * Creates a new {@link QueryExecutionResultHandler}.
+	 */
+	public QueryExecutionResultHandler() {
+
+		GenericConversionService conversionService = new DefaultConversionService();
+		QueryExecutionConverters.registerConvertersIn(conversionService);
+
+		this.conversionService = conversionService;
+	}
+
+	/**
+	 * Post-processes the given result of a query invocation to the given type.
+	 * 
+	 * @param result can be {@literal null}.
+	 * @param returnTypeDesciptor can be {@literal null}, if so, no conversion is performed.
+	 * @return
+	 */
+	public Object postProcessInvocationResult(Object result, TypeDescriptor returnTypeDesciptor) {
+
+		if (returnTypeDesciptor == null) {
+			return result;
+		}
+
+		Class<?> expectedReturnType = returnTypeDesciptor.getType();
+
+		if (result != null && expectedReturnType.isInstance(result)) {
+			return result;
+		}
+
+		if (QueryExecutionConverters.supports(expectedReturnType)
+				&& conversionService.canConvert(WRAPPER_TYPE, returnTypeDesciptor)
+				&& !conversionService.canBypassConvert(WRAPPER_TYPE, TypeDescriptor.valueOf(expectedReturnType))) {
+			return conversionService.convert(new NullableWrapper(result), expectedReturnType);
+		}
+
+		if (result == null) {
+			return null;
+		}
+
+		return conversionService.canConvert(result.getClass(), expectedReturnType) ? conversionService.convert(result,
+				expectedReturnType) : result;
+	}
+}
