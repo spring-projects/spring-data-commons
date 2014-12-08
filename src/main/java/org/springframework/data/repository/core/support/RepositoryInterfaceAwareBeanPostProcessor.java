@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,14 +70,14 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 			return null;
 		}
 
-		BeanDefinition definition = context.getBeanDefinition(beanName);
-		PropertyValue value = definition.getPropertyValues().getPropertyValue("repositoryInterface");
-
 		Class<?> resolvedBeanClass = cache.get(beanName);
 
-		if (cache.containsKey(beanName)) {
-			return cache.get(beanName);
+		if (resolvedBeanClass != null) {
+			return resolvedBeanClass == Void.class ? null : resolvedBeanClass;
 		}
+
+		BeanDefinition definition = context.getBeanDefinition(beanName);
+		PropertyValue value = definition.getPropertyValues().getPropertyValue("repositoryInterface");
 
 		resolvedBeanClass = getClassForPropertyValue(value, beanName);
 		cache.put(beanName, resolvedBeanClass);
