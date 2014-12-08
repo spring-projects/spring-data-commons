@@ -70,17 +70,13 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 			return null;
 		}
 
-		BeanDefinition definition = context.getBeanDefinition(beanName);
-		PropertyValue value = definition.getPropertyValues().getPropertyValue("repositoryInterface");
-
 		Class<?> resolvedBeanClass = cache.get(beanName);
-
-		if (cache.containsKey(beanName)) {
-			return cache.get(beanName);
+		if (resolvedBeanClass == null) {
+            BeanDefinition definition = context.getBeanDefinition(beanName);
+            PropertyValue value = definition.getPropertyValues().getPropertyValue("repositoryInterface");
+            resolvedBeanClass = getClassForPropertyValue(value, beanName);
+            cache.put(beanName, resolvedBeanClass);
 		}
-
-		resolvedBeanClass = getClassForPropertyValue(value, beanName);
-		cache.put(beanName, resolvedBeanClass);
 
 		return resolvedBeanClass == Void.class ? null : resolvedBeanClass;
 	}
