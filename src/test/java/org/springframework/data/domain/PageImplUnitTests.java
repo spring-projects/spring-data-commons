@@ -126,4 +126,12 @@ public class PageImplUnitTests {
 		assertThat(page.hasNext(), is(false));
 		assertThat(page.hasPrevious(), is(false));
 	}
+
+	/**
+	 * @see DATACMNS-615
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsTotalLessThanContentLength() {
+		new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(0, 10), 1);
+	}
 }
