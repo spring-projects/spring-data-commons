@@ -17,6 +17,8 @@ package org.springframework.data.domain;
 
 import java.util.List;
 
+import org.springframework.util.Assert;
+
 /**
  * Basic {@code Page} implementation.
  * 
@@ -39,6 +41,9 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	public PageImpl(List<T> content, Pageable pageable, long total) {
 
 		super(content, pageable);
+
+		Assert.isTrue(total >= content.size(), "Total must not be less than the number of elements given!");
+
 		this.total = total;
 	}
 
