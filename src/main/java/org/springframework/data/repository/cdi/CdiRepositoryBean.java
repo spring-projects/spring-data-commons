@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -516,9 +515,6 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 			public BeanManager next() {
 				if(currentIndex < providedBeanManagers.length){
 					return providedBeanManagers[currentIndex++];
-				}
-				if(jndiBeanManager == null){
-					throw new NoSuchElementException();
 				}
 				BeanManager result = jndiBeanManager;
 				jndiBeanManager = null;
