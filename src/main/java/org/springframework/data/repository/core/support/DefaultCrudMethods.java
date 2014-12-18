@@ -29,6 +29,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Default implementation to discover CRUD methods based on the given {@link RepositoryMetadata}. Will detect methods
@@ -165,6 +167,27 @@ class DefaultCrudMethods implements CrudMethods {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Looks up the most specific method for the given method and type and returns an accessible version of discovered
+	 * {@link Method} if found.
+	 * 
+	 * @param method
+	 * @param type
+	 * @see ClassUtils#getMostSpecificMethod(Method, Class)
+	 * @return
+	 */
+	private static Method getMostSpecificMethod(Method method, Class<?> type) {
+
+		Method result = ClassUtils.getMostSpecificMethod(method, type);
+
+		if (result == null) {
+			return null;
+		}
+
+		ReflectionUtils.makeAccessible(result);
+		return result;
 	}
 
 	/* 
