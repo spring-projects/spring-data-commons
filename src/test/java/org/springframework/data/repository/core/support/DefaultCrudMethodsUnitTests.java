@@ -142,6 +142,20 @@ public class DefaultCrudMethodsUnitTests {
 				RepositoryWithDeleteMethodForEntityOverloaded.class.getMethod("delete", Domain.class));
 	}
 
+	/**
+	 * @see DATACMNS-619
+	 */
+	@Test
+	public void exposedMethodsAreAccessible() {
+
+		CrudMethods methods = getMethodsFor(RepositoryWithAllCrudMethodOverloaded.class);
+
+		assertThat(methods.getSaveMethod().isAccessible(), is(true));
+		assertThat(methods.getDeleteMethod().isAccessible(), is(true));
+		assertThat(methods.getFindAllMethod().isAccessible(), is(true));
+		assertThat(methods.getFindOneMethod().isAccessible(), is(true));
+	}
+
 	private static CrudMethods getMethodsFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);

@@ -174,6 +174,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notNull(parameters, "Parameters must not be null!");
 
+		ReflectionUtils.makeAccessible(method);
+
 		return invoke(method, prepareParameters(method, parameters, pageable, sort));
 	}
 
@@ -225,8 +227,6 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@SuppressWarnings("unchecked")
 	private <T> T invoke(Method method, Object... arguments) {
-
-		ReflectionUtils.makeAccessible(method);
 		return (T) ReflectionUtils.invokeMethod(method, repository, arguments);
 	}
 
