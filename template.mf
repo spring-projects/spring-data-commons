@@ -33,5 +33,6 @@ Import-Template:
  org.joda.time.*;version="${jodatime:[=.=.=,+1.0.0)}";resolution:=optional,
  org.slf4j.*;version="[1.6.0,2.0.0)",
  javax.servlet.*;version="[2.5.0, 4.0.0)";resolution:=optional,
+ javax.naming.*;version="[1.2.1, 1.2.1)";resolution:=optional,
  org.w3c.dom.*;version="0"
 DynamicImport-Package: *
