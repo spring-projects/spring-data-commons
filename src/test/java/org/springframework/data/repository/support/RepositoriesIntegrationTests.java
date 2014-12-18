@@ -78,6 +78,15 @@ public class RepositoriesIntegrationTests {
 		public ProductRepository productRepository() {
 			return mock(ProductRepository.class);
 		}
+
+		@Bean
+		public RepositoryFactoryBeanSupport<Repository<Order, Long>, Order, Long> orderRepositoryFactory() {
+
+			DummyRepositoryFactoryBean<Repository<Order, Long>, Order, Long> factory = new DummyRepositoryFactoryBean<Repository<Order, Long>, Order, Long>();
+			factory.setRepositoryInterface(OrderRepository.class);
+
+			return factory;
+		}
 	}
 
 	@Autowired Repositories repositories;
@@ -97,6 +106,7 @@ public class RepositoriesIntegrationTests {
 		assertThat(repositories, is(notNullValue()));
 		assertThat(repositories.getCrudInvoker(User.class), is(instanceOf(CrudRepositoryInvoker.class)));
 		assertThat(repositories.getCrudInvoker(Product.class), is(instanceOf(ReflectionRepositoryInvoker.class)));
+		assertThat(repositories.getCrudInvoker(Order.class), is(instanceOf(ReflectionRepositoryInvoker.class)));
 	}
 
 	/**
@@ -132,12 +142,19 @@ public class RepositoriesIntegrationTests {
 
 	}
 
-	public static class Product {}
+	static class Product {}
 
-	public static interface ProductRepository extends Repository<Product, Long> {
+	interface ProductRepository extends Repository<Product, Long> {
 
 		Product findOne(Long id);
 
 		Product save(Product product);
+	}
+
+	static class Order {}
+
+	interface OrderRepository extends CrudRepository<Order, Long> {
+
+		Order findOne(Long id);
 	}
 }

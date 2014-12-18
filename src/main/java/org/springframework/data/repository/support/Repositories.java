@@ -16,6 +16,8 @@
 package org.springframework.data.repository.support;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +31,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.CrudInvoker;
+import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
@@ -202,7 +205,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(repository, String.format("No repository found for domain class: %s", domainClass));
 
-		if (repository instanceof CrudRepository) {
+		if (repository instanceof CrudRepository && !hasRedeclaredCrudMethods(domainClass)) {
 			return new CrudRepositoryInvoker<T>((CrudRepository<T, Serializable>) repository);
 		} else {
 			return new ReflectionRepositoryInvoker<T>(repository, getRepositoryInformationFor(domainClass).getCrudMethods());
@@ -215,6 +218,25 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public Iterator<Class<?>> iterator() {
 		return repositoryFactoryInfos.keySet().iterator();
+	}
+
+	/**
+	 * Returns whether any of the CRUD methods of the repository for the given domain type are redeclared.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private boolean hasRedeclaredCrudMethods(Class<?> type) {
+
+		CrudMethods crudMethods = getRepositoryInformationFor(type).getCrudMethods();
+
+		for (Method method : Arrays.asList(crudMethods.getFindOneMethod(), crudMethods.getSaveMethod())) {
+			if (!method.getDeclaringClass().equals(CrudRepository.class)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
