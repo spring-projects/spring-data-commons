@@ -129,13 +129,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.data.build</groupId>
-			<artifactId>spring-data-java8-stub</artifactId>
-			<version>1.4.4.RELEASE</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>el-api</artifactId>
 			<version>${cdi}</version>

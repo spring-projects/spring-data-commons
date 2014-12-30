@@ -1,14 +1,16 @@
 language: java
 jdk:
-  - oraclejdk7
-  - openjdk6
   - oraclejdk8
 env:
   matrix:
     - PROFILE=ci
-    - PROFILE=spring4
     - PROFILE=spring32-next
+    - PROFILE=spring4
     - PROFILE=spring4-next
+    - PROFILE=spring41
+    - PROFILE=spring41-next
+    - PROFILE=querydsl-next
+sudo: false
 cache:
   directories:
     - $HOME/.m2
