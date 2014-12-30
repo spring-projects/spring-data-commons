@@ -6,8 +6,10 @@ env:
     - PROFILE=ci
     - PROFILE=spring4-next
     - PROFILE=spring41-next
+    - PROFILE=querydsl-next
 cache:
   directories:
     - $HOME/.m2
+sudo: false
 install: true
 script: "mvn clean dependency:list test -P${PROFILE} -Dsort"
