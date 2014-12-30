@@ -19,6 +19,7 @@ import static java.time.Instant.*;
 import static java.time.LocalDateTime.*;
 import static java.time.ZoneId.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -59,11 +60,13 @@ public abstract class Jsr310Converters {
 		converters.add(LocalDateToDateConverter.INSTANCE);
 		converters.add(DateToLocalTimeConverter.INSTANCE);
 		converters.add(LocalTimeToDateConverter.INSTANCE);
+		converters.add(DateToInstantConverter.INSTANCE);
+		converters.add(InstantToDateConverter.INSTANCE);
 
 		return converters;
 	}
 
-	static enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
+	public static enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
 
 		INSTANCE;
 
@@ -73,7 +76,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
-	static enum LocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
+	public static enum LocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
 
 		INSTANCE;
 
@@ -83,7 +86,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
-	static enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
+	public static enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
 
 		INSTANCE;
 
@@ -93,7 +96,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
-	static enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
+	public static enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
 
 		INSTANCE;
 
@@ -103,7 +106,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
-	static enum DateToLocalTimeConverter implements Converter<Date, LocalTime> {
+	public static enum DateToLocalTimeConverter implements Converter<Date, LocalTime> {
 
 		INSTANCE;
 
@@ -113,13 +116,33 @@ public abstract class Jsr310Converters {
 		}
 	}
 
-	static enum LocalTimeToDateConverter implements Converter<LocalTime, Date> {
+	public static enum LocalTimeToDateConverter implements Converter<LocalTime, Date> {
 
 		INSTANCE;
 
 		@Override
 		public Date convert(LocalTime source) {
 			return source == null ? null : Date.from(source.atDate(LocalDate.now()).atZone(systemDefault()).toInstant());
+		}
+	}
+
+	public static enum DateToInstantConverter implements Converter<Date, Instant> {
+
+		INSTANCE;
+
+		@Override
+		public Instant convert(Date source) {
+			return source == null ? null : source.toInstant();
+		}
+	}
+
+	public static enum InstantToDateConverter implements Converter<Instant, Date> {
+
+		INSTANCE;
+
+		@Override
+		public Date convert(Instant source) {
+			return source == null ? null : Date.from(source.atZone(systemDefault()).toInstant());
 		}
 	}
 }

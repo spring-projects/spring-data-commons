@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -103,6 +104,26 @@ public class Jsr310ConvertersUnitTests {
 
 		LocalTime now = LocalTime.now();
 		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "HH:mm:ss.SSS"), is(now.toString()));
+	}
+
+	/**
+	 * @see DATACMNS-623
+	 */
+	@Test
+	public void convertsDateToInstant() {
+
+		Date now = new Date();
+		assertThat(CONVERSION_SERVICE.convert(now, Instant.class), is(now.toInstant()));
+	}
+
+	/**
+	 * @see DATACMNS-623
+	 */
+	@Test
+	public void convertsInstantToDate() {
+
+		Date now = new Date();
+		assertThat(CONVERSION_SERVICE.convert(now.toInstant(), Date.class), is(now));
 	}
 
 	private static String format(Date date, String format) {
