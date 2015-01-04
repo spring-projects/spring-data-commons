@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014 the original author or authors.
+ * Copyright 2010-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,12 +73,22 @@ public class Distance implements Serializable {
 	}
 
 	/**
-	 * Retruns the {@link Metric} of the {@link Distance}.
+	 * Returns the {@link Metric} of the {@link Distance}.
 	 * 
 	 * @return the metric
 	 */
 	public Metric getMetric() {
 		return metric;
+	}
+
+	/**
+	 * Returns a {@link String} representation of the unit the distance is in.
+	 * 
+	 * @return the unit
+	 * @see Metric#getAbbreviation()
+	 */
+	public String getUnit() {
+		return metric.getAbbreviation();
 	}
 
 	/**

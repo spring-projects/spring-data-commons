@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.geo.format.DistanceFormatter;
+import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
@@ -65,6 +67,9 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Override
 	public void addFormatters(FormatterRegistry registry) {
+
+		registry.addFormatter(DistanceFormatter.INSTANCE);
+		registry.addFormatter(PointFormatter.INSTANCE);
 
 		if (!(registry instanceof FormattingConversionService)) {
 			return;

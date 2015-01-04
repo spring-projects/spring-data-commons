@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,5 +136,13 @@ public class DistanceUnitTests {
 
 		Distance serialized = (Distance) SerializationUtils.deserialize(SerializationUtils.serialize(dist));
 		assertThat(serialized, is(dist));
+	}
+
+	/**
+	 * @see DATACMNS-626
+	 */
+	@Test
+	public void returnsMetricsAbbreviationAsUnit() {
+		assertThat(new Distance(10, KILOMETERS).getUnit(), is("km"));
 	}
 }

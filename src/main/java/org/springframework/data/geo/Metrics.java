@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,20 @@ package org.springframework.data.geo;
  */
 public enum Metrics implements Metric {
 
-	KILOMETERS(6378.137), MILES(3963.191), NEUTRAL(1);
+	KILOMETERS(6378.137, "km"), MILES(3963.191, "mi"), NEUTRAL(1, "");
 
 	private final double multiplier;
+	private final String abbreviation;
 
 	/**
 	 * Creates a new {@link Metrics} using the given muliplier.
 	 * 
 	 * @param multiplier the earth radius at equator.
 	 */
-	private Metrics(double multiplier) {
+	private Metrics(double multiplier, String abbreviation) {
+
 		this.multiplier = multiplier;
+		this.abbreviation = abbreviation;
 	}
 
 	/*
@@ -43,5 +46,14 @@ public enum Metrics implements Metric {
 	 */
 	public double getMultiplier() {
 		return multiplier;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.geo.Metric#getAbbreviation()
+	 */
+	@Override
+	public String getAbbreviation() {
+		return abbreviation;
 	}
 }

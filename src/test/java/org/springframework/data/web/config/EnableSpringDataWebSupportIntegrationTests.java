@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@ import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Point;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
@@ -120,6 +123,22 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names, not(hasItem("jacksonGeoModule")));
+	}
+
+	/**
+	 * @see DATACMNS-626
+	 */
+	@Test
+	public void registersFormatters() {
+
+		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
+
+		ConversionService conversionService = context.getBean(ConversionService.class);
+
+		assertThat(conversionService.canConvert(String.class, Distance.class), is(true));
+		assertThat(conversionService.canConvert(Distance.class, String.class), is(true));
+		assertThat(conversionService.canConvert(String.class, Point.class), is(true));
+		assertThat(conversionService.canConvert(Point.class, String.class), is(true));
 	}
 
 	@SuppressWarnings("unchecked")

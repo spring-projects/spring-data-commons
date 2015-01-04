@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.geo;
 
+import org.springframework.util.Assert;
+
 /**
  * Value object to create custom {@link Metric}s on the fly.
  * 
@@ -27,6 +29,7 @@ public class CustomMetric implements Metric {
 	private static final long serialVersionUID = -2972074177454114228L;
 
 	private final double multiplier;
+	private final String abbreviation;
 
 	/**
 	 * Creates a custom {@link Metric} using the given multiplier.
@@ -34,7 +37,22 @@ public class CustomMetric implements Metric {
 	 * @param multiplier
 	 */
 	public CustomMetric(double multiplier) {
+
+		this(multiplier, "");
+	}
+
+	/**
+	 * Creates a custom {@link Metric} using the given multiplier and abbreviation.
+	 * 
+	 * @param multiplier
+	 * @param abbreviation must not be {@literal null}.
+	 */
+	public CustomMetric(double multiplier, String abbreviation) {
+
+		Assert.notNull(abbreviation, "Abbreviation must not be null!");
+
 		this.multiplier = multiplier;
+		this.abbreviation = abbreviation;
 	}
 
 	/* 
@@ -43,5 +61,14 @@ public class CustomMetric implements Metric {
 	 */
 	public double getMultiplier() {
 		return multiplier;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.geo.Metric#getAbbreviation()
+	 */
+	@Override
+	public String getAbbreviation() {
+		return abbreviation;
 	}
 }
