@@ -91,6 +91,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.threeten</groupId>
+			<artifactId>threetenbp</artifactId>
+			<version>${threetenbp}</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
 			<groupId>com.mysema.querydsl</groupId>
 			<artifactId>querydsl-core</artifactId>
 			<version>${querydsl}</version>
