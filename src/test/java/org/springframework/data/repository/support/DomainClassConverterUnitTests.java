@@ -45,22 +45,18 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
 public class DomainClassConverterUnitTests {
 
 	static final User USER = new User();
+	static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
+	static final TypeDescriptor USER_TYPE = TypeDescriptor.valueOf(User.class);
+	static final TypeDescriptor LONG_TYPE = TypeDescriptor.valueOf(Long.class);
 
 	@SuppressWarnings("rawtypes") DomainClassConverter converter;
-
-	TypeDescriptor sourceDescriptor;
-	TypeDescriptor targetDescriptor;
 
 	@Mock DefaultConversionService service;
 
 	@Before
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setUp() {
-
 		converter = new DomainClassConverter(service);
-
-		sourceDescriptor = TypeDescriptor.valueOf(String.class);
-		targetDescriptor = TypeDescriptor.valueOf(User.class);
 	}
 
 	@Test
@@ -96,19 +92,19 @@ public class DomainClassConverterUnitTests {
 	 * @see DATACMNS-233
 	 */
 	public void returnsNullForNullSource() {
-		assertThat(converter.convert(null, sourceDescriptor, targetDescriptor), is(nullValue()));
+		assertThat(converter.convert(null, STRING_TYPE, USER_TYPE), is(nullValue()));
 	}
 
 	/**
 	 * @see DATACMNS-233
 	 */
 	public void returnsNullForEmptyStringSource() {
-		assertThat(converter.convert("", sourceDescriptor, targetDescriptor), is(nullValue()));
+		assertThat(converter.convert("", STRING_TYPE, USER_TYPE), is(nullValue()));
 	}
 
 	private void assertMatches(boolean matchExpected) {
 
-		assertThat(converter.matches(sourceDescriptor, targetDescriptor), is(matchExpected));
+		assertThat(converter.matches(STRING_TYPE, USER_TYPE), is(matchExpected));
 	}
 
 	@Test
@@ -120,7 +116,7 @@ public class DomainClassConverterUnitTests {
 		when(service.canConvert(String.class, Long.class)).thenReturn(true);
 		when(service.convert(anyString(), eq(Long.class))).thenReturn(1L);
 
-		converter.convert("1", sourceDescriptor, targetDescriptor);
+		converter.convert("1", STRING_TYPE, USER_TYPE);
 
 		UserRepository bean = context.getBean(UserRepository.class);
 		UserRepository repo = (UserRepository) ((Advised) bean).getTargetSource().getTarget();
@@ -141,20 +137,53 @@ public class DomainClassConverterUnitTests {
 		when(service.canConvert(String.class, Long.class)).thenReturn(true);
 
 		converter.setApplicationContext(context);
-		assertThat(converter.matches(sourceDescriptor, targetDescriptor), is(true));
+		assertThat(converter.matches(STRING_TYPE, USER_TYPE), is(true));
 	}
 
 	/**
-	 * @DATACMNS-583
+	 * @see DATACMNS-583
 	 */
 	@Test
 	public void shouldReturnSourceObjectIfSourceAndTargetTypesAreTheSame() {
 
-		ApplicationContext context = initContextWithRepo();
-		converter.setApplicationContext(context);
+		converter.setApplicationContext(initContextWithRepo());
 
-		assertThat(converter.matches(targetDescriptor, targetDescriptor), is(true));
-		assertThat((User) converter.convert(USER, targetDescriptor, targetDescriptor), is(USER));
+		assertThat(converter.matches(USER_TYPE, USER_TYPE), is(true));
+		assertThat((User) converter.convert(USER, USER_TYPE, USER_TYPE), is(USER));
+	}
+
+	/**
+	 * @see DATACMNS-627
+	 */
+	@Test
+	public void supportsConversionFromIdType() {
+
+		converter.setApplicationContext(initContextWithRepo());
+
+		assertThat(converter.matches(LONG_TYPE, USER_TYPE), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-627
+	 */
+	@Test
+	public void supportsConversionFromEntityToIdType() {
+
+		converter.setApplicationContext(initContextWithRepo());
+
+		assertThat(converter.matches(USER_TYPE, LONG_TYPE), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-627
+	 */
+	@Test
+	public void supportsConversionFromEntityToString() {
+
+		converter.setApplicationContext(initContextWithRepo());
+
+		when(service.canConvert(Long.class, String.class)).thenReturn(true);
+		assertThat(converter.matches(USER_TYPE, STRING_TYPE), is(true));
 	}
 
 	private ApplicationContext initContextWithRepo() {
