@@ -39,11 +39,12 @@ import org.threeten.bp.LocalTime;
  * 
  * @author Oliver Gierke
  * @see http://www.threeten.org/threetenbp
+ * @since 1.10
  */
-public abstract class Jsr310BackPortConverters {
+public abstract class ThreeTenBackPortConverters {
 
 	private static final boolean THREE_TEN_BACK_PORT_IS_PRESENT = ClassUtils.isPresent("org.threeten.bp.LocalDateTime",
-			Jsr310BackPortConverters.class.getClassLoader());
+			ThreeTenBackPortConverters.class.getClassLoader());
 
 	/**
 	 * Returns the converters to be registered. Will only return converters in case we're running on Java 8.

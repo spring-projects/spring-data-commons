@@ -32,11 +32,12 @@ import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.LocalTime;
 
 /**
- * Unit tests for {@link Jsr310BackPortConverters}.
+ * Unit tests for {@link ThreeTenBackPortConverters}.
  * 
  * @author Oliver Gierke
+ * @ssince 1.10
  */
-public class Jsr310BackPortConvertersUnitTests {
+public class ThreeTenBackPortConvertersUnitTests {
 
 	static final Date NOW = new Date();
 	static final ConversionService CONVERSION_SERVICE;
@@ -45,7 +46,7 @@ public class Jsr310BackPortConvertersUnitTests {
 
 		GenericConversionService conversionService = new GenericConversionService();
 
-		for (Converter<?, ?> converter : Jsr310BackPortConverters.getConvertersToRegister()) {
+		for (Converter<?, ?> converter : ThreeTenBackPortConverters.getConvertersToRegister()) {
 			conversionService.addConverter(converter);
 		}
 
