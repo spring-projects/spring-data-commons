@@ -312,7 +312,7 @@ If the number is left out, a result size of 1 is assumed.
 ====
 [source, java]
 ----
-User findFirstByOrderByLastname();
+User findFirstByOrderByLastnameAsc();
 
 User findTopByOrderByAgeDesc();
 
