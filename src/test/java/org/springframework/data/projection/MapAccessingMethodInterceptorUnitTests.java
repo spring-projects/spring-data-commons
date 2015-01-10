@@ -120,7 +120,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 		new MapAccessingMethodInterceptor(Collections.<String, Object> emptyMap()).invoke(invocation);
 	}
 
-	public static interface Sample {
+	interface Sample {
 
 		String getName();
 

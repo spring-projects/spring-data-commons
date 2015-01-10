@@ -17,6 +17,8 @@ package org.springframework.data.web.config;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.geo.Distance;
@@ -36,10 +39,14 @@ import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.SpringDataWebConfigurationImportSelector;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Integration tests for {@link EnableSpringDataWebSupport}.
@@ -57,6 +64,9 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	@EnableSpringDataWebSupport
 	static class SampleConfig {
 
+		public @Bean SampleController controller() {
+			return new SampleController();
+		}
 	}
 
 	@After
@@ -139,6 +149,27 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		assertThat(conversionService.canConvert(Distance.class, String.class), is(true));
 		assertThat(conversionService.canConvert(String.class, Point.class), is(true));
 		assertThat(conversionService.canConvert(Point.class, String.class), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-630
+	 */
+	@Test
+	public void createsProxyForInterfaceBasedControllerMethodParameter() throws Exception {
+
+		WebApplicationContext applicationContext = WebTestUtils.createApplicationContext(SampleConfig.class);
+		MockMvc mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/proxy");
+		builder.queryParam("name", "Foo");
+		builder.queryParam("shippingAddresses[0].zipCode", "ZIP");
+		builder.queryParam("shippingAddresses[0].city", "City");
+		builder.queryParam("billingAddress.zipCode", "ZIP");
+		builder.queryParam("billingAddress.city", "City");
+		builder.queryParam("date", "2014-01-11");
+
+		mvc.perform(post(builder.build().toString())).//
+				andExpect(status().isOk());
 	}
 
 	@SuppressWarnings("unchecked")

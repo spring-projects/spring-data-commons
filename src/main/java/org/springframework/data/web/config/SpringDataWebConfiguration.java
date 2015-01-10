@@ -17,14 +17,18 @@ package org.springframework.data.web.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
@@ -42,6 +46,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 	@Autowired private ApplicationContext context;
+	@Autowired @Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService;
 
 	/*
 	 * (non-Javadoc)
@@ -75,10 +80,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 			return;
 		}
 
-		registerDomainClassConverterFor((FormattingConversionService) registry);
-	}
-
-	private void registerDomainClassConverterFor(FormattingConversionService conversionService) {
+		FormattingConversionService conversionService = (FormattingConversionService) registry;
 
 		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<FormattingConversionService>(
 				conversionService);
@@ -94,5 +96,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 		argumentResolvers.add(sortResolver());
 		argumentResolvers.add(pageableResolver());
+
+		argumentResolvers.add(new ProxyingHandlerMethodArgumentResolver(conversionService.getObject()));
 	}
 }
