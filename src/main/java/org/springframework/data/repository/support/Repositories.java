@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.springframework.util.ClassUtils;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Thomas Eizinger
  */
 public class Repositories implements Iterable<Class<?>> {
 
@@ -135,10 +136,18 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		RepositoryFactoryInformation<Object, Serializable> repositoryInfo = repositoryFactoryInfos.get(ClassUtils
-				.getUserClass(domainClass));
+		Class<?> classToInspect = domainClass;
+		RepositoryFactoryInformation<Object, Serializable> repositoryInfo = repositoryFactoryInfos
+				.get(ClassUtils.getUserClass(classToInspect));
+
+		while (repositoryInfo == null && !classToInspect.equals(Object.class)) {
+			classToInspect = classToInspect.getSuperclass();
+			repositoryInfo = repositoryFactoryInfos.get(ClassUtils.getUserClass(classToInspect));
+		}
+
 		return repositoryInfo == null ? EMPTY_REPOSITORY_FACTORY_INFO : repositoryInfo;
 	}
+
 
 	/**
 	 * Returns the {@link EntityInformation} for the given domain class.
