@@ -125,25 +125,27 @@ public class RepositoriesUnitTests {
 		repositories.getCrudInvoker(EntityWithoutRepository.class);
 	}
 
-	class Person {
+	/**
+	 * @see DATACMNS-634
+	 */
+	@Test
+	public void findsRepositoryForSubTypes() {
 
+		Repositories repositories = new Repositories(context);
+		assertThat(repositories.getPersistentEntity(AdvancedAddress.class), is(notNullValue()));
 	}
 
-	class Address {
+	class EntityWithoutRepository {}
 
-	}
+	class Person {}
 
-	class EntityWithoutRepository {
+	class Address {}
 
-	}
+	class AdvancedAddress extends Address {}
 
-	interface PersonRepository extends CrudRepository<Person, Long> {
+	interface PersonRepository extends CrudRepository<Person, Long> {}
 
-	}
-
-	interface AddressRepository extends Repository<Address, Long> {
-
-	}
+	interface AddressRepository extends Repository<Address, Long> {}
 
 	static class SampleRepoFactoryInformation<T, S extends Serializable> implements RepositoryFactoryInformation<T, S> {
 
