@@ -134,18 +134,19 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		Class<?> classToInspect = domainClass;
-		RepositoryFactoryInformation<Object, Serializable> repositoryInfo = repositoryFactoryInfos
-				.get(ClassUtils.getUserClass(classToInspect));
+		Class<?> userType = ClassUtils.getUserClass(domainClass);
+		RepositoryFactoryInformation<Object, Serializable> repositoryInfo = repositoryFactoryInfos.get(userType);
 
-		while (repositoryInfo == null && !classToInspect.equals(Object.class)) {
-			classToInspect = classToInspect.getSuperclass();
-			repositoryInfo = repositoryFactoryInfos.get(ClassUtils.getUserClass(classToInspect));
+		if (repositoryInfo != null) {
+			return repositoryInfo;
 		}
 
-		return repositoryInfo == null ? EMPTY_REPOSITORY_FACTORY_INFO : repositoryInfo;
-	}
+		if (!userType.equals(Object.class)) {
+			return getRepositoryFactoryInfoFor(userType.getSuperclass());
+		}
 
+		return EMPTY_REPOSITORY_FACTORY_INFO;
+	}
 
 	/**
 	 * Returns the {@link EntityInformation} for the given domain class.
