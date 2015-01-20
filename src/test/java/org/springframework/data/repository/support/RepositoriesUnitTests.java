@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except
@@ -130,9 +130,7 @@ public class RepositoriesUnitTests {
 	 */
 	@Test
 	public void findsRepositoryForSubTypes() {
-
-		Repositories repositories = new Repositories(context);
-		assertThat(repositories.getPersistentEntity(AdvancedAddress.class), is(notNullValue()));
+		assertThat(new Repositories(context).getPersistentEntity(AdvancedAddress.class), is(notNullValue()));
 	}
 
 	class EntityWithoutRepository {}
