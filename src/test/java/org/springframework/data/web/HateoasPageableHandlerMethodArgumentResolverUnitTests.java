@@ -106,6 +106,25 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		assertThat(variables, is("{?foo,size,sort}"));
 	}
 
+	/**
+	 * @see DATACMNS-563
+	 */
+	@Test
+	public void enablingOneIndexedParameterReturnsOneForFirstPage() {
+
+		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setOneIndexedParameters(true);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
+
+		resolver.enhance(builder, null, new PageRequest(0, 10));
+
+		MultiValueMap<String, String> params = builder.build().getQueryParams();
+
+		assertThat(params.containsKey(resolver.getPageParameterName()), is(true));
+		assertThat(params.getFirst(resolver.getPageParameterName()), is("1"));
+	}
+
 	@Override
 	protected HateoasPageableHandlerMethodArgumentResolver getResolver() {
 
