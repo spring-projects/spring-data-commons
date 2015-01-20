@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
@@ -31,6 +32,7 @@ import com.mysema.query.types.Path;
  * Sort option for queries that wraps a querydsl {@link OrderSpecifier}.
  * 
  * @author Thomas Darimont
+ * @author Christoph Strobl
  */
 public class QSort extends Sort implements Serializable {
 
@@ -87,8 +89,8 @@ public class QSort extends Sort implements Serializable {
 		Assert.notNull(orderSpecifier, "Order specifier must not be null!");
 
 		Expression<?> target = orderSpecifier.getTarget();
-		Object targetElement = target instanceof Path ? ((com.mysema.query.types.Path<?>) target).getMetadata()
-				.getElement() : target;
+
+		Object targetElement = target instanceof Path ? preparePropertyPath((Path<?>) target) : target;
 
 		Assert.notNull(targetElement, "Target element must not be null!");
 
@@ -142,4 +144,25 @@ public class QSort extends Sort implements Serializable {
 		Assert.notEmpty(orderSpecifiers, "OrderSpecifiers must not be null or empty!");
 		return and(Arrays.asList(orderSpecifiers));
 	}
+
+	private static String preparePropertyPath(Path<?> path) {
+
+		Stack<String> stack = new Stack<String>();
+		Path<?> pathElement = path;
+		while (pathElement.getMetadata() != null && pathElement.getMetadata().getParent() != null) {
+
+			stack.push(pathElement.getMetadata().getElement().toString());
+			pathElement = pathElement.getMetadata().getParent();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		while (!stack.isEmpty()) {
+			sb.append(stack.pop());
+			if (!stack.isEmpty()) {
+				sb.append(".");
+			}
+		}
+		return sb.toString();
+	}
+
 }
