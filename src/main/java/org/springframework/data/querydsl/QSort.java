@@ -19,14 +19,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Stack;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.OrderSpecifier;
 import com.mysema.query.types.Path;
+import com.mysema.query.types.PathMetadata;
 
 /**
  * Sort option for queries that wraps a querydsl {@link OrderSpecifier}.
@@ -145,24 +146,24 @@ public class QSort extends Sort implements Serializable {
 		return and(Arrays.asList(orderSpecifiers));
 	}
 
+	/**
+	 * Recursively creates a dot-separated path for the property path.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @return
+	 */
 	private static String preparePropertyPath(Path<?> path) {
 
-		Stack<String> stack = new Stack<String>();
-		Path<?> pathElement = path;
-		while (pathElement.getMetadata() != null && pathElement.getMetadata().getParent() != null) {
+		PathMetadata<?> metadata = path.getMetadata();
+		Path<?> parent = metadata.getParent();
 
-			stack.push(pathElement.getMetadata().getElement().toString());
-			pathElement = pathElement.getMetadata().getParent();
+		if (parent == null) {
+			return "";
 		}
 
-		StringBuilder sb = new StringBuilder();
-		while (!stack.isEmpty()) {
-			sb.append(stack.pop());
-			if (!stack.isEmpty()) {
-				sb.append(".");
-			}
-		}
-		return sb.toString();
+		String basPath = preparePropertyPath(parent);
+		String element = metadata.getElement().toString();
+
+		return StringUtils.hasText(basPath) ? basPath.concat(".").concat(element) : basPath.concat(element);
 	}
-
 }
