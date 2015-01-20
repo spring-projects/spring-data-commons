@@ -108,9 +108,21 @@ public class RepositoriesUnitTests {
 		assertThat(repositories.getPersistentEntity(Address.class), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATAREST-321
+	 */
+	@Test
+	public void findsRepositoryForSubTypes() {
+
+		Repositories repositories = new Repositories(context);
+		assertThat(repositories.getPersistentEntity(AdvancedAddress.class), is(notNullValue()));
+	}
+
 	class Person {}
 
 	class Address {}
+
+	class AdvancedAddress extends Address { }
 
 	interface PersonRepository extends CrudRepository<Person, Long> {}
 
