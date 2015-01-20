@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 package org.springframework.data.querydsl;
 
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 import java.util.List;
 
@@ -34,6 +33,7 @@ import com.mysema.query.types.OrderSpecifier;
  * 
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class QSortUnitTests {
 
@@ -147,7 +147,7 @@ public class QSortUnitTests {
 		assertThat(result, is(Matchers.<Order> iterableWithSize(2)));
 		assertThat(result, hasItems(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, "firstname")));
 	}
-	
+
 	/**
 	 * @see DATACMNS-566
 	 */
@@ -159,6 +159,44 @@ public class QSortUnitTests {
 
 		Sort result = sort.and(new Sort(Direction.ASC, "lastname"));
 		assertThat(result, is(Matchers.<Order> iterableWithSize(2)));
-		assertThat(result, hasItems(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString())));
+		assertThat(
+				result,
+				hasItems(new Order(Direction.ASC, "lastname"),
+						new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString())));
+	}
+
+	/**
+	 * @see DATACMNS-621
+	 */
+	@Test
+	public void shouldCreateSortForNestedPathCorrectly() {
+
+		QSort sort = new QSort(QUserWrapper.userWrapper.user.firstname.asc());
+
+		assertThat(sort, hasItems(new Order(Direction.ASC, "user.firstname")));
+	}
+
+	/**
+	 * @see DATACMNS-621
+	 */
+	@Test
+	public void shouldCreateSortForDeepNestedPathCorrectly() {
+
+		QSort sort = new QSort(QWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname.asc());
+
+		assertThat(sort, hasItems(new Order(Direction.ASC, "wrapper.user.firstname")));
+	}
+
+	/**
+	 * @see DATACMNS-621
+	 */
+	@Test
+	public void shouldCreateSortForReallyDeepNestedPathCorrectly() {
+
+		QSort sort = new QSort(
+				QWrapperToWrapWrapperForUserWrapper.wrapperToWrapWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname
+						.asc());
+
+		assertThat(sort, hasItems(new Order(Direction.ASC, "wrapperForUserWrapper.wrapper.user.firstname")));
 	}
 }
