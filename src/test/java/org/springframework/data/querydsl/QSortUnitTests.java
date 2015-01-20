@@ -17,6 +17,9 @@ package org.springframework.data.querydsl;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.querydsl.QQSortUnitTests_WrapperToWrapWrapperForUserWrapper.*;
+import static org.springframework.data.querydsl.QQSortUnitTests_WrapperToWrapWrapperForUserWrapper_WrapperForUserWrapper.*;
+import static org.springframework.data.querydsl.QQSortUnitTests_WrapperToWrapWrapperForUserWrapper_WrapperForUserWrapper_UserWrapper.*;
 
 import java.util.List;
 
@@ -26,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 
+import com.mysema.query.annotations.QueryInit;
 import com.mysema.query.types.OrderSpecifier;
 
 /**
@@ -171,7 +175,7 @@ public class QSortUnitTests {
 	@Test
 	public void shouldCreateSortForNestedPathCorrectly() {
 
-		QSort sort = new QSort(QUserWrapper.userWrapper.user.firstname.asc());
+		QSort sort = new QSort(userWrapper.user.firstname.asc());
 
 		assertThat(sort, hasItems(new Order(Direction.ASC, "user.firstname")));
 	}
@@ -182,7 +186,7 @@ public class QSortUnitTests {
 	@Test
 	public void shouldCreateSortForDeepNestedPathCorrectly() {
 
-		QSort sort = new QSort(QWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname.asc());
+		QSort sort = new QSort(wrapperForUserWrapper.wrapper.user.firstname.asc());
 
 		assertThat(sort, hasItems(new Order(Direction.ASC, "wrapper.user.firstname")));
 	}
@@ -193,10 +197,27 @@ public class QSortUnitTests {
 	@Test
 	public void shouldCreateSortForReallyDeepNestedPathCorrectly() {
 
-		QSort sort = new QSort(
-				QWrapperToWrapWrapperForUserWrapper.wrapperToWrapWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname
-						.asc());
+		QSort sort = new QSort(wrapperToWrapWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname.asc());
 
 		assertThat(sort, hasItems(new Order(Direction.ASC, "wrapperForUserWrapper.wrapper.user.firstname")));
+	}
+
+	@com.mysema.query.annotations.QueryEntity
+	static class WrapperToWrapWrapperForUserWrapper {
+
+		@QueryInit("wrapper.user")//
+		WrapperForUserWrapper wrapperForUserWrapper;
+
+		@com.mysema.query.annotations.QueryEntity
+		static class WrapperForUserWrapper {
+
+			UserWrapper wrapper;
+
+			@com.mysema.query.annotations.QueryEntity
+			static class UserWrapper {
+
+				User user;
+			}
+		}
 	}
 }
