@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.domain;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.core.convert.converter.Converter;
 
 /**
  * Unit test for {@link PageImpl}.
@@ -133,5 +134,23 @@ public class PageImplUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsTotalLessThanContentLength() {
 		new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(0, 10), 1);
+	}
+
+	/**
+	 * @see DATACMNS-635
+	 */
+	@Test
+	public void transformsPageCorrectly() {
+
+		Page<Integer> transformed = new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(0, 2), 10)
+				.map(new Converter<String, Integer>() {
+					@Override
+					public Integer convert(String source) {
+						return source.length();
+					}
+				});
+
+		assertThat(transformed.getContent(), hasSize(2));
+		assertThat(transformed.getContent(), contains(3, 3));
 	}
 }

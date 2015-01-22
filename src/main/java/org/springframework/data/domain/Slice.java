@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.springframework.data.domain;
 
 import java.util.List;
+
+import org.springframework.core.convert.converter.Converter;
 
 /**
  * A slice of data that indicates whether there's a next or previous slice available. Allows to obtain a
@@ -113,4 +115,13 @@ public interface Slice<T> extends Iterable<T> {
 	 * @return
 	 */
 	Pageable previousPageable();
+
+	/**
+	 * Returns a new {@link Slice} with the content of the current one mapped by the given {@link Converter}.
+	 * 
+	 * @param converter must not be {@literal null}.
+	 * @return a new {@link Slice} with the content of the current one mapped by the given {@link Converter}.
+	 * @since 1.10
+	 */
+	<S> Slice<S> map(Converter<? super T, ? extends S> converter);
 }

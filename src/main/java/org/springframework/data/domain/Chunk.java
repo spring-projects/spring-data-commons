@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 
 /**
@@ -149,6 +150,25 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	 */
 	public Iterator<T> iterator() {
 		return content.iterator();
+	}
+
+	/**
+	 * Applies the given {@link Converter} to the content of the {@link Chunk}.
+	 * 
+	 * @param converter must not be {@literal null}.
+	 * @return
+	 */
+	protected <S> List<S> getConvertedContent(Converter<? super T, ? extends S> converter) {
+
+		Assert.notNull(converter, "Converter must not be null!");
+
+		List<S> result = new ArrayList<S>(content.size());
+
+		for (T element : this) {
+			result.add(converter.convert(element));
+		}
+
+		return result;
 	}
 
 	/*

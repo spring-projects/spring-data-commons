@@ -17,6 +17,8 @@ package org.springframework.data.domain;
 
 import java.util.List;
 
+import org.springframework.core.convert.converter.Converter;
+
 /**
  * Default implementation of {@link Slice}.
  * 
@@ -28,6 +30,7 @@ public class SliceImpl<T> extends Chunk<T> {
 	private static final long serialVersionUID = 867755909294344406L;
 
 	private final boolean hasNext;
+	private final Pageable pageable;
 
 	/**
 	 * Creates a new {@link Slice} with the given content and {@link Pageable}.
@@ -40,6 +43,7 @@ public class SliceImpl<T> extends Chunk<T> {
 
 		super(content, pageable);
 		this.hasNext = hasNext;
+		this.pageable = pageable;
 	}
 
 	/**
@@ -58,6 +62,15 @@ public class SliceImpl<T> extends Chunk<T> {
 	 */
 	public boolean hasNext() {
 		return hasNext;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Slice#transform(org.springframework.core.convert.converter.Converter)
+	 */
+	@Override
+	public <S> Slice<S> map(Converter<? super T, ? extends S> converter) {
+		return new SliceImpl<S>(getConvertedContent(converter), pageable, hasNext);
 	}
 
 	/*

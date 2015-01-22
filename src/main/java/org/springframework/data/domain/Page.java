@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.domain;
+
+import org.springframework.core.convert.converter.Converter;
 
 /**
  * A page is a sublist of a list of objects. It allows gain information about the position of it in the containing
@@ -37,4 +39,13 @@ public interface Page<T> extends Slice<T> {
 	 * @return the total amount of elements
 	 */
 	long getTotalElements();
+
+	/**
+	 * Returns a new {@link Page} with the content of the current one mapped by the given {@link Converter}.
+	 * 
+	 * @param converter must not be {@literal null}.
+	 * @return a new {@link Page} with the content of the current one mapped by the given {@link Converter}.
+	 * @since 1.10
+	 */
+	<S> Page<S> map(Converter<? super T, ? extends S> converter);
 }

@@ -17,6 +17,7 @@ package org.springframework.data.domain;
 
 import java.util.List;
 
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 
 /**
@@ -30,6 +31,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	private static final long serialVersionUID = 867755909294344406L;
 
 	private final long total;
+	private final Pageable pageable;
 
 	/**
 	 * Constructor of {@code PageImpl}.
@@ -45,6 +47,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		Assert.isTrue(total >= content.size(), "Total must not be less than the number of elements given!");
 
 		this.total = total;
+		this.pageable = pageable;
 	}
 
 	/**
@@ -91,6 +94,15 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	@Override
 	public boolean isLast() {
 		return !hasNext();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Slice#transform(org.springframework.core.convert.converter.Converter)
+	 */
+	@Override
+	public <S> Page<S> map(Converter<? super T, ? extends S> converter) {
+		return new PageImpl<S>(getConvertedContent(converter), pageable, total);
 	}
 
 	/*
