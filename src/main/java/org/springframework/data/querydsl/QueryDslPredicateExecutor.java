@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,4 +83,12 @@ public interface QueryDslPredicateExecutor<T> {
 	 * @return the number of instances matching the {@link Predicate}.
 	 */
 	long count(Predicate predicate);
+
+	/**
+	 * Checks whether the data store contains elements that match the given {@link Predicate}.
+	 *
+	 * @param predicate the {@link Predicate} to use for the existance check, can be {@literal null}.
+	 * @return {@literal true} if the data store contains elements that match the given {@link Predicate}.
+	 */
+	boolean exists(Predicate predicate);
 }
