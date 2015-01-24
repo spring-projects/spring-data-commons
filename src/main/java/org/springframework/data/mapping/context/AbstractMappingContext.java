@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 by the original author(s).
+ * Copyright 2011-2015 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,7 +137,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
 	 */
 	public E getPersistentEntity(Class<?> type) {
-		Assert.notNull(type);
 		return getPersistentEntity(ClassTypeInformation.from(type));
 	}
 

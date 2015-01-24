@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
  */
 package org.springframework.data.convert;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.util.CacheValue;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -34,7 +35,7 @@ import org.springframework.util.Assert;
  */
 public class MappingContextTypeInformationMapper implements TypeInformationMapper {
 
-	private final Map<ClassTypeInformation<?>, Object> typeMap;
+	private final Map<ClassTypeInformation<?>, CacheValue<Object>> typeMap;
 	private final MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext;
 
 	/**
@@ -47,7 +48,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 
 		Assert.notNull(mappingContext);
 
-		this.typeMap = new HashMap<ClassTypeInformation<?>, Object>();
+		this.typeMap = new ConcurrentHashMap<ClassTypeInformation<?>, CacheValue<Object>>();
 		this.mappingContext = mappingContext;
 
 		for (PersistentEntity<?, ?> entity : mappingContext.getPersistentEntities()) {
@@ -61,10 +62,10 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	 */
 	public Object createAliasFor(TypeInformation<?> type) {
 
-		Object key = typeMap.get(type);
+		CacheValue<Object> key = typeMap.get(type);
 
 		if (key != null) {
-			return key;
+			return key.getValue();
 		}
 
 		PersistentEntity<?, ?> entity = mappingContext.getPersistentEntity(type);
@@ -87,26 +88,36 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	 */
 	private void safelyAddToCache(ClassTypeInformation<?> key, Object alias) {
 
-		if (alias == null) {
+		CacheValue<Object> aliasToBeCached = CacheValue.ofNullable(alias);
+
+		if (alias == null && !typeMap.containsKey(key)) {
+			typeMap.put(key, aliasToBeCached);
 			return;
 		}
 
-		Object existingAlias = typeMap.get(key);
+		CacheValue<Object> alreadyCachedAlias = typeMap.get(key);
 
 		// Reject second alias for same type
 
-		if (existingAlias != null && !alias.equals(existingAlias)) {
+		if (alreadyCachedAlias != null && alreadyCachedAlias.isPresent() && !alreadyCachedAlias.hasValue(alias)) {
 			throw new IllegalArgumentException(String.format(
-					"Trying to register alias '%s', but found already registered alias '%s' for type %s!", alias, existingAlias,
-					key));
+					"Trying to register alias '%s', but found already registered alias '%s' for type %s!", alias,
+					alreadyCachedAlias, key));
 		}
 
 		// Reject second type for same alias
 
-		if (typeMap.containsValue(alias)) {
+		if (typeMap.containsValue(aliasToBeCached)) {
 
-			for (Entry<ClassTypeInformation<?>, Object> entry : typeMap.entrySet()) {
-				if (entry.getValue().equals(alias) && !entry.getKey().equals(key)) {
+			for (Entry<ClassTypeInformation<?>, CacheValue<Object>> entry : typeMap.entrySet()) {
+
+				CacheValue<Object> value = entry.getValue();
+
+				if (!value.isPresent()) {
+					continue;
+				}
+
+				if (value.hasValue(alias) && !entry.getKey().equals(key)) {
 					throw new IllegalArgumentException(String.format(
 							"Detected existing type mapping of %s to alias '%s' but attempted to bind the same alias to %s!", key,
 							alias, entry.getKey()));
@@ -114,7 +125,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 			}
 		}
 
-		typeMap.put(key, alias);
+		typeMap.put(key, aliasToBeCached);
 	}
 
 	/*
@@ -127,8 +138,11 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 			return null;
 		}
 
-		for (Entry<ClassTypeInformation<?>, Object> entry : typeMap.entrySet()) {
-			if (entry.getValue().equals(alias)) {
+		for (Entry<ClassTypeInformation<?>, CacheValue<Object>> entry : typeMap.entrySet()) {
+
+			CacheValue<Object> cachedAlias = entry.getValue();
+
+			if (cachedAlias.hasValue(alias)) {
 				return entry.getKey();
 			}
 		}
