@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 by the original author(s).
+ * Copyright 2011-2015 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@ package org.springframework.data.mapping.model;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -50,7 +53,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private final PreferredConstructor<T, P> constructor;
 	private final TypeInformation<T> information;
-	private final Set<P> properties;
+	private final List<P> properties;
+	private final Comparator<P> comparator;
 	private final Set<Association<P>> associations;
 
 	private final Map<String, P> propertyCache;
@@ -81,7 +85,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		Assert.notNull(information);
 
 		this.information = information;
-		this.properties = comparator == null ? new HashSet<P>() : new TreeSet<P>(comparator);
+		this.properties = new ArrayList<P>();
+		this.comparator = comparator;
 		this.constructor = new PreferredConstructorDiscoverer<T, P>(information, this).getConstructor();
 		this.associations = comparator == null ? new HashSet<Association<P>>() : new TreeSet<Association<P>>(
 				new AssociationComparator<P>(comparator));
@@ -169,6 +174,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public void addPersistentProperty(P property) {
 
 		Assert.notNull(property);
+
+		if (properties.contains(property)) {
+			return;
+		}
+
 		properties.add(property);
 
 		if (!propertyCache.containsKey(property.getName())) {
@@ -217,7 +227,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.MutablePersistentEntity#addAssociation(org.springframework.data.mapping.model.Association)
 	 */
 	public void addAssociation(Association<P> association) {
-		associations.add(association);
+
+		if (!associations.contains(association)) {
+			associations.add(association);
+		}
 	}
 
 	/*
@@ -357,11 +370,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return annotation;
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.MutablePersistentEntity#verify()
 	 */
 	public void verify() {
 
+		if (comparator != null) {
+			Collections.sort(properties, comparator);
+		}
 	}
 
 	/**

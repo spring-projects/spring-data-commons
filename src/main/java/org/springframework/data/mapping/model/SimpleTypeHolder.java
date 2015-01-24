@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011-2015 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.springframework.util.Assert;
 
@@ -86,7 +87,7 @@ public class SimpleTypeHolder {
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, boolean registerDefaults) {
 
 		Assert.notNull(customSimpleTypes);
-		this.simpleTypes = new HashSet<Class<?>>(customSimpleTypes);
+		this.simpleTypes = new CopyOnWriteArraySet<Class<?>>(customSimpleTypes);
 
 		if (registerDefaults) {
 			this.simpleTypes.addAll(DEFAULTS);
@@ -104,7 +105,7 @@ public class SimpleTypeHolder {
 		Assert.notNull(customSimpleTypes);
 		Assert.notNull(source);
 
-		this.simpleTypes = new HashSet<Class<?>>(customSimpleTypes);
+		this.simpleTypes = new CopyOnWriteArraySet<Class<?>>(customSimpleTypes);
 		this.simpleTypes.addAll(source.simpleTypes);
 	}
 
@@ -118,12 +119,13 @@ public class SimpleTypeHolder {
 
 		Assert.notNull(type);
 
-		if (Object.class.equals(type)) {
+		if (Object.class.equals(type) || simpleTypes.contains(type)) {
 			return true;
 		}
 
 		for (Class<?> clazz : simpleTypes) {
 			if (clazz.isAssignableFrom(type)) {
+				simpleTypes.add(type);
 				return true;
 			}
 		}

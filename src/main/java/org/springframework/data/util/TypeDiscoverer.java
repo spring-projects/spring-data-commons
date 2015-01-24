@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package org.springframework.data.util;
-
-import static org.springframework.util.ObjectUtils.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
@@ -50,6 +48,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private final Type type;
 	private final Map<TypeVariable<?>, Type> typeVariableMap;
 	private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
+	private final int hashCode;
 
 	private boolean componentTypeResolved = false;
 	private TypeInformation<?> componentType;
@@ -72,6 +71,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		this.type = type;
 		this.typeVariableMap = typeVariableMap;
+		this.hashCode = 17 + (31 * type.hashCode()) + (31 * typeVariableMap.hashCode());
 	}
 
 	/**
@@ -513,10 +513,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		TypeDiscoverer<?> that = (TypeDiscoverer<?>) obj;
 
-		boolean typeEqual = nullSafeEquals(this.type, that.type);
-		boolean typeVariableMapEqual = nullSafeEquals(this.typeVariableMap, that.typeVariableMap);
-
-		return typeEqual && typeVariableMapEqual;
+		return this.type.equals(that.type) && this.typeVariableMap.equals(that.typeVariableMap);
 	}
 
 	/*
@@ -525,12 +522,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	@Override
 	public int hashCode() {
-
-		int result = 17;
-
-		result += nullSafeHashCode(type);
-		result += nullSafeHashCode(typeVariableMap);
-
-		return result;
+		return hashCode;
 	}
 }
