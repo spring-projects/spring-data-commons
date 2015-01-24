@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.util.ObjectUtils;
-
 /**
  * Base class for {@link TypeInformation} implementations that need parent type awareness.
  * 
@@ -30,6 +28,7 @@ import org.springframework.util.ObjectUtils;
 public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S> {
 
 	private final TypeDiscoverer<?> parent;
+	private int hashCode;
 
 	/**
 	 * Creates a new {@link ParentTypeAwareTypeInformation}.
@@ -99,6 +98,11 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 	 */
 	@Override
 	public int hashCode() {
-		return super.hashCode() + 31 * ObjectUtils.nullSafeHashCode(parent);
+
+		if (this.hashCode == 0) {
+			this.hashCode = super.hashCode() + 31 * parent.hashCode();
+		}
+
+		return this.hashCode;
 	}
 }

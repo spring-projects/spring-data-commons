@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	protected final Association<P> association;
 	protected final PersistentEntity<?, P> owner;
 	private final SimpleTypeHolder simpleTypeHolder;
+	private final int hashCode;
 
 	public AbstractPersistentProperty(Field field, PropertyDescriptor propertyDescriptor, PersistentEntity<?, P> owner,
 			SimpleTypeHolder simpleTypeHolder) {
@@ -67,6 +68,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.association = isAssociation() ? createAssociation() : null;
 		this.owner = owner;
 		this.simpleTypeHolder = simpleTypeHolder;
+		this.hashCode = this.field == null ? this.propertyDescriptor.hashCode() : this.field.hashCode();
 	}
 
 	protected abstract Association<P> createAssociation();
@@ -315,7 +317,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public int hashCode() {
-		return this.field == null ? this.propertyDescriptor.hashCode() : this.field.hashCode();
+		return this.hashCode;
 	}
 
 	/* 

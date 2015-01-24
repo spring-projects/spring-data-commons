@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,11 +168,11 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 		Assert.notNull(parameter);
 
-		if (parameters.isEmpty()) {
+		if (parameters.isEmpty() || !parameter.isEnclosingClassParameter()) {
 			return false;
 		}
 
-		return parameters.get(0).equals(parameter) && parameter.isEnclosingClassParameter();
+		return parameters.get(0).equals(parameter);
 	}
 
 	/**
@@ -312,10 +312,10 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 			boolean nameEquals = this.name == null ? that.name == null : this.name.equals(that.name);
 			boolean keyEquals = this.key == null ? that.key == null : this.key.equals(that.key);
-			boolean typeEquals = nullSafeEquals(this.type, that.type);
 			boolean entityEquals = this.entity == null ? that.entity == null : this.entity.equals(that.entity);
 
-			return nameEquals && keyEquals && typeEquals && entityEquals;
+			// Explicitly delay equals check on type as it might be expensive
+			return nameEquals && keyEquals && entityEquals && this.type.equals(that.type);
 		}
 
 		/* 
@@ -329,8 +329,8 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 			result += 31 * nullSafeHashCode(this.name);
 			result += 31 * nullSafeHashCode(this.key);
-			result += 31 * nullSafeHashCode(this.type);
 			result += 31 * nullSafeHashCode(this.entity);
+			result += 31 * this.type.hashCode();
 
 			return result;
 		}

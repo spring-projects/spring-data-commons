@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.SortedSet;
+import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 
-	@Mock T property;
+	@Mock T property, anotherProperty;
 
 	@Test
 	public void assertInvariants() {
@@ -110,8 +110,9 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		entity.addPersistentProperty(lastName);
 		entity.addPersistentProperty(firstName);
 		entity.addPersistentProperty(ssn);
+		entity.verify();
 
-		SortedSet<T> properties = (SortedSet<T>) ReflectionTestUtils.getField(entity, "properties");
+		List<T> properties = (List<T>) ReflectionTestUtils.getField(entity, "properties");
 
 		assertThat(properties.size(), is(3));
 		Iterator<T> iterator = properties.iterator();
@@ -143,10 +144,11 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		MutablePersistentEntity<Person, T> entity = createEntity(null);
 
 		when(property.isIdProperty()).thenReturn(true);
+		when(anotherProperty.isIdProperty()).thenReturn(true);
 
 		entity.addPersistentProperty(property);
 		exception.expect(MappingException.class);
-		entity.addPersistentProperty(property);
+		entity.addPersistentProperty(anotherProperty);
 	}
 
 	/**

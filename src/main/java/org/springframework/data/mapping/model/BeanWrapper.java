@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 by the original author(s).
+ * Copyright 2011-2015 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,15 +116,17 @@ public class BeanWrapper<T> {
 		try {
 
 			Object obj = null;
-			Method getter = property.getGetter();
 
 			if (!property.usePropertyAccess()) {
 
 				Field field = property.getField();
 				ReflectionUtils.makeAccessible(field);
 				obj = ReflectionUtils.getField(field, bean);
+			}
 
-			} else if (property.usePropertyAccess() && getter != null) {
+			Method getter = property.getGetter();
+
+			if (property.usePropertyAccess() && getter != null) {
 
 				ReflectionUtils.makeAccessible(getter);
 				obj = ReflectionUtils.invokeMethod(getter, bean);
