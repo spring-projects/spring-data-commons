@@ -1,6 +1,24 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.8.5.RELEASE (2015-01-27)
+---------------------------------------------
+* DATACMNS-637 - General inspection for performance improvements.
+* DATACMNS-634 - Repositories should return repository for entity's super-type if available.
+* DATACMNS-632 - Release 1.8.5.
+* DATACMNS-624 - Re-enable Travis builds for Spring 4.1, 4.1.next and Querydsl.next.
+* DATACMNS-621 - QSort does not treat nested paths correctly.
+* DATACMNS-616 - AnnotationRevisionMetadata can't access private fields.
+* DATACMNS-615 - PageImpl should reject total less than given content length.
+* DATACMNS-611 - Avoid triple cache lookup in RepositoryInterfaceAwareBeanPostProcessor.predictBeanType(…).
+* DATACMNS-601 - Work on SonarQube warnings.
+* DATACMNS-594 - Strange generics behaviour for multiply nested generic types.
+* DATACMNS-590 - Bug in generics detection for multiply nested generic types.
+* DATACMNS-583 - DomainClassConverter#matches should return false when source- and targetType are equal.
+* DATACMNS-577 - Improve javadoc on QueryDslPredicateExecutor.
+* DATACMNS-530 - JavaDoc should be updated to reflect change of requiring an environment.
+
+
 Changes in version 1.10.0.M1 (2014-12-01)
 -----------------------------------------
 * DATACMNS-609 - Multiple usage of repository setup means (XML or annotation) creates multiple bean definitions for RepositoryInterfaceAwareBeanPostProcessor.
