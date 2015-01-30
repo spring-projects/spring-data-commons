@@ -18,9 +18,11 @@ package org.springframework.data.web;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -168,6 +170,25 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(assembler.appendPaginationParameterTemplates(link), is(new Link("/foo?page=0{&size,sort}")));
 	}
 
+	/**
+	 * @see DATAMCNS-563
+	 */
+	@Test
+	public void createsPaginationLinksForOneIndexedArgumentResolverCorrectly() {
+
+		HateoasPageableHandlerMethodArgumentResolver argumentResolver = new HateoasPageableHandlerMethodArgumentResolver();
+		argumentResolver.setOneIndexedParameters(true);
+
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(argumentResolver, null);
+		PagedResources<Resource<Person>> resource = assembler.toResource(createPage(1));
+
+		assertThat(resource.hasLink("prev"), is(true));
+		assertThat(resource.hasLink("next"), is(true));
+
+		assertThat(getQueryParameters(resource.getLink("prev")), hasEntry("page", "1"));
+		assertThat(getQueryParameters(resource.getLink("next")), hasEntry("page", "3"));
+	}
+
 	private static Page<Person> createPage(int index) {
 
 		AbstractPageRequest request = new PageRequest(index, 1);
@@ -176,6 +197,12 @@ public class PagedResourcesAssemblerUnitTests {
 		person.name = "Dave";
 
 		return new PageImpl<Person>(Arrays.asList(person), request, 3);
+	}
+
+	private static Map<String, String> getQueryParameters(Link link) {
+
+		UriComponents uriComponents = UriComponentsBuilder.fromUri(URI.create(link.expand().getHref())).build();
+		return uriComponents.getQueryParams().toSingleValueMap();
 	}
 
 	static class Person {
