@@ -66,8 +66,6 @@ public class BeanWrapper<T> {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
-		Method setter = property.getSetter();
-
 		try {
 
 			if (!property.usePropertyAccess()) {
@@ -75,8 +73,12 @@ public class BeanWrapper<T> {
 				Object valueToSet = getPotentiallyConvertedValue(value, property.getType());
 				ReflectionUtils.makeAccessible(property.getField());
 				ReflectionUtils.setField(property.getField(), bean, valueToSet);
+				return;
+			}
 
-			} else if (property.usePropertyAccess() && setter != null) {
+			Method setter = property.getSetter();
+
+			if (property.usePropertyAccess() && setter != null) {
 
 				Class<?>[] paramTypes = setter.getParameterTypes();
 				Object valueToSet = getPotentiallyConvertedValue(value, paramTypes[0]);
