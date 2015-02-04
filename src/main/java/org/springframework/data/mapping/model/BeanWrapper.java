@@ -66,16 +66,18 @@ public class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
-		Method setter = property.getSetter();
-
 		try {
 
 			if (!property.usePropertyAccess()) {
 
 				ReflectionUtils.makeAccessible(property.getField());
 				ReflectionUtils.setField(property.getField(), bean, value);
+				return;
+			}
 
-			} else if (property.usePropertyAccess() && setter != null) {
+			Method setter = property.getSetter();
+
+			if (property.usePropertyAccess() && setter != null) {
 
 				ReflectionUtils.makeAccessible(setter);
 				ReflectionUtils.invokeMethod(setter, bean, value);
@@ -123,9 +125,9 @@ public class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 				ReflectionUtils.makeAccessible(getter);
 				return (S) ReflectionUtils.invokeMethod(getter, bean);
-			} else {
-				return null;
 			}
+
+			return null;
 
 		} catch (IllegalStateException e) {
 			throw new MappingException(String.format("Could not read property %s of %s!", property.toString(),
