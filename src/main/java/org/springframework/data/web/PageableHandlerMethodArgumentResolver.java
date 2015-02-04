@@ -235,7 +235,11 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 		pageSize = pageSize > maxPageSize ? maxPageSize : pageSize;
 
 		Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
-		return new PageRequest(page, pageSize, sort == null ? defaultOrFallback.getSort() : sort);
+
+		// Default if necessary and default configured
+		sort = sort == null && defaultOrFallback != null ? defaultOrFallback.getSort() : sort;
+
+		return new PageRequest(page, pageSize, sort);
 	}
 
 	/**

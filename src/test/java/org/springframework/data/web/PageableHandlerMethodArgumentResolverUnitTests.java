@@ -216,6 +216,26 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 				.getPageNumber(), is(0));
 	}
 
+	/**
+	 * @see DATACMNS-640
+	 */
+	@Test
+	public void usesNullSortIfNoDefaultIsConfiguredAndPageAndSizeAreGiven() {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setFallbackPageable(null);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "0");
+		request.addParameter("size", "10");
+
+		Pageable result = resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null);
+
+		assertThat(result.getPageNumber(), is(0));
+		assertThat(result.getPageSize(), is(10));
+		assertThat(result.getSort(), is(nullValue()));
+	}
+
 	@Override
 	protected PageableHandlerMethodArgumentResolver getResolver() {
 		PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
