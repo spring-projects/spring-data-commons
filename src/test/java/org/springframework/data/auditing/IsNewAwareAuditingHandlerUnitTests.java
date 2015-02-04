@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,15 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.context.SampleMappingContext;
 
 /**
@@ -47,7 +48,7 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 
 	@Override
 	protected IsNewAwareAuditingHandler getHandler() {
-		return new IsNewAwareAuditingHandler(mock(SampleMappingContext.class));
+		return new IsNewAwareAuditingHandler(mock(PersistentEntities.class));
 	}
 
 	@Test
@@ -76,8 +77,7 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullMappingContext() {
-		new IsNewAwareAuditingHandler(
-				(MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>>) null);
+		new IsNewAwareAuditingHandler((PersistentEntities) null);
 	}
 
 	/**
@@ -85,7 +85,20 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	 */
 	@Test
 	public void setsUpHandlerWithMappingContext() {
-		new IsNewAwareAuditingHandler(new SampleMappingContext());
+		new IsNewAwareAuditingHandler(new PersistentEntities(Collections.<MappingContext<?, ?>> emptySet()));
+	}
+
+	/**
+	 * @see DATACMNS-638
+	 */
+	@Test
+	public void handlingNullIsANoOp() {
+
+		IsNewAwareAuditingHandler handler = getHandler();
+
+		handler.markAudited(null);
+		handler.markCreated(null);
+		handler.markModified(null);
 	}
 
 	static class Domain {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package org.springframework.data.auditing;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.mapping.context.SampleMappingContext;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.context.PersistentEntities;
 
 /**
  * Unit test for {@code AuditingHandler}.
@@ -48,7 +51,7 @@ public class AuditingHandlerUnitTests {
 	}
 
 	protected AuditingHandler getHandler() {
-		return new AuditingHandler(new SampleMappingContext());
+		return new AuditingHandler(new PersistentEntities(Collections.<MappingContext<?, ?>> emptySet()));
 	}
 
 	/**

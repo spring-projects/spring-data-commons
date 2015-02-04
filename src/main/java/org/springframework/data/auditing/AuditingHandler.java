@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.auditing;
 
+import java.util.Arrays;
 import java.util.Calendar;
 
 import org.joda.time.DateTime;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.util.Assert;
 
 /**
@@ -38,7 +40,7 @@ public class AuditingHandler implements InitializingBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuditingHandler.class);
 
-	private final AuditableBeanWrapperFactory factory;
+	private final DefaultAuditableBeanWrapperFactory factory;
 
 	private DateTimeProvider dateTimeProvider = CurrentDateTimeProvider.INSTANCE;
 	private AuditorAware<?> auditorAware;
@@ -51,12 +53,26 @@ public class AuditingHandler implements InitializingBean {
 	 * 
 	 * @param mappingContext must not be {@literal null}.
 	 * @since 1.8
+	 * @deprecated use {@link AuditingHandler(PersistentEntities)} instead.
 	 */
+	@Deprecated
+	@SuppressWarnings("unchecked")
 	public AuditingHandler(
 			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
+		this(new PersistentEntities(Arrays.asList(mappingContext)));
+	}
 
-		Assert.notNull(mappingContext, "MappingContext must not be null!");
-		this.factory = new MappingAuditableBeanWrapperFactory(mappingContext);
+	/**
+	 * Creates a new {@link AuditableBeanWrapper} using the given {@link PersistentEntities} when looking up auditing
+	 * metadata via reflection.
+	 * 
+	 * @param entities must not be {@literal null}.
+	 * @since 1.10
+	 */
+	public AuditingHandler(PersistentEntities entities) {
+
+		Assert.notNull(entities, "PersistentEntities must not be null!");
+		this.factory = new MappingAuditableBeanWrapperFactory(entities);
 	}
 
 	/**

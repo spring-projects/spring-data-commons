@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -64,6 +65,16 @@ public abstract class Jsr310Converters {
 		converters.add(InstantToDateConverter.INSTANCE);
 
 		return converters;
+	}
+
+	public static boolean supports(Class<?> type) {
+
+		if (!JAVA_8_IS_PRESENT) {
+			return false;
+		}
+
+		return Arrays.<Class<?>> asList(LocalDateTime.class, LocalDate.class, LocalTime.class, Instant.class)
+				.contains(type);
 	}
 
 	public static enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {

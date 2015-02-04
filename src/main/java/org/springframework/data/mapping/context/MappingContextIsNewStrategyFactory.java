@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.mapping.context;
+
+import java.util.Arrays;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -34,17 +36,30 @@ import org.springframework.util.Assert;
  */
 public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupport {
 
-	private final MappingContext<? extends PersistentEntity<?, ?>, ?> context;
+	private final PersistentEntities context;
 
 	/**
 	 * Creates a new {@link MappingContextIsNewStrategyFactory} using the given {@link MappingContext}.
 	 * 
 	 * @param context must not be {@literal null}.
+	 * @deprecated use {@link MappingContextIsNewStrategyFactory(PersistentEntities)} instead.
 	 */
+	@Deprecated
+	@SuppressWarnings("unchecked")
 	public MappingContextIsNewStrategyFactory(MappingContext<? extends PersistentEntity<?, ?>, ?> context) {
+		this(new PersistentEntities(Arrays.asList(context)));
+	}
 
-		Assert.notNull(context, "MappingContext must not be null!");
-		this.context = context;
+	/**
+	 * Creates a new {@link MappingContextIsNewStrategyFactory} using the given {@link PersistentEntities}.
+	 * 
+	 * @param context must not be {@literal null}.
+	 * @since 1.10
+	 */
+	public MappingContextIsNewStrategyFactory(PersistentEntities entities) {
+
+		Assert.notNull(entities, "PersistentEntities must not be null!");
+		this.context = entities;
 	}
 
 	/*

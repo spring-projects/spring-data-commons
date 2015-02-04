@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,23 @@ package org.springframework.data.mapping.context;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory;
 import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory.PropertyIsNullIsNewStrategy;
 import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory.PropertyIsNullOrZeroNumberIsNewStrategy;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
 
 /**
+ * Unit tests for {@link MappingContextIsNewStrategyFactory}.
+ * 
  * @author Oliver Gierke
  */
 public class MappingContextIsNewStrategyFactoryUnitTests {
@@ -40,7 +45,10 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	public void setUp() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		factory = new MappingContextIsNewStrategyFactory(context);
+		context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.<Class<?>> asList(Entity.class, VersionedEntity.class)));
+		context.afterPropertiesSet();
+
+		factory = new MappingContextIsNewStrategyFactory(new PersistentEntities(Collections.singleton(context)));
 	}
 
 	@Test
@@ -94,11 +102,9 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	@SuppressWarnings("serial")
 	static class PersistableEntity implements Persistable<Long> {
 
-		@Version
-		Long version;
+		@Version Long version;
 
-		@Id
-		Long id;
+		@Id Long id;
 
 		boolean isNew = true;
 
@@ -113,25 +119,20 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 
 	static class VersionedEntity {
 
-		@Version
-		Long version;
+		@Version Long version;
 
-		@Id
-		Long id;
+		@Id Long id;
 	}
 
 	static class PrimitveVersionedEntity {
 
-		@Version
-		long version = 0;
+		@Version long version = 0;
 
-		@Id
-		Long id;
+		@Id Long id;
 	}
 
 	static class Entity {
 
-		@Id
-		Long id;
+		@Id Long id;
 	}
 }

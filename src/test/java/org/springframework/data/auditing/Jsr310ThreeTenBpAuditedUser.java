@@ -15,20 +15,16 @@
  */
 package org.springframework.data.auditing;
 
-/**
- * A factory to lookup {@link AuditableBeanWrapper}s.
- * 
- * @author Oliver Gierke
- * @since 1.10
- */
-public interface AuditableBeanWrapperFactory {
+import java.time.LocalDateTime;
 
-	/**
-	 * Returns the {@link AuditableBeanWrapper} for the given source obejct if it's eligible for auditing.
-	 * 
-	 * @param source can be {@literal null}.
-	 * @return the {@link AuditableBeanWrapper} for the given source obejct if it's eligible for auditing or
-	 *         {@literal null} otherwise.
-	 */
-	AuditableBeanWrapper getBeanWrapperFor(Object source);
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+/**
+ * @author Oliver Gierke
+ */
+public class Jsr310ThreeTenBpAuditedUser {
+
+	@CreatedDate LocalDateTime createdDate;
+	@LastModifiedDate org.threeten.bp.LocalDateTime lastModifiedDate;
 }

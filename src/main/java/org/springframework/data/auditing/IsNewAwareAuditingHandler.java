@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,15 @@
  */
 package org.springframework.data.auditing;
 
+import java.util.Arrays;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
-import org.springframework.util.Assert;
 
 /**
  * {@link AuditingHandler} extension that uses an {@link IsNewStrategyFactory} to expose a generic
@@ -40,14 +42,26 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 * 
 	 * @param mappingContext must not be {@literal null}.
 	 * @since 1.8
+	 * @deprecated use {@link IsNewAwareAuditingHandler(PersistentEntities)} instead.
 	 */
+	@Deprecated
+	@SuppressWarnings("unchecked")
 	public IsNewAwareAuditingHandler(
 			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
+		this(new PersistentEntities(Arrays.asList(mappingContext)));
+	}
 
-		super(mappingContext);
+	/**
+	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
+	 * 
+	 * @param mappingContext must not be {@literal null}.
+	 * @since 1.10
+	 */
+	public IsNewAwareAuditingHandler(PersistentEntities entities) {
 
-		Assert.notNull(mappingContext, "MappingContext must not be null!");
-		this.isNewStrategyFactory = new MappingContextIsNewStrategyFactory(mappingContext);
+		super(entities);
+
+		this.isNewStrategyFactory = new MappingContextIsNewStrategyFactory(entities);
 	}
 
 	/**

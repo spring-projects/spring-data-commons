@@ -27,6 +27,8 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.convert.Jsr310Converters;
+import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.ReflectionUtils.AnnotationFieldFilter;
 import org.springframework.util.Assert;
@@ -93,7 +95,7 @@ final class AnnotationAuditingMetadata {
 	/**
 	 * Checks whether the given field has a type that is a supported date type.
 	 * 
-	 * @param field
+	 * @param field can be {@literal null}.
 	 */
 	private void assertValidDateFieldType(Field field) {
 
@@ -101,14 +103,15 @@ final class AnnotationAuditingMetadata {
 			return;
 		}
 
-		// Support JDK 8 date types if runtime allows
-		if (IS_JDK_8 && field.getType().getPackage().getName().startsWith(JDK8_TIME_PACKAGE_PREFIX)) {
+		Class<?> type = field.getType();
+
+		if (Jsr310Converters.supports(type) || ThreeTenBackPortConverters.supports(type)) {
 			return;
 		}
 
 		throw new IllegalStateException(String.format(
-				"Found created/modified date field with type %s but only %s as well as java.time types are supported!",
-				field.getType(), SUPPORTED_DATE_TYPES));
+				"Found created/modified date field with type %s but only %s as well as java.time types are supported!", type,
+				SUPPORTED_DATE_TYPES));
 	}
 
 	/**
