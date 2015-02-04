@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,16 @@ public class OrderBySourceUnitTests {
 
 		OrderBySource source = new OrderBySource("BarNameDesc", Foo.class);
 		assertThat(source.toSort(), is(new Sort(new Order(DESC, "bar.name"))));
+	}
 
+	/**
+	 * @see DATACMNS-641
+	 */
+	@Test
+	public void defaultsSortOrderToAscendingSort() {
+
+		OrderBySource source = new OrderBySource("lastname");
+		assertThat(source.toSort(), is(new Sort("lastname")));
 	}
 
 	@SuppressWarnings("unused")

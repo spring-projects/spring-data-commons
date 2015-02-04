@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 package org.springframework.data.repository.query.parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +39,9 @@ import org.springframework.util.StringUtils;
 public class OrderBySource {
 
 	private static final String BLOCK_SPLIT = "(?<=Asc|Desc)(?=\\p{Lu})";
-	private static final Pattern DIRECTION_SPLIT = Pattern.compile("(.+)(Asc|Desc)$");
+	private static final Pattern DIRECTION_SPLIT = Pattern.compile("(.+?)(Asc|Desc)?$");
+	private static final String INVALID_ORDER_SYNTAX = "Invalid order syntax for part %s!";
+	private static final Set<String> DIRECTION_KEYWORDS = new HashSet<String>(Arrays.asList("Asc", "Desc"));
 
 	private final List<Order> orders;
 
@@ -47,7 +52,6 @@ public class OrderBySource {
 	 * @param clause must not be {@literal null}.
 	 */
 	public OrderBySource(String clause) {
-
 		this(clause, null);
 	}
 
@@ -56,18 +60,30 @@ public class OrderBySource {
 	 * type.
 	 * 
 	 * @param clause must not be {@literal null}.
-	 * @param domainClass
+	 * @param domainClass can be {@literal null}.
 	 */
 	public OrderBySource(String clause, Class<?> domainClass) {
 
 		this.orders = new ArrayList<Sort.Order>();
+
 		for (String part : clause.split(BLOCK_SPLIT)) {
+
 			Matcher matcher = DIRECTION_SPLIT.matcher(part);
+
 			if (!matcher.find()) {
-				throw new IllegalArgumentException(String.format("Invalid order syntax for part %s!", part));
+				throw new IllegalArgumentException(String.format(INVALID_ORDER_SYNTAX, part));
 			}
-			Direction direction = Direction.fromString(matcher.group(2));
-			this.orders.add(createOrder(matcher.group(1), direction, domainClass));
+
+			String propertyString = matcher.group(1);
+			String directionString = matcher.group(2);
+
+			// No property, but only a direction keyword
+			if (DIRECTION_KEYWORDS.contains(propertyString) && directionString == null) {
+				throw new IllegalArgumentException(String.format(INVALID_ORDER_SYNTAX, part));
+			}
+
+			Direction direction = StringUtils.hasText(directionString) ? Direction.fromString(directionString) : null;
+			this.orders.add(createOrder(propertyString, direction, domainClass));
 		}
 	}
 
