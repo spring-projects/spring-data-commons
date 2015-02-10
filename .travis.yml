@@ -9,6 +9,7 @@ env:
     - PROFILE=spring4-next
     - PROFILE=spring41
     - PROFILE=spring41-next
+    - PROFILE=spring42-next
     - PROFILE=querydsl-next
 sudo: false
 cache:
