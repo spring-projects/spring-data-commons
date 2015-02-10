@@ -20,6 +20,7 @@ import static org.springframework.data.repository.support.RepositoryInvocationTe
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -37,8 +38,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.repository.support.CrudRepositoryInvoker;
-import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -183,6 +182,8 @@ public class CrudRepositoryInvokerUnitTests {
 
 		Page<Person> findByCreatedUsingISO8601Date(@Param("date") @DateTimeFormat(iso = ISO.DATE_TIME) Date date,
 				Pageable pageable);
+
+		List<Person> findByIdIn(@Param("ids") Collection<Long> ids);
 	}
 
 	interface CrudWithFindAllWithSort extends CrudRepository<Order, Long> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,13 @@ import static org.mockito.Mockito.*;
 import static org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -41,8 +44,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
-import org.springframework.data.repository.support.ReflectionRepositoryInvoker;
-import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.Person;
 import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.PersonRepository;
 import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
@@ -169,8 +170,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 	@Test
 	public void considersFormattingAnnotationsOnQueryMethodParameters() throws Exception {
 
-		HashMap<String, String[]> parameters = new HashMap<String, String[]>();
-		parameters.put("date", new String[] { "2013-07-18T10:49:00.000+02:00" });
+		Map<String, String[]> parameters = Collections.singletonMap("date",
+				new String[] { "2013-07-18T10:49:00.000+02:00" });
 
 		Method method = PersonRepository.class.getMethod("findByCreatedUsingISO8601Date", Date.class, Pageable.class);
 		PersonRepository repository = mock(PersonRepository.class);
@@ -236,6 +237,23 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		assertThat(invoker.hasSaveMethod(), is(false));
 		invoker.invokeSave(new Object());
+	}
+
+	/**
+	 * @see DATACMNS-647
+	 */
+	@Test
+	public void translatesCollectionRequestParametersCorrectly() throws Exception {
+
+		for (String[] ids : Arrays.asList(new String[] { "1,2" }, new String[] { "1", "2" })) {
+
+			Map<String, String[]> parameters = Collections.singletonMap("ids", ids);
+
+			Method method = PersonRepository.class.getMethod("findByIdIn", Collection.class);
+			PersonRepository repository = mock(PersonRepository.class);
+
+			getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, null, null);
+		}
 	}
 
 	private static RepositoryInvoker getInvokerFor(Object repository) {
