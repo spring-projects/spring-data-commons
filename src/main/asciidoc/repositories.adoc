@@ -205,7 +205,7 @@ NOTE: Note, that the intermediate repository interface is annotated with `@NoRep
 [[repositories.query-methods.details]]
 == Defining query methods
 
-The repository proxy has two ways to derive a store-specific query from the method name. It can derive the query from the method name directly, or by using an manually defined query. Available options depend on the actual store. However, there's got to be an strategy that decides what actual query is created. Let's have a look at the available options.
+The repository proxy has two ways to derive a store-specific query from the method name. It can derive the query from the method name directly, or by using a manually defined query. Available options depend on the actual store. However, there's got to be an strategy that decides what actual query is created. Let's have a look at the available options.
 
 [[repositories.query-methods.query-lookup-strategies]]
 === Query lookup strategies
