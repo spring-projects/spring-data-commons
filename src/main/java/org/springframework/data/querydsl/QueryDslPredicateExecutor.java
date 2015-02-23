@@ -17,6 +17,7 @@ package org.springframework.data.querydsl;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import com.mysema.query.types.OrderSpecifier;
 import com.mysema.query.types.Predicate;
@@ -47,6 +48,17 @@ public interface QueryDslPredicateExecutor<T> {
 	 * @return all entities matching the given {@link Predicate}.
 	 */
 	Iterable<T> findAll(Predicate predicate);
+
+	/**
+	 * Returns all entities matching the given {@link Predicate} applying the given {@link Sort}. In case no match could
+	 * be found an empty {@link Iterable} is returned.
+	 * 
+	 * @param predicate can be {@literal null}.
+	 * @param sort the {@link Sort} specification to sort the results by
+	 * @return all entities matching the given {@link Predicate}.
+	 * @since 1.10
+	 */
+	Iterable<T> findAll(Predicate predicate, Sort sort);
 
 	/**
 	 * Returns all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s. In case no
