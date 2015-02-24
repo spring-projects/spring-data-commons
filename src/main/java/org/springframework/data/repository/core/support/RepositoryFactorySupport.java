@@ -15,9 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.springframework.util.ReflectionUtils.*;
-
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
@@ -45,6 +45,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ClassUtils;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -63,6 +64,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
 	private final List<RepositoryProxyPostProcessor> postProcessors = new ArrayList<RepositoryProxyPostProcessor>();
 
+	private Class<?> repositoryBaseClass;
 	private QueryLookupStrategy.Key queryLookupStrategyKey;
 	private List<QueryCreationListener<?>> queryPostProcessors = new ArrayList<QueryCreationListener<?>>();
 	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
@@ -111,6 +113,17 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	public void setEvaluationContextProvider(EvaluationContextProvider evaluationContextProvider) {
 		this.evaluationContextProvider = evaluationContextProvider == null ? DefaultEvaluationContextProvider.INSTANCE
 				: evaluationContextProvider;
+	}
+
+	/**
+	 * Configures the repository base class to use when creating the repository proxy. If not set, the factory will use
+	 * the type returned by {@link #getRepositoryBaseClass(RepositoryMetadata)} by default.
+	 * 
+	 * @param repositoryBaseClass the repository base class to back the repository proxy, can be {@literal null}.
+	 * @since 1.11
+	 */
+	public void setRepositoryBaseClass(Class<?> repositoryBaseClass) {
+		this.repositoryBaseClass = repositoryBaseClass;
 	}
 
 	/**
@@ -214,8 +227,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 			return repositoryInformation;
 		}
 
-		repositoryInformation = new DefaultRepositoryInformation(metadata, getRepositoryBaseClass(metadata),
-				customImplementationClass);
+		Class<?> repositoryBaseClass = this.repositoryBaseClass == null ? getRepositoryBaseClass(metadata)
+				: this.repositoryBaseClass;
+
+		repositoryInformation = new DefaultRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass);
 		repositoryInformationCache.put(cacheKey, repositoryInformation);
 		return repositoryInformation;
 	}
@@ -240,7 +255,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	 * @param metadata
 	 * @return
 	 */
-	protected abstract Object getTargetRepository(RepositoryMetadata metadata);
+	protected abstract Object getTargetRepository(RepositoryInformation metadata);
 
 	/**
 	 * Returns the base class backing the actual repository instance. Make sure
@@ -294,6 +309,29 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 	protected void validate(RepositoryMetadata repositoryMetadata) {
 
+	}
+
+	/**
+	 * Creates a repository of the repository base class defined in the given {@link RepositoryInformation} using
+	 * reflection.
+	 * 
+	 * @param information
+	 * @param constructorArguments
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	protected final <R> R getTargetRepositoryViaReflection(RepositoryInformation information,
+			Object... constructorArguments) {
+
+		Class<?> baseClass = information.getRepositoryBaseClass();
+		Constructor<?> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
+
+		if (constructor == null) {
+			throw new IllegalStateException(String.format(
+					"No suitable constructor found on %s to match the given arguments: %s", baseClass, constructorArguments));
+		}
+
+		return (R) BeanUtils.instantiateClass(constructor, constructorArguments);
 	}
 
 	/**
@@ -384,8 +422,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 			Object[] arguments = invocation.getArguments();
 
 			if (isCustomMethodInvocation(invocation)) {
+
 				Method actualMethod = repositoryInformation.getTargetClassMethod(method);
-				makeAccessible(actualMethod);
 				return executeMethodOn(customImplementation, actualMethod, arguments);
 			}
 

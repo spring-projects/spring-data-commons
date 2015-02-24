@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import static org.springframework.core.GenericTypeResolver.*;
 import static org.springframework.data.repository.util.ClassUtils.*;
+import static org.springframework.util.ReflectionUtils.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -117,13 +118,20 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 		Method result = getTargetClassMethod(method, customImplementationClass);
 
 		if (!result.equals(method)) {
-			methodCache.put(method, result);
-			return result;
+			return cacheAndReturn(method, result);
 		}
 
-		result = getTargetClassMethod(method, repositoryBaseClass);
-		methodCache.put(method, result);
-		return result;
+		return cacheAndReturn(method, getTargetClassMethod(method, repositoryBaseClass));
+	}
+
+	private Method cacheAndReturn(Method key, Method value) {
+
+		if (value != null) {
+			makeAccessible(value);
+		}
+
+		methodCache.put(key, value);
+		return value;
 	}
 
 	/**

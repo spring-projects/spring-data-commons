@@ -16,6 +16,7 @@
 package org.springframework.data.util;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -237,5 +238,57 @@ public abstract class ReflectionUtils {
 		}
 
 		return JAVA8_STREAM_TYPE.isAssignableFrom(type);
+	}
+
+	/**
+	 * Finds a constructoron the given type that matches the given constructor arguments.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param constructorArguments must not be {@literal null}.
+	 * @return a {@link Constructor} that is compatible with the given arguments or {@literal null} if none found.
+	 */
+	public static Constructor<?> findConstructor(Class<?> type, Object... constructorArguments) {
+
+		Assert.notNull(type, "Target type must not be null!");
+		Assert.notNull(constructorArguments, "Constructor arguments must not be null!");
+
+		for (Constructor<?> candidate : type.getDeclaredConstructors()) {
+
+			Class<?>[] parameterTypes = candidate.getParameterTypes();
+
+			if (argumentsMatch(parameterTypes, constructorArguments)) {
+				return candidate;
+			}
+		}
+
+		return null;
+	}
+
+	private static final boolean argumentsMatch(Class<?>[] parameterTypes, Object[] arguments) {
+
+		if (parameterTypes.length != arguments.length) {
+			return false;
+		}
+
+		int index = 0;
+
+		for (Class<?> argumentType : parameterTypes) {
+
+			Object argument = arguments[index];
+
+			// Reject nulls for primitives
+			if (argumentType.isPrimitive() && argument == null) {
+				return false;
+			}
+
+			// Type check if argument is not null
+			if (argument != null && !ClassUtils.isAssignableValue(argumentType, argument)) {
+				return false;
+			}
+
+			index++;
+		}
+
+		return true;
 	}
 }

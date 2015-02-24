@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns="http://www.springframework.org/schema/data/repository"
+						xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+						xmlns:tool="http://www.springframework.org/schema/tool"
+						xmlns:context="http://www.springframework.org/schema/context"
+						targetNamespace="http://www.springframework.org/schema/data/repository"
+						elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+	<xsd:import namespace="http://www.springframework.org/schema/context"
+		schemaLocation="http://www.springframework.org/schema/context/spring-context.xsd" />
+
+	<xsd:complexType name="repositories">
+		<xsd:sequence>
+			<xsd:element name="include-filter" type="context:filterType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+   Controls which eligible types to include for component scanning.
+                           ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="exclude-filter" type="context:filterType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+   Controls which eligible types to exclude for component scanning.
+                       ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="base-package" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Defines the base package where the DAO interface will be tried to be detected.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="named-queries-location" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Defines the location to look for a Properties file containing externally defined queries.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="consider-nested-repositories" type="xsd:boolean" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Controls whether nested repository interface definitions should be considered.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="populator">
+		<xsd:attribute name="locations" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>
+					Where to find the files to read the objects from the repository shall be populated with.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="id" type="xsd:string" />
+	</xsd:complexType>
+
+	<!-- XML (Unmarshaller) initializer -->
+
+	<xsd:element name="unmarshaller-populator">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="populator">
+					<xsd:attribute name="unmarshaller-ref" type="unmarshallerRefType" use="required" />
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:simpleType name="unmarshallerRefType">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:expected-type type="org.springframework.oxm.Unmarshaller" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string" />
+	</xsd:simpleType>
+
+	<!-- JSON (Jackson2) initializer -->
+
+	<xsd:element name="jackson2-populator">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="populator">
+					<xsd:attribute name="object-mapper-ref" type="objectMapper2Type" />
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:simpleType name="objectMapper2Type">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:expected-type type="com.fasterxml.jackson.databind.ObjectMapper" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string" />
+	</xsd:simpleType>
+
+	<xsd:attributeGroup name="repository-attributes">
+		<xsd:attribute name="repository-impl-postfix" type="xsd:string"/>
+		<xsd:attribute name="query-lookup-strategy" type="query-strategy"/>
+		<xsd:attribute name="factory-class" type="classType">
+			<xsd:annotation>
+				<xsd:documentation>Deprecated as of version 1.11. Configure a dedicated base-class instead.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="base-class" type="classType" />
+	</xsd:attributeGroup>
+
+	<xsd:attributeGroup name="transactional-repository-attributes">
+		<xsd:attributeGroup ref="repository-attributes"/>
+		<xsd:attribute name="transaction-manager-ref" type="transactionManagerRef"/>
+	</xsd:attributeGroup>
+
+	<xsd:attributeGroup name="auditing-attributes">
+		<xsd:attribute name="auditor-aware-ref">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				References a bean of type AuditorAware to represent the current principal.
+				]]></xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:assignable-to type="org.springframework.data.domain.AuditorAware" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="set-dates" default="true" type="xsd:boolean">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Configures whether the creation and modification dates are set.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="date-time-provider-ref">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Configures a DateTimeProvider that allows customizing which DateTime shall be used for setting
+				creation and modification dates.
+				]]></xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:assignable-to type="org.springframework.data.jpa.domain.support.DateTimeProvider" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="modify-on-creation" default="true" type="xsd:boolean">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Configures whether the entity shall be marked as modified on creation.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+
+	<xsd:simpleType name="query-strategy">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+			Determines the way query methods are being executed.
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="create-if-not-found">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+					Tries to find a named query but creates a custom query if
+					none can be found. (Default)
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="create">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+					Creates a query from the query method's name.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="use-declared-query">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+					Uses a declared query to execute. Fails if no
+					declared query (either through named query or through @Query)
+					is defined.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="customImplementationReference">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="entityManagerFactoryRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to type="org.springframework.orm.jpa.AbstractEntityManagerFactoryBean"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="transactionManagerRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to type="org.springframework.transaction.PlatformTransactionManager"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="classType">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="direct">
+					<tool:expected-type type="java.lang.Class"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+</xsd:schema>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	private static final String NAMED_QUERIES_LOCATION = "named-queries-location";
 	private static final String REPOSITORY_IMPL_POSTFIX = "repository-impl-postfix";
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS_NAME = "factory-class";
+	private static final String REPOSITORY_BASE_CLASS_NAME = "base-class";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "consider-nested-repositories";
 
 	private final Element element;
@@ -146,6 +147,15 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 */
 	public String getRepositoryFactoryBeanName() {
 		return getNullDefaultedAttribute(element, REPOSITORY_FACTORY_BEAN_CLASS_NAME);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryBaseClassName()
+	 */
+	@Override
+	public String getRepositoryBaseClassName() {
+		return getNullDefaultedAttribute(element, REPOSITORY_BASE_CLASS_NAME);
 	}
 
 	private String getNullDefaultedAttribute(Element element, String attributeName) {

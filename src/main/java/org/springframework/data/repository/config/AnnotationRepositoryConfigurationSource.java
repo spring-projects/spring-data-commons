@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private static final String NAMED_QUERIES_LOCATION = "namedQueriesLocation";
 	private static final String QUERY_LOOKUP_STRATEGY = "queryLookupStrategy";
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS = "repositoryFactoryBeanClass";
+	private static final String REPOSITORY_BASE_CLASS = "repositoryBaseClass";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "considerNestedRepositories";
 
 	private final AnnotationMetadata configMetadata;
@@ -211,6 +212,17 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	public String getRepositoryFactoryBeanName() {
 		return attributes.getClass(REPOSITORY_FACTORY_BEAN_CLASS).getName();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryBaseClassName()
+	 */
+	@Override
+	public String getRepositoryBaseClassName() {
+
+		Class<? extends Object> repositoryBaseClass = attributes.getClass(REPOSITORY_BASE_CLASS);
+		return DefaultRepositoryBaseClass.class.equals(repositoryBaseClass) ? null : repositoryBaseClass.getName();
 	}
 
 	/**

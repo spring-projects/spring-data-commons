@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.util;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
 import org.junit.Before;
@@ -31,11 +32,13 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  */
 public class ReflectionUtilsUnitTests {
 
+	@SuppressWarnings("rawtypes") Constructor constructor;
 	Field reference;
 
 	@Before
 	public void setUp() throws Exception {
 		this.reference = Sample.class.getField("field");
+		this.constructor = ConstructorDetection.class.getConstructor(int.class, String.class);
 	}
 
 	@Test
@@ -84,12 +87,43 @@ public class ReflectionUtilsUnitTests {
 		assertThat(sample.first, is("foo"));
 	}
 
+	/**
+	 * @see DATACMNS-542
+	 */
+	@Test
+	public void detectsConstructorForCompleteMatch() throws Exception {
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test"), is(constructor));
+	}
+
+	/**
+	 * @see DATACMNS-542
+	 */
+	@Test
+	public void detectsConstructorForMatchWithNulls() throws Exception {
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, null), is(constructor));
+	}
+
+	/**
+	 * @see DATACMNS-542
+	 */
+	@Test
+	public void rejectsConstructorIfNumberOfArgumentsDontMatch() throws Exception {
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test", "test"), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-542
+	 */
+	@Test
+	public void rejectsConstructorForNullForPrimitiveArgument() throws Exception {
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, null, "test"), is(nullValue()));
+	}
+
 	static class Sample {
 
 		public String field;
 
-		@Autowired
-		String first, second;
+		@Autowired String first, second;
 	}
 
 	static class FieldNameFieldFilter implements DescribedFieldFilter {
@@ -107,5 +141,9 @@ public class ReflectionUtilsUnitTests {
 		public String getDescription() {
 			return String.format("Filter for fields named %s", name);
 		}
+	}
+
+	static class ConstructorDetection {
+		public ConstructorDetection(int i, String string) {}
 	}
 }

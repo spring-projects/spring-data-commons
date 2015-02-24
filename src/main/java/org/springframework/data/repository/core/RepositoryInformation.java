@@ -74,9 +74,10 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	/**
 	 * Returns the target class method that is backing the given method. This can be necessary if a repository interface
 	 * redeclares a method of the core repository interface (e.g. for transaction behaviour customization). Returns the
-	 * method itself if the target class does not implement the given method.
+	 * method itself if the target class does not implement the given method. Implementations need to make sure the
+	 * {@link Method} returned can be invoked via reflection, i.e. needs to be accessible.
 	 * 
-	 * @param method
+	 * @param method must not be {@literal null}.
 	 * @return
 	 */
 	Method getTargetClassMethod(Method method);

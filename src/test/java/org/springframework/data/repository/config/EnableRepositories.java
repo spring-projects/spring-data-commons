@@ -21,6 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupportUnitTests.DummyRegistrar;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 
@@ -40,6 +41,8 @@ public @interface EnableRepositories {
 	Filter[] excludeFilters() default {};
 
 	Class<?> repositoryFactoryBeanClass() default DummyRepositoryFactoryBean.class;
+
+	Class<?> repositoryBaseClass() default PagingAndSortingRepository.class;
 
 	String namedQueriesLocation() default "";
 

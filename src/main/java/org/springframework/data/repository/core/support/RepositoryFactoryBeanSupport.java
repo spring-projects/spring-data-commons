@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,11 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.util.Assert;
 
 /**
@@ -51,6 +51,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 	private Key queryLookupStrategyKey;
 	private Class<? extends T> repositoryInterface;
+	private Class<?> repositoryBaseClass;
 	private Object customImplementation;
 	private NamedQueries namedQueries;
 	private MappingContext<?, ?> mappingContext;
@@ -72,6 +73,16 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		Assert.notNull(repositoryInterface);
 		this.repositoryInterface = repositoryInterface;
+	}
+
+	/**
+	 * Configures the repository base class to be used.
+	 * 
+	 * @param repositoryBaseClass the repositoryBaseClass to set, can be {@literal null}.
+	 * @since 1.11
+	 */
+	public void setRepositoryBaseClass(Class<?> repositoryBaseClass) {
+		this.repositoryBaseClass = repositoryBaseClass;
 	}
 
 	/**
@@ -218,6 +229,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.factory.setNamedQueries(namedQueries);
 		this.factory.setBeanClassLoader(classLoader);
 		this.factory.setEvaluationContextProvider(evaluationContextProvider);
+		this.factory.setRepositoryBaseClass(repositoryBaseClass);
 
 		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,8 +72,19 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 * Returns the name of the {@link FactoryBean} class to be used to create repository instances.
 	 * 
 	 * @return
+	 * @deprecated as of 1.11 in favor of a dedicated repository class name, see {@link #getRepositoryBaseClassName()}.
 	 */
+	@Deprecated
 	String getRepositoryFactoryBeanName();
+
+	/**
+	 * Returns the name of the repository base class to be used or {@literal null} if the store specific defaults shall be
+	 * applied.
+	 * 
+	 * @return
+	 * @since 1.11
+	 */
+	String getRepositoryBaseClassName();
 
 	/**
 	 * Returns the source of the {@link RepositoryConfiguration}.

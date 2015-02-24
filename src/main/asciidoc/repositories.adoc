@@ -528,10 +528,8 @@ The approach just shown works well if your custom implementation uses annotation
 [[repositories.custom-behaviour-for-all-repositories]]
 === Adding custom behavior to all repositories
 
-The preceding approach is not feasible when you want to add a single method to all your repository interfaces.
+The preceding approach is not feasible when you want to add a single method to all your repository interfaces. To add custom behavior to all repositories, you first add an intermediate interface to declare the shared behavior.
 
-. To add custom behavior to all repositories, you first add an intermediate interface to declare the shared behavior.
-+
 .An interface declaring custom shared behavior
 ====
 [source, java]
@@ -545,10 +543,8 @@ public interface MyRepository<T, ID extends Serializable>
 ----
 ====
 
-. Now your individual repository interfaces will extend this intermediate interface instead of the `Repository` interface to include the functionality declared.
+Now your individual repository interfaces will extend this intermediate interface instead of the `Repository` interface to include the functionality declared. Next, create an implementation of the intermediate interface that extends the persistence technology-specific repository base class. This class will then act as a custom base class for the repository proxies.
 
-. Next, create an implementation of the intermediate interface that extends the persistence technology-specific repository base class. This class will then act as a custom base class for the repository proxies.
-+
 .Custom repository base class
 ====
 [source, java]
@@ -571,62 +567,29 @@ public class MyRepositoryImpl<T, ID extends Serializable>
 }
 ----
 ====
-+
+
 The default behavior of the Spring `<repositories />` namespace is to provide an implementation for all interfaces that fall under the `base-package`. This means that if left in its current state, an implementation instance of `MyRepository` will be created by Spring. This is of course not desired as it is just supposed to act as an intermediary between `Repository` and the actual repository interfaces you want to define for each entity. To exclude an interface that extends `Repository` from being instantiated as a repository instance, you can either annotate it with `@NoRepositoryBean` (as seen above) or move it outside of the configured `base-package`.
 
-. Then create a custom repository factory to replace the default `RepositoryFactoryBean` that will in turn produce a custom `RepositoryFactory`. The new repository factory will then provide your `MyRepositoryImpl` as the implementation of any interfaces that extend the `Repository` interface, replacing the `SimpleJpaRepository` implementation you just extended.
-+
-.Custom repository factory bean
+The final step is to make the Spring Data infrastructure aware of the customized repository base class. In JavaConfig this is achieved by using the `repositoryBaseClass` attribute of the `@Enable…Repositories` annotation:
+
+.Configuring a custom repository base class using JavaConfig
 ====
 [source, java]
 ----
-public class MyRepositoryFactoryBean<R extends JpaRepository<T, I>, T,
-  I extends Serializable> extends JpaRepositoryFactoryBean<R, T, I> {
-
-  protected RepositoryFactorySupport createRepositoryFactory(EntityManager em) {
-    return new MyRepositoryFactory(em);
-  }
-
-  private static class MyRepositoryFactory<T, I extends Serializable>
-    extends JpaRepositoryFactory {
-
-    private final EntityManager em;
-
-    public MyRepositoryFactory(EntityManager em) {
-
-      super(em);
-      this.em = em;
-    }
-
-    protected Object getTargetRepository(RepositoryMetadata metadata) {
-      return new MyRepositoryImpl<T, I>((Class<T>) metadata.getDomainClass(), em);
-    }
-
-    protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
-      return MyRepositoryImpl.class;
-    }
-  }
-}
+@Configuration
+@EnableJpaRepositories(repositoryBaseClass = MyRepositoryImpl.class)
+class ApplicationConfiguration { … }
 ----
 ====
 
-. Finally, either declare beans of the custom factory directly or use the `factory-class` attribute of the Spring namespace or `@Enable…` annotation to instruct the repository infrastructure to use your custom factory implementation.
-+
-.Using the custom factory with the namespace
+A corresponding attribute is available in the XML namespace.
+
+.Configuring a custom repository base class using XML
 ====
 [source, xml]
 ----
 <repositories base-package="com.acme.repository"
-  factory-class="com.acme.MyRepositoryFactoryBean" />
-----
-====
-+
-.Using the custom factory with the `@Enable…` annotation
-====
-[source, java]
-----
-@EnableJpaRepositories(factoryClass = "com.acme.MyRepositoryFactoryBean")
-class Config {}
+     repository-base-class="….MyRepositoryImpl" />
 ----
 ====
 

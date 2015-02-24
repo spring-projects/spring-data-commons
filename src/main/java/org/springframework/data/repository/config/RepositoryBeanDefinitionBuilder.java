@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,8 @@ class RepositoryBeanDefinitionBuilder {
 		this.extension = extension;
 		this.resourceLoader = resourceLoader;
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
-		this.implementationDetector = new CustomRepositoryImplementationDetector(metadataReaderFactory, environment, resourceLoader);
+		this.implementationDetector = new CustomRepositoryImplementationDetector(metadataReaderFactory, environment,
+				resourceLoader);
 	}
 
 	/**
@@ -90,6 +91,7 @@ class RepositoryBeanDefinitionBuilder {
 		builder.addPropertyValue("repositoryInterface", configuration.getRepositoryInterface());
 		builder.addPropertyValue("queryLookupStrategyKey", configuration.getQueryLookupStrategyKey());
 		builder.addPropertyValue("lazyInit", configuration.isLazyInit());
+		builder.addPropertyValue("repositoryBaseClass", configuration.getRepositoryBaseClassName());
 
 		NamedQueriesBeanDefinitionBuilder definitionBuilder = new NamedQueriesBeanDefinitionBuilder(
 				extension.getDefaultNamedQueryLocation());
@@ -143,6 +145,4 @@ class RepositoryBeanDefinitionBuilder {
 
 		return beanName;
 	}
-
-
 }
