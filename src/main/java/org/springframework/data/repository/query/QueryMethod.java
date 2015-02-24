@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.util.CloseableIterator;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -33,6 +35,7 @@ import org.springframework.util.Assert;
  * with specific information that is necessary to construct {@link RepositoryQuery}s for the method.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class QueryMethod {
 
@@ -219,5 +222,21 @@ public class QueryMethod {
 	@Override
 	public String toString() {
 		return method.toString();
+	}
+
+	/**
+	 * @return
+	 * @since 1.10
+	 */
+	public boolean isCloseableIteratorQuery() {
+		return org.springframework.util.ClassUtils.isAssignable(CloseableIterator.class, method.getReturnType());
+	}
+
+	/**
+	 * @return
+	 * @since 1.10
+	 */
+	public boolean isStreamQuery() {
+		return ReflectionUtils.isJava8StreamType(method.getReturnType());
 	}
 }

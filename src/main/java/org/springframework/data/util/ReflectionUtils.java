@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -30,9 +31,25 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * Spring Data specific reflection utility methods and classes.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  * @since 1.5
  */
 public abstract class ReflectionUtils {
+
+	private static final Class<?> JAVA8_STREAM_TYPE;
+
+	static {
+		String streamClassName = "java.util.stream.Stream";
+
+		Class<?> cls = null;
+		if (ClassUtils.isPresent(streamClassName, ReflectionUtils.class.getClassLoader())) {
+			try {
+				cls = Class.forName(streamClassName, true, ReflectionUtils.class.getClassLoader());
+			} catch (ClassNotFoundException ignore) {}
+		}
+
+		JAVA8_STREAM_TYPE = cls;
+	}
 
 	private ReflectionUtils() {}
 
@@ -207,5 +224,20 @@ public abstract class ReflectionUtils {
 
 		org.springframework.util.ReflectionUtils.makeAccessible(field);
 		org.springframework.util.ReflectionUtils.setField(field, target, value);
+	}
+
+	/**
+	 * Tests whether the given {@code type} is assignable from a Java 8 {@link Stream}.
+	 * 
+	 * @param type may be {@literal null}
+	 * @return
+	 */
+	public static boolean isJava8StreamType(Class<?> type) {
+
+		if (type == null || JAVA8_STREAM_TYPE == null) {
+			return false;
+		}
+
+		return JAVA8_STREAM_TYPE.isAssignableFrom(type);
 	}
 }
