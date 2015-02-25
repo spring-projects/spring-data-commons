@@ -39,14 +39,12 @@ public abstract class ReflectionUtils {
 	private static final Class<?> JAVA8_STREAM_TYPE;
 
 	static {
-		String streamClassName = "java.util.stream.Stream";
 
 		Class<?> cls = null;
-		if (ClassUtils.isPresent(streamClassName, ReflectionUtils.class.getClassLoader())) {
-			try {
-				cls = Class.forName(streamClassName, true, ReflectionUtils.class.getClassLoader());
-			} catch (ClassNotFoundException ignore) {}
-		}
+
+		try {
+			cls = Class.forName("java.util.stream.Stream");
+		} catch (ClassNotFoundException ignore) {}
 
 		JAVA8_STREAM_TYPE = cls;
 	}
