@@ -22,13 +22,12 @@ import java.util.Iterator;
  * A {@link CloseableIterator} serves as a bridging data structure for the underlying data store specific results that
  * can be wrapped in a Java 8 {@link java.util.stream.Stream}.
  * <p>
- * For convenient usage in an advanced for-loop we the {@code iterator()} method should return {@literal this}.
  * 
  * @author Thomas Darimont
  * @param <T>
  * @since 1.10
  */
-public interface CloseableIterator<T> extends Iterator<T>, Closeable, Iterable<T> {
+public interface CloseableIterator<T> extends Iterator<T>, Closeable {
 
 	/**
 	 * Closes this iterator, freeing any resources created.

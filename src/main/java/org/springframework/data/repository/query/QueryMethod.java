@@ -26,7 +26,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.util.CloseableIterator;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
@@ -222,14 +221,6 @@ public class QueryMethod {
 	@Override
 	public String toString() {
 		return method.toString();
-	}
-
-	/**
-	 * @return
-	 * @since 1.10
-	 */
-	public boolean isCloseableIteratorQuery() {
-		return org.springframework.util.ClassUtils.isAssignable(CloseableIterator.class, method.getReturnType());
 	}
 
 	/**
