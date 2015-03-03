@@ -27,11 +27,12 @@ import org.springframework.util.Assert;
  * Spring Data specific Java {@link Stream} utility methods and classes.
  * 
  * @author Thomas Darimont
- * @since 1.8
+ * @author Oliver Gierke
+ * @since 1.10
  */
-public class Java8StreamUtils {
+public class StreamUtils {
 
-	private Java8StreamUtils() {}
+	private StreamUtils() {}
 
 	/**
 	 * Returns a {@link Stream} backed by the given {@link Iterator}.
@@ -52,5 +53,48 @@ public class Java8StreamUtils {
 
 		return iterator instanceof CloseableIterator ? stream.onClose(new CloseableIteratorDisposingRunnable(
 				(CloseableIterator<T>) iterator)) : stream;
+	}
+
+	/**
+	 * A {@link Runnable} that closes the given {@link CloseableIterator} in its {@link #run()} method. If the given
+	 * {@code closeable} is {@literal null} the {@link #run()} method effectively becomes a noop.
+	 * <p>
+	 * Can be used in conjunction with streams as close action via:
+	 * 
+	 * <pre>
+	 * CloseableIterator<T> result = ...;
+	 * Spliterator<T> spliterator = ...;
+	 * 
+	 * return StreamSupport.stream(spliterator, false).onClose(new CloseableIteratorDisposingRunnable(result));
+	 * </pre>
+	 * 
+	 * @author Thomas Darimont
+	 * @author Oliver Gierke
+	 * @since 1.10
+	 */
+	private static class CloseableIteratorDisposingRunnable implements Runnable {
+
+		private CloseableIterator<?> closeable;
+
+		/**
+		 * Creates a new {@link CloseableIteratorDisposingRunnable} for the given {@link CloseableIterator}.
+		 * 
+		 * @param closeable can be {@literal null}.
+		 */
+		public CloseableIteratorDisposingRunnable(CloseableIterator<?> closeable) {
+			this.closeable = closeable;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
+		@Override
+		public void run() {
+
+			if (closeable != null) {
+				closeable.close();
+			}
+		}
 	}
 }

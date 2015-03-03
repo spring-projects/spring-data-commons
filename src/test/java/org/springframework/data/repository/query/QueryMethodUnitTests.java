@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.springframework.data.domain.Page;
@@ -138,6 +139,30 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-650
+	 */
+	@Test
+	public void considersMethodReturningAStreamStreaming() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("streaming");
+
+		assertThat(new QueryMethod(method, repositoryMetadata).isStreamQuery(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-650
+	 */
+	@Test
+	public void doesNotRejectStreamingForPagination() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("streaming", Pageable.class);
+
+		assertThat(new QueryMethod(method, repositoryMetadata).isStreamQuery(), is(true));
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -157,6 +182,10 @@ public class QueryMethodUnitTests {
 		Slice<User> sliceOfUsers();
 
 		User[] arrayOfUsers();
+
+		Stream<String> streaming();
+
+		Stream<String> streaming(Pageable pageable);
 	}
 
 	class User {

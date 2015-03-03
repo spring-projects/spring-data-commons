@@ -20,8 +20,8 @@ import java.util.Iterator;
 
 /**
  * A {@link CloseableIterator} serves as a bridging data structure for the underlying data store specific results that
- * can be wrapped in a Java 8 {@link java.util.stream.Stream}.
- * <p>
+ * can be wrapped in a Java 8 {@link java.util.stream.Stream}. This allows implementations to clean up any resources
+ * they need to keep open to iterate over elements.
  * 
  * @author Thomas Darimont
  * @param <T>
@@ -29,10 +29,10 @@ import java.util.Iterator;
  */
 public interface CloseableIterator<T> extends Iterator<T>, Closeable {
 
-	/**
-	 * Closes this iterator, freeing any resources created.
+	/*
+	 * (non-Javadoc)
+	 * @see java.io.Closeable#close()
 	 */
 	@Override
 	void close();
-
 }

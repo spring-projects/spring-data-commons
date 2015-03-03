@@ -225,9 +225,9 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
-	 * Tests whether the given {@code type} is assignable from a Java 8 {@link Stream}.
+	 * Tests whether the given type is assignable to a Java 8 {@link Stream}.
 	 * 
-	 * @param type may be {@literal null}
+	 * @param type can be {@literal null}.
 	 * @return
 	 */
 	public static boolean isJava8StreamType(Class<?> type) {

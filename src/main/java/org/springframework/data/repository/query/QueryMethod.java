@@ -63,17 +63,21 @@ public class QueryMethod {
 			}
 		}
 
+		this.method = method;
+		this.parameters = createParameters(method);
+		this.metadata = metadata;
+
 		if (hasParameterOfType(method, Pageable.class)) {
-			assertReturnTypeAssignable(method, Slice.class, Page.class, List.class);
+
+			if (!isStreamQuery()) {
+				assertReturnTypeAssignable(method, Slice.class, Page.class, List.class);
+			}
+
 			if (hasParameterOfType(method, Sort.class)) {
 				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameter. "
 						+ "Use sorting capabilities on Pageble instead! Offending method: %s", method.toString()));
 			}
 		}
-
-		this.method = method;
-		this.parameters = createParameters(method);
-		this.metadata = metadata;
 
 		Assert.notNull(this.parameters);
 
@@ -206,6 +210,16 @@ public class QueryMethod {
 	}
 
 	/**
+	 * Returns whether the method returns a Stream.
+	 * 
+	 * @return
+	 * @since 1.10
+	 */
+	public boolean isStreamQuery() {
+		return ReflectionUtils.isJava8StreamType(method.getReturnType());
+	}
+
+	/**
 	 * Returns the {@link Parameters} wrapper to gain additional information about {@link Method} parameters.
 	 * 
 	 * @return
@@ -221,13 +235,5 @@ public class QueryMethod {
 	@Override
 	public String toString() {
 		return method.toString();
-	}
-
-	/**
-	 * @return
-	 * @since 1.10
-	 */
-	public boolean isStreamQuery() {
-		return ReflectionUtils.isJava8StreamType(method.getReturnType());
 	}
 }

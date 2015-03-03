@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class PartTree implements Iterable<OrPart> {
 	 * @see http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#ubc
 	 */
 	private static final String KEYWORD_TEMPLATE = "(%s)(?=(\\p{Lu}|\\P{InBASIC_LATIN}))";
-	private static final String QUERY_PATTERN = "find|read|get|query";
+	private static final String QUERY_PATTERN = "find|read|get|query|stream";
 	private static final String COUNT_PATTERN = "count";
 	private static final String DELETE_PATTERN = "delete|remove";
 	private static final Pattern PREFIX_TEMPLATE = Pattern.compile( //

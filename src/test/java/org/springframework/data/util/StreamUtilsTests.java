@@ -15,6 +15,7 @@
  */
 package org.springframework.data.util;
 
+import static org.springframework.data.util.StreamUtils.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -29,9 +30,9 @@ import org.junit.Test;
  * Spring Data specific Java {@link Stream} utility methods and classes.
  * 
  * @author Thomas Darimont
- * @since 1.8
+ * @since 1.10
  */
-public class Java8StreamUtilsTests {
+public class StreamUtilsTests {
 
 	/**
 	 * @see DATACMNS-650
@@ -40,7 +41,7 @@ public class Java8StreamUtilsTests {
 	public void shouldConvertAnIteratorToAStream() {
 
 		List<String> input = Arrays.asList("a", "b", "c");
-		Stream<String> stream = Java8StreamUtils.createStreamFromIterator(input.iterator());
+		Stream<String> stream = createStreamFromIterator(input.iterator());
 		List<String> output = stream.collect(Collectors.<String> toList());
 
 		assertThat(input, is(equalTo(output)));
