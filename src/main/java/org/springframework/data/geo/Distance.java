@@ -17,6 +17,7 @@ package org.springframework.data.geo;
 
 import java.io.Serializable;
 
+import org.springframework.data.domain.Range;
 import org.springframework.util.Assert;
 
 /**
@@ -26,7 +27,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
-public class Distance implements Serializable {
+public class Distance implements Serializable, Comparable<Distance> {
 
 	private static final long serialVersionUID = 2460886201934027744L;
 
@@ -52,6 +53,30 @@ public class Distance implements Serializable {
 
 		this.value = value;
 		this.metric = metric == null ? Metrics.NEUTRAL : metric;
+	}
+
+	/**
+	 * Creates a {@link Range} between the given {@link Distance}.
+	 * 
+	 * @param min can be {@literal null}.
+	 * @param max can be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	public static Range<Distance> between(Distance min, Distance max) {
+		return new Range<Distance>(min, max);
+	}
+
+	/**
+	 * Creates a new {@link Range} by creating minimum and maximum {@link Distance} from the given values.
+	 * 
+	 * @param minValue
+	 * @param minMetric can be {@literal null}.
+	 * @param maxValue
+	 * @param maxMetric can be {@literal null}.
+	 * @return
+	 */
+	public static Range<Distance> between(double minValue, Metric minMetric, double maxValue, Metric maxMetric) {
+		return between(new Distance(minValue, minMetric), new Distance(maxValue, maxMetric));
 	}
 
 	/**
@@ -136,6 +161,18 @@ public class Distance implements Serializable {
 
 		Assert.notNull(metric, "Metric must not be null!");
 		return this.metric.equals(metric) ? this : new Distance(getNormalizedValue() * metric.getMultiplier(), metric);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(Distance o) {
+
+		double difference = this.getNormalizedValue() - o.getNormalizedValue();
+
+		return difference == 0 ? 0 : difference > 0 ? 1 : -1;
 	}
 
 	/*

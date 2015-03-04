@@ -15,12 +15,12 @@
  */
 package org.springframework.data.geo;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.number.IsCloseTo.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.geo.Metrics.*;
 
 import org.junit.Test;
+import org.springframework.data.domain.Range;
 import org.springframework.util.SerializationUtils;
 
 /**
@@ -144,5 +144,55 @@ public class DistanceUnitTests {
 	@Test
 	public void returnsMetricsAbbreviationAsUnit() {
 		assertThat(new Distance(10, KILOMETERS).getUnit(), is("km"));
+	}
+
+	/**
+	 * @see DATACMNS-651
+	 */
+	@Test
+	public void createsARangeCorrectly() {
+
+		Distance twoKilometers = new Distance(2, KILOMETERS);
+		Distance tenKilometers = new Distance(10, KILOMETERS);
+
+		Range<Distance> range = Distance.between(twoKilometers, tenKilometers);
+
+		assertThat(range, is(notNullValue()));
+		assertThat(range.getLowerBound(), is(twoKilometers));
+		assertThat(range.getUpperBound(), is(tenKilometers));
+	}
+
+	/**
+	 * @see DATACMNS-651
+	 */
+	@Test
+	public void createsARangeFromPiecesCorrectly() {
+
+		Distance twoKilometers = new Distance(2, KILOMETERS);
+		Distance tenKilometers = new Distance(10, KILOMETERS);
+
+		Range<Distance> range = Distance.between(2, KILOMETERS, 10, KILOMETERS);
+
+		assertThat(range, is(notNullValue()));
+		assertThat(range.getLowerBound(), is(twoKilometers));
+		assertThat(range.getUpperBound(), is(tenKilometers));
+	}
+
+	/**
+	 * @see DATACMNS-651
+	 */
+	@Test
+	public void implementsComparableCorrectly() {
+
+		Distance twoKilometers = new Distance(2, KILOMETERS);
+		Distance tenKilometers = new Distance(10, KILOMETERS);
+		Distance tenKilometersInMiles = new Distance(6.21371256214785, MILES);
+
+		assertThat(tenKilometers.compareTo(tenKilometers), is(0));
+		assertThat(tenKilometers.compareTo(tenKilometersInMiles), is(0));
+		assertThat(tenKilometersInMiles.compareTo(tenKilometers), is(0));
+
+		assertThat(twoKilometers.compareTo(tenKilometers), is(lessThan(0)));
+		assertThat(tenKilometers.compareTo(twoKilometers), is(greaterThan(0)));
 	}
 }
