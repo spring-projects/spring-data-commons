@@ -1,6 +1,41 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.10.0.RC1 (2015-03-05)
+------------------------------------------
+* DATACMNS-652 - Release 1.10 RC1.
+* DATACMNS-651 - Add domain types to represent a range of values.
+* DATACMNS-650 - Provide a CloseableIterator abstraction as a foundation for streaming of results.
+* DATACMNS-649 - Incorrect reference docs on extending all repositories causes failures in lookup of default transaction metadata.
+* DATACMNS-647 - Add test case for collection parameter invocation on ReflectionRepositoryInvoker.
+* DATACMNS-646 - Enable build for Spring 4.2 profile.
+* DATACMNS-645 - Typo in reference documentation.
+* DATACMNS-643 - Add support for JSR-310 and ThreeTen Backport types in auditing support.
+* DATACMNS-642 - Performance improvement - BeanWrapper.setProperty should not lock when unnecessary.
+* DATACMNS-641 - Default sort direction to ascending order in case none is specified in derived repository queries.
+* DATACMNS-640 - Possible NullPointerException on PageableHandlerMethodArgumentResolver when fallbackPageable is null.
+* DATACMNS-638 - Let auditing infrastructure work with PersistentEntities rather than a single MappingContext.
+* DATACMNS-637 - General inspection for performance improvements.
+* DATACMNS-636 - Add 'exists' method to QueryDslPredicateExecutor which accepts a querydsl Predicate.
+* DATACMNS-635 - Provide an easier way to instantiate Page.
+* DATACMNS-634 - Repositories should return repository for entity's super-type if available.
+* DATACMNS-631 - Make RepositoryFactorySupport.getRepositoryMetadata(…) protected.
+* DATACMNS-630 - Move core projection infrastructure from Spring Data REST into Commons.
+* DATACMNS-629 - Reference documentation section on limiting query results is showing incorrect order-by-clause.
+* DATACMNS-628 - Add converters for ThreeTen backport library.
+* DATACMNS-627 - Extend DomainClassConverter to be able to convert entity into its identifier.
+* DATACMNS-626 - Port converters for Point and Distance from Spring Data REST and turn them into Formatters.
+* DATACMNS-625 - Re-enable querydsl-next profile for Travis.
+* DATACMNS-623 - Add converter for Instants to JSR-310 Converters.
+* DATACMNS-621 - QSort does not treat nested paths correctly.
+* DATACMNS-619 - DefaultCrudMethods should always return accessible methods.
+* DATACMNS-616 - AnnotationRevisionMetadata can't access private fields.
+* DATACMNS-615 - PageImpl should reject total less than given content length.
+* DATACMNS-611 - Avoid triple cache lookup in RepositoryInterfaceAwareBeanPostProcessor.predictBeanType(…).
+* DATACMNS-610 - Add converter support for Set<T> return types.
+* DATACMNS-554 - Add QueryDslPredicateExecutor.findAll(Predicate, Sort) method.
+
+
 Changes in version 1.9.2.RELEASE (2015-01-28)
 ---------------------------------------------
 * DATACMNS-637 - General inspection for performance improvements.
