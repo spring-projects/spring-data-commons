@@ -17,7 +17,6 @@ package org.springframework.data.util;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
@@ -158,7 +157,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor) {
 
 		Assert.notNull(constructor, "Constructor must not be null!");
-		return getParameterTypes((Executable) constructor);
+
+		Type[] types = constructor.getGenericParameterTypes();
+		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>(types.length);
+
+		for (Type parameterType : types) {
+			result.add(createInfo(parameterType));
+		}
+
+		return result;
 	}
 
 	/*
@@ -408,7 +415,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public List<TypeInformation<?>> getParameterTypes(Method method) {
 
 		Assert.notNull(method, "Method most not be null!");
-		return getParameterTypes((Executable) method);
+
+		Type[] types = method.getGenericParameterTypes();
+		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>(types.length);
+
+		for (Type parameterType : types) {
+			result.add(createInfo(parameterType));
+		}
+
+		return result;
 	}
 
 	/* 
@@ -477,18 +492,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		return createInfo(arguments[index]);
-	}
-
-	private List<TypeInformation<?>> getParameterTypes(Executable executable) {
-
-		Type[] types = executable.getGenericParameterTypes();
-		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>(types.length);
-
-		for (Type parameterType : types) {
-			result.add(createInfo(parameterType));
-		}
-
-		return result;
 	}
 
 	/*
