@@ -157,6 +157,17 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(result, hasItems("firstname", "address"));
 	}
 
+	/**
+	 * @see DATACMNS-655
+	 */
+	@Test
+	public void invokesDefaultMethodOnProxy() {
+
+		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
+
+		assertThat(excerpt.sampleDefaultMethod(), is("default"));
+	}
+
 	static class Customer {
 
 		public String firstname, lastname;
@@ -173,6 +184,10 @@ public class ProxyProjectionFactoryUnitTests {
 		String getFirstname();
 
 		AddressExcerpt getAddress();
+
+		default String sampleDefaultMethod() {
+			return "default";
+		}
 	}
 
 	interface AddressExcerpt {

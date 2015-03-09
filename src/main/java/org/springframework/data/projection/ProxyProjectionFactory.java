@@ -43,6 +43,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 class ProxyProjectionFactory implements ProjectionFactory {
 
+	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
+			ProxyProjectionFactory.class.getClassLoader());
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.projection.ProjectionFactory#createProjection(java.lang.Object, java.lang.Class)
@@ -62,6 +65,10 @@ class ProxyProjectionFactory implements ProjectionFactory {
 		factory.setTarget(source);
 		factory.setOpaque(true);
 		factory.setInterfaces(projectionType, TargetClassAware.class);
+
+		if (IS_JAVA_8) {
+			factory.addAdvice(new DefaultMethodInvokingMethodInterceptor());
+		}
 
 		factory.addAdvice(new TargetClassAwareMethodInterceptor(source.getClass()));
 		factory.addAdvice(getMethodInterceptor(source, projectionType));
