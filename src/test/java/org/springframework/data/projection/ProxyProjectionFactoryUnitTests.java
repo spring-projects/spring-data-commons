@@ -18,12 +18,16 @@ package org.springframework.data.projection;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.springframework.aop.Advisor;
 import org.springframework.aop.TargetClassAware;
+import org.springframework.aop.framework.Advised;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link ProxyProjectionFactory}.
@@ -155,6 +159,21 @@ public class ProxyProjectionFactoryUnitTests {
 
 		assertThat(result, hasSize(2));
 		assertThat(result, hasItems("firstname", "address"));
+	}
+
+	/**
+	 * @see DATACMNS-655
+	 */
+	@Test
+	public void invokesDefaultMethodOnProxy() {
+
+		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
+
+		Advised advised = (Advised) ReflectionTestUtils.getField(Proxy.getInvocationHandler(excerpt), "advised");
+		Advisor[] advisors = advised.getAdvisors();
+
+		assertThat(advisors.length, is(greaterThan(0)));
+		assertThat(advisors[0].getAdvice(), is(instanceOf(DefaultMethodInvokingMethodInterceptor.class)));
 	}
 
 	static class Customer {
