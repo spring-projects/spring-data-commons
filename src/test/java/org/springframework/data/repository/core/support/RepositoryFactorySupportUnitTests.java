@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -57,6 +59,8 @@ import org.springframework.util.ClassUtils;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryFactorySupportUnitTests {
+
+	public @Rule ExpectedException exception = ExpectedException.none();
 
 	DummyRepositoryFactory factory;
 
@@ -205,6 +209,18 @@ public class RepositoryFactorySupportUnitTests {
 
 		assertThat(result, hasSize(1));
 		assertThat(result.iterator().next(), is((Object) "Dave"));
+	}
+
+	/**
+	 * @see DATACMNS-656
+	 */
+	@Test
+	public void rejectsNullRepositoryProxyPostProcessor() {
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(RepositoryProxyPostProcessor.class.getSimpleName());
+
+		factory.addRepositoryProxyPostProcessor(null);
 	}
 
 	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {

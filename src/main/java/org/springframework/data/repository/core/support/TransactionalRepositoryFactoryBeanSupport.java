@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	private String transactionManagerName = TxUtils.DEFAULT_TRANSACTION_MANAGER;
 	private RepositoryProxyPostProcessor txPostProcessor;
 	private RepositoryProxyPostProcessor exceptionPostProcessor;
+	private boolean enableDefaultTransactions = true;
 
 	/**
 	 * Setter to configure which transaction manager to be used. We have to use the bean name explicitly as otherwise the
@@ -51,6 +52,15 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	}
 
 	/**
+	 * Configures whether to enable the default transactions configured at the repository base implementation class.
+	 * 
+	 * @param enableDefaultTransactions the enableDefaultTransactions to set
+	 */
+	public void setEnableDefaultTransactions(boolean enableDefaultTransactions) {
+		this.enableDefaultTransactions = enableDefaultTransactions;
+	}
+
+	/**
 	 * Delegates {@link RepositoryFactorySupport} creation to {@link #doCreateRepositoryFactory()} and applies the
 	 * {@link TransactionalRepositoryProxyPostProcessor} to the created instance.
 	 * 
@@ -61,7 +71,11 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 
 		RepositoryFactorySupport factory = doCreateRepositoryFactory();
 		factory.addRepositoryProxyPostProcessor(exceptionPostProcessor);
-		factory.addRepositoryProxyPostProcessor(txPostProcessor);
+
+		if (enableDefaultTransactions) {
+			factory.addRepositoryProxyPostProcessor(txPostProcessor);
+		}
+
 		return factory;
 	}
 

@@ -134,7 +134,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	 */
 	public void addRepositoryProxyPostProcessor(RepositoryProxyPostProcessor processor) {
 
-		Assert.notNull(processor);
+		Assert.notNull(processor, "RepositoryProxyPostProcessor must not be null!");
 		this.postProcessors.add(processor);
 	}
 
