@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,15 @@
 package org.springframework.data.web.config;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.geo.GeoModule;
 
 /**
- * JavaConfig class to export Jackson specific configuration.
- * 
  * @author Oliver Gierke
  */
 @SpringDataWebConfigurationMixin
-public class SpringDataJacksonConfiguration {
+public class SampleMixin {
 
 	@Bean
-	public GeoModule jacksonGeoModule() {
-		return new GeoModule();
+	String sampleBean() {
+		return "sampleBean";
 	}
 }

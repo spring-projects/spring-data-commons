@@ -172,6 +172,18 @@ public class EnableSpringDataWebSupportIntegrationTests {
 				andExpect(status().isOk());
 	}
 
+	/**
+	 * @see DATACMNS-660
+	 */
+	@Test
+	public void picksUpWebConfigurationMixins() {
+
+		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
+		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+
+		assertThat(names, hasItem("sampleBean"));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
 
