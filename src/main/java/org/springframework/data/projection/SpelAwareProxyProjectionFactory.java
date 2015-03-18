@@ -27,6 +27,8 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.util.AnnotationDetectionMethodCallback;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -34,6 +36,7 @@ import org.springframework.util.ReflectionUtils;
  * to evaluate the contained SpEL expression to define the outcome of the method call.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  * @since 1.10
  */
 public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory implements BeanFactoryAware {
@@ -41,6 +44,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 	private final Map<Class<?>, Boolean> typeCache = new HashMap<Class<?>, Boolean>();
 
 	private BeanFactory beanFactory;
+	private SpelExpressionParser parser = new SpelExpressionParser();
 
 	/* 
 	 * (non-Javadoc)
@@ -52,12 +56,24 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 	}
 
 	/**
+	 * Set the {@link SpelExpressionParser} to use.
+	 * 
+	 * @param parser must not be {@literal null}
+	 */
+	public void setParser(SpelExpressionParser parser) {
+
+		Assert.notNull(parser, "Parser must not be null!");
+
+		this.parser = parser;
+	}
+
+	/**
 	 * Inspects the given target type for methods with {@link Value} annotations and caches the result. Will create a
 	 * {@link SpelEvaluatingMethodInterceptor} if an annotation was found or return the delegate as is if not.
 	 * 
+	 * @param interceptor the root {@link MethodInterceptor}.
 	 * @param source The backing source object.
 	 * @param projectionType the proxy target type.
-	 * @param delegate the root {@link MethodInterceptor}.
 	 * @return
 	 */
 	@Override
@@ -72,8 +88,8 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 			typeCache.put(projectionType, callback.hasFoundAnnotation());
 		}
 
-		return typeCache.get(projectionType) ? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory)
-				: interceptor;
+		return typeCache.get(projectionType) ? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory,
+				parser, projectionType) : interceptor;
 	}
 
 	/* 

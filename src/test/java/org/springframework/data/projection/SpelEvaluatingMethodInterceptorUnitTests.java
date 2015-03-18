@@ -30,17 +30,21 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * Unit tests for {@link SpelEvaluatingMethodInterceptor}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 @RunWith(MockitoJUnitRunner.class)
 public class SpelEvaluatingMethodInterceptorUnitTests {
 
 	@Mock MethodInterceptor delegate;
 	@Mock MethodInvocation invocation;
+
+	SpelExpressionParser parser = new SpelExpressionParser();
 
 	/**
 	 * @see DATAREST-221, DATACMNS-630
@@ -50,7 +54,8 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("propertyFromTarget"));
 
-		MethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(), null);
+		MethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(), null, parser,
+				Projection.class);
 
 		assertThat(interceptor.invoke(invocation), is((Object) "property"));
 	}
@@ -66,7 +71,8 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
 		factory.registerSingleton("someBean", new SomeBean());
 
-		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(), factory);
+		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(), factory,
+				parser, Projection.class);
 
 		assertThat(interceptor.invoke(invocation), is((Object) "value"));
 	}
@@ -80,7 +86,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("getName"));
 
 		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(),
-				new DefaultListableBeanFactory());
+				new DefaultListableBeanFactory(), parser, Projection.class);
 
 		interceptor.invoke(invocation);
 
@@ -93,10 +99,10 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 	@Test(expected = IllegalStateException.class)
 	public void rejectsEmptySpelExpression() throws Throwable {
 
-		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("getAddress"));
+		when(invocation.getMethod()).thenReturn(InvalidProjection.class.getMethod("getAddress"));
 
 		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(),
-				new DefaultListableBeanFactory());
+				new DefaultListableBeanFactory(), parser, InvalidProjection.class);
 
 		interceptor.invoke(invocation);
 	}
@@ -113,7 +119,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("propertyFromTarget"));
 
 		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, map,
-				new DefaultListableBeanFactory());
+				new DefaultListableBeanFactory(), parser, Projection.class);
 
 		assertThat(interceptor.invoke(invocation), is((Object) "Dave"));
 	}
@@ -127,6 +133,11 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		String invokeBean();
 
 		String getName();
+
+		String getAddress();
+	}
+
+	interface InvalidProjection {
 
 		@Value("")
 		String getAddress();

@@ -16,6 +16,8 @@
 package org.springframework.data.projection;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -38,14 +40,15 @@ import org.springframework.util.StringUtils;
  * delegate {@link MethodInterceptor} if no {@link Value} annotation is found.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  * @see 1.10
  */
 class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 
-	private final SpelExpressionParser parser;
-	private final ParserContext parserContext;
+	private static final ParserContext PARSER_CONTEXT = new TemplateParserContext();
 	private final EvaluationContext evaluationContext;
 	private final MethodInterceptor delegate;
+	private final Map<Integer, Expression> expressions;
 
 	/**
 	 * Creates a new {@link SpelEvaluatingMethodInterceptor} delegating to the given {@link MethodInterceptor} as fallback
@@ -55,11 +58,16 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	 * @param delegate must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param beanFactory can be {@literal null}.
+	 * @param parser must not be {@literal null}.
+	 * @param targetInterface must not be {@literal null}.
 	 */
-	public SpelEvaluatingMethodInterceptor(MethodInterceptor delegate, Object target, BeanFactory beanFactory) {
+	public SpelEvaluatingMethodInterceptor(MethodInterceptor delegate, Object target, BeanFactory beanFactory,
+			SpelExpressionParser parser, Class<?> targetInterface) {
 
 		Assert.notNull(delegate, "Delegate MethodInterceptor must not be null!");
 		Assert.notNull(target, "TargetObject must not be null!");
+		Assert.notNull(parser, "TargetObject must not be null!");
+		Assert.notNull(targetInterface, "TargetInterface must not be null!");
 
 		StandardEvaluationContext evaluationContext = new StandardEvaluationContext(new TargetWrapper(target));
 
@@ -71,10 +79,43 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 			evaluationContext.setBeanResolver(new BeanFactoryResolver(beanFactory));
 		}
 
+		this.expressions = potentiallyCreateExpressionsForMethodsOnTargetInterface(parser, targetInterface);
+
 		this.evaluationContext = evaluationContext;
-		this.parser = new SpelExpressionParser();
-		this.parserContext = new TemplateParserContext();
 		this.delegate = delegate;
+	}
+
+	/**
+	 * Eagerly parses {@link Expression} defined on {@link Value} annotations. Returns a map with
+	 * {@code method.hashCode()} as key and the parsed {@link Expression} or an {@link Collections#emptyMap()} if no
+	 * {@code Expressions} were found.
+	 * 
+	 * @param parser
+	 * @param targetInterface
+	 * @return
+	 */
+	private Map<Integer, Expression> potentiallyCreateExpressionsForMethodsOnTargetInterface(SpelExpressionParser parser,
+			Class<?> targetInterface) {
+
+		Map<Integer, Expression> expressions = new HashMap<Integer, Expression>();
+
+		for (Method method : targetInterface.getMethods()) {
+
+			if (!method.isAnnotationPresent(Value.class)) {
+				continue;
+			}
+
+			Value value = method.getAnnotation(Value.class);
+			if (!StringUtils.hasText(value.value())) {
+				throw new IllegalStateException(String.format("@Value annotation on %s contains empty expression!", method));
+			}
+
+			Expression expression = parser.parseExpression(value.value(), PARSER_CONTEXT);
+
+			expressions.put(method.hashCode(), expression);
+		}
+
+		return expressions.isEmpty() ? Collections.<Integer, Expression> emptyMap() : expressions;
 	}
 
 	/* 
@@ -84,18 +125,12 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 
-		Method method = invocation.getMethod();
-		Value annotation = method.getAnnotation(Value.class);
+		Expression expression = expressions.get(invocation.getMethod().hashCode());
 
-		if (annotation == null) {
+		if (expression == null) {
 			return delegate.invoke(invocation);
 		}
 
-		if (!StringUtils.hasText(annotation.value())) {
-			throw new IllegalStateException(String.format("@Value annotation on %s contains empty expression!", method));
-		}
-
-		Expression expression = parser.parseExpression(annotation.value(), parserContext);
 		return expression.getValue(evaluationContext);
 	}
 

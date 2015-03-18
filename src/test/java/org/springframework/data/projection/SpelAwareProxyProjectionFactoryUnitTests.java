@@ -20,17 +20,25 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * Unit tests for {@link SpelAwareProxyProjectionFactory}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class SpelAwareProxyProjectionFactoryUnitTests {
 
-	private final SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+	private SpelAwareProxyProjectionFactory factory;
+
+	@Before
+	public void setup() {
+		factory = new SpelAwareProxyProjectionFactory();
+	}
 
 	/**
 	 * @see DATAREST-221, DATACMNS-630
@@ -56,6 +64,22 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 
 		assertThat(properties, hasSize(1));
 		assertThat(properties, hasItem("firstname"));
+	}
+
+	/**
+	 * @see DATACMNS-661
+	 */
+	@Test
+	public void shouldSupportConfiguringFactoryWithCustomSpelParser() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+		customer.lastname = "Matthews";
+
+		factory.setParser(new SpelExpressionParser());
+		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+
+		assertThat(excerpt.getFullName(), is("Dave Matthews"));
 	}
 
 	static class Customer {
