@@ -46,6 +46,7 @@ import org.springframework.util.StringUtils;
 class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 
 	private static final ParserContext PARSER_CONTEXT = new TemplateParserContext();
+
 	private final EvaluationContext evaluationContext;
 	private final MethodInterceptor delegate;
 	private final Map<Integer, Expression> expressions;
@@ -65,9 +66,9 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 			SpelExpressionParser parser, Class<?> targetInterface) {
 
 		Assert.notNull(delegate, "Delegate MethodInterceptor must not be null!");
-		Assert.notNull(target, "TargetObject must not be null!");
-		Assert.notNull(parser, "TargetObject must not be null!");
-		Assert.notNull(targetInterface, "TargetInterface must not be null!");
+		Assert.notNull(target, "Target object must not be null!");
+		Assert.notNull(parser, "SpelExpressionParser must not be null!");
+		Assert.notNull(targetInterface, "Target interface must not be null!");
 
 		StandardEvaluationContext evaluationContext = new StandardEvaluationContext(new TargetWrapper(target));
 
@@ -90,12 +91,12 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	 * {@code method.hashCode()} as key and the parsed {@link Expression} or an {@link Collections#emptyMap()} if no
 	 * {@code Expressions} were found.
 	 * 
-	 * @param parser
-	 * @param targetInterface
+	 * @param parser must not be {@literal null}.
+	 * @param targetInterface must not be {@literal null}.
 	 * @return
 	 */
-	private Map<Integer, Expression> potentiallyCreateExpressionsForMethodsOnTargetInterface(SpelExpressionParser parser,
-			Class<?> targetInterface) {
+	private static Map<Integer, Expression> potentiallyCreateExpressionsForMethodsOnTargetInterface(
+			SpelExpressionParser parser, Class<?> targetInterface) {
 
 		Map<Integer, Expression> expressions = new HashMap<Integer, Expression>();
 
@@ -106,16 +107,15 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 			}
 
 			Value value = method.getAnnotation(Value.class);
+
 			if (!StringUtils.hasText(value.value())) {
 				throw new IllegalStateException(String.format("@Value annotation on %s contains empty expression!", method));
 			}
 
-			Expression expression = parser.parseExpression(value.value(), PARSER_CONTEXT);
-
-			expressions.put(method.hashCode(), expression);
+			expressions.put(method.hashCode(), parser.parseExpression(value.value(), PARSER_CONTEXT));
 		}
 
-		return expressions.isEmpty() ? Collections.<Integer, Expression> emptyMap() : expressions;
+		return Collections.unmodifiableMap(expressions);
 	}
 
 	/* 
