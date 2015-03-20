@@ -29,5 +29,6 @@ include::auditing.adoc[]
 include::repository-namespace-reference.adoc[]
 include::repository-populator-namespace-reference.adoc[]
 include::repository-query-keywords-reference.adoc[]
+include::repository-query-return-types-reference.adoc[]
 :leveloffset: -1
 
