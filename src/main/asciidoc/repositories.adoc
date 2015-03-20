@@ -332,6 +332,39 @@ If pagination or slicing is applied to a limiting query pagination (and the calc
 
 NOTE: Note that limiting the results in combination with dynamic sorting via a `Sort` parameter allows to express query methods for the 'K' smallest as well as for the 'K' biggest elements.
 
+[[repositories.query-streaming]]
+=== Streaming query results
+
+The results of query methods can be processed incrementally by using a Java 8 `Stream<T>` as return type.
+Instead of simply wrapping the query results in a `Stream` data store specific methods are used to 
+perform the streaming.
+
+.Stream the result of a query with Java 8 `Stream<T>`
+====
+[source, java]
+----  
+@Query("select u from User u")
+Stream<User> findAllByCustomQueryAndStream();
+
+Stream<User> readAllByFirstnameNotNull();
+
+@Query("select u from User u")
+Stream<User> streamAllPaged(Pageable pageable);
+----
+====
+NOTE: A `Stream` potentially wraps underlying data store specific resources and must therefore be closed after usage. The closing can be done manually via the `close()` method of `Stream` or by using a  Java 7 `TWR`-block.
+
+.Working with a `Stream<T>` result in a TWR block
+====
+[source, java]
+----  
+try (Stream<User> stream = repository.findAllByCustomQueryAndStream()){
+  stream.forEach(/* process user */);
+}
+----
+====
+NOTE: Not all data store specific repository implementations support `Stream<T>` as a return type.
+
 [[repositories.create-instances]]
 == Creating repository instances
 In this section you create instances and bean definitions for the repository interfaces defined. One way to do so is using the Spring namespace that is shipped with each Spring Data module that supports the repository mechanism although we generally recommend to use the Java-Config style configuration.

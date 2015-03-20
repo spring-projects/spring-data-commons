@@ -1,0 +1,24 @@
+[[repository-query-return-types]]
+[appendix]
+= Repository query return types
+
+== Supported query return types
+The following table lists the return types generally supported by Spring Data repositories. However, consult the store-specific documentation for the exact list of supported return-types, because some listed here might not be supported in a particular store.
+
+.Query return types
+[options="header", cols="1,3"]
+|===============
+|Return type|Description
+|`void`|`Denotes no return value`
+|`Primitives`|`Java primitives`
+|`Wrapper types`|`Java wrapper types`
+|`T`|`An entity or single attribute type T`
+|`Iterator<T>`|`Iterator`
+|`Collection<T>`|`Collection`
+|`List<T>`|`List`
+|`Optional<T>`|`Java 8 or Guava Optional`
+|`Stream<T>`|`Java 8 Stream`
+|`Slice`|`A sized chunk of data with information whether there is more data available.`
+|`Page<T>`|`A Slice with additional information, e.g. total # of results.`
+|===============
+
