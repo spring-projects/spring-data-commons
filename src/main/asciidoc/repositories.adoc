@@ -1,5 +1,3 @@
-:spring-framework-docs: http://docs.spring.io/spring-framework/docs/current/spring-framework-reference/html
-
 [[repositories]]
 = Working with Spring Data Repositories
 
@@ -335,9 +333,7 @@ NOTE: Note that limiting the results in combination with dynamic sorting via a `
 [[repositories.query-streaming]]
 === Streaming query results
 
-The results of query methods can be processed incrementally by using a Java 8 `Stream<T>` as return type.
-Instead of simply wrapping the query results in a `Stream` data store specific methods are used to
-perform the streaming.
+The results of query methods can be processed incrementally by using a Java 8 `Stream<T>` as return type. Instead of simply wrapping the query results in a `Stream` data store specific methods are used to perform the streaming.
 
 .Stream the result of a query with Java 8 `Stream<T>`
 ====
@@ -352,18 +348,18 @@ Stream<User> readAllByFirstnameNotNull();
 Stream<User> streamAllPaged(Pageable pageable);
 ----
 ====
-NOTE: A `Stream` potentially wraps underlying data store specific resources and must therefore be closed after usage. The closing can be done manually via the `close()` method of `Stream` or by using a  Java 7 `TWR`-block.
+NOTE: A `Stream` potentially wraps underlying data store specific resources and must therefore be closed after usage. You can either manually close the `Stream` using the `close()` method or by using a Java 7 try-with-resources block.
 
-.Working with a `Stream<T>` result in a TWR block
+.Working with a `Stream<T>` result in a try-with-resources block
 ====
 [source, java]
 ----
-try (Stream<User> stream = repository.findAllByCustomQueryAndStream()){
-  stream.forEach(/* process user */);
+try (Stream<User> stream = repository.findAllByCustomQueryAndStream()) {
+  stream.forEach(…);
 }
 ----
 ====
-NOTE: Not all data store specific repository implementations support `Stream<T>` as a return type.
+NOTE: Not all Spring Data modules currently support `Stream<T>` as a return type.
 
 [[repositories.create-instances]]
 == Creating repository instances
