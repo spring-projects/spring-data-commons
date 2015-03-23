@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.10.0.RELEASE (2015-03-23)
+----------------------------------------------
+* DATACMNS-662 - Release 1.10 GA.
+* DATACMNS-661 - Performance improvements in SpelAwareProxyProjectionFactory.
+* DATACMNS-660 - Extend web configuration infrastructure to pick up configuration from store modules.
+* DATACMNS-656 - Allow configuring whether to enable default transactions on TransactionRepositoryFactoryBeanSupport.
+* DATACMNS-655 - Allow invocation of default method on projection proxies.
+* DATACMNS-654 - Document usage of Java 8 Streams in Repositories.
+
+
 Changes in version 1.10.0.RC1 (2015-03-05)
 ------------------------------------------
 * DATACMNS-652 - Release 1.10 RC1.
