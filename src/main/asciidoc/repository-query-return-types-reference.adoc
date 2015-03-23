@@ -5,6 +5,8 @@
 == Supported query return types
 The following table lists the return types generally supported by Spring Data repositories. However, consult the store-specific documentation for the exact list of supported return types, because some listed here might not be supported in a particular store.
 
+NOTE: Geospatial types like (`GeoResult`, `GeoResults`, `GeoPage`) are only available for data stores that support geospatial queries.
+
 .Query return types
 [options="header", cols="1,3"]
 |===============
@@ -14,11 +16,14 @@ The following table lists the return types generally supported by Spring Data re
 |Wrapper types|Java wrapper types.
 |`T`|An unique entity. Expects the query method to return one result at most. In case no result is found `null` is returned. More than one result will trigger an `IncorrectResultSizeDataAccessException`.
 |`Iterator<T>`|An `Iterator`.
-|`Collection<T>`|A`Collection`.
+|`Collection<T>`|A `Collection`.
 |`List<T>`|A `List`.
 |`Optional<T>`|A Java 8 or Guava `Optional`. Expects the query method to return one result at most. In case no result is found `Optional.empty()`/`Optional.absent()` is returned. More than one result will trigger an `IncorrectResultSizeDataAccessException`.
 |`Stream<T>`|A Java 8 `Stream`.
 |`Slice`|A sized chunk of data with information whether there is more data available. Requires a `Pageable` method parameter.
 |`Page<T>`|A Slice with additional information, e.g. the total number of results. Requires a `Pageable` method parameter.
+|`GeoResult<T>`|A result entry with additional information, e.g. distance to a reference location.
+|`GeoResults<T>`|A list of GeoResult<T> with additional information, e.g. average distance to a reference location.
+|`GeoPage<T>`|A Page with GeoResult<T>, e.g. average distance to a reference location.
 |===============
 
