@@ -105,7 +105,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	 */
 	private EntityInstantiator createEntityInstantiator(PersistentEntity<?, ?> entity) {
 
-		if (shoudUseReflectionEntityInstantiator(entity)) {
+		if (shouldUseReflectionEntityInstantiator(entity)) {
 			return ReflectionEntityInstantiator.INSTANCE;
 		}
 
@@ -120,7 +120,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @param entity
 	 * @return
 	 */
-	private boolean shoudUseReflectionEntityInstantiator(PersistentEntity<?, ?> entity) {
+	private boolean shouldUseReflectionEntityInstantiator(PersistentEntity<?, ?> entity) {
 
 		Class<?> type = entity.getType();
 
