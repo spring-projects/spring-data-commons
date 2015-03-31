@@ -18,9 +18,11 @@ package org.springframework.data.repository.support;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -79,19 +81,33 @@ public class Repositories implements Iterable<Class<?>> {
 		populateRepositoryFactoryInformation(factory);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void populateRepositoryFactoryInformation(ListableBeanFactory factory) {
 
 		for (String name : BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory, RepositoryFactoryInformation.class,
 				false, false)) {
+			cacheRepositoryFactory(name);
+		}
+	}
 
-			RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.getBean(name,
-					RepositoryFactoryInformation.class);
-			Class<?> userDomainType = ClassUtils.getUserClass(repositoryFactoryInformation.getRepositoryInformation()
-					.getDomainType());
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private synchronized void cacheRepositoryFactory(String name) {
 
-			this.repositoryFactoryInfos.put(userDomainType, repositoryFactoryInformation);
-			this.repositoryBeanNames.put(userDomainType, BeanFactoryUtils.transformedBeanName(name));
+		RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.getBean(name,
+				RepositoryFactoryInformation.class);
+		Class<?> domainType = ClassUtils.getUserClass(repositoryFactoryInformation.getRepositoryInformation()
+				.getDomainType());
+
+		RepositoryInformation information = repositoryFactoryInformation.getRepositoryInformation();
+		Set<Class<?>> alternativeDomainTypes = information.getAlternativeDomainTypes();
+		String beanName = BeanFactoryUtils.transformedBeanName(name);
+
+		Set<Class<?>> typesToRegister = new HashSet<Class<?>>(alternativeDomainTypes.size() + 1);
+		typesToRegister.add(domainType);
+		typesToRegister.addAll(alternativeDomainTypes);
+
+		for (Class<?> type : typesToRegister) {
+			this.repositoryFactoryInfos.put(type, repositoryFactoryInformation);
+			this.repositoryBeanNames.put(type, beanName);
 		}
 	}
 

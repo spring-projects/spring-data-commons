@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package org.springframework.data.repository.core;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Set;
+
+import org.springframework.data.repository.support.Repositories;
 
 /**
  * Metadata for repository interfaces.
@@ -69,4 +72,15 @@ public interface RepositoryMetadata {
 	 * @return
 	 */
 	boolean isPagingRepository();
+
+	/**
+	 * Returns the set of types the repository shall be discoverable for when trying to look up a repository by domain
+	 * type.
+	 * 
+	 * @see Repositories#getRepositoryFor(Class)
+	 * @return the set of types the repository shall be discoverable for when trying to look up a repository by domain
+	 *         type, must not be {@literal null}.
+	 * @since 1.11
+	 */
+	Set<Class<?>> getAlternativeDomainTypes();
 }

@@ -17,6 +17,8 @@ package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
@@ -113,6 +115,15 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		}
 
 		return Arrays.asList(findAllMethod.getParameterTypes()).contains(Pageable.class);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#getAlternativeDomainTypes()
+	 */
+	@Override
+	public Set<Class<?>> getAlternativeDomainTypes() {
+		return Collections.emptySet();
 	}
 
 	/**

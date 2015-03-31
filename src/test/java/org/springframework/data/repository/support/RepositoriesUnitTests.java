@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +46,7 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
 import org.springframework.data.repository.core.support.DummyRepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.util.ClassUtils;
 
 /**
  * Unit tests for {@link Repositories}.
@@ -116,6 +118,27 @@ public class RepositoriesUnitTests {
 		assertThat(new Repositories(context).getPersistentEntity(AdvancedAddress.class), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-673
+	 */
+	@Test
+	public void discoversRepositoryForAlternativeDomainType() {
+
+		RepositoryMetadata metadata = new CustomRepositoryMetadata(SampleRepository.class);
+		RepositoryFactoryInformation<?, ?> information = new SampleRepoFactoryInformation<Object, Serializable>(metadata);
+
+		GenericApplicationContext context = new GenericApplicationContext();
+		context.getBeanFactory().registerSingleton("foo", information);
+		context.refresh();
+
+		Repositories repositories = new Repositories(context);
+
+		assertThat(repositories.getRepositoryFor(Sample.class), is(notNullValue()));
+		assertThat(repositories.getRepositoryFor(SampleEntity.class), is(notNullValue()));
+
+		context.close();
+	}
+
 	class Person {}
 
 	class Address {}
@@ -132,7 +155,11 @@ public class RepositoriesUnitTests {
 		private final SampleMappingContext mappingContext;
 
 		public SampleRepoFactoryInformation(Class<?> repositoryInterface) {
-			this.repositoryMetadata = new DefaultRepositoryMetadata(repositoryInterface);
+			this(new DefaultRepositoryMetadata(repositoryInterface));
+		}
+
+		public SampleRepoFactoryInformation(RepositoryMetadata metadata) {
+			this.repositoryMetadata = metadata;
 			this.mappingContext = new SampleMappingContext();
 		}
 
@@ -142,7 +169,7 @@ public class RepositoriesUnitTests {
 		}
 
 		public RepositoryInformation getRepositoryInformation() {
-			return new DummyRepositoryInformation(repositoryMetadata.getRepositoryInterface());
+			return new DummyRepositoryInformation(repositoryMetadata);
 		}
 
 		public PersistentEntity<?, ?> getPersistentEntity() {
@@ -153,4 +180,49 @@ public class RepositoriesUnitTests {
 			return Collections.emptyList();
 		}
 	}
+
+	static class CustomRepositoryMetadata extends DefaultRepositoryMetadata {
+
+		private final Class<?> domainType;
+
+		/**
+		 * @param repositoryInterface
+		 */
+		public CustomRepositoryMetadata(Class<?> repositoryInterface) {
+
+			super(repositoryInterface);
+
+			String domainType = super.getDomainType().getName().concat("Entity");
+
+			try {
+				this.domainType = ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.DefaultRepositoryMetadata#getDomainType()
+		 */
+		@Override
+		public Class<?> getDomainType() {
+			return this.domainType;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.AbstractRepositoryMetadata#getAlternativeDomainTypes()
+		 */
+		@Override
+		public Set<Class<?>> getAlternativeDomainTypes() {
+			return Collections.<Class<?>> singleton(super.getDomainType());
+		}
+	}
+
+	interface Sample {}
+
+	static class SampleEntity implements Sample {}
+
+	interface SampleRepository extends Repository<Sample, Long> {}
 }

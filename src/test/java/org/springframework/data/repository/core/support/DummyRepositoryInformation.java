@@ -29,7 +29,11 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 	private final RepositoryMetadata metadata;
 
 	public DummyRepositoryInformation(Class<?> repositoryInterface) {
-		this.metadata = new DefaultRepositoryMetadata(repositoryInterface);
+		this(new DefaultRepositoryMetadata(repositoryInterface));
+	}
+
+	public DummyRepositoryInformation(RepositoryMetadata metadata) {
+		this.metadata = metadata;
 	}
 
 	public Class<? extends Serializable> getIdType() {
@@ -83,5 +87,10 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 	@Override
 	public boolean isPagingRepository() {
 		return false;
+	}
+
+	@Override
+	public Set<Class<?>> getAlternativeDomainTypes() {
+		return metadata.getAlternativeDomainTypes();
 	}
 }
