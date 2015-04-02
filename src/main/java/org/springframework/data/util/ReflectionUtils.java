@@ -37,16 +37,22 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
 public abstract class ReflectionUtils {
 
 	private static final Class<?> JAVA8_STREAM_TYPE;
+	private static final Class<?> RXJAVA_OBSERVABLE_TYPE;
 
 	static {
 
-		Class<?> cls = null;
-
+		Class<?> streamClass = null;
 		try {
-			cls = Class.forName("java.util.stream.Stream");
+			streamClass = Class.forName("java.util.stream.Stream");
+		} catch (ClassNotFoundException ignore) {}
+		JAVA8_STREAM_TYPE = streamClass;
+
+		Class<?> rxjavaObservableClass = null;
+		try {
+			rxjavaObservableClass = Class.forName("rx.Observable");
 		} catch (ClassNotFoundException ignore) {}
 
-		JAVA8_STREAM_TYPE = cls;
+		RXJAVA_OBSERVABLE_TYPE = rxjavaObservableClass;
 	}
 
 	private ReflectionUtils() {}
@@ -237,5 +243,21 @@ public abstract class ReflectionUtils {
 		}
 
 		return JAVA8_STREAM_TYPE.isAssignableFrom(type);
+	}
+
+	/**
+	 * Tests whether the given type is assignable to an RX Java {@link rx.Observable}.
+	 * 
+	 * @param type can be {@literal null}.
+	 * @return
+	 * @since 1.11
+	 */
+	public static boolean isRxJavaObservableType(Class<?> type) {
+
+		if (type == null || RXJAVA_OBSERVABLE_TYPE == null) {
+			return false;
+		}
+
+		return RXJAVA_OBSERVABLE_TYPE.isAssignableFrom(type);
 	}
 }

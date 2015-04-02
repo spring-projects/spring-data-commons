@@ -190,6 +190,13 @@
 			<version>1.8.6</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.netflix.rxjava</groupId>
+			<artifactId>rxjava-core</artifactId>
+			<version>0.20.7</version>
+			<optional>true</optional>
+		</dependency>
 
 	</dependencies>
 
