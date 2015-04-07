@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.MultiValueMap;
 
 /**
  * API to invoke (CRUD) methods on Spring Data repository instances independently of the base interface they expose.
@@ -96,6 +97,22 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	 * @param pageable can be {@literal null}.
 	 * @param sort can be {@literal null}.
 	 * @return the result of the invoked query method.
+	 * @deprecated use {@link #invokeQueryMethod(Method, MultiValueMap, Pageable, Sort)} instead.
 	 */
+	@Deprecated
 	Object invokeQueryMethod(Method method, Map<String, String[]> parameters, Pageable pageable, Sort sort);
+
+	/**
+	 * Invokes the query method backed by the given {@link Method} using the given parameters, {@link Pageable} and
+	 * {@link Sort}.
+	 * 
+	 * @param method must not be {@literal null}.
+	 * @param parameters must not be {@literal null}.
+	 * @param pageable can be {@literal null}.
+	 * @param sort can be {@literal null}.
+	 * @return the result of the invoked query method.
+	 * @since 1.11
+	 */
+	Object invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters, Pageable pageable,
+			Sort sort);
 }

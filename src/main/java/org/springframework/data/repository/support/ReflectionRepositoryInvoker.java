@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
@@ -30,6 +31,8 @@ import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.util.Assert;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -164,12 +167,32 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		}
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, java.util.Map, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
+	 */
+	@Override
+	public Object invokeQueryMethod(Method method, Map<String, String[]> parameters, Pageable pageable, Sort sort) {
+
+		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(parameters, "Parameters must not be null!");
+
+		MultiValueMap<String, String> forward = new LinkedMultiValueMap<String, String>(parameters.size());
+
+		for (Entry<String, String[]> entry : parameters.entrySet()) {
+			forward.put(entry.getKey(), Arrays.asList(entry.getValue()));
+		}
+
+		return invokeQueryMethod(method, forward, pageable, sort);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, java.util.Map, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
 	 */
 	@Override
-	public Object invokeQueryMethod(Method method, Map<String, String[]> parameters, Pageable pageable, Sort sort) {
+	public Object invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters, Pageable pageable,
+			Sort sort) {
 
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notNull(parameters, "Parameters must not be null!");
@@ -179,7 +202,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return invoke(method, prepareParameters(method, parameters, pageable, sort));
 	}
 
-	private Object[] prepareParameters(Method method, Map<String, String[]> rawParameters, Pageable pageable, Sort sort) {
+	private Object[] prepareParameters(Method method, MultiValueMap<String, ? extends Object> rawParameters,
+			Pageable pageable, Sort sort) {
 
 		List<MethodParameter> parameters = new MethodParameters(method, PARAM_ANNOTATION).getParameters();
 
@@ -208,10 +232,10 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 							+ " for parameter " + parameterName);
 				}
 
-				String[] parameterValue = rawParameters.get(parameterName);
-				Object value = parameterValue == null ? null : parameterValue.length == 1 ? parameterValue[0] : parameterValue;
+				Object value = unwrapSingleElement(rawParameters.get(parameterName));
 
-				result[i] = conversionService.convert(value, TypeDescriptor.forObject(value), new TypeDescriptor(param));
+				result[i] = targetType.isInstance(value) ? value : conversionService.convert(value,
+						TypeDescriptor.forObject(value), new TypeDescriptor(param));
 			}
 		}
 
@@ -274,5 +298,15 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		}
 
 		return invoke(method, sort);
+	}
+
+	/**
+	 * Unwraps the first item if the given source has exactly one element.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	private static Object unwrapSingleElement(List<? extends Object> source) {
+		return source == null ? null : source.size() == 1 ? source.get(0) : source;
 	}
 }
