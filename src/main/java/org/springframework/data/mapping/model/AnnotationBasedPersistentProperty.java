@@ -190,8 +190,9 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	}
 
 	/**
-	 * Returns the annotation found for the current {@link AnnotationBasedPersistentProperty}. Will prefer field
-	 * annotations over ones found at getters or setters.
+	 * Returns the annotation found for the current {@link AnnotationBasedPersistentProperty}. Will prefer getters or
+	 * setters annotations over ones found at the backing field as the former can be used to reconfigure the metadata in
+	 * subclasses.
 	 * 
 	 * @param annotationType must not be {@literal null}.
 	 * @return
@@ -218,7 +219,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			}
 		}
 
-		return field == null ? null : cacheAndReturn(annotationType, AnnotationUtils.getAnnotation(field, annotationType));
+		return cacheAndReturn(annotationType, field == null ? null : AnnotationUtils.getAnnotation(field, annotationType));
 	}
 
 	/* 

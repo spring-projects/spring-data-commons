@@ -168,6 +168,23 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		getProperty(TypeWithCustomAnnotationsOnBothFieldAndAccessor.class, "field");
 	}
 
+	/**
+	 * @see DATACMNS-677
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void cachesNonPresenceOfAnnotationOnField() {
+
+		SamplePersistentProperty property = getProperty(Sample.class, "getterWithoutField");
+
+		assertThat(property.findAnnotation(MyAnnotation.class), is(nullValue()));
+
+		Map<Class<?>, ?> field = (Map<Class<?>, ?>) ReflectionTestUtils.getField(property, "annotationCache");
+
+		assertThat(field.containsKey(MyAnnotation.class), is(true));
+		assertThat(field.get(MyAnnotation.class), is(nullValue()));
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -215,6 +232,13 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		public void setDoubleMapping(String doubleMapping) {
 			this.doubleMapping = doubleMapping;
 		}
+
+		@AccessType(Type.PROPERTY)
+		public Object getGetterWithoutField() {
+			return null;
+		}
+
+		public void setGetterWithoutField(Object object) {}
 	}
 
 	static class InvalidSample {
