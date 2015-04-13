@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.springframework.beans.factory.parsing.ReaderContext;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
@@ -56,10 +57,12 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 	 */
 	public BeanDefinition parse(Element element, ParserContext parser) {
 
+		XmlReaderContext readerContext = parser.getReaderContext();
+
 		try {
 
-			Environment environment = parser.getDelegate().getEnvironment();
-			ResourceLoader resourceLoader = parser.getReaderContext().getResourceLoader();
+			Environment environment = readerContext.getEnvironment();
+			ResourceLoader resourceLoader = readerContext.getResourceLoader();
 			BeanDefinitionRegistry registry = parser.getRegistry();
 
 			XmlRepositoryConfigurationSource configSource = new XmlRepositoryConfigurationSource(element, parser, environment);
@@ -69,11 +72,11 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 			RepositoryConfigurationUtils.exposeRegistration(extension, registry, configSource);
 
 			for (BeanComponentDefinition definition : delegate.registerRepositoriesIn(registry, extension)) {
-				parser.getReaderContext().fireComponentRegistered(definition);
+				readerContext.fireComponentRegistered(definition);
 			}
 
 		} catch (RuntimeException e) {
-			handleError(e, element, parser.getReaderContext());
+			handleError(e, element, readerContext);
 		}
 
 		return null;
