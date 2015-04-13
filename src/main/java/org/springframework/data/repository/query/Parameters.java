@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.util.Assert;
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Iterable<T> {
 
+	@SuppressWarnings("unchecked")//
 	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
 	private static final String PARAM_ON_SPECIAL = format("You must not user @%s on a parameter typed %s or %s",
