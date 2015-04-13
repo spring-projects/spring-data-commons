@@ -147,7 +147,8 @@ or via <<repositories.create-instances,XML configuration>>:
 </beans>
 ----
 +
-The JPA namespace is used in this example. If you are using the repository abstraction for any other store, you need to change this to the appropriate namespace declaration of your store module which should be exchanging `jpa` in favor of, for example, `mongodb`. Also, note that the JavaConfig variant doesn't configure a package explictly as the package of the annotated class is used by default. To customize the package to scan
+The JPA namespace is used in this example. If you are using the repository abstraction for any other store, you need to change this to the appropriate namespace declaration of your store module which should be exchanging `jpa` in favor of, for example, `mongodb`. Also, note that the JavaConfig variant doesn't configure a package explictly as the package of the annotated class is used by default. 
+The packages to scan can be customized via the `basePackages` attribute of the data-store specific Repository annotation like `@EnableJpaRepositories` or `@EnableMongoRepositories`. For more concise declarations the `value` attribute can be used as an alias for `basePackages`.
 
 . Get the repository instance injected and use it.
 +
