@@ -166,12 +166,12 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		@Override
 		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-			if (!repositories.hasRepositoryFor(targetType.getType())) {
+			if (sourceType.isAssignableTo(targetType)) {
 				return false;
 			}
 
-			if (sourceType.equals(targetType)) {
-				return true;
+			if (!repositories.hasRepositoryFor(targetType.getType())) {
+				return false;
 			}
 
 			Class<?> rawIdType = repositories.getRepositoryInformationFor(targetType.getType()).getIdType();
@@ -192,7 +192,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 * @author Oliver Gierke
 	 * @since 1.10
 	 */
-	private class ToIdConverter implements ConditionalGenericConverter {
+	class ToIdConverter implements ConditionalGenericConverter {
 
 		/*
 		 * (non-Javadoc)
@@ -232,12 +232,12 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		@Override
 		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-			if (!repositories.hasRepositoryFor(sourceType.getType())) {
+			if (sourceType.isAssignableTo(targetType)) {
 				return false;
 			}
 
-			if (sourceType.equals(targetType)) {
-				return true;
+			if (!repositories.hasRepositoryFor(sourceType.getType())) {
+				return false;
 			}
 
 			Class<?> rawIdType = repositories.getRepositoryInformationFor(sourceType.getType()).getIdType();
