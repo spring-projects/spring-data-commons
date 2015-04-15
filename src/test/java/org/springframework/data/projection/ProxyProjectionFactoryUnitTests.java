@@ -176,6 +176,18 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(advisors[0].getAdvice(), is(instanceOf(DefaultMethodInvokingMethodInterceptor.class)));
 	}
 
+	/**
+	 * @see DATACMNS-648
+	 */
+	@Test
+	public void exposesProxyTarget() {
+
+		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
+
+		assertThat(excerpt, is(instanceOf(TargetAware.class)));
+		assertThat(((TargetAware) excerpt).getTarget(), is(instanceOf(Map.class)));
+	}
+
 	static class Customer {
 
 		public String firstname, lastname;

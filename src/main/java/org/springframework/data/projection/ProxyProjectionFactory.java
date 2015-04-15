@@ -29,8 +29,6 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  * A {@link ProjectionFactory} to create JDK proxies to back interfaces and handle method invocations on them. By
  * default accessor methods are supported. In case the delegating lookups result in an object of different type that the
@@ -64,13 +62,13 @@ class ProxyProjectionFactory implements ProjectionFactory {
 		ProxyFactory factory = new ProxyFactory();
 		factory.setTarget(source);
 		factory.setOpaque(true);
-		factory.setInterfaces(projectionType, TargetClassAware.class);
+		factory.setInterfaces(projectionType, TargetAware.class);
 
 		if (IS_JAVA_8) {
 			factory.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
-		factory.addAdvice(new TargetClassAwareMethodInterceptor(source.getClass()));
+		factory.addAdvice(new TargetAwareMethodInterceptor(source.getClass()));
 		factory.addAdvice(getMethodInterceptor(source, projectionType));
 
 		return (T) factory.getProxy(getClass().getClassLoader());
@@ -153,44 +151,36 @@ class ProxyProjectionFactory implements ProjectionFactory {
 	}
 
 	/**
-	 * Extension of {@link org.springframework.aop.TargetClassAware} to be able to ignore the getter on JSON rendering.
-	 * 
-	 * @author Oliver Gierke
-	 */
-	public static interface TargetClassAware extends org.springframework.aop.TargetClassAware {
-
-		@JsonIgnore
-		Class<?> getTargetClass();
-	}
-
-	/**
 	 * Custom {@link MethodInterceptor} to expose the proxy target class even if we set
 	 * {@link ProxyFactory#setOpaque(boolean)} to true to prevent properties on {@link Advised} to be rendered.
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static class TargetClassAwareMethodInterceptor implements MethodInterceptor {
+	private static class TargetAwareMethodInterceptor implements MethodInterceptor {
 
 		private static final Method GET_TARGET_CLASS_METHOD;
-		private final Class<?> targetClass;
+		private static final Method GET_TARGET_METHOD;
+
+		private final Class<?> targetType;
 
 		static {
 			try {
-				GET_TARGET_CLASS_METHOD = TargetClassAware.class.getMethod("getTargetClass");
+				GET_TARGET_CLASS_METHOD = TargetAware.class.getMethod("getTargetClass");
+				GET_TARGET_METHOD = TargetAware.class.getMethod("getTarget");
 			} catch (NoSuchMethodException e) {
 				throw new IllegalStateException(e);
 			}
 		}
 
 		/**
-		 * Creates a new {@link TargetClassAwareMethodInterceptor} with the given target class.
+		 * Creates a new {@link TargetAwareMethodInterceptor} with the given target class.
 		 * 
-		 * @param targetClass must not be {@literal null}.
+		 * @param targetType must not be {@literal null}.
 		 */
-		public TargetClassAwareMethodInterceptor(Class<?> targetClass) {
+		public TargetAwareMethodInterceptor(Class<?> targetType) {
 
-			Assert.notNull(targetClass, "Target class must not be null!");
-			this.targetClass = targetClass;
+			Assert.notNull(targetType, "Target type must not be null!");
+			this.targetType = targetType;
 		}
 
 		/* 
@@ -201,7 +191,9 @@ class ProxyProjectionFactory implements ProjectionFactory {
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
 			if (invocation.getMethod().equals(GET_TARGET_CLASS_METHOD)) {
-				return targetClass;
+				return targetType;
+			} else if (invocation.getMethod().equals(GET_TARGET_METHOD)) {
+				return invocation.getThis();
 			}
 
 			return invocation.proceed();
