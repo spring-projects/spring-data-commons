@@ -137,7 +137,8 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		Class<?> rawType = type.getType();
 
 		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray()
-				|| QueryExecutionConverters.supports(rawType) || ReflectionUtils.isJava8StreamType(rawType);
+				|| QueryExecutionConverters.supports(rawType) || ReflectionUtils.isJava8StreamType(rawType)
+				 || ReflectionUtils.isRxJavaObservableType(rawType);
 
 		return needToUnwrap ? unwrapWrapperTypes(type.getComponentType()) : rawType;
 	}

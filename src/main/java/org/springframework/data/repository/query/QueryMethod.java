@@ -19,6 +19,7 @@ import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -210,13 +211,23 @@ public class QueryMethod {
 	}
 
 	/**
-	 * Returns whether the method returns a Stream.
+	 * Returns whether the method returns a {@link Stream}.
 	 * 
 	 * @return
 	 * @since 1.10
 	 */
 	public boolean isStreamQuery() {
 		return ReflectionUtils.isJava8StreamType(method.getReturnType());
+	}
+	
+	/**
+	 * Returns whether the method returns a {@link rx.Observable}.
+	 * 
+	 * @return
+	 * @since 1.11
+	 */
+	public boolean isObservableQuery(){
+		return ReflectionUtils.isRxJavaObservableType(method.getReturnType());
 	}
 
 	/**

@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>1.11.0.BUILD-SNAPSHOT</version>
+	<version>1.11.0.DATACMNS-676-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 
@@ -167,6 +167,13 @@
 			<artifactId>spring-webmvc</artifactId>
 			<optional>true</optional>
 		</dependency>
+		
+		<dependency>
+			<groupId>io.reactivex</groupId>
+			<artifactId>rxjava</artifactId>
+			<optional>true</optional>
+			<version>${rxjava}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
@@ -189,7 +196,6 @@
 			<version>1.8.6</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>
