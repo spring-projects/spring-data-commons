@@ -21,9 +21,9 @@ NOTE: Geospatial types like (`GeoResult`, `GeoResults`, `GeoPage`) are only avai
 |`Optional<T>`|A Java 8 or Guava `Optional`. Expects the query method to return one result at most. In case no result is found `Optional.empty()`/`Optional.absent()` is returned. More than one result will trigger an `IncorrectResultSizeDataAccessException`.
 |`Stream<T>`|A Java 8 `Stream`.
 |`Slice`|A sized chunk of data with information whether there is more data available. Requires a `Pageable` method parameter.
-|`Page<T>`|A Slice with additional information, e.g. the total number of results. Requires a `Pageable` method parameter.
+|`Page<T>`|A `Slice` with additional information, e.g. the total number of results. Requires a `Pageable` method parameter.
 |`GeoResult<T>`|A result entry with additional information, e.g. distance to a reference location.
-|`GeoResults<T>`|A list of GeoResult<T> with additional information, e.g. average distance to a reference location.
-|`GeoPage<T>`|A Page with GeoResult<T>, e.g. average distance to a reference location.
+|`GeoResults<T>`|A list of `GeoResult<T>` with additional information, e.g. average distance to a reference location.
+|`GeoPage<T>`|A `Page` with `GeoResult<T>`, e.g. average distance to a reference location.
 |===============
 
