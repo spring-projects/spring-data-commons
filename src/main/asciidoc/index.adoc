@@ -17,6 +17,7 @@ include::preface.adoc[]
 = Reference documentation
 
 :leveloffset: +1
+include::dependencies.adoc[]
 include::repositories.adoc[]
 include::auditing.adoc[]
 :leveloffset: -1
