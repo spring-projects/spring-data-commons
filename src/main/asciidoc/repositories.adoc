@@ -638,6 +638,7 @@ The configuration setup shown above will register a few basic components:
 - A `DomainClassConverter` to enable Spring MVC to resolve instances of repository managed domain classes from request parameters or path variables.
 - `HandlerMethodArgumentResolver` implementations to let Spring MVC resolve Pageable and Sort instances from request parameters.
 
+[[core.web.basic.domain-class-converter]]
 ===== DomainClassConverter
 The `DomainClassConverter` allows you to use domain types in your Spring MVC controller method signatures directly, so that you don't have to manually lookup the instances via the repository:
 
@@ -663,6 +664,7 @@ As you can see the method receives a User instance directly and no further looku
 
 NOTE: Currently the repository has to implement `CrudRepository` to be eligible to be discovered for conversion.
 
+[[core.web.basic.paging-and-sorting]]
 ===== HandlerMethodArgumentResolvers for Pageable and Sort
 The configuration snippet above also registers a `PageableHandlerMethodArgumentResolver` as well as an instance of `SortHandlerMethodArgumentResolver`. The registration enables `Pageable` and `Sort` being valid controller method arguments
 
@@ -691,8 +693,8 @@ This method signature will cause Spring MVC try to derive a Pageable instance fr
 .Request parameters evaluated for Pageable instances
 [options = "autowidth"]
 |===============
-|`page`|Page you want to retrieve.
-|`size`|Size of the page you want to retrieve.
+|`page`|Page you want to retrieve, 0 indexed and defaults to 0.
+|`size`|Size of the page you want to retrieve, defaults to 20.
 |`sort`|Properties that should be sorted by in the format `property,property(,ASC\|DESC)`. Default sort direction is ascending. Use multiple `sort` parameters if you want to switch directions, e.g. `?sort=firstname&sort=lastname,asc`.
 |===============
 
@@ -871,6 +873,7 @@ public class UserController {
 
 First you declare a repository dependency for each controller to look up the entity managed by the controller or repository respectively. Looking up the entity is boilerplate as well, as it's always a `findOne(…)` call. Fortunately Spring provides means to register custom components that allow conversion between a `String` value to an arbitrary type.
 
+[[web.legacy.property-editors]]
 ===== PropertyEditors
 
 For Spring versions before 3.0 simple Java `PropertyEditors` had to be used. To integrate with that, Spring Data offers a `DomainClassPropertyEditorRegistrar`, which looks up all Spring Data repositories registered in the `ApplicationContext` and registers a custom `PropertyEditor` for the managed domain class.
@@ -903,146 +906,5 @@ public class UserController {
     return "userForm";
   }
 }
-----
-
-ConversionServiceIn Spring 3.0 and later the `PropertyEditor` support is superseded by a new conversion infrastructure that eliminates the drawbacks of `PropertyEditors` and uses a stateless X to Y conversion approach. Spring Data now ships with a `DomainClassConverter` that mimics the behavior of `DomainClassPropertyEditorRegistrar`. To configure, simply declare a bean instance and pipe the `ConversionService` being used into its constructor:
-
-[source, xml]
-----
-<mvc:annotation-driven conversion-service="conversionService" />
-
-<bean class="org.springframework.data.repository.support.DomainClassConverter">
-  <constructor-arg ref="conversionService" />
-</bean>
-----
-
-If you are using JavaConfig, you can simply extend Spring MVC's `WebMvcConfigurationSupport` and hand the `FormatingConversionService` that the configuration superclass provides into the `DomainClassConverter` instance you create.
-
-[source, java]
-----
-class WebConfiguration extends WebMvcConfigurationSupport {
-
-  // Other configuration omitted
-
-  @Bean
-  public DomainClassConverter<?> domainClassConverter() {
-    return new DomainClassConverter<FormattingConversionService>(mvcConversionService());
-  }
-}
-----
-
-[[web-pagination]]
-==== Web pagination
-
-When working with pagination in the web layer you usually have to write a lot of boilerplate code yourself to extract the necessary metadata from the request. The less desirable approach shown in the example below requires the method to contain an `HttpServletRequest` parameter that has to be parsed manually. This example also omits appropriate failure handling, which would make the code even more verbose.
-
-[source, java]
-----
-@Controller
-@RequestMapping("/users")
-public class UserController {
-
-  // DI code omitted
-
-  @RequestMapping
-  public String showUsers(Model model, HttpServletRequest request) {
-
-    int page = Integer.parseInt(request.getParameter("page"));
-    int pageSize = Integer.parseInt(request.getParameter("pageSize"));
-
-    Pageable pageable = new PageRequest(page, pageSize);
-
-    model.addAttribute("users", userService.getUsers(pageable));
-    return "users";
-  }
-}
-----
-
-The bottom line is that the controller should not have to handle the functionality of extracting pagination information from the request. So Spring Data ships with a `PageableHandlerMethodArgumentResolver` that will do the work for you. The Spring MVC JavaConfig support exposes a `WebMvcConfigurationSupport` helper class to customize the configuration as follows:
-
-[source, java]
-----
-@Configuration
-public class WebConfig extends WebMvcConfigurationSupport {
-
-  @Override
-  protected void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-    argumentResolvers.add(new PageableHandlerMethodArgumentResolver());
-  }
-}
-----
-
-If you're stuck with XML configuration you can register the resolver as follows:
-
-[source, xml]
-----
-<bean class="….web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
-  <property name="customArgumentResolvers">
-    <list>
-      <bean class="org.springframework.data.web.PageableHandlerMethodArgumentResolver" />
-    </list>
-  </property>
-</bean>
-----
-
-Once you've configured the resolver with Spring MVC it allows you to simplify controllers down to something like this:
-
-[source, java]
-----
-@Controller
-@RequestMapping("/users")
-public class UserController {
-
-  @RequestMapping
-  public String showUsers(Model model, Pageable pageable) {
-
-    model.addAttribute("users", userRepository.findAll(pageable));
-    return "users";
-  }
-}
-----
-
-The `PageableArgumentResolver` automatically resolves request parameters to build a `PageRequest` instance. By default it expects the following structure for the request parameters.
-
-.Request parameters evaluated by PageableHandlerMethodArgumentResolver
-[options = "autowidth"]
-|===============
-|`page`|Page you want to retrieve, 0 indexed and defaults to 0.
-|`size`|Size of the page you want to retrieve, defaults to 20.
-|`sort`|A collection of sort directives in the format `($propertyname,)[asc\|desc]?`.
-|===============
-
-.Pagination URL parameter examples
-
-To retrieve the third page with a maximum page size of 100 with the data sorted by the email property in ascending order use the following url parameter:
-====
-----
-?page=2&size=100&sort=email,asc
-----
-====
-To sort the data by multiple properties in different sort order use the following URL parameter:
-====
-----
-?sort=foo,asc&sort=bar,desc
-----
-====
-
-In case you need multiple `Pageable` instances to be resolved from the request (for multiple tables, for example) you can use Spring's `@Qualifier` annotation to distinguish one from another. The request parameters then have to be prefixed with `${qualifier}_`. So for a method signature like this:
-
-[source, java]
-----
-public String showUsers(Model model,
-  @Qualifier("foo") Pageable first,
-  @Qualifier("bar") Pageable second) { … }
-----
-
-you have to populate `foo_page` and `bar_page` and the related subproperties.
-
-Configuring a global default on bean declaration the `PageableArgumentResolver` will use a `PageRequest` with the first page and a page size of 10 by default. It will use that value if it cannot resolve a `PageRequest` from the request (because of missing parameters, for example). You can configure a global default on the bean declaration directly. If you might need controller method specific defaults for the `Pageable`, annotate the method parameter with `@PageableDefaults` and specify page (through `pageNumber`), page size (through `value`), `sort` (list of properties to sort by), and `sortDir` (the direction to sort by) as annotation attributes:
-
-[source, java]
-----
-public String showUsers(Model model,
-  @PageableDefaults(pageNumber = 0, value = 30) Pageable pageable) { … }
 ----
 
