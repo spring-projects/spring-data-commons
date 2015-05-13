@@ -239,7 +239,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			result.add(persistentProperty);
 
 			if (iterator.hasNext()) {
-				current = getPersistentEntity(persistentProperty.getActualType());
+				current = getPersistentEntity(persistentProperty.getTypeInformation().getActualType());
 			}
 		}
 
