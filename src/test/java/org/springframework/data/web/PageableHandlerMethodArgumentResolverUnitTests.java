@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -234,6 +234,23 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		assertThat(result.getPageNumber(), is(0));
 		assertThat(result.getPageSize(), is(10));
 		assertThat(result.getSort(), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-692
+	 */
+	@Test
+	public void oneIndexedParametersDefaultsIndexOutOfRange() {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setOneIndexedParameters(true);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "0");
+
+		Pageable result = resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null);
+
+		assertThat(result.getPageNumber(), is(0));
 	}
 
 	@Override
