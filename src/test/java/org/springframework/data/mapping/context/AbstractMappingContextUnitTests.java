@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -245,6 +246,15 @@ public class AbstractMappingContextUnitTests {
 		assertHasEntityFor(TreeMap.class, context, false);
 	}
 
+	/**
+	 * @see DATACMNS-695
+	 */
+	@Test
+	public void persistentPropertyPathTraversesGenericTypesCorrectly() {
+		assertThat(context.getPersistentPropertyPath("field.wrapped.field", Outer.class),
+				is(Matchers.<SamplePersistentProperty> iterableWithSize(3)));
+	}
+
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
 
 		boolean found = false;
@@ -282,5 +292,18 @@ public class AbstractMappingContextUnitTests {
 
 	static class Extension extends Base {
 		@Id String foo;
+	}
+
+	static class Outer {
+
+		Wrapper<Inner> field;
+	}
+
+	static class Wrapper<T> {
+		T wrapped;
+	}
+
+	static class Inner {
+		String field;
 	}
 }
