@@ -15,9 +15,6 @@
  */
 package org.springframework.data.mapping.context;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -34,6 +31,8 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -63,6 +62,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Oliver Gierke
  * @author Michael Hunger
  * @author Thomas Darimont
+ * @author Tomasz Wysocki
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
@@ -281,10 +281,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
 			persistentEntities.put(typeInformation, entity);
 
-			BeanInfo info = Introspector.getBeanInfo(type);
+			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
 
 			final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
-			for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
+			for (PropertyDescriptor descriptor : pds) {
 				descriptors.put(descriptor.getName(), descriptor);
 			}
 
@@ -308,7 +308,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			return entity;
 
-		} catch (IntrospectionException e) {
+		} catch (BeansException e) {
 			throw new MappingException(e.getMessage(), e);
 		} finally {
 			write.unlock();
