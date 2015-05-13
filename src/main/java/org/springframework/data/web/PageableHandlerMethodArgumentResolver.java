@@ -235,9 +235,9 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 			return null;
 		}
 
-		int page = StringUtils.hasText(pageString) ? parseAndApplyBoundaries(pageString, 0, Integer.MAX_VALUE)
-				- (oneIndexedParameters ? 1 : 0) : defaultOrFallback.getPageNumber();
-		int pageSize = StringUtils.hasText(pageSizeString) ? parseAndApplyBoundaries(pageSizeString, 0, maxPageSize)
+		int page = StringUtils.hasText(pageString) ? parseAndApplyBoundaries(pageString, Integer.MAX_VALUE)
+				: defaultOrFallback.getPageNumber();
+		int pageSize = StringUtils.hasText(pageSizeString) ? parseAndApplyBoundaries(pageSizeString, maxPageSize)
 				: defaultOrFallback.getPageSize();
 
 		// Limit lower bound
@@ -306,17 +306,16 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	 * boundary if the {@link String} cannot be parsed.
 	 * 
 	 * @param parameter
-	 * @param lower
 	 * @param upper
 	 * @return
 	 */
-	private static int parseAndApplyBoundaries(String parameter, int lower, int upper) {
+	private int parseAndApplyBoundaries(String parameter, int upper) {
 
 		try {
-			int parsed = Integer.parseInt(parameter);
-			return parsed < lower ? lower : parsed > upper ? upper : parsed;
+			int parsed = Integer.parseInt(parameter) - (oneIndexedParameters ? 1 : 0);
+			return parsed < 0 ? 0 : parsed > upper ? upper : parsed;
 		} catch (NumberFormatException e) {
-			return lower;
+			return 0;
 		}
 	}
 }
