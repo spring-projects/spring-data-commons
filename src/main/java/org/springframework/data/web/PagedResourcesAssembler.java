@@ -29,7 +29,6 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -118,7 +117,10 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * 
 	 * @param link must not be {@literal null}.
 	 * @return
+	 * @deprecated this method will be removed in 1.11 as no Spring Data module actually calls it. Other clients calling
+	 *             it should stop doing so as {@link Link}s used for pagination shouldn't be templated in the first place.
 	 */
+	@Deprecated
 	public Link appendPaginationParameterTemplates(Link link) {
 
 		Assert.notNull(link, "Link must not be null!");
@@ -138,9 +140,9 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		}
 
 		UriTemplate base = new UriTemplate(link == null ? getDefaultUriString() : link.getHref());
+		Link selfLink = createLink(base, null, Link.REL_SELF);
 
-		PagedResources<R> pagedResources = new PagedResources<R>(resources, asPageMetadata(page));
-		pagedResources.add(createLink(base, null, Link.REL_SELF));
+		PagedResources<R> pagedResources = new PagedResources<R>(resources, asPageMetadata(page), selfLink);
 
 		if (page.hasNext()) {
 			pagedResources.add(createLink(base, page.nextPageable(), Link.REL_NEXT));
@@ -165,8 +167,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 
 	/**
 	 * Creates a {@link Link} with the given rel that will be based on the given {@link UriTemplate} but enriched with the
-	 * values of the given {@link Pageable} (if not {@literal null}) and the missing parameters added as template
-	 * variables.
+	 * values of the given {@link Pageable} (if not {@literal null}).
 	 * 
 	 * @param base must not be {@literal null}.
 	 * @param pageable can be {@literal null}
@@ -178,11 +179,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		UriComponentsBuilder builder = fromUri(base.expand());
 		pageableResolver.enhance(builder, getMethodParameter(), pageable);
 
-		UriComponents components = builder.build();
-		TemplateVariables variables = new TemplateVariables(base.getVariables());
-		variables = variables.concat(pageableResolver.getPaginationTemplateVariables(getMethodParameter(), components));
-
-		return new Link(new UriTemplate(components.toString()).with(variables), rel);
+		return new Link(new UriTemplate(builder.build().toString()), rel);
 	}
 
 	/**

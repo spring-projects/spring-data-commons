@@ -129,15 +129,16 @@ public class PagedResourcesAssemblerUnitTests {
 
 	/**
 	 * @see DATACMNS-418
+	 * @see DATACMNS-515
 	 */
 	@Test
-	public void addsSelfLinkWithPaginationTemplateVariables() {
+	public void createsACanonicalLinkWithoutTemplateParameters() {
 
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
 		Link selfLink = resources.getLink(Link.REL_SELF);
-		assertThat(selfLink.getHref(), endsWith("{?page,size,sort}"));
+		assertThat(selfLink.getHref(), endsWith("localhost"));
 	}
 
 	/**
@@ -159,33 +160,6 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
-	public void appendsMissingTemplateParametersToLink() {
-
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
-
-		Link link = new Link("/foo?page=0");
-		assertThat(assembler.appendPaginationParameterTemplates(link), is(new Link("/foo?page=0{&size,sort}")));
-	}
-
-	/**
-	 * @see DATACMNS-519
-	 */
-	@Test
-	public void keepsExistingTemplateVariablesFromBaseLink() {
-
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
-
-		Link link = new Link("/foo?page=0{&projection}");
-		Link result = assembler.appendPaginationParameterTemplates(link);
-
-		assertThat(result.getVariableNames(), hasSize(3));
-		assertThat(result.getVariableNames(), hasItems("projection", "size", "sort"));
-	}
-
-	/**
 	 * @see DATAMCNS-563
 	 */
 	@Test
@@ -202,6 +176,20 @@ public class PagedResourcesAssemblerUnitTests {
 
 		assertThat(getQueryParameters(resource.getLink("prev")), hasEntry("page", "1"));
 		assertThat(getQueryParameters(resource.getLink("next")), hasEntry("page", "3"));
+	}
+
+	/**
+	 * @see DATACMNS-515
+	 */
+	@Test
+	public void generatedLinksShouldNotBeTemplated() {
+
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
+		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
+
+		assertThat(resources.getLink(Link.REL_SELF).getHref(), endsWith("localhost"));
+		assertThat(resources.getLink(Link.REL_NEXT).getHref(), endsWith("?page=2&size=1"));
+		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), endsWith("?page=0&size=1"));
 	}
 
 	private static Page<Person> createPage(int index) {
