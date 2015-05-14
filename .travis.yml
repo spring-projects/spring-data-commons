@@ -1,15 +1,18 @@
 language: java
 jdk:
-  - oraclejdk8
+- oraclejdk8
 env:
   matrix:
-    - PROFILE=ci
-    - PROFILE=spring41-next
-    - PROFILE=spring42-next
-    - PROFILE=querydsl-next
+  - PROFILE=ci
+  - PROFILE=spring41-next
+  - PROFILE=spring42-next
+  - PROFILE=querydsl-next
 cache:
   directories:
-    - $HOME/.m2
+  - $HOME/.m2
 sudo: false
 install: true
-script: "mvn clean dependency:list test -P${PROFILE} -Dsort"
+script: mvn clean dependency:list test -P${PROFILE} -Dsort
+notifications:
+  slack:
+    secure: PWyr3+7uTnHzZSrJY2DrowwdYODlIeFZB6tzuq+i/vYqMlX2GGXGQN9YmqbKPeaVZBdSI7YrI1UDa5cPAAXoTjn/JewkL0RbdTeIS6PGCpcpAb5rFMYtOhEDBrFB/SRiMH4tw86bRNKq/SrUWmpkzDtTzLrw7JceumgyqnrT6GY=
