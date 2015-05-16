@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -125,6 +126,17 @@ public class ParameterizedTypeUnitTests {
 		assertThat(type.getActualType(), is(type));
 	}
 
+	/**
+	 * @see DATACMNS-697
+	 */
+	@Test
+	public void usesLocalGenericInformationOfFields() {
+
+		TypeInformation<NormalizedProfile> information = ClassTypeInformation.from(NormalizedProfile.class);
+		TypeInformation<?> valueType = information.getProperty("education2.data").getComponentType();
+		assertThat(valueType.getProperty("value").getType(), is(typeCompatibleWith(Education.class)));
+	}
+
 	@SuppressWarnings("serial")
 	class Localized<S> extends HashMap<Locale, S> {
 		S value;
@@ -151,4 +163,21 @@ public class ParameterizedTypeUnitTests {
 	class Second {
 		Parameterized<String> property;
 	}
+
+	// see DATACMNS-697
+
+	class NormalizedProfile {
+
+		ListField<Education> education2;
+	}
+
+	class ListField<L> {
+		List<Value<L>> data;
+	}
+
+	class Value<T> {
+		T value;
+	}
+
+	class Education {}
 }
