@@ -100,10 +100,21 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return new ClassTypeInformation((Class<?>) fieldType);
 		}
 
-		Map<TypeVariable, Type> variableMap = GenericTypeResolver.getTypeVariableMap(resolveType(fieldType));
+		Class<S> resolveType = resolveType(fieldType);
+		Map<TypeVariable, Type> variableMap = new HashMap<TypeVariable, Type>();
+		variableMap.putAll(GenericTypeResolver.getTypeVariableMap(resolveType));
 
 		if (fieldType instanceof ParameterizedType) {
+
 			ParameterizedType parameterizedType = (ParameterizedType) fieldType;
+
+			TypeVariable<Class<S>>[] typeParameters = resolveType.getTypeParameters();
+			Type[] arguments = parameterizedType.getActualTypeArguments();
+
+			for (int i = 0; i < typeParameters.length; i++) {
+				variableMap.put(typeParameters[i], arguments[i]);
+			}
+
 			return new ParameterizedTypeInformation(parameterizedType, this, variableMap);
 		}
 
