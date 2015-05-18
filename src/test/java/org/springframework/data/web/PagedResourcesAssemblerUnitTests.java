@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -46,7 +47,10 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class PagedResourcesAssemblerUnitTests {
 
+	static final Page<Object> EMPTY_PAGE = new PageImpl<Object>(Collections.emptyList());
+
 	HateoasPageableHandlerMethodArgumentResolver resolver = new HateoasPageableHandlerMethodArgumentResolver();
+	PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 
 	@Before
 	public void setUp() {
@@ -56,7 +60,6 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void addsNextLinkForFirstPage() {
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS), is(nullValue()));
@@ -67,7 +70,6 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void addsPreviousAndNextLinksForMiddlePage() {
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS), is(notNullValue()));
@@ -78,7 +80,6 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void addsPreviousLinkForLastPage() {
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS), is(notNullValue()));
@@ -104,7 +105,6 @@ public class PagedResourcesAssemblerUnitTests {
 
 		Link link = new Link("http://foo:9090", "rel");
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1), link);
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), startsWith(link.getHref()));
@@ -119,7 +119,6 @@ public class PagedResourcesAssemblerUnitTests {
 	public void createsPagedResourcesForOneIndexedArgumentResolver() {
 
 		resolver.setOneIndexedParameters(true);
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 
 		AbstractPageRequest request = new PageRequest(0, 1);
 		Page<Person> page = new PageImpl<Person>(Collections.<Person> emptyList(), request, 0);
@@ -134,7 +133,6 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void createsACanonicalLinkWithoutTemplateParameters() {
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
 		Link selfLink = resources.getLink(Link.REL_SELF);
@@ -147,7 +145,6 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void invokesCustomElementResourceAssembler() {
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 		PersonResourceAssembler personAssembler = new PersonResourceAssembler();
 
 		PagedResources<PersonResource> resources = assembler.toResource(createPage(0), personAssembler);
@@ -184,12 +181,43 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void generatedLinksShouldNotBeTemplated() {
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
 		assertThat(resources.getLink(Link.REL_SELF).getHref(), endsWith("localhost"));
 		assertThat(resources.getLink(Link.REL_NEXT).getHref(), endsWith("?page=2&size=1"));
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), endsWith("?page=0&size=1"));
+	}
+
+	/**
+	 * @see DATACMNS-699
+	 */
+	@Test
+	public void generatesEmptyPagedResourceWithEmbeddedWrapper() {
+
+		PagedResources<?> result = assembler.toEmptyResource(EMPTY_PAGE, Person.class, null);
+
+		Collection<?> content = result.getContent();
+		assertThat(content, hasSize(1));
+
+		Object element = content.iterator().next();
+		assertThat(element, is(instanceOf(EmbeddedWrapper.class)));
+		assertThat(((EmbeddedWrapper) element).getRelTargetType(), is(typeCompatibleWith(Person.class)));
+	}
+
+	/**
+	 * @see DATACMNS-699
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void emptyPageCreatorRejectsPageWithContent() {
+		assembler.toEmptyResource(createPage(1), Person.class, null);
+	}
+
+	/**
+	 * @see DATACMNS-699
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void emptyPageCreatorRejectsNullType() {
+		assembler.toEmptyResource(EMPTY_PAGE, null, null);
 	}
 
 	private static Page<Person> createPage(int index) {

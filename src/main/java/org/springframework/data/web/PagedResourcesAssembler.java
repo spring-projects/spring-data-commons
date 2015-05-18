@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.web;
 import static org.springframework.web.util.UriComponentsBuilder.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
@@ -30,6 +31,8 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.UriTemplate;
+import org.springframework.hateoas.core.EmbeddedWrapper;
+import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
@@ -46,6 +49,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 
 	private final HateoasPageableHandlerMethodArgumentResolver pageableResolver;
 	private final UriComponents baseUri;
+	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
 	/**
 	 * Creates a new {@link PagedResourcesAssembler} using the given {@link PageableHandlerMethodArgumentResolver} and
@@ -113,6 +117,30 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	}
 
 	/**
+	 * Creates a {@link PagedResources} with an empt collection {@link EmbeddedWrapper} for the given domain type.
+	 * 
+	 * @param page must not be {@literal null}, content must be empty.
+	 * @param type must not be {@literal null}.
+	 * @param link can be {@literal null}.
+	 * @return
+	 * @since 1.11
+	 */
+	public PagedResources<?> toEmptyResource(Page<?> page, Class<?> type, Link link) {
+
+		Assert.notNull(page, "Page must must not be null!");
+		Assert.isTrue(!page.hasContent(), "Page must not have any content!");
+		Assert.notNull(type, "Type must not be null!");
+
+		PageMetadata metadata = asPageMetadata(page);
+
+		EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(type);
+		List<EmbeddedWrapper> embedded = Collections.singletonList(wrapper);
+
+		return new PagedResources<EmbeddedWrapper>(embedded, metadata,
+				createLink(getUriTemplate(link), null, Link.REL_SELF));
+	}
+
+	/**
 	 * Adds the pagination parameters for all parameters not already present in the given {@link Link}.
 	 * 
 	 * @param link must not be {@literal null}.
@@ -139,7 +167,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			resources.add(assembler.toResource(element));
 		}
 
-		UriTemplate base = new UriTemplate(link == null ? getDefaultUriString() : link.getHref());
+		UriTemplate base = getUriTemplate(link);
 		Link selfLink = createLink(base, null, Link.REL_SELF);
 
 		PagedResources<R> pagedResources = new PagedResources<R>(resources, asPageMetadata(page), selfLink);
@@ -161,8 +189,12 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * 
 	 * @return
 	 */
-	private String getDefaultUriString() {
-		return baseUri == null ? ServletUriComponentsBuilder.fromCurrentRequest().build().toString() : baseUri.toString();
+	private UriTemplate getUriTemplate(Link baseLink) {
+
+		String href = baseLink != null ? baseLink.getHref() : baseUri == null ? ServletUriComponentsBuilder
+				.fromCurrentRequest().build().toString() : baseUri.toString();
+
+		return new UriTemplate(href);
 	}
 
 	/**
