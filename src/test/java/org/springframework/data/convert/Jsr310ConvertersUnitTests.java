@@ -15,20 +15,22 @@
  */
 package org.springframework.data.convert;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import org.junit.Test;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.support.GenericConversionService;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.Date;
 
-import org.junit.Test;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.support.GenericConversionService;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * Unit tests for {@link Jsr310Converters}.
@@ -124,6 +126,42 @@ public class Jsr310ConvertersUnitTests {
 
 		Date now = new Date();
 		assertThat(CONVERSION_SERVICE.convert(now.toInstant(), Date.class), is(now));
+	}
+
+	/**
+	 * @see DATACMNS-698
+	 */
+	@Test
+	public void convertsDateToOffsetDateTime() {
+		assertThat(CONVERSION_SERVICE.convert(NOW, OffsetDateTime.class).toString(), is(format(NOW, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")));
+	}
+
+	/**
+	 * @see DATACMNS-698
+	 */
+	@Test
+	public void convertsOffsetDateTimeToDate() {
+
+		OffsetDateTime now = OffsetDateTime.now();
+		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"), is(now.toString()));
+	}
+
+	/**
+	 * @see DATACMNS-698
+	 */
+	@Test
+	public void convertsDateToOffsetTime() {
+		assertThat(CONVERSION_SERVICE.convert(NOW, OffsetTime.class).toString(), is(format(NOW, "HH:mm:ss.SSSXXX")));
+	}
+
+	/**
+	 * @see DATACMNS-698
+	 */
+	@Test
+	public void convertsOffsetTimeToDate() {
+
+		OffsetTime now = OffsetTime.now();
+		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "HH:mm:ss.SSSXXX"), is(now.toString()));
 	}
 
 	private static String format(Date date, String format) {

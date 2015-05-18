@@ -15,14 +15,16 @@
  */
 package org.springframework.data.convert;
 
-import static java.time.Instant.*;
-import static java.time.LocalDateTime.*;
-import static java.time.ZoneId.*;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.util.ClassUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,8 +32,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.util.ClassUtils;
+import static java.time.Instant.ofEpochMilli;
+import static java.time.LocalDateTime.ofInstant;
+import static java.time.ZoneId.systemDefault;
 
 /**
  * Helper class to register JSR-310 specific {@link Converter} implementations in case the we're running on Java 8.
@@ -63,6 +66,10 @@ public abstract class Jsr310Converters {
 		converters.add(LocalTimeToDateConverter.INSTANCE);
 		converters.add(DateToInstantConverter.INSTANCE);
 		converters.add(InstantToDateConverter.INSTANCE);
+        converters.add(OffsetDateTimeToDateConverter.INSTANCE);
+        converters.add(DateToOffsetDateTimeConverter.INSTANCE);
+        converters.add(OffsetTimeToDateConverter.INSTANCE);
+        converters.add(DateToOffsetTimeConverter.INSTANCE);
 
 		return converters;
 	}
@@ -73,7 +80,7 @@ public abstract class Jsr310Converters {
 			return false;
 		}
 
-		return Arrays.<Class<?>> asList(LocalDateTime.class, LocalDate.class, LocalTime.class, Instant.class)
+		return Arrays.<Class<?>> asList(LocalDateTime.class, LocalDate.class, LocalTime.class, Instant.class, OffsetDateTime.class, OffsetTime.class)
 				.contains(type);
 	}
 
@@ -156,4 +163,45 @@ public abstract class Jsr310Converters {
 			return source == null ? null : Date.from(source.atZone(systemDefault()).toInstant());
 		}
 	}
+
+	public static enum OffsetDateTimeToDateConverter implements Converter<OffsetDateTime, Date> {
+
+		INSTANCE;
+
+		@Override
+		public Date convert(OffsetDateTime source) {
+			return source == null ? null : Date.from(source.atZoneSameInstant(systemDefault()).toInstant());
+		}
+	}
+
+	public static enum DateToOffsetDateTimeConverter implements Converter<Date, OffsetDateTime> {
+
+		INSTANCE;
+
+		@Override
+		public OffsetDateTime convert(Date source) {
+			return source == null ? null : OffsetDateTime.ofInstant(source.toInstant(), ZoneId.systemDefault());
+		}
+	}
+
+	public static enum OffsetTimeToDateConverter implements Converter<OffsetTime, Date> {
+
+		INSTANCE;
+
+		@Override
+		public Date convert(OffsetTime source) {
+			return source == null ? null : Date.from(source.atDate(LocalDate.now()).atZoneSameInstant(systemDefault()).toInstant());
+		}
+	}
+
+	public static enum DateToOffsetTimeConverter implements Converter<Date, OffsetTime> {
+
+		INSTANCE;
+
+		@Override
+		public OffsetTime convert(Date source) {
+			return source == null ? null : OffsetDateTime.ofInstant(ofEpochMilli(source.getTime()), systemDefault()).toOffsetTime();
+		}
+	}
+
 }
