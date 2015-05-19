@@ -30,6 +30,7 @@ import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -47,7 +48,8 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class PagedResourcesAssemblerUnitTests {
 
-	static final Page<Object> EMPTY_PAGE = new PageImpl<Object>(Collections.emptyList());
+	static final Pageable PAGEABLE = new PageRequest(0, 20);
+	static final Page<Person> EMPTY_PAGE = new PageImpl<Person>(Collections.<Person> emptyList(), PAGEABLE, 0);
 
 	HateoasPageableHandlerMethodArgumentResolver resolver = new HateoasPageableHandlerMethodArgumentResolver();
 	PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
@@ -218,6 +220,57 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void emptyPageCreatorRejectsNullType() {
 		assembler.toEmptyResource(EMPTY_PAGE, null, null);
+	}
+
+	/**
+	 * @see DATACMNS-701
+	 */
+	@Test
+	public void addsFirstAndLastLinksForMultiplePages() {
+
+		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
+
+		assertThat(resources.getLink(Link.REL_FIRST).getHref(), endsWith("?page=0&size=1"));
+		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
+	}
+
+	/**
+	 * @see DATACMNS-701
+	 */
+	@Test
+	public void doesNotAddFirstLinkForFirstPageByDefault() {
+
+		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
+
+		assertThat(resources.getLink(Link.REL_FIRST), is(nullValue()));
+		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
+	}
+
+	/**
+	 * @see DATACMNS-701
+	 */
+	@Test
+	public void doesNotAddLastLinkForLastPageByDefault() {
+
+		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
+
+		assertThat(resources.getLink(Link.REL_FIRST).getHref(), endsWith("?page=0&size=1"));
+		assertThat(resources.getLink(Link.REL_LAST), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-701
+	 */
+	@Test
+	public void alwaysAddsFirstAndLastLinkIfConfiguredTo() {
+
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
+		assembler.setForceFirstAndLastRels(true);
+
+		PagedResources<Resource<Person>> resources = assembler.toResource(EMPTY_PAGE);
+
+		assertThat(resources.getLink(Link.REL_FIRST).getHref(), endsWith("?page=0&size=20"));
+		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=0&size=20"));
 	}
 
 	private static Page<Person> createPage(int index) {

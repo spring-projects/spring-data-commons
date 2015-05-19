@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
@@ -51,6 +52,8 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	private final UriComponents baseUri;
 	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
+	private boolean forceFirstAndLastRels = false;
+
 	/**
 	 * Creates a new {@link PagedResourcesAssembler} using the given {@link PageableHandlerMethodArgumentResolver} and
 	 * base URI. If the former is {@literal null}, a default one will be created. If the latter is {@literal null}, calls
@@ -63,6 +66,19 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 
 		this.pageableResolver = resolver == null ? new HateoasPageableHandlerMethodArgumentResolver() : resolver;
 		this.baseUri = baseUri;
+	}
+
+	/**
+	 * Configures whether to always add {@code first} and {@code last} links to the {@link PagedResources} created.
+	 * Defaults to {@literal false} which means that {@code first} and {@code last} links only appear in conjunction with
+	 * {@code prev} and {@code next} links.
+	 * 
+	 * @param forceFirstAndLastRels whether to always add {@code first} and {@code last} links to the
+	 *          {@link PagedResources} created.
+	 * @since 1.11
+	 */
+	public void setForceFirstAndLastRels(boolean forceFirstAndLastRels) {
+		this.forceFirstAndLastRels = forceFirstAndLastRels;
 	}
 
 	/* 
@@ -136,8 +152,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(type);
 		List<EmbeddedWrapper> embedded = Collections.singletonList(wrapper);
 
-		return new PagedResources<EmbeddedWrapper>(embedded, metadata,
-				createLink(getUriTemplate(link), null, Link.REL_SELF));
+		return addPaginationLinks(new PagedResources<EmbeddedWrapper>(embedded, metadata), page, link);
 	}
 
 	/**
@@ -167,20 +182,35 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			resources.add(assembler.toResource(element));
 		}
 
+		return addPaginationLinks(new PagedResources<R>(resources, asPageMetadata(page)), page, link);
+	}
+
+	private <R> PagedResources<R> addPaginationLinks(PagedResources<R> resources, Page<?> page, Link link) {
+
 		UriTemplate base = getUriTemplate(link);
-		Link selfLink = createLink(base, null, Link.REL_SELF);
 
-		PagedResources<R> pagedResources = new PagedResources<R>(resources, asPageMetadata(page), selfLink);
-
-		if (page.hasNext()) {
-			pagedResources.add(createLink(base, page.nextPageable(), Link.REL_NEXT));
+		if (page.hasPrevious() || forceFirstAndLastRels) {
+			resources.add(createLink(base, new PageRequest(0, page.getSize(), page.getSort()), Link.REL_FIRST));
 		}
 
 		if (page.hasPrevious()) {
-			pagedResources.add(createLink(base, page.previousPageable(), Link.REL_PREVIOUS));
+			resources.add(createLink(base, page.previousPageable(), Link.REL_PREVIOUS));
 		}
 
-		return pagedResources;
+		resources.add(createLink(base, null, Link.REL_SELF));
+
+		if (page.hasNext()) {
+			resources.add(createLink(base, page.nextPageable(), Link.REL_NEXT));
+		}
+
+		if (page.hasNext() || forceFirstAndLastRels) {
+
+			int lastIndex = page.getTotalPages() == 0 ? 0 : page.getTotalPages() - 1;
+
+			resources.add(createLink(base, new PageRequest(lastIndex, page.getSize(), page.getSort()), Link.REL_LAST));
+		}
+
+		return resources;
 	}
 
 	/**
