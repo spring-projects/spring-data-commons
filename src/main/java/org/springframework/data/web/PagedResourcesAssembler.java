@@ -189,7 +189,9 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 
 		UriTemplate base = getUriTemplate(link);
 
-		if (page.hasPrevious() || forceFirstAndLastRels) {
+		boolean isNavigable = page.hasPrevious() || page.hasNext();
+
+		if (isNavigable || forceFirstAndLastRels) {
 			resources.add(createLink(base, new PageRequest(0, page.getSize(), page.getSort()), Link.REL_FIRST));
 		}
 
@@ -203,7 +205,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			resources.add(createLink(base, page.nextPageable(), Link.REL_NEXT));
 		}
 
-		if (page.hasNext() || forceFirstAndLastRels) {
+		if (isNavigable || forceFirstAndLastRels) {
 
 			int lastIndex = page.getTotalPages() == 0 ? 0 : page.getTotalPages() - 1;
 
@@ -221,8 +223,8 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 */
 	private UriTemplate getUriTemplate(Link baseLink) {
 
-		String href = baseLink != null ? baseLink.getHref() : baseUri == null ? ServletUriComponentsBuilder
-				.fromCurrentRequest().build().toString() : baseUri.toString();
+		String href = baseLink != null ? baseLink.getHref()
+				: baseUri == null ? ServletUriComponentsBuilder.fromCurrentRequest().build().toString() : baseUri.toString();
 
 		return new UriTemplate(href);
 	}

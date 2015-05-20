@@ -238,11 +238,11 @@ public class PagedResourcesAssemblerUnitTests {
 	 * @see DATACMNS-701
 	 */
 	@Test
-	public void doesNotAddFirstLinkForFirstPageByDefault() {
+	public void addsFirstAndLastLinksForFirstPage() {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
 
-		assertThat(resources.getLink(Link.REL_FIRST), is(nullValue()));
+		assertThat(resources.getLink(Link.REL_FIRST).getHref(), endsWith("?page=0&size=1"));
 		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
 	}
 
@@ -250,12 +250,12 @@ public class PagedResourcesAssemblerUnitTests {
 	 * @see DATACMNS-701
 	 */
 	@Test
-	public void doesNotAddLastLinkForLastPageByDefault() {
+	public void addsFirstAndLastLinksForLastPage() {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
 
 		assertThat(resources.getLink(Link.REL_FIRST).getHref(), endsWith("?page=0&size=1"));
-		assertThat(resources.getLink(Link.REL_LAST), is(nullValue()));
+		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
 	}
 
 	/**
