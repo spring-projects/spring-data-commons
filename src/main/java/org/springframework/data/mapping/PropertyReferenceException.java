@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,14 @@
  */
 package org.springframework.data.mapping;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.PropertyMatches;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Exception being thrown when creating {@link PropertyPath} instances.
@@ -29,10 +33,12 @@ public class PropertyReferenceException extends RuntimeException {
 
 	private static final long serialVersionUID = -5254424051438976570L;
 	private static final String ERROR_TEMPLATE = "No property %s found for type %s!";
+	private static final String HINTS_TEMPLATE = " Did you mean %s?";
 
 	private final String propertyName;
 	private final TypeInformation<?> type;
 	private final List<PropertyPath> alreadyResolvedPath;
+	private final List<String> propertyMatches;
 
 	/**
 	 * Creates a new {@link PropertyReferenceException}.
@@ -41,7 +47,8 @@ public class PropertyReferenceException extends RuntimeException {
 	 * @param type the type the property could not be found on.
 	 * @param alreadyResolvedPah the previously calculated {@link PropertyPath}s.
 	 */
-	public PropertyReferenceException(String propertyName, TypeInformation<?> type, List<PropertyPath> alreadyResolvedPah) {
+	public PropertyReferenceException(String propertyName, TypeInformation<?> type,
+			List<PropertyPath> alreadyResolvedPah) {
 
 		Assert.hasText(propertyName);
 		Assert.notNull(type);
@@ -49,6 +56,7 @@ public class PropertyReferenceException extends RuntimeException {
 		this.propertyName = propertyName;
 		this.type = type;
 		this.alreadyResolvedPath = alreadyResolvedPah;
+		this.propertyMatches = detectPotentialMatches(propertyName, type.getType());
 	}
 
 	/**
@@ -76,11 +84,18 @@ public class PropertyReferenceException extends RuntimeException {
 	@Override
 	public String getMessage() {
 
-		StringBuilder builder = new StringBuilder(String.format(ERROR_TEMPLATE, propertyName, type.getType()
-				.getSimpleName()));
+		StringBuilder builder = new StringBuilder(
+				String.format(ERROR_TEMPLATE, propertyName, type.getType().getSimpleName()));
+
+		if (!propertyMatches.isEmpty()) {
+			String matches = StringUtils.collectionToDelimitedString(propertyMatches, ",", "'", "'");
+			builder.append(String.format(HINTS_TEMPLATE, matches));
+		}
 
 		if (!alreadyResolvedPath.isEmpty()) {
-			builder.append(" Traversed path: ").append(alreadyResolvedPath.get(0).toString()).append(".");
+			builder.append(" Traversed path: ");
+			builder.append(alreadyResolvedPath.get(0).toString());
+			builder.append(".");
 		}
 
 		return builder.toString();
@@ -104,5 +119,21 @@ public class PropertyReferenceException extends RuntimeException {
 	 */
 	public boolean hasDeeperResolutionDepthThan(PropertyReferenceException exception) {
 		return this.alreadyResolvedPath.size() > exception.alreadyResolvedPath.size();
+	}
+
+	/**
+	 * Detects all potential matches for the given property name and type.
+	 * 
+	 * @param propertyName must not be {@literal null} or empty.
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static List<String> detectPotentialMatches(String propertyName, Class<?> type) {
+
+		List<String> result = new ArrayList<String>();
+		result.addAll(Arrays.asList(PropertyMatches.forField(propertyName, type).getPossibleMatches()));
+		result.addAll(Arrays.asList(PropertyMatches.forProperty(propertyName, type).getPossibleMatches()));
+
+		return result;
 	}
 }

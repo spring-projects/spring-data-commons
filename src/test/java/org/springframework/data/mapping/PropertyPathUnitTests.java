@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -353,6 +353,9 @@ public class PropertyPathUnitTests {
 		from("foo", (TypeInformation<?>) null);
 	}
 
+	/**
+	 * @see DATACMNS-546
+	 */
 	@Test
 	public void returnsCompletePathIfResolutionFailedCompletely() {
 
@@ -362,8 +365,11 @@ public class PropertyPathUnitTests {
 		from("somethingDifferent", Foo.class);
 	}
 
+	/**
+	 * @see DATACMNS-546
+	 */
 	@Test
-	public void foobar() {
+	public void includesResolvedPathInExceptionMessage() {
 
 		exception.expect(PropertyReferenceException.class);
 		exception.expectMessage("fooName");
@@ -371,6 +377,18 @@ public class PropertyPathUnitTests {
 		exception.expectMessage("Bar.user");
 
 		from("userFooName", Bar.class);
+	}
+
+	/**
+	 * @see DATACMNS-703
+	 */
+	@Test
+	public void includesPropertyHintsOnTypos() {
+
+		exception.expect(PropertyReferenceException.class);
+		exception.expectMessage("userName");
+
+		from("userAme", Foo.class);
 	}
 
 	private class Foo {
