@@ -25,14 +25,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.Page;
@@ -44,10 +43,13 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.Person;
 import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.PersonRepository;
 import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
 import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 /**
  * Integration tests for {@link ReflectionRepositoryInvoker}.
@@ -155,8 +157,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 	@Test
 	public void invokesQueryMethod() throws Exception {
 
-		HashMap<String, String[]> parameters = new HashMap<String, String[]>();
-		parameters.put("firstName", new String[] { "John" });
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+		parameters.add("firstName", "John");
 
 		Method method = PersonRepository.class.getMethod("findByFirstName", String.class, Pageable.class);
 		PersonRepository repository = mock(PersonRepository.class);
@@ -170,8 +172,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 	@Test
 	public void considersFormattingAnnotationsOnQueryMethodParameters() throws Exception {
 
-		Map<String, String[]> parameters = Collections.singletonMap("date",
-				new String[] { "2013-07-18T10:49:00.000+02:00" });
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+		parameters.add("date", "2013-07-18T10:49:00.000+02:00");
 
 		Method method = PersonRepository.class.getMethod("findByCreatedUsingISO8601Date", Date.class, Pageable.class);
 		PersonRepository repository = mock(PersonRepository.class);
@@ -247,12 +249,36 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		for (String[] ids : Arrays.asList(new String[] { "1,2" }, new String[] { "1", "2" })) {
 
-			Map<String, String[]> parameters = Collections.singletonMap("ids", ids);
+			MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+			parameters.put("ids", Arrays.asList(ids));
 
 			Method method = PersonRepository.class.getMethod("findByIdIn", Collection.class);
 			PersonRepository repository = mock(PersonRepository.class);
 
 			getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, null, null);
+		}
+	}
+
+	/**
+	 * @see DATACMNS-700
+	 */
+	@Test
+	public void failedParameterConversionCapturesContext() throws Exception {
+
+		RepositoryInvoker invoker = getInvokerFor(mock(SimpleRepository.class));
+
+		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
+		parameters.add("value", "value");
+
+		Method method = SimpleRepository.class.getMethod("findByClass", int.class);
+
+		try {
+			invoker.invokeQueryMethod(method, parameters, null, null);
+		} catch (QueryMethodParameterConversionException o_O) {
+
+			assertThat(o_O.getParameter(), is(new MethodParameters(method).getParameters().get(0)));
+			assertThat(o_O.getSource(), is((Object) "value"));
+			assertThat(o_O.getCause(), is(instanceOf(ConversionFailedException.class)));
 		}
 	}
 
@@ -309,5 +335,10 @@ public class ReflectionRepositoryInvokerUnitTests {
 		Domain findOne(Long id);
 
 		void delete(Domain entity);
+	}
+
+	interface SimpleRepository extends Repository<Domain, Long> {
+
+		Domain findByClass(@Param("value") int value);
 	}
 }

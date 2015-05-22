@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.domain.Pageable;
@@ -234,12 +235,20 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 				Object value = unwrapSingleElement(rawParameters.get(parameterName));
 
-				result[i] = targetType.isInstance(value) ? value : conversionService.convert(value,
-						TypeDescriptor.forObject(value), new TypeDescriptor(param));
+				result[i] = targetType.isInstance(value) ? value : convert(value, param);
 			}
 		}
 
 		return result;
+	}
+
+	private Object convert(Object value, MethodParameter parameter) {
+
+		try {
+			return conversionService.convert(value, TypeDescriptor.forObject(value), new TypeDescriptor(parameter));
+		} catch (ConversionException o_O) {
+			throw new QueryMethodParameterConversionException(value, parameter, o_O);
+		}
 	}
 
 	/**
