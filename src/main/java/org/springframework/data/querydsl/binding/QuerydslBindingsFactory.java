@@ -29,10 +29,13 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
-import com.mysema.query.types.EntityPath;
+import com.querydsl.core.types.EntityPath;
 
 /**
+ * Factory to create {@link QuerydslBindings} using an {@link EntityPathResolver}.
+ * 
  * @author Oliver Gierke
+ * @since 1.11
  */
 public class QuerydslBindingsFactory implements ApplicationContextAware {
 
@@ -45,6 +48,8 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	private Repositories repositories;
 
 	/**
+	 * Creates a new {@link QuerydslBindingsFactory} using the given {@link EntityPathResolver}.
+	 * 
 	 * @param entityPathResolver must not be {@literal null}.
 	 */
 	public QuerydslBindingsFactory(EntityPathResolver entityPathResolver) {
@@ -61,6 +66,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
 		this.beanFactory = applicationContext.getAutowireCapableBeanFactory();
 		this.repositories = new Repositories(applicationContext);
 	}
@@ -74,8 +80,19 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		return entityPathResolver;
 	}
 
-	public QuerydslBindings createBindingsFor(Class<? extends QuerydslBinderCustomizer> customizer,
+	/**
+	 * Creates the {@link QuerydslBindings} to be used using for the given domain type and a pre-defined
+	 * {@link QuerydslBinderCustomizer}. If no customizer is given, auto-detection will be applied.
+	 * 
+	 * @param customizer the {@link QuerydslBinderCustomizer} to use. If {@literal null} is given customizer detection for
+	 *          the given domain type will be applied.
+	 * @param domainType must not be {@literal null}.
+	 * @return
+	 */
+	public QuerydslBindings createBindingsFor(Class<? extends QuerydslBinderCustomizer<?>> customizer,
 			TypeInformation<?> domainType) {
+
+		Assert.notNull(domainType, "Domain type must not be null!");
 
 		EntityPath<?> path = verifyEntityPathPresent(domainType);
 

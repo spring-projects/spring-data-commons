@@ -19,11 +19,11 @@ import java.util.Collection;
 
 import org.springframework.util.Assert;
 
-import com.mysema.query.BooleanBuilder;
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
-import com.mysema.query.types.expr.SimpleExpression;
-import com.mysema.query.types.path.CollectionPathBase;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.CollectionPathBase;
+import com.querydsl.core.types.dsl.SimpleExpression;
 
 /**
  * Default implementation of {@link MultiValueBinding} creating {@link Predicate} based on the {@link Path}s type.

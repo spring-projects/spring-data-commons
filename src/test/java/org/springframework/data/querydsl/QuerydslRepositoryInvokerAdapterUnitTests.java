@@ -33,7 +33,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.util.MultiValueMap;
 
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Predicate;
 
 /**
  * Unit tests for {@link QuerydslRepositoryInvokerAdapter}.

@@ -27,10 +27,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.querydsl.QUser;
-import org.springframework.data.querydsl.binding.QuerydslDefaultBinding;
 
-import com.mysema.query.types.Expression;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Predicate;
 
 /**
  * @author Christoph Strobl

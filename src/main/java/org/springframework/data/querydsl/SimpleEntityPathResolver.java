@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.lang.reflect.Modifier;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
-import com.mysema.query.types.EntityPath;
+import com.querydsl.core.types.EntityPath;
 
 /**
  * Simple implementation of {@link EntityPathResolver} to lookup a query class by reflection and using the static field

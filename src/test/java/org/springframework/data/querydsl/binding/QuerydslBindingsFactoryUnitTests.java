@@ -36,9 +36,9 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
-import com.mysema.query.types.path.StringPath;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QuerydslBindingsFactory}.

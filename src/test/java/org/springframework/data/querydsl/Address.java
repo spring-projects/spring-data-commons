@@ -15,7 +15,7 @@
  */
 package org.springframework.data.querydsl;
 
-import com.mysema.query.annotations.QueryEntity;
+import com.querydsl.core.annotations.QueryEntity;
 
 /**
  * @author Christoph Strobl

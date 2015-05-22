@@ -15,8 +15,8 @@
  */
 package org.springframework.data.querydsl.binding;
 
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
 
 /**
  * {@link SingleValueBinding} creates a {@link Predicate} out of given {@link Path} and value. Used for specific
@@ -30,12 +30,13 @@ import com.mysema.query.types.Predicate;
 public interface SingleValueBinding<T extends Path<? extends S>, S> {
 
 	/**
-	 * Returns the predicate to be applied to the given {@link Path} for the given value. The given value will be the first 
-	 * the first one provided for the given path and converted into the expected type.
+	 * Returns the predicate to be applied to the given {@link Path} for the given value. The given value will be the
+	 * first the first one provided for the given path and converted into the expected type.
 	 * 
 	 * @param path {@link Path} to the property. Will not be {@literal null}.
 	 * @param value the value that should be bound. Will not be {@literal null}.
-	 * @return can be {@literal null}, in which case the binding will not be incorporated in the overall {@link Predicate}.
+	 * @return can be {@literal null}, in which case the binding will not be incorporated in the overall {@link Predicate}
+	 *         .
 	 */
 	Predicate bind(T path, S value);
 }

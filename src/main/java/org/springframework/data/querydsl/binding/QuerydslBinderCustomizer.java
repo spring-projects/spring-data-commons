@@ -15,14 +15,21 @@
  */
 package org.springframework.data.querydsl.binding;
 
-import com.mysema.query.types.EntityPath;
+import com.querydsl.core.types.EntityPath;
 
 /**
  * A component that will customize {@link QuerydslBindings} for the given entity path.
  * 
  * @author Oliver Gierke
+ * @since 1.11
  */
 public interface QuerydslBinderCustomizer<T extends EntityPath<?>> {
 
+	/**
+	 * Customize the {@link QuerydslBindings} for the given root.
+	 * 
+	 * @param bindings the {@link QuerydslBindings} to customize, will never be {@literal null}.
+	 * @param root the entity root, will never be {@literal null}.
+	 */
 	void customize(QuerydslBindings bindings, T root);
 }

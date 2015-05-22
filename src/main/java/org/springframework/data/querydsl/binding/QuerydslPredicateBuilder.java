@@ -39,9 +39,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.mysema.query.BooleanBuilder;
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
 
 /**
  * Builder assembling {@link Predicate} out of {@link PropertyValues}.

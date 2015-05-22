@@ -8,8 +8,8 @@ Import-Package:
  sun.reflect;version="0";resolution:=optional
 Import-Template:
  com.fasterxml.jackson.*;version="${jackson:[=.=.=,+1.0.0)}";resolution:=optional,
- com.mysema.query.*;version="${querydsl:[=.=.=,+1.0.0)}";resolution:=optional,
  com.google.common.*;version="${guava:[=.=.=,+1.0.0)}";resolution:=optional,
+ com.querydsl.*;version="${querydsl:[=.=.=,+1.0.0)}";resolution:=optional,
  javax.enterprise.*;version="${cdi:[=.=.=,+1.0.0)}";resolution:=optional,
  javax.inject.*;version="[1.0.0,2.0.0)";resolution:=optional,
  javax.xml.bind.*;version="0";resolution:=optional,

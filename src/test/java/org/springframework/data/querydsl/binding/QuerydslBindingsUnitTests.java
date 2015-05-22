@@ -25,15 +25,11 @@ import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
-import org.springframework.data.querydsl.binding.MultiValueBinding;
-import org.springframework.data.querydsl.binding.QuerydslBindings;
-import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
-import org.springframework.data.querydsl.binding.SingleValueBinding;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
-import com.mysema.query.types.path.StringPath;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QuerydslBindings}.

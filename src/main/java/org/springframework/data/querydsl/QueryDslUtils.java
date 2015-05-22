@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ package org.springframework.data.querydsl;
  */
 public abstract class QueryDslUtils {
 
-	public static final boolean QUERY_DSL_PRESENT = org.springframework.util.ClassUtils.isPresent(
-			"com.mysema.query.types.Predicate", QueryDslUtils.class.getClassLoader());
+	public static final boolean QUERY_DSL_PRESENT = org.springframework.util.ClassUtils
+			.isPresent("com.querydsl.core.types.Predicate", QueryDslUtils.class.getClassLoader());
 
 	private QueryDslUtils() {
 

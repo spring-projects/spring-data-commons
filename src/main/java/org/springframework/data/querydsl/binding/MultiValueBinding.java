@@ -17,8 +17,8 @@ package org.springframework.data.querydsl.binding;
 
 import java.util.Collection;
 
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
 
 /**
  * {@link MultiValueBinding} creates a {@link Predicate} out of given {@link Path} and collection value. Used for
@@ -31,13 +31,14 @@ import com.mysema.query.types.Predicate;
 public interface MultiValueBinding<T extends Path<? extends S>, S> {
 
 	/**
-	 * Returns the predicate to be applied to the given {@link Path} for the given collection value, which will contain 
-	 * all values submitted for the path bind. If a single value was provided only the collection will consist of exactly 
-	 * one element. 
+	 * Returns the predicate to be applied to the given {@link Path} for the given collection value, which will contain
+	 * all values submitted for the path bind. If a single value was provided only the collection will consist of exactly
+	 * one element.
 	 * 
 	 * @param path {@link Path} to the property. Will not be {@literal null}.
 	 * @param value the value that should be bound. Will not be {@literal null} or empty.
-	 * @return can be {@literal null}, in which case the binding will not be incorporated in the overall {@link Predicate}.
+	 * @return can be {@literal null}, in which case the binding will not be incorporated in the overall {@link Predicate}
+	 *         .
 	 */
 	Predicate bind(T path, Collection<? extends S> value);
 }

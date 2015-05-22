@@ -36,10 +36,10 @@ import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.mysema.query.collections.CollQueryFactory;
-import com.mysema.query.types.Constant;
-import com.mysema.query.types.Predicate;
-import com.mysema.query.types.path.StringPath;
+import com.querydsl.collections.CollQueryFactory;
+import com.querydsl.core.types.Constant;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QuerydslPredicateBuilder}.
@@ -99,7 +99,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("Oliver")));
 
-		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).list(QUser.user);
+		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
 
 		assertThat(result, hasSize(1));
 		assertThat(result, hasItem(Users.OLIVER));
@@ -117,7 +117,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		assertThat(predicate, is((Predicate) QUser.user.address.city.eq("Linz")));
 
-		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).list(QUser.user);
+		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
 
 		assertThat(result, hasSize(1));
 		assertThat(result, hasItem(Users.CHRISTOPH));

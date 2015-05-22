@@ -29,9 +29,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 
-import com.mysema.query.annotations.QueryInit;
-import com.mysema.query.types.OrderSpecifier;
-import com.mysema.query.types.path.StringPath;
+import com.querydsl.core.annotations.QueryInit;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.PathBuilderFactory;
+import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QSort}.
@@ -164,10 +165,8 @@ public class QSortUnitTests {
 
 		Sort result = sort.and(new Sort(Direction.ASC, "lastname"));
 		assertThat(result, is(Matchers.<Order> iterableWithSize(2)));
-		assertThat(
-				result,
-				hasItems(new Order(Direction.ASC, "lastname"),
-						new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString())));
+		assertThat(result, hasItems(new Order(Direction.ASC, "lastname"),
+				new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString())));
 	}
 
 	/**
@@ -209,23 +208,25 @@ public class QSortUnitTests {
 	@Test
 	public void handlesPlainStringPathsCorrectly() {
 
-		QSort sort = new QSort(new OrderSpecifier<String>(com.mysema.query.types.Order.ASC, new StringPath("firstname")));
+		StringPath path = new PathBuilderFactory().create(User.class).getString("firstname");
+
+		QSort sort = new QSort(new OrderSpecifier<String>(com.querydsl.core.types.Order.ASC, path));
 
 		assertThat(sort, hasItems(new Order(Direction.ASC, "firstname")));
 	}
 
-	@com.mysema.query.annotations.QueryEntity
+	@com.querydsl.core.annotations.QueryEntity
 	static class WrapperToWrapWrapperForUserWrapper {
 
-		@QueryInit("wrapper.user")//
+		@QueryInit("wrapper.user") //
 		WrapperForUserWrapper wrapperForUserWrapper;
 
-		@com.mysema.query.annotations.QueryEntity
+		@com.querydsl.core.annotations.QueryEntity
 		static class WrapperForUserWrapper {
 
 			UserWrapper wrapper;
 
-			@com.mysema.query.annotations.QueryEntity
+			@com.querydsl.core.annotations.QueryEntity
 			static class UserWrapper {
 
 				User user;

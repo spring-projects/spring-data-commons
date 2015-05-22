@@ -28,9 +28,9 @@ import org.springframework.data.mapping.PropertyPath;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.mysema.query.types.Path;
-import com.mysema.query.types.PathMetadata;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.Predicate;
 
 /**
  * {@link QuerydslBindings} allows definition of path specific {@link SingleValueBinding}.
@@ -229,9 +229,9 @@ public class QuerydslBindings {
 			return "";
 		}
 
-		PathMetadata<?> metadata = path.getMetadata();
+		PathMetadata metadata = path.getMetadata();
 
-		return path.toString().substring(metadata.getRoot().getMetadata().getName().length() + 1);
+		return path.toString().substring(metadata.getRootPath().getMetadata().getName().length() + 1);
 	}
 
 	/**

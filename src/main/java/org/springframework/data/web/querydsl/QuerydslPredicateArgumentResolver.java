@@ -35,7 +35,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Predicate;
 
 /**
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.mysema.query.types.Predicate} into Spring MVC
@@ -88,6 +88,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public Predicate resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
@@ -100,7 +101,8 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 		QuerydslPredicate annotation = parameter.getParameterAnnotation(QuerydslPredicate.class);
 		TypeInformation<?> domainType = extractTypeInfo(parameter).getActualType();
 
-		Class<? extends QuerydslBinderCustomizer> customizer = annotation == null ? null : annotation.bindings();
+		Class<? extends QuerydslBinderCustomizer<?>> customizer = (Class<? extends QuerydslBinderCustomizer<?>>) (annotation == null
+				? null : annotation.bindings());
 		QuerydslBindings bindings = bindingsFactory.createBindingsFor(customizer, domainType);
 
 		return predicateBuilder.getPredicate(domainType, parameters, bindings);

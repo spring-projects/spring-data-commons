@@ -25,7 +25,7 @@ import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Predicate;
 
 /**
  * {@link RepositoryInvoker} that is aware of a {@link QueryDslPredicateExecutor} and {@link Predicate} to be executed

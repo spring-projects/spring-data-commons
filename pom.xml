@@ -94,22 +94,24 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!--  Querydsl -->
+
 		<dependency>
-			<groupId>com.mysema.querydsl</groupId>
+			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-core</artifactId>
 			<version>${querydsl}</version>
 			<optional>true</optional>
 		</dependency>
 
 		<dependency>
-			<groupId>com.mysema.querydsl</groupId>
+			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-apt</artifactId>
 			<version>${querydsl}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>com.mysema.querydsl</groupId>
+			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-collections</artifactId>
 			<version>${querydsl}</version>
 			<optional>true</optional>
@@ -212,7 +214,7 @@
 						</goals>
 						<configuration>
 							<outputDirectory>${project.build.directory}/generated-sources/test-annotations</outputDirectory>
-							<processor>com.mysema.query.apt.QuerydslAnnotationProcessor</processor>
+							<processor>com.querydsl.apt.QuerydslAnnotationProcessor</processor>
 						</configuration>
 					</execution>
 				</executions>
