@@ -276,7 +276,7 @@ To resolve this ambiguity you can use `_` inside your method name to manually de
 List<Person> findByAddress_ZipCode(ZipCode zipCode);
 ----
 
-If your property names contain underscores (e.g. `first_name`) you can escape the underscore in the method name with a second underscore. For a `first_name` property the query method would have to be named `findByFirst__name(…)`.
+As we treat underscore as a reserved character we stongly advise to follow standard Java naming conventions (i.e. *not* using underscores in property names but camel case instead).
 
 [[repositories.special-parameters]]
 === Special parameter handling
