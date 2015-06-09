@@ -18,7 +18,6 @@ package org.springframework.data.convert;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.convert.BytecodeGeneratingEntityInstantiator.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
 
 import java.lang.reflect.Constructor;
@@ -31,7 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.data.convert.BytecodeGeneratingEntityInstantiatorUnitTests.Outer.Inner;
+import org.springframework.data.convert.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -44,14 +43,15 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
 /**
- * Unit tests for {@link BytecodeGeneratingEntityInstantiator}.
- * 
+ * Unit tests for {@link ClassGeneratingEntityInstantiator}.
+ *
  * @author Thomas Darimont
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-@Deprecated
-public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
+public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
+
+	ClassGeneratingEntityInstantiator instance = new ClassGeneratingEntityInstantiator();
 
 	@Mock PersistentEntity<?, P> entity;
 	@Mock ParameterValueProvider<P> provider;
@@ -63,7 +63,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 	public void instantiatesSimpleObjectCorrectly() {
 
 		when(entity.getType()).thenReturn((Class) Object.class);
-		INSTANCE.createInstance(entity, provider);
+		this.instance.createInstance(entity, provider);
 	}
 
 	@Test
@@ -71,7 +71,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 	public void instantiatesArrayCorrectly() {
 
 		when(entity.getType()).thenReturn((Class) String[][].class);
-		INSTANCE.createInstance(entity, provider);
+		this.instance.createInstance(entity, provider);
 	}
 
 	@Test
@@ -83,7 +83,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		when(entity.getType()).thenReturn((Class) Foo.class);
 		when(entity.getPersistenceConstructor()).thenReturn(constructor);
 
-		Object instance = INSTANCE.createInstance(entity, provider);
+		Object instance = this.instance.createInstance(entity, provider);
 
 		assertTrue(instance instanceof Foo);
 		verify(provider, times(1)).getParameterValue((Parameter) constructor.getParameters().iterator().next());
@@ -99,7 +99,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		when(entity.getPersistenceConstructor()).thenReturn(null);
 		when(entity.getType()).thenReturn((Class) PersistentEntity.class);
 
-		INSTANCE.createInstance(entity, provider);
+		this.instance.createInstance(entity, provider);
 	}
 
 	/**
@@ -115,7 +115,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		final Object outer = new Outer();
 
 		when(provider.getParameterValue(parameter)).thenReturn(outer);
-		final Inner instance = INSTANCE.createInstance(entity, provider);
+		final Inner instance = this.instance.createInstance(entity, provider);
 
 		assertThat(instance, is(notNullValue()));
 
@@ -146,7 +146,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 
 		try {
 
-			INSTANCE.createInstance(entity, provider);
+			this.instance.createInstance(entity, provider);
 			fail("Expected MappingInstantiationException!");
 
 		} catch (MappingInstantiationException o_O) {
@@ -176,7 +176,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		when(entity.getPersistenceConstructor()).thenReturn(constructor);
 
 		for (int i = 0; i < 2; i++) {
-			Object instance = INSTANCE.createInstance(entity, provider);
+			Object instance = this.instance.createInstance(entity, provider);
 			assertTrue(instance instanceof ObjCtorDefault);
 		}
 	}
@@ -195,7 +195,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		when(entity.getPersistenceConstructor()).thenReturn(constructor);
 
 		for (int i = 0; i < 2; i++) {
-			Object instance = INSTANCE.createInstance(entity, provider);
+			Object instance = this.instance.createInstance(entity, provider);
 			assertTrue(instance instanceof ObjCtorNoArgs);
 			assertTrue(((ObjCtorNoArgs) instance).ctorInvoked);
 		}
@@ -217,7 +217,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("FOO");
 
 		for (int i = 0; i < 2; i++) {
-			Object instance = INSTANCE.createInstance(entity, provider);
+			Object instance = this.instance.createInstance(entity, provider);
 			assertTrue(instance instanceof ObjCtor1ParamString);
 			assertTrue(((ObjCtor1ParamString) instance).ctorInvoked);
 			assertThat(((ObjCtor1ParamString) instance).param1, is("FOO"));
@@ -240,7 +240,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		for (int i = 0; i < 2; i++) {
 			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("FOO").thenReturn("BAR");
 
-			Object instance = INSTANCE.createInstance(entity, provider);
+			Object instance = this.instance.createInstance(entity, provider);
 			assertTrue(instance instanceof ObjCtor2ParamStringString);
 			assertTrue(((ObjCtor2ParamStringString) instance).ctorInvoked);
 			assertThat(((ObjCtor2ParamStringString) instance).param1, is("FOO"));
@@ -265,7 +265,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 
 			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn(42);
 
-			Object instance = INSTANCE.createInstance(entity, provider);
+			Object instance = this.instance.createInstance(entity, provider);
 			assertTrue(instance instanceof ObjectCtor1ParamInt);
 			assertTrue("matches", ((ObjectCtor1ParamInt) instance).param1 == 42);
 		}
@@ -288,7 +288,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("A").thenReturn(1).thenReturn(2)
 					.thenReturn(3).thenReturn(4).thenReturn(5).thenReturn("B");
 
-			Object instance = INSTANCE.createInstance(entity, provider);
+			Object instance = this.instance.createInstance(entity, provider);
 			assertTrue(instance instanceof ObjectCtor7ParamsString5IntsString);
 			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param1, is("A"));
 			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param2, is(1));
