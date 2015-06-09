@@ -284,7 +284,7 @@ public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 
 			this.classLoader = AccessController.doPrivileged(new PrivilegedAction<ByteArrayClassLoader>() {
 				public ByteArrayClassLoader run() {
-					return new ByteArrayClassLoader(ObjectInstantiatorClassGenerator.class.getClassLoader());
+					return new ByteArrayClassLoader(ClassUtils.getDefaultClassLoader());
 				}
 			});
 		}
