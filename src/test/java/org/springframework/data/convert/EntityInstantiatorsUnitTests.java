@@ -49,7 +49,7 @@ public class EntityInstantiatorsUnitTests {
 
 		EntityInstantiators instantiators = new EntityInstantiators();
 		assertThat(instantiators.getInstantiatorFor(entity),
-				is((EntityInstantiator) BytecodeGeneratingEntityInstantiator.INSTANCE));
+				instanceOf(ClassGeneratingEntityInstantiator.class));
 	}
 
 	@Test
