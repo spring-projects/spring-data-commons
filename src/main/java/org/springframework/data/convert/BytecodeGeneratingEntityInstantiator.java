@@ -29,16 +29,17 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @since 1.10
- * @deprecated since 1.11 in favor of {@link ClassGeneratingEntityInstantiator}
+ * @deprecated since 1.11 in favor of {@link ClassGeneratingEntityInstantiator}.
  */
+@Deprecated
 public enum BytecodeGeneratingEntityInstantiator implements EntityInstantiator {
 
 	INSTANCE;
 
 	private final ClassGeneratingEntityInstantiator delegate = new ClassGeneratingEntityInstantiator();
 
-
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
 	 */
 	@Override

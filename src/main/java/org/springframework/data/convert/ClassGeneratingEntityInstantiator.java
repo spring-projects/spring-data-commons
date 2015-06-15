@@ -1,4 +1,3 @@
-package org.springframework.data.convert;
 /*
  * Copyright 2015 the original author or authors.
  *
@@ -14,6 +13,7 @@ package org.springframework.data.convert;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.data.convert;
 
 import static org.springframework.asm.Opcodes.*;
 
@@ -49,7 +49,8 @@ import org.springframework.util.ClassUtils;
  *
  * @author Thomas Darimont
  * @author Oliver Gierke
- * @since 1.10
+ * @author Phillip Webb
+ * @since 1.11
  */
 public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
@@ -58,11 +59,15 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	private volatile Map<TypeInformation<?>, EntityInstantiator> entityInstantiators = new HashMap<TypeInformation<?>, EntityInstantiator>(
 			32);
 
+	/**
+	 * Creates a new {@link ClassGeneratingEntityInstantiator}.
+	 */
 	public ClassGeneratingEntityInstantiator() {
 		this.generator = new ObjectInstantiatorClassGenerator();
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
 	 */
 	@Override
