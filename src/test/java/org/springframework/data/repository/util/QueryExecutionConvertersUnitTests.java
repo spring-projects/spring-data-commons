@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ package org.springframework.data.repository.util;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import org.junit.Assume;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.util.ClassUtils;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
 
@@ -43,6 +45,19 @@ public class QueryExecutionConvertersUnitTests {
 	}
 
 	/**
+	 * @see DATACMNS-714
+	 */
+	@Test
+	public void registersWrapperTypes() {
+
+		assertThat(QueryExecutionConverters.supports(Optional.class), is(true));
+		assertThat(QueryExecutionConverters.supports(java.util.Optional.class), is(true));
+		assertThat(QueryExecutionConverters.supports(Future.class), is(true));
+		assertThat(QueryExecutionConverters.supports(ListenableFuture.class), is(true));
+		assertThat(QueryExecutionConverters.supports(CompletableFuture.class), is(true));
+	}
+
+	/**
 	 * @see DATACMNS-483
 	 */
 	@Test
@@ -60,9 +75,22 @@ public class QueryExecutionConvertersUnitTests {
 	@SuppressWarnings("unchecked")
 	public void turnsNullIntoJdk8Optional() {
 
-		Assume.assumeThat(ClassUtils.isPresent("java.util.Optional", getClass().getClassLoader()), is(true));
-
-		java.util.Optional<Object> optional = conversionService.convert(new NullableWrapper(null), java.util.Optional.class);
+		java.util.Optional<Object> optional = conversionService.convert(new NullableWrapper(null),
+				java.util.Optional.class);
 		assertThat(optional, is(java.util.Optional.<Object> empty()));
+	}
+
+	/**
+	 * @see DATACMNS-714
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void turnsNullIntoCompletableFutureForNull() throws Exception {
+
+		CompletableFuture<Object> result = conversionService.convert(new NullableWrapper(null), CompletableFuture.class);
+
+		assertThat(result, is(notNullValue()));
+		assertThat(result.isDone(), is(true));
+		assertThat(result.get(), is(nullValue()));
 	}
 }
