@@ -55,7 +55,7 @@ public class EntityInstantiators {
 	 * @param customInstantiators must not be {@literal null}.
 	 */
 	public EntityInstantiators(Map<Class<?>, EntityInstantiator> customInstantiators) {
-		this(BytecodeGeneratingEntityInstantiator.INSTANCE, customInstantiators);
+		this(new ClassGeneratingEntityInstantiator(), customInstantiators);
 	}
 
 	/**
