@@ -128,10 +128,36 @@ public class PageImplUnitTests {
 	}
 
 	/**
-	 * @see DATACMNS-615
+	 * @see DATACMNS-713
 	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsTotalLessThanContentLength() {
-		new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(0, 10), 1);
+	@Test
+	public void adaptsTotalForLastPageOnIntermediateDeletion() {
+		assertThat(new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(0, 5), 3).getTotalElements(), is(2L));
+	}
+
+	/**
+	 * @see DATACMNS-713
+	 */
+	@Test
+	public void adaptsTotalForLastPageOnIntermediateInsertion() {
+		assertThat(new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(0, 5), 1).getTotalElements(), is(2L));
+	}
+
+	/**
+	 * @see DATACMNS-713
+	 */
+	@Test
+	public void adaptsTotalForLastPageOnIntermediateDeletionOnLastPate() {
+		assertThat(new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(1, 10), 13).getTotalElements(),
+				is(12L));
+	}
+
+	/**
+	 * @see DATACMNS-713
+	 */
+	@Test
+	public void adaptsTotalForLastPageOnIntermediateInsertionOnLastPate() {
+		assertThat(new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(1, 10), 11).getTotalElements(),
+				is(12L));
 	}
 }

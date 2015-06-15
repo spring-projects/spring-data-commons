@@ -17,8 +17,6 @@ package org.springframework.data.domain;
 
 import java.util.List;
 
-import org.springframework.util.Assert;
-
 /**
  * Basic {@code Page} implementation.
  * 
@@ -36,15 +34,15 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 * 
 	 * @param content the content of this page, must not be {@literal null}.
 	 * @param pageable the paging information, can be {@literal null}.
-	 * @param total the total amount of items available
+	 * @param total the total amount of items available. The total might be adapted considering the length of the content
+	 *          given, if it is going to be the content of the last page. This is in place to mitigate inconsistencies
 	 */
 	public PageImpl(List<T> content, Pageable pageable, long total) {
 
 		super(content, pageable);
 
-		Assert.isTrue(total >= content.size(), "Total must not be less than the number of elements given!");
-
-		this.total = total;
+		this.total = pageable != null && pageable.getOffset() + pageable.getPageSize() > total
+				? pageable.getOffset() + content.size() : total;
 	}
 
 	/**
