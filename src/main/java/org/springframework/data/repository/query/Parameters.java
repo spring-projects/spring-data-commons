@@ -45,7 +45,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private static final String ALL_OR_NOTHING = String.format("Either use @%s "
 			+ "on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
 			Pageable.class.getSimpleName(), Sort.class.getSimpleName());
-	private static final ParameterNameDiscoverer PARAMETER_DISCOVERER = ReflectionUtils.createInstanceIfPresent(
+	private final ParameterNameDiscoverer PARAMETER_DISCOVERER = ReflectionUtils.createInstanceIfPresent(
 			"org.springframework.core.DefaultParameterNameDiscoverer", new LocalVariableTableParameterNameDiscoverer());
 
 	private final int pageableIndex;
