@@ -21,9 +21,11 @@ import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.junit.Before;
@@ -41,6 +43,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.querydsl.User;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
@@ -223,6 +226,76 @@ public class RepositoryFactorySupportUnitTests {
 		factory.addRepositoryProxyPostProcessor(null);
 	}
 
+	/**
+	 * @see @see DATACMNS-712
+	 */
+	@Test
+	public void wrapsExecutionResultIntoCompletableFutureIfConfigured() throws Exception {
+
+		final User reference = new User();
+
+		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(new Answer<User>() {
+			@Override
+			public User answer(InvocationOnMock invocation) throws Throwable {
+				Thread.sleep(500);
+				return reference;
+			}
+		});
+
+		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
+
+		AsyncAnnotationBeanPostProcessor processor = new AsyncAnnotationBeanPostProcessor();
+		processor.setBeanFactory(new DefaultListableBeanFactory());
+		repository = (ConvertingRepository) processor.postProcessAfterInitialization(repository, null);
+
+		CompletableFuture<User> future = repository.findOneByFirstname("Foo");
+
+		assertThat(future.isDone(), is(false));
+
+		while (!future.isDone()) {
+			Thread.sleep(300);
+		}
+
+		assertThat(future.get(), is(reference));
+
+		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
+	}
+	
+	/**
+	 * @see @see DATACMNS-712
+	 */
+	@Test
+	public void wrapsExecutionResultIntoCompletableFutureWithEntityCollectionIfConfigured() throws Exception {
+
+		final List<User> reference = Arrays.asList(new User());
+
+		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(new Answer<List<User>>() {
+			@Override
+			public List<User> answer(InvocationOnMock invocation) throws Throwable {
+				Thread.sleep(500);
+				return reference;
+			}
+		});
+
+		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
+
+		AsyncAnnotationBeanPostProcessor processor = new AsyncAnnotationBeanPostProcessor();
+		processor.setBeanFactory(new DefaultListableBeanFactory());
+		repository = (ConvertingRepository) processor.postProcessAfterInitialization(repository, null);
+
+		CompletableFuture<List<User>> future = repository.readAllByFirstname("Foo");
+
+		assertThat(future.isDone(), is(false));
+
+		while (!future.isDone()) {
+			Thread.sleep(300);
+		}
+
+		assertThat(future.get(), is(reference));
+
+		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
+	}
+
 	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {
 
 		Object findByClass(Class<?> clazz);
@@ -281,5 +354,11 @@ public class RepositoryFactorySupportUnitTests {
 
 		@Async
 		Future<Object> findByFirstname(String firstname);
+
+		@Async
+		CompletableFuture<User> findOneByFirstname(String firstname);
+
+		@Async
+		CompletableFuture<List<User>> readAllByFirstname(String firstname);
 	}
 }

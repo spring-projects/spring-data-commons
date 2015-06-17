@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.repository.util;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.springframework.core.convert.ConversionService;
@@ -36,14 +37,17 @@ import com.google.common.base.Optional;
  * available on the classpath.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  * @since 1.8
  */
 public abstract class QueryExecutionConverters {
 
-	private static final boolean GUAVA_PRESENT = ClassUtils.isPresent("com.google.common.base.Optional",
+	private static final boolean GUAVA_OPTIONAL_PRESENT = ClassUtils.isPresent("com.google.common.base.Optional",
 			QueryExecutionConverters.class.getClassLoader());
-	private static final boolean JDK_PRESENT = ClassUtils.isPresent("java.util.Optional",
+	private static final boolean JDK_OPTIONAL_PRESENT = ClassUtils.isPresent("java.util.Optional",
 			QueryExecutionConverters.class.getClassLoader());
+	private static final boolean COMPLETABLE_FUTURE_PRESENT = ClassUtils.isPresent("java.util.concurrent.CompletableFuture",
+			QueryExecutionConverters.class.getClassLoader()); 
 
 	private static final Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
 
@@ -51,12 +55,16 @@ public abstract class QueryExecutionConverters {
 
 		WRAPPER_TYPES.add(Future.class);
 
-		if (GUAVA_PRESENT) {
+		if (GUAVA_OPTIONAL_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToGuavaOptionalConverter.getWrapperType());
 		}
 
-		if (JDK_PRESENT) {
+		if (JDK_OPTIONAL_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToJdk8OptionalConverter.getWrapperType());
+		}
+		
+		if(COMPLETABLE_FUTURE_PRESENT){
+			WRAPPER_TYPES.add(NullableWrapperToJdk8CompletableFutureConverter.getWrapperType());
 		}
 	}
 
@@ -83,12 +91,13 @@ public abstract class QueryExecutionConverters {
 
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
-		if (GUAVA_PRESENT) {
+		if (GUAVA_OPTIONAL_PRESENT) {
 			conversionService.addConverter(new NullableWrapperToGuavaOptionalConverter(conversionService));
 		}
 
-		if (JDK_PRESENT) {
+		if (JDK_OPTIONAL_PRESENT) {
 			conversionService.addConverter(new NullableWrapperToJdk8OptionalConverter(conversionService));
+			conversionService.addConverter(new NullableWrapperToJdk8CompletableFutureConverter(conversionService));
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
@@ -272,6 +281,47 @@ public abstract class QueryExecutionConverters {
 		@Override
 		protected Object wrap(Object source) {
 			return new AsyncResult<Object>(source);
+		}
+	}
+
+	/**
+	 * A Spring {@link Converter} to support returning {@link CompletableFuture} instances from repository methods.
+	 * 
+	 * @author Thomas Darimont
+	 */
+	private static class NullableWrapperToJdk8CompletableFutureConverter extends AbstractWrapperTypeConverter {
+
+		private static final CompletableFuture<Object> NULL_OBJECT = CompletableFuture.completedFuture(null);
+
+		/**
+		 * Creates a new {@link NullableWrapperToFutureConverter} using the given {@link ConversionService}.
+		 * 
+		 * @param conversionService must not be {@literal null}.
+		 */
+		public NullableWrapperToJdk8CompletableFutureConverter(ConversionService conversionService) {
+			super(conversionService, CompletableFuture.class);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#getNullValue()
+		 */
+		@Override
+		protected Object getNullValue() {
+			return NULL_OBJECT;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
+		 */
+		@Override
+		protected Object wrap(Object source) {
+			return CompletableFuture.completedFuture(source);
+		}
+
+		public static Class<?> getWrapperType() {
+			return CompletableFuture.class;
 		}
 	}
 }

@@ -38,16 +38,22 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
 public abstract class ReflectionUtils {
 
 	private static final Class<?> JAVA8_STREAM_TYPE;
+	private static final Class<?> JAVA8_COMPLETABLE_FUTURE;
 
 	static {
+		JAVA8_STREAM_TYPE = returnClassIfPresentOrNull("java.util.stream.Stream");
+		JAVA8_COMPLETABLE_FUTURE = returnClassIfPresentOrNull("java.util.concurrent.CompletableFuture");
+	}
 
+	private static Class<?> returnClassIfPresentOrNull(String name) {
+		
 		Class<?> cls = null;
 
 		try {
-			cls = Class.forName("java.util.stream.Stream");
+			cls = Class.forName(name);
 		} catch (ClassNotFoundException ignore) {}
 
-		JAVA8_STREAM_TYPE = cls;
+		return cls;
 	}
 
 	private ReflectionUtils() {}
@@ -238,6 +244,21 @@ public abstract class ReflectionUtils {
 		}
 
 		return JAVA8_STREAM_TYPE.isAssignableFrom(type);
+	}
+	
+	/**
+	 * Tests whether the given type is assignable to a Java 8 {@link Stream}.
+	 * 
+	 * @param type can be {@literal null}.
+	 * @return
+	 */
+	public static boolean isJava8CompletableFuture(Class<?> type) {
+
+		if (type == null || JAVA8_COMPLETABLE_FUTURE == null) {
+			return false;
+		}
+
+		return JAVA8_COMPLETABLE_FUTURE.isAssignableFrom(type);
 	}
 
 	/**
