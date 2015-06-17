@@ -17,13 +17,16 @@ package org.springframework.data.repository.core.support;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.junit.Assume;
@@ -48,10 +51,12 @@ import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.data.repository.sample.User;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport}.
@@ -241,6 +246,89 @@ public class RepositoryFactorySupportUnitTests {
 		}
 	}
 
+	/**
+	 * @see @see DATACMNS-714
+	 */
+	@Test
+	public void wrapsExecutionResultIntoCompletableFutureIfConfigured() throws Exception {
+
+		assumeThat(ClassUtils.isPresent("org.springframework.transaction.interceptor.TransactionalProxy", null), is(true));
+
+		User reference = new User();
+
+		expect(prepareConvertingRepository(reference).findOneByFirstname("Foo"), reference);
+	}
+
+	/**
+	 * @see @see DATACMNS-714
+	 */
+	@Test
+	public void wrapsExecutionResultIntoListenableFutureIfConfigured() throws Exception {
+
+		assumeThat(ClassUtils.isPresent("org.springframework.transaction.interceptor.TransactionalProxy", null), is(true));
+
+		User reference = new User();
+
+		expect(prepareConvertingRepository(reference).findOneByLastname("Foo"), reference);
+	}
+
+	/**
+	 * @see @see DATACMNS-714
+	 */
+	@Test
+	public void wrapsExecutionResultIntoCompletableFutureWithEntityCollectionIfConfigured() throws Exception {
+
+		assumeThat(ClassUtils.isPresent("org.springframework.transaction.interceptor.TransactionalProxy", null), is(true));
+
+		List<User> reference = Arrays.asList(new User());
+
+		expect(prepareConvertingRepository(reference).readAllByFirstname("Foo"), reference);
+	}
+
+	/**
+	 * @see @see DATACMNS-714
+	 */
+	@Test
+	public void wrapsExecutionResultIntoListenableFutureWithEntityCollectionIfConfigured() throws Exception {
+
+		assumeThat(ClassUtils.isPresent("org.springframework.transaction.interceptor.TransactionalProxy", null), is(true));
+
+		List<User> reference = Arrays.asList(new User());
+
+		expect(prepareConvertingRepository(reference).readAllByLastname("Foo"), reference);
+	}
+
+	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {
+
+		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(new Answer<Object>() {
+
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				Thread.sleep(200);
+				return expectedValue;
+			}
+		});
+
+		AsyncAnnotationBeanPostProcessor processor = new AsyncAnnotationBeanPostProcessor();
+		processor.setBeanFactory(new DefaultListableBeanFactory());
+
+		return (ConvertingRepository) processor
+				.postProcessAfterInitialization(factory.getRepository(ConvertingRepository.class), null);
+	}
+
+	private void expect(Future<?> future, Object value) throws Exception {
+
+		assertThat(future.isDone(), is(false));
+
+		while (!future.isDone()) {
+			Thread.sleep(50);
+		}
+
+		assertThat(future.get(), is(value));
+
+		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
+	}
+
 	interface SimpleRepository extends Repository<Object, Serializable> {}
 
 	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {
@@ -301,5 +389,21 @@ public class RepositoryFactorySupportUnitTests {
 
 		@Async
 		Future<Object> findByFirstname(String firstname);
+
+		// DATACMNS-714
+		@Async
+		CompletableFuture<User> findOneByFirstname(String firstname);
+
+		// DATACMNS-714
+		@Async
+		CompletableFuture<List<User>> readAllByFirstname(String firstname);
+
+		// DATACMNS-714
+		@Async
+		ListenableFuture<User> findOneByLastname(String lastname);
+
+		// DATACMNS-714
+		@Async
+		ListenableFuture<List<User>> readAllByLastname(String lastname);
 	}
 }
