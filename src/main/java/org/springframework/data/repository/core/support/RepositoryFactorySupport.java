@@ -61,6 +61,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
 			RepositoryFactorySupport.class.getClassLoader());
+	private static final Class<?> TRANSACTION_PROXY_TYPE = getTransactionProxyType();
 
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
 	private final List<RepositoryProxyPostProcessor> postProcessors = new ArrayList<RepositoryProxyPostProcessor>();
@@ -175,6 +176,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		ProxyFactory result = new ProxyFactory();
 		result.setTarget(target);
 		result.setInterfaces(new Class[] { repositoryInterface, Repository.class });
+
+		if (TRANSACTION_PROXY_TYPE != null) {
+			result.addInterface(TRANSACTION_PROXY_TYPE);
+		}
 
 		for (RepositoryProxyPostProcessor processor : postProcessors) {
 			processor.postProcess(result, information);
@@ -296,6 +301,21 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 	protected void validate(RepositoryMetadata repositoryMetadata) {
 
+	}
+
+	/**
+	 * Returns the TransactionProxy type or {@literal null} if not on the classpath.
+	 * 
+	 * @return
+	 */
+	private static Class<?> getTransactionProxyType() {
+
+		try {
+			return org.springframework.util.ClassUtils
+					.forName("org.springframework.transaction.interceptor.TransactionalProxy", null);
+		} catch (ClassNotFoundException o_O) {
+			return null;
+		}
 	}
 
 	/**
