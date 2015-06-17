@@ -20,6 +20,9 @@ import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.springframework.data.domain.Page;
@@ -33,6 +36,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * Unit tests for {@link QueryMethod}.
  * 
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public class QueryMethodUnitTests {
 
@@ -138,6 +142,30 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-716
+	 */
+	@Test
+	public void doesNotRejectFutureQueryForSingleEntity() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("returnsFutureForSingleEntity");
+
+		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-716
+	 */
+	@Test
+	public void doesNotRejectFutureQueryForEntityCollection() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("returnsFutureForEntityCollection");
+
+		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(true));
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -157,6 +185,20 @@ public class QueryMethodUnitTests {
 		Slice<User> sliceOfUsers();
 
 		User[] arrayOfUsers();
+
+		Stream<String> streaming();
+
+		Stream<String> streaming(Pageable pageable);
+
+		/**
+		 * @see DATACMNS-716
+		 */
+		Future<User> returnsFutureForSingleEntity();
+
+		/**
+		 * @see DATACMNS-716
+		 */
+		Future<List<User>> returnsFutureForEntityCollection();
 	}
 
 	class User {
