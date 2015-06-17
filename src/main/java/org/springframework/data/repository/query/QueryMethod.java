@@ -26,6 +26,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
@@ -40,6 +42,7 @@ public class QueryMethod {
 
 	private final RepositoryMetadata metadata;
 	private final Method method;
+	private final Class<?> unwrappedReturnType;
 	private final Parameters<?, ?> parameters;
 
 	private Class<?> domainClass;
@@ -64,6 +67,7 @@ public class QueryMethod {
 		}
 
 		this.method = method;
+		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(method);
 		this.parameters = createParameters(method);
 		this.metadata = metadata;
 
@@ -85,6 +89,16 @@ public class QueryMethod {
 			Assert.isTrue(this.parameters.hasPageableParameter(),
 					String.format("Paging query needs to have a Pageable parameter! Offending method %s", method.toString()));
 		}
+	}
+
+	private Class<? extends Object> potentiallyUnwrapReturnTypeFor(Method method) {
+		
+		if(QueryExecutionConverters.supports(method.getReturnType())){
+			//unwrap only one level to handle cases like Future<List<Entity>> correctly.  
+			return ClassTypeInformation.fromReturnTypeOf(method).getComponentType().getType();
+		}
+		
+		return method.getReturnType();
 	}
 
 	/**
@@ -163,7 +177,8 @@ public class QueryMethod {
 	 */
 	public boolean isCollectionQuery() {
 
-		Class<?> returnType = method.getReturnType();
+		Class<?> returnType = unwrappedReturnType;
+
 		return !(isPageQuery() || isSliceQuery())
 				&& org.springframework.util.ClassUtils.isAssignable(Iterable.class, returnType) || returnType.isArray();
 	}
@@ -176,7 +191,7 @@ public class QueryMethod {
 	 */
 	public boolean isSliceQuery() {
 
-		Class<?> returnType = method.getReturnType();
+		Class<?> returnType = unwrappedReturnType;
 		return !isPageQuery() && org.springframework.util.ClassUtils.isAssignable(Slice.class, returnType);
 	}
 
@@ -187,7 +202,7 @@ public class QueryMethod {
 	 */
 	public final boolean isPageQuery() {
 
-		Class<?> returnType = method.getReturnType();
+		Class<?> returnType = unwrappedReturnType;
 		return org.springframework.util.ClassUtils.isAssignable(Page.class, returnType);
 	}
 
@@ -216,7 +231,7 @@ public class QueryMethod {
 	 * @since 1.10
 	 */
 	public boolean isStreamQuery() {
-		return ReflectionUtils.isJava8StreamType(method.getReturnType());
+		return ReflectionUtils.isJava8StreamType(unwrappedReturnType);
 	}
 
 	/**
