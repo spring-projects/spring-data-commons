@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,9 +77,8 @@ public class RepositoryFactorySupportUnitTests {
 
 		Mockito.reset(factory.strategy);
 
-		when(
-				factory.strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
-						Mockito.any(NamedQueries.class))).thenReturn(factory.queryOne, factory.queryTwo);
+		when(factory.strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
+				Mockito.any(NamedQueries.class))).thenReturn(factory.queryOne, factory.queryTwo);
 
 		factory.addQueryCreationListener(listener);
 		factory.addQueryCreationListener(otherListener);
@@ -206,6 +206,26 @@ public class RepositoryFactorySupportUnitTests {
 		assertThat(result, hasSize(1));
 		assertThat(result.iterator().next(), is((Object) "Dave"));
 	}
+
+	/**
+	 * @see DATACMNS-715, SPR-13109
+	 */
+	@Test
+	public void addsTransactionProxyInterfaceIfAvailable() throws Exception {
+
+		try {
+
+			Class<?> type = ClassUtils.forName("org.springframework.transaction.interceptor.TransactionalProxy", null);
+
+			SimpleRepository repository = factory.getRepository(SimpleRepository.class);
+			assertThat(repository, is(instanceOf(type)));
+
+		} catch (ClassNotFoundException o_O) {
+			Assume.assumeFalse(true);
+		}
+	}
+
+	interface SimpleRepository extends Repository<Object, Serializable> {}
 
 	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {
 
