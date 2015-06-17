@@ -18,6 +18,7 @@
 	<properties>
 		<springhateoas>0.17.0.RELEASE</springhateoas>
 		<dist.key>DATACMNS</dist.key>
+		<spring>4.2.0.BUILD-SNAPSHOT</spring>
 	</properties>
 
 	<dependencies>
