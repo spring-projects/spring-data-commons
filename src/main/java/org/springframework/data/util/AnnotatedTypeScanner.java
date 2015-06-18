@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,11 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.ClassUtils;
 
@@ -31,10 +35,13 @@ import org.springframework.util.ClassUtils;
  * 
  * @author Oliver Gierke
  */
-public class AnnotatedTypeScanner {
+public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAware {
 
 	private final Iterable<Class<? extends Annotation>> annotationTypess;
 	private final boolean considerInterfaces;
+
+	private ResourceLoader resourceLoader;
+	private Environment environment;
 
 	/**
 	 * Creates a new {@link AnnotatedTypeScanner} for the given annotation types.
@@ -57,6 +64,24 @@ public class AnnotatedTypeScanner {
 		this.considerInterfaces = considerInterfaces;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
+	 */
+	@Override
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		this.resourceLoader = resourceLoader;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.EnvironmentAware#setEnvironment(org.springframework.core.env.Environment)
+	 */
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
+	}
+
 	public Set<Class<?>> findTypes(String... basePackages) {
 		return findTypes(Arrays.asList(basePackages));
 	}
@@ -64,6 +89,14 @@ public class AnnotatedTypeScanner {
 	public Set<Class<?>> findTypes(Iterable<String> basePackages) {
 
 		ClassPathScanningCandidateComponentProvider provider = new InterfaceAwareScanner(considerInterfaces);
+
+		if (resourceLoader != null) {
+			provider.setResourceLoader(resourceLoader);
+		}
+
+		if (environment != null) {
+			provider.setEnvironment(environment);
+		}
 
 		for (Class<? extends Annotation> annotationType : annotationTypess) {
 			provider.addIncludeFilter(new AnnotationTypeFilter(annotationType, true, considerInterfaces));
@@ -75,7 +108,8 @@ public class AnnotatedTypeScanner {
 
 			for (BeanDefinition definition : provider.findCandidateComponents(basePackage)) {
 				try {
-					types.add(ClassUtils.forName(definition.getBeanClassName(), getClass().getClassLoader()));
+					types.add(ClassUtils.forName(definition.getBeanClassName(),
+							resourceLoader == null ? null : resourceLoader.getClassLoader()));
 				} catch (ClassNotFoundException o_O) {
 					throw new IllegalStateException(o_O);
 				}
@@ -106,8 +140,8 @@ public class AnnotatedTypeScanner {
 		 */
 		@Override
 		protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
-			return super.isCandidateComponent(beanDefinition) || considerInterfaces
-					&& beanDefinition.getMetadata().isInterface();
+			return super.isCandidateComponent(beanDefinition)
+					|| considerInterfaces && beanDefinition.getMetadata().isInterface();
 		}
 	}
 }
