@@ -27,7 +27,10 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * A {@link ProjectionFactory} to create JDK proxies to back interfaces and handle method invocations on them. By
@@ -39,10 +42,21 @@ import org.springframework.util.Assert;
  * @see SpelAwareProxyProjectionFactory
  * @since 1.10
  */
-class ProxyProjectionFactory implements ProjectionFactory {
+class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware {
 
 	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
 			ProxyProjectionFactory.class.getClassLoader());
+
+	private ResourceLoader resourceLoader;
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
+	 */
+	@Override
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		this.resourceLoader = resourceLoader;
+	}
 
 	/* 
 	 * (non-Javadoc)
@@ -71,7 +85,8 @@ class ProxyProjectionFactory implements ProjectionFactory {
 		factory.addAdvice(new TargetAwareMethodInterceptor(source.getClass()));
 		factory.addAdvice(getMethodInterceptor(source, projectionType));
 
-		return (T) factory.getProxy(getClass().getClassLoader());
+		return (T) factory
+				.getProxy(resourceLoader == null ? ClassUtils.getDefaultClassLoader() : resourceLoader.getClassLoader());
 	}
 
 	/* 
@@ -141,7 +156,7 @@ class ProxyProjectionFactory implements ProjectionFactory {
 	/**
 	 * Returns whether the given {@link PropertyDescriptor} describes an input property for the projection, i.e. a
 	 * property that needs to be present on the source to be able to create reasonable projections for the type the
-	 * descritor was looked up on.
+	 * descriptor was looked up on.
 	 * 
 	 * @param descriptor will never be {@literal null}.
 	 * @return
