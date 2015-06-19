@@ -179,4 +179,14 @@ public class PageImplUnitTests {
 		assertThat(new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(1, 10), 11).getTotalElements(),
 				is(12L));
 	}
+
+	/**
+	 * @see DATACMNS-713
+	 */
+	@Test
+	public void doesNotAdapttotalIfPageIsEmpty() {
+
+		assertThat(new PageImpl<String>(Collections.<String> emptyList(), new PageRequest(1, 10), 0).getTotalElements(),
+				is(0L));
+	}
 }
