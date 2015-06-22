@@ -41,6 +41,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.core.SpringVersion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +53,7 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.sample.User;
+import org.springframework.data.util.Version;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -65,6 +67,9 @@ import org.springframework.util.concurrent.ListenableFuture;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryFactorySupportUnitTests {
+
+	static final Version SPRING_VERSION = Version.parse(SpringVersion.getVersion());
+	static final Version FOUR_DOT_TWO = new Version(4, 2);
 
 	public @Rule ExpectedException exception = ExpectedException.none();
 
@@ -252,7 +257,7 @@ public class RepositoryFactorySupportUnitTests {
 	@Test
 	public void wrapsExecutionResultIntoCompletableFutureIfConfigured() throws Exception {
 
-		assumeThat(ClassUtils.isPresent("org.springframework.transaction.interceptor.TransactionalProxy", null), is(true));
+		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
 
 		User reference = new User();
 
@@ -265,7 +270,7 @@ public class RepositoryFactorySupportUnitTests {
 	@Test
 	public void wrapsExecutionResultIntoListenableFutureIfConfigured() throws Exception {
 
-		assumeThat(ClassUtils.isPresent("org.springframework.transaction.interceptor.TransactionalProxy", null), is(true));
+		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
 
 		User reference = new User();
 
@@ -278,7 +283,7 @@ public class RepositoryFactorySupportUnitTests {
 	@Test
 	public void wrapsExecutionResultIntoCompletableFutureWithEntityCollectionIfConfigured() throws Exception {
 
-		assumeThat(ClassUtils.isPresent("org.springframework.transaction.interceptor.TransactionalProxy", null), is(true));
+		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
 
 		List<User> reference = Arrays.asList(new User());
 
@@ -291,7 +296,7 @@ public class RepositoryFactorySupportUnitTests {
 	@Test
 	public void wrapsExecutionResultIntoListenableFutureWithEntityCollectionIfConfigured() throws Exception {
 
-		assumeThat(ClassUtils.isPresent("org.springframework.transaction.interceptor.TransactionalProxy", null), is(true));
+		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
 
 		List<User> reference = Arrays.asList(new User());
 

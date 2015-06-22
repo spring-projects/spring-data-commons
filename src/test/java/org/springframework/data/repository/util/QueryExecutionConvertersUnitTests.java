@@ -17,13 +17,16 @@ package org.springframework.data.repository.util;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.util.Version;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -34,6 +37,9 @@ import com.google.common.base.Optional;
  * @author Oliver Gierke
  */
 public class QueryExecutionConvertersUnitTests {
+
+	private static final Version SPRING_VERSION = Version.parse(SpringVersion.getVersion());
+	private static final Version FOUR_DOT_TWO = new Version(4, 2);
 
 	DefaultConversionService conversionService;
 
@@ -54,6 +60,16 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(java.util.Optional.class), is(true));
 		assertThat(QueryExecutionConverters.supports(Future.class), is(true));
 		assertThat(QueryExecutionConverters.supports(ListenableFuture.class), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-714
+	 */
+	@Test
+	public void registersCompletableFutureAsWrapperTypeOnSpring42OrBetter() {
+
+		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
+
 		assertThat(QueryExecutionConverters.supports(CompletableFuture.class), is(true));
 	}
 
