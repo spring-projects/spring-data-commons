@@ -1,9 +1,27 @@
+/*
+ * Copyright 2015 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.util;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import org.hamcrest.Matchers;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * Unit tests for {@link Version}.
@@ -12,6 +30,11 @@ import org.junit.Test;
  */
 public class VersionUnitTests {
 
+	public @Rule ExpectedException exception = ExpectedException.none();
+
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void sameVersionsEqualOneDigits() {
 
@@ -22,6 +45,9 @@ public class VersionUnitTests {
 		assertThat(second, is(first));
 	}
 
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void sameVersionsEqualTwoDigits() {
 
@@ -32,6 +58,9 @@ public class VersionUnitTests {
 		assertThat(second, is(first));
 	}
 
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void sameVersionsEqualThreeDigits() {
 
@@ -42,6 +71,9 @@ public class VersionUnitTests {
 		assertThat(second, is(first));
 	}
 
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void sameVersionsEqualFourDigits() {
 
@@ -52,6 +84,9 @@ public class VersionUnitTests {
 		assertThat(second, is(first));
 	}
 
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void parsesVersionCorrectlyOneDigits() {
 
@@ -59,6 +94,9 @@ public class VersionUnitTests {
 		assertThat(version, is(new Version(5)));
 	}
 
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void parsesVersionCorrectlyTwoDigits() {
 
@@ -66,6 +104,9 @@ public class VersionUnitTests {
 		assertThat(version, is(new Version(5, 2)));
 	}
 
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void parsesVersionCorrectlyThreeDigits() {
 
@@ -73,6 +114,9 @@ public class VersionUnitTests {
 		assertThat(version, is(new Version(12, 1, 3)));
 	}
 
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void parsesVersionCorrectlyFourDigits() {
 
@@ -80,6 +124,9 @@ public class VersionUnitTests {
 		assertThat(version, is(new Version(12, 1, 3, 1000)));
 	}
 
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void comparesToCorrectly() {
 
@@ -112,6 +159,9 @@ public class VersionUnitTests {
 		assertThat(nextBuild.compareTo(version), is(greaterThan(0)));
 	}
 
+	/**
+	 * @see DATCMNS-384
+	 */
 	@Test
 	public void removesTrailingZerosAfterSecondValueForToString() {
 
@@ -130,5 +180,26 @@ public class VersionUnitTests {
 	@Test
 	public void parseShouldRemoveNonNumericVersionParts() {
 		assertThat(Version.parse("2.0.0-rc1"), is(new Version(2, 0, 0)));
+	}
+
+	/**
+	 * @see DATACMNS-719, DATACMNS-496
+	 */
+	@Test
+	public void removesNonNumericSuffix() {
+		assertThat(Version.parse("4.2.0.RELEASE"), is(new Version(4, 2, 0)));
+	}
+
+	/**
+	 * @see DATACMNS-719, DATACMNS-496
+	 */
+	@Test
+	public void rejectsNonNumericPartOnNonLastPosition() {
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(Matchers.<Throwable> instanceOf(IllegalArgumentException.class));
+		exception.expectMessage("1.RELEASE.2");
+
+		Version.parse("1.RELEASE.2");
 	}
 }
