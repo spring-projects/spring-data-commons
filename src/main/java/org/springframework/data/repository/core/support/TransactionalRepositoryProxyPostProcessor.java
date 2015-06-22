@@ -56,6 +56,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 
 	private final BeanFactory beanFactory;
 	private final String transactionManagerName;
+	private final boolean enableDefaultTransactions;
 
 	/**
 	 * Creates a new {@link TransactionalRepositoryProxyPostProcessor} using the given {@link ListableBeanFactory} and
@@ -63,14 +64,17 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 * 
 	 * @param beanFactory must not be {@literal null}.
 	 * @param transactionManagerName must not be {@literal null} or empty.
+	 * @param enableDefaultTransaction
 	 */
-	public TransactionalRepositoryProxyPostProcessor(ListableBeanFactory beanFactory, String transactionManagerName) {
+	public TransactionalRepositoryProxyPostProcessor(ListableBeanFactory beanFactory, String transactionManagerName,
+			boolean enableDefaultTransaction) {
 
 		Assert.notNull(beanFactory);
 		Assert.notNull(transactionManagerName);
 
 		this.beanFactory = beanFactory;
 		this.transactionManagerName = transactionManagerName;
+		this.enableDefaultTransactions = enableDefaultTransaction;
 	}
 
 	/*
@@ -81,6 +85,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 
 		CustomAnnotationTransactionAttributeSource transactionAttributeSource = new CustomAnnotationTransactionAttributeSource();
 		transactionAttributeSource.setRepositoryInformation(repositoryInformation);
+		transactionAttributeSource.setEnableDefaultTransactions(enableDefaultTransactions);
 
 		TransactionInterceptor transactionInterceptor = new TransactionInterceptor(null, transactionAttributeSource);
 		transactionInterceptor.setTransactionManagerBeanName(transactionManagerName);
@@ -259,12 +264,20 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		final Map<Object, TransactionAttribute> attributeCache = new ConcurrentHashMap<Object, TransactionAttribute>();
 
 		private RepositoryInformation repositoryInformation;
+		private boolean enableDefaultTransactions = true;
 
 		/**
 		 * @param repositoryInformation the repositoryInformation to set
 		 */
 		public void setRepositoryInformation(RepositoryInformation repositoryInformation) {
 			this.repositoryInformation = repositoryInformation;
+		}
+
+		/**
+		 * @param enableDefaultTransactions the enableDefaultTransactions to set
+		 */
+		public void setEnableDefaultTransactions(boolean enableDefaultTransactions) {
+			this.enableDefaultTransactions = enableDefaultTransactions;
 		}
 
 		/**
@@ -349,7 +362,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 				// Last fallback is the class of the original method.
 				txAtt = findTransactionAttribute(method.getDeclaringClass());
 
-				if (txAtt != null) {
+				if (txAtt != null || !enableDefaultTransactions) {
 					return txAtt;
 				}
 			}
@@ -366,6 +379,10 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 			txAtt = findTransactionAttribute(specificMethod.getDeclaringClass());
 			if (txAtt != null) {
 				return txAtt;
+			}
+
+			if (!enableDefaultTransactions) {
+				return null;
 			}
 
 			// Fallback to implementation class transaction settings of nothing found

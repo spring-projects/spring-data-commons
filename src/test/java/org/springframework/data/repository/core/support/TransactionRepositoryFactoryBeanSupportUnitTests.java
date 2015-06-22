@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.util.ReflectionTestUtils.*;
 
 import org.junit.Test;
 import org.springframework.aop.Advisor;
@@ -38,7 +39,7 @@ public class TransactionRepositoryFactoryBeanSupportUnitTests {
 	 * @see DATACMNS-656
 	 */
 	@Test
-	public void doesNotRegisterTransactionalRepositoryProxyPostProcessorIfConfigured() {
+	public void disablesDefaultTransactionsIfConfigured() {
 
 		SampleTransactionalRepositoryFactoryBean factoryBean = new SampleTransactionalRepositoryFactoryBean();
 		factoryBean.setEnableDefaultTransactions(false);
@@ -48,9 +49,22 @@ public class TransactionRepositoryFactoryBeanSupportUnitTests {
 		CrudRepository<Object, Long> repository = factoryBean.getObject();
 
 		Advisor[] advisors = ((Advised) repository).getAdvisors();
+		boolean found = false;
 
-		assertThat(advisors.length, is(greaterThanOrEqualTo(2)));
-		assertThat(advisors[1].getAdvice(), is(not(instanceOf(TransactionInterceptor.class))));
+		for (Advisor advisor : advisors) {
+
+			if (advisor.getAdvice() instanceof TransactionInterceptor) {
+
+				found = true;
+
+				TransactionInterceptor interceptor = (TransactionInterceptor) advisor.getAdvice();
+				assertThat(getField(interceptor.getTransactionAttributeSource(), "enableDefaultTransactions"),
+						is((Object) false));
+				break;
+			}
+		}
+
+		assertThat(found, is(true));
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

@@ -71,10 +71,7 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 
 		RepositoryFactorySupport factory = doCreateRepositoryFactory();
 		factory.addRepositoryProxyPostProcessor(exceptionPostProcessor);
-
-		if (enableDefaultTransactions) {
-			factory.addRepositoryProxyPostProcessor(txPostProcessor);
-		}
+		factory.addRepositoryProxyPostProcessor(txPostProcessor);
 
 		return factory;
 	}
@@ -95,7 +92,8 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
 
 		ListableBeanFactory listableBeanFactory = (ListableBeanFactory) beanFactory;
-		this.txPostProcessor = new TransactionalRepositoryProxyPostProcessor(listableBeanFactory, transactionManagerName);
+		this.txPostProcessor = new TransactionalRepositoryProxyPostProcessor(listableBeanFactory, transactionManagerName,
+				enableDefaultTransactions);
 		this.exceptionPostProcessor = new PersistenceExceptionTranslationRepositoryProxyPostProcessor(listableBeanFactory);
 	}
 }

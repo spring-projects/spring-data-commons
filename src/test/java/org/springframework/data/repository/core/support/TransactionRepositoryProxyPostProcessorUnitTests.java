@@ -63,18 +63,19 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullBeanFactory() throws Exception {
-		new TransactionalRepositoryProxyPostProcessor(null, "transactionManager");
+		new TransactionalRepositoryProxyPostProcessor(null, "transactionManager", true);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullTxManagerName() throws Exception {
-		new TransactionalRepositoryProxyPostProcessor(beanFactory, null);
+		new TransactionalRepositoryProxyPostProcessor(beanFactory, null, true);
 	}
 
 	@Test
 	public void setsUpBasicInstance() throws Exception {
 
-		RepositoryProxyPostProcessor postProcessor = new TransactionalRepositoryProxyPostProcessor(beanFactory, "txManager");
+		RepositoryProxyPostProcessor postProcessor = new TransactionalRepositoryProxyPostProcessor(beanFactory, "txManager",
+				true);
 		postProcessor.postProcess(proxyFactory, repositoryInformation);
 
 		verify(proxyFactory).addAdvice(isA(TransactionInterceptor.class));
