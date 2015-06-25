@@ -157,8 +157,8 @@ public class ProxyProjectionFactoryUnitTests {
 
 		List<String> result = factory.getInputProperties(CustomerExcerpt.class);
 
-		assertThat(result, hasSize(2));
-		assertThat(result, hasItems("firstname", "address"));
+		assertThat(result, hasSize(4));
+		assertThat(result, hasItems("firstname", "address", "shippingAddresses", "picture"));
 	}
 
 	/**
@@ -176,10 +176,44 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(advisors[0].getAdvice(), is(instanceOf(DefaultMethodInvokingMethodInterceptor.class)));
 	}
 
+	/**
+	 * @see DATACMNS-722
+	 */
+	@Test
+	public void doesNotProjectPrimitiveArray() {
+
+		Customer customer = new Customer();
+		customer.picture = "binarydata".getBytes();
+
+		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+
+		assertThat(excerpt.getPicture(), is(customer.picture));
+	}
+
+	/**
+	 * @see DATACMNS-722
+	 */
+	@Test
+	public void projectsNonPrimitiveArray() {
+
+		Address address = new Address();
+		address.city = "New York";
+		address.zipCode = "ZIP";
+
+		Customer customer = new Customer();
+		customer.shippingAddresses = new Address[] { address };
+
+		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+
+		assertThat(excerpt.getShippingAddresses(), is(arrayWithSize(1)));
+	}
+
 	static class Customer {
 
 		public String firstname, lastname;
 		public Address address;
+		public byte[] picture;
+		public Address[] shippingAddresses;
 	}
 
 	static class Address {
@@ -192,6 +226,10 @@ public class ProxyProjectionFactoryUnitTests {
 		String getFirstname();
 
 		AddressExcerpt getAddress();
+
+		AddressExcerpt[] getShippingAddresses();
+
+		byte[] getPicture();
 	}
 
 	interface AddressExcerpt {
