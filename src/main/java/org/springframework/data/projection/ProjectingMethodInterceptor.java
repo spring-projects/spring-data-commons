@@ -15,9 +15,11 @@
  */
 package org.springframework.data.projection;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -28,6 +30,7 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * {@link MethodInterceptor} to delegate the invocation to a different {@link MethodInterceptor} but creating a
@@ -73,7 +76,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 
 		TypeInformation<?> type = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod());
 
-		if (type.isCollectionLike()) {
+		if (type.isCollectionLike() && !ClassUtils.isPrimitiveArray(type.getType())) {
 			return projectCollectionElements(asCollection(result), type);
 		} else if (type.isMap()) {
 			return projectMapValues((Map<?, ?>) result, type);
@@ -90,12 +93,18 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	private Collection<Object> projectCollectionElements(Collection<?> sources, TypeInformation<?> type) {
+	private Object projectCollectionElements(Collection<?> sources, TypeInformation<?> type) {
 
-		Collection<Object> result = CollectionFactory.createCollection(type.getType(), sources.size());
+		Class<?> rawType = type.getType();
+		Collection<Object> result = CollectionFactory.createCollection(rawType.isArray() ? List.class : rawType,
+				sources.size());
 
 		for (Object source : sources) {
 			result.add(getProjection(source, type.getComponentType().getType()));
+		}
+
+		if (rawType.isArray()) {
+			return result.toArray((Object[]) Array.newInstance(type.getComponentType().getType(), result.size()));
 		}
 
 		return result;
@@ -121,8 +130,8 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	}
 
 	private Object getProjection(Object result, Class<?> returnType) {
-		return ClassUtils.isAssignable(returnType, result.getClass()) ? result : factory.createProjection(returnType,
-				result);
+		return ClassUtils.isAssignable(returnType, result.getClass()) ? result
+				: factory.createProjection(returnType, result);
 	}
 
 	/**
@@ -139,7 +148,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 		if (source instanceof Collection) {
 			return (Collection<?>) source;
 		} else if (source.getClass().isArray()) {
-			return Arrays.asList((Object[]) source);
+			return Arrays.asList(ObjectUtils.toObjectArray(source));
 		} else {
 			return Collections.singleton(source);
 		}
