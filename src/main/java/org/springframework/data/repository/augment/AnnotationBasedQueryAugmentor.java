@@ -103,11 +103,11 @@ public abstract class AnnotationBasedQueryAugmentor<T extends Annotation, Q exte
 	 */
 	private T findAndCache(Class<?> type, Method method) {
 
-		T expression = AnnotationUtils.findAnnotation(type, annotationType);
+		T annotation = AnnotationUtils.findAnnotation(type, annotationType);
 
-		if (expression != null) {
-			cache.put(method, expression);
-			return expression;
+		if (annotation != null) {
+			cache.put(method, annotation);
+			return annotation;
 		}
 
 		return null;
@@ -118,7 +118,15 @@ public abstract class AnnotationBasedQueryAugmentor<T extends Annotation, Q exte
 	 * @see org.springframework.data.repository.augment.QueryAugmentor#augmentNativeQuery(org.springframework.data.repository.augment.QueryContext, org.springframework.data.repository.augment.MethodMetadata)
 	 */
 	public final N augmentNativeQuery(N context, MethodMetadata metadata) {
-		return null;
+
+		Method method = metadata.getMethod();
+
+		if (cache.containsKey(method)) {
+			return prepareNativeQuery(context, cache.get(method));
+		}
+
+		T expression = findAndCacheAnnotation(metadata);
+		return expression == null ? context : prepareNativeQuery(context, expression);
 	}
 
 	/*
@@ -153,7 +161,7 @@ public abstract class AnnotationBasedQueryAugmentor<T extends Annotation, Q exte
 		return expression == null ? update : prepareUpdate(update, cache.get(method));
 	}
 
-	protected N prepareNativeQuery(N context, T expression) {
+	protected N prepareNativeQuery(N context, T annotation) {
 		return context;
 	}
 
@@ -162,10 +170,10 @@ public abstract class AnnotationBasedQueryAugmentor<T extends Annotation, Q exte
 	 * returns the context as is.
 	 * 
 	 * @param context will never be {@literal null}.
-	 * @param expression will never be {@literal null}.
+	 * @param annotation will never be {@literal null}.
 	 * @return
 	 */
-	protected Q prepareQuery(Q context, T expression) {
+	protected Q prepareQuery(Q context, T annotation) {
 		return context;
 	}
 
