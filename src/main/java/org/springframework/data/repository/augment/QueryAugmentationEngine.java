@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.MultiValueMap;
  * Wrapper for a collection of {@link QueryAugmentor}s. Groups them by the context type they're referring to for the
  * appropriate invocation later on.
  * 
- * @since 1.9
+ * @since 1.11
  * @author Oliver Gierke
  */
 public class QueryAugmentationEngine {
@@ -125,7 +125,8 @@ public class QueryAugmentationEngine {
 
 		return invokeAugmentor(new AugmentorInvoker<T>() {
 			@SuppressWarnings("unchecked")
-			public T invokeAugmentor(QueryAugmentor<QueryContext<?>, QueryContext<?>, UpdateContext<?>> augmentor, T context) {
+			public T invokeAugmentor(QueryAugmentor<QueryContext<?>, QueryContext<?>, UpdateContext<?>> augmentor,
+					T context) {
 				return (T) augmentor.augmentNativeQuery(context, methodMetadata);
 			}
 		}, context);
@@ -140,7 +141,8 @@ public class QueryAugmentationEngine {
 
 		return invokeAugmentor(new AugmentorInvoker<N>() {
 			@SuppressWarnings("unchecked")
-			public N invokeAugmentor(QueryAugmentor<QueryContext<?>, QueryContext<?>, UpdateContext<?>> augmentor, N context) {
+			public N invokeAugmentor(QueryAugmentor<QueryContext<?>, QueryContext<?>, UpdateContext<?>> augmentor,
+					N context) {
 				return (N) augmentor.augmentQuery(context, methodMetadata);
 			}
 		}, context);
@@ -156,7 +158,8 @@ public class QueryAugmentationEngine {
 
 		return invokeAugmentor(new AugmentorInvoker<U>() {
 			@SuppressWarnings("unchecked")
-			public U invokeAugmentor(QueryAugmentor<QueryContext<?>, QueryContext<?>, UpdateContext<?>> augmentor, U context) {
+			public U invokeAugmentor(QueryAugmentor<QueryContext<?>, QueryContext<?>, UpdateContext<?>> augmentor,
+					U context) {
 				return (U) augmentor.augmentUpdate(context, methodMetadata);
 			}
 		}, context);
@@ -167,8 +170,8 @@ public class QueryAugmentationEngine {
 		Assert.notNull(context, "UpdateContext must not be null!");
 		T augmentedContext = context;
 
-		for (QueryAugmentor<QueryContext<?>, QueryContext<?>, UpdateContext<?>> augmentor : augmentors.get(context
-				.getClass())) {
+		for (QueryAugmentor<QueryContext<?>, QueryContext<?>, UpdateContext<?>> augmentor : augmentors
+				.get(context.getClass())) {
 
 			LOGGER.debug("Invoking augmentor {} for context {}", augmentor, context);
 			augmentedContext = invoker.invokeAugmentor(augmentor, augmentedContext);

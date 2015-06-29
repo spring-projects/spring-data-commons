@@ -57,7 +57,17 @@ public class QueryContext<T> {
 		/**
 		 * To be used for the execution of the additional count query to be executed when paging.
 		 */
-		COUNT_FOR_PAGING;
+		COUNT_FOR_PAGING,
+
+		/**
+		 * To be used for the execution of queries that precede an update.
+		 */
+		FOR_UPDATE,
+
+		/**
+		 * To be used for the execution of queries that precede a delete.
+		 */
+		FOR_DELETE;
 
 		/**
 		 * Returns whether the {@link QueryMode} is one of the given ones.

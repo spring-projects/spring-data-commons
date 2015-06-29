@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,13 @@ import org.springframework.data.repository.core.EntityMetadata;
 /**
  * SPI to abstract components that want to augment queries executed by the repositories.
  * 
- * @since 1.9
+ * @since 1.11
  * @author Oliver Gierke
+ * @param Q the {@link QueryContext} type to be used for store specific queries.
+ * @param N the {@link QueryContext} type to be used to native queries.
+ * @param U the {@link UpdateContext} type to be used.
  */
-public interface QueryAugmentor<Q extends QueryContext<?>, N extends QueryContext<?>, S extends UpdateContext<?>> {
+public interface QueryAugmentor<Q extends QueryContext<?>, N extends QueryContext<?>, U extends UpdateContext<?>> {
 
 	/**
 	 * Determines whether the implementation is interested in augmentation at all. The implementations can expect to only
@@ -39,26 +42,26 @@ public interface QueryAugmentor<Q extends QueryContext<?>, N extends QueryContex
 	 */
 	boolean supports(MethodMetadata method, QueryMode queryMode, EntityMetadata<?> entityMetadata);
 
-	N augmentNativeQuery(N query, MethodMetadata methodMetadata);
+	N augmentNativeQuery(N context, MethodMetadata methodMetadata);
 
 	/**
 	 * Augments the query by either adding further constraints to it or entirely replacing it. Clients will use
 	 * {@link QueryContext#getQuery()} proceeding with the query execution.
 	 * 
-	 * @param query the query context of the query about to be executed.
+	 * @param context the query context of the query about to be executed.
 	 * @param methodMetadata metadata about the repository method being invoked.
 	 * @return must not be {@literal null}.
 	 */
-	Q augmentQuery(Q query, MethodMetadata methodMetadata);
+	Q augmentQuery(Q context, MethodMetadata methodMetadata);
 
 	/**
 	 * Augments the update about to be executed. Implementations can prevent the original update from being executed by
 	 * returning null.
 	 * 
-	 * @param update the update context of the update about to be executed
+	 * @param context the update context of the update about to be executed
 	 * @param methodMetadata metadata about the repository method being invoked.
 	 * @return the update to continue to work with or {@literal null} in case the implementation already executed custom
 	 *         update and wants to prevent the execution of the original update.
 	 */
-	S augmentUpdate(S update, MethodMetadata methodMetadata);
+	U augmentUpdate(U context, MethodMetadata methodMetadata);
 }
