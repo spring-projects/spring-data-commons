@@ -1,6 +1,40 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.10.1.RELEASE (2015-06-30)
+----------------------------------------------
+* DATACMNS-725 - Release 1.10.1 (Fowler).
+* DATACMNS-722 - ProxyProjectionFactory does not handle arrays correctly.
+* DATACMNS-720 - Explicit transaction configuration is not considered if default transactions are disabled.
+* DATACMNS-719 - Version fails to parse input string with non-numerical suffix.
+* DATACMNS-718 - Improve class loader handling for proxy factories.
+* DATACMNS-717 - AnnotatedTypeScanner does not use context classloader for loading found types.
+* DATACMNS-716 - QueryMethod type not detected correctly when wrapper types are used with collections.
+* DATACMNS-715 - @Transactional customizations not applied correctly on redeclared methods.
+* DATACMNS-713 - PageImpl should adapt the total for last pages if it doesn't match the content.
+* DATACMNS-711 - DomainClassConverter triggered unnecessarily.
+* DATACMNS-710 - ObjectInstantiatorClassGenerator should use ClassUtils.getDefaultClassLoader().
+* DATACMNS-707 - Fix JavaDoc in CrudRepository.
+* DATACMNS-697 - Field-local generics information not honored.
+* DATACMNS-696 - Enable Slack notifications for Travis build.
+* DATACMNS-695 - Potential NullPointerException in AbstractMappingContext.
+* DATACMNS-694 - Remove relative paths to parent POM.
+* DATACMNS-693 - Change property reflection mechanisms from java.beans.Introspector to spring specific BeanUtils.
+* DATACMNS-692 - IllegalArgumentExceptions in PageableHandlerMethodArgumentResolver with one-based index parameters.
+* DATACMNS-691 - Remove Travis build profile for Spring 4.0.next.
+* DATACMNS-689 - Improve reference documentation on web pagination.
+* DATACMNS-687 - Add section on dependency management for Spring Data modules and Spring Framework to the reference documentation.
+* DATACMNS-683 - Enabling Spring Data web support breaks @ModelAttribute binding in Spring MVC.
+* DATACMNS-682 - Abrupt documentation line ending.
+* DATACMNS-681 - Take care of compiler warnings.
+* DATACMNS-679 - Clean up Sonargraph architecture description.
+* DATACMNS-677 - Cache annotation absence in AnnotationBasedPersistentProperty when there is no field for property.
+* DATACMNS-674 - Typo in reference documentation.
+* DATACMNS-663 - Typo in method in BytecodeGeneratingEntityInstantiator.
+* DATACMNS-648 - o.s.d.r.q.Parameters prevents custom classloader from being garbage collected.
+* DATACMNS-569 - Fix documentation on underscores in property references of derived query methods.
+
+
 Changes in version 1.11.0.M1 (2015-06-02)
 -----------------------------------------
 * DATACMNS-706 - Release 1.11 M1 (Gosling).
