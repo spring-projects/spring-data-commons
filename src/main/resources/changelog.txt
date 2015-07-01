@@ -1,6 +1,28 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.8.6.RELEASE (2015-07-01)
+---------------------------------------------
+* DATACMNS-723 - Release 1.8.6 (Dijkstra).
+* DATACMNS-719 - Version fails to parse input string with non-numerical suffix.
+* DATACMNS-717 - AnnotatedTypeScanner does not use context classloader for loading found types.
+* DATACMNS-715 - @Transactional customizations not applied correctly on redeclared methods.
+* DATACMNS-713 - PageImpl should adapt the total for last pages if it doesn't match the content.
+* DATACMNS-707 - Fix JavaDoc in CrudRepository.
+* DATACMNS-697 - Field-local generics information not honored.
+* DATACMNS-696 - Enable Slack notifications for Travis build.
+* DATACMNS-695 - Potential NullPointerException in AbstractMappingContext.
+* DATACMNS-694 - Remove relative paths to parent POM.
+* DATACMNS-693 - Change property reflection mechanisms from java.beans.Introspector to spring specific BeanUtils.
+* DATACMNS-692 - IllegalArgumentExceptions in PageableHandlerMethodArgumentResolver with one-based index parameters.
+* DATACMNS-691 - Remove Travis build profile for Spring 4.0.next.
+* DATACMNS-677 - Cache annotation absence in AnnotationBasedPersistentProperty when there is no field for property.
+* DATACMNS-648 - o.s.d.r.q.Parameters prevents custom classloader from being garbage collected.
+* DATACMNS-646 - Enable build for Spring 4.2 profile.
+* DATACMNS-642 - Performance improvement - BeanWrapper.setProperty should not lock when unnecessary.
+* DATACMNS-640 - Possible NullPointerException on PageableHandlerMethodArgumentResolver when fallbackPageable is null.
+
+
 Changes in version 1.10.1.RELEASE (2015-06-30)
 ----------------------------------------------
 * DATACMNS-725 - Release 1.10.1 (Fowler).
