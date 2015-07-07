@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.querydsl;
+package org.springframework.data.web.querydsl;
 
-import java.util.Date;
-import java.util.List;
-
-import com.mysema.query.annotations.QueryEntity;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @author Oliver Gierke
- * @author Thomas Darimont
+ * Customization hook for paths.
+ * 
  * @author Christoph Strobl
+ * @since 1.11
  */
-@QueryEntity
-public class User {
+@Inherited
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface QueryDslSpecification {
 
-	String firstname;
-	String lastname;
-	Date dateOfBirth;
+	Class<? extends QueryDslPredicateSpecification> spec() default QueryDslPredicateSpecification.class;
 
-	Address address;
-	List<String> nickNames;
-	Long inceptionYear;
 }

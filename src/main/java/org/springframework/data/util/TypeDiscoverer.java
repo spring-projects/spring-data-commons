@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -315,6 +316,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getComponentType();
 		}
 
+		if (isPageLike()) {
+			return getTypeArguments().get(0);
+		}
+
 		return this;
 	}
 
@@ -368,6 +373,14 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		return Collection.class.isAssignableFrom(rawType);
+	}
+
+	/**
+	 * @return
+	 * @since 1.11
+	 */
+	public boolean isPageLike() {
+		return Page.class.isAssignableFrom(getType());
 	}
 
 	/*

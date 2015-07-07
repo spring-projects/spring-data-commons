@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.querydsl;
+package org.springframework.data.web.querydsl;
 
-import java.util.Date;
-import java.util.List;
+import org.springframework.data.mapping.PropertyPath;
 
-import com.mysema.query.annotations.QueryEntity;
+import com.mysema.query.types.Predicate;
 
 /**
- * @author Oliver Gierke
- * @author Thomas Darimont
  * @author Christoph Strobl
+ * @since 1.11
  */
-@QueryEntity
-public class User {
+public interface QueryDslPredicateBuilder {
 
-	String firstname;
-	String lastname;
-	Date dateOfBirth;
-
-	Address address;
-	List<String> nickNames;
-	Long inceptionYear;
+	/**
+	 * @param path Path to the property. Must not be {@literal null}.
+	 * @param value
+	 * @return
+	 */
+	Predicate buildPredicate(PropertyPath path, Object value);
 }

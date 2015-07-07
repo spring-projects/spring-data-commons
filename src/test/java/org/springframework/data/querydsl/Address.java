@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,13 @@
  */
 package org.springframework.data.querydsl;
 
-import java.util.Date;
-import java.util.List;
-
 import com.mysema.query.annotations.QueryEntity;
 
 /**
- * @author Oliver Gierke
- * @author Thomas Darimont
  * @author Christoph Strobl
  */
 @QueryEntity
-public class User {
-
-	String firstname;
-	String lastname;
-	Date dateOfBirth;
-
-	Address address;
-	List<String> nickNames;
-	Long inceptionYear;
+public class Address {
+	String street;
+	String city;
 }
