@@ -6,6 +6,7 @@ env:
     - PROFILE=ci
     - PROFILE=spring41
     - PROFILE=spring41-next
+    - PROFILE=spring42
     - PROFILE=spring42-next
     - PROFILE=querydsl-next
 cache:
