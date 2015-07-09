@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.springframework.data.mapping.context;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,9 +52,43 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	public DefaultPersistentPropertyPath(List<T> properties) {
 
 		Assert.notNull(properties);
-		Assert.isTrue(!properties.isEmpty());
 
 		this.properties = properties;
+	}
+
+	/**
+	 * Creates an empty {@link DefaultPersistentPropertyPath}.
+	 * 
+	 * @return
+	 */
+	public static <T extends PersistentProperty<T>> DefaultPersistentPropertyPath<T> empty() {
+		return new DefaultPersistentPropertyPath<T>(Collections.<T> emptyList());
+	}
+
+	/**
+	 * Appends the given {@link PersistentProperty} to the current {@link PersistentPropertyPath}.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @return a new {@link DefaultPersistentPropertyPath} with the given property appended to the current one.
+	 * @throws IllegalArgumentException in case the property is not a property of the type of the current leaf property.
+	 */
+	@SuppressWarnings("unchecked")
+	public DefaultPersistentPropertyPath<T> append(T property) {
+
+		Assert.notNull(property, "Property must not be null!");
+
+		if (isEmpty()) {
+			return new DefaultPersistentPropertyPath<T>(Arrays.asList(property));
+		}
+
+		Class<?> leafPropertyType = getLeafProperty().getActualType();
+		Assert.isTrue(property.getOwner().getType().equals(leafPropertyType),
+				String.format("Cannot append property %s to type %s!", property.getName(), leafPropertyType.getName()));
+
+		List<T> properties = new ArrayList<T>(this.properties);
+		properties.add(property);
+
+		return new DefaultPersistentPropertyPath<T>(properties);
 	}
 
 	/* 
@@ -86,8 +122,8 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	public String toPath(String delimiter, Converter<? super T, String> converter) {
 
 		@SuppressWarnings("unchecked")
-		Converter<? super T, String> converterToUse = (Converter<? super T, String>) (converter == null ? PropertyNameConverter.INSTANCE
-				: converter);
+		Converter<? super T, String> converterToUse = (Converter<? super T, String>) (converter == null
+				? PropertyNameConverter.INSTANCE : converter);
 		String delimiterToUse = delimiter == null ? "." : delimiter;
 
 		List<String> result = new ArrayList<String>();
@@ -198,6 +234,14 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 */
 	public Iterator<T> iterator() {
 		return properties.iterator();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#isEmpty()
+	 */
+	public boolean isEmpty() {
+		return properties.isEmpty();
 	}
 
 	/* 

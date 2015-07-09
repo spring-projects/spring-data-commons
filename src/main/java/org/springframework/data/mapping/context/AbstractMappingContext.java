@@ -18,14 +18,12 @@ package org.springframework.data.mapping.context;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -48,6 +46,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.FieldFilter;
+import org.springframework.util.StringUtils;
 
 /**
  * Base class to build mapping metadata and thus create instances of {@link PersistentEntity} and
@@ -199,6 +198,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.Class, java.lang.String)
 	 */
 	public PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath) {
+
+		Assert.notNull(propertyPath, "Property path must not be null!");
+
 		return getPersistentPropertyPath(propertyPath.toDotPath(), propertyPath.getOwningType());
 	}
 
@@ -207,7 +209,20 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.String, java.lang.Class)
 	 */
 	public PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type) {
+
+		Assert.notNull(propertyPath, "Property path must not be null!");
+		Assert.notNull(type, "Type must not be null!");
+
 		return getPersistentPropertyPath(propertyPath, ClassTypeInformation.from(type));
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(org.springframework.data.mapping.context.InvalidPersistentPropertyPath)
+	 */
+	@Override
+	public PersistentPropertyPath<P> getPersistentPropertyPath(InvalidPersistentPropertyPath invalidPath) {
+		return getPersistentPropertyPath(invalidPath.getResolvedPath(), invalidPath.getType());
 	}
 
 	private PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
@@ -221,9 +236,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	private PersistentPropertyPath<P> getPersistentPropertyPath(Iterable<String> parts, TypeInformation<?> type) {
+	private PersistentPropertyPath<P> getPersistentPropertyPath(Collection<String> parts, TypeInformation<?> type) {
 
-		List<P> result = new ArrayList<P>();
+		DefaultPersistentPropertyPath<P> path = DefaultPersistentPropertyPath.empty();
 		Iterator<String> iterator = parts.iterator();
 		E current = getPersistentEntity(type);
 
@@ -233,17 +248,22 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			P persistentProperty = current.getPersistentProperty(segment);
 
 			if (persistentProperty == null) {
-				throw new MappingException(String.format("No property %s found on %s!", segment, current.getName()));
+
+				String source = StringUtils.collectionToDelimitedString(parts, ".");
+				String resolvedPath = path.toDotPath();
+
+				throw new InvalidPersistentPropertyPath(source, type, segment, resolvedPath,
+						String.format("No property %s found on %s!", segment, current.getName()));
 			}
 
-			result.add(persistentProperty);
+			path = path.append(persistentProperty);
 
 			if (iterator.hasNext()) {
 				current = getPersistentEntity(persistentProperty.getTypeInformation().getActualType());
 			}
 		}
 
-		return new DefaultPersistentPropertyPath<P>(result);
+		return path;
 	}
 
 	/**

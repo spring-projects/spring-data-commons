@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * 
 	 * @param propertyPath must not be {@literal null}.
 	 * @return the {@link PersistentPropertyPath} representing the given {@link PropertyPath}.
+	 * @throws InvalidPersistentPropertyPath in case not all of the segments of the given {@link PropertyPath} can be resolved.
 	 */
 	PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath);
 
@@ -94,8 +95,18 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @param propertyPath must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return the {@link PersistentPropertyPath} representing the given property path on the given type.
+	 * @throws InvalidPersistentPropertyPath in case not all of the segments of the given property path can be resolved.
 	 */
 	PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type);
+
+	/**
+	 * Returns the {@link PersistentPropertyPath} for the resolvable part of the given {@link InvalidPersistentPropertyPath}.
+	 * 
+	 * @param invalidPath must not be {@literal null}.
+	 * @return the {@link PersistentPropertyPath} for the resolvable part of the given {@link InvalidPersistentPropertyPath}.
+	 * @since 1.11
+	 */
+	PersistentPropertyPath<P> getPersistentPropertyPath(InvalidPersistentPropertyPath invalidPath);
 
 	/**
 	 * Returns the {@link TypeInformation}s for all {@link PersistentEntity}s in the {@link MappingContext}.

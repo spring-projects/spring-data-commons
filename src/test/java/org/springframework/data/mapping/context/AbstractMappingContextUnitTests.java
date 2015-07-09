@@ -18,6 +18,7 @@ package org.springframework.data.mapping.context;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
 import groovy.lang.MetaClass;
 
 import java.util.Collections;
@@ -59,8 +60,8 @@ public class AbstractMappingContextUnitTests {
 
 	@Test
 	public void doesNotTryToLookupPersistentEntityForLeafProperty() {
-		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath(PropertyPath.from("name",
-				Person.class));
+		PersistentPropertyPath<SamplePersistentProperty> path = context
+				.getPersistentPropertyPath(PropertyPath.from("name", Person.class));
 		assertThat(path, is(notNullValue()));
 	}
 
@@ -253,6 +254,28 @@ public class AbstractMappingContextUnitTests {
 	public void persistentPropertyPathTraversesGenericTypesCorrectly() {
 		assertThat(context.getPersistentPropertyPath("field.wrapped.field", Outer.class),
 				is(Matchers.<SamplePersistentProperty> iterableWithSize(3)));
+	}
+
+	/**
+	 * @see DATACMNS-727
+	 */
+	@Test
+	public void exposesContextForFailingPropertyPathLookup() {
+
+		try {
+
+			context.getPersistentPropertyPath("persons.firstname", Sample.class);
+			fail("Expected InvalidPersistentPropertyPath!");
+
+		} catch (InvalidPersistentPropertyPath o_O) {
+
+			assertThat(o_O.getMessage(), not(isEmptyOrNullString()));
+			assertThat(o_O.getResolvedPath(), is("persons"));
+			assertThat(o_O.getUnresolvableSegment(), is("firstname"));
+
+			// Make sure, the resolvable part can be obtained
+			assertThat(context.getPersistentPropertyPath(o_O), is(notNullValue()));
+		}
 	}
 
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
