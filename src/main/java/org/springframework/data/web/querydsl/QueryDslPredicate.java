@@ -31,7 +31,24 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface QueryDslPredicate {
 
+	/**
+	 * Root type to be used for {@link com.mysema.query.types.Path}
+	 * 
+	 * @return
+	 */
 	Class<?> root() default Object.class;
 
+	/**
+	 * Configuration class providing options on a per field base.
+	 * 
+	 * @return
+	 */
 	Class<? extends QueryDslPredicateSpecification> spec() default QueryDslPredicateSpecification.class;
+
+	/**
+	 * Properties to exclude
+	 * 
+	 * @return
+	 */
+	String[] exclude() default {};
 }

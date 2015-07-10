@@ -18,20 +18,20 @@ package org.springframework.data.web.querydsl;
 import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
 
+import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.User;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 
-import com.mysema.query.types.PathImpl;
-import com.mysema.query.types.PathMetadataFactory;
 import com.mysema.query.types.Predicate;
-import com.mysema.query.types.path.PathBuilderFactory;
+import com.mysema.query.types.expr.BooleanExpression;
+import com.mysema.query.types.path.StringPath;
 
 /**
  * @author Christoph Strobl
@@ -81,10 +81,10 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("firstname", "rand");
 
-		Predicate predicate = (Predicate) resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class),
-				null, new ServletWebRequest(request), null);
+		Object predicate = (BooleanExpression) resolver.resolveArgument(
+				getMethodParameterFor("simpleFind", Predicate.class), null, new ServletWebRequest(request), null);
 
-		assertThat(predicate.toString(), is("user.firstname = rand"));
+		assertThat(predicate, Is.<Object> is(QUser.user.firstname.eq("rand")));
 	}
 
 	/**
@@ -96,10 +96,10 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 		request.addParameter("firstname", "rand");
 		request.addParameter("lastname", "al'thor");
 
-		Predicate predicate = (Predicate) resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class),
-				null, new ServletWebRequest(request), null);
+		Object predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
 
-		assertThat(predicate.toString(), is("user.firstname = rand && user.lastname = al'thor"));
+		assertThat(predicate, Is.<Object> is(QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("al'thor"))));
 	}
 
 	/**
@@ -110,10 +110,10 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("address.city", "two rivers");
 
-		Predicate predicate = (Predicate) resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class),
-				null, new ServletWebRequest(request), null);
+		Object predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
 
-		assertThat(predicate.toString(), is("user.address.city = two rivers"));
+		assertThat(predicate.toString(), is(QUser.user.address.city.eq("two rivers").toString()));
 	}
 
 	/**
@@ -124,11 +124,10 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("address.city", "tar valon");
 
-		Predicate predicate = (Predicate) resolver
-				.resolveArgument(getMethodParameterFor("pagedFind", Predicate.class, Pageable.class), null,
-						new ServletWebRequest(request), null);
+		Object predicate = resolver.resolveArgument(getMethodParameterFor("pagedFind", Predicate.class, Pageable.class),
+				null, new ServletWebRequest(request), null);
 
-		assertThat(predicate.toString(), is("user.address.city = tar valon"));
+		assertThat(predicate.toString(), is(QUser.user.address.city.eq("tar valon").toString()));
 	}
 
 	/**
@@ -140,10 +139,71 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 		request.addParameter("firstname", "egwene");
 		request.addParameter("lastname", "al'vere");
 
-		Predicate predicate = (Predicate) resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class),
-				null, new ServletWebRequest(request), null);
+		Object predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
 
-		assertThat(predicate.toString(), is("user.firstname = EGWENE && user.lastname = al'vere"));
+		assertThat(predicate.toString(),
+				is(QUser.user.firstname.eq("egwene".toUpperCase()).and(QUser.user.lastname.toLowerCase().eq("al'vere"))
+						.toString()));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	public void shouldCreatePredicateForNonStringPropertyCorrectly() throws Exception {
+
+		request.addParameter("inceptionYear", "978");
+
+		Object predicate = (BooleanExpression) resolver.resolveArgument(
+				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
+
+		assertThat(predicate, Is.<Object> is(QUser.user.inceptionYear.eq(978L)));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	public void shouldCreatePredicateForNonStringListPropertyCorrectly() throws Exception {
+
+		request.addParameter("inceptionYear", new String[] { "978", "998" });
+
+		Object predicate = (BooleanExpression) resolver.resolveArgument(
+				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
+
+		assertThat(predicate, Is.<Object> is(QUser.user.inceptionYear.in(978L, 998L)));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	public void shouldExcludePorpertiesCorrectly() throws Exception {
+
+		request.addParameter("address.street", "downhill");
+		request.addParameter("inceptionYear", "973");
+
+		Object predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
+
+		assertThat(predicate.toString(), is(QUser.user.inceptionYear.eq(973L).toString()));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	public void shouldExcludePorpertiesCorrectlyWhenContainedInAnnotation() throws Exception {
+
+		request.addParameter("firstname", "elayne");
+		request.addParameter("address.street", "downhill");
+		request.addParameter("address.city", "two rivers");
+
+		Object predicate = resolver.resolveArgument(getMethodParameterFor("findWithExclusions", Predicate.class), null,
+				new ServletWebRequest(request), null);
+
+		assertThat(predicate.toString(), is(QUser.user.address.street.eq("downhill").toString()));
 	}
 
 	private MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {
@@ -158,17 +218,24 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 	static class QDSLSpecic extends QueryDslPredicateSpecification {
 
 		public QDSLSpecic() {
-			define("firstname", new QueryDslPredicateBuilder() {
 
-				@SuppressWarnings({ "unchecked", "rawtypes" })
+			define("firstname", new QueryDslPredicateBuilder<StringPath>() {
+
 				@Override
-				public Predicate buildPredicate(PropertyPath path, Object value) {
-
-					return new PathBuilderFactory().create(path.getOwningType().getActualType().getType())
-							.get(new PathImpl(value.getClass(), PathMetadataFactory.forVariable(path.toDotPath())))
-							.eq(value.toString().toUpperCase());
+				public Predicate buildPredicate(StringPath path, Object value) {
+					return path.eq(value.toString().toUpperCase());
 				}
 			});
+
+			define(QUser.user.lastname, new QueryDslPredicateBuilder<StringPath>() {
+
+				@Override
+				public Predicate buildPredicate(StringPath path, Object value) {
+					return path.toLowerCase().eq(value.toString());
+				}
+			});
+
+			exclude("address");
 		}
 	}
 
@@ -183,6 +250,8 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 		Page<User> pagedFind(@QueryDslPredicate Predicate predicate, Pageable page);
 
 		User specificFind(@QueryDslPredicate(spec = QDSLSpecic.class) Predicate predicate);
+
+		User findWithExclusions(@QueryDslPredicate(exclude = { "firstname", "address.city" }) Predicate predicate);
 	}
 
 }

@@ -15,18 +15,33 @@
  */
 package org.springframework.data.web.querydsl;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.mysema.query.BooleanBuilder;
+import com.mysema.query.types.Path;
+import com.mysema.query.types.PathMetadata;
+import com.mysema.query.types.PathMetadataFactory;
 import com.mysema.query.types.Predicate;
+import com.mysema.query.types.path.CollectionPath;
+import com.mysema.query.types.path.NumberPath;
+import com.mysema.query.types.path.PathBuilder;
+import com.mysema.query.types.path.PathBuilderFactory;
+import com.mysema.query.types.path.SimplePath;
+import com.mysema.query.types.path.StringPath;
 
 /**
  * Accessor assembling {@link Predicate} out of {@link MutablePropertyValues} using provided
@@ -37,14 +52,15 @@ import com.mysema.query.types.Predicate;
 public class QueryDslPredicateAccessor {
 
 	private final TypeInformation<?> typeInfo;
-	private final QueryDslPredicateBuilder defaultPredicateBuilder;
-	private Map<String, QueryDslPredicateBuilder> specificBuilders;
+	private final QueryDslPredicateBuilder<?> defaultPredicateBuilder;
+	private final ConversionService conversionService;
+	private final QueryDslPredicateSpecification predicateSpec;
 
 	public QueryDslPredicateAccessor(TypeInformation<?> typeInfo) {
 		this(typeInfo, null, null);
 	}
 
-	public QueryDslPredicateAccessor(TypeInformation<?> typeInfo, QueryDslPredicateBuilder defaultPredicateBuilder) {
+	public QueryDslPredicateAccessor(TypeInformation<?> typeInfo, QueryDslPredicateBuilder<?> defaultPredicateBuilder) {
 		this(typeInfo, defaultPredicateBuilder, null);
 	}
 
@@ -52,25 +68,23 @@ public class QueryDslPredicateAccessor {
 		this(typeInfo, null, predicateSpecification);
 	}
 
-	public QueryDslPredicateAccessor(TypeInformation<?> typeInfo, QueryDslPredicateBuilder defaultPredicateBuilder,
+	public QueryDslPredicateAccessor(TypeInformation<?> typeInfo, QueryDslPredicateBuilder<?> defaultPredicateBuilder,
 			QueryDslPredicateSpecification predicateSpecification) {
 
 		Assert.notNull(typeInfo, "TypeInfo must not be null!");
 
 		this.typeInfo = typeInfo;
-		this.defaultPredicateBuilder = defaultPredicateBuilder == null ? new GenericQueryDslPredicateBuilder(typeInfo)
+		this.defaultPredicateBuilder = defaultPredicateBuilder == null ? new GenericQueryDslPredicateBuilder()
 				: defaultPredicateBuilder;
-		this.specificBuilders = new LinkedHashMap<String, QueryDslPredicateBuilder>(0);
-
-		if (predicateSpecification != null) {
-			this.specificBuilders.putAll(predicateSpecification.getSpecs());
-		}
+		this.conversionService = new DefaultConversionService();
+		this.predicateSpec = predicateSpecification;
 	}
 
 	/**
 	 * @param values
 	 * @return
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Predicate getPredicate(MutablePropertyValues values) {
 
 		if (values.isEmpty()) {
@@ -78,27 +92,113 @@ public class QueryDslPredicateAccessor {
 		}
 
 		BooleanBuilder builder = new BooleanBuilder();
-		Class<?> type = typeInfo.getActualType().getType();
 
 		for (PropertyValue propertyValue : values.getPropertyValueList()) {
 
-			PropertyPath propertyPath = PropertyPath.from(propertyValue.getName(), type);
+			PropertyPath propertyPath = PropertyPath.from(propertyValue.getName(), typeInfo.getActualType().getType());
 			String dotPath = propertyPath.toDotPath();
 
-			QueryDslPredicateBuilder predicateBuilder = specificBuilders.containsKey(dotPath) ? specificBuilders.get(dotPath)
-					: defaultPredicateBuilder;
+			if (predicateSpec.isPathVisible(propertyPath)) {
+				Object value = convertToPropertyPathSpecificType(propertyValue.getValue(), propertyPath);
 
-			Object value = null;
-			if (propertyValue.getValue() instanceof String[]) {
-				if (propertyPath.isCollection()) {
-					value = Arrays.asList((String[]) propertyValue.getValue());
-				} else {
-					value = ((String[]) propertyValue.getValue())[0];
-				}
+				QueryDslPredicateBuilder predicateBuilder = getPredicateBuilderForPath(dotPath);
+				builder.and(predicateBuilder.buildPredicate(getPath(propertyPath), value));
 			}
-
-			builder.and(predicateBuilder.buildPredicate(propertyPath, value));
 		}
+
 		return builder.getValue();
 	}
+
+	private QueryDslPredicateBuilder<? extends Path<?>> getPredicateBuilderForPath(String dotPath) {
+
+		if (predicateSpec == null) {
+			return defaultPredicateBuilder;
+		}
+
+		return predicateSpec.hasSpecificsForPath(dotPath) ? predicateSpec.getBuilderForPath(dotPath)
+				: defaultPredicateBuilder;
+	}
+
+	private Path<?> getPath(PropertyPath propertyPath) {
+
+		if (predicateSpec.getPathForStringPath(propertyPath.toDotPath()) != null) {
+			return predicateSpec.getPathForStringPath(propertyPath.toDotPath());
+		}
+
+		return new PropertyPathPathBuilder(typeInfo.getActualType().getType()).forProperty(propertyPath);
+	}
+
+	private Object convertToPropertyPathSpecificType(Object source, PropertyPath path) {
+
+		Object value = source;
+
+		if (ObjectUtils.isArray(value)) {
+
+			List<?> list = CollectionUtils.arrayToList(value);
+			if (!list.isEmpty() && list.size() == 1) {
+				value = list.get(0);
+			} else {
+				value = list;
+			}
+		}
+
+		if (value instanceof Collection) {
+			return potentiallyConvertCollectionValues((Collection<?>) value, path.getType());
+		}
+
+		return potentiallyConvertValue(value, path.getType());
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private Collection<?> potentiallyConvertCollectionValues(Collection<?> source, Class<?> targetType) {
+
+		Collection target = new ArrayList(source.size());
+		for (Object value : source) {
+			target.add(potentiallyConvertValue(value, targetType));
+		}
+
+		return target;
+	}
+
+	private Object potentiallyConvertValue(Object source, Class<?> targetType) {
+
+		return conversionService.canConvert(source.getClass(), targetType) ? conversionService.convert(source, targetType)
+				: source;
+	}
+
+	/**
+	 * {@link Converter} implementation creating a typed {@link Path} based on type information contained in
+	 * {@link PropertyPath}.
+	 * 
+	 * @author Christoph Strobl
+	 */
+	@SuppressWarnings("rawtypes")
+	static class PropertyPathPathBuilder {
+
+		final PathBuilder<?> pathBuilder;
+
+		public PropertyPathPathBuilder(Class<?> type) {
+			pathBuilder = new PathBuilderFactory().create(type);
+		}
+
+		@SuppressWarnings({ "unchecked" })
+		public Path<?> forProperty(PropertyPath source) {
+
+			PathMetadata<?> metadata = PathMetadataFactory.forVariable(source.toDotPath());
+
+			Path<?> path = null;
+			if (source.isCollection()) {
+				path = pathBuilder.get(new CollectionPath(Collection.class, source.getType(), metadata));
+			} else if (ClassUtils.isAssignable(String.class, source.getType())) {
+				path = pathBuilder.get(new StringPath(metadata));
+			} else if (ClassUtils.isAssignable(Number.class, source.getType())) {
+				path = pathBuilder.get(new NumberPath(source.getType(), metadata));
+			} else {
+				path = pathBuilder.get(new SimplePath(source.getType(), metadata));
+			}
+
+			return path;
+		}
+	}
+
 }

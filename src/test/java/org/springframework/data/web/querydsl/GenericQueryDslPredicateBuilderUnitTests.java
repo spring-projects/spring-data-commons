@@ -22,11 +22,9 @@ import java.util.Arrays;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.Is;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.QUser;
-import org.springframework.data.querydsl.User;
-import org.springframework.data.util.ClassTypeInformation;
 
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Predicate;
@@ -38,12 +36,9 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 
 	GenericQueryDslPredicateBuilder builder;
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void shouldThrowExceptionWhenTypeInformationIsNull() {
-		new GenericQueryDslPredicateBuilder(null);
+	@Before
+	public void setUp() {
+		builder = new GenericQueryDslPredicateBuilder();
 	}
 
 	/**
@@ -52,8 +47,7 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInRoot() {
 
-		Predicate predicate = new GenericQueryDslPredicateBuilder(ClassTypeInformation.from(User.class)).buildPredicate(
-				PropertyPath.from("firstname", User.class), "tam");
+		Predicate predicate = builder.buildPredicate(QUser.user.firstname, "tam");
 
 		assertThat(predicate, is(QUser.user.firstname.eq("tam")));
 	}
@@ -64,8 +58,7 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInNestedElement() {
 
-		Predicate predicate = new GenericQueryDslPredicateBuilder(ClassTypeInformation.from(User.class)).buildPredicate(
-				PropertyPath.from("address.city", User.class), "two rivers");
+		Predicate predicate = builder.buildPredicate(QUser.user.address.city, "two rivers");
 
 		Assert.assertThat(predicate.toString(), is(QUser.user.address.city.eq("two rivers").toString()));
 	}
@@ -76,8 +69,7 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenValueIsNull() {
 
-		Predicate predicate = new GenericQueryDslPredicateBuilder(ClassTypeInformation.from(User.class)).buildPredicate(
-				PropertyPath.from("firstname", User.class), null);
+		Predicate predicate = builder.buildPredicate(QUser.user.firstname, null);
 
 		assertThat(predicate, is(QUser.user.firstname.isNull()));
 	}
@@ -88,8 +80,7 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateWithContainingWhenPropertyIsCollectionLikeAndValueIsObject() {
 
-		Predicate predicate = new GenericQueryDslPredicateBuilder(ClassTypeInformation.from(User.class)).buildPredicate(
-				PropertyPath.from("nickNames", User.class), "dragon reborn");
+		Predicate predicate = builder.buildPredicate(QUser.user.nickNames, "dragon reborn");
 
 		assertThat(predicate, is(QUser.user.nickNames.contains("dragon reborn")));
 	}
@@ -100,34 +91,9 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateWithInWhenPropertyIsAnObjectAndValueIsACollection() {
 
-		Predicate predicate = new GenericQueryDslPredicateBuilder(ClassTypeInformation.from(User.class)).buildPredicate(
-				PropertyPath.from("firstname", User.class), Arrays.asList("dragon reborn", "shadowkiller"));
+		Predicate predicate = builder.buildPredicate(QUser.user.firstname, Arrays.asList("dragon reborn", "shadowkiller"));
 
 		assertThat(predicate, is(QUser.user.firstname.in(Arrays.asList("dragon reborn", "shadowkiller"))));
-	}
-
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
-	public void shouldCreatePredicateForNonStringPropertyCorrectly() {
-
-		Predicate predicate = new GenericQueryDslPredicateBuilder(ClassTypeInformation.from(User.class)).buildPredicate(
-				PropertyPath.from("inceptionYear", User.class), "978");
-
-		assertThat(predicate, is(QUser.user.inceptionYear.eq(978L)));
-	}
-
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
-	public void shouldCreatePredicateForNonStringListPropertyCorrectly() {
-
-		Predicate predicate = new GenericQueryDslPredicateBuilder(ClassTypeInformation.from(User.class)).buildPredicate(
-				PropertyPath.from("inceptionYear", User.class), Arrays.asList("978", "998"));
-
-		assertThat(predicate, is(QUser.user.inceptionYear.in(978L, 998L)));
 	}
 
 	/*

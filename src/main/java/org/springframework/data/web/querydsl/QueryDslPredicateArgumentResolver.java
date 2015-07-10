@@ -20,6 +20,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -69,6 +70,12 @@ public class QueryDslPredicateArgumentResolver implements HandlerMethodArgumentR
 	private QueryDslPredicateSpecification extractPathSpecificPredicateBuilders(MethodParameter parameter)
 			throws InstantiationException, IllegalAccessException {
 
-		return parameter.getParameterAnnotation(QueryDslPredicate.class).spec().newInstance();
+		QueryDslPredicate annotation = parameter.getParameterAnnotation(QueryDslPredicate.class);
+
+		QueryDslPredicateSpecification spec = annotation.spec().newInstance();
+		if (!ObjectUtils.isEmpty(annotation.exclude())) {
+			spec.exclude(annotation.exclude());
+		}
+		return spec;
 	}
 }

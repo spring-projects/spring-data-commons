@@ -15,20 +15,19 @@
  */
 package org.springframework.data.web.querydsl;
 
-import org.springframework.data.mapping.PropertyPath;
-
+import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 
 /**
  * @author Christoph Strobl
  * @since 1.11
  */
-public interface QueryDslPredicateBuilder {
+public interface QueryDslPredicateBuilder<T extends Path<?>> {
 
 	/**
 	 * @param path Path to the property. Must not be {@literal null}.
 	 * @param value
 	 * @return
 	 */
-	Predicate buildPredicate(PropertyPath path, Object value);
+	Predicate buildPredicate(T path, Object value);
 }

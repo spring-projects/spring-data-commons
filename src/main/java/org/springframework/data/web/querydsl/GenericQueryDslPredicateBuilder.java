@@ -15,24 +15,14 @@
  */
 package org.springframework.data.web.querydsl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.util.Assert;
 
 import com.mysema.query.types.Path;
-import com.mysema.query.types.PathImpl;
-import com.mysema.query.types.PathMetadataFactory;
 import com.mysema.query.types.Predicate;
-import com.mysema.query.types.path.ListPath;
-import com.mysema.query.types.path.PathBuilder;
-import com.mysema.query.types.path.PathBuilderFactory;
-import com.mysema.query.types.path.SimplePath;
+import com.mysema.query.types.expr.SimpleExpression;
+import com.mysema.query.types.path.CollectionPathBase;
 
 /**
  * Generic {@link QueryDslPredicateBuilder} implementation creating {@link Predicate} based on elements root
@@ -41,22 +31,7 @@ import com.mysema.query.types.path.SimplePath;
  * @author Christoph Strobl
  * @since 1.11
  */
-public class GenericQueryDslPredicateBuilder implements QueryDslPredicateBuilder {
-
-	private final ConversionService conversionService;
-	private final PathBuilder<?> pathBuilder;
-
-	/**
-	 * Create new {@link GenericQueryDslPredicateBuilder} for given {@link TypeInformation}.
-	 * 
-	 * @param typeInfo must not be {@literal null}.
-	 */
-	public GenericQueryDslPredicateBuilder(TypeInformation<?> typeInfo) {
-
-		Assert.notNull(typeInfo, "TypeInfo must not be null!");
-		pathBuilder = new PathBuilderFactory().create(typeInfo.getActualType().getType());
-		this.conversionService = new DefaultConversionService();
-	}
+public class GenericQueryDslPredicateBuilder implements QueryDslPredicateBuilder<Path<?>> {
 
 	/*
 	 * (non-Javadoc)
@@ -64,59 +39,27 @@ public class GenericQueryDslPredicateBuilder implements QueryDslPredicateBuilder
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate buildPredicate(PropertyPath path, Object source) {
+	public Predicate buildPredicate(Path<?> path, Object source) {
 
-		SimplePath simplePath = pathBuilder.get(PathConverter.INSTANCE.convert(path));
-
-		if (source == null) {
-			return simplePath.isNull();
+		if (source == null && path instanceof SimpleExpression) {
+			return ((SimpleExpression) path).isNull();
 		}
 
-		if (source instanceof Collection) {
-			return simplePath.in(potentiallyConvertCollectionValues((Collection) source, path.getType()));
+		if (path instanceof CollectionPathBase) {
+			return ((CollectionPathBase) path).contains(source);
 		}
 
-		Object value = potentiallyConvertValue(source, path.getType());
+		if (path instanceof SimpleExpression) {
 
-		if (path.isCollection()) {
-			return new ListPath(path.getType(), pathBuilder.getType(), simplePath.getMetadata()).contains(value);
+			if (source instanceof Collection) {
+				return ((SimpleExpression) path).in((Collection) source);
+			}
+
+			return ((SimpleExpression) path).eq(source);
 		}
 
-		return simplePath.eq(value);
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Collection<?> potentiallyConvertCollectionValues(Collection<?> source, Class<?> targetType) {
-
-		Collection target = new ArrayList(source.size());
-		for (Object value : source) {
-			target.add(potentiallyConvertValue(value, targetType));
-		}
-
-		return target;
-	}
-
-	private Object potentiallyConvertValue(Object source, Class<?> targetType) {
-
-		return conversionService.canConvert(source.getClass(), targetType) ? conversionService.convert(source, targetType)
-				: source;
-	}
-
-	/**
-	 * {@link Converter} implementation creating a typed {@link Path} based on type information contained in
-	 * {@link PropertyPath}.
-	 * 
-	 * @author Christoph Strobl
-	 */
-	@SuppressWarnings("rawtypes")
-	enum PathConverter implements Converter<PropertyPath, com.mysema.query.types.Path> {
-		INSTANCE;
-
-		@SuppressWarnings({ "unchecked" })
-		@Override
-		public Path convert(PropertyPath source) {
-			return new PathImpl(source.getType(), PathMetadataFactory.forVariable(source.toDotPath()));
-		}
+		throw new IllegalArgumentException(String.format("Cannot create predicate for path '%s' with type '%s'.", path,
+				path.getMetadata().getPathType()));
 	}
 
 }
