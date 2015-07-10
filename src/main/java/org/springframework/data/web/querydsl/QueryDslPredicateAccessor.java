@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -85,7 +86,7 @@ public class QueryDslPredicateAccessor {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate getPredicate(MutablePropertyValues values) {
+	public Predicate getPredicate(PropertyValues values) {
 
 		if (values.isEmpty()) {
 			return new BooleanBuilder();
@@ -93,15 +94,15 @@ public class QueryDslPredicateAccessor {
 
 		BooleanBuilder builder = new BooleanBuilder();
 
-		for (PropertyValue propertyValue : values.getPropertyValueList()) {
+		for (PropertyValue propertyValue : values.getPropertyValues()) {
 
 			PropertyPath propertyPath = PropertyPath.from(propertyValue.getName(), typeInfo.getActualType().getType());
-			String dotPath = propertyPath.toDotPath();
 
 			if (predicateSpec.isPathVisible(propertyPath)) {
-				Object value = convertToPropertyPathSpecificType(propertyValue.getValue(), propertyPath);
 
-				QueryDslPredicateBuilder predicateBuilder = getPredicateBuilderForPath(dotPath);
+				Object value = convertToPropertyPathSpecificType(propertyValue.getValue(), propertyPath);
+				QueryDslPredicateBuilder predicateBuilder = getPredicateBuilderForPath(propertyPath);
+
 				builder.and(predicateBuilder.buildPredicate(getPath(propertyPath), value));
 			}
 		}
@@ -109,14 +110,15 @@ public class QueryDslPredicateAccessor {
 		return builder.getValue();
 	}
 
-	private QueryDslPredicateBuilder<? extends Path<?>> getPredicateBuilderForPath(String dotPath) {
+	private QueryDslPredicateBuilder<? extends Path<?>> getPredicateBuilderForPath(PropertyPath dotPath) {
 
 		if (predicateSpec == null) {
 			return defaultPredicateBuilder;
 		}
 
-		return predicateSpec.hasSpecificsForPath(dotPath) ? predicateSpec.getBuilderForPath(dotPath)
-				: defaultPredicateBuilder;
+		QueryDslPredicateBuilder<? extends Path<?>> builder = predicateSpec.getBuilderForPath(dotPath);
+
+		return builder == null ? defaultPredicateBuilder : builder;
 	}
 
 	private Path<?> getPath(PropertyPath propertyPath) {

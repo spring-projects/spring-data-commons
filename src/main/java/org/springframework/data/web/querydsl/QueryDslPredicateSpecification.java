@@ -18,12 +18,14 @@ package org.springframework.data.web.querydsl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.mysema.query.types.Path;
 
@@ -34,11 +36,13 @@ import com.mysema.query.types.Path;
 public class QueryDslPredicateSpecification {
 
 	private final Map<String, PathAndBuilder> pathSpecs;
+	private final Map<Class<?>, PathAndBuilder> typeSpecs;
 	private Set<String> whiteList;
 	private final Set<String> blackList;
 
 	public QueryDslPredicateSpecification() {
 		this.pathSpecs = new LinkedHashMap<String, PathAndBuilder>();
+		this.typeSpecs = new LinkedHashMap<Class<?>, PathAndBuilder>();
 		this.whiteList = new HashSet<String>();
 		this.blackList = new HashSet<String>();
 	}
@@ -47,16 +51,24 @@ public class QueryDslPredicateSpecification {
 		return Collections.unmodifiableMap(this.pathSpecs);
 	}
 
-	public void define(String path, QueryDslPredicateBuilder<? extends Path<?>> builder) {
+	protected void define(String path, QueryDslPredicateBuilder<? extends Path<?>> builder) {
 		this.pathSpecs.put(path, new PathAndBuilder(null, builder));
 	}
 
-	public <T extends Path<?>> void define(T path, QueryDslPredicateBuilder<T> builder) {
-		this.pathSpecs.put(extractPropetyPath(path), new PathAndBuilder(path, builder));
+	protected <T> void define(Class<T> type, QueryDslPredicateBuilder<? extends Path<T>> builder) {
+		this.typeSpecs.put(type, new PathAndBuilder(null, builder));
 	}
 
-	public void exclude(String... properties) {
+	protected <T extends Path<?>> void define(T path, QueryDslPredicateBuilder<T> builder) {
+		this.pathSpecs.put(extractPropertyPath(path), new PathAndBuilder(path, builder));
+	}
+
+	protected void exclude(String... properties) {
 		this.blackList.addAll(Arrays.asList(properties));
+	}
+
+	protected void include(String... properties) {
+		this.whiteList.addAll(Arrays.asList(properties));
 	}
 
 	public boolean hasSpecificsForPath(String path) {
@@ -65,18 +77,14 @@ public class QueryDslPredicateSpecification {
 
 	public boolean isPathVisible(PropertyPath path) {
 
-		Iterator<PropertyPath> it = path.iterator();
-		String spath = "";
-		while (it.hasNext()) {
+		List<String> segments = Arrays.asList(path.toDotPath().split("\\."));
 
-			spath += it.next().getSegment();
-			if (!isPathVisible(spath)) {
+		for (int i = 1; i <= segments.size(); i++) {
+			if (!isPathVisible(StringUtils.collectionToDelimitedString(segments.subList(0, i), "."))) {
 				return false;
 			}
-			if (it.hasNext()) {
-				spath += ".";
-			}
 		}
+
 		return true;
 	}
 
@@ -97,14 +105,26 @@ public class QueryDslPredicateSpecification {
 		return true;
 	}
 
-	public QueryDslPredicateBuilder<? extends Path<?>> getBuilderForPath(String path) {
+	/**
+	 * Returns the {@link QueryDslPredicateBuilder} for the given {@link PropertyPath}. Prefers a path configured for the
+	 * specific path but falls back to the builder registered for a given type.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @return
+	 */
+	public QueryDslPredicateBuilder<? extends Path<?>> getBuilderForPath(PropertyPath path) {
 
-		PathAndBuilder pathAndBuilder = pathSpecs.get(path);
-		if (pathAndBuilder == null) {
-			return null;
+		Assert.notNull(path, "PropertyPath must not be null!");
+
+		PathAndBuilder pathAndBuilder = pathSpecs.get(path.toDotPath());
+
+		if (pathAndBuilder != null) {
+			return pathAndBuilder.getBuilder();
 		}
 
-		return pathAndBuilder.getBuilder();
+		pathAndBuilder = typeSpecs.get(path.getLeafProperty().getType());
+
+		return pathAndBuilder == null ? null : pathAndBuilder.getBuilder();
 	}
 
 	public Path<?> getPathForStringPath(String path) {
@@ -117,14 +137,14 @@ public class QueryDslPredicateSpecification {
 		return pathAndBuilder.getPath();
 	}
 
-	private String extractPropetyPath(Path<?> path) {
+	private String extractPropertyPath(Path<?> path) {
 
 		if (path == null) {
 			return "";
 		}
 
 		if (path.getMetadata().getParent() != null && !path.getMetadata().getParent().getMetadata().isRoot()) {
-			return extractPropetyPath(path.getMetadata().getParent()) + "." + path.getMetadata().getName();
+			return extractPropertyPath(path.getMetadata().getParent()) + "." + path.getMetadata().getName();
 		}
 
 		return path.getMetadata().getName();
