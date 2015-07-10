@@ -32,4 +32,6 @@ import java.lang.annotation.Target;
 public @interface QueryDslPredicate {
 
 	Class<?> root() default Object.class;
+
+	Class<? extends QueryDslPredicateSpecification> spec() default QueryDslPredicateSpecification.class;
 }

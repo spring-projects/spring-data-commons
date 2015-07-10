@@ -69,10 +69,6 @@ public class QueryDslPredicateArgumentResolver implements HandlerMethodArgumentR
 	private QueryDslPredicateSpecification extractPathSpecificPredicateBuilders(MethodParameter parameter)
 			throws InstantiationException, IllegalAccessException {
 
-		QueryDslSpecification spec = parameter.getMethodAnnotation(QueryDslSpecification.class);
-
-		Class<? extends QueryDslPredicateSpecification> specType = spec != null ? spec.spec()
-				: QueryDslPredicateSpecification.class;
-		return specType.newInstance();
+		return parameter.getParameterAnnotation(QueryDslPredicate.class).spec().newInstance();
 	}
 }

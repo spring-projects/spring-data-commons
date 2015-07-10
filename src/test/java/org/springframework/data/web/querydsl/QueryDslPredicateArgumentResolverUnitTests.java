@@ -182,8 +182,7 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 
 		Page<User> pagedFind(@QueryDslPredicate Predicate predicate, Pageable page);
 
-		@QueryDslSpecification(spec = QDSLSpecic.class)
-		User specificFind(@QueryDslPredicate Predicate predicate);
+		User specificFind(@QueryDslPredicate(spec = QDSLSpecic.class) Predicate predicate);
 	}
 
 }
