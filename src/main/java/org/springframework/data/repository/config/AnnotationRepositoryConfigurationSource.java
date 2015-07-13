@@ -221,6 +221,10 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	@Override
 	public String getRepositoryBaseClassName() {
 
+		if (!attributes.containsKey(REPOSITORY_BASE_CLASS)) {
+			return null;
+		}
+
 		Class<? extends Object> repositoryBaseClass = attributes.getClass(REPOSITORY_BASE_CLASS);
 		return DefaultRepositoryBaseClass.class.equals(repositoryBaseClass) ? null : repositoryBaseClass.getName();
 	}

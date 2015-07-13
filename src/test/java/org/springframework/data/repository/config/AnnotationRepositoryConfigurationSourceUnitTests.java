@@ -18,6 +18,8 @@ package org.springframework.data.repository.config;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collection;
 
 import org.junit.Before;
@@ -146,6 +148,19 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(getConfigSource(DefaultConfiguration.class).usesExplicitFilters(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-542
+	 */
+	@Test
+	public void ignoresMissingRepositoryBaseClassNameAttribute() {
+
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(ConfigWithSampleAnnotation.class, true);
+		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
+				SampleAnnotation.class, resourceLoader, environment);
+
+		assertThat(configurationSource.getRepositoryBaseClassName(), is(nullValue()));
+	}
+
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(type, true);
@@ -165,4 +180,15 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	@EnableRepositories(excludeFilters = { @Filter(Primary.class) })
 	static class ConfigurationWithExplicitFilter {}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@interface SampleAnnotation {
+
+		Filter[] includeFilters() default {};
+
+		Filter[] excludeFilters() default {};
+	}
+
+	@SampleAnnotation
+	static class ConfigWithSampleAnnotation {}
 }
