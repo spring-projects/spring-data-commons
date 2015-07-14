@@ -32,13 +32,13 @@ import com.mysema.query.types.Predicate;
 /**
  * @author Christoph Strobl
  */
-public class GenericQueryDslPredicateBuilderUnitTests {
+public class QuerydslDefaultBindingUnitTests {
 
-	GenericQueryDslPredicateBuilder builder;
+	QuerydslDefaultBinding builder;
 
 	@Before
 	public void setUp() {
-		builder = new GenericQueryDslPredicateBuilder();
+		builder = new QuerydslDefaultBinding();
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInRoot() {
 
-		Predicate predicate = builder.buildPredicate(QUser.user.firstname, "tam");
+		Predicate predicate = builder.bind(QUser.user.firstname, "tam");
 
 		assertThat(predicate, is(QUser.user.firstname.eq("tam")));
 	}
@@ -58,7 +58,7 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInNestedElement() {
 
-		Predicate predicate = builder.buildPredicate(QUser.user.address.city, "two rivers");
+		Predicate predicate = builder.bind(QUser.user.address.city, "two rivers");
 
 		Assert.assertThat(predicate.toString(), is(QUser.user.address.city.eq("two rivers").toString()));
 	}
@@ -69,7 +69,7 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenValueIsNull() {
 
-		Predicate predicate = builder.buildPredicate(QUser.user.firstname, null);
+		Predicate predicate = builder.bind(QUser.user.firstname, null);
 
 		assertThat(predicate, is(QUser.user.firstname.isNull()));
 	}
@@ -80,7 +80,7 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateWithContainingWhenPropertyIsCollectionLikeAndValueIsObject() {
 
-		Predicate predicate = builder.buildPredicate(QUser.user.nickNames, "dragon reborn");
+		Predicate predicate = builder.bind(QUser.user.nickNames, "dragon reborn");
 
 		assertThat(predicate, is(QUser.user.nickNames.contains("dragon reborn")));
 	}
@@ -91,7 +91,7 @@ public class GenericQueryDslPredicateBuilderUnitTests {
 	@Test
 	public void shouldCreatePredicateWithInWhenPropertyIsAnObjectAndValueIsACollection() {
 
-		Predicate predicate = builder.buildPredicate(QUser.user.firstname, Arrays.asList("dragon reborn", "shadowkiller"));
+		Predicate predicate = builder.bind(QUser.user.firstname, Arrays.asList("dragon reborn", "shadowkiller"));
 
 		assertThat(predicate, is(QUser.user.firstname.in(Arrays.asList("dragon reborn", "shadowkiller"))));
 	}

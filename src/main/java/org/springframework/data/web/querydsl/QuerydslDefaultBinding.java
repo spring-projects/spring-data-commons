@@ -17,21 +17,24 @@ package org.springframework.data.web.querydsl;
 
 import java.util.Collection;
 
-import org.springframework.data.util.TypeInformation;
-
 import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.expr.SimpleExpression;
 import com.mysema.query.types.path.CollectionPathBase;
 
 /**
- * Generic {@link QueryDslPredicateBuilder} implementation creating {@link Predicate} based on elements root
- * {@link TypeInformation}.
+ * Default implementation of {@link QuerydslBinding} creating {@link Predicate} based on the {@link Path}s type. Binds:
+ * <ul>
+ * <li><i>{@literal null}</i> as {@link SimpleExpression#isNull()}.</li>
+ * <li><i>{@link java.lang.Object}</i> as {@link SimpleExpression#eq()} on simple properties.</li>
+ * <li><i>{@link java.lang.Object}</i> as {@link SimpleExpression#contains()} on collection properties.</li>
+ * <li><i>{@link java.util.Collection}</i> as {@link SimpleExpression#in()} on simple properties.</li>
+ * </ul>
  * 
  * @author Christoph Strobl
  * @since 1.11
  */
-public class GenericQueryDslPredicateBuilder implements QueryDslPredicateBuilder<Path<?>> {
+class QuerydslDefaultBinding implements QuerydslBinding<Path<?>> {
 
 	/*
 	 * (non-Javadoc)
@@ -39,7 +42,7 @@ public class GenericQueryDslPredicateBuilder implements QueryDslPredicateBuilder
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate buildPredicate(Path<?> path, Object source) {
+	public Predicate bind(Path<?> path, Object source) {
 
 		if (source == null && path instanceof SimpleExpression) {
 			return ((SimpleExpression) path).isNull();

@@ -33,7 +33,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.data.querydsl.QueryDslUtils;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.util.ClassUtils;
 
@@ -131,10 +130,6 @@ public @interface EnableSpringDataWebSupport {
 				for (BeanDefinition definition : provider.findCandidateComponents("org.springframework.data")) {
 					imports.add(definition.getBeanClassName());
 				}
-			}
-
-			if (QueryDslUtils.QUERY_DSL_PRESENT) {
-				imports.add(SpringDataQueryDslWebConfiguration.class.getName());
 			}
 
 			return imports.toArray(new String[imports.size()]);

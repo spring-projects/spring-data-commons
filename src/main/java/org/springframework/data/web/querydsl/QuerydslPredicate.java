@@ -21,15 +21,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marker {@link java.lang.annotation.Annotation} for {@link com.mysema.query.types.Predicate} used in Spring MVC
- * {@link org.springframework.web.servlet.mvc.Controller}.
+ * {@link java.lang.annotation.Annotation} to specify aspects of {@link com.mysema.query.types.Predicate} used in Spring
+ * MVC {@link org.springframework.web.servlet.mvc.Controller}.
  * 
  * @author Christoph Strobl
  * @since 1.11
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface QueryDslPredicate {
+public @interface QuerydslPredicate {
 
 	/**
 	 * Root type to be used for {@link com.mysema.query.types.Path}
@@ -43,12 +43,5 @@ public @interface QueryDslPredicate {
 	 * 
 	 * @return
 	 */
-	Class<? extends QueryDslPredicateSpecification> spec() default QueryDslPredicateSpecification.class;
-
-	/**
-	 * Properties to exclude
-	 * 
-	 * @return
-	 */
-	String[] exclude() default {};
+	Class<? extends QuerydslBindings> bindings() default QuerydslBindings.class;
 }

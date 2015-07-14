@@ -26,10 +26,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
+import org.springframework.data.querydsl.QueryDslUtils;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
+import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -96,6 +98,10 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 		argumentResolvers.add(sortResolver());
 		argumentResolvers.add(pageableResolver());
+
+		if (QueryDslUtils.QUERY_DSL_PRESENT) {
+			argumentResolvers.add(new QuerydslPredicateArgumentResolver(conversionService.getObject()));
+		}
 
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
 				conversionService.getObject());

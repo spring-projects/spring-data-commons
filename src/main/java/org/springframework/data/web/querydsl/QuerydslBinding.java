@@ -19,15 +19,18 @@ import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 
 /**
+ * {@link QuerydslBinding} creates a {@link Predicate} out of given {@link Path} and value. Used for specific parameter
+ * treatment in {@link QuerydslBindings}. <br />
+ * 
  * @author Christoph Strobl
  * @since 1.11
  */
-public interface QueryDslPredicateBuilder<T extends Path<?>> {
+public interface QuerydslBinding<T extends Path<?>> {
 
 	/**
-	 * @param path Path to the property. Must not be {@literal null}.
+	 * @param path {@link Path} to the property. Must not be {@literal null}.
 	 * @param value
 	 * @return
 	 */
-	Predicate buildPredicate(T path, Object value);
+	Predicate bind(T path, Object value);
 }

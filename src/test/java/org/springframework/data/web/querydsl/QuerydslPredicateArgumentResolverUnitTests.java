@@ -36,15 +36,15 @@ import com.mysema.query.types.path.StringPath;
 /**
  * @author Christoph Strobl
  */
-public class QueryDslPredicateArgumentResolverUnitTests {
+public class QuerydslPredicateArgumentResolverUnitTests {
 
-	QueryDslPredicateArgumentResolver resolver;
+	QuerydslPredicateArgumentResolver resolver;
 	MockHttpServletRequest request;
 
 	@Before
 	public void setUp() {
 
-		resolver = new QueryDslPredicateArgumentResolver();
+		resolver = new QuerydslPredicateArgumentResolver(null);
 		request = new MockHttpServletRequest();
 	}
 
@@ -60,17 +60,26 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void supportsParameterReturnsFalseWhenMethodParameterIsPredicateButNotAnnotatedAsSuch() {
+	public void supportsParameterReturnsTrueWhenMethodParameterIsPredicateButNotAnnotatedAsSuch() {
 		assertThat(resolver.supportsParameter(getMethodParameterFor("predicateWithoutAnnotation", Predicate.class)),
-				is(false));
+				is(true));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void supportsParameterShouldThrowExceptionWhenMethodParameterIsNoPredicateButAnnotatedAsSuch() {
+		resolver.supportsParameter(getMethodParameterFor("nonPredicateWithAnnotation", String.class));
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void supportsParameterReturnsFalseWhenMethodParameterIsNoPredicateButAnnotatedAsSuch() {
-		assertThat(resolver.supportsParameter(getMethodParameterFor("nonPredicateWithAnnotation", String.class)), is(false));
+	public void supportsParameterReturnsFalseWhenMethodParameterIsNoPredicate() {
+		assertThat(resolver.supportsParameter(getMethodParameterFor("nonPredicateWithoutAnnotation", String.class)),
+				is(false));
 	}
 
 	/**
@@ -190,22 +199,6 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 		assertThat(predicate.toString(), is(QUser.user.inceptionYear.eq(973L).toString()));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
-	public void shouldExcludePorpertiesCorrectlyWhenContainedInAnnotation() throws Exception {
-
-		request.addParameter("firstname", "elayne");
-		request.addParameter("address.street", "downhill");
-		request.addParameter("address.city", "two rivers");
-
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("findWithExclusions", Predicate.class), null,
-				new ServletWebRequest(request), null);
-
-		assertThat(predicate.toString(), is(QUser.user.address.street.eq("downhill").toString()));
-	}
-
 	private MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {
 
 		try {
@@ -215,27 +208,27 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 		}
 	}
 
-	static class QDSLSpecic extends QueryDslPredicateSpecification {
+	static class SpecificBinding extends QuerydslBindings {
 
-		public QDSLSpecic() {
+		public SpecificBinding() {
 
-			define("firstname", new QueryDslPredicateBuilder<StringPath>() {
+			bind("firstname", new QuerydslBinding<StringPath>() {
 
 				@Override
-				public Predicate buildPredicate(StringPath path, Object value) {
+				public Predicate bind(StringPath path, Object value) {
 					return path.eq(value.toString().toUpperCase());
 				}
 			});
 
-			define(QUser.user.lastname, new QueryDslPredicateBuilder<StringPath>() {
+			bind(QUser.user.lastname, new QuerydslBinding<StringPath>() {
 
 				@Override
-				public Predicate buildPredicate(StringPath path, Object value) {
+				public Predicate bind(StringPath path, Object value) {
 					return path.toLowerCase().eq(value.toString());
 				}
 			});
 
-			exclude("address");
+			excluding("address");
 		}
 	}
 
@@ -243,15 +236,15 @@ public class QueryDslPredicateArgumentResolverUnitTests {
 
 		User predicateWithoutAnnotation(Predicate predicate);
 
-		User nonPredicateWithAnnotation(@QueryDslPredicate String predicate);
+		User nonPredicateWithAnnotation(@QuerydslPredicate String predicate);
 
-		User simpleFind(@QueryDslPredicate Predicate predicate);
+		User nonPredicateWithoutAnnotation(String predicate);
 
-		Page<User> pagedFind(@QueryDslPredicate Predicate predicate, Pageable page);
+		User simpleFind(@QuerydslPredicate Predicate predicate);
 
-		User specificFind(@QueryDslPredicate(spec = QDSLSpecic.class) Predicate predicate);
+		Page<User> pagedFind(@QuerydslPredicate Predicate predicate, Pageable page);
 
-		User findWithExclusions(@QueryDslPredicate(exclude = { "firstname", "address.city" }) Predicate predicate);
+		User specificFind(@QuerydslPredicate(bindings = SpecificBinding.class) Predicate predicate);
 	}
 
 }
