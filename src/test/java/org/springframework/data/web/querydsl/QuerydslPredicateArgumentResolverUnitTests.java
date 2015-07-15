@@ -209,18 +209,6 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void createBindingContextShouldUseQuerydslPredicationAnntotationDefaultBindingIfNotAnnotated() {
-
-		Object bindings = ReflectionTestUtils.invokeMethod(resolver, "createBindings",
-				getMethodParameterFor("predicateWithoutAnnotation", Predicate.class));
-
-		assertThat(bindings, is(instanceOf(QuerydslBindings.class)));
-	}
-
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
 	@SuppressWarnings("rawtypes")
 	public void extractTypeInformationShouldUseTypeExtractedFromMethodReturnTypeIfPredicateNotAnnotated() {
 
@@ -239,11 +227,11 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		}
 	}
 
-	static class SpecificBinding extends QuerydslBindings {
+	static class SpecificBinding implements QuerydslBinderCustomizer<QUser> {
 
-		public SpecificBinding() {
+		public void customize(QuerydslBindings bindings, QUser user) {
 
-			bind("firstname").using(new SingleValueBinding<StringPath, String>() {
+			bindings.bind("firstname").using(new SingleValueBinding<StringPath, String>() {
 
 				@Override
 				public Predicate bind(StringPath path, String value) {
@@ -251,7 +239,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 				}
 			});
 
-			bind(QUser.user.lastname).single(new SingleValueBinding<StringPath, String>() {
+			bindings.bind(user.lastname).single(new SingleValueBinding<StringPath, String>() {
 
 				@Override
 				public Predicate bind(StringPath path, String value) {
@@ -259,7 +247,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 				}
 			});
 
-			excluding("address");
+			bindings.excluding("address");
 		}
 	}
 

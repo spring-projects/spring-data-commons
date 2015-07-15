@@ -18,6 +18,7 @@ package org.springframework.data.web.querydsl;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ import com.mysema.query.types.Predicate;
  * new QuerydslBindings() {
  *   {
  *     bind(QUser.user.address.city).using((path, value) -> path.like(value.toString()));
- *     bind("lastname").using((path, value) -> path.like(value.toString()));
+ *     bind(String.class).using((path, value) -> path.like(value.toString()));
  *   }
  * }
  * </code>
@@ -72,11 +73,15 @@ public class QuerydslBindings {
 	/**
 	 * Returns a new {@link PathBinder} for the given {@link Path}s to define bindings for them.
 	 * 
-	 * @param paths must not be {@literal null} or emtpy.
+	 * @param paths must not be {@literal null} or empty.
 	 * @return
 	 */
 	public final <T extends Path<S>, S> PathBinder<T, S> bind(T... paths) {
 		return new PathBinder<T, S>(paths);
+	}
+
+	public final <T> TypeBinder<T> bind(Class<T> type) {
+		return new TypeBinder<T>(type);
 	}
 
 	/**
@@ -85,12 +90,8 @@ public class QuerydslBindings {
 	 * @param paths
 	 * @return
 	 */
-	public final PropertyBinder bind(String... paths) {
+	final PropertyBinder bind(String... paths) {
 		return new PropertyBinder(Arrays.asList(paths));
-	}
-
-	public final <T> TypeBinder<T> bind(Class<T> type) {
-		return new TypeBinder<T>(type);
 	}
 
 	/**
@@ -114,7 +115,7 @@ public class QuerydslBindings {
 	 * 
 	 * @param properties
 	 */
-	public final void excluding(String... properties) {
+	final void excluding(String... properties) {
 		this.blackList.addAll(Arrays.asList(properties));
 	}
 
@@ -137,7 +138,7 @@ public class QuerydslBindings {
 	 * 
 	 * @param properties
 	 */
-	public final void including(String... properties) {
+	final void including(String... properties) {
 
 		Assert.notEmpty(properties, "At least one property has to be provided!");
 
@@ -264,7 +265,7 @@ public class QuerydslBindings {
 	 *
 	 * @author Oliver Gierke
 	 */
-	protected final class PathBinder<P extends Path<? extends T>, T> {
+	public final class PathBinder<P extends Path<? extends T>, T> {
 
 		private final List<P> paths;
 
@@ -302,7 +303,7 @@ public class QuerydslBindings {
 		}
 	}
 
-	protected final class TypeBinder<T> {
+	public final class TypeBinder<T> {
 
 		private final Class<T> type;
 
@@ -323,7 +324,7 @@ public class QuerydslBindings {
 		}
 	}
 
-	protected final class PropertyBinder {
+	public final class PropertyBinder {
 
 		private final List<String> paths;
 
@@ -393,7 +394,8 @@ public class QuerydslBindings {
 		 */
 		@Override
 		public Predicate bind(T path, Collection<? extends S> value) {
-			return delegate.bind(path, value.iterator().next());
+			Iterator<? extends S> iterator = value.iterator();
+			return delegate.bind(path, iterator.hasNext() ? iterator.next() : null);
 		}
 	}
 }

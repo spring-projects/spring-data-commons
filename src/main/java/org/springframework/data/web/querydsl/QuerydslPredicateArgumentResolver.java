@@ -15,22 +15,28 @@
  */
 package org.springframework.data.web.querydsl;
 
+import java.util.Arrays;
+import java.util.Map.Entry;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 
 /**
@@ -42,8 +48,6 @@ import com.mysema.query.types.Predicate;
  * @since 1.11
  */
 public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentResolver, ApplicationContextAware {
-
-	private static final QuerydslBindings DEFAULT_BINDINGS = new QuerydslBindings();
 
 	private final QuerydslPredicateBuilder predicateBuilder;
 
@@ -95,8 +99,16 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	public Predicate resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		return predicateBuilder.getPredicate(new MutablePropertyValues(webRequest.getParameterMap()),
-				createBindings(parameter), extractTypeInfo(parameter).getActualType());
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+
+		for (Entry<String, String[]> entry : webRequest.getParameterMap().entrySet()) {
+			parameters.put(entry.getKey(), Arrays.asList(entry.getValue()));
+		}
+
+		QuerydslPredicate annotation = parameter.getParameterAnnotation(QuerydslPredicate.class);
+		TypeInformation<?> domainType = extractTypeInfo(parameter).getActualType();
+
+		return predicateBuilder.getPredicate(parameters, createBindings(annotation, domainType.getType()), domainType);
 	}
 
 	private TypeInformation<?> extractTypeInfo(MethodParameter parameter) {
@@ -110,16 +122,22 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 		return ClassTypeInformation.from(annotation.root());
 	}
 
-	private QuerydslBindings createBindings(MethodParameter parameter)
-			throws InstantiationException, IllegalAccessException {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public QuerydslBindings createBindings(QuerydslPredicate annotation, Class<?> domainType) {
 
-		QuerydslPredicate annotation = parameter.getParameterAnnotation(QuerydslPredicate.class);
+		EntityPath<?> path = SimpleEntityPathResolver.INSTANCE.createPath(domainType);
 
-		if (annotation == null) {
-			return DEFAULT_BINDINGS;
+		QuerydslBindings bindings = new QuerydslBindings();
+
+		if (annotation == null || annotation.bindings().equals(QuerydslBinderCustomizer.class)) {
+			return bindings;
 		}
 
-		Class<? extends QuerydslBindings> type = annotation.bindings();
-		return beanFactory != null ? beanFactory.createBean(type) : BeanUtils.instantiateClass(type);
+		Class<? extends QuerydslBinderCustomizer> type = annotation.bindings();
+		QuerydslBinderCustomizer<EntityPath<?>> customizer = beanFactory != null ? beanFactory.createBean(type)
+				: BeanUtils.instantiateClass(type);
+		customizer.customize(bindings, path);
+
+		return bindings;
 	}
 }
