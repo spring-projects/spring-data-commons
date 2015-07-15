@@ -36,7 +36,6 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.mysema.query.BooleanBuilder;
-import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 
@@ -47,7 +46,7 @@ import com.mysema.query.types.Predicate;
  * @author Oliver Gierke
  * @since 1.11
  */
-class QuerydslPredicateBuilder {
+public class QuerydslPredicateBuilder {
 
 	private final ConversionService conversionService;
 	private final MultiValueBinding<?, ?> defaultBinding;
@@ -138,16 +137,16 @@ class QuerydslPredicateBuilder {
 		return resolvedPath;
 	}
 
-	private static Path<?> reifyPath(PropertyPath path, EntityPath<?> base) {
+	private static Path<?> reifyPath(PropertyPath path, Path<?> base) {
 
-		EntityPath<?> entityPath = base != null ? base
+		Path<?> entityPath = base != null ? base
 				: SimpleEntityPathResolver.INSTANCE.createPath(path.getOwningType().getType());
 
 		Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
 		Object value = ReflectionUtils.getField(field, entityPath);
 
-		if (path.hasNext() && value instanceof EntityPath) {
-			return reifyPath(path.next(), (EntityPath<?>) value);
+		if (path.hasNext()) {
+			return reifyPath(path.next(), (Path<?>) value);
 		}
 
 		return (Path<?>) value;

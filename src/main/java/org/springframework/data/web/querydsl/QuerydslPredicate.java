@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * @author Christoph Strobl
  * @since 1.11
  */
-@Target(ElementType.PARAMETER)
+@Target({ ElementType.PARAMETER, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface QuerydslPredicate {
 
@@ -36,12 +36,13 @@ public @interface QuerydslPredicate {
 	 * 
 	 * @return
 	 */
-	Class<?> root() default Object.class;
+	Class<?>root() default Object.class;
 
 	/**
 	 * Configuration class providing options on a per field base.
 	 * 
 	 * @return
 	 */
-	Class<? extends QuerydslBindings> bindings() default QuerydslBindings.class;
+	@SuppressWarnings("rawtypes")
+	Class<? extends QuerydslBinderCustomizer>bindings() default QuerydslBinderCustomizer.class;
 }

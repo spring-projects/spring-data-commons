@@ -33,14 +33,15 @@ import com.mysema.query.types.Predicate;
 
 /**
  * @author Christoph Strobl
+ * @author Oliver Gierke
  */
 public class QuerydslDefaultBindingUnitTests {
 
-	QuerydslDefaultBinding builder;
+	QuerydslDefaultBinding binding;
 
 	@Before
 	public void setUp() {
-		builder = new QuerydslDefaultBinding();
+		binding = new QuerydslDefaultBinding();
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInRoot() {
 
-		Predicate predicate = builder.bind(QUser.user.firstname, Collections.singleton("tam"));
+		Predicate predicate = binding.bind(QUser.user.firstname, Collections.singleton("tam"));
 
 		assertPredicate(predicate, is(QUser.user.firstname.eq("tam")));
 	}
@@ -60,7 +61,7 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInNestedElement() {
 
-		Predicate predicate = builder.bind(QUser.user.address.city, Collections.singleton("two rivers"));
+		Predicate predicate = binding.bind(QUser.user.address.city, Collections.singleton("two rivers"));
 
 		Assert.assertThat(predicate.toString(), is(QUser.user.address.city.eq("two rivers").toString()));
 	}
@@ -71,7 +72,7 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void shouldCreatePredicateWithContainingWhenPropertyIsCollectionLikeAndValueIsObject() {
 
-		Predicate predicate = builder.bind(QUser.user.nickNames, Collections.singleton("dragon reborn"));
+		Predicate predicate = binding.bind(QUser.user.nickNames, Collections.singleton("dragon reborn"));
 
 		assertPredicate(predicate, is(QUser.user.nickNames.contains("dragon reborn")));
 	}
@@ -82,7 +83,7 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void shouldCreatePredicateWithInWhenPropertyIsAnObjectAndValueIsACollection() {
 
-		Predicate predicate = builder.bind(QUser.user.firstname, Arrays.asList("dragon reborn", "shadowkiller"));
+		Predicate predicate = binding.bind(QUser.user.firstname, Arrays.asList("dragon reborn", "shadowkiller"));
 
 		assertPredicate(predicate, is(QUser.user.firstname.in(Arrays.asList("dragon reborn", "shadowkiller"))));
 	}
@@ -90,7 +91,7 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void testname() {
 
-		assertThat(builder.bind(QUser.user.lastname, Collections.emptySet()), is(nullValue()));
+		assertThat(binding.bind(QUser.user.lastname, Collections.emptySet()), is(nullValue()));
 	}
 
 	/*

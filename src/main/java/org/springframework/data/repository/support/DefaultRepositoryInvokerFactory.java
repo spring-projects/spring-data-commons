@@ -92,12 +92,17 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 	 * @param domainType
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	private RepositoryInvoker prepareInvokers(Class<?> domainType) {
 
 		Object repository = repositories.getRepositoryFor(domainType);
 		Assert.notNull(repository, String.format("No repository found for domain type: %s", domainType));
 		RepositoryInformation information = repositories.getRepositoryInformationFor(domainType);
+
+		return createInvoker(information, repository);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected RepositoryInvoker createInvoker(RepositoryInformation information, Object repository) {
 
 		if (repository instanceof PagingAndSortingRepository) {
 			return new PagingAndSortingRepositoryInvoker((PagingAndSortingRepository<Object, Serializable>) repository,

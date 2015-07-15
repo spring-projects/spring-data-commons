@@ -73,7 +73,7 @@ public class QuerydslBindings {
 	/**
 	 * Returns a new {@link PathBinder} for the given {@link Path}s to define bindings for them.
 	 * 
-	 * @param paths must not be {@literal null} or emtpy.
+	 * @param paths must not be {@literal null} or empty.
 	 * @return
 	 */
 	public final <T extends Path<S>, S> PathBinder<T, S> bind(T... paths) {
@@ -265,7 +265,7 @@ public class QuerydslBindings {
 	 *
 	 * @author Oliver Gierke
 	 */
-	protected final class PathBinder<P extends Path<? extends T>, T> {
+	public final class PathBinder<P extends Path<? extends T>, T> {
 
 		private final List<P> paths;
 
@@ -303,7 +303,7 @@ public class QuerydslBindings {
 		}
 	}
 
-	protected final class TypeBinder<T> {
+	public final class TypeBinder<T> {
 
 		private final Class<T> type;
 
@@ -324,7 +324,7 @@ public class QuerydslBindings {
 		}
 	}
 
-	protected final class PropertyBinder {
+	public final class PropertyBinder {
 
 		private final List<String> paths;
 
