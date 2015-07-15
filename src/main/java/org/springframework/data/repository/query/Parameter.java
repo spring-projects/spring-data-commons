@@ -121,6 +121,16 @@ public class Parameter {
 		return parameter.getParameterType();
 	}
 
+	/**
+	 * Returns whether the parameter is named explicitly, i.e. annotated with {@link Param}.
+	 * 
+	 * @return
+	 * @since 1.11
+	 */
+	public boolean isExplicitlyNamed() {
+		return parameter.hasParameterAnnotation(Param.class);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()

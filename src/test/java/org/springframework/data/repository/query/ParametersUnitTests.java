@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit test for {@link Parameters}.
@@ -123,8 +124,35 @@ public class ParametersUnitTests {
 		getParametersFor("validWithPageableFirst", Pageable.class, String.class);
 	}
 
-	private Parameters<?, ?> getParametersFor(String methodName, Class<?>... parameterTypes) throws SecurityException,
-			NoSuchMethodException {
+	/**
+	 * @see DATACMNS-731
+	 */
+	@Test
+	public void detectsExplicitlyNamedParameter() throws Exception {
+
+		Parameter parameter = getParametersFor("valid", String.class).getBindableParameter(0);
+
+		assertThat(parameter.getName(), is(notNullValue()));
+		assertThat(parameter.isExplicitlyNamed(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-731
+	 */
+	@Test
+	public void doesNotConsiderParameterExplicitlyNamedEvenIfNamePresent() throws Exception {
+
+		Parameter parameter = getParametersFor("validWithSortFirst", Sort.class, String.class).getBindableParameter(0);
+
+		Object methodParameter = ReflectionTestUtils.getField(parameter, "parameter");
+		ReflectionTestUtils.setField(methodParameter, "parameterName", "name");
+
+		assertThat(parameter.getName(), is(notNullValue()));
+		assertThat(parameter.isExplicitlyNamed(), is(false));
+	}
+
+	private Parameters<?, ?> getParametersFor(String methodName, Class<?>... parameterTypes)
+			throws SecurityException, NoSuchMethodException {
 
 		Method method = SampleDao.class.getMethod(methodName, parameterTypes);
 
