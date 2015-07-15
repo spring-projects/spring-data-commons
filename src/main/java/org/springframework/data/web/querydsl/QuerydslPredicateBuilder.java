@@ -20,9 +20,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PropertyPath;
@@ -30,9 +31,9 @@ import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 import com.mysema.query.BooleanBuilder;
 import com.mysema.query.types.EntityPath;
@@ -67,26 +68,36 @@ class QuerydslPredicateBuilder {
 	 * @return
 	 */
 
-	public Predicate getPredicate(PropertyValues values, QuerydslBindings bindings, TypeInformation<?> type) {
+	public Predicate getPredicate(MultiValueMap<String, String> values, QuerydslBindings bindings,
+			TypeInformation<?> type) {
 
 		Assert.notNull(bindings, "Context must not be null!");
 
-		if (values.isEmpty()) {
-			return new BooleanBuilder();
-		}
-
 		BooleanBuilder builder = new BooleanBuilder();
 
-		for (PropertyValue propertyValue : values.getPropertyValues()) {
+		if (values.isEmpty()) {
+			return builder.getValue();
+		}
+
+		for (Entry<String, List<String>> entry : values.entrySet()) {
+
+			if (isSingleElementCollectionWithoutText(entry.getValue())) {
+				continue;
+			}
 
 			try {
 
-				PropertyPath propertyPath = PropertyPath.from(propertyValue.getName(), type);
+				PropertyPath propertyPath = PropertyPath.from(entry.getKey(), type);
 
 				if (bindings.isPathVisible(propertyPath)) {
 
-					Collection<Object> value = convertToPropertyPathSpecificType(propertyValue.getValue(), propertyPath);
-					builder.and(invokeBinding(propertyPath, bindings, value));
+					Collection<Object> value = convertToPropertyPathSpecificType(entry.getValue(), propertyPath);
+
+					Predicate binding = invokeBinding(propertyPath, bindings, value);
+
+					if (binding != null) {
+						builder.and(binding);
+					}
 				}
 			} catch (PropertyReferenceException o_O) {
 				// not a property of the domain object, continue
@@ -142,33 +153,18 @@ class QuerydslPredicateBuilder {
 		return (Path<?>) value;
 	}
 
-	private Collection<Object> convertToPropertyPathSpecificType(Object source, PropertyPath path) {
+	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PropertyPath path) {
 
 		Class<?> targetType = path.getLeafProperty().getType();
 
-		if (targetType.isInstance(source)) {
-			return Collections.singleton(source);
+		if (isSingleElementCollectionWithoutText(source)) {
+			return Collections.emptyList();
 		}
-
-		Object value = source;
-
-		if (ObjectUtils.isArray(value)) {
-			value = CollectionUtils.arrayToList(value);
-		}
-
-		if (value instanceof Collection) {
-			return potentiallyConvertCollectionValues((Collection<?>) value, targetType);
-		}
-
-		return Collections.singleton(potentiallyConvertValue(value, targetType));
-	}
-
-	private Collection<Object> potentiallyConvertCollectionValues(Collection<?> source, Class<?> elementType) {
 
 		Collection<Object> target = new ArrayList<Object>(source.size());
 
-		for (Object value : source) {
-			target.add(potentiallyConvertValue(value, elementType));
+		for (String value : source) {
+			target.add(potentiallyConvertValue(value, targetType));
 		}
 
 		return target;
@@ -177,5 +173,16 @@ class QuerydslPredicateBuilder {
 	private Object potentiallyConvertValue(Object source, Class<?> targetType) {
 		return conversionService.canConvert(source.getClass(), targetType) ? conversionService.convert(source, targetType)
 				: source;
+	}
+
+	/**
+	 * Returns whether the given collection has exactly one element that doesn't contain any text. This is basically an
+	 * indicator that a request parameter has been submitted but no value for it.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean isSingleElementCollectionWithoutText(List<String> source) {
+		return source.size() == 1 && !StringUtils.hasText(source.get(0));
 	}
 }

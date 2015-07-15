@@ -17,6 +17,9 @@ package org.springframework.data.web.querydsl;
 
 import java.util.Collection;
 
+import org.springframework.util.Assert;
+
+import com.mysema.query.BooleanBuilder;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.expr.SimpleExpression;
@@ -26,7 +29,6 @@ import com.mysema.query.types.path.CollectionPathBase;
  * Default implementation of {@link MultiValueBinding} creating {@link Predicate} based on the {@link Path}s type.
  * Binds:
  * <ul>
- * <li><i>{@literal null}</i> as {@link SimpleExpression#isNull()}.</li>
  * <li><i>{@link java.lang.Object}</i> as {@link SimpleExpression#eq()} on simple properties.</li>
  * <li><i>{@link java.lang.Object}</i> as {@link SimpleExpression#contains()} on collection properties.</li>
  * <li><i>{@link java.util.Collection}</i> as {@link SimpleExpression#in()} on simple properties.</li>
@@ -44,25 +46,33 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate bind(Path<?> path, Collection<? extends Object> source) {
+	public Predicate bind(Path<?> path, Collection<? extends Object> value) {
 
-		if ((source == null || source.isEmpty())) {
-			return ((SimpleExpression) path).isNull();
+		Assert.notNull(path, "Path must not be null!");
+		Assert.notNull(value, "Value must not be null!");
+
+		if (value.isEmpty()) {
+			return null;
 		}
 
-		Object firstValue = source.iterator().next();
-
 		if (path instanceof CollectionPathBase) {
-			return ((CollectionPathBase) path).contains(firstValue);
+
+			BooleanBuilder builder = new BooleanBuilder();
+
+			for (Object element : value) {
+				builder.and(((CollectionPathBase) path).contains(element));
+			}
+
+			return builder.getValue();
 		}
 
 		if (path instanceof SimpleExpression) {
 
-			if (source.size() > 1) {
-				return ((SimpleExpression) path).in(source);
+			if (value.size() > 1) {
+				return ((SimpleExpression) path).in(value);
 			}
 
-			return ((SimpleExpression) path).eq(firstValue);
+			return ((SimpleExpression) path).eq(value.iterator().next());
 		}
 
 		throw new IllegalArgumentException(

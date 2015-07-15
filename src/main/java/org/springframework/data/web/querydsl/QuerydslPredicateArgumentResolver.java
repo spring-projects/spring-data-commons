@@ -15,9 +15,11 @@
  */
 package org.springframework.data.web.querydsl;
 
+import java.util.Arrays;
+import java.util.Map.Entry;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -26,6 +28,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -95,8 +99,14 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	public Predicate resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		return predicateBuilder.getPredicate(new MutablePropertyValues(webRequest.getParameterMap()),
-				createBindings(parameter), extractTypeInfo(parameter).getActualType());
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+
+		for (Entry<String, String[]> entry : webRequest.getParameterMap().entrySet()) {
+			parameters.put(entry.getKey(), Arrays.asList(entry.getValue()));
+		}
+
+		return predicateBuilder.getPredicate(parameters, createBindings(parameter),
+				extractTypeInfo(parameter).getActualType());
 	}
 
 	private TypeInformation<?> extractTypeInfo(MethodParameter parameter) {
