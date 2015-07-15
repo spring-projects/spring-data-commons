@@ -30,6 +30,8 @@ import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.querydsl.Users;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import com.mysema.query.BooleanBuilder;
 import com.mysema.query.collections.CollQueryFactory;
@@ -110,5 +112,18 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		assertThat(result, hasSize(1));
 		assertThat(result, hasItem(Users.CHRISTOPH));
+	}
+
+	@Test
+	public void ignoresNonDomainTypeProperties() {
+
+		MultiValueMap<String, String> values = new LinkedMultiValueMap<String, String>();
+		values.add("firstname", "rand");
+		values.add("lastname".toUpperCase(), "al'thor");
+
+		Predicate predicate = builder.getPredicate(new MutablePropertyValues(values), new QuerydslBindings(),
+				ClassTypeInformation.from(User.class));
+
+		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand")));
 	}
 }

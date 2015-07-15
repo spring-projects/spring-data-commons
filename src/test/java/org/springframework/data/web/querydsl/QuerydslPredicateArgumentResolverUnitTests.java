@@ -15,7 +15,7 @@
  */
 package org.springframework.data.web.querydsl;
 
-import static org.hamcrest.core.Is.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
@@ -25,7 +25,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.context.request.ServletWebRequest;
 
 import com.mysema.query.types.Predicate;
@@ -202,6 +205,31 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(predicate.toString(), is(QUser.user.inceptionYear.eq(973L).toString()));
 	}
 
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	public void createBindingContextShouldUseQuerydslPredicationAnntotationDefaultBindingIfNotAnnotated() {
+
+		Object bindings = ReflectionTestUtils.invokeMethod(resolver, "createBindings",
+				getMethodParameterFor("predicateWithoutAnnotation", Predicate.class));
+
+		assertThat(bindings, is(instanceOf(QuerydslBindings.class)));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void extractTypeInformationShouldUseTypeExtractedFromMethodReturnTypeIfPredicateNotAnnotated() {
+
+		TypeInformation<?> type = ReflectionTestUtils.invokeMethod(resolver, "extractTypeInfo",
+				getMethodParameterFor("predicateWithoutAnnotation", Predicate.class));
+
+		assertThat(type, is((TypeInformation) ClassTypeInformation.from(User.class)));
+	}
+
 	private static MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {
 
 		try {
@@ -249,5 +277,4 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		User specificFind(@QuerydslPredicate(bindings = SpecificBinding.class) Predicate predicate);
 	}
-
 }

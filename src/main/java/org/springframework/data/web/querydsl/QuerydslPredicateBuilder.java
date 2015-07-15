@@ -26,6 +26,7 @@ import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -78,12 +79,17 @@ class QuerydslPredicateBuilder {
 
 		for (PropertyValue propertyValue : values.getPropertyValues()) {
 
-			PropertyPath propertyPath = PropertyPath.from(propertyValue.getName(), type);
+			try {
 
-			if (bindings.isPathVisible(propertyPath)) {
+				PropertyPath propertyPath = PropertyPath.from(propertyValue.getName(), type);
 
-				Collection<Object> value = convertToPropertyPathSpecificType(propertyValue.getValue(), propertyPath);
-				builder.and(invokeBinding(propertyPath, bindings, value));
+				if (bindings.isPathVisible(propertyPath)) {
+
+					Collection<Object> value = convertToPropertyPathSpecificType(propertyValue.getValue(), propertyPath);
+					builder.and(invokeBinding(propertyPath, bindings, value));
+				}
+			} catch (PropertyReferenceException o_O) {
+				// not a property of the domain object, continue
 			}
 		}
 

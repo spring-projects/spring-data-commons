@@ -43,6 +43,8 @@ import com.mysema.query.types.Predicate;
  */
 public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentResolver, ApplicationContextAware {
 
+	private static final QuerydslBindings DEFAULT_BINDINGS = new QuerydslBindings();
+
 	private final QuerydslPredicateBuilder predicateBuilder;
 
 	private AutowireCapableBeanFactory beanFactory;
@@ -99,18 +101,25 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 
 	private TypeInformation<?> extractTypeInfo(MethodParameter parameter) {
 
-		Class<?> type = parameter.getParameterAnnotation(QuerydslPredicate.class).root();
+		QuerydslPredicate annotation = parameter.getParameterAnnotation(QuerydslPredicate.class);
 
-		return type == Object.class ? ClassTypeInformation.fromReturnTypeOf(parameter.getMethod())
-				: ClassTypeInformation.from(type);
+		if (annotation == null || Object.class.equals(annotation.root())) {
+			return ClassTypeInformation.fromReturnTypeOf(parameter.getMethod());
+		}
+
+		return ClassTypeInformation.from(annotation.root());
 	}
 
 	private QuerydslBindings createBindings(MethodParameter parameter)
 			throws InstantiationException, IllegalAccessException {
 
-		Class<? extends QuerydslBindings> bindingsType = parameter.getParameterAnnotation(QuerydslPredicate.class)
-				.bindings();
+		QuerydslPredicate annotation = parameter.getParameterAnnotation(QuerydslPredicate.class);
 
-		return beanFactory != null ? beanFactory.createBean(bindingsType) : BeanUtils.instantiateClass(bindingsType);
+		if (annotation == null) {
+			return DEFAULT_BINDINGS;
+		}
+
+		Class<? extends QuerydslBindings> type = annotation.bindings();
+		return beanFactory != null ? beanFactory.createBean(type) : BeanUtils.instantiateClass(type);
 	}
 }
