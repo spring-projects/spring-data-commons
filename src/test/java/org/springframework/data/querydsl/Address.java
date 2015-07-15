@@ -22,6 +22,11 @@ import com.mysema.query.annotations.QueryEntity;
  */
 @QueryEntity
 public class Address {
-	String street;
-	String city;
+
+	public String street, city;
+
+	public Address(String street, String city) {
+		this.street = street;
+		this.city = city;
+	}
 }

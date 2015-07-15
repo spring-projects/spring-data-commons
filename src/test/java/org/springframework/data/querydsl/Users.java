@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,23 @@
  */
 package org.springframework.data.querydsl;
 
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
-
-import com.mysema.query.annotations.QueryEntity;
 
 /**
  * @author Oliver Gierke
- * @author Thomas Darimont
- * @author Christoph Strobl
  */
-@QueryEntity
-public class User {
+public class Users {
 
-	public String firstname, lastname;
-	public Date dateOfBirth;
-	public Address address;
-	public List<String> nickNames;
-	public Long inceptionYear;
+	public static final User OLIVER, CHRISTOPH;
 
-	public User(String firstname, String lastname, Address address) {
+	public static final List<User> USERS;
 
-		this.firstname = firstname;
-		this.lastname = lastname;
-		this.address = address;
+	static {
+
+		OLIVER = new User("Oliver", "Gierke", new Address("Somewhere", "Dresden"));
+		CHRISTOPH = new User("Christoph", "Strobl", new Address("Somewhere", "Linz"));
+
+		USERS = Arrays.asList(OLIVER, CHRISTOPH);
 	}
 }

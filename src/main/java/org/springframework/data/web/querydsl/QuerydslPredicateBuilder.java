@@ -15,42 +15,49 @@
  */
 package org.springframework.data.web.querydsl;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.ReflectionUtils;
 
 import com.mysema.query.BooleanBuilder;
+import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
-import com.mysema.query.types.PathMetadata;
-import com.mysema.query.types.PathMetadataFactory;
 import com.mysema.query.types.Predicate;
-import com.mysema.query.types.path.CollectionPath;
-import com.mysema.query.types.path.NumberPath;
-import com.mysema.query.types.path.PathBuilder;
-import com.mysema.query.types.path.PathBuilderFactory;
-import com.mysema.query.types.path.SimplePath;
-import com.mysema.query.types.path.StringPath;
 
 /**
  * Builder assembling {@link Predicate} out of {@link PropertyValues}.
  * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.11
  */
 class QuerydslPredicateBuilder {
 
-	private final QuerydslBinding<?> defaultBinding;
+	private final ConversionService conversionService;
+	private final MultiValueBinding<?, ?> defaultBinding;
+	private final Map<PropertyPath, Path<?>> paths;
 
-	public QuerydslPredicateBuilder() {
+	public QuerydslPredicateBuilder(ConversionService conversionService) {
+
+		Assert.notNull(conversionService, "ConversionService must not be null!");
+
 		this.defaultBinding = new QuerydslDefaultBinding();
+		this.conversionService = conversionService;
+		this.paths = new HashMap<PropertyPath, Path<?>>();
 	}
 
 	/**
@@ -58,10 +65,10 @@ class QuerydslPredicateBuilder {
 	 * @param context
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate getPredicate(PropertyValues values, QuerydslBindingContext context) {
 
-		Assert.notNull(context, "Context must not be null!");
+	public Predicate getPredicate(PropertyValues values, QuerydslBindings bindings, TypeInformation<?> type) {
+
+		Assert.notNull(bindings, "Context must not be null!");
 
 		if (values.isEmpty()) {
 			return new BooleanBuilder();
@@ -71,109 +78,98 @@ class QuerydslPredicateBuilder {
 
 		for (PropertyValue propertyValue : values.getPropertyValues()) {
 
-			PropertyPath propertyPath = PropertyPath.from(propertyValue.getName(), context.getTargetType());
+			PropertyPath propertyPath = PropertyPath.from(propertyValue.getName(), type);
 
-			if (context.isPathVisible(propertyPath)) {
+			if (bindings.isPathVisible(propertyPath)) {
 
-				Object value = convertToPropertyPathSpecificType(propertyValue.getValue(), propertyPath, context);
-				QuerydslBinding binding = getPredicateBuilderForPath(propertyPath, context);
-
-				builder.and(binding.bind(getPath(propertyPath, context), value));
+				Collection<Object> value = convertToPropertyPathSpecificType(propertyValue.getValue(), propertyPath);
+				builder.and(invokeBinding(propertyPath, bindings, value));
 			}
 		}
 
 		return builder.getValue();
 	}
 
-	private QuerydslBinding<? extends Path<?>> getPredicateBuilderForPath(PropertyPath dotPath,
-			QuerydslBindingContext context) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private Predicate invokeBinding(PropertyPath dotPath, QuerydslBindings bindings, Collection<Object> value) {
 
-		QuerydslBinding<? extends Path<?>> binding = context.getBindingForPath(dotPath);
-		return binding == null ? defaultBinding : binding;
+		Path<?> path = getPath(dotPath, bindings);
+
+		MultiValueBinding binding = bindings.getBindingForPath(dotPath);
+		binding = binding == null ? defaultBinding : binding;
+
+		return binding.bind(path, value);
 	}
 
-	private Path<?> getPath(PropertyPath propertyPath, QuerydslBindingContext context) {
+	private Path<?> getPath(PropertyPath path, QuerydslBindings bindings) {
 
-		Path<?> path = context.getPathForPropertyPath(propertyPath);
-		if (path != null) {
-			return path;
+		Path<?> resolvedPath = bindings.getExistingPath(path);
+
+		if (resolvedPath != null) {
+			return resolvedPath;
 		}
 
-		return new PropertyPathPathBuilder(context.getTargetType()).forProperty(propertyPath);
+		resolvedPath = paths.get(resolvedPath);
+
+		if (resolvedPath != null) {
+			return resolvedPath;
+		}
+
+		resolvedPath = reifyPath(path, null);
+		paths.put(path, resolvedPath);
+
+		return resolvedPath;
 	}
 
-	private Object convertToPropertyPathSpecificType(Object source, PropertyPath path, QuerydslBindingContext context) {
+	private static Path<?> reifyPath(PropertyPath path, EntityPath<?> base) {
+
+		EntityPath<?> entityPath = base != null ? base
+				: SimpleEntityPathResolver.INSTANCE.createPath(path.getOwningType().getType());
+
+		Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
+		Object value = ReflectionUtils.getField(field, entityPath);
+
+		if (path.hasNext() && value instanceof EntityPath) {
+			return reifyPath(path.next(), (EntityPath<?>) value);
+		}
+
+		return (Path<?>) value;
+	}
+
+	private Collection<Object> convertToPropertyPathSpecificType(Object source, PropertyPath path) {
+
+		Class<?> targetType = path.getLeafProperty().getType();
+
+		if (targetType.isInstance(source)) {
+			return Collections.singleton(source);
+		}
 
 		Object value = source;
 
 		if (ObjectUtils.isArray(value)) {
-
-			List<?> list = CollectionUtils.arrayToList(value);
-			if (!list.isEmpty() && list.size() == 1) {
-				value = list.get(0);
-			} else {
-				value = list;
-			}
+			value = CollectionUtils.arrayToList(value);
 		}
 
 		if (value instanceof Collection) {
-			return potentiallyConvertCollectionValues((Collection<?>) value, path.getType(), context);
+			return potentiallyConvertCollectionValues((Collection<?>) value, targetType);
 		}
 
-		return potentiallyConvertValue(value, path.getType(), context);
+		return Collections.singleton(potentiallyConvertValue(value, targetType));
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Collection<?> potentiallyConvertCollectionValues(Collection<?> source, Class<?> targetType,
-			QuerydslBindingContext context) {
+	private Collection<Object> potentiallyConvertCollectionValues(Collection<?> source, Class<?> elementType) {
 
-		Collection target = new ArrayList(source.size());
+		Collection<Object> target = new ArrayList<Object>(source.size());
+
 		for (Object value : source) {
-			target.add(potentiallyConvertValue(value, targetType, context));
+			target.add(potentiallyConvertValue(value, elementType));
 		}
 
 		return target;
 	}
 
-	private Object potentiallyConvertValue(Object source, Class<?> targetType, QuerydslBindingContext context) {
-
-		return context.getConversionService().canConvert(source.getClass(), targetType) ? context.getConversionService()
-				.convert(source, targetType) : source;
+	private Object potentiallyConvertValue(Object source, Class<?> targetType) {
+		return conversionService.canConvert(source.getClass(), targetType) ? conversionService.convert(source, targetType)
+				: source;
 	}
-
-	/**
-	 * {@link PropertyPathPathBuilder} creates a typed {@link Path} based on type information contained in
-	 * {@link PropertyPath}.
-	 * 
-	 * @author Christoph Strobl
-	 */
-	@SuppressWarnings("rawtypes")
-	static class PropertyPathPathBuilder {
-
-		final PathBuilder<?> pathBuilder;
-
-		public PropertyPathPathBuilder(Class<?> type) {
-			pathBuilder = new PathBuilderFactory().create(type);
-		}
-
-		@SuppressWarnings({ "unchecked" })
-		public Path<?> forProperty(PropertyPath source) {
-
-			PathMetadata<?> metadata = PathMetadataFactory.forVariable(source.toDotPath());
-
-			Path<?> path = null;
-			if (source.isCollection()) {
-				path = pathBuilder.get(new CollectionPath(Collection.class, source.getType(), metadata));
-			} else if (ClassUtils.isAssignable(String.class, source.getType())) {
-				path = pathBuilder.get(new StringPath(metadata));
-			} else if (ClassUtils.isAssignable(Number.class, source.getType())) {
-				path = pathBuilder.get(new NumberPath(source.getType(), metadata));
-			} else {
-				path = pathBuilder.get(new SimplePath(source.getType(), metadata));
-			}
-
-			return path;
-		}
-	}
-
 }

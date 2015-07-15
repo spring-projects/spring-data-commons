@@ -18,6 +18,7 @@ package org.springframework.data.web.querydsl;
 import static org.hamcrest.core.Is.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.core.Is;
@@ -47,7 +48,7 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInRoot() {
 
-		Predicate predicate = builder.bind(QUser.user.firstname, "tam");
+		Predicate predicate = builder.bind(QUser.user.firstname, Collections.singleton("tam"));
 
 		assertThat(predicate, is(QUser.user.firstname.eq("tam")));
 	}
@@ -58,7 +59,7 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInNestedElement() {
 
-		Predicate predicate = builder.bind(QUser.user.address.city, "two rivers");
+		Predicate predicate = builder.bind(QUser.user.address.city, Collections.singleton("two rivers"));
 
 		Assert.assertThat(predicate.toString(), is(QUser.user.address.city.eq("two rivers").toString()));
 	}
@@ -69,7 +70,7 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void shouldCreatePredicateCorrectlyWhenValueIsNull() {
 
-		Predicate predicate = builder.bind(QUser.user.firstname, null);
+		Predicate predicate = builder.bind(QUser.user.firstname, Collections.emptySet());
 
 		assertThat(predicate, is(QUser.user.firstname.isNull()));
 	}
@@ -80,7 +81,7 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void shouldCreatePredicateWithContainingWhenPropertyIsCollectionLikeAndValueIsObject() {
 
-		Predicate predicate = builder.bind(QUser.user.nickNames, "dragon reborn");
+		Predicate predicate = builder.bind(QUser.user.nickNames, Collections.singleton("dragon reborn"));
 
 		assertThat(predicate, is(QUser.user.nickNames.contains("dragon reborn")));
 	}

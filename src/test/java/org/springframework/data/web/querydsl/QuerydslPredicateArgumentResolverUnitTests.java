@@ -18,7 +18,6 @@ package org.springframework.data.web.querydsl;
 import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
 
-import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.MethodParameter;
@@ -34,7 +33,10 @@ import com.mysema.query.types.expr.BooleanExpression;
 import com.mysema.query.types.path.StringPath;
 
 /**
+ * Unit tests for {@link QuerydslPredicateArgumentResolver}.
+ * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  */
 public class QuerydslPredicateArgumentResolverUnitTests {
 
@@ -90,10 +92,10 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("firstname", "rand");
 
-		Object predicate = (BooleanExpression) resolver.resolveArgument(
+		Predicate predicate = (BooleanExpression) resolver.resolveArgument(
 				getMethodParameterFor("simpleFind", Predicate.class), null, new ServletWebRequest(request), null);
 
-		assertThat(predicate, Is.<Object> is(QUser.user.firstname.eq("rand")));
+		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand")));
 	}
 
 	/**
@@ -105,10 +107,10 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		request.addParameter("firstname", "rand");
 		request.addParameter("lastname", "al'thor");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
-		assertThat(predicate, Is.<Object> is(QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("al'thor"))));
+		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("al'thor"))));
 	}
 
 	/**
@@ -119,10 +121,12 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("address.city", "two rivers");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
-		assertThat(predicate.toString(), is(QUser.user.address.city.eq("two rivers").toString()));
+		BooleanExpression eq = QUser.user.address.city.eq("two rivers");
+
+		assertThat(predicate, is((Predicate) eq));
 	}
 
 	/**
@@ -133,10 +137,10 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("address.city", "tar valon");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("pagedFind", Predicate.class, Pageable.class),
+		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("pagedFind", Predicate.class, Pageable.class),
 				null, new ServletWebRequest(request), null);
 
-		assertThat(predicate.toString(), is(QUser.user.address.city.eq("tar valon").toString()));
+		assertThat(predicate, is((Predicate) QUser.user.address.city.eq("tar valon")));
 	}
 
 	/**
@@ -148,12 +152,11 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		request.addParameter("firstname", "egwene");
 		request.addParameter("lastname", "al'vere");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
+		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
-		assertThat(predicate.toString(),
-				is(QUser.user.firstname.eq("egwene".toUpperCase()).and(QUser.user.lastname.toLowerCase().eq("al'vere"))
-						.toString()));
+		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("egwene".toUpperCase())
+				.and(QUser.user.lastname.toLowerCase().eq("al'vere"))));
 	}
 
 	/**
@@ -164,10 +167,10 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("inceptionYear", "978");
 
-		Object predicate = (BooleanExpression) resolver.resolveArgument(
+		Predicate predicate = (BooleanExpression) resolver.resolveArgument(
 				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
 
-		assertThat(predicate, Is.<Object> is(QUser.user.inceptionYear.eq(978L)));
+		assertThat(predicate, is((Predicate) QUser.user.inceptionYear.eq(978L)));
 	}
 
 	/**
@@ -178,10 +181,10 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("inceptionYear", new String[] { "978", "998" });
 
-		Object predicate = (BooleanExpression) resolver.resolveArgument(
+		Predicate predicate = (BooleanExpression) resolver.resolveArgument(
 				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
 
-		assertThat(predicate, Is.<Object> is(QUser.user.inceptionYear.in(978L, 998L)));
+		assertThat(predicate, is((Predicate) QUser.user.inceptionYear.in(978L, 998L)));
 	}
 
 	/**
@@ -199,7 +202,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(predicate.toString(), is(QUser.user.inceptionYear.eq(973L).toString()));
 	}
 
-	private MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {
+	private static MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {
 
 		try {
 			return new MethodParameter(Sample.class.getMethod(methodName, args), 0);
@@ -212,19 +215,19 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		public SpecificBinding() {
 
-			bind("firstname", new QuerydslBinding<StringPath>() {
+			bind("firstname").using(new SingleValueBinding<StringPath, String>() {
 
 				@Override
-				public Predicate bind(StringPath path, Object value) {
-					return path.eq(value.toString().toUpperCase());
+				public Predicate bind(StringPath path, String value) {
+					return path.eq(value.toUpperCase());
 				}
 			});
 
-			bind(QUser.user.lastname, new QuerydslBinding<StringPath>() {
+			bind(QUser.user.lastname).single(new SingleValueBinding<StringPath, String>() {
 
 				@Override
-				public Predicate bind(StringPath path, Object value) {
-					return path.toLowerCase().eq(value.toString());
+				public Predicate bind(StringPath path, String value) {
+					return path.toLowerCase().eq(value);
 				}
 			});
 

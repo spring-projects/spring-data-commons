@@ -16,7 +16,11 @@
 package org.springframework.data.web.querydsl;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -34,20 +38,32 @@ import com.mysema.query.types.Predicate;
  * controller methods.
  * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.11
  */
-public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentResolver {
+public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentResolver, ApplicationContextAware {
 
 	private final QuerydslPredicateBuilder predicateBuilder;
-	private final ConversionService conversionService;
+
+	private AutowireCapableBeanFactory beanFactory;
 
 	/**
-	 * @param conversionService Defaulted to {@link DefaultConversionService} if {@literal null}.
+	 * Creates a new {@link QuerydslPredicateArgumentResolver} using the given {@link ConversionService}.
+	 * 
+	 * @param conversionService defaults to {@link DefaultConversionService} if {@literal null}.
 	 */
 	public QuerydslPredicateArgumentResolver(ConversionService conversionService) {
+		this.predicateBuilder = new QuerydslPredicateBuilder(
+				conversionService == null ? new DefaultConversionService() : conversionService);
+	}
 
-		this.conversionService = conversionService == null ? new DefaultConversionService() : conversionService;
-		this.predicateBuilder = new QuerydslPredicateBuilder();
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 */
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.beanFactory = applicationContext.getAutowireCapableBeanFactory();
 	}
 
 	/*
@@ -62,9 +78,8 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 		}
 
 		if (parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
-			throw new IllegalArgumentException(String.format(
-					"Parameter at position %s must be of type Predicate but was %s.", parameter.getParameterIndex(),
-					parameter.getParameterType()));
+			throw new IllegalArgumentException(String.format("Parameter at position %s must be of type Predicate but was %s.",
+					parameter.getParameterIndex(), parameter.getParameterType()));
 		}
 
 		return false;
@@ -75,29 +90,27 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+	public Predicate resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
 		return predicateBuilder.getPredicate(new MutablePropertyValues(webRequest.getParameterMap()),
-				createBindingContext(parameter));
-	}
-
-	private QuerydslBindingContext createBindingContext(MethodParameter parameter) throws InstantiationException,
-			IllegalAccessException {
-		return new QuerydslBindingContext(extractTypeInfo(parameter), extractBindings(parameter), conversionService);
+				createBindings(parameter), extractTypeInfo(parameter).getActualType());
 	}
 
 	private TypeInformation<?> extractTypeInfo(MethodParameter parameter) {
 
 		Class<?> type = parameter.getParameterAnnotation(QuerydslPredicate.class).root();
 
-		return type == Object.class ? ClassTypeInformation.fromReturnTypeOf(parameter.getMethod()) : ClassTypeInformation
-				.from(type);
+		return type == Object.class ? ClassTypeInformation.fromReturnTypeOf(parameter.getMethod())
+				: ClassTypeInformation.from(type);
 	}
 
-	private QuerydslBindings extractBindings(MethodParameter parameter) throws InstantiationException,
-			IllegalAccessException {
+	private QuerydslBindings createBindings(MethodParameter parameter)
+			throws InstantiationException, IllegalAccessException {
 
-		return BeanUtils.instantiateClass(parameter.getParameterAnnotation(QuerydslPredicate.class).bindings());
+		Class<? extends QuerydslBindings> bindingsType = parameter.getParameterAnnotation(QuerydslPredicate.class)
+				.bindings();
+
+		return beanFactory != null ? beanFactory.createBean(bindingsType) : BeanUtils.instantiateClass(bindingsType);
 	}
 }
