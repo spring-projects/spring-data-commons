@@ -15,21 +15,18 @@
  */
 package org.springframework.data.web.querydsl;
 
-import static org.hamcrest.core.Is.*;
-import static org.hamcrest.core.IsNull.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-
-import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.MutablePropertyValues;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.querydsl.Address;
-import org.springframework.data.querydsl.QAddress;
+import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.User;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.StringPath;
 
@@ -41,69 +38,50 @@ import com.mysema.query.types.path.StringPath;
  */
 public class QuerydslBindingsUnitTests {
 
-	private QuerydslPredicateBuilder builder;
-	private QuerydslBindings typeBasedBindings;
-	private QuerydslBindings pathBasedBindings;
+	QuerydslPredicateBuilder builder;
+	QuerydslBindings bindings;
+
+	static final SingleValueBinding<StringPath, String> CONTAINS_BINDING = new SingleValueBinding<StringPath, String>() {
+
+		@Override
+		public Predicate bind(StringPath path, String value) {
+			return path.contains(value);
+		}
+	};
 
 	@Before
 	public void setUp() {
-		builder = new QuerydslPredicateBuilder();
 
-		typeBasedBindings = new QuerydslBindings() {
-			{
-				bind(String.class, new QuerydslBinding<StringPath>() {
-
-					@Override
-					public Predicate bind(StringPath path, Object value) {
-						return path.contains(value.toString());
-					}
-				});
-			}
-		};
-
-		pathBasedBindings = new QuerydslBindings() {
-			{
-				bind("address.street", new QuerydslBinding<StringPath>() {
-
-					@Override
-					public Predicate bind(StringPath path, Object value) {
-						return path.contains(value.toString());
-					}
-				});
-
-				bind("firstname", new QuerydslBinding<StringPath>() {
-
-					@Override
-					public Predicate bind(StringPath path, Object value) {
-						return path.contains(value.toString());
-					}
-				});
-			}
-		};
+		this.builder = new QuerydslPredicateBuilder(new DefaultConversionService());
+		this.bindings = new QuerydslBindings();
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void getBindingForPathShouldThrowErrorWhenPathIsNull() {
-		pathBasedBindings.getBindingForPath(null);
+	public void rejectsNullPath() {
+		bindings.getBindingForPath(null);
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void getBindingForPathShouldReturnNullWhenNoSpecifcBindingAvailable() {
-		assertThat(pathBasedBindings.getBindingForPath(PropertyPath.from("lastname", User.class)), nullValue());
+	public void returnsNullIfNoBindingRegisteredForPath() {
+		assertThat(bindings.getBindingForPath(PropertyPath.from("lastname", User.class)), nullValue());
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void getBindingForPathShouldReturnSpeficicBindingWhenAvailable() {
-		assertThat(pathBasedBindings.getBindingForPath(PropertyPath.from("firstname", User.class)), notNullValue());
+	public void returnsRegisteredBindingForSimplePath() {
+
+		bindings.bind("firstname").using(CONTAINS_BINDING);
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPath.from("firstname", User.class)),
+				CONTAINS_BINDING);
 	}
 
 	/**
@@ -111,7 +89,11 @@ public class QuerydslBindingsUnitTests {
 	 */
 	@Test
 	public void getBindingForPathShouldReturnSpeficicBindingForNestedElementsWhenAvailable() {
-		assertThat(pathBasedBindings.getBindingForPath(PropertyPath.from("address.street", User.class)), notNullValue());
+
+		bindings.bind("address.street").using(CONTAINS_BINDING);
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPath.from("address.street", User.class)),
+				CONTAINS_BINDING);
 	}
 
 	/**
@@ -119,100 +101,112 @@ public class QuerydslBindingsUnitTests {
 	 */
 	@Test
 	public void getBindingForPathShouldReturnSpeficicBindingForTypes() {
-		assertThat(typeBasedBindings.getBindingForPath(PropertyPath.from("address.street", User.class)), notNullValue());
+
+		bindings.bind(String.class).single(CONTAINS_BINDING);
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPath.from("address.street", User.class)),
+				CONTAINS_BINDING);
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void getBindingForPathShouldIgnoreSpeficicBindingForTypesWhenTypesDoNotMatch() {
-		assertThat(typeBasedBindings.getBindingForPath(PropertyPath.from("inceptionYear", User.class)), nullValue());
+	public void propertyNotExplicitlyIncludedAndWithoutTypeBindingIsInvisible() {
+
+		bindings.bind(String.class).single(CONTAINS_BINDING);
+
+		assertThat(bindings.getBindingForPath(PropertyPath.from("inceptionYear", User.class)), nullValue());
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void isPathVisibleShouldReturnTrueWhenNoRestrictionDefined() {
-		assertThat(typeBasedBindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(true));
+	public void pathIsVisibleIfTypeBasedBindingWasRegistered() {
+
+		bindings.bind(String.class).single(CONTAINS_BINDING);
+
+		assertThat(bindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(true));
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void isPathVisibleShouldReturnTrueWhenPathContainedInIncluding() {
+	public void explicitlyIncludedPathIsVisible() {
 
-		assertThat(
-				new QuerydslBindings().including("inceptionYear").isPathVisible(PropertyPath.from("inceptionYear", User.class)),
-				is(true));
+		bindings.including("inceptionYear");
+
+		assertThat(bindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(true));
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void isPathVisibleShouldReturnFalseWhenPathNotContainedInIncluding() {
+	public void notExplicitlyIncludedPathIsInvisible() {
 
-		assertThat(
-				new QuerydslBindings().including("inceptionYear").isPathVisible(PropertyPath.from("firstname", User.class)),
-				is(false));
+		bindings.including("inceptionYear");
+
+		assertThat(bindings.isPathVisible(PropertyPath.from("firstname", User.class)), is(false));
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void isPathVisibleShouldReturnFalseWhenPathContainedInExcluding() {
+	public void excludedPathIsInvisible() {
 
-		assertThat(
-				new QuerydslBindings().excluding("inceptionYear").isPathVisible(PropertyPath.from("inceptionYear", User.class)),
-				is(false));
+		bindings.excluding("inceptionYear");
+
+		assertThat(bindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(false));
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void isPathVisibleShouldReturnTrueWhenPathNotContainedInExcluding() {
+	public void pathIsVisibleIfNotExplicitlyExcluded() {
 
-		assertThat(
-				new QuerydslBindings().excluding("inceptionYear").isPathVisible(PropertyPath.from("firstname", User.class)),
-				is(true));
+		bindings.excluding("inceptionYear");
+
+		assertThat(bindings.isPathVisible(PropertyPath.from("firstname", User.class)), is(true));
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void isPathVisibleShouldReturnTrueWhenPathContainedInExcludingAndIncluding() {
+	public void pathIsVisibleIfItsBothBlackAndWhitelisted() {
 
-		assertThat(
-				new QuerydslBindings().excluding("inceptionYear").isPathVisible(PropertyPath.from("firstname", User.class)),
-				is(true));
+		bindings.excluding("firstname");
+		bindings.including("firstname");
+
+		assertThat(bindings.isPathVisible(PropertyPath.from("firstname", User.class)), is(true));
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void isPathVisibleShouldReturnFalseWhenPartialPathContainedInExcluding() {
+	public void nestedPathIsInvisibleIfAParanetPathWasExcluded() {
 
-		assertThat(
-				new QuerydslBindings().excluding("address").isPathVisible(PropertyPath.from("address.city", User.class)),
-				is(false));
+		bindings.excluding("address");
+
+		assertThat(bindings.isPathVisible(PropertyPath.from("address.city", User.class)), is(false));
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void isPathVisibleShouldReturnTrueWhenPartialPathContainedInExcludingButConcretePathIsIncluded() {
+	public void pathIsVisibleIfConcretePathIsVisibleButParentExcluded() {
 
-		assertThat(
-				new QuerydslBindings().excluding("address").including("address.city")
-						.isPathVisible(PropertyPath.from("address.city", User.class)), is(true));
+		bindings.excluding("address");
+		bindings.including("address.city");
+
+		assertThat(bindings.isPathVisible(PropertyPath.from("address.city", User.class)), is(true));
 	}
 
 	/**
@@ -221,22 +215,32 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void isPathVisibleShouldReturnFalseWhenPartialPathContainedInExcludingAndConcretePathToDifferentPropertyIsIncluded() {
 
-		assertThat(
-				new QuerydslBindings().excluding("address").including("address.city")
-						.isPathVisible(PropertyPath.from("address.street", User.class)), is(false));
+		bindings.excluding("address");
+		bindings.including("address.city");
+
+		assertThat(bindings.isPathVisible(PropertyPath.from("address.street", User.class)), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
 	@Test
-	public void usesTypeBasedBindingIfConfigured() {
+	public void testname() {
 
-		MutablePropertyValues values = new MutablePropertyValues(Collections.singletonMap("city", "Dresden"));
+		PropertyPath firstname = PropertyPath.from("firstname", User.class);
+		PropertyPath lastname = PropertyPath.from("lastname", User.class);
+		PropertyPath city = PropertyPath.from("address.city", User.class);
+		PropertyPath street = PropertyPath.from("address.street", User.class);
 
-		QuerydslBindingContext context = new QuerydslBindingContext(ClassTypeInformation.from(Address.class),
-				this.typeBasedBindings, null);
+		bindings.including(QUser.user.firstname, QUser.user.address.street);
 
-		assertThat(builder.getPredicate(values, context), is((Predicate) QAddress.address.city.contains("Dresden")));
+		assertThat(bindings.isPathVisible(firstname), is(true));
+		assertThat(bindings.isPathVisible(street), is(true));
+		assertThat(bindings.isPathVisible(lastname), is(false));
+		assertThat(bindings.isPathVisible(city), is(false));
+	}
+
+	private static <P extends Path<S>, S> void assertAdapterWithTargetBinding(MultiValueBinding<P, S> binding,
+			SingleValueBinding<? extends Path<?>, ?> expected) {
+
+		assertThat(binding, is(instanceOf(QuerydslBindings.MultiValueBindingAdapter.class)));
+		assertThat(ReflectionTestUtils.getField(binding, "delegate"), is((Object) expected));
 	}
 }

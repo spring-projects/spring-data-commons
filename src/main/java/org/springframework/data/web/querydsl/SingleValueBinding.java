@@ -19,18 +19,22 @@ import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 
 /**
- * {@link QuerydslBinding} creates a {@link Predicate} out of given {@link Path} and value. Used for specific parameter
- * treatment in {@link QuerydslBindings}. <br />
+ * {@link SingleValueBinding} creates a {@link Predicate} out of given {@link Path} and value. Used for specific parameter
+ * treatment in {@link QuerydslBindings}.
  * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.11
  */
-public interface QuerydslBinding<T extends Path<?>> {
+@FunctionalInterface
+public interface SingleValueBinding<T extends Path<? extends S>, S> {
 
 	/**
+	 * Returns the predicate to be applied to the given {@link Path} for the given value.
+	 * 
 	 * @param path {@link Path} to the property. Must not be {@literal null}.
-	 * @param value
-	 * @return
+	 * @param value the value that should be bound. Can be {@literal null}.
+	 * @return must not be {@literal null}.
 	 */
-	Predicate bind(T path, Object value);
+	Predicate bind(T path, S value);
 }

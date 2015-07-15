@@ -15,32 +15,49 @@
  */
 package org.springframework.data.web.querydsl;
 
-import static org.hamcrest.core.Is.*;
+import static java.util.Collections.*;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
-import java.util.Collections;
+import java.util.List;
 
-import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.MutablePropertyValues;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.querydsl.Users;
 import org.springframework.data.util.ClassTypeInformation;
 
 import com.mysema.query.BooleanBuilder;
+import com.mysema.query.collections.CollQueryFactory;
 import com.mysema.query.types.Predicate;
 
 /**
+ * Unit tests for {@link QuerydslPredicateBuilder}.
+ * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  */
 public class QuerydslPredicateBuilderUnitTests {
+
+	static final QuerydslBindings DEFAULT_BINDINGS = new QuerydslBindings();
 
 	QuerydslPredicateBuilder builder;
 
 	@Before
 	public void setUp() {
-		builder = new QuerydslPredicateBuilder();
+		builder = new QuerydslPredicateBuilder(new DefaultConversionService());
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullConversionService() {
+		new QuerydslPredicateBuilder(null);
 	}
 
 	/**
@@ -48,7 +65,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void getPredicateShouldThrowErrorWhenBindingContextIsNull() {
-		builder.getPredicate(new MutablePropertyValues(), null);
+		builder.getPredicate(new MutablePropertyValues(), null, null);
 	}
 
 	/**
@@ -57,8 +74,8 @@ public class QuerydslPredicateBuilderUnitTests {
 	@Test
 	public void getPredicateShouldReturnEmptyPredicateWhenPropertiesAreEmpty() {
 
-		assertThat(builder.getPredicate(new MutablePropertyValues(), new QuerydslBindingContext(
-				ClassTypeInformation.OBJECT, null, null)), is((Predicate) new BooleanBuilder()));
+		assertThat(builder.getPredicate(new MutablePropertyValues(), DEFAULT_BINDINGS, ClassTypeInformation.OBJECT),
+				is((Predicate) new BooleanBuilder()));
 	}
 
 	/**
@@ -67,10 +84,31 @@ public class QuerydslPredicateBuilderUnitTests {
 	@Test
 	public void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
 
-		Predicate predicate = builder.getPredicate(
-				new MutablePropertyValues(Collections.singletonMap("firstname", new String[] { "rand" })),
-				new QuerydslBindingContext(ClassTypeInformation.from(User.class), null, null));
+		Predicate predicate = builder.getPredicate(new MutablePropertyValues(singletonMap("firstname", "Oliver")),
+				DEFAULT_BINDINGS, ClassTypeInformation.from(User.class));
 
-		assertThat(predicate, Is.<Object> is(QUser.user.firstname.eq("rand")));
+		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("Oliver")));
+
+		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).list(QUser.user);
+
+		assertThat(result, hasSize(1));
+		assertThat(result, hasItem(Users.OLIVER));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	public void resolveArgumentShouldCreateNestedStringParameterPredicateCorrectly() throws Exception {
+
+		Predicate predicate = builder.getPredicate(new MutablePropertyValues(singletonMap("address.city", "Linz")),
+				DEFAULT_BINDINGS, ClassTypeInformation.from(User.class));
+
+		assertThat(predicate, is((Predicate) QUser.user.address.city.eq("Linz")));
+
+		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).list(QUser.user);
+
+		assertThat(result, hasSize(1));
+		assertThat(result, hasItem(Users.CHRISTOPH));
 	}
 }

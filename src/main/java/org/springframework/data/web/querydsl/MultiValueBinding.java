@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.querydsl;
+package org.springframework.data.web.querydsl;
 
-import java.util.Date;
-import java.util.List;
+import java.util.Collection;
 
-import com.mysema.query.annotations.QueryEntity;
+import com.mysema.query.types.Path;
+import com.mysema.query.types.Predicate;
 
 /**
  * @author Oliver Gierke
- * @author Thomas Darimont
- * @author Christoph Strobl
  */
-@QueryEntity
-public class User {
+public interface MultiValueBinding<T extends Path<? extends S>, S> {
 
-	public String firstname, lastname;
-	public Date dateOfBirth;
-	public Address address;
-	public List<String> nickNames;
-	public Long inceptionYear;
-
-	public User(String firstname, String lastname, Address address) {
-
-		this.firstname = firstname;
-		this.lastname = lastname;
-		this.address = address;
-	}
+	Predicate bind(T path, Collection<? extends S> value);
 }

@@ -23,7 +23,8 @@ import com.mysema.query.types.expr.SimpleExpression;
 import com.mysema.query.types.path.CollectionPathBase;
 
 /**
- * Default implementation of {@link QuerydslBinding} creating {@link Predicate} based on the {@link Path}s type. Binds:
+ * Default implementation of {@link MultiValueBinding} creating {@link Predicate} based on the {@link Path}s type.
+ * Binds:
  * <ul>
  * <li><i>{@literal null}</i> as {@link SimpleExpression#isNull()}.</li>
  * <li><i>{@link java.lang.Object}</i> as {@link SimpleExpression#eq()} on simple properties.</li>
@@ -32,9 +33,10 @@ import com.mysema.query.types.path.CollectionPathBase;
  * </ul>
  * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.11
  */
-class QuerydslDefaultBinding implements QuerydslBinding<Path<?>> {
+class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>, Object> {
 
 	/*
 	 * (non-Javadoc)
@@ -42,27 +44,28 @@ class QuerydslDefaultBinding implements QuerydslBinding<Path<?>> {
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate bind(Path<?> path, Object source) {
+	public Predicate bind(Path<?> path, Collection<? extends Object> source) {
 
-		if (source == null && path instanceof SimpleExpression) {
+		if ((source == null || source.isEmpty())) {
 			return ((SimpleExpression) path).isNull();
 		}
 
+		Object firstValue = source.iterator().next();
+
 		if (path instanceof CollectionPathBase) {
-			return ((CollectionPathBase) path).contains(source);
+			return ((CollectionPathBase) path).contains(firstValue);
 		}
 
 		if (path instanceof SimpleExpression) {
 
-			if (source instanceof Collection) {
-				return ((SimpleExpression) path).in((Collection) source);
+			if (source.size() > 1) {
+				return ((SimpleExpression) path).in(source);
 			}
 
-			return ((SimpleExpression) path).eq(source);
+			return ((SimpleExpression) path).eq(firstValue);
 		}
 
-		throw new IllegalArgumentException(String.format("Cannot create predicate for path '%s' with type '%s'.", path,
-				path.getMetadata().getPathType()));
+		throw new IllegalArgumentException(
+				String.format("Cannot create predicate for path '%s' with type '%s'.", path, path.getMetadata().getPathType()));
 	}
-
 }
