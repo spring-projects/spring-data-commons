@@ -20,6 +20,9 @@ import java.util.List;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -100,7 +103,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		argumentResolvers.add(pageableResolver());
 
 		if (QueryDslUtils.QUERY_DSL_PRESENT) {
-			argumentResolvers.add(new QuerydslPredicateArgumentResolver(conversionService.getObject()));
+			argumentResolvers.add(createAndPotentiallyRegisterQuerydslPredicateArgumentResolver());
 		}
 
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
@@ -109,5 +112,24 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		resolver.setResourceLoader(context);
 
 		argumentResolvers.add(resolver);
+	}
+
+	private QuerydslPredicateArgumentResolver createAndPotentiallyRegisterQuerydslPredicateArgumentResolver() {
+
+		if (!(context instanceof BeanDefinitionRegistry)) {
+			return new QuerydslPredicateArgumentResolver(conversionService.getObject());
+		}
+
+		if (!context.containsBean("querydslPredicateArgumentResolver")) {
+
+			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) context;
+
+			BeanDefinition beanDefinition = BeanDefinitionBuilder
+					.genericBeanDefinition(QuerydslPredicateArgumentResolver.class)
+					.addConstructorArgValue(conversionService.getObject()).getBeanDefinition();
+			registry.registerBeanDefinition("querydslPredicateArgumentResolver", beanDefinition);
+		}
+
+		return (QuerydslPredicateArgumentResolver) context.getBean("querydslPredicateArgumentResolver");
 	}
 }
