@@ -22,6 +22,7 @@ import java.util.Map;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 
 import com.mysema.query.types.Predicate;
@@ -39,12 +40,18 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 	private final Predicate predicate;
 
 	/**
+	 * Creates a new {@link QuerydslRepositoryInvokerAdapter} for the given delegate {@link RepositoryInvoker},
+	 * {@link QueryDslPredicateExecutor} and Querydsl {@link Predicate}.
+	 * 
 	 * @param delegate must not be {@literal null}.
 	 * @param executor must not be {@literal null}.
 	 * @param predicate can be {@literal null}.
 	 */
 	public QuerydslRepositoryInvokerAdapter(RepositoryInvoker delegate, QueryDslPredicateExecutor<Object> executor,
 			Predicate predicate) {
+
+		Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null!");
+		Assert.notNull(executor, "QuerydslPredicateExecutor must not be null!");
 
 		this.delegate = delegate;
 		this.executor = executor;
