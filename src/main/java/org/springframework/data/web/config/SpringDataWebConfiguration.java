@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
@@ -68,6 +69,17 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		return new SortHandlerMethodArgumentResolver();
 	}
 
+	/**
+	 * Default QuerydslPredicateArgumentResolver.
+	 * 
+	 * @return
+	 */
+	@Bean
+	@Lazy
+	public QuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
+		return new QuerydslPredicateArgumentResolver(conversionService.getObject());
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addFormatters(org.springframework.format.FormatterRegistry)
@@ -100,7 +112,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		argumentResolvers.add(pageableResolver());
 
 		if (QueryDslUtils.QUERY_DSL_PRESENT) {
-			argumentResolvers.add(new QuerydslPredicateArgumentResolver(conversionService.getObject()));
+			argumentResolvers.add(querydslPredicateArgumentResolver());
 		}
 
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
@@ -110,4 +122,5 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 		argumentResolvers.add(resolver);
 	}
+
 }

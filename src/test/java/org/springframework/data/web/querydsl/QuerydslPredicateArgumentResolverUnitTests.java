@@ -17,20 +17,28 @@ package org.springframework.data.web.querydsl;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.context.request.ServletWebRequest;
 
+import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.expr.BooleanExpression;
 import com.mysema.query.types.path.StringPath;
@@ -218,6 +226,53 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(type, is((TypeInformation) ClassTypeInformation.from(User.class)));
 	}
 
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void createBindingsShouldHonorQuerydslBinderCustomizerHookWhenPresent() {
+
+		Repositories repositories = mock(Repositories.class);
+		RepositoryInformation repoInfo = mock(RepositoryInformation.class);
+
+		when(repositories.hasRepositoryFor(User.class)).thenReturn(true);
+		when(repositories.getRepositoryFor(User.class)).thenReturn(new SampleRepo());
+
+		resolver = new QuerydslPredicateArgumentResolver(null);
+		ReflectionTestUtils.setField(resolver, "repositories", repositories);
+
+		QuerydslBindings bindings = resolver.createBindings(null, User.class);
+		MultiValueBinding<Path<Object>, Object> binding = bindings.getBindingForPath(PropertyPath.from("firstname",
+				User.class));
+
+		assertThat(binding.bind((Path) QUser.user.firstname, Collections.singleton("rand")),
+				is((Predicate) QUser.user.firstname.contains("rand")));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void shouldReuseExistingQuerydslBinderCustomizer() {
+
+		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
+		when(beanFactory.getBean(SpecificBinding.class)).thenReturn(new SpecificBinding());
+		QuerydslPredicate annotation = getMethodParameterFor("specificFind", Predicate.class).getParameterAnnotation(
+				QuerydslPredicate.class);
+
+		resolver = new QuerydslPredicateArgumentResolver(null);
+		ReflectionTestUtils.setField(resolver, "beanFactory", beanFactory);
+
+		QuerydslBindings bindings = resolver.createBindings(annotation, User.class);
+		MultiValueBinding<Path<Object>, Object> binding = bindings.getBindingForPath(PropertyPath.from("firstname",
+				User.class));
+
+		assertThat(binding.bind((Path) QUser.user.firstname, Collections.singleton("rand")),
+				is((Predicate) QUser.user.firstname.eq("RAND")));
+	}
+
 	private static MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {
 
 		try {
@@ -264,5 +319,20 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Page<User> pagedFind(@QuerydslPredicate Predicate predicate, Pageable page);
 
 		User specificFind(@QuerydslPredicate(bindings = SpecificBinding.class) Predicate predicate);
+	}
+
+	public static class SampleRepo implements QuerydslBinderCustomizer<QUser> {
+
+		@Override
+		public void customize(QuerydslBindings bindings, QUser user) {
+
+			bindings.bind(QUser.user.firstname).single(new SingleValueBinding<StringPath, String>() {
+
+				@Override
+				public Predicate bind(StringPath path, String value) {
+					return path.contains(value);
+				}
+			});
+		}
 	}
 }

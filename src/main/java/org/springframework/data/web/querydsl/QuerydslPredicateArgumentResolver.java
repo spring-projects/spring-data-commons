@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -27,6 +28,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.LinkedMultiValueMap;
@@ -53,6 +55,8 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 
 	private AutowireCapableBeanFactory beanFactory;
 
+	private Repositories repositories;
+
 	/**
 	 * Creates a new {@link QuerydslPredicateArgumentResolver} using the given {@link ConversionService}.
 	 * 
@@ -69,7 +73,9 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
 		this.beanFactory = applicationContext.getAutowireCapableBeanFactory();
+		this.repositories = new Repositories(applicationContext);
 	}
 
 	/*
@@ -127,17 +133,48 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 
 		EntityPath<?> path = SimpleEntityPathResolver.INSTANCE.createPath(domainType);
 
-		QuerydslBindings bindings = new QuerydslBindings();
+		QuerydslBinderCustomizer customizer = findCustomizerForDomainType(annotation, domainType);
 
-		if (annotation == null || annotation.bindings().equals(QuerydslBinderCustomizer.class)) {
-			return bindings;
+		QuerydslBindings bindings = new QuerydslBindings();
+		if (customizer != null) {
+			customizer.customize(bindings, path);
+		}
+		return bindings;
+	}
+
+	@SuppressWarnings("unchecked")
+	private QuerydslBinderCustomizer<EntityPath<?>> findCustomizerForDomainType(QuerydslPredicate annotation,
+			Class<?> domainType) {
+
+		if (annotation == null || (annotation != null && annotation.bindings().equals(QuerydslBinderCustomizer.class))) {
+			if (repositories != null && repositories.hasRepositoryFor(domainType)) {
+
+				Object repository = this.repositories.getRepositoryFor(domainType);
+				if (repository instanceof QuerydslBinderCustomizer) {
+					return (QuerydslBinderCustomizer<EntityPath<?>>) repository;
+				}
+			}
+
+			return null;
 		}
 
-		Class<? extends QuerydslBinderCustomizer> type = annotation.bindings();
-		QuerydslBinderCustomizer<EntityPath<?>> customizer = beanFactory != null ? beanFactory.createBean(type)
-				: BeanUtils.instantiateClass(type);
-		customizer.customize(bindings, path);
+		return createQuerydslBinderCustomizer(annotation.bindings());
+	}
 
-		return bindings;
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private QuerydslBinderCustomizer<EntityPath<?>> createQuerydslBinderCustomizer(
+			Class<? extends QuerydslBinderCustomizer> type) {
+
+		if (beanFactory == null) {
+			return BeanUtils.instantiateClass(type);
+		}
+
+		try {
+			return beanFactory.getBean(type);
+		} catch (NoSuchBeanDefinitionException e) {
+
+		}
+
+		return beanFactory.createBean(type);
 	}
 }
