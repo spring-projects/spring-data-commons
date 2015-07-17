@@ -16,73 +16,90 @@
 package org.springframework.data.web.config;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.springframework.test.util.ReflectionTestUtils.*;
 
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.core.IsCollectionContaining;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.context.support.GenericWebApplicationContext;
+import org.springframework.instrument.classloading.ShadowingClassLoader;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 /**
  * @author Christoph Strobl
  */
-@RunWith(MockitoJUnitRunner.class)
 public class SpringDataWebConfigurationUnitTests {
 
-	@Mock GenericWebApplicationContext context;
-	@Mock ObjectFactory<ConversionService> conversionServiceObjectFactory;
-
-	SpringDataWebConfiguration config;
-
-	@Before
-	public void setUp() {
-
-		config = new SpringDataWebConfiguration();
-		ReflectionTestUtils.setField(config, "context", context);
-		ReflectionTestUtils.setField(config, "conversionService", conversionServiceObjectFactory);
-	}
-
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void registersQuerydslPredicateArgumentResolverAsBeanDefinitionWhenNotPresent() {
+	public void shouldNotAddQuerydslPredicateArgumentResolverWhenQuerydslNotPresent() throws ClassNotFoundException,
+			InstantiationException, IllegalAccessException {
 
-		config.addArgumentResolvers(new ArrayList<HandlerMethodArgumentResolver>());
+		ClassLoader classLoader = initClassLoader();
 
-		verify(context, times(1))
-				.registerBeanDefinition(eq("querydslPredicateArgumentResolver"), any(BeanDefinition.class));
-	}
+		Object config = classLoader.loadClass("org.springframework.data.web.config.SpringDataWebConfiguration")
+				.newInstance();
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
-	public void usesExistingQuerydslPredicateArgumentResolverWhenBeanIsPresent() {
-
-		QuerydslPredicateArgumentResolver argumentResolver = new QuerydslPredicateArgumentResolver(
-				new DefaultConversionService());
-		when(context.containsBean("querydslPredicateArgumentResolver")).thenReturn(true);
-		when(context.getBean("querydslPredicateArgumentResolver")).thenReturn(argumentResolver);
+		setField(config, "context",
+				classLoader.loadClass("org.springframework.web.context.support.GenericWebApplicationContext").newInstance());
+		setField(
+				config,
+				"conversionService",
+				classLoader.loadClass(
+						"org.springframework.data.web.config.SpringDataWebConfigurationUnitTests$ObjectFactoryImpl").newInstance());
 
 		List<HandlerMethodArgumentResolver> argumentResolvers = new ArrayList<HandlerMethodArgumentResolver>();
-		config.addArgumentResolvers(argumentResolvers);
 
-		verify(context, never()).registerBeanDefinition(eq("querydslPredicateArgumentResolver"), any(BeanDefinition.class));
-		assertThat(argumentResolvers, IsCollectionContaining.hasItem(argumentResolver));
+		invokeMethod(config, "addArgumentResolvers", argumentResolvers);
+
+		for (Object resolver : argumentResolvers) {
+			if (resolver instanceof QuerydslPredicateArgumentResolver) {
+				fail("QuerydslPredicateArgumentResolver should not be present when Querydsl not on path");
+			}
+		}
+	}
+
+	private ClassLoader initClassLoader() {
+
+		ClassLoader classLoader = new ShadowingClassLoader(URLClassLoader.getSystemClassLoader()) {
+
+			@Override
+			public Class<?> loadClass(String name) throws ClassNotFoundException {
+
+				if (name.startsWith("com.mysema")) {
+					throw new ClassNotFoundException();
+				}
+
+				return super.loadClass(name);
+			}
+
+			@Override
+			protected Class<?> findClass(String name) throws ClassNotFoundException {
+
+				if (name.startsWith("com.mysema")) {
+					throw new ClassNotFoundException();
+				}
+
+				return super.findClass(name);
+			}
+		};
+
+		return classLoader;
+	}
+
+	public static class ObjectFactoryImpl implements ObjectFactory<ConversionService> {
+
+		@Override
+		public ConversionService getObject() throws BeansException {
+			return null;
+		}
+
 	}
 }

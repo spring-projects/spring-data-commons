@@ -20,12 +20,10 @@ import java.util.List;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
@@ -71,6 +69,17 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		return new SortHandlerMethodArgumentResolver();
 	}
 
+	/**
+	 * Default QuerydslPredicateArgumentResolver.
+	 * 
+	 * @return
+	 */
+	@Bean
+	@Lazy
+	public QuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
+		return new QuerydslPredicateArgumentResolver(conversionService.getObject());
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addFormatters(org.springframework.format.FormatterRegistry)
@@ -103,7 +112,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		argumentResolvers.add(pageableResolver());
 
 		if (QueryDslUtils.QUERY_DSL_PRESENT) {
-			argumentResolvers.add(createAndPotentiallyRegisterQuerydslPredicateArgumentResolver());
+			argumentResolvers.add(querydslPredicateArgumentResolver());
 		}
 
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
@@ -114,22 +123,4 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		argumentResolvers.add(resolver);
 	}
 
-	private QuerydslPredicateArgumentResolver createAndPotentiallyRegisterQuerydslPredicateArgumentResolver() {
-
-		if (!(context instanceof BeanDefinitionRegistry)) {
-			return new QuerydslPredicateArgumentResolver(conversionService.getObject());
-		}
-
-		if (!context.containsBean("querydslPredicateArgumentResolver")) {
-
-			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) context;
-
-			BeanDefinition beanDefinition = BeanDefinitionBuilder
-					.genericBeanDefinition(QuerydslPredicateArgumentResolver.class)
-					.addConstructorArgValue(conversionService.getObject()).getBeanDefinition();
-			registry.registerBeanDefinition("querydslPredicateArgumentResolver", beanDefinition);
-		}
-
-		return (QuerydslPredicateArgumentResolver) context.getBean("querydslPredicateArgumentResolver");
-	}
 }
