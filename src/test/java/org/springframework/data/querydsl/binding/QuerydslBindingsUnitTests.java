@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.web.querydsl;
+package org.springframework.data.querydsl.binding;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -25,6 +25,10 @@ import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.querydsl.binding.MultiValueBinding;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
+import org.springframework.data.querydsl.binding.SingleValueBinding;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.mysema.query.types.Path;

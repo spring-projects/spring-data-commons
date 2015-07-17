@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.web.querydsl;
+package org.springframework.data.querydsl.binding;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -169,7 +169,7 @@ public class QuerydslBindings {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	<S extends Path<T>, T> MultiValueBinding<S, T> getBindingForPath(PropertyPath path) {
+	public <S extends Path<T>, T> MultiValueBinding<S, T> getBindingForPath(PropertyPath path) {
 
 		Assert.notNull(path, "PropertyPath must not be null!");
 

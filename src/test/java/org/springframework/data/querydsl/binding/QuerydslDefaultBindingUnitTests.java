@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.web.querydsl;
+package org.springframework.data.querydsl.binding;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -27,6 +27,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.querydsl.QUser;
+import org.springframework.data.querydsl.binding.QuerydslDefaultBinding;
 
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Predicate;
