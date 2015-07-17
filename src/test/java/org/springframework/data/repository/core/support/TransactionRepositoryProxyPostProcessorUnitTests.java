@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -24,11 +25,11 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -38,6 +39,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAttribute;
+import org.springframework.transaction.interceptor.TransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 /**
@@ -57,8 +59,8 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 
 		Map<String, PersistenceExceptionTranslator> beans = new HashMap<String, PersistenceExceptionTranslator>();
 		beans.put("foo", mock(PersistenceExceptionTranslator.class));
-		when(beanFactory.getBeansOfType(eq(PersistenceExceptionTranslator.class), anyBoolean(), anyBoolean())).thenReturn(
-				beans);
+		when(beanFactory.getBeansOfType(eq(PersistenceExceptionTranslator.class), anyBoolean(), anyBoolean()))
+				.thenReturn(beans);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -78,7 +80,7 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 				true);
 		postProcessor.postProcess(proxyFactory, repositoryInformation);
 
-		verify(proxyFactory).addAdvice(isA(TransactionInterceptor.class));
+		verify(proxyFactory).addAdvice(Mockito.any(TransactionInterceptor.class));
 	}
 
 	/**
@@ -97,6 +99,20 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 		assertTransactionAttributeFor(SampleImplementationWithClassAnnotation.class);
 	}
 
+	/**
+	 * @see DATACMNS-732
+	 */
+	@Test
+	public void considersJtaTransactional() throws Exception {
+
+		Method method = SampleRepository.class.getMethod("methodWithJtaOneDotTwoAtTransactional");
+
+		TransactionAttributeSource attributeSource = new CustomAnnotationTransactionAttributeSource();
+		TransactionAttribute attribute = attributeSource.getTransactionAttribute(method, SampleRepository.class);
+
+		assertThat(attribute, is(notNullValue()));
+	}
+
 	private void assertTransactionAttributeFor(Class<?> implementationClass) throws Exception {
 
 		Method repositorySaveMethod = SampleRepository.class.getMethod("save", Sample.class);
@@ -110,7 +126,7 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 		TransactionAttribute attribute = attributeSource.getTransactionAttribute(repositorySaveMethod,
 				SampleImplementation.class);
 
-		assertThat(attribute, Matchers.is(Matchers.notNullValue()));
+		assertThat(attribute, is(notNullValue()));
 	}
 
 	static class Sample {}
@@ -118,6 +134,9 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 	interface SampleRepository extends Repository<Sample, Serializable> {
 
 		Sample save(Sample object);
+
+		@javax.transaction.Transactional
+		void methodWithJtaOneDotTwoAtTransactional();
 	}
 
 	static class SampleImplementation<T> {
