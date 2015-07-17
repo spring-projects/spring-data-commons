@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.QUser;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.querydsl.Users;
 import org.springframework.data.util.ClassTypeInformation;
@@ -51,7 +52,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 	@Before
 	public void setUp() {
-		this.builder = new QuerydslPredicateBuilder(new DefaultConversionService());
+		this.builder = new QuerydslPredicateBuilder(new DefaultConversionService(), SimpleEntityPathResolver.INSTANCE);
 		this.values = new LinkedMultiValueMap<String, String>();
 	}
 
@@ -60,7 +61,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullConversionService() {
-		new QuerydslPredicateBuilder(null);
+		new QuerydslPredicateBuilder(null, SimpleEntityPathResolver.INSTANCE);
 	}
 
 	/**
@@ -68,7 +69,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void getPredicateShouldThrowErrorWhenBindingContextIsNull() {
-		builder.getPredicate(values, null, null);
+		builder.getPredicate(null, values, null);
 	}
 
 	/**
@@ -77,7 +78,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	@Test
 	public void getPredicateShouldReturnEmptyPredicateWhenPropertiesAreEmpty() {
 
-		assertThat(builder.getPredicate(values, DEFAULT_BINDINGS, ClassTypeInformation.OBJECT), is(nullValue()));
+		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS), is(nullValue()));
 	}
 
 	/**
@@ -88,7 +89,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		values.add("firstname", "Oliver");
 
-		Predicate predicate = builder.getPredicate(values, DEFAULT_BINDINGS, USER_TYPE);
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("Oliver")));
 
@@ -106,7 +107,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		values.add("address.city", "Linz");
 
-		Predicate predicate = builder.getPredicate(values, DEFAULT_BINDINGS, USER_TYPE);
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate, is((Predicate) QUser.user.address.city.eq("Linz")));
 
@@ -125,7 +126,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		values.add("firstname", "rand");
 		values.add("lastname".toUpperCase(), "al'thor");
 
-		Predicate predicate = builder.getPredicate(values, new QuerydslBindings(), USER_TYPE);
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand")));
 	}
@@ -139,7 +140,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		values.add("lastname", null);
 
 		QuerydslBindings bindings = new QuerydslBindings();
-		bindings.bind(QUser.user.lastname).single(new SingleValueBinding<StringPath, String>() {
+		bindings.bind(QUser.user.lastname).first(new SingleValueBinding<StringPath, String>() {
 
 			@Override
 			public Predicate bind(StringPath path, String value) {
@@ -147,6 +148,6 @@ public class QuerydslPredicateBuilderUnitTests {
 			}
 		});
 
-		builder.getPredicate(values, bindings, USER_TYPE);
+		builder.getPredicate(USER_TYPE, values, bindings);
 	}
 }

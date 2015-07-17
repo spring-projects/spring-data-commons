@@ -80,18 +80,14 @@ public class QuerydslBindings {
 		return new PathBinder<T, S>(paths);
 	}
 
-	public final <T> TypeBinder<T> bind(Class<T> type) {
-		return new TypeBinder<T>(type);
-	}
-
 	/**
-	 * Defines a binding for the given
+	 * Returns a new {@link TypeBinder} for the given type.
 	 * 
-	 * @param paths
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	final PropertyBinder bind(String... paths) {
-		return new PropertyBinder(Arrays.asList(paths));
+	public final <T> TypeBinder<T> bind(Class<T> type) {
+		return new TypeBinder<T>(type);
 	}
 
 	/**
@@ -110,16 +106,6 @@ public class QuerydslBindings {
 	}
 
 	/**
-	 * Exclude properties from binding. Exclusion of all properties of a nested type can be done by exclusion on a higher
-	 * level. E.g. {@code address} would exclude both {@code address.city} and {@code address.street}.
-	 * 
-	 * @param properties
-	 */
-	final void excluding(String... properties) {
-		this.blackList.addAll(Arrays.asList(properties));
-	}
-
-	/**
 	 * Include properties for binding. Include the property considered a binding candidate.
 	 * 
 	 * @param properties must not be {@literal null} or empty.
@@ -131,18 +117,6 @@ public class QuerydslBindings {
 		for (Path<?> path : paths) {
 			this.whiteList.add(toDotPath(path));
 		}
-	}
-
-	/**
-	 * Include properties for binding. Include the property considered a binding candidate.
-	 * 
-	 * @param properties
-	 */
-	final void including(String... properties) {
-
-		Assert.notEmpty(properties, "At least one property has to be provided!");
-
-		this.whiteList.addAll(Arrays.asList(properties));
 	}
 
 	/**
@@ -281,19 +255,25 @@ public class QuerydslBindings {
 		}
 
 		/**
-		 * Defines the given {@link SingleValueBinding} to be used for the paths,
+		 * Defines the given {@link SingleValueBinding} to be used for the paths.
 		 * 
 		 * @param binding must not be {@literal null}.
 		 * @return
 		 */
-		public void single(SingleValueBinding<P, T> binding) {
+		public void first(SingleValueBinding<P, T> binding) {
 
 			Assert.notNull(binding, "Binding must not be null!");
 
-			multi(new MultiValueBindingAdapter<P, T>(binding));
+			all(new MultiValueBindingAdapter<P, T>(binding));
 		}
 
-		public void multi(MultiValueBinding<P, T> binding) {
+		/**
+		 * Defines the given {@link MultiValueBinding} to be used for the paths.
+		 * 
+		 * @param binding must not be {@literal null}.
+		 * @return
+		 */
+		public void all(MultiValueBinding<P, T> binding) {
 
 			Assert.notNull(binding, "Binding must not be null!");
 
@@ -303,54 +283,53 @@ public class QuerydslBindings {
 		}
 	}
 
+	/**
+	 * A binder for types.
+	 *
+	 * @author Oliver Gierke
+	 */
 	public final class TypeBinder<T> {
 
 		private final Class<T> type;
 
-		public TypeBinder(Class<T> type) {
+		/**
+		 * Creates a new {@link TypeBinder} for the given type.
+		 * 
+		 * @param type must not be {@literal null}.
+		 */
+		private TypeBinder(Class<T> type) {
+
+			Assert.notNull(type, "Type must not be null!");
+
 			this.type = type;
 		}
 
-		public <P extends Path<T>> void single(SingleValueBinding<P, T> binding) {
+		/**
+		 * Configures the given {@link SingleValueBinding} to be used for the current type.
+		 * 
+		 * @param binding must not be {@literal null}.
+		 */
+		public <P extends Path<T>> void first(SingleValueBinding<P, T> binding) {
 
 			Assert.notNull(binding, "Binding must not be null!");
-			multi(new MultiValueBindingAdapter<P, T>(binding));
+			all(new MultiValueBindingAdapter<P, T>(binding));
 		}
 
-		public <P extends Path<T>> void multi(MultiValueBinding<P, T> binding) {
+		/**
+		 * Configures the given {@link MultiValueBinding} to be used for the current type.
+		 * 
+		 * @param binding must not be {@literal null}.
+		 */
+		public <P extends Path<T>> void all(MultiValueBinding<P, T> binding) {
 
 			Assert.notNull(binding, "Binding must not be null!");
 			QuerydslBindings.this.typeSpecs.put(type, new PathAndBinding<P, T>(null, binding));
 		}
 	}
 
-	public final class PropertyBinder {
-
-		private final List<String> paths;
-
-		private PropertyBinder(List<String> paths) {
-			this.paths = paths;
-		}
-
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		public void using(SingleValueBinding<?, ?> binding) {
-
-			Assert.notNull(binding, "Binding must not be null!");
-			using(new MultiValueBindingAdapter(binding));
-		}
-
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		public void using(MultiValueBinding<?, ?> binding) {
-
-			Assert.notNull(binding, "Binding must not be null!");
-
-			for (String path : paths) {
-				QuerydslBindings.this.pathSpecs.put(path, new PathAndBinding(null, binding));
-			}
-		}
-	}
-
 	/**
+	 * A pair of a {@link Path} and the registered {@link MultiValueBinding}.
+	 * 
 	 * @author Christoph Strobl
 	 * @since 1.11
 	 */
@@ -359,6 +338,12 @@ public class QuerydslBindings {
 		private final Path<?> path;
 		private final MultiValueBinding<S, T> binding;
 
+		/**
+		 * Creates a new {@link PathAndBinding} for the given {@link Path} and {@link MultiValueBinding}.
+		 * 
+		 * @param path must not be {@literal null}.
+		 * @param binding must not be {@literal null}.
+		 */
 		public PathAndBinding(S path, MultiValueBinding<S, T> binding) {
 
 			this.path = path;
@@ -375,6 +360,9 @@ public class QuerydslBindings {
 	}
 
 	/**
+	 * {@link MultiValueBinding} that forwards the first value of the collection values to the delegate
+	 * {@link SingleValueBinding}.
+	 * 
 	 * @author Oliver Gierke
 	 */
 	static class MultiValueBindingAdapter<T extends Path<? extends S>, S> implements MultiValueBinding<T, S> {
@@ -382,7 +370,9 @@ public class QuerydslBindings {
 		private final SingleValueBinding<T, S> delegate;
 
 		/**
-		 * @param delegate
+		 * Creates a new {@link MultiValueBindingAdapter} for the given {@link SingleValueBinding}.
+		 * 
+		 * @param delegate must not be {@literal null}.
 		 */
 		public MultiValueBindingAdapter(SingleValueBinding<T, S> delegate) {
 			this.delegate = delegate;

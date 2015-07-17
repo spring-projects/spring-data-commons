@@ -38,6 +38,8 @@ import org.springframework.format.support.FormattingConversionService;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.mysema.query.types.Predicate;
+
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
  * {@link SortHandlerMethodArgumentResolver} and {@link DomainClassConverter}.
@@ -70,13 +72,14 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	}
 
 	/**
-	 * Default QuerydslPredicateArgumentResolver.
+	 * Default {@link QuerydslPredicateArgumentResolver} to create Querydsl {@link Predicate} instances for Spring MVC
+	 * controller methods.
 	 * 
 	 * @return
 	 */
-	@Bean
 	@Lazy
-	public QuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
+	@Bean
+	public HandlerMethodArgumentResolver querydslPredicateArgumentResolver() {
 		return new QuerydslPredicateArgumentResolver(conversionService.getObject());
 	}
 

@@ -30,7 +30,8 @@ import com.mysema.query.types.Predicate;
 public interface SingleValueBinding<T extends Path<? extends S>, S> {
 
 	/**
-	 * Returns the predicate to be applied to the given {@link Path} for the given value.
+	 * Returns the predicate to be applied to the given {@link Path} for the given value. The given value will be the first 
+	 * the first one provided for the given path and converted into the expected type.
 	 * 
 	 * @param path {@link Path} to the property. Will not be {@literal null}.
 	 * @param value the value that should be bound. Will not be {@literal null}.

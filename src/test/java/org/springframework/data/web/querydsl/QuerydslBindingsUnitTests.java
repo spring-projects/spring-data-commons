@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.QUser;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -52,7 +53,7 @@ public class QuerydslBindingsUnitTests {
 	@Before
 	public void setUp() {
 
-		this.builder = new QuerydslPredicateBuilder(new DefaultConversionService());
+		this.builder = new QuerydslPredicateBuilder(new DefaultConversionService(), SimpleEntityPathResolver.INSTANCE);
 		this.bindings = new QuerydslBindings();
 	}
 
@@ -78,7 +79,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void returnsRegisteredBindingForSimplePath() {
 
-		bindings.bind("firstname").using(CONTAINS_BINDING);
+		bindings.bind(QUser.user.firstname).first(CONTAINS_BINDING);
 
 		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPath.from("firstname", User.class)),
 				CONTAINS_BINDING);
@@ -90,7 +91,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void getBindingForPathShouldReturnSpeficicBindingForNestedElementsWhenAvailable() {
 
-		bindings.bind("address.street").using(CONTAINS_BINDING);
+		bindings.bind(QUser.user.address.street).first(CONTAINS_BINDING);
 
 		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPath.from("address.street", User.class)),
 				CONTAINS_BINDING);
@@ -102,7 +103,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void getBindingForPathShouldReturnSpeficicBindingForTypes() {
 
-		bindings.bind(String.class).single(CONTAINS_BINDING);
+		bindings.bind(String.class).first(CONTAINS_BINDING);
 
 		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPath.from("address.street", User.class)),
 				CONTAINS_BINDING);
@@ -114,7 +115,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void propertyNotExplicitlyIncludedAndWithoutTypeBindingIsInvisible() {
 
-		bindings.bind(String.class).single(CONTAINS_BINDING);
+		bindings.bind(String.class).first(CONTAINS_BINDING);
 
 		assertThat(bindings.getBindingForPath(PropertyPath.from("inceptionYear", User.class)), nullValue());
 	}
@@ -125,7 +126,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void pathIsVisibleIfTypeBasedBindingWasRegistered() {
 
-		bindings.bind(String.class).single(CONTAINS_BINDING);
+		bindings.bind(String.class).first(CONTAINS_BINDING);
 
 		assertThat(bindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(true));
 	}
@@ -136,7 +137,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void explicitlyIncludedPathIsVisible() {
 
-		bindings.including("inceptionYear");
+		bindings.including(QUser.user.inceptionYear);
 
 		assertThat(bindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(true));
 	}
@@ -147,7 +148,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void notExplicitlyIncludedPathIsInvisible() {
 
-		bindings.including("inceptionYear");
+		bindings.including(QUser.user.inceptionYear);
 
 		assertThat(bindings.isPathVisible(PropertyPath.from("firstname", User.class)), is(false));
 	}
@@ -158,7 +159,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void excludedPathIsInvisible() {
 
-		bindings.excluding("inceptionYear");
+		bindings.excluding(QUser.user.inceptionYear);
 
 		assertThat(bindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(false));
 	}
@@ -169,7 +170,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void pathIsVisibleIfNotExplicitlyExcluded() {
 
-		bindings.excluding("inceptionYear");
+		bindings.excluding(QUser.user.inceptionYear);
 
 		assertThat(bindings.isPathVisible(PropertyPath.from("firstname", User.class)), is(true));
 	}
@@ -180,8 +181,8 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void pathIsVisibleIfItsBothBlackAndWhitelisted() {
 
-		bindings.excluding("firstname");
-		bindings.including("firstname");
+		bindings.excluding(QUser.user.firstname);
+		bindings.including(QUser.user.firstname);
 
 		assertThat(bindings.isPathVisible(PropertyPath.from("firstname", User.class)), is(true));
 	}
@@ -192,7 +193,7 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void nestedPathIsInvisibleIfAParanetPathWasExcluded() {
 
-		bindings.excluding("address");
+		bindings.excluding(QUser.user.address);
 
 		assertThat(bindings.isPathVisible(PropertyPath.from("address.city", User.class)), is(false));
 	}
@@ -203,8 +204,8 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void pathIsVisibleIfConcretePathIsVisibleButParentExcluded() {
 
-		bindings.excluding("address");
-		bindings.including("address.city");
+		bindings.excluding(QUser.user.address);
+		bindings.including(QUser.user.address.city);
 
 		assertThat(bindings.isPathVisible(PropertyPath.from("address.city", User.class)), is(true));
 	}
@@ -215,12 +216,15 @@ public class QuerydslBindingsUnitTests {
 	@Test
 	public void isPathVisibleShouldReturnFalseWhenPartialPathContainedInExcludingAndConcretePathToDifferentPropertyIsIncluded() {
 
-		bindings.excluding("address");
-		bindings.including("address.city");
+		bindings.excluding(QUser.user.address);
+		bindings.including(QUser.user.address.city);
 
 		assertThat(bindings.isPathVisible(PropertyPath.from("address.street", User.class)), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-669
+	 */
 	@Test
 	public void testname() {
 

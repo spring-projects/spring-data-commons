@@ -21,10 +21,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * {@link java.lang.annotation.Annotation} to specify aspects of {@link com.mysema.query.types.Predicate} used in Spring
- * MVC {@link org.springframework.web.servlet.mvc.Controller}.
+ * Annotation to customize the binding of HTTP request parameters to a Querydsl {@link com.mysema.query.types.Predicate}
+ * in Spring MVC handler methods.
  * 
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 1.11
  */
 @Target({ ElementType.PARAMETER, ElementType.TYPE })
@@ -32,14 +33,18 @@ import java.lang.annotation.Target;
 public @interface QuerydslPredicate {
 
 	/**
-	 * Root type to be used for {@link com.mysema.query.types.Path}
+	 * The root type to create the {@link com.mysema.query.types.Predicate}. Specify this explictly if the type is not
+	 * contained in the controller method's return type.
 	 * 
 	 * @return
 	 */
 	Class<?>root() default Object.class;
 
 	/**
-	 * Configuration class providing options on a per field base.
+	 * To customize the way individual properties' values should be bound to the predicate a
+	 * {@link QuerydslBinderCustomizer} can be specified here. We'll try to obtain a Spring bean of this type but fall
+	 * back to a plain instantiation if no bean is found in the current
+	 * {@link org.springframework.beans.factory.BeanFactory}.
 	 * 
 	 * @return
 	 */

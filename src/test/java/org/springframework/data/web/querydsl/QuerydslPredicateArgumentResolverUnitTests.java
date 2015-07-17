@@ -18,11 +18,14 @@ package org.springframework.data.web.querydsl;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver.*;
 
 import java.util.Collections;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
@@ -30,13 +33,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.User;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
@@ -50,6 +56,10 @@ import com.mysema.query.types.path.StringPath;
  * @author Oliver Gierke
  */
 public class QuerydslPredicateArgumentResolverUnitTests {
+
+	static final TypeInformation<?> USER_TYPE = ClassTypeInformation.from(User.class);
+
+	public @Rule ExpectedException exception = ExpectedException.none();
 
 	QuerydslPredicateArgumentResolver resolver;
 	MockHttpServletRequest request;
@@ -202,7 +212,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void shouldExcludePorpertiesCorrectly() throws Exception {
+	public void shouldExcludePropertiesCorrectly() throws Exception {
 
 		request.addParameter("address.street", "downhill");
 		request.addParameter("inceptionYear", "973");
@@ -234,7 +244,6 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	public void createBindingsShouldHonorQuerydslBinderCustomizerHookWhenPresent() {
 
 		Repositories repositories = mock(Repositories.class);
-		RepositoryInformation repoInfo = mock(RepositoryInformation.class);
 
 		when(repositories.hasRepositoryFor(User.class)).thenReturn(true);
 		when(repositories.getRepositoryFor(User.class)).thenReturn(new SampleRepo());
@@ -242,9 +251,9 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		resolver = new QuerydslPredicateArgumentResolver(null);
 		ReflectionTestUtils.setField(resolver, "repositories", repositories);
 
-		QuerydslBindings bindings = resolver.createBindings(null, User.class);
-		MultiValueBinding<Path<Object>, Object> binding = bindings.getBindingForPath(PropertyPath.from("firstname",
-				User.class));
+		QuerydslBindings bindings = resolver.createBindings(null, USER_TYPE);
+		MultiValueBinding<Path<Object>, Object> binding = bindings
+				.getBindingForPath(PropertyPath.from("firstname", User.class));
 
 		assertThat(binding.bind((Path) QUser.user.firstname, Collections.singleton("rand")),
 				is((Predicate) QUser.user.firstname.contains("rand")));
@@ -259,18 +268,46 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
 		when(beanFactory.getBean(SpecificBinding.class)).thenReturn(new SpecificBinding());
-		QuerydslPredicate annotation = getMethodParameterFor("specificFind", Predicate.class).getParameterAnnotation(
-				QuerydslPredicate.class);
+		QuerydslPredicate annotation = getMethodParameterFor("specificFind", Predicate.class)
+				.getParameterAnnotation(QuerydslPredicate.class);
 
 		resolver = new QuerydslPredicateArgumentResolver(null);
 		ReflectionTestUtils.setField(resolver, "beanFactory", beanFactory);
 
-		QuerydslBindings bindings = resolver.createBindings(annotation, User.class);
-		MultiValueBinding<Path<Object>, Object> binding = bindings.getBindingForPath(PropertyPath.from("firstname",
-				User.class));
+		QuerydslBindings bindings = resolver.createBindings(annotation, USER_TYPE);
+		MultiValueBinding<Path<Object>, Object> binding = bindings
+				.getBindingForPath(PropertyPath.from("firstname", User.class));
 
 		assertThat(binding.bind((Path) QUser.user.firstname, Collections.singleton("rand")),
 				is((Predicate) QUser.user.firstname.eq("RAND")));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void detectsDomainTypesCorrectly() {
+
+		TypeInformation USER_TYPE = ClassTypeInformation.from(User.class);
+		TypeInformation MODELA_AND_VIEW_TYPE = ClassTypeInformation.from(ModelAndView.class);
+
+		assertThat(extractTypeInfo(getMethodParameterFor("forEntity")), is(USER_TYPE));
+		assertThat(extractTypeInfo(getMethodParameterFor("forResourceOfUser")), is(USER_TYPE));
+		assertThat(extractTypeInfo(getMethodParameterFor("forModelAndView")), is(MODELA_AND_VIEW_TYPE));
+	}
+
+	/**
+	 * @see DATACMNS-669
+	 */
+	@Test
+	public void rejectsPredicateResolutionIfDomainTypeCantBeAutoDetected() {
+
+		exception.expect(IllegalStateException.class);
+		exception.expectMessage(QuerydslPredicate.class.getSimpleName());
+		exception.expectMessage("root");
+
+		resolver.createBindings(null, ClassTypeInformation.from(ModelAndView.class));
 	}
 
 	private static MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {
@@ -286,7 +323,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		public void customize(QuerydslBindings bindings, QUser user) {
 
-			bindings.bind("firstname").using(new SingleValueBinding<StringPath, String>() {
+			bindings.bind(user.firstname).first(new SingleValueBinding<StringPath, String>() {
 
 				@Override
 				public Predicate bind(StringPath path, String value) {
@@ -294,7 +331,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 				}
 			});
 
-			bindings.bind(user.lastname).single(new SingleValueBinding<StringPath, String>() {
+			bindings.bind(user.lastname).first(new SingleValueBinding<StringPath, String>() {
 
 				@Override
 				public Predicate bind(StringPath path, String value) {
@@ -302,7 +339,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 				}
 			});
 
-			bindings.excluding("address");
+			bindings.excluding(user.address);
 		}
 	}
 
@@ -319,6 +356,12 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Page<User> pagedFind(@QuerydslPredicate Predicate predicate, Pageable page);
 
 		User specificFind(@QuerydslPredicate(bindings = SpecificBinding.class) Predicate predicate);
+
+		HttpEntity<User> forEntity();
+
+		ModelAndView forModelAndView();
+
+		ResponseEntity<Resource<User>> forResourceOfUser();
 	}
 
 	public static class SampleRepo implements QuerydslBinderCustomizer<QUser> {
@@ -326,7 +369,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		@Override
 		public void customize(QuerydslBindings bindings, QUser user) {
 
-			bindings.bind(QUser.user.firstname).single(new SingleValueBinding<StringPath, String>() {
+			bindings.bind(QUser.user.firstname).first(new SingleValueBinding<StringPath, String>() {
 
 				@Override
 				public Predicate bind(StringPath path, String value) {

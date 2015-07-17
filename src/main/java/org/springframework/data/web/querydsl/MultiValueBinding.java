@@ -31,7 +31,9 @@ import com.mysema.query.types.Predicate;
 public interface MultiValueBinding<T extends Path<? extends S>, S> {
 
 	/**
-	 * Returns the predicate to be applied to the given {@link Path} for the given value.
+	 * Returns the predicate to be applied to the given {@link Path} for the given collection value, which will contain 
+	 * all values submitted for the path bind. If a single value was provided only the collection will consist of exactly 
+	 * one element. 
 	 * 
 	 * @param path {@link Path} to the property. Will not be {@literal null}.
 	 * @param value the value that should be bound. Will not be {@literal null} or empty.

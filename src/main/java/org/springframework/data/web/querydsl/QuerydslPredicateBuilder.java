@@ -28,7 +28,7 @@ import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
-import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
@@ -51,24 +51,29 @@ public class QuerydslPredicateBuilder {
 	private final ConversionService conversionService;
 	private final MultiValueBinding<?, ?> defaultBinding;
 	private final Map<PropertyPath, Path<?>> paths;
+	private final EntityPathResolver resolver;
 
-	public QuerydslPredicateBuilder(ConversionService conversionService) {
+	public QuerydslPredicateBuilder(ConversionService conversionService, EntityPathResolver resolver) {
 
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
 		this.defaultBinding = new QuerydslDefaultBinding();
 		this.conversionService = conversionService;
 		this.paths = new HashMap<PropertyPath, Path<?>>();
+		this.resolver = resolver;
 	}
 
 	/**
-	 * @param values
-	 * @param context
+	 * Creates a Querydsl {@link Predicate} for the given values, {@link QuerydslBindings} on the given
+	 * {@link TypeInformation}.
+	 * 
+	 * @param type the type to create a predicate for.
+	 * @param values the values to bind.
+	 * @param bindings the {@link QuerydslBindings} for the predicate.
 	 * @return
 	 */
-
-	public Predicate getPredicate(MultiValueMap<String, String> values, QuerydslBindings bindings,
-			TypeInformation<?> type) {
+	public Predicate getPredicate(TypeInformation<?> type, MultiValueMap<String, String> values,
+			QuerydslBindings bindings) {
 
 		Assert.notNull(bindings, "Context must not be null!");
 
@@ -92,10 +97,10 @@ public class QuerydslPredicateBuilder {
 
 					Collection<Object> value = convertToPropertyPathSpecificType(entry.getValue(), propertyPath);
 
-					Predicate binding = invokeBinding(propertyPath, bindings, value);
+					Predicate predicate = invokeBinding(propertyPath, bindings, value);
 
-					if (binding != null) {
-						builder.and(binding);
+					if (predicate != null) {
+						builder.and(predicate);
 					}
 				}
 			} catch (PropertyReferenceException o_O) {
@@ -106,17 +111,34 @@ public class QuerydslPredicateBuilder {
 		return builder.getValue();
 	}
 
+	/**
+	 * Invokes the binding of the given values, for the given {@link PropertyPath} and {@link QuerydslBindings}.
+	 * 
+	 * @param dotPath must not be {@literal null}.
+	 * @param bindings must not be {@literal null}.
+	 * @param values must not be {@literal null}.
+	 * @return
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Predicate invokeBinding(PropertyPath dotPath, QuerydslBindings bindings, Collection<Object> value) {
+	private Predicate invokeBinding(PropertyPath dotPath, QuerydslBindings bindings, Collection<Object> values) {
 
 		Path<?> path = getPath(dotPath, bindings);
 
 		MultiValueBinding binding = bindings.getBindingForPath(dotPath);
 		binding = binding == null ? defaultBinding : binding;
 
-		return binding.bind(path, value);
+		return binding.bind(path, values);
 	}
 
+	/**
+	 * Returns the {@link Path} for the given {@link PropertyPath} and {@link QuerydslBindings}. Will try to obtain the
+	 * {@link Path} from the bindings first but fall back to reifying it from the PropertyPath in case no specific binding
+	 * has been configured.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @param bindings must not be {@literal null}.
+	 * @return
+	 */
 	private Path<?> getPath(PropertyPath path, QuerydslBindings bindings) {
 
 		Path<?> resolvedPath = bindings.getExistingPath(path);
@@ -137,10 +159,16 @@ public class QuerydslPredicateBuilder {
 		return resolvedPath;
 	}
 
-	private static Path<?> reifyPath(PropertyPath path, Path<?> base) {
+	/**
+	 * Tries to reify a Querydsl {@link Path} from the given {@link PropertyPath} and base.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @param base can be {@literal null}.
+	 * @return
+	 */
+	private Path<?> reifyPath(PropertyPath path, Path<?> base) {
 
-		Path<?> entityPath = base != null ? base
-				: SimpleEntityPathResolver.INSTANCE.createPath(path.getOwningType().getType());
+		Path<?> entityPath = base != null ? base : resolver.createPath(path.getOwningType().getType());
 
 		Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
 		Object value = ReflectionUtils.getField(field, entityPath);
@@ -152,26 +180,32 @@ public class QuerydslPredicateBuilder {
 		return (Path<?>) value;
 	}
 
+	/**
+	 * Converts the given source values into a collection of elements that are of the given {@link PropertyPath}'s type.
+	 * Considers a single element list with an empty {@link String} an empty collection because this basically indicates
+	 * the property having been submitted but no value provided.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @param path must not be {@literal null}.
+	 * @return
+	 */
 	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PropertyPath path) {
 
 		Class<?> targetType = path.getLeafProperty().getType();
 
-		if (isSingleElementCollectionWithoutText(source)) {
+		if (source.isEmpty() || isSingleElementCollectionWithoutText(source)) {
 			return Collections.emptyList();
 		}
 
 		Collection<Object> target = new ArrayList<Object>(source.size());
 
 		for (String value : source) {
-			target.add(potentiallyConvertValue(value, targetType));
+
+			target.add(conversionService.canConvert(value.getClass(), targetType)
+					? conversionService.convert(value, targetType) : value);
 		}
 
 		return target;
-	}
-
-	private Object potentiallyConvertValue(Object source, Class<?> targetType) {
-		return conversionService.canConvert(source.getClass(), targetType) ? conversionService.convert(source, targetType)
-				: source;
 	}
 
 	/**
