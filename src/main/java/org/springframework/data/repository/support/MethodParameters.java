@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ import org.springframework.util.Assert;
  */
 class MethodParameters {
 
-	private static final ParameterNameDiscoverer DISCOVERER = new DefaultParameterNameDiscoverer();
-
+	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
 	private final List<MethodParameter> parameters;
 
 	/**
@@ -61,7 +60,7 @@ class MethodParameters {
 		for (int i = 0; i < method.getParameterTypes().length; i++) {
 
 			MethodParameter parameter = new AnnotationNamingMethodParameter(method, i, namingAnnotation);
-			parameter.initParameterNameDiscovery(DISCOVERER);
+			parameter.initParameterNameDiscovery(discoverer);
 			parameters.add(parameter);
 		}
 	}

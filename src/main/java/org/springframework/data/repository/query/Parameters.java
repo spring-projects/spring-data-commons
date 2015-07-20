@@ -46,7 +46,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			+ "on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
 			Pageable.class.getSimpleName(), Sort.class.getSimpleName());
 
-	private final ParameterNameDiscoverer PARAMETER_DISCOVERER = new DefaultParameterNameDiscoverer();
+	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
 	private final int pageableIndex;
 	private final int sortIndex;
 	private final List<T> parameters;
@@ -54,7 +54,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	/**
 	 * Creates a new instance of {@link Parameters}.
 	 * 
-	 * @param method
+	 * @param method must not be {@literal null}.
 	 */
 	public Parameters(Method method) {
 
@@ -67,7 +67,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		for (int i = 0; i < types.size(); i++) {
 
 			MethodParameter methodParameter = new MethodParameter(method, i);
-			methodParameter.initParameterNameDiscovery(PARAMETER_DISCOVERER);
+			methodParameter.initParameterNameDiscovery(discoverer);
 
 			T parameter = createParameter(methodParameter);
 
