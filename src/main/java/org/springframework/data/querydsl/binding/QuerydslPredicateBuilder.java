@@ -191,7 +191,8 @@ public class QuerydslPredicateBuilder {
 	 */
 	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PropertyPath path) {
 
-		Class<?> targetType = path.getLeafProperty().getType();
+		Class<?> targetType = path.getLeafProperty().getOwningType().getProperty(path.getLeafProperty().getSegment())
+				.getType();
 
 		if (source.isEmpty() || isSingleElementCollectionWithoutText(source)) {
 			return Collections.emptyList();
@@ -201,8 +202,8 @@ public class QuerydslPredicateBuilder {
 
 		for (String value : source) {
 
-			target.add(conversionService.canConvert(value.getClass(), targetType)
-					? conversionService.convert(value, targetType) : value);
+			target.add(conversionService.canConvert(String.class, targetType) ? conversionService.convert(
+					targetType.isArray() ? value.split(",") : value, targetType) : value);
 		}
 
 		return target;

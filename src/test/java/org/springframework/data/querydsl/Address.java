@@ -24,6 +24,7 @@ import com.mysema.query.annotations.QueryEntity;
 public class Address {
 
 	public String street, city;
+	public Double[] lonLat;
 
 	public Address(String street, String city) {
 		this.street = street;
