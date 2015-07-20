@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 by the original author(s).
+ * Copyright 2011-2015 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.data.util.TypeInformation;
  */
 public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
 
-	private static final ParameterNameDiscoverer PARAMETER_DISCOVERER = new DefaultParameterNameDiscoverer();
+	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
 
 	private PreferredConstructor<T, P> constructor;
 
@@ -106,7 +106,7 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 			return new PreferredConstructor<T, P>((Constructor<T>) constructor);
 		}
 
-		String[] parameterNames = PARAMETER_DISCOVERER.getParameterNames(constructor);
+		String[] parameterNames = discoverer.getParameterNames(constructor);
 
 		Parameter<Object, P>[] parameters = new Parameter[parameterTypes.size()];
 		Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
