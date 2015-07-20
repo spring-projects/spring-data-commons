@@ -16,8 +16,8 @@
 package org.springframework.data.querydsl.binding;
 
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
+import static org.springframework.test.util.ReflectionTestUtils.*;
 
 import java.util.List;
 
@@ -28,14 +28,12 @@ import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.querydsl.Users;
-import org.springframework.data.querydsl.binding.QuerydslBindings;
-import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
-import org.springframework.data.querydsl.binding.SingleValueBinding;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.mysema.query.collections.CollQueryFactory;
+import com.mysema.query.types.Constant;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.StringPath;
 
@@ -152,5 +150,39 @@ public class QuerydslPredicateBuilderUnitTests {
 		});
 
 		builder.getPredicate(USER_TYPE, values, bindings);
+	}
+
+	/**
+	 * @see DATACMNS-734
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void resolvesCommaSeparatedArgumentToArrayCorrectly() {
+
+		values.add("address.lonLat", "40.740337,-73.995146");
+
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+
+		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
+
+		assertThat(constant.getConstant(), instanceOf(Double[].class));
+		assertThat((Double[]) (constant.getConstant()), arrayContaining(40.740337D, -73.995146D));
+	}
+
+	/**
+	 * @see DATACMNS-734
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void leavesCommaSeparatedArgumentUntouchedWhenTargetIsNotAnArray() {
+
+		values.add("address.city", "rivers,two");
+
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+
+		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
+
+		assertThat(constant.getConstant(), instanceOf(String.class));
+		assertThat((String) (constant.getConstant()), equalTo("rivers,two"));
 	}
 }
