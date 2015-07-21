@@ -18,6 +18,9 @@ package org.springframework.data.querydsl;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+
 import com.mysema.query.annotations.QueryEntity;
 
 /**
@@ -29,7 +32,7 @@ import com.mysema.query.annotations.QueryEntity;
 public class User {
 
 	public String firstname, lastname;
-	public Date dateOfBirth;
+	public @DateTimeFormat(iso = ISO.DATE) Date dateOfBirth;
 	public Address address;
 	public List<String> nickNames;
 	public Long inceptionYear;

@@ -19,16 +19,20 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.test.util.ReflectionTestUtils.*;
 
+import java.text.ParseException;
 import java.util.List;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.querydsl.Users;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -53,7 +57,8 @@ public class QuerydslPredicateBuilderUnitTests {
 
 	@Before
 	public void setUp() {
-		this.builder = new QuerydslPredicateBuilder(new DefaultConversionService(), SimpleEntityPathResolver.INSTANCE);
+		this.builder = new QuerydslPredicateBuilder(new DefaultFormattingConversionService(),
+				SimpleEntityPathResolver.INSTANCE);
 		this.values = new LinkedMultiValueMap<String, String>();
 	}
 
@@ -184,5 +189,21 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		assertThat(constant.getConstant(), instanceOf(String.class));
 		assertThat((String) (constant.getConstant()), equalTo("rivers,two"));
+	}
+
+	/**
+	 * @see DATACMNS-734
+	 */
+	@Test
+	public void bindsDateCorrectly() throws ParseException {
+
+		DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd");
+		String date = format.print(new DateTime());
+
+		values.add("dateOfBirth", format.print(new DateTime()));
+
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+
+		assertThat(predicate, is((Predicate) QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate())));
 	}
 }

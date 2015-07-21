@@ -15,6 +15,7 @@
  */
 package org.springframework.data.querydsl.binding;
 
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,8 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.Property;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.querydsl.EntityPathResolver;
@@ -191,8 +195,8 @@ public class QuerydslPredicateBuilder {
 	 */
 	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PropertyPath path) {
 
-		Class<?> targetType = path.getLeafProperty().getOwningType().getProperty(path.getLeafProperty().getSegment())
-				.getType();
+		PropertyPath leafProperty = path.getLeafProperty();
+		Class<?> targetType = leafProperty.getOwningType().getProperty(leafProperty.getSegment()).getType();
 
 		if (source.isEmpty() || isSingleElementCollectionWithoutText(source)) {
 			return Collections.emptyList();
@@ -202,11 +206,34 @@ public class QuerydslPredicateBuilder {
 
 		for (String value : source) {
 
-			target.add(conversionService.canConvert(String.class, targetType) ? conversionService.convert(
-					targetType.isArray() ? value.split(",") : value, targetType) : value);
+			target.add(conversionService.canConvert(String.class, targetType)
+					? conversionService.convert(value, TypeDescriptor.forObject(value), getTargetTypeDescriptor(path)) : value);
 		}
 
 		return target;
+	}
+
+	/**
+	 * Returns the target {@link TypeDescriptor} for the given {@link PropertyPath} by either inspecting the field or
+	 * property (the latter preferred) to pick up annotations potentially defined for formatting purposes.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @return
+	 */
+	private static TypeDescriptor getTargetTypeDescriptor(PropertyPath path) {
+
+		PropertyPath leafProperty = path.getLeafProperty();
+		Class<?> owningType = leafProperty.getOwningType().getType();
+
+		PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(owningType, leafProperty.getSegment());
+
+		if (descriptor == null) {
+			return TypeDescriptor.nested(ReflectionUtils.findField(owningType, leafProperty.getSegment()), 0);
+		}
+
+		return TypeDescriptor.nested(
+				new Property(owningType, descriptor.getReadMethod(), descriptor.getWriteMethod(), leafProperty.getSegment()),
+				0);
 	}
 
 	/**
