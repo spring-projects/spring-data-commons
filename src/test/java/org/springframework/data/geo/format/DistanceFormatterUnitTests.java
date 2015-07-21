@@ -43,6 +43,11 @@ public class DistanceFormatterUnitTests {
 
 	static Distance REFERENCE = new Distance(10.8, Metrics.KILOMETERS);
 
+	@Test
+	public void testname() {
+		// To make sure Maven picks up the tests
+	}
+
 	public static class UnparameterizedTests {
 
 		/**
