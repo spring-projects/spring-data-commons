@@ -35,7 +35,7 @@ public enum PointFormatter implements Converter<String, Point>, Formatter<Point>
 
 	public static final ConvertiblePair CONVERTIBLE = new ConvertiblePair(String.class, Point.class);
 
-	private static final String INVALID_FORMAT = "Expected two doubles separated by a semicolon but got '%s'!";
+	private static final String INVALID_FORMAT = "Expected two doubles separated by a comma but got '%s'!";
 
 	/* 
 	 * (non-Javadoc)
