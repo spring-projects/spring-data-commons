@@ -24,8 +24,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -49,11 +51,17 @@ public class PointFormatterUnitTests {
 
 	public static class UnparameterizedTests {
 
+		public @Rule ExpectedException exception = ExpectedException.none();
+
 		/**
 		 * @see DATAREST-279, DATACMNS-626
 		 */
-		@Test(expected = IllegalArgumentException.class)
+		@Test
 		public void rejectsArbitraryNonsense() {
+
+			exception.expect(IllegalArgumentException.class);
+			exception.expectMessage("comma");
+
 			INSTANCE.convert("foo");
 		}
 
@@ -79,8 +87,8 @@ public class PointFormatterUnitTests {
 
 		@Parameters
 		public static Collection<String[]> parameters() {
-			return Arrays.asList(new String[] { "10.8,20.9" }, new String[] { " 10.8,20.9 " },
-					new String[] { " 10.8 ,20.9" }, new String[] { " 10.8, 20.9 " });
+			return Arrays.asList(new String[] { "10.8,20.9" }, new String[] { " 10.8,20.9 " }, new String[] { " 10.8 ,20.9" },
+					new String[] { " 10.8, 20.9 " });
 		}
 
 		public @Parameter String source;
