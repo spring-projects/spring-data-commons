@@ -29,7 +29,6 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.util.Assert;
 
 /**
@@ -130,8 +129,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 	}
 
 	/**
-	 * {@link AuditableBeanWrapper} using {@link MappingAuditingMetadata} and a {@link BeanWrapper} to set values on
-	 * auditing properties.
+	 * {@link AuditableBeanWrapper} using {@link MappingAuditingMetadata} and a {@link PersistentPropertyAccessor} to set
+	 * values on auditing properties.
 	 * 
 	 * @author Oliver Gierke
 	 * @since 1.8
@@ -142,7 +141,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		private final MappingAuditingMetadata metadata;
 
 		/**
-		 * Creates a new {@link MappingMetadataAuditableBeanWrapper} for the given taregt and
+		 * Creates a new {@link MappingMetadataAuditableBeanWrapper} for the given target and
 		 * {@link MappingAuditingMetadata}.
 		 * 
 		 * @param target must not be {@literal null}.

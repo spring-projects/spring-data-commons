@@ -18,7 +18,6 @@ package org.springframework.data.mapping.model;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
@@ -29,23 +28,9 @@ import org.springframework.util.ReflectionUtils;
  * 
  * @author Oliver Gierke
  */
-public class BeanWrapper<T> implements PersistentPropertyAccessor {
+class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 	private final T bean;
-
-	/**
-	 * Creates a new {@link BeanWrapper} for the given bean and {@link ConversionService}.TODO: remove!
-	 * 
-	 * @param bean must not be {@literal null}.
-	 * @param conversionService can be {@literal null}.
-	 * @return
-	 * @deprecated use {@link org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(Object)} instead. Will
-	 *             be removed in 1.10 RC1.
-	 */
-	@Deprecated
-	public static <T> BeanWrapper<T> create(T bean, ConversionService conversionService) {
-		return new BeanWrapper<T>(bean);
-	}
 
 	/**
 	 * Creates a new {@link BeanWrapper} for the given bean.
@@ -130,8 +115,8 @@ public class BeanWrapper<T> implements PersistentPropertyAccessor {
 			return null;
 
 		} catch (IllegalStateException e) {
-			throw new MappingException(String.format("Could not read property %s of %s!", property.toString(),
-					bean.toString()), e);
+			throw new MappingException(
+					String.format("Could not read property %s of %s!", property.toString(), bean.toString()), e);
 		}
 	}
 
