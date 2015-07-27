@@ -37,7 +37,8 @@ import org.springframework.util.Assert;
 class MultiTransactionStatus implements TransactionStatus {
 
 	private final PlatformTransactionManager mainTransactionManager;
-	private final Map<PlatformTransactionManager, TransactionStatus> transactionStatuses = new ConcurrentHashMap<PlatformTransactionManager, TransactionStatus>();
+	private final Map<PlatformTransactionManager, TransactionStatus> transactionStatuses = 
+				new ConcurrentHashMap<PlatformTransactionManager, TransactionStatus>();
 
 	private boolean newSynchonization;
 
