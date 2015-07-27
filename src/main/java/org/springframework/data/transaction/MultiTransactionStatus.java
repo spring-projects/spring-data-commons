@@ -18,6 +18,7 @@ package org.springframework.data.transaction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -36,8 +37,7 @@ import org.springframework.util.Assert;
 class MultiTransactionStatus implements TransactionStatus {
 
 	private final PlatformTransactionManager mainTransactionManager;
-	private final Map<PlatformTransactionManager, TransactionStatus> transactionStatuses = Collections
-			.synchronizedMap(new HashMap<PlatformTransactionManager, TransactionStatus>());
+	private final Map<PlatformTransactionManager, TransactionStatus> transactionStatuses = new ConcurrentHashMap<PlatformTransactionManager, TransactionStatus>();
 
 	private boolean newSynchonization;
 
