@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.10.2.RELEASE (2015-07-28)
+----------------------------------------------
+* DATACMNS-740 - Release 1.10.2 (Fowler).
+* DATACMNS-736 - Invalid error message in PointFormatter.
+* DATACMNS-733 - PreferredConstructorDiscoverer prevents custom classloader from being garbage collected.
+* DATACMNS-732 - JTA 1.2's @Transactional not being applied to query methods.
+* DATACMNS-728 - Configure Travis build to run against latest Spring 4.2 release, too.
+
+
 Changes in version 1.8.6.RELEASE (2015-07-01)
 ---------------------------------------------
 * DATACMNS-723 - Release 1.8.6 (Dijkstra).
