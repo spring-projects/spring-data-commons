@@ -23,24 +23,17 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
-import org.springframework.data.querydsl.QueryDslUtils;
-import org.springframework.data.querydsl.SimpleEntityPathResolver;
-import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
-import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import com.mysema.query.types.Predicate;
 
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
@@ -71,24 +64,6 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	@Bean
 	public SortHandlerMethodArgumentResolver sortResolver() {
 		return new SortHandlerMethodArgumentResolver();
-	}
-
-	/**
-	 * Default {@link QuerydslPredicateArgumentResolver} to create Querydsl {@link Predicate} instances for Spring MVC
-	 * controller methods.
-	 * 
-	 * @return
-	 */
-	@Lazy
-	@Bean
-	public HandlerMethodArgumentResolver querydslPredicateArgumentResolver() {
-		return new QuerydslPredicateArgumentResolver(querydslBindingsFactory(), conversionService.getObject());
-	}
-
-	@Lazy
-	@Bean
-	public QuerydslBindingsFactory querydslBindingsFactory() {
-		return new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 	}
 
 	/* 
@@ -122,10 +97,6 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		argumentResolvers.add(sortResolver());
 		argumentResolvers.add(pageableResolver());
 
-		if (QueryDslUtils.QUERY_DSL_PRESENT) {
-			argumentResolvers.add(querydslPredicateArgumentResolver());
-		}
-
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
 				conversionService.getObject());
 		resolver.setBeanFactory(context);
@@ -133,5 +104,4 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 		argumentResolvers.add(resolver);
 	}
-
 }
