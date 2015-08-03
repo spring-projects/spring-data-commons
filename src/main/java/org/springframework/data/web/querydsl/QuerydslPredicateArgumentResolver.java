@@ -16,27 +16,17 @@
 package org.springframework.data.web.querydsl;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Map.Entry;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.querydsl.EntityPathResolver;
-import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
+import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
-import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -44,7 +34,6 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 
 /**
@@ -55,38 +44,23 @@ import com.mysema.query.types.Predicate;
  * @author Oliver Gierke
  * @since 1.11
  */
-public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentResolver, ApplicationContextAware {
+public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private static final String INVALID_DOMAIN_TYPE = "Unable to find Querydsl root type for detected domain type %s! User @%s's root attribute to define the domain type manually!";
+	private final QuerydslBindingsFactory bindingsFactory;
 	private final QuerydslPredicateBuilder predicateBuilder;
-	private final EntityPathResolver resolver;
-	private final Map<TypeInformation<?>, EntityPath<?>> entityPaths;
-
-	private AutowireCapableBeanFactory beanFactory;
-	private Repositories repositories;
 
 	/**
 	 * Creates a new {@link QuerydslPredicateArgumentResolver} using the given {@link ConversionService}.
 	 * 
+	 * @param factory
 	 * @param conversionService defaults to {@link DefaultConversionService} if {@literal null}.
 	 */
-	public QuerydslPredicateArgumentResolver(ConversionService conversionService) {
+	public QuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory, ConversionService conversionService) {
 
-		this.resolver = SimpleEntityPathResolver.INSTANCE;
-		this.entityPaths = new ConcurrentReferenceHashMap<TypeInformation<?>, EntityPath<?>>();
+		this.bindingsFactory = factory;
 		this.predicateBuilder = new QuerydslPredicateBuilder(
-				conversionService == null ? new DefaultConversionService() : conversionService, resolver);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-
-		this.beanFactory = applicationContext.getAutowireCapableBeanFactory();
-		this.repositories = new Repositories(applicationContext);
+				conversionService == null ? new DefaultConversionService() : conversionService,
+				factory.getEntityPathResolver());
 	}
 
 	/*
@@ -125,102 +99,10 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 		QuerydslPredicate annotation = parameter.getParameterAnnotation(QuerydslPredicate.class);
 		TypeInformation<?> domainType = extractTypeInfo(parameter).getActualType();
 
-		return predicateBuilder.getPredicate(domainType, parameters, createBindings(annotation, domainType));
-	}
+		Class<? extends QuerydslBinderCustomizer> customizer = annotation == null ? null : annotation.bindings();
+		QuerydslBindings bindings = bindingsFactory.createBindingsFor(customizer, domainType);
 
-	QuerydslBindings createBindings(QuerydslPredicate annotation, TypeInformation<?> domainType) {
-
-		EntityPath<?> path = verifyEntityPathPresent(domainType);
-
-		QuerydslBindings bindings = new QuerydslBindings();
-		findCustomizerForDomainType(annotation, domainType.getType()).customize(bindings, path);
-
-		return bindings;
-	}
-
-	/**
-	 * Obtains the {@link QuerydslBinderCustomizer} for the given domain type. Will inspect the given annotation for a
-	 * dedicatedly configured one or consider the domain types's repository.
-	 * 
-	 * @param annotation
-	 * @param domainType
-	 * @return
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private QuerydslBinderCustomizer<EntityPath<?>> findCustomizerForDomainType(QuerydslPredicate annotation,
-			Class<?> domainType) {
-
-		if (annotation != null) {
-
-			Class<? extends QuerydslBinderCustomizer> bindings = annotation.bindings();
-
-			if (bindings != QuerydslBinderCustomizer.class) {
-				return createQuerydslBinderCustomizer(bindings);
-			}
-		}
-
-		if (repositories != null && repositories.hasRepositoryFor(domainType)) {
-
-			Object repository = repositories.getRepositoryFor(domainType);
-
-			if (repository instanceof QuerydslBinderCustomizer) {
-				return (QuerydslBinderCustomizer<EntityPath<?>>) repository;
-			}
-		}
-
-		return NoOpCustomizer.INSTANCE;
-	}
-
-	/**
-	 * Obtains a {@link QuerydslBinderCustomizer} for the given type. Will try to obtain a bean from the
-	 * {@link org.springframework.beans.factory.BeanFactory} first or fall back to create a fresh instance through the
-	 * {@link org.springframework.beans.factory.BeanFactory} or finally falling back to a plain instantiation if no
-	 * {@link org.springframework.beans.factory.BeanFactory} is present.
-	 * 
-	 * @param type must not be {@literal null}.
-	 * @return
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private QuerydslBinderCustomizer<EntityPath<?>> createQuerydslBinderCustomizer(
-			Class<? extends QuerydslBinderCustomizer> type) {
-
-		if (beanFactory == null) {
-			return BeanUtils.instantiateClass(type);
-		}
-
-		try {
-			return beanFactory.getBean(type);
-		} catch (NoSuchBeanDefinitionException e) {
-			return beanFactory.createBean(type);
-		}
-	}
-
-	/**
-	 * Tries to detect a Querydsl query type for the given domain type candidate via the configured
-	 * {@link EntityPathResolver}.
-	 * 
-	 * @param candidate must not be {@literal null}.
-	 * @throws IllegalStateException to indicate the query type can't be found and manual configuration is necessary.
-	 */
-	private EntityPath<?> verifyEntityPathPresent(TypeInformation<?> candidate) {
-
-		EntityPath<?> path = entityPaths.get(candidate);
-
-		if (path != null) {
-			return path;
-		}
-
-		Class<?> type = candidate.getType();
-
-		try {
-			path = resolver.createPath(type);
-		} catch (IllegalArgumentException o_O) {
-			throw new IllegalStateException(
-					String.format(INVALID_DOMAIN_TYPE, candidate.getType(), QuerydslPredicate.class.getSimpleName()), o_O);
-		}
-
-		entityPaths.put(candidate, path);
-		return path;
+		return predicateBuilder.getPredicate(domainType, parameters, bindings);
 	}
 
 	/**
@@ -258,13 +140,5 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 		}
 
 		return detectDomainType(source.getComponentType());
-	}
-
-	private static enum NoOpCustomizer implements QuerydslBinderCustomizer<EntityPath<?>> {
-
-		INSTANCE;
-
-		@Override
-		public void customize(QuerydslBindings bindings, EntityPath<?> root) {}
 	}
 }

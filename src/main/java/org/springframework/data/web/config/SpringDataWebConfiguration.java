@@ -28,6 +28,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.querydsl.QueryDslUtils;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
@@ -80,7 +82,13 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	@Lazy
 	@Bean
 	public HandlerMethodArgumentResolver querydslPredicateArgumentResolver() {
-		return new QuerydslPredicateArgumentResolver(conversionService.getObject());
+		return new QuerydslPredicateArgumentResolver(querydslBindingsFactory(), conversionService.getObject());
+	}
+
+	@Lazy
+	@Bean
+	public QuerydslBindingsFactory querydslBindingsFactory() {
+		return new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 	}
 
 	/* 
