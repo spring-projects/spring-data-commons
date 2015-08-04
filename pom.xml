@@ -16,7 +16,7 @@
 	</parent>
 
 	<properties>
-		<springhateoas>0.17.0.RELEASE</springhateoas>
+		<springhateoas>0.18.0.RELEASE</springhateoas>
 		<dist.key>DATACMNS</dist.key>
 	</properties>
 
