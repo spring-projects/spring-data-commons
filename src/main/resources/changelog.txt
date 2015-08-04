@@ -1,6 +1,34 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.11.0.RC1 (2015-08-04)
+------------------------------------------
+* DATACMNS-744 - NoClassDefFoundError com/mysema/query/types/EntityPath with latest SNAPSHOT.
+* DATACMNS-742 - Release 1.11 RC1 (Gosling).
+* DATACMNS-738 - Remove deprecated BeanWrapper.
+* DATACMNS-736 - Invalid error message in PointFormatter.
+* DATACMNS-734 - Make sure Querydsl binding considers formatting annotations.
+* DATACMNS-733 - PreferredConstructorDiscoverer prevents custom classloader from being garbage collected.
+* DATACMNS-732 - JTA 1.2's @Transactional not being applied to query methods.
+* DATACMNS-731 - Parameter should expose whether it's explicitly named.
+* DATACMNS-728 - Configure Travis build to run against latest Spring 4.2 release, too.
+* DATACMNS-727 - Improve handling of invalid PersistentPropertyPaths in MappingContext.
+* DATACMNS-722 - ProxyProjectionFactory does not handle arrays correctly.
+* DATACMNS-720 - Explicit transaction configuration is not considered if default transactions are disabled.
+* DATACMNS-719 - Version fails to parse input string with non-numerical suffix.
+* DATACMNS-718 - Improve class loader handling for proxy factories.
+* DATACMNS-717 - AnnotatedTypeScanner does not use context classloader for loading found types.
+* DATACMNS-716 - QueryMethod type not detected correctly when wrapper types are used with collections.
+* DATACMNS-715 - @Transactional customizations not applied correctly on redeclared methods.
+* DATACMNS-714 - Add support for CompletableFuture as query method return type on Spring 4.2.
+* DATACMNS-713 - PageImpl should adapt the total for last pages if it doesn't match the content.
+* DATACMNS-710 - ObjectInstantiatorClassGenerator should use ClassUtils.getDefaultClassLoader().
+* DATACMNS-707 - Fix JavaDoc in CrudRepository.
+* DATACMNS-703 - PropertyReferenceException's message should contain potential matches.
+* DATACMNS-648 - o.s.d.r.q.Parameters prevents custom classloader from being garbage collected.
+* DATACMNS-569 - Fix documentation on underscores in property references of derived query methods.
+
+
 Changes in version 1.10.2.RELEASE (2015-07-28)
 ----------------------------------------------
 * DATACMNS-740 - Release 1.10.2 (Fowler).
