@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,17 @@
  */
 package org.springframework.data.mapping;
 
+import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
+
 /**
- * Domain service to allow accessing and setting {@link PersistentProperty}s of an entity.
+ * Domain service to allow accessing and setting {@link PersistentProperty}s of an entity. Usually obtained through
+ * {@link PersistentEntity#getPropertyAccessor(Object)}. In case type conversion shall be applied on property access,
+ * use a {@link ConvertingPropertyAccessor}.
  * 
  * @author Oliver Gierke
+ * @since 1.10
+ * @see PersistentEntity#getPropertyAccessor(Object)
+ * @see ConvertingPropertyAccessor
  */
 public interface PersistentPropertyAccessor {
 
