@@ -21,13 +21,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
-import org.springframework.data.util.Version;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -44,8 +42,9 @@ import com.google.common.base.Optional;
  */
 public abstract class QueryExecutionConverters {
 
-	private static final Version SPRING_VERSION = Version.parse(SpringVersion.getVersion());
-	private static final Version FOUR_DOT_TWO = new Version(4, 2);
+	private static final boolean SPRING_4_2_PRESENT = ClassUtils.isPresent(
+			"org.springframework.core.annotation.AnnotationConfigurationException",
+			QueryExecutionConverters.class.getClassLoader());
 
 	private static final boolean GUAVA_PRESENT = ClassUtils.isPresent("com.google.common.base.Optional",
 			QueryExecutionConverters.class.getClassLoader());
@@ -67,7 +66,7 @@ public abstract class QueryExecutionConverters {
 			WRAPPER_TYPES.add(NullableWrapperToJdk8OptionalConverter.getWrapperType());
 		}
 
-		if (JDK_8_PRESENT && SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO)) {
+		if (JDK_8_PRESENT && SPRING_4_2_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToCompletableFutureConverter.getWrapperType());
 		}
 	}
