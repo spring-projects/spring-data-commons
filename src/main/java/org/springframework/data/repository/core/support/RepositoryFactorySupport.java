@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.GenericTypeResolver;
@@ -187,6 +188,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		ProxyFactory result = new ProxyFactory();
 		result.setTarget(target);
 		result.setInterfaces(new Class[] { repositoryInterface, Repository.class });
+
+		result.addAdvice(ExposeInvocationInterceptor.INSTANCE);
 
 		if (TRANSACTION_PROXY_TYPE != null) {
 			result.addInterface(TRANSACTION_PROXY_TYPE);
