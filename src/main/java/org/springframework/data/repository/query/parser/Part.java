@@ -298,7 +298,7 @@ public class Part {
 
 			for (String keyword : keywords) {
 				if (candidate.endsWith(keyword)) {
-					return candidate.substring(0, candidate.indexOf(keyword));
+					return candidate.substring(0, candidate.length() - keyword.length());
 				}
 			}
 
