@@ -764,6 +764,84 @@ Assume we have 30 Person instances in the database. You can now trigger a reques
 
 You see that the assembler produced the correct URI and also picks up the default configuration present to resolve the parameters into a `Pageable` for an upcoming request. This means, if you change that configuration, the links will automatically adhere to the change. By default the assembler points to the controller method it was invoked in but that can be customized by handing in a custom `Link` to be used as base to build the pagination links to overloads of the `PagedResourcesAssembler.toResource(…)` method.
 
+[[core.web.type-safe]]
+==== QueryDSL web support
+
+For those stores having http://www.querydsl.com/[QueryDSL] integration it is possible to derive queries from the attributes contained in a `Request` query string.
+
+This means that given the `User` object from previous samples a query string
+
+[source,text]
+----
+?firstname=Dave&lastname=Matthews
+----
+
+can be resolved to
+
+[source,text]
+----
+QUser.user.firstname.eq("Dave").and(QUser.user.lastname.eq("Matthews"))
+----
+
+using the `QuerydslPredicateArgumentResolver`.
+
+NOTE: The feature will be automatically enabled along `@EnableSpringDataWebSupport` when Querydsl is found on the classpath.
+
+Adding a `@QuerydslPredicate` to the method signature will provide a ready to use `Predicate` which can be executed via the `QueryDslPredicateExecutor`.
+
+TIP: Type information is typically resolved from the methods return type. Since those information does not necessarily match the domain type it might be a good idea to use the `root` attribute of `QuerydslPredicate`. 
+
+====
+[source,java]
+----
+@Controller
+class UserController {
+
+  @Autowired UserRepository repository;
+
+  @RequestMapping(value = "/", method = RequestMethod.GET)
+  String index(Model model, @QuerydslPredicate(root = User.class) Predicate predicate,    <1>
+          Pageable pageable, @RequestParam MultiValueMap<String, String> parameters) {
+
+    model.addAttribute("users", repository.findAll(predicate, pageable));
+
+    return "index";
+  }
+}
+----
+<1> Resolve query string arguments to matching `Predicate` for `User`.
+====
+
+The default binding is as follows:
+
+* `Object` on simple properties as `eq`.
+* `Object` on collection like properties as `contains`.
+* `Collection` on simple properties as `in`.
+
+Those bindings can be customized via the `bindings` attribute of `@QuerydslPredicate` or by making use of Java 8 `default methods` adding the `QuerydslBinderCustomizer` to the repository interface.
+
+====
+[source,java]
+----
+interface UserRepository extends CrudRepository<User, String>,
+                                 QueryDslPredicateExecutor<User>,            <1>
+                                 QuerydslBinderCustomizer<QUser> {           <2>
+
+  @Override
+  default public void customize(QuerydslBindings bindings, QUser root) {
+
+    bindings.bind(String.class).first((StringPath path, String value)        <3>
+        -> path.containsIgnoreCase(value));
+    bindings.excluding(root.password);                                       <4>
+  }
+}
+----
+<1> `QueryDslPredicateExecutor` provides access to specific finder methods for `Predicate`.
+<2> `QuerydslBinderCustomizer` defined on the repository interface will be automatically picked up and shortcuts `@QuerydslPredicate(bindings=...)`.
+<3> Define the default binding for `String` properies to be a case insensitive contains match.
+<4> Exclude the _password_ property from `Predicate` resolution.
+====
+
 [[core.repository-populators]]
 === Repository populators
 If you work with the Spring JDBC module, you probably are familiar with the support to populate a `DataSource` using SQL scripts. A similar abstraction is available on the repositories level, although it does not use SQL as the data definition language because it must be store-independent. Thus the populators support XML (through Spring's OXM abstraction) and JSON (through Jackson) to define data with which to populate the repositories.
