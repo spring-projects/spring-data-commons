@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -670,6 +671,24 @@ public class PartTreeUnitTests {
 		assertPart(tree, new Part[] { new Part("legalNameNotContaining", Organization.class) });
 	}
 
+	/**
+	 * @see DATACMNS-750
+	 */
+	@Test
+	public void doesNotFailOnPropertiesContainingAKeyword() {
+
+		PartTree partTree = new PartTree("findBySomeInfoIn", Category.class);
+
+		Iterable<Part> parts = partTree.getParts();
+
+		assertThat(parts, is(Matchers.<Part> iterableWithSize(1)));
+
+		Part part = parts.iterator().next();
+
+		assertThat(part.getType(), is(Type.IN));
+		assertThat(part.getProperty(), is(PropertyPath.from("someInfo", Category.class)));
+	}
+
 	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {
 		assertLimiting(methodName, entityType, limiting, maxResults, false);
 	}
@@ -791,6 +810,8 @@ public class PartTreeUnitTests {
 	interface Category {
 
 		Long getId();
+
+		String getSomeInfo();
 	}
 
 	interface Order {
