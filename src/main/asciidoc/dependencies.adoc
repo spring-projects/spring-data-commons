@@ -16,7 +16,7 @@ Due to different inception dates of individual Spring Data modules, most of them
       <scope>import</scope>
       <type>pom</type>
     </dependency>
-  <dependencies>
+  </dependencies>
 </dependencyManagement>
 ----
 ====
