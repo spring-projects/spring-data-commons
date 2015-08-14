@@ -366,6 +366,28 @@ try (Stream<User> stream = repository.findAllByCustomQueryAndStream()) {
 ====
 NOTE: Not all Spring Data modules currently support `Stream<T>` as a return type.
 
+[[repositories.query-async]]
+=== Async query results
+
+Repository queries can be executed asynchronously using link:{spring-framework-docs}#scheduling[Spring's asynchronous method execution capability]. This means the method will return immediately upon invocation and the actual query execution will occur in a task that has been submitted to a Spring TaskExecutor.
+
+====
+[source, java]
+----
+@Async
+Future<User> findByFirstname(String firstname);               <1>
+
+@Async
+CompletableFuture<User> findOneByFirstname(String firstname); <2>
+
+@Async
+ListenableFuture<User> findOneByLastname(String lastname);    <3>
+----
+<1> Use `java.util.concurrent.Future` as return type.
+<2> Use a Java 8 `java.util.concurrent.CompletableFuture` as return type.
+<3> Use a `org.springframework.util.concurrent.ListenableFuture` as return type.
+====
+
 [[repositories.create-instances]]
 == Creating repository instances
 In this section you create instances and bean definitions for the repository interfaces defined. One way to do so is using the Spring namespace that is shipped with each Spring Data module that supports the repository mechanism although we generally recommend to use the Java-Config style configuration.

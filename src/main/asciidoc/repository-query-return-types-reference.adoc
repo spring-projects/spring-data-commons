@@ -20,6 +20,9 @@ NOTE: Geospatial types like (`GeoResult`, `GeoResults`, `GeoPage`) are only avai
 |`List<T>`|A `List`.
 |`Optional<T>`|A Java 8 or Guava `Optional`. Expects the query method to return one result at most. In case no result is found `Optional.empty()`/`Optional.absent()` is returned. More than one result will trigger an `IncorrectResultSizeDataAccessException`.
 |`Stream<T>`|A Java 8 `Stream`.
+|`Future<T>`|A `Future`. Expects method to be annotated with `@Async` and requires Spring's asynchronous method execution capability enabled.
+|`CompletableFuture<T>`|A Java 8 `CompletableFuture`. Expects method to be annotated with `@Async` and requires Spring's asynchronous method execution capability enabled.
+|`ListenableFuture`|A `org.springframework.util.concurrent.ListenableFuture`. Expects method to be annotated with `@Async` and requires Spring's asynchronous method execution capability enabled.
 |`Slice`|A sized chunk of data with information whether there is more data available. Requires a `Pageable` method parameter.
 |`Page<T>`|A `Slice` with additional information, e.g. the total number of results. Requires a `Pageable` method parameter.
 |`GeoResult<T>`|A result entry with additional information, e.g. distance to a reference location.
