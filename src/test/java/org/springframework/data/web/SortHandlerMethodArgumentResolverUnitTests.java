@@ -150,6 +150,21 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	}
 
 	/**
+	 *
+	 * @see DATACMNS-753
+	 * see also DATACMNS-408
+	 */
+	@Test
+	public void doesNotReturnNullWhenAnnotatedWithSortDefault() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", ""); //valid input
+
+		assertNotNull(resolveSort(request, getParameterOfMethod("simpleDefault")));
+		assertNotNull(resolveSort(request, getParameterOfMethod("containeredDefault")));
+	}
+
+	/**
 	 * @see DATACMNS-408
 	 */
 	@Test
