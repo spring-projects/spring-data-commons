@@ -1,3 +1,6 @@
+:spring-framework-docs: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+
+
 [[repositories]]
 = Working with Spring Data Repositories
 
@@ -276,7 +279,7 @@ To resolve this ambiguity you can use `_` inside your method name to manually de
 List<Person> findByAddress_ZipCode(ZipCode zipCode);
 ----
 
-As we treat underscore as a reserved character we stongly advise to follow standard Java naming conventions (i.e. *not* using underscores in property names but camel case instead).
+As we treat underscore as a reserved character we strongly advise to follow standard Java naming conventions (i.e. *not* using underscores in property names but camel case instead).
 
 [[repositories.special-parameters]]
 === Special parameter handling
