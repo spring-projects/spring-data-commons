@@ -17,7 +17,7 @@
 ### Prerequisites
 
 - Maven 3
-- Java 7 (the project produces Java 6 compatible bytecode but partially integrates with Java 7)
+- Java 8 (the project produces Java 6 compatible bytecode but partially integrates with Java 8)
 
 ```
 $ git clone https://github.com/spring-projects/spring-data-commons.git
@@ -29,7 +29,7 @@ $ mvn clean install
 
 This README as well as the [reference documentation](http://docs.spring.io/spring-data/data-commons/docs/current/reference/html/) are the best places to start learning about Spring Data Commons.
 
-The main project [website](http://www.springsource.org/spring-data) contains links to basic project information such as source code, JavaDocs, Issue tracking, etc.
+The main project [website](http://projects.spring.io/spring-data/) contains links to basic project information such as source code, JavaDocs, Issue tracking, etc.
 
 For more detailed questions, please refer to [spring-data on stackoverflow](http://stackoverflow.com/questions/tagged/spring-data). If you are new to Spring as well as to Spring Data, look for information about [Spring projects](https://spring.io/projects). 
 
@@ -37,7 +37,7 @@ For more detailed questions, please refer to [spring-data on stackoverflow](http
 
 Here are some ways for you to get involved in the community:
 
-* Create [JIRA](https://jira.springsource.org/browse/DATACMNS) tickets for bugs and new features and comment and vote on the ones that you are interested in.  
+* Create [JIRA](https://jira.spring.io/browse/DATACMNS) tickets for bugs and new features and comment and vote on the ones that you are interested in.
 * Github is for social coding: if you want to write code, we encourage contributions through pull requests from [forks of this repository](http://help.github.com/forking/). If you want to contribute code this way, please reference a JIRA ticket as well covering the specific issue you are addressing.
 * Watch for upcoming articles on Spring by [subscribing](https://spring.io/blog.atom) to springframework.org
 
