@@ -23,11 +23,14 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
@@ -63,6 +66,7 @@ public abstract class Jsr310Converters {
 		converters.add(LocalTimeToDateConverter.INSTANCE);
 		converters.add(DateToInstantConverter.INSTANCE);
 		converters.add(InstantToDateConverter.INSTANCE);
+        converters.add(OffsetDateTimeToCalendarConverter.INSTANCE);
 
 		return converters;
 	}
@@ -156,4 +160,14 @@ public abstract class Jsr310Converters {
 			return source == null ? null : Date.from(source.atZone(systemDefault()).toInstant());
 		}
 	}
+
+    public static enum OffsetDateTimeToCalendarConverter implements Converter<OffsetDateTime, Calendar> {
+
+        INSTANCE;
+
+        @Override
+        public Calendar convert(OffsetDateTime source) {
+            return source == null ? null : GregorianCalendar.from( source.toZonedDateTime() );
+        }
+    }
 }
