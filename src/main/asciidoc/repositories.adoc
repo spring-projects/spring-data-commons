@@ -107,14 +107,14 @@ Standard CRUD functionality repositories usually have queries on the underlying 
 +
 [source, java]
 ----
-interface PersonRepository extends Repository<User, Long> { … }
+interface PersonRepository extends Repository<Person, Long> { … }
 ----
 
 . Declare query methods on the interface.
 +
 [source, java]
 ----
-interface PersonRepository extends Repository<User, Long> {
+interface PersonRepository extends Repository<Person, Long> {
   List<Person> findByLastname(String lastname);
 }
 ----
