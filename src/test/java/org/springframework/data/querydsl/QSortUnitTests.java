@@ -31,6 +31,7 @@ import org.springframework.data.domain.Sort.Order;
 
 import com.mysema.query.annotations.QueryInit;
 import com.mysema.query.types.OrderSpecifier;
+import com.mysema.query.types.path.StringPath;
 
 /**
  * Unit tests for {@link QSort}.
@@ -200,6 +201,17 @@ public class QSortUnitTests {
 		QSort sort = new QSort(wrapperToWrapWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname.asc());
 
 		assertThat(sort, hasItems(new Order(Direction.ASC, "wrapperForUserWrapper.wrapper.user.firstname")));
+	}
+
+	/**
+	 * @see DATACMNS-755
+	 */
+	@Test
+	public void handlesPlainStringPathsCorrectly() {
+
+		QSort sort = new QSort(new OrderSpecifier<String>(com.mysema.query.types.Order.ASC, new StringPath("firstname")));
+
+		assertThat(sort, hasItems(new Order(Direction.ASC, "firstname")));
 	}
 
 	@com.mysema.query.annotations.QueryEntity

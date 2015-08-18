@@ -22,12 +22,10 @@ import java.util.List;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.OrderSpecifier;
 import com.mysema.query.types.Path;
-import com.mysema.query.types.PathMetadata;
 
 /**
  * Sort option for queries that wraps a querydsl {@link OrderSpecifier}.
@@ -154,16 +152,9 @@ public class QSort extends Sort implements Serializable {
 	 */
 	private static String preparePropertyPath(Path<?> path) {
 
-		PathMetadata<?> metadata = path.getMetadata();
-		Path<?> parent = metadata.getParent();
+		Path<?> root = path.getRoot();
 
-		if (parent == null) {
-			return "";
-		}
-
-		String basPath = preparePropertyPath(parent);
-		String element = metadata.getElement().toString();
-
-		return StringUtils.hasText(basPath) ? basPath.concat(".").concat(element) : basPath.concat(element);
+		return root == null || path.equals(root) ? path.toString()
+				: path.toString().substring(root.toString().length() + 1);
 	}
 }
