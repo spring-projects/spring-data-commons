@@ -31,7 +31,7 @@ import org.springframework.data.domain.jaxb.SpringDataJaxb.SortDto;
  * 
  * @author Oliver Gierke
  */
-class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
+public class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 
 	/*
 	 * (non-Javadoc)
