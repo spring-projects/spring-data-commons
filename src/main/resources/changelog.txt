@@ -1,6 +1,19 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.11.0.RELEASE (2015-09-01)
+----------------------------------------------
+* DATACMNS-760 - Remove cyclic dependency in querydsl packages.
+* DATACMNS-759 - Release 1.11 GA (Gosling).
+* DATACMNS-755 - Paths without parent are causing IllegalArgumentException in QSort class.
+* DATACMNS-754 - PersonRepository in reference documentation persists User.
+* DATACMNS-751 - Update reference documentation.
+* DATACMNS-750 - Part.extractProperty(String part) invalidly extracts property paths containing keywords.
+* DATACMNS-749 - Register ExposeInvocationInterceptor globally so that RepositoryPostProcessors don't have to individually.
+* DATACMNS-748 - Spring version check in QueryExecutionConverters might fail.
+* DATACMNS-746 - JavaDoc of PersistentPropertyAccessor should explain how to obtain one.
+
+
 Changes in version 1.11.0.RC1 (2015-08-04)
 ------------------------------------------
 * DATACMNS-744 - NoClassDefFoundError com/mysema/query/types/EntityPath with latest SNAPSHOT.
