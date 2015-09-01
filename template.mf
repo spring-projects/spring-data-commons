@@ -22,7 +22,7 @@ Import-Template:
  org.springframework.dao.*;version="${spring:[=.=.=,+1.1.0)}";resolution:=optional,
  org.springframework.expression.*;version="${spring:[=.=.=,+1.1.0)}";resolution:=optional,
  org.springframework.format.*;version="${spring:[=.=.=,+1.1.0)}";resolution:=optional,
- org.springframework.hateoas.*;version="${springhateoas:[=.=.=,+1.1.0)}";resolution:=optional,
+ org.springframework.hateoas.*;version="${spring-hateoas:[=.=.=,+1.1.0)}";resolution:=optional,
  org.springframework.oxm.*;version="${spring:[=.=.=,+1.1.0)}";resolution:=optional,
  org.springframework.scheduling.*;version="${spring:[=.=.=,+1.1.0)}";resolution:=optional,
  org.springframework.transaction.*;version="${spring:[=.=.=,+1.1.0)}";resolution:=optional,

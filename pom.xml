@@ -16,7 +16,6 @@
 	</parent>
 
 	<properties>
-		<springhateoas>0.18.0.RELEASE</springhateoas>
 		<dist.key>DATACMNS</dist.key>
 	</properties>
 
@@ -157,7 +156,7 @@
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
-			<version>${springhateoas}</version>
+			<version>${spring-hateoas}</version>
 			<optional>true</optional>
 		</dependency>
 
