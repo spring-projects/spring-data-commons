@@ -33,7 +33,6 @@ import org.springframework.data.querydsl.User;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.data.web.querydsl.QuerydslPredicate;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.ModelAndView;
 

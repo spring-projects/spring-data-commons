@@ -26,7 +26,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.data.web.querydsl.QuerydslPredicate;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 

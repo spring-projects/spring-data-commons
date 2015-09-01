@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.web.querydsl;
+package org.springframework.data.querydsl.binding;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 
 /**
  * Annotation to customize the binding of HTTP request parameters to a Querydsl {@link com.mysema.query.types.Predicate}
