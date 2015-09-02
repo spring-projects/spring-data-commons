@@ -253,6 +253,23 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		assertThat(result.getPageNumber(), is(0));
 	}
 
+	/**
+	 * @see DATACMNS-761
+	 */
+	@Test
+	public void returnsCorrectPageSizeForOneIndexParameters() {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setOneIndexedParameters(true);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("size", "10");
+
+		Pageable result = resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null);
+
+		assertThat(result.getPageSize(), is(10));
+	}
+
 	@Override
 	protected PageableHandlerMethodArgumentResolver getResolver() {
 		PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();

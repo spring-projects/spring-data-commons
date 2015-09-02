@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -235,9 +235,9 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 			return null;
 		}
 
-		int page = StringUtils.hasText(pageString) ? parseAndApplyBoundaries(pageString, Integer.MAX_VALUE)
+		int page = StringUtils.hasText(pageString) ? parseAndApplyBoundaries(pageString, Integer.MAX_VALUE, true)
 				: defaultOrFallback.getPageNumber();
-		int pageSize = StringUtils.hasText(pageSizeString) ? parseAndApplyBoundaries(pageSizeString, maxPageSize)
+		int pageSize = StringUtils.hasText(pageSizeString) ? parseAndApplyBoundaries(pageSizeString, maxPageSize, false)
 				: defaultOrFallback.getPageSize();
 
 		// Limit lower bound
@@ -302,17 +302,18 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	}
 
 	/**
-	 * Tries to parse the given {@link String} into an integer and applies the given boundaries. Will return the lower
-	 * boundary if the {@link String} cannot be parsed.
+	 * Tries to parse the given {@link String} into an integer and applies the given boundaries. Will return 0 if the
+	 * {@link String} cannot be parsed.
 	 * 
-	 * @param parameter
-	 * @param upper
+	 * @param parameter the parameter value.
+	 * @param upper the upper bound to be applied.
+	 * @param shiftIndex whether to shift the index if {@link #oneIndexedParameters} is set to true.
 	 * @return
 	 */
-	private int parseAndApplyBoundaries(String parameter, int upper) {
+	private int parseAndApplyBoundaries(String parameter, int upper, boolean shiftIndex) {
 
 		try {
-			int parsed = Integer.parseInt(parameter) - (oneIndexedParameters ? 1 : 0);
+			int parsed = Integer.parseInt(parameter) - (oneIndexedParameters && shiftIndex ? 1 : 0);
 			return parsed < 0 ? 0 : parsed > upper ? upper : parsed;
 		} catch (NumberFormatException e) {
 			return 0;
