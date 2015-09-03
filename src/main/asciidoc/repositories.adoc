@@ -1,6 +1,5 @@
 :spring-framework-docs: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
 
-
 [[repositories]]
 = Working with Spring Data Repositories
 
