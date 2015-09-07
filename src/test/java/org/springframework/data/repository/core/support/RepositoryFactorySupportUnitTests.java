@@ -49,7 +49,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
+import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.sample.User;
@@ -291,7 +293,7 @@ public class RepositoryFactorySupportUnitTests {
 	}
 
 	/**
-	 * @see @see DATACMNS-714
+	 * @see DATACMNS-714
 	 */
 	@Test
 	public void wrapsExecutionResultIntoListenableFutureWithEntityCollectionIfConfigured() throws Exception {
@@ -301,6 +303,24 @@ public class RepositoryFactorySupportUnitTests {
 		List<User> reference = Arrays.asList(new User());
 
 		expect(prepareConvertingRepository(reference).readAllByLastname("Foo"), reference);
+	}
+
+	/**
+	 * @see DATACMNS-763
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void rejectsRepositoryBaseClassWithInvalidConstructor() {
+
+		RepositoryInformation information = mock(RepositoryInformation.class);
+		doReturn(CustomRepositoryBaseClass.class).when(information).getRepositoryBaseClass();
+		EntityInformation entityInformation = mock(EntityInformation.class);
+
+		exception.expect(IllegalStateException.class);
+		exception.expectMessage(entityInformation.getClass().getName());
+		exception.expectMessage(String.class.getName());
+
+		factory.getTargetRepositoryViaReflection(information, entityInformation, "Foo");
 	}
 
 	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {
@@ -410,5 +430,10 @@ public class RepositoryFactorySupportUnitTests {
 		// DATACMNS-714
 		@Async
 		ListenableFuture<List<User>> readAllByLastname(String lastname);
+	}
+
+	static class CustomRepositoryBaseClass {
+
+		public CustomRepositoryBaseClass(EntityInformation<?, ?> information) {}
 	}
 }

@@ -107,6 +107,7 @@ Standard CRUD functionality repositories usually have queries on the underlying 
 
 . Declare an interface extending Repository or one of its subinterfaces and type it to the domain class and ID type that it will handle.
 +
+
 [source, java]
 ----
 interface PersonRepository extends Repository<Person, Long> { … }
@@ -114,6 +115,7 @@ interface PersonRepository extends Repository<Person, Long> { … }
 
 . Declare query methods on the interface.
 +
+
 [source, java]
 ----
 interface PersonRepository extends Repository<Person, Long> {
@@ -123,6 +125,7 @@ interface PersonRepository extends Repository<Person, Long> {
 
 . Set up Spring to create proxy instances for those interfaces. Either via <<repositories.create-instances.java-config,JavaConfig>>:
 +
+
 [source, java]
 ----
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -130,9 +133,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories
 class Config {}
 ----
+
 +
 or via <<repositories.create-instances,XML configuration>>:
 +
+
 [source, xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
@@ -148,13 +153,15 @@ or via <<repositories.create-instances,XML configuration>>:
 
 </beans>
 ----
+
 +
 The JPA namespace is used in this example. If you are using the repository abstraction for any other store, you need to change this to the appropriate namespace declaration of your store module which should be exchanging `jpa` in favor of, for example, `mongodb`.
-
++
 Also, note that the JavaConfig variant doesn't configure a package explictly as the package of the annotated class is used by default. To customize the package to scan use one of the `basePackage…` attribute of the data-store specific repository `@Enable…`-annotation.
 
 . Get the repository instance injected and use it.
 +
+
 [source, java]
 ----
 public class SomeClient {
@@ -578,8 +585,9 @@ public class MyRepositoryImpl<T, ID extends Serializable>
 
   private final EntityManager entityManager;
 
-  public MyRepositoryImpl(Class<T> domainClass, EntityManager entityManager) {
-    super(domainClass, entityManager);
+  public MyRepositoryImpl(JpaEntityInformation entityInformation,
+                          EntityManager entityManager) {
+    super(entityInformation, entityManager);
 
     // Keep the EntityManager around to used from the newly introduced methods.
     this.entityManager = entityManager;
@@ -591,6 +599,8 @@ public class MyRepositoryImpl<T, ID extends Serializable>
 }
 ----
 ====
+
+WARNING: The class needs to have a constructor of the super class which the store-specific repository factory implementation is using. In case the repository base class has multiple constructors, override the one taking an `EntityInformation` plus a store specific infrastructure object (e.g. an `EntityManager` or a template class).
 
 The default behavior of the Spring `<repositories />` namespace is to provide an implementation for all interfaces that fall under the `base-package`. This means that if left in its current state, an implementation instance of `MyRepository` will be created by Spring. This is of course not desired as it is just supposed to act as an intermediary between `Repository` and the actual repository interfaces you want to define for each entity. To exclude an interface that extends `Repository` from being instantiated as a repository instance, you can either annotate it with `@NoRepositoryBean` (as seen above) or move it outside of the configured `base-package`.
 
