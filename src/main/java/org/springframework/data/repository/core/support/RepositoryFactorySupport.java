@@ -335,8 +335,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		Constructor<?> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
 
 		if (constructor == null) {
+
+			List<Class<?>> argumentTypes = new ArrayList<Class<?>>(constructorArguments.length);
+
+			for (Object argument : constructorArguments) {
+				argumentTypes.add(argument.getClass());
+			}
+
 			throw new IllegalStateException(String.format(
-					"No suitable constructor found on %s to match the given arguments: %s", baseClass, constructorArguments));
+					"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
+					baseClass, argumentTypes));
 		}
 
 		return (R) BeanUtils.instantiateClass(constructor, constructorArguments);
