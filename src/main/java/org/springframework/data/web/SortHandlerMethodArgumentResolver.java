@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,11 +108,17 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 
 		String[] directionParameter = webRequest.getParameterValues(getSortParameter(parameter));
 
-		if (directionParameter != null && directionParameter.length != 0) {
-			return parseParameterIntoSort(directionParameter, propertyDelimiter);
-		} else {
+		// No parameter
+		if (directionParameter == null) {
 			return getDefaultFromAnnotationOrFallback(parameter);
 		}
+
+		// Single empty parameter, e.g "sort="
+		if (directionParameter.length == 1 && !StringUtils.hasText(directionParameter[0])) {
+			return getDefaultFromAnnotationOrFallback(parameter);
+		}
+
+		return parseParameterIntoSort(directionParameter, propertyDelimiter);
 	}
 
 	/**
@@ -130,9 +136,9 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 		SortDefault annotatedDefault = parameter.getParameterAnnotation(SortDefault.class);
 
 		if (annotatedDefault != null && annotatedDefaults != null) {
-			throw new IllegalArgumentException(String.format(
-					"Cannot use both @%s and @%s on parameter %s! Move %s into %s to define sorting order!", SORT_DEFAULTS_NAME,
-					SORT_DEFAULT_NAME, parameter.toString(), SORT_DEFAULT_NAME, SORT_DEFAULTS_NAME));
+			throw new IllegalArgumentException(
+					String.format("Cannot use both @%s and @%s on parameter %s! Move %s into %s to define sorting order!",
+							SORT_DEFAULTS_NAME, SORT_DEFAULT_NAME, parameter.toString(), SORT_DEFAULT_NAME, SORT_DEFAULTS_NAME));
 		}
 
 		if (annotatedDefault != null) {
