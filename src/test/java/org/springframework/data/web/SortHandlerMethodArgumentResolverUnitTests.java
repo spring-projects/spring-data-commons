@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,21 +150,6 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	}
 
 	/**
-	 *
-	 * @see DATACMNS-753
-	 * see also DATACMNS-408
-	 */
-	@Test
-	public void doesNotReturnNullWhenAnnotatedWithSortDefault() throws Exception {
-
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addParameter("sort", ""); //valid input
-
-		assertNotNull(resolveSort(request, getParameterOfMethod("simpleDefault")));
-		assertNotNull(resolveSort(request, getParameterOfMethod("containeredDefault")));
-	}
-
-	/**
 	 * @see DATACMNS-408
 	 */
 	@Test
@@ -211,6 +196,19 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		request.addParameter("sort", ",");
 
 		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-753, DATACMNS-408
+	 */
+	@Test
+	public void doesNotReturnNullWhenAnnotatedWithSortDefault() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, getParameterOfMethod("simpleDefault")), is(new Sort("firstname", "lastname")));
+		assertThat(resolveSort(request, getParameterOfMethod("containeredDefault")), is(new Sort("foo", "bar")));
 	}
 
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
