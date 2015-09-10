@@ -40,7 +40,7 @@ public class QueryAugmentationEngine {
 
 	private static final Iterable<QueryAugmentor<? extends QueryContext<?>, ? extends QueryContext<?>, ? extends UpdateContext<?>>> NO_AUGMENTORS = Collections
 			.emptySet();
-	public static final QueryAugmentationEngine NONE = new QueryAugmentationEngine(NO_AUGMENTORS, null, false);
+	public static final QueryAugmentationEngine NONE = new QueryAugmentationEngine(NO_AUGMENTORS);
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryAugmentationEngine.class);
 	private static final Comparator<Object> COMPARATOR = new AnnotationAwareOrderComparator();
@@ -54,34 +54,14 @@ public class QueryAugmentationEngine {
 	 * Creates a new {@link QueryAugmentationEngine} by inspecting the given {@link QueryAugmentor}s.
 	 * 
 	 * @param augmentors must not be {@literal null}.
-	 * @param metadataProvider must not be {@literal null}.
-	 */
-	public QueryAugmentationEngine(
-			Iterable<QueryAugmentor<? extends QueryContext<?>, ? extends QueryContext<?>, ? extends UpdateContext<?>>> augmentors,
-			MethodMetadata metadataProvider) {
-		this(augmentors, metadataProvider, true);
-	}
-
-	/**
-	 * Internal constructor to allow {@link #NONE} being created with a {@literal null} {@link MethodMetadata} which
-	 * actually must not be null otherwise.
-	 * 
-	 * @param augmentors the {@link QueryAugmentor}s to register.
-	 * @param methodMetadata
-	 * @param checkNull whether to check the {@link MethodMetadata} for {@literal null}.
 	 */
 	@SuppressWarnings("unchecked")
-	private QueryAugmentationEngine(
-			Iterable<QueryAugmentor<? extends QueryContext<?>, ? extends QueryContext<?>, ? extends UpdateContext<?>>> augmentors,
-			MethodMetadata methodMetadata, boolean checkNull) {
+	public QueryAugmentationEngine(
+			Iterable<QueryAugmentor<? extends QueryContext<?>, ? extends QueryContext<?>, ? extends UpdateContext<?>>> augmentors) {
 
 		Assert.notNull(augmentors, "QueryAugmentors must not be null!");
 
-		if (checkNull) {
-			Assert.notNull(methodMetadata, "MethodMetadata must not be null!");
-		}
-
-		this.methodMetadata = methodMetadata;
+		this.methodMetadata = DefaultMethodMetadata.INSTANCE;
 
 		for (QueryAugmentor<? extends QueryContext<?>, ? extends QueryContext<?>, ? extends UpdateContext<?>> augmentor : augmentors) {
 

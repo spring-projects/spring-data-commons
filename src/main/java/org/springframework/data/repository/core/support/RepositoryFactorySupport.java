@@ -19,8 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.aop.ProxyMethodInvocation;
-import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.aop.framework.ReflectiveMethodInvocation;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -40,7 +35,6 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.augment.MethodMetadata;
 import org.springframework.data.repository.augment.QueryAugmentationEngine;
 import org.springframework.data.repository.augment.QueryAugmentationEngineAware;
 import org.springframework.data.repository.augment.QueryAugmentor;
@@ -137,7 +131,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 	 */
 	public void setQueryAugmentors(
 			List<QueryAugmentor<? extends QueryContext<?>, ? extends QueryContext<?>, ? extends UpdateContext<?>>> augmentors) {
-		this.augmentationEngine = new QueryAugmentationEngine(augmentors, DefaultMethodMetadata.INSTANCE);
+		this.augmentationEngine = new QueryAugmentationEngine(augmentors);
 	}
 
 	/**
@@ -334,9 +328,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 
 		if (null == customImplementation && repositoryInformation.hasCustomMethod()) {
 
-			throw new IllegalArgumentException(String.format(
-					"You have custom methods in %s but not provided a custom implementation!",
-					repositoryInformation.getRepositoryInterface()));
+			throw new IllegalArgumentException(
+					String.format("You have custom methods in %s but not provided a custom implementation!",
+							repositoryInformation.getRepositoryInterface()));
 		}
 
 		validate(repositoryInformation);
@@ -645,52 +639,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware {
 		@Override
 		public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 			factory.addAdvice(ExposeInvocationInterceptor.INSTANCE);
-		}
-	}
-
-	/**
-	 * Default implementation of {@link MethodMetadata}.
-	 * 
-	 * @author Oliver Gierke
-	 */
-	private static enum DefaultMethodMetadata implements MethodMetadata {
-
-		INSTANCE;
-
-		private MethodInvocation getMethodInvocation() {
-			return ExposeInvocationInterceptor.currentInvocation();
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.MethodMetadata#getInvocationTargetType()
-		 */
-		public List<Class<?>> getInvocationTargetType() {
-
-			MethodInvocation invocation = getMethodInvocation();
-
-			if (invocation instanceof ReflectiveMethodInvocation) {
-				Advised proxy = (Advised) ((ReflectiveMethodInvocation) invocation).getProxy();
-				return Arrays.asList(proxy.getProxiedInterfaces());
-			}
-
-			return Collections.<Class<?>> singletonList(getMethodInvocation().getThis().getClass());
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.MethodMetadata#getInvocationArguments()
-		 */
-		public Object[] getInvocationArguments() {
-			return getMethodInvocation().getArguments();
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.MethodMetadata#getMethod()
-		 */
-		public Method getMethod() {
-			return getMethodInvocation().getMethod();
 		}
 	}
 }
