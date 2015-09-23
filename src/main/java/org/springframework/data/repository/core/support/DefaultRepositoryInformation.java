@@ -182,7 +182,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 */
 	private boolean isQueryMethodCandidate(Method method) {
 		return !method.isBridge() && !ReflectionUtils.isDefaultMethod(method) //
-				&& (isQueryAnnotationPresentOn(method) || !isCustomMethod(method) && !isBaseClassMethod(method));
+				&& (isQueryAnnotationPresentOn(method) || !isBaseClassMethod(method));
 	}
 
 	/**
