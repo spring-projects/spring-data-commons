@@ -21,6 +21,9 @@ import static org.threeten.bp.DateTimeUtils.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.Test;
 import org.springframework.core.convert.ConversionService;
@@ -30,12 +33,13 @@ import org.threeten.bp.Instant;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.LocalTime;
+import org.threeten.bp.ZoneId;
 
 /**
  * Unit tests for {@link ThreeTenBackPortConverters}.
  * 
  * @author Oliver Gierke
- * @ssince 1.10
+ * @since 1.10
  */
 public class ThreeTenBackPortConvertersUnitTests {
 
@@ -126,6 +130,19 @@ public class ThreeTenBackPortConvertersUnitTests {
 
 		Date now = new Date();
 		assertThat(CONVERSION_SERVICE.convert(toInstant(now), Date.class), is(now));
+	}
+
+	@Test
+	public void convertsZoneIdToStringAndBack() {
+
+		Map<String, ZoneId> ids = new HashMap<String, ZoneId>();
+		ids.put("Europe/Berlin", ZoneId.of("Europe/Berlin"));
+		ids.put("+06:00", ZoneId.of("+06:00"));
+
+		for (Entry<String, ZoneId> entry : ids.entrySet()) {
+			assertThat(CONVERSION_SERVICE.convert(entry.getValue(), String.class), is(entry.getKey()));
+			assertThat(CONVERSION_SERVICE.convert(entry.getKey(), ZoneId.class), is(entry.getValue()));
+		}
 	}
 
 	private static String format(Date date, String format) {

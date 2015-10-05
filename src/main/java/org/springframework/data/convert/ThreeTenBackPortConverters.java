@@ -33,6 +33,7 @@ import org.threeten.bp.Instant;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.LocalTime;
+import org.threeten.bp.ZoneId;
 
 /**
  * Helper class to register {@link Converter} implementations for the ThreeTen Backport project in case it's present on
@@ -67,6 +68,8 @@ public abstract class ThreeTenBackPortConverters {
 		converters.add(LocalTimeToDateConverter.INSTANCE);
 		converters.add(DateToInstantConverter.INSTANCE);
 		converters.add(InstantToDateConverter.INSTANCE);
+		converters.add(ZoneIdToStringConverter.INSTANCE);
+		converters.add(StringToZoneIdConverter.INSTANCE);
 
 		return converters;
 	}
@@ -159,6 +162,28 @@ public abstract class ThreeTenBackPortConverters {
 		@Override
 		public Date convert(Instant source) {
 			return source == null ? null : toDate(source.atZone(systemDefault()).toInstant());
+		}
+	}
+
+	@WritingConverter
+	public static enum ZoneIdToStringConverter implements Converter<ZoneId, String> {
+
+		INSTANCE;
+
+		@Override
+		public String convert(ZoneId source) {
+			return source.toString();
+		}
+	}
+
+	@ReadingConverter
+	public static enum StringToZoneIdConverter implements Converter<String, ZoneId> {
+
+		INSTANCE;
+
+		@Override
+		public ZoneId convert(String source) {
+			return ZoneId.of(source);
 		}
 	}
 }
