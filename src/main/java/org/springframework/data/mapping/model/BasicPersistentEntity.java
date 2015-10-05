@@ -403,7 +403,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	@Override
 	public IdentifierAccessor getIdentifierAccessor(Object bean) {
 
-		Assert.notNull(bean, "Targte bean must not be null!");
+		Assert.notNull(bean, "Target bean must not be null!");
 		Assert.isTrue(getType().isInstance(bean), "Target bean is not of type of the persistent entity!");
 
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : NullReturningIdentifierAccessor.INSTANCE;
