@@ -19,13 +19,16 @@ import static org.junit.Assert.*;
 import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * Unit test for {@link ClassUtils}.
@@ -48,6 +51,17 @@ public class ClassUtilsUnitTests {
 		assertFalse(hasProperty(User.class, "address"));
 	}
 
+	/**
+	 * @see DATACMNS-769
+	 */
+	@Test
+	public void unwrapsWrapperTypesBeforeAssignmentCheck() throws Exception {
+
+		Method method = UserRepository.class.getMethod("findAsync", Pageable.class);
+
+		assertReturnTypeAssignable(method, Page.class);
+	}
+
 	@SuppressWarnings("unused")
 	private class User {
 
@@ -61,6 +75,8 @@ public class ClassUtilsUnitTests {
 
 	static interface UserRepository extends Repository<User, Integer> {
 
+		@Async
+		Future<Page<User>> findAsync(Pageable pageable);
 	}
 
 	interface SomeDao extends Serializable, UserRepository {
