@@ -109,4 +109,36 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(result.isDone(), is(true));
 		assertThat(result.get(), is(nullValue()));
 	}
+
+	/**
+	 * @see DATACMNS-768
+	 */
+	@Test
+	public void unwrapsJdk8Optional() {
+		assertThat(QueryExecutionConverters.unwrap(java.util.Optional.of("Foo")), is((Object) "Foo"));
+	}
+
+	/**
+	 * @see DATACMNS-768
+	 */
+	@Test
+	public void unwrapsGuava8Optional() {
+		assertThat(QueryExecutionConverters.unwrap(Optional.of("Foo")), is((Object) "Foo"));
+	}
+
+	/**
+	 * @see DATACMNS-768
+	 */
+	@Test
+	public void unwrapsNullToNull() {
+		assertThat(QueryExecutionConverters.unwrap(null), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-768
+	 */
+	@Test
+	public void unwrapsNonWrapperTypeToItself() {
+		assertThat(QueryExecutionConverters.unwrap("Foo"), is((Object) "Foo"));
+	}
 }

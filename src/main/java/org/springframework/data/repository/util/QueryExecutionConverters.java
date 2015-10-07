@@ -52,6 +52,7 @@ public abstract class QueryExecutionConverters {
 			QueryExecutionConverters.class.getClassLoader());
 
 	private static final Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
+	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
 
 	static {
 
@@ -60,10 +61,12 @@ public abstract class QueryExecutionConverters {
 
 		if (GUAVA_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToGuavaOptionalConverter.getWrapperType());
+			UNWRAPPERS.add(GuavaOptionalUnwrapper.INSTANCE);
 		}
 
 		if (JDK_8_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToJdk8OptionalConverter.getWrapperType());
+			UNWRAPPERS.add(Jdk8OptionalUnwrapper.INSTANCE);
 		}
 
 		if (JDK_8_PRESENT && SPRING_4_2_PRESENT) {
@@ -82,7 +85,14 @@ public abstract class QueryExecutionConverters {
 	public static boolean supports(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null!");
-		return WRAPPER_TYPES.contains(type);
+
+		for (Class<?> candidate : WRAPPER_TYPES) {
+			if (candidate.isAssignableFrom(type)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -104,6 +114,30 @@ public abstract class QueryExecutionConverters {
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
+	}
+
+	/**
+	 * Unwraps the given source value in case it's one of the currently supported wrapper types detected at runtime.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	public static Object unwrap(Object source) {
+
+		if (source == null || !supports(source.getClass())) {
+			return source;
+		}
+
+		for (Converter<Object, Object> converter : UNWRAPPERS) {
+
+			Object result = converter.convert(source);
+
+			if (result != source) {
+				return result;
+			}
+		}
+
+		return source;
 	}
 
 	/**
@@ -332,6 +366,46 @@ public abstract class QueryExecutionConverters {
 
 		public static Class<?> getWrapperType() {
 			return CompletableFuture.class;
+		}
+	}
+
+	/**
+	 * A {@link Converter} to unwrap Guava {@link Optional} instances.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.12
+	 */
+	private static enum GuavaOptionalUnwrapper implements Converter<Object, Object> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		public Object convert(Object source) {
+			return source instanceof Optional ? ((Optional<?>) source).orNull() : source;
+		}
+	}
+
+	/**
+	 * A {@link Converter} to unwrap JDK 8 {@link java.util.Optional} instances.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.12
+	 */
+	private static enum Jdk8OptionalUnwrapper implements Converter<Object, Object> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		public Object convert(Object source) {
+			return source instanceof java.util.Optional ? ((java.util.Optional<?>) source).orElse(null) : source;
 		}
 	}
 }
