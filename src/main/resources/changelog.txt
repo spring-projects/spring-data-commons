@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.9.4.RELEASE (2015-10-14)
+---------------------------------------------
+* DATACMNS-778 - Backport fix for @javax.transaction.Transactional support.
+* DATACMNS-777 - Release 1.9.4 (Evans).
+* DATACMNS-774 - Tweak Travis build to run the updated build profiles for Evans.
+
+
 Changes in version 1.11.0.RELEASE (2015-09-01)
 ----------------------------------------------
 * DATACMNS-760 - Remove cyclic dependency in querydsl packages.
