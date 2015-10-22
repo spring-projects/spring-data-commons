@@ -57,6 +57,13 @@ public class QuerydslPredicateBuilder {
 	private final Map<PropertyPath, Path<?>> paths;
 	private final EntityPathResolver resolver;
 
+	/**
+	 * Creates a new {@link QuerydslPredicateBuilder} for the given {@link ConversionService} and
+	 * {@link EntityPathResolver}.
+	 * 
+	 * @param conversionService must not be {@literal null}.
+	 * @param resolver can be {@literal null}.
+	 */
 	public QuerydslPredicateBuilder(ConversionService conversionService, EntityPathResolver resolver) {
 
 		Assert.notNull(conversionService, "ConversionService must not be null!");
