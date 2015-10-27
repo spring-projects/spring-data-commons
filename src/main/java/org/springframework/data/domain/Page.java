@@ -29,7 +29,7 @@ public interface Page<T> extends Slice<T> {
 	/**
 	 * Returns the number of total pages.
 	 * 
-	 * @return the number of toral pages
+	 * @return the number of total pages
 	 */
 	int getTotalPages();
 
