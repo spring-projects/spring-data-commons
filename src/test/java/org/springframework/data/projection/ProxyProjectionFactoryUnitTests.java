@@ -157,7 +157,7 @@ public class ProxyProjectionFactoryUnitTests {
 
 		List<String> result = factory.getInputProperties(CustomerExcerpt.class);
 
-		assertThat(result, hasSize(4));
+		assertThat(result, hasSize(5));
 		assertThat(result, hasItems("firstname", "address", "shippingAddresses", "picture"));
 	}
 
@@ -220,8 +220,23 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(excerpt.getShippingAddresses(), is(arrayWithSize(1)));
 	}
 
+	/**
+	 * @see DATACMNS-782
+	 */
+	@Test
+	public void convertsPrimitiveValues() {
+
+		Customer customer = new Customer();
+		customer.id = 1L;
+
+		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+
+		assertThat(excerpt.getId(), is(customer.id.toString()));
+	}
+
 	static class Customer {
 
+		public Long id;
 		public String firstname, lastname;
 		public Address address;
 		public byte[] picture;
@@ -234,6 +249,8 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	interface CustomerExcerpt {
+
+		String getId();
 
 		String getFirstname();
 

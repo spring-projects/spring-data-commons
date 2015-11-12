@@ -26,6 +26,8 @@ import java.util.Map.Entry;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.CollectionFactory;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -43,6 +45,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 
 	private final ProjectionFactory factory;
 	private final MethodInterceptor delegate;
+	private final ConversionService conversionService;
 
 	/**
 	 * Creates a new {@link ProjectingMethodInterceptor} using the given {@link ProjectionFactory} and delegate
@@ -59,6 +62,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 
 		this.factory = factory;
 		this.delegate = delegate;
+		this.conversionService = new DefaultConversionService();
 	}
 
 	/* 
@@ -75,13 +79,16 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 		}
 
 		TypeInformation<?> type = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod());
+		Class<?> rawType = type.getType();
 
-		if (type.isCollectionLike() && !ClassUtils.isPrimitiveArray(type.getType())) {
+		if (type.isCollectionLike() && !ClassUtils.isPrimitiveArray(rawType)) {
 			return projectCollectionElements(asCollection(result), type);
 		} else if (type.isMap()) {
 			return projectMapValues((Map<?, ?>) result, type);
+		} else if (conversionRequiredAndPossible(result, rawType)) {
+			return conversionService.convert(result, rawType);
 		} else {
-			return getProjection(result, type.getType());
+			return getProjection(result, rawType);
 		}
 	}
 
@@ -132,6 +139,23 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	private Object getProjection(Object result, Class<?> returnType) {
 		return ClassUtils.isAssignable(returnType, result.getClass()) ? result
 				: factory.createProjection(returnType, result);
+	}
+
+	/**
+	 * Returns whether the source object needs to be converted to the given target type and whether we can convert it at
+	 * all.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @param targetType must not be {@literal null}.
+	 * @return
+	 */
+	private boolean conversionRequiredAndPossible(Object source, Class<?> targetType) {
+
+		if (source == null || targetType.isInstance(source)) {
+			return false;
+		}
+
+		return conversionService.canConvert(source.getClass(), targetType);
 	}
 
 	/**
