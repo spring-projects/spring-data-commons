@@ -224,8 +224,8 @@ public class ClassTypeInformationUnitTests {
 		assertThat(parameterType.isAssignableFrom(stringInfo), is(true));
 		assertThat(stringInfo.getSuperTypeInformation(GenericInterface.class), is((Object) parameterType));
 		assertThat(parameterType.isAssignableFrom(from(LongImplementation.class)), is(false));
-		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class).getSuperTypeInformation(
-				GenericInterface.class)), is(true));
+		assertThat(parameterType
+				.isAssignableFrom(from(StringImplementation.class).getSuperTypeInformation(GenericInterface.class)), is(true));
 	}
 
 	@Test
@@ -238,8 +238,8 @@ public class ClassTypeInformationUnitTests {
 
 		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class)), is(false));
 		assertThat(parameterType.isAssignableFrom(from(LongImplementation.class)), is(true));
-		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class).getSuperTypeInformation(
-				GenericInterface.class)), is(false));
+		assertThat(parameterType
+				.isAssignableFrom(from(StringImplementation.class).getSuperTypeInformation(GenericInterface.class)), is(false));
 	}
 
 	@Test
@@ -252,8 +252,8 @@ public class ClassTypeInformationUnitTests {
 
 		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class)), is(false));
 		assertThat(parameterType.isAssignableFrom(from(LongImplementation.class)), is(true));
-		assertThat(parameterType.isAssignableFrom(from(StringImplementation.class).getSuperTypeInformation(
-				GenericInterface.class)), is(false));
+		assertThat(parameterType
+				.isAssignableFrom(from(StringImplementation.class).getSuperTypeInformation(GenericInterface.class)), is(false));
 	}
 
 	@Test
@@ -351,6 +351,35 @@ public class ClassTypeInformationUnitTests {
 		TypeInformation<?> leafType = customer.getProperty("intermediate.content.intermediate.content");
 
 		assertThat(leafType.getType(), is((Object) Leaf.class));
+	}
+
+	/**
+	 * @see DATACMNS-783
+	 */
+	@Test
+	public void specializesTypeUsingTypeVariableContext() {
+
+		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
+		TypeInformation<?> property = root.getProperty("abstractBar");
+
+		TypeInformation<?> specialized = property.specialize(ClassTypeInformation.from(Bar.class));
+
+		assertThat(specialized.getType(), is((Object) Bar.class));
+		assertThat(specialized.getProperty("field").getType(), is((Object) Character.class));
+	}
+
+	/**
+	 * @see DATACMNS-783
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void usesTargetTypeDirectlyIfNoGenericsAreInvolved() {
+
+		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
+		TypeInformation<?> property = root.getProperty("object");
+
+		ClassTypeInformation<?> from = ClassTypeInformation.from(Bar.class);
+		assertThat(property.specialize(from), is((TypeInformation) from));
 	}
 
 	static class StringMapContainer extends MapContainer<String> {
@@ -527,4 +556,17 @@ public class ClassTypeInformationUnitTests {
 	static class ConcreteInnerIntermediate extends GenericInnerIntermediate<Leaf> {}
 
 	static class Leaf {}
+
+	static class TypeWithAbstractGenericType<T> {
+		AbstractBar<T> abstractBar;
+		Object object;
+	}
+
+	static class Foo extends TypeWithAbstractGenericType<Character> {}
+
+	static abstract class AbstractBar<T> {}
+
+	static class Bar<T> extends AbstractBar<T> {
+		T field;
+	}
 }

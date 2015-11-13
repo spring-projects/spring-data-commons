@@ -140,4 +140,14 @@ public interface TypeInformation<S> {
 	 * @return
 	 */
 	List<TypeInformation<?>> getTypeArguments();
+
+	/**
+	 * Specializes the given (raw) {@link ClassTypeInformation} using the context of the current potentially parameterized
+	 * type, basically turning the given raw type into a parameterized one. Will return the given type as is if no
+	 * generics are involved.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	TypeInformation<?> specialize(ClassTypeInformation<?> type);
 }
