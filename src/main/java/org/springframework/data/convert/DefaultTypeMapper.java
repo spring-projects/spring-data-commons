@@ -147,10 +147,16 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		Class<T> rawType = basicType == null ? null : basicType.getType();
 
-		boolean isMoreConcreteCustomType = rawType == null ? true : rawType.isAssignableFrom(documentsTargetType)
-				&& !rawType.equals(documentsTargetType);
-		return isMoreConcreteCustomType ? (TypeInformation<? extends T>) ClassTypeInformation.from(documentsTargetType)
-				: basicType;
+		boolean isMoreConcreteCustomType = rawType == null ? true
+				: rawType.isAssignableFrom(documentsTargetType) && !rawType.equals(documentsTargetType);
+
+		if (!isMoreConcreteCustomType) {
+			return basicType;
+		}
+
+		ClassTypeInformation<?> targetType = ClassTypeInformation.from(documentsTargetType);
+
+		return (TypeInformation<? extends T>) (basicType != null ? basicType.specialize(targetType) : targetType);
 	}
 
 	/**

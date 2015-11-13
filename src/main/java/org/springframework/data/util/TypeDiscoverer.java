@@ -493,6 +493,20 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return target.getSuperTypeInformation(getType()).equals(this);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeInformation#specialize(org.springframework.data.util.ClassTypeInformation)
+	 */
+	@Override
+	public TypeInformation<?> specialize(ClassTypeInformation<?> type) {
+
+		Assert.isTrue(getType().isAssignableFrom(type.getType()));
+
+		List<TypeInformation<?>> arguments = getTypeArguments();
+
+		return arguments.isEmpty() ? type : createInfo(new SyntheticParamterizedType(type, arguments));
+	}
+
 	private TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
 
 		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
@@ -536,5 +550,64 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Override
 	public int hashCode() {
 		return hashCode;
+	}
+
+	/**
+	 * A synthetic {@link ParameterizedType}.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.11
+	 */
+	private static class SyntheticParamterizedType implements ParameterizedType {
+
+		private final ClassTypeInformation<?> typeInformation;
+		private final List<TypeInformation<?>> typeParameters;
+
+		/**
+		 * @param typeInformation must not be {@literal null}.
+		 * @param typeParameters must not be {@literal null}.
+		 */
+		public SyntheticParamterizedType(ClassTypeInformation<?> typeInformation, List<TypeInformation<?>> typeParameters) {
+
+			Assert.notNull(typeInformation, "Type must not be null!");
+			Assert.notNull(typeParameters, "Type parameters must not be null!");
+
+			this.typeInformation = typeInformation;
+			this.typeParameters = typeParameters;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.reflect.ParameterizedType#getRawType()
+		 */
+		@Override
+		public Type getRawType() {
+			return typeInformation.getType();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.reflect.ParameterizedType#getOwnerType()
+		 */
+		@Override
+		public Type getOwnerType() {
+			return null;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.reflect.ParameterizedType#getActualTypeArguments()
+		 */
+		@Override
+		public Type[] getActualTypeArguments() {
+
+			Type[] result = new Type[typeParameters.size()];
+
+			for (int i = 0; i < typeParameters.size(); i++) {
+				result[i] = typeParameters.get(0).getType();
+			}
+
+			return result;
+		}
 	}
 }
