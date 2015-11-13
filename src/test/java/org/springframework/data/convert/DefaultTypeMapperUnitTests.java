@@ -15,7 +15,7 @@
  */
 package org.springframework.data.convert;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -50,14 +50,13 @@ public class DefaultTypeMapperUnitTests {
 	Map<String, String> source;
 
 	@Before
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void setUp() {
 
 		this.typeMapper = new DefaultTypeMapper<Map<String, String>>(accessor, Arrays.asList(mapper));
 		this.source = Collections.singletonMap("key", STRING);
 
-		when(accessor.readAliasFrom(source)).thenReturn(STRING);
-		when(mapper.resolveTypeFrom(STRING)).thenReturn((TypeInformation) STRING_TYPE_INFO);
+		doReturn(STRING).when(accessor).readAliasFrom(source);
+		doReturn(STRING_TYPE_INFO).when(mapper).resolveTypeFrom(STRING);
 	}
 
 	@Test
@@ -82,5 +81,36 @@ public class DefaultTypeMapperUnitTests {
 		when(mapper.createAliasFor(STRING_TYPE_INFO)).thenReturn(alias);
 
 		assertThat(this.typeMapper.getAliasFor(STRING_TYPE_INFO), is(alias));
+	}
+
+	/**
+	 * @see DATACMNS-783
+	 */
+	@Test
+	public void specializesRawSourceTypeUsingGenericContext() {
+
+		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
+		TypeInformation<?> propertyType = root.getProperty("abstractBar");
+		TypeInformation<?> barType = ClassTypeInformation.from(Bar.class);
+
+		doReturn(barType).when(accessor).readAliasFrom(source);
+		doReturn(barType).when(mapper).resolveTypeFrom(barType);
+
+		TypeInformation<?> result = typeMapper.readType(source, propertyType);
+
+		assertThat(result.getType(), is((Object) Bar.class));
+		assertThat(result.getProperty("field").getType(), is((Object) Character.class));
+	}
+
+	static class TypeWithAbstractGenericType<T> {
+		AbstractBar<T> abstractBar;
+	}
+
+	static class Foo extends TypeWithAbstractGenericType<Character> {}
+
+	static abstract class AbstractBar<T> {}
+
+	static class Bar<T> extends AbstractBar<T> {
+		T field;
 	}
 }

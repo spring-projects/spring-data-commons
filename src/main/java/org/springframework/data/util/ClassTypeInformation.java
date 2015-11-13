@@ -167,6 +167,15 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		return getType().isAssignableFrom(target.getType());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#specialize(org.springframework.data.util.ClassTypeInformation)
+	 */
+	@Override
+	public TypeInformation<?> specialize(ClassTypeInformation<?> type) {
+		return type;
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
