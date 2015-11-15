@@ -1,6 +1,20 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.11.1.RELEASE (2015-11-15)
+----------------------------------------------
+* DATACMNS-784 - Release 1.11.1 (Gosling).
+* DATACMNS-783 - TypeInformation should allow applying the generic context to a raw type.
+* DATACMNS-782 - ProxyProjectionFactory should support primitive attribute conversion in projections out of the box.
+* DATACMNS-779 - Fix JavaDoc of constructor of QuerydslPredicateBuilder.
+* DATACMNS-771 - Typo in exception in BasicPersistentEntity.
+* DATACMNS-769 - Cannot create auto-generated @Async method with pagination.
+* DATACMNS-763 - Custom repository implementation class not working as stated in the reference documentation.
+* DATACMNS-762 - Polish section about dependencies in the reference documentation.
+* DATACMNS-761 - PageableHandlerMethodArgumentResolver reduces page size by one if on-indexed parameters are used.
+* DATACMNS-753 - SortHandlerMethodArgumentResolver fails to fall back to default if empty parameter is given.
+
+
 Changes in version 1.9.4.RELEASE (2015-10-14)
 ---------------------------------------------
 * DATACMNS-778 - Backport fix for @javax.transaction.Transactional support.
