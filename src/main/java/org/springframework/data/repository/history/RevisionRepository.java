@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,4 +56,14 @@ public interface RevisionRepository<T, ID extends Serializable, N extends Number
 	 * @return
 	 */
 	Page<Revision<N, T>> findRevisions(ID id, Pageable pageable);
+
+	/**
+	 * Returns the entity with the given ID in the given revision number.
+	 * 
+	 * @param id must not be {@literal null}.
+	 * @param revisionNumber must not be {@literal null}.
+	 * @return the entity with the given ID in the given revision number.
+	 * @since 1.12
+	 */
+	Revision<N, T> findRevision(ID id, N revisionNumber);
 }
