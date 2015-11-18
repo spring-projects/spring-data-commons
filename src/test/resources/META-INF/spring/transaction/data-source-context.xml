@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+                           http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd">
+
+
+  	<context:annotation-config/>
+  	
+  	<context:component-scan base-package="org.springframework.data.transaction"/>
+  	
+  	<tx:annotation-driven transaction-manager="chainedTransactionManager"/>
+
+	
+	<bean id="firstDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	    <property name="driverClassName" value="org.h2.Driver"/>
+        <property name="url" value="jdbc:h2:mem:test;MVCC=true;INIT=RUNSCRIPT FROM 'classpath:org/springframework/data/transaction/firstDataSourceInitialisationScript.sql'"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+	    <property name="maxIdle" value="10"/>
+	    <property name="maxActive" value="100"/>
+	    <property name="maxWait" value="10000"/>
+	    <property name="validationQuery" value="select 1"/>
+	    <property name="testOnBorrow" value="false"/>
+	    <property name="testWhileIdle" value="true"/>
+	    <property name="timeBetweenEvictionRunsMillis" value="1200000"/>
+	    <property name="minEvictableIdleTimeMillis" value="1800000"/>
+	    <property name="numTestsPerEvictionRun" value="5"/>
+	    <property name="defaultAutoCommit" value="false"/>
+  	</bean>
+
+
+
+	<bean id="secondDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	    <property name="driverClassName" value="org.h2.Driver"/>
+        <property name="url" value="jdbc:h2:mem:test;MVCC=true;INIT=RUNSCRIPT FROM 'classpath:org/springframework/data/transaction/secondDataSourceInitialisationScript.sql'"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+	    <property name="maxIdle" value="10"/>
+	    <property name="maxActive" value="100"/>
+	    <property name="maxWait" value="10000"/>
+	    <property name="validationQuery" value="select 1"/>
+	    <property name="testOnBorrow" value="false"/>
+	    <property name="testWhileIdle" value="true"/>
+	    <property name="timeBetweenEvictionRunsMillis" value="1200000"/>
+	    <property name="minEvictableIdleTimeMillis" value="1800000"/>
+	    <property name="numTestsPerEvictionRun" value="5"/>
+	    <property name="defaultAutoCommit" value="false"/>
+  	</bean>
+
+	
+	<bean id="firstTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="firstDataSource" />
+	</bean>
+	
+	<bean id="secondTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="firstDataSource" />
+	</bean>		
+	
+
+	<bean id="chainedTransactionManager" class="org.springframework.data.transaction.ChainedTransactionManager">
+		
+        <constructor-arg>
+            <list>
+            
+                <ref bean="firstTransactionManager"/>     
+                         
+                <ref bean="secondTransactionManager"/>            
+	
+            </list>
+        </constructor-arg>		
+		
+	</bean>
+
+
+</beans>
