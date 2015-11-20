@@ -912,7 +912,7 @@ You can easily populate your repositories by using the populator elements of the
     http://www.springframework.org/schema/data/repository
     http://www.springframework.org/schema/data/repository/spring-repository.xsd">
 
-  <repository:jackson-populator locations="classpath:data.json" />
+  <repository:jackson2-populator locations="classpath:data.json" />
 
 </beans>
 ----
