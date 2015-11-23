@@ -168,7 +168,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void resolveArgumentShouldHonorCustomSpeficifcation() throws Exception {
+	public void resolveArgumentShouldHonorCustomSpecification() throws Exception {
 
 		request.addParameter("firstname", "egwene");
 		request.addParameter("lastname", "al'vere");

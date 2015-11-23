@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.PropertyReferenceException;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -33,29 +36,37 @@ import com.querydsl.core.types.PathMetadata;
 import com.querydsl.core.types.Predicate;
 
 /**
- * {@link QuerydslBindings} allows definition of path specific {@link SingleValueBinding}.
+ * {@link QuerydslBindings} allows definition of path specific bindings.
  * 
  * <pre>
  * <code>
  * new QuerydslBindings() {
  *   {
- *     bind(QUser.user.address.city).using((path, value) -> path.like(value.toString()));
- *     bind(String.class).using((path, value) -> path.like(value.toString()));
+ *     bind(QUser.user.address.city).first((path, value) -> path.like(value.toString()));
+ *     bind(String.class).first((path, value) -> path.like(value.toString()));
  *   }
  * }
  * </code>
  * </pre>
  * 
+ * The bindings can either handle a single - see {@link PathBinder#first(SingleValueBinding)} - (the first in case
+ * multiple ones are supplied) or multiple - see {@link PathBinder#all(MultiValueBinding)} - value binding. If exactly
+ * one path is deployed, an {@link AliasingPathBinder} is returned which - as the name suggests - allows aliasing of
+ * paths, i.e. exposing the path under a different name.
+ * <p>
+ * {@link QuerydslBindings} are usually manipulated using a {@link QuerydslBinderCustomizer}, either implemented
+ * directly or using a default method on a Spring Data repository.
+ * 
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @since 1.11
+ * @see QuerydslBinderCustomizer
  */
 public class QuerydslBindings {
 
 	private final Map<String, PathAndBinding<?, ?>> pathSpecs;
 	private final Map<Class<?>, PathAndBinding<?, ?>> typeSpecs;
-	private final Set<String> whiteList;
-	private final Set<String> blackList;
+	private final Set<String> whiteList, blackList, aliases;
 
 	private boolean excludeUnlistedProperties;
 
@@ -68,6 +79,18 @@ public class QuerydslBindings {
 		this.typeSpecs = new LinkedHashMap<Class<?>, PathAndBinding<?, ?>>();
 		this.whiteList = new HashSet<String>();
 		this.blackList = new HashSet<String>();
+		this.aliases = new HashSet<String>();
+
+	}
+
+	/**
+	 * Returns an {@link AliasingPathBinder} for the given {@link Path} to define bindings for them.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @return
+	 */
+	public final <T extends Path<S>, S> AliasingPathBinder<T, S> bind(T path) {
+		return new AliasingPathBinder<T, S>(path);
 	}
 
 	/**
@@ -135,30 +158,8 @@ public class QuerydslBindings {
 		return this;
 	}
 
-	/**
-	 * Checks if a given {@link PropertyPath} should be visible for binding values.
-	 * 
-	 * @param path
-	 * @return
-	 */
-	boolean isPathVisible(PropertyPath path) {
-
-		List<String> segments = Arrays.asList(path.toDotPath().split("\\."));
-
-		for (int i = 1; i <= segments.size(); i++) {
-
-			if (!isPathVisible(StringUtils.collectionToDelimitedString(segments.subList(0, i), "."))) {
-
-				// check if full path is on whitelist if though partial one is not
-				if (!whiteList.isEmpty()) {
-					return whiteList.contains(path.toDotPath());
-				}
-
-				return false;
-			}
-		}
-
-		return true;
+	public boolean isPathVisible(String path, Class<?> type) {
+		return getPropertyPath(path, ClassTypeInformation.from(type)) != null;
 	}
 
 	/**
@@ -166,17 +167,22 @@ public class QuerydslBindings {
 	 * specific path but falls back to the builder registered for a given type.
 	 * 
 	 * @param path must not be {@literal null}.
-	 * @return
+	 * @return can be {@literal null}.
 	 */
 	@SuppressWarnings("unchecked")
-	public <S extends Path<T>, T> MultiValueBinding<S, T> getBindingForPath(PropertyPath path) {
+	public <S extends Path<? extends T>, T> MultiValueBinding<S, T> getBindingForPath(PropertyPath path) {
 
 		Assert.notNull(path, "PropertyPath must not be null!");
 
 		PathAndBinding<S, T> pathAndBinding = (PathAndBinding<S, T>) pathSpecs.get(path.toDotPath());
 
 		if (pathAndBinding != null) {
-			return pathAndBinding.getBinding();
+
+			MultiValueBinding<S, T> binding = pathAndBinding.getBinding();
+
+			if (binding != null) {
+				return pathAndBinding.getBinding();
+			}
 		}
 
 		pathAndBinding = (PathAndBinding<S, T>) typeSpecs.get(path.getLeafProperty().getType());
@@ -197,24 +203,73 @@ public class QuerydslBindings {
 	}
 
 	/**
-	 * Returns whether the given path is visible, which means either on the white list or not on the black list if no
-	 * white list configured.
+	 * @param path
+	 * @param type
+	 * @return
+	 */
+	PropertyPath getPropertyPath(String path, TypeInformation<?> type) {
+
+		if (!isPathVisible(path)) {
+			return null;
+		}
+
+		if (pathSpecs.containsKey(path)) {
+			return PropertyPath.from(toDotPath(pathSpecs.get(path).getPath()), type);
+		}
+
+		try {
+			PropertyPath propertyPath = PropertyPath.from(path, type);
+			return isPathVisible(propertyPath) ? propertyPath : null;
+		} catch (PropertyReferenceException o_O) {
+			return null;
+		}
+	}
+
+	/**
+	 * Checks if a given {@link PropertyPath} should be visible for binding values.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	private boolean isPathVisible(PropertyPath path) {
+
+		List<String> segments = Arrays.asList(path.toDotPath().split("\\."));
+
+		for (int i = 1; i <= segments.size(); i++) {
+
+			if (!isPathVisible(StringUtils.collectionToDelimitedString(segments.subList(0, i), "."))) {
+
+				// check if full path is on whitelist although the partial one is not
+				if (!whiteList.isEmpty()) {
+					return whiteList.contains(path.toDotPath());
+				}
+
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns whether the given path is visible, which means either an alias and not explicitly blacklisted, explicitly
+	 * white listed or not on the black list if no white list configured.
 	 * 
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
 	private boolean isPathVisible(String path) {
 
-		if (!whiteList.isEmpty()) {
-
-			if (whiteList.contains(path)) {
-				return true;
-			}
-
-			return false;
+		// Aliases are visible if not explicitly blacklisted
+		if (aliases.contains(path) && !blackList.contains(path)) {
+			return true;
 		}
 
-		return excludeUnlistedProperties ? false : !blackList.contains(path);
+		if (whiteList.isEmpty()) {
+			return excludeUnlistedProperties ? false : !blackList.contains(path);
+		}
+
+		return whiteList.contains(path);
 	}
 
 	/**
@@ -223,7 +278,7 @@ public class QuerydslBindings {
 	 * @param path can be {@literal null}.
 	 * @return
 	 */
-	private String toDotPath(Path<?> path) {
+	private static String toDotPath(Path<?> path) {
 
 		if (path == null) {
 			return "";
@@ -239,7 +294,7 @@ public class QuerydslBindings {
 	 *
 	 * @author Oliver Gierke
 	 */
-	public final class PathBinder<P extends Path<? extends T>, T> {
+	public class PathBinder<P extends Path<? extends T>, T> {
 
 		private final List<P> paths;
 
@@ -248,7 +303,7 @@ public class QuerydslBindings {
 		 * 
 		 * @param paths must not be {@literal null} or empty.
 		 */
-		public PathBinder(P... paths) {
+		PathBinder(P... paths) {
 
 			Assert.notEmpty(paths, "At least one path has to be provided!");
 			this.paths = Arrays.asList(paths);
@@ -278,7 +333,86 @@ public class QuerydslBindings {
 			Assert.notNull(binding, "Binding must not be null!");
 
 			for (P path : paths) {
-				QuerydslBindings.this.pathSpecs.put(toDotPath(path), new PathAndBinding<P, T>(path, binding));
+				registerBinding(new PathAndBinding<P, T>(path, binding));
+			}
+		}
+
+		protected void registerBinding(PathAndBinding<P, T> binding) {
+			QuerydslBindings.this.pathSpecs.put(toDotPath(binding.getPath()), binding);
+		}
+	}
+
+	/**
+	 * A special {@link PathBinder} that additionally registers the binding under a dedicated alias. The original path is
+	 * still registered but blacklisted so that it becomes unavailable except it's explicitly whitelisted.
+	 *
+	 * @author Oliver Gierke
+	 */
+	public class AliasingPathBinder<P extends Path<? extends T>, T> extends PathBinder<P, T> {
+
+		private final String alias;
+		private final P path;
+
+		/**
+		 * Creates a new {@link AliasingPathBinder} for the given {@link Path}.
+		 * 
+		 * @param paths must not be {@literal null}.
+		 */
+		AliasingPathBinder(P path) {
+			this(null, path);
+		}
+
+		/**
+		 * Creates a new {@link AliasingPathBinder} using the given alias and {@link Path}.
+		 * 
+		 * @param alias can be {@literal null}.
+		 * @param path must not be {@literal null}.
+		 */
+		@SuppressWarnings("unchecked")
+		private AliasingPathBinder(String alias, P path) {
+
+			super(path);
+
+			Assert.notNull(path, "Path must not be null!");
+
+			this.alias = alias;
+			this.path = path;
+		}
+
+		/**
+		 * Aliases the current binding to be available under the given path. By default, the binding path will be
+		 * blacklisted so that aliasing effectively hides the original path. If you want to keep the original path around,
+		 * include it in an explicit whitelist.
+		 * 
+		 * @param alias must not be {@literal null}.
+		 * @return will never be {@literal null}.
+		 */
+		public AliasingPathBinder<P, T> as(String alias) {
+
+			Assert.hasText(alias, "Alias must not be null or empty!");
+			return new AliasingPathBinder<P, T>(alias, path);
+		}
+
+		/**
+		 * Registers the current aliased binding to use the default binding.
+		 */
+		public void withDefaultBinding() {
+			registerBinding(new PathAndBinding<P, T>(path, null));
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.querydsl.binding.QuerydslBindings.PathBinder#registerBinding(org.springframework.data.querydsl.binding.QuerydslBindings.PathAndBinding)
+		 */
+		@Override
+		protected void registerBinding(PathAndBinding<P, T> binding) {
+
+			super.registerBinding(binding);
+
+			if (alias != null) {
+				QuerydslBindings.this.pathSpecs.put(alias, binding);
+				QuerydslBindings.this.aliases.add(alias);
+				QuerydslBindings.this.blackList.add(toDotPath(binding.getPath()));
 			}
 		}
 	}

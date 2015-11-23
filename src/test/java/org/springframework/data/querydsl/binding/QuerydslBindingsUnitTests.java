@@ -25,6 +25,7 @@ import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.querydsl.core.types.Path;
@@ -128,7 +129,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.bind(String.class).first(CONTAINS_BINDING);
 
-		assertThat(bindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(true));
+		assertThat(bindings.isPathVisible("inceptionYear", User.class), is(true));
 	}
 
 	/**
@@ -139,7 +140,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.including(QUser.user.inceptionYear);
 
-		assertThat(bindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(true));
+		assertThat(bindings.isPathVisible("inceptionYear", User.class), is(true));
 	}
 
 	/**
@@ -150,7 +151,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.including(QUser.user.inceptionYear);
 
-		assertThat(bindings.isPathVisible(PropertyPath.from("firstname", User.class)), is(false));
+		assertThat(bindings.isPathVisible("firstname", User.class), is(false));
 	}
 
 	/**
@@ -161,7 +162,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.excluding(QUser.user.inceptionYear);
 
-		assertThat(bindings.isPathVisible(PropertyPath.from("inceptionYear", User.class)), is(false));
+		assertThat(bindings.isPathVisible("inceptionYear", User.class), is(false));
 	}
 
 	/**
@@ -172,7 +173,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.excluding(QUser.user.inceptionYear);
 
-		assertThat(bindings.isPathVisible(PropertyPath.from("firstname", User.class)), is(true));
+		assertThat(bindings.isPathVisible("firstname", User.class), is(true));
 	}
 
 	/**
@@ -184,7 +185,7 @@ public class QuerydslBindingsUnitTests {
 		bindings.excluding(QUser.user.firstname);
 		bindings.including(QUser.user.firstname);
 
-		assertThat(bindings.isPathVisible(PropertyPath.from("firstname", User.class)), is(true));
+		assertThat(bindings.isPathVisible("firstname", User.class), is(true));
 	}
 
 	/**
@@ -195,7 +196,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.excluding(QUser.user.address);
 
-		assertThat(bindings.isPathVisible(PropertyPath.from("address.city", User.class)), is(false));
+		assertThat(bindings.isPathVisible("address.city", User.class), is(false));
 	}
 
 	/**
@@ -207,7 +208,7 @@ public class QuerydslBindingsUnitTests {
 		bindings.excluding(QUser.user.address);
 		bindings.including(QUser.user.address.city);
 
-		assertThat(bindings.isPathVisible(PropertyPath.from("address.city", User.class)), is(true));
+		assertThat(bindings.isPathVisible("address.city", User.class), is(true));
 	}
 
 	/**
@@ -219,29 +220,94 @@ public class QuerydslBindingsUnitTests {
 		bindings.excluding(QUser.user.address);
 		bindings.including(QUser.user.address.city);
 
-		assertThat(bindings.isPathVisible(PropertyPath.from("address.street", User.class)), is(false));
+		assertThat(bindings.isPathVisible("address.street", User.class), is(false));
 	}
 
 	/**
 	 * @see DATACMNS-669
 	 */
 	@Test
-	public void testname() {
-
-		PropertyPath firstname = PropertyPath.from("firstname", User.class);
-		PropertyPath lastname = PropertyPath.from("lastname", User.class);
-		PropertyPath city = PropertyPath.from("address.city", User.class);
-		PropertyPath street = PropertyPath.from("address.street", User.class);
+	public void whitelistsPropertiesCorrectly() {
 
 		bindings.including(QUser.user.firstname, QUser.user.address.street);
 
-		assertThat(bindings.isPathVisible(firstname), is(true));
-		assertThat(bindings.isPathVisible(street), is(true));
-		assertThat(bindings.isPathVisible(lastname), is(false));
-		assertThat(bindings.isPathVisible(city), is(false));
+		assertThat(bindings.isPathVisible("firstname", User.class), is(true));
+		assertThat(bindings.isPathVisible("address.street", User.class), is(true));
+		assertThat(bindings.isPathVisible("lastname", User.class), is(false));
+		assertThat(bindings.isPathVisible("address.city", User.class), is(false));
 	}
 
-	private static <P extends Path<S>, S> void assertAdapterWithTargetBinding(MultiValueBinding<P, S> binding,
+	/**
+	 * @see DATACMNS-787
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullAlias() {
+		bindings.bind(QUser.user.address).as(null);
+	}
+
+	/**
+	 * @see DATACMNS-787
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsEmptyAlias() {
+		bindings.bind(QUser.user.address).as("");
+	}
+
+	/**
+	 * @see DATACMNS-787
+	 */
+	@Test
+	public void aliasesBinding() {
+
+		bindings.bind(QUser.user.address.city).as("city").first(CONTAINS_BINDING);
+
+		PropertyPath path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
+
+		assertThat(path, is(notNullValue()));
+		assertThat(bindings.isPathVisible("city", User.class), is(true));
+
+		// Aliasing implicitly blacklists original path
+		assertThat(bindings.isPathVisible("address.city", User.class), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-787
+	 */
+	@Test
+	public void explicitlyIncludesOriginalBindingDespiteAlias() {
+
+		bindings.including(QUser.user.address.city);
+		bindings.bind(QUser.user.address.city).as("city").first(CONTAINS_BINDING);
+
+		PropertyPath path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
+
+		assertThat(path, is(notNullValue()));
+		assertThat(bindings.isPathVisible("city", User.class), is(true));
+
+		assertThat(bindings.isPathVisible("address.city", User.class), is(true));
+
+		PropertyPath propertyPath = bindings.getPropertyPath("address.city", ClassTypeInformation.from(User.class));
+		assertThat(propertyPath, is(notNullValue()));
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(propertyPath), CONTAINS_BINDING);
+	}
+
+	/**
+	 * @see DATACMNS-787
+	 */
+	@Test
+	public void registedAliasWithNullBinding() {
+
+		bindings.bind(QUser.user.address.city).as("city").withDefaultBinding();
+
+		PropertyPath path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
+		assertThat(path, is(notNullValue()));
+
+		MultiValueBinding<Path<? extends Object>, Object> binding = bindings.getBindingForPath(path);
+		assertThat(binding, is(nullValue()));
+	}
+
+	private static <P extends Path<? extends S>, S> void assertAdapterWithTargetBinding(MultiValueBinding<P, S> binding,
 			SingleValueBinding<? extends Path<?>, ?> expected) {
 
 		assertThat(binding, is(instanceOf(QuerydslBindings.MultiValueBindingAdapter.class)));
