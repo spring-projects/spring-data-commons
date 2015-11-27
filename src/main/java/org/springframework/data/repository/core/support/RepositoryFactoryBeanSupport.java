@@ -18,7 +18,10 @@ package org.springframework.data.repository.core.support;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
@@ -45,7 +48,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable> implements
-		InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware {
+		InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware, BeanFactoryAware {
 
 	private RepositoryFactorySupport factory;
 
@@ -56,6 +59,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private NamedQueries namedQueries;
 	private MappingContext<?, ?> mappingContext;
 	private ClassLoader classLoader;
+	private BeanFactory beanFactory;
 	private boolean lazyInit = false;
 	private EvaluationContextProvider evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
 
@@ -151,6 +155,16 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.classLoader = classLoader;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
+	 */
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getEntityInformation()
@@ -167,8 +181,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public RepositoryInformation getRepositoryInformation() {
 
-		return this.factory.getRepositoryInformation(repositoryMetadata, customImplementation == null ? null
-				: customImplementation.getClass());
+		return this.factory.getRepositoryInformation(repositoryMetadata,
+				customImplementation == null ? null : customImplementation.getClass());
 	}
 
 	/* 
@@ -227,9 +241,10 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.factory = createRepositoryFactory();
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
-		this.factory.setBeanClassLoader(classLoader);
 		this.factory.setEvaluationContextProvider(evaluationContextProvider);
 		this.factory.setRepositoryBaseClass(repositoryBaseClass);
+		this.factory.setBeanClassLoader(classLoader);
+		this.factory.setBeanFactory(beanFactory);
 
 		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
 

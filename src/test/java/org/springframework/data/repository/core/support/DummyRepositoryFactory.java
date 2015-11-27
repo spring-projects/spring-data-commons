@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import org.mockito.Mockito;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -48,9 +49,8 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 
 		this.repository = repository;
 
-		when(
-				strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
-						Mockito.any(NamedQueries.class))).thenReturn(queryOne);
+		when(strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
+				Mockito.any(ProjectionFactory.class), Mockito.any(NamedQueries.class))).thenReturn(queryOne);
 	}
 
 	/*

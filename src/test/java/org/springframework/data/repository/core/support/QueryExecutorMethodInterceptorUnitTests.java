@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -40,12 +41,9 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 @RunWith(MockitoJUnitRunner.class)
 public class QueryExecutorMethodInterceptorUnitTests {
 
-	@Mock
-	RepositoryFactorySupport factory;
-	@Mock
-	RepositoryInformation information;
-	@Mock
-	QueryLookupStrategy strategy;
+	@Mock RepositoryFactorySupport factory;
+	@Mock RepositoryInformation information;
+	@Mock QueryLookupStrategy strategy;
 
 	@Test(expected = IllegalStateException.class)
 	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() throws Exception {
@@ -63,6 +61,7 @@ public class QueryExecutorMethodInterceptorUnitTests {
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(strategy);
 
 		factory.new QueryExecutorMethodInterceptor(information, null, new Object());
-		verify(strategy, times(0)).resolveQuery(any(Method.class), any(RepositoryMetadata.class), any(NamedQueries.class));
+		verify(strategy, times(0)).resolveQuery(any(Method.class), any(RepositoryMetadata.class),
+				any(ProjectionFactory.class), any(NamedQueries.class));
 	}
 }

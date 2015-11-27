@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@ package org.springframework.data.repository.query;
 
 import static java.lang.String.*;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
@@ -38,6 +41,7 @@ public class Parameter {
 	private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
 
 	private final MethodParameter parameter;
+	private final boolean isDynamicProjectionParameter;
 
 	/**
 	 * Creates a new {@link Parameter} for the given {@link MethodParameter}.
@@ -47,7 +51,9 @@ public class Parameter {
 	protected Parameter(MethodParameter parameter) {
 
 		Assert.notNull(parameter);
+
 		this.parameter = parameter;
+		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter);
 	}
 
 	/**
@@ -57,7 +63,7 @@ public class Parameter {
 	 * @see #TYPES
 	 */
 	public boolean isSpecialParameter() {
-		return TYPES.contains(parameter.getParameterType());
+		return isDynamicProjectionParameter || TYPES.contains(parameter.getParameterType());
 	}
 
 	/**
@@ -67,6 +73,15 @@ public class Parameter {
 	 */
 	public boolean isBindable() {
 		return !isSpecialParameter();
+	}
+
+	/**
+	 * Returns whether the current {@link Parameter} is the one used for dynamic projections.
+	 * 
+	 * @return
+	 */
+	public boolean isDynamicProjectionParameter() {
+		return isDynamicProjectionParameter;
 	}
 
 	/**
@@ -156,5 +171,32 @@ public class Parameter {
 	 */
 	boolean isSort() {
 		return Sort.class.isAssignableFrom(getType());
+	}
+
+	/**
+	 * Returns whether the given {@link MethodParameter} is a dynamic projection parameter, which means it carries a
+	 * dynamic type parameter which is identical to the type parameter of the actually returned type.
+	 * <p>
+	 * <code>
+	 * <T> Collection<T> findBy…(…, Class<T> type);
+	 * </code>
+	 * 
+	 * @param parameter must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean isDynamicProjectionParameter(MethodParameter parameter) {
+
+		Method method = parameter.getMethod();
+
+		ClassTypeInformation<?> ownerType = ClassTypeInformation.from(parameter.getDeclaringClass());
+		TypeInformation<?> parameterTypes = ownerType.getParameterTypes(method).get(parameter.getParameterIndex());
+		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+
+		if (!parameterTypes.getType().equals(Class.class)) {
+			return false;
+		}
+
+		TypeInformation<?> bound = parameterTypes.getTypeArguments().get(0);
+		return bound.equals(returnType.getActualType());
 	}
 }

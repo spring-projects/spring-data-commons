@@ -37,19 +37,21 @@ import org.springframework.util.Assert;
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Iterable<T> {
 
-	@SuppressWarnings("unchecked")//
+	@SuppressWarnings("unchecked") //
 	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
 	private static final String PARAM_ON_SPECIAL = format("You must not user @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
-	private static final String ALL_OR_NOTHING = String.format("Either use @%s "
-			+ "on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
+	private static final String ALL_OR_NOTHING = String.format(
+			"Either use @%s on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
 			Pageable.class.getSimpleName(), Sort.class.getSimpleName());
 
 	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
 	private final int pageableIndex;
 	private final int sortIndex;
 	private final List<T> parameters;
+
+	private int dynamicProjectionIndex;
 
 	/**
 	 * Creates a new instance of {@link Parameters}.
@@ -61,6 +63,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		Assert.notNull(method);
 
 		this.parameters = new ArrayList<T>();
+		this.dynamicProjectionIndex = -1;
 
 		List<Class<?>> types = Arrays.asList(method.getParameterTypes());
 
@@ -73,6 +76,10 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 			if (parameter.isSpecialParameter() && parameter.isNamedParameter()) {
 				throw new IllegalArgumentException(PARAM_ON_SPECIAL);
+			}
+
+			if (parameter.isDynamicProjectionParameter()) {
+				this.dynamicProjectionIndex = parameter.getIndex();
 			}
 
 			parameters.add(parameter);
@@ -95,6 +102,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		int pageableIndexTemp = -1;
 		int sortIndexTemp = -1;
+		int dynamicProjectionTemp = -1;
 
 		for (int i = 0; i < originals.size(); i++) {
 
@@ -103,10 +111,12 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 			pageableIndexTemp = original.isPageable() ? i : -1;
 			sortIndexTemp = original.isSort() ? i : -1;
+			dynamicProjectionTemp = original.isDynamicProjectionParameter() ? i : -1;
 		}
 
 		this.pageableIndex = pageableIndexTemp;
 		this.sortIndex = sortIndexTemp;
+		this.dynamicProjectionIndex = dynamicProjectionTemp;
 	}
 
 	/**
@@ -153,6 +163,25 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 */
 	public boolean hasSortParameter() {
 		return sortIndex != -1;
+	}
+
+	/**
+	 * Returns the index of the parameter that represents the dynamic projection type. Will return {@literal -1} if no
+	 * such parameter exists.
+	 * 
+	 * @return
+	 */
+	public int getDynamicProjectionIndex() {
+		return dynamicProjectionIndex;
+	}
+
+	/**
+	 * Returns whether a parameter expressing a dynamic projection exists.
+	 * 
+	 * @return
+	 */
+	public boolean hasDynamicProjection() {
+		return dynamicProjectionIndex != -1;
 	}
 
 	/**

@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
@@ -44,6 +45,7 @@ public class QueryMethod {
 	private final Method method;
 	private final Class<?> unwrappedReturnType;
 	private final Parameters<?, ?> parameters;
+	private final ResultProcessor resultProcessor;
 
 	private Class<?> domainClass;
 
@@ -51,13 +53,15 @@ public class QueryMethod {
 	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct query to use for following
 	 * invocations of the method given.
 	 * 
-	 * @param method must not be {@literal null}
-	 * @param metadata must not be {@literal null}
+	 * @param method must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
+	 * @param factory must not be {@literal null}.
 	 */
-	public QueryMethod(Method method, RepositoryMetadata metadata) {
+	public QueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory) {
 
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notNull(metadata, "Repository metadata must not be null!");
+		Assert.notNull(factory, "ProjectionFactory must not be null!");
 
 		for (Class<?> type : Parameters.TYPES) {
 			if (getNumberOfOccurences(method, type) > 1) {
@@ -89,6 +93,8 @@ public class QueryMethod {
 			Assert.isTrue(this.parameters.hasPageableParameter(),
 					String.format("Paging query needs to have a Pageable parameter! Offending method %s", method.toString()));
 		}
+
+		this.resultProcessor = new ResultProcessor(this, factory);
 	}
 
 	/**
@@ -226,6 +232,15 @@ public class QueryMethod {
 	 */
 	public Parameters<?, ?> getParameters() {
 		return parameters;
+	}
+
+	/**
+	 * Returns the {@link ResultProcessor} to be usedwith the query method.
+	 * 
+	 * @return the resultFactory
+	 */
+	public ResultProcessor getResultProcessor() {
+		return resultProcessor;
 	}
 
 	/*

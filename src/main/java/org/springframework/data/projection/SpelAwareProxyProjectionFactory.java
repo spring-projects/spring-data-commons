@@ -75,23 +75,34 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 			typeCache.put(projectionType, callback.hasFoundAnnotation());
 		}
 
-		return typeCache.get(projectionType) ? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory,
-				parser, projectionType) : interceptor;
+		return typeCache.get(projectionType)
+				? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory, parser, projectionType) : interceptor;
 	}
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.ProxyProjectionFactory#isProperty(java.beans.PropertyDescriptor)
+	 * @see org.springframework.data.projection.ProxyProjectionFactory#getProjectionInformation(java.lang.Class)
 	 */
 	@Override
-	protected boolean isInputProperty(PropertyDescriptor descriptor) {
+	public ProjectionInformation getProjectionInformation(Class<?> projectionType) {
 
-		Method readMethod = descriptor.getReadMethod();
+		return new DefaultProjectionInformation(projectionType) {
 
-		if (readMethod == null) {
-			return false;
-		}
+			/* 
+			 * (non-Javadoc)
+			 * @see org.springframework.data.projection.DefaultProjectionInformation#isInputProperty(java.beans.PropertyDescriptor)
+			 */
+			@Override
+			protected boolean isInputProperty(PropertyDescriptor descriptor) {
 
-		return AnnotationUtils.findAnnotation(readMethod, Value.class) == null;
+				Method readMethod = descriptor.getReadMethod();
+
+				if (readMethod == null) {
+					return false;
+				}
+
+				return AnnotationUtils.findAnnotation(readMethod, Value.class) == null;
+			}
+		};
 	}
 }

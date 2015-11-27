@@ -31,6 +31,8 @@ import org.springframework.core.SpringVersion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
@@ -48,6 +50,7 @@ public class QueryMethodUnitTests {
 	private static final Version FOUR_DOT_TWO = new Version(4, 2);
 
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(SampleRepository.class);
+	ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 
 	/**
 	 * @see DATAJPA-59
@@ -56,7 +59,7 @@ public class QueryMethodUnitTests {
 	public void rejectsPagingMethodWithInvalidReturnType() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("pagingMethodWithInvalidReturnType", Pageable.class);
-		new QueryMethod(method, metadata);
+		new QueryMethod(method, metadata, factory);
 	}
 
 	/**
@@ -65,7 +68,7 @@ public class QueryMethodUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsPagingMethodWithoutPageable() throws Exception {
 		Method method = SampleRepository.class.getMethod("pagingMethodWithoutPageable");
-		new QueryMethod(method, metadata);
+		new QueryMethod(method, metadata, factory);
 	}
 
 	/**
@@ -74,7 +77,7 @@ public class QueryMethodUnitTests {
 	@Test
 	public void setsUpSimpleQueryMethodCorrectly() throws Exception {
 		Method method = SampleRepository.class.getMethod("findByUsername", String.class);
-		new QueryMethod(method, metadata);
+		new QueryMethod(method, metadata, factory);
 	}
 
 	/**
@@ -83,7 +86,7 @@ public class QueryMethodUnitTests {
 	@Test
 	public void considersIterableMethodForCollectionQuery() throws Exception {
 		Method method = SampleRepository.class.getMethod("sampleMethod");
-		QueryMethod queryMethod = new QueryMethod(method, metadata);
+		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
 		assertThat(queryMethod.isCollectionQuery(), is(true));
 	}
 
@@ -93,7 +96,7 @@ public class QueryMethodUnitTests {
 	@Test
 	public void doesNotConsiderPageMethodCollectionQuery() throws Exception {
 		Method method = SampleRepository.class.getMethod("anotherSampleMethod", Pageable.class);
-		QueryMethod queryMethod = new QueryMethod(method, metadata);
+		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
 		assertThat(queryMethod.isPageQuery(), is(true));
 		assertThat(queryMethod.isCollectionQuery(), is(false));
 	}
@@ -105,7 +108,7 @@ public class QueryMethodUnitTests {
 	public void detectsAnEntityBeingReturned() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("returnsEntitySubclass");
-		QueryMethod queryMethod = new QueryMethod(method, metadata);
+		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
 
 		assertThat(queryMethod.isQueryForEntity(), is(true));
 	}
@@ -117,7 +120,7 @@ public class QueryMethodUnitTests {
 	public void detectsNonEntityBeingReturned() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("returnsProjection");
-		QueryMethod queryMethod = new QueryMethod(method, metadata);
+		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
 
 		assertThat(queryMethod.isQueryForEntity(), is(false));
 	}
@@ -130,7 +133,7 @@ public class QueryMethodUnitTests {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("sliceOfUsers");
-		QueryMethod queryMethod = new QueryMethod(method, repositoryMetadata);
+		QueryMethod queryMethod = new QueryMethod(method, repositoryMetadata, factory);
 
 		assertThat(queryMethod.isSliceQuery(), is(true));
 		assertThat(queryMethod.isCollectionQuery(), is(false));
@@ -146,7 +149,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("arrayOfUsers");
 
-		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(true));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
 	}
 
 	/**
@@ -158,7 +161,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("streaming");
 
-		assertThat(new QueryMethod(method, repositoryMetadata).isStreamQuery(), is(true));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isStreamQuery(), is(true));
 	}
 
 	/**
@@ -170,7 +173,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("streaming", Pageable.class);
 
-		assertThat(new QueryMethod(method, repositoryMetadata).isStreamQuery(), is(true));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isStreamQuery(), is(true));
 	}
 
 	/**
@@ -182,7 +185,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsCompletableFutureForSingleEntity");
 
-		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(false));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(false));
 	}
 
 	/**
@@ -196,7 +199,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsCompletableFutureForEntityCollection");
 
-		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(true));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
 	}
 
 	/**
@@ -208,7 +211,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsFutureForSingleEntity");
 
-		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(false));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(false));
 	}
 
 	/**
@@ -220,7 +223,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsFutureForEntityCollection");
 
-		assertThat(new QueryMethod(method, repositoryMetadata).isCollectionQuery(), is(true));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
 	}
 
 	interface SampleRepository extends Repository<User, Serializable> {
