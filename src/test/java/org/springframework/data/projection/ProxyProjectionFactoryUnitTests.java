@@ -18,6 +18,7 @@ package org.springframework.data.projection;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
@@ -155,10 +156,10 @@ public class ProxyProjectionFactoryUnitTests {
 	@Test
 	public void returnsAllPropertiesAsInputProperties() {
 
-		List<String> result = factory.getInputProperties(CustomerExcerpt.class);
+		ProjectionInformation projectionInformation = factory.getProjectionInformation(CustomerExcerpt.class);
+		List<PropertyDescriptor> result = projectionInformation.getInputProperties();
 
 		assertThat(result, hasSize(5));
-		assertThat(result, hasItems("firstname", "address", "shippingAddresses", "picture"));
 	}
 
 	/**
@@ -232,6 +233,18 @@ public class ProxyProjectionFactoryUnitTests {
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 
 		assertThat(excerpt.getId(), is(customer.id.toString()));
+	}
+
+	/**
+	 * @see DATACMNS-89
+	 */
+	@Test
+	public void exposesProjectionInformationCorrectly() {
+
+		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
+
+		assertThat(information.getType(), is(typeCompatibleWith(CustomerExcerpt.class)));
+		assertThat(information.isClosed(), is(true));
 	}
 
 	static class Customer {

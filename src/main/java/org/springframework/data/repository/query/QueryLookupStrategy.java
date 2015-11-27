@@ -18,6 +18,7 @@ package org.springframework.data.repository.query;
 import java.lang.reflect.Method;
 import java.util.Locale;
 
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.StringUtils;
@@ -52,10 +53,12 @@ public interface QueryLookupStrategy {
 	/**
 	 * Resolves a {@link RepositoryQuery} from the given {@link QueryMethod} that can be executed afterwards.
 	 * 
-	 * @param method
-	 * @param metadata
-	 * @param namedQueries
+	 * @param method will never be {@literal null}.
+	 * @param metadata will never be {@literal null}.
+	 * @param factory will never be {@literal null}.
+	 * @param namedQueries will never be {@literal null}.
 	 * @return
 	 */
-	RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, NamedQueries namedQueries);
+	RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
+			NamedQueries namedQueries);
 }

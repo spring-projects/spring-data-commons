@@ -46,6 +46,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
@@ -94,7 +95,8 @@ public class RepositoryFactorySupportUnitTests {
 		Mockito.reset(factory.strategy);
 
 		when(factory.strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
-				Mockito.any(NamedQueries.class))).thenReturn(factory.queryOne, factory.queryTwo);
+				Mockito.any(ProjectionFactory.class), Mockito.any(NamedQueries.class))).thenReturn(factory.queryOne,
+						factory.queryTwo);
 
 		factory.addQueryCreationListener(listener);
 		factory.addQueryCreationListener(otherListener);

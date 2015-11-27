@@ -98,6 +98,15 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	}
 
 	/**
+	 * Returns the dynamic projection type if available, {@literal null} otherwise.
+	 * 
+	 * @return
+	 */
+	public Class<?> getDynamicProjection() {
+		return parameters.hasDynamicProjection() ? (Class<?>) values.get(parameters.getDynamicProjectionIndex()) : null;
+	}
+
+	/**
 	 * Returns the value with the given index.
 	 * 
 	 * @param index

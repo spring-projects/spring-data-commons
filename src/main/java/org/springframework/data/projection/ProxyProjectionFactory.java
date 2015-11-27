@@ -26,7 +26,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
@@ -42,20 +42,30 @@ import org.springframework.util.ClassUtils;
  * @see SpelAwareProxyProjectionFactory
  * @since 1.10
  */
-class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware {
+class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, BeanClassLoaderAware {
 
 	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
 			ProxyProjectionFactory.class.getClassLoader());
 
-	private ResourceLoader resourceLoader;
+	private ClassLoader classLoader;
+
+	/**
+	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
+	 * @deprecated rather set the {@link ClassLoader} directly via {@link #setBeanClassLoader(ClassLoader)}.
+	 */
+	@Override
+	@Deprecated
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		this.classLoader = resourceLoader.getClassLoader();
+	}
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
 	 */
 	@Override
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.resourceLoader = resourceLoader;
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader;
 	}
 
 	/* 
@@ -85,8 +95,7 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware {
 		factory.addAdvice(new TargetAwareMethodInterceptor(source.getClass()));
 		factory.addAdvice(getMethodInterceptor(source, projectionType));
 
-		return (T) factory
-				.getProxy(resourceLoader == null ? ClassUtils.getDefaultClassLoader() : resourceLoader.getClassLoader());
+		return (T) factory.getProxy(classLoader == null ? ClassUtils.getDefaultClassLoader() : classLoader);
 	}
 
 	/* 
@@ -110,16 +119,22 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware {
 
 		Assert.notNull(projectionType, "Projection type must not be null!");
 
-		PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(projectionType);
-		List<String> result = new ArrayList<String>(descriptors.length);
+		List<String> result = new ArrayList<String>();
 
-		for (PropertyDescriptor descriptor : descriptors) {
-			if (isInputProperty(descriptor)) {
-				result.add(descriptor.getName());
-			}
+		for (PropertyDescriptor descriptor : getProjectionInformation(projectionType).getInputProperties()) {
+			result.add(descriptor.getName());
 		}
 
 		return result;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.projection.ProjectionFactory#getProjectionInformation(java.lang.Class)
+	 */
+	@Override
+	public ProjectionInformation getProjectionInformation(Class<?> projectionType) {
+		return new DefaultProjectionInformation(projectionType);
 	}
 
 	/**
@@ -132,11 +147,12 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware {
 	@SuppressWarnings("unchecked")
 	private MethodInterceptor getMethodInterceptor(Object source, Class<?> projectionType) {
 
-		MethodInterceptor propertyInvocationInterceptor = source instanceof Map ? new MapAccessingMethodInterceptor(
-				(Map<String, Object>) source) : new PropertyAccessingMethodInterceptor(source);
+		MethodInterceptor propertyInvocationInterceptor = source instanceof Map
+				? new MapAccessingMethodInterceptor((Map<String, Object>) source)
+				: new PropertyAccessingMethodInterceptor(source);
 
-		return new ProjectingMethodInterceptor(this, postProcessAccessorInterceptor(propertyInvocationInterceptor, source,
-				projectionType));
+		return new ProjectingMethodInterceptor(this,
+				postProcessAccessorInterceptor(propertyInvocationInterceptor, source, projectionType));
 	}
 
 	/**
@@ -151,18 +167,6 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware {
 	protected MethodInterceptor postProcessAccessorInterceptor(MethodInterceptor interceptor, Object source,
 			Class<?> projectionType) {
 		return interceptor;
-	}
-
-	/**
-	 * Returns whether the given {@link PropertyDescriptor} describes an input property for the projection, i.e. a
-	 * property that needs to be present on the source to be able to create reasonable projections for the type the
-	 * descriptor was looked up on.
-	 * 
-	 * @param descriptor will never be {@literal null}.
-	 * @return
-	 */
-	protected boolean isInputProperty(PropertyDescriptor descriptor) {
-		return true;
 	}
 
 	/**

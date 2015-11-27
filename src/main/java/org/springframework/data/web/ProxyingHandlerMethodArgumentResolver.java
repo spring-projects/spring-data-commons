@@ -17,6 +17,7 @@ package org.springframework.data.web;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.context.ResourceLoaderAware;
@@ -37,7 +38,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * @since 1.10
  */
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
-		implements BeanFactoryAware, ResourceLoaderAware {
+		implements BeanFactoryAware, ResourceLoaderAware, BeanClassLoaderAware {
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
 	private final ConversionService conversionService;
@@ -64,13 +65,23 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		this.proxyFactory.setBeanFactory(beanFactory);
 	}
 
-	/* 
-	 * (non-Javadoc)
+	/**
 	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
+	 * @deprecated rather set the {@link ClassLoader} via {@link #setBeanClassLoader(ClassLoader)}.
 	 */
 	@Override
+	@Deprecated
 	public void setResourceLoader(ResourceLoader resourceLoader) {
 		this.proxyFactory.setResourceLoader(resourceLoader);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.proxyFactory.setBeanClassLoader(classLoader);
 	}
 
 	/* 

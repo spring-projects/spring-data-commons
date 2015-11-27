@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -151,7 +151,20 @@ public class ParametersUnitTests {
 		assertThat(parameter.isExplicitlyNamed(), is(false));
 	}
 
-	private Parameters<?, ?> getParametersFor(String methodName, Class<?>... parameterTypes)
+	/**
+	 * @see DATACMNS-89
+	 */
+	@Test
+	public void detectsDynamicProjectionParameter() throws Exception {
+
+		Parameters<?, Parameter> parameters = getParametersFor("dynamicBind", Class.class, Class.class, Class.class);
+
+		assertThat(parameters.getParameter(0).isDynamicProjectionParameter(), is(true));
+		assertThat(parameters.getParameter(1).isDynamicProjectionParameter(), is(false));
+		assertThat(parameters.getParameter(2).isDynamicProjectionParameter(), is(false));
+	}
+
+	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
 		Method method = SampleDao.class.getMethod(methodName, parameterTypes);
@@ -181,5 +194,6 @@ public class ParametersUnitTests {
 
 		User emptyParameters();
 
+		<T> T dynamicBind(Class<T> type, Class<?> one, Class<Object> two);
 	}
 }
