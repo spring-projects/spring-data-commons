@@ -34,13 +34,16 @@ public class QueryMethodParameterConversionException extends RuntimeException {
 	private final MethodParameter parameter;
 
 	/**
+	 * Creates a new {@link QueryMethodParameterConversionException} for the given source object, {@link MethodParameter}
+	 * and root cause {@link ConversionException}.
+	 * 
 	 * @param source can be {@literal null}.
 	 * @param parameter the {@link MethodParameter} the value should've been converted for, must not be {@literal null}..
 	 * @param cause the original {@link ConversionException}, must not be {@literal null}.
 	 */
 	public QueryMethodParameterConversionException(Object source, MethodParameter parameter, ConversionException cause) {
 
-		super("message", cause);
+		super(String.format("Failed to convert %s into %s!", source, parameter.getParameterType().getName()), cause);
 
 		Assert.notNull(parameter, "Method parameter must not be null!");
 		Assert.notNull(cause, "ConversionException must not be null!");
