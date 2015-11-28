@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
@@ -46,6 +47,7 @@ import org.springframework.util.StringUtils;
 class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	private static final AnnotationAttribute PARAM_ANNOTATION = new AnnotationAttribute(Param.class);
+	private static final String NAME_NOT_FOUND = "Unable to detect parameter names for query method %s! Use @Param or compile with -parameters on JDK 8.";
 
 	private final Object repository;
 	private final CrudMethods methods;
@@ -60,7 +62,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @param metadata must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
 	 */
-	public ReflectionRepositoryInvoker(Object repository, RepositoryMetadata metadata, ConversionService conversionService) {
+	public ReflectionRepositoryInvoker(Object repository, RepositoryMetadata metadata,
+			ConversionService conversionService) {
 
 		Assert.notNull(repository, "Repository must not be null!");
 		Assert.notNull(metadata, "RepositoryMetadata must not be null!");
@@ -229,8 +232,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 				String parameterName = param.getParameterName();
 
 				if (!StringUtils.hasText(parameterName)) {
-					throw new IllegalArgumentException("No @Param annotation found on query method " + method.getName()
-							+ " for parameter " + parameterName);
+					throw new IllegalArgumentException(String.format(NAME_NOT_FOUND, ClassUtils.getQualifiedMethodName(method)));
 				}
 
 				Object value = unwrapSingleElement(rawParameters.get(parameterName));
