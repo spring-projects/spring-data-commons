@@ -45,7 +45,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		Assert.notNull(type, "Projection type must not be null!");
 
 		this.projectionType = type;
-		this.properties = Arrays.asList(BeanUtils.getPropertyDescriptors(projectionType));
+		this.properties = collectDescriptors(type);
 	}
 
 	/* 
@@ -93,5 +93,23 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 */
 	protected boolean isInputProperty(PropertyDescriptor descriptor) {
 		return true;
+	}
+
+	/**
+	 * Collects {@link PropertyDescriptor}s for all properties exposed by the given type and all its super interfaces.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static List<PropertyDescriptor> collectDescriptors(Class<?> type) {
+
+		List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
+		result.addAll(Arrays.asList(BeanUtils.getPropertyDescriptors(type)));
+
+		for (Class<?> interfaze : type.getInterfaces()) {
+			result.addAll(collectDescriptors(interfaze));
+		}
+
+		return result;
 	}
 }
