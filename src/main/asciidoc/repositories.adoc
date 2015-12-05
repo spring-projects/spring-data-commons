@@ -749,7 +749,7 @@ The default `Pageable` handed into the method is equivalent to a `new PageReques
 
 [[core.web.pageables]]
 ==== Hypermedia support for Pageables
-Spring HATEOAS ships with a representation model class `PagedResources` that allows enrichting the content of a `Page` instance with the necessary `Page` metadata as well as links to let the clients easily navigate the pages. The conversion of a Page to a `PagedResources` is done by an implementation of the Spring HATEOAS `ResourceAssembler` interface, the `PagedResourcesAssembler`.
+Spring HATEOAS ships with a representation model class `PagedResources` that allows enriching the content of a `Page` instance with the necessary `Page` metadata as well as links to let the clients easily navigate the pages. The conversion of a Page to a `PagedResources` is done by an implementation of the Spring HATEOAS `ResourceAssembler` interface, the `PagedResourcesAssembler`.
 
 .Using a PagedResourcesAssembler as controller method argument
 ====
@@ -874,7 +874,7 @@ interface UserRepository extends CrudRepository<User, String>,
 <1> `QueryDslPredicateExecutor` provides access to specific finder methods for `Predicate`.
 <2> `QuerydslBinderCustomizer` defined on the repository interface will be automatically picked up and shortcuts `@QuerydslPredicate(bindings=...)`.
 <3> Define the binding for the `username` property to be a simple contains binding.
-<4> Define the default binding for `String` properies to be a case insensitive contains match.
+<4> Define the default binding for `String` properties to be a case insensitive contains match.
 <5> Exclude the _password_ property from `Predicate` resolution.
 ====
 

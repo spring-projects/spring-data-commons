@@ -22,7 +22,7 @@ Due to different inception dates of individual Spring Data modules, most of them
 ====
 
 [[dependencies.train-names]]
-The current release train version is `{releasetrainVersion}. The train names are ascending alphabetically and currently available ones are listed https://github.com/spring-projects/spring-data-commons/wiki/Release-planning[here]. The version name follows the following pattern: `${name}-${release}` where release can be one of the following:
+The current release train version is `{releasetrainVersion}`. The train names are ascending alphabetically and currently available ones are listed https://github.com/spring-projects/spring-data-commons/wiki/Release-planning[here]. The version name follows the following pattern: `${name}-${release}` where release can be one of the following:
 
 * `BUILD-SNAPSHOT` - current snapshots
 * `M1`, `M2` etc. - milestones
