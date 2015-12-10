@@ -94,8 +94,8 @@ public class Repositories implements Iterable<Class<?>> {
 
 		RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.getBean(name,
 				RepositoryFactoryInformation.class);
-		Class<?> domainType = ClassUtils.getUserClass(repositoryFactoryInformation.getRepositoryInformation()
-				.getDomainType());
+		Class<?> domainType = ClassUtils
+				.getUserClass(repositoryFactoryInformation.getRepositoryInformation().getDomainType());
 
 		RepositoryInformation information = repositoryFactoryInformation.getRepositoryInformation();
 		Set<Class<?>> alternativeDomainTypes = information.getAlternativeDomainTypes();
@@ -191,6 +191,28 @@ public class Repositories implements Iterable<Class<?>> {
 
 		RepositoryFactoryInformation<Object, Serializable> information = getRepositoryFactoryInfoFor(domainClass);
 		return information == EMPTY_REPOSITORY_FACTORY_INFO ? null : information.getRepositoryInformation();
+	}
+
+	/**
+	 * Returns the {@link RepositoryInformation} for the given repository interface.
+	 * 
+	 * @param repositoryInterface must not be {@literal null}.
+	 * @return the {@link RepositoryInformation} for the given repository interface or {@literal null} there's no
+	 *         repository instance registered for the given interface.
+	 * @since 1.12
+	 */
+	public RepositoryInformation getRepositoryInformation(Class<?> repositoryInterface) {
+
+		for (RepositoryFactoryInformation<Object, Serializable> factoryInformation : repositoryFactoryInfos.values()) {
+
+			RepositoryInformation information = factoryInformation.getRepositoryInformation();
+
+			if (information.getRepositoryInterface().equals(repositoryInterface)) {
+				return information;
+			}
+		}
+
+		return null;
 	}
 
 	/**

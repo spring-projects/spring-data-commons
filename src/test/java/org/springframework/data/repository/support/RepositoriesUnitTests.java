@@ -17,7 +17,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -137,6 +137,18 @@ public class RepositoriesUnitTests {
 		assertThat(repositories.getRepositoryFor(SampleEntity.class), is(notNullValue()));
 
 		context.close();
+	}
+
+	/**
+	 * @see DATACMNS-794
+	 */
+	@Test
+	public void exposesRepositoryFactoryInformationForRepository() {
+
+		RepositoryInformation information = new Repositories(context).getRepositoryInformation(PersonRepository.class);
+
+		assertThat(information, is(notNullValue()));
+		assertThat(information.getRepositoryInterface(), is(typeCompatibleWith(PersonRepository.class)));
 	}
 
 	class Person {}
