@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -33,6 +35,8 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.PassivationCapable;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +53,7 @@ import org.springframework.util.StringUtils;
  * @author Dirk Mahler
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Goncalo Marques
  */
 public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapable {
 
@@ -60,6 +65,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	private final CustomRepositoryImplementationDetector detector;
 	private final BeanManager beanManager;
 	private final String passivationId;
+	private final BeanManagerList beanManagers;
 
 	private transient T repoInstance;
 
@@ -96,6 +102,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		this.beanManager = beanManager;
 		this.detector = detector;
 		this.passivationId = createPassivationId(qualifiers, repositoryType);
+		this.beanManagers = new BeanManagerList(beanManager);
 	}
 
 	/**
@@ -194,7 +201,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	@SuppressWarnings("unchecked")
 	protected CdiRepositoryConfiguration lookupConfiguration(BeanManager beanManager, Set<Annotation> qualifiers) {
 
-		Set<Bean<?>> beans = beanManager.getBeans(CdiRepositoryConfiguration.class, getQualifiersArray(qualifiers));
+		Set<Bean<?>> beans = CDIBeanResolver.resolve(beanManagers, CdiRepositoryConfiguration.class, getQualifiersArray(qualifiers));
 
 		if (beans.isEmpty()) {
 			return DEFAULT_CONFIGURATION;
@@ -227,7 +234,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 			return null;
 		}
 
-		Set<Bean<?>> beans = beanManager.getBeans(customImplementationClass, getQualifiersArray(qualifiers));
+		Set<Bean<?>> beans = CDIBeanResolver.resolve(beanManagers, customImplementationClass, getQualifiersArray(qualifiers));
 		return beans.isEmpty() ? null : beans.iterator().next();
 	}
 
@@ -408,4 +415,118 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 			return DefaultRepositoryConfiguration.DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX;
 		}
 	}
+	
+	/**
+	 * The bean resolver that will be used to resolve CDI managed beans across the available bean managers
+	 * 
+	 * @author Goncalo Marques
+	 */
+	static class CDIBeanResolver{
+		
+		/**
+		 * Tries to resolve a CDI managed bean using a provided {@link Iterable} of Bean Managers.
+		 * 
+		 * @param beanManagers
+		 * @param beanType
+		 * @param qualifiers
+		 * @return the resolved bean set or null if no beans are found
+		 */
+		static Set<Bean<?>> resolve(Iterable<BeanManager> beanManagers, Class<?> beanType, Annotation[] qualifiers){
+			Set<Bean<?>> beans = Collections.emptySet();
+			Iterator<BeanManager> it = beanManagers.iterator();
+			while(it.hasNext()){
+				beans = it.next().getBeans(beanType, qualifiers);
+				if(!beans.isEmpty()){
+					break;
+				}
+			}
+			return beans; 
+		}
+		
+	}
+	
+	/**
+	 * Represents an ordered list of available bean managers
+	 * 
+	 * @author Goncalo Marques
+	 */
+	static class BeanManagerList implements Iterable<BeanManager>{
+		
+		private final BeanManager [] providedBeanManagers;
+		
+		/**
+		 * Creates a new {@link BeanManagerList} based on the provided Bean Managers.
+		 * 
+		 * @param providedBeanManagers must not be {@literal null} or {@literal empty}.
+		 */
+		BeanManagerList(BeanManager... providedBeanManagers){
+			Assert.notNull(providedBeanManagers);
+			Assert.notEmpty(providedBeanManagers);
+			this.providedBeanManagers = providedBeanManagers;
+		}
+		
+		/**
+		 * Returns an iterator over the {@link BeanManagerList} available bean managers.
+		 * 
+		 * @return the Bean Manager iterator
+		 */
+		@Override
+		public Iterator<BeanManager> iterator() {
+			return new BeanManagerIterator();
+		}
+		
+		/**
+		 * An {@link Iterator} which will iterate over the provided bean managers.
+		 * Additionally it will also try to return the Bean Manager fetched from JNDI 
+		 * during the last step of the iteration.
+		 * 
+		 * @author Goncalo Marques
+		 */
+		class BeanManagerIterator implements Iterator<BeanManager>{
+			
+			private static final String BEAN_MANAGER_JNDI = "java:comp/BeanManager";
+			private int currentIndex = 0;
+			private BeanManager jndiBeanManager;
+
+			/**
+			 * Creates a new {@link BeanManagerIterator}.
+			 */
+			BeanManagerIterator(){
+				try {
+					jndiBeanManager = (BeanManager) new InitialContext().lookup(BEAN_MANAGER_JNDI);
+				} catch (NamingException e) {
+					LOGGER.warn("Could not fetch Bean Manager from JNDI. Fallback strategy will not be used.", e);
+				}
+			}
+			
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.Iterator#hasNext()
+			 */
+			@Override
+			public boolean hasNext() {
+				return currentIndex < providedBeanManagers.length || jndiBeanManager != null;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.Iterator#next()
+			 */
+			@Override
+			public BeanManager next() {
+				if(currentIndex < providedBeanManagers.length){
+					return providedBeanManagers[currentIndex++];
+				}
+				if(jndiBeanManager == null){
+					throw new NoSuchElementException();
+				}
+				BeanManager result = jndiBeanManager;
+				jndiBeanManager = null;
+				return result;
+			}
+			
+		}
+		
+	}
+	
 }
