@@ -65,6 +65,17 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		assertThat(properties, hasItem("firstname"));
 	}
 
+	/**
+	 * @see DATACMNS-89
+	 */
+	@Test
+	public void considersProjectionUsingAtValueNotClosed() {
+
+		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
+
+		assertThat(information.isClosed(), is(false));
+	}
+
 	static class Customer {
 
 		public String firstname, lastname;

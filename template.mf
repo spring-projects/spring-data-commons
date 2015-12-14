@@ -4,6 +4,8 @@ Bundle-Vendor: Pivotal Software, Inc.
 Bundle-Version: ${project.version}
 Bundle-ManifestVersion: 2
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Excluded-Imports:
+ lombok.*
 Import-Package:
  sun.reflect;version="0";resolution:=optional
 Import-Template:

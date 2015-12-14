@@ -49,6 +49,17 @@ public interface ProjectionFactory {
 	 * 
 	 * @param projectionType must not be {@literal null}.
 	 * @return
+	 * @deprecated use {@link #getProjectionInformation(Class)}
 	 */
+	@Deprecated
 	List<String> getInputProperties(Class<?> projectionType);
+
+	/**
+	 * Returns the {@link ProjectionInformation} for the given projection type.
+	 * 
+	 * @param projectionType must not be {@literal null}.
+	 * @return
+	 * @since 1.12
+	 */
+	ProjectionInformation getProjectionInformation(Class<?> projectionType);
 }

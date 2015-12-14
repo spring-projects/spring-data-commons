@@ -43,6 +43,14 @@ public interface ParameterAccessor extends Iterable<Object> {
 	Sort getSort();
 
 	/**
+	 * Returns the dynamic projection type to be used when executing the query or {@literal null} if none is defined.
+	 * 
+	 * @return
+	 * @since 1.12
+	 */
+	Class<?> getDynamicProjection();
+
+	/**
 	 * Returns the bindable value with the given index. Bindable means, that {@link Pageable} and {@link Sort} values are
 	 * skipped without noticed in the index. For a method signature taking {@link String}, {@link Pageable} ,
 	 * {@link String}, {@code #getBindableParameter(1)} would return the second {@link String} value.
