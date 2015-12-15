@@ -127,7 +127,7 @@ public class ResultProcessor {
 
 		Assert.notNull(preparingConverter, "Preparing converter must not be null!");
 
-		ChainingConverter converter = ChainingConverter.of(preparingConverter).and(this.converter);
+		ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
 
 		if (source instanceof Page && method.isPageQuery()) {
 			return (T) ((Page<?>) source).map(converter);
@@ -151,6 +151,7 @@ public class ResultProcessor {
 	@RequiredArgsConstructor(staticName = "of")
 	private static class ChainingConverter implements Converter<Object, Object> {
 
+		private final @NonNull Class<?> targetType;
 		private final @NonNull Converter<Object, Object> delegate;
 
 		/**
@@ -164,11 +165,13 @@ public class ResultProcessor {
 
 			Assert.notNull(converter, "Converter must not be null!");
 
-			return new ChainingConverter(new Converter<Object, Object>() {
+			return new ChainingConverter(targetType, new Converter<Object, Object>() {
 
 				@Override
 				public Object convert(Object source) {
-					return converter.convert(ChainingConverter.this.convert(source));
+
+					Object intermediate = ChainingConverter.this.convert(source);
+					return targetType.isInstance(intermediate) ? intermediate : converter.convert(intermediate);
 				}
 			});
 		}

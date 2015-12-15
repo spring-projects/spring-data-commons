@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -61,7 +62,7 @@ public class ResultProcessorUnitTests {
 	@Test
 	public void createsProjectionFromProperties() throws Exception {
 
-		ResultProcessor information = getFactory("findOneProjection");
+		ResultProcessor information = getProcessor("findOneProjection");
 
 		SampleProjection result = information.processResult(Arrays.asList("Matthews"));
 
@@ -75,7 +76,7 @@ public class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	public void createsListOfProjectionsFormNestedLists() throws Exception {
 
-		ResultProcessor information = getFactory("findAllProjection");
+		ResultProcessor information = getProcessor("findAllProjection");
 
 		List<String> columns = Arrays.asList("Matthews");
 		List<List<String>> source = new ArrayList<List<String>>(Arrays.asList(columns));
@@ -93,7 +94,7 @@ public class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	public void createsListOfProjectionsFromMaps() throws Exception {
 
-		ResultProcessor information = getFactory("findAllProjection");
+		ResultProcessor information = getProcessor("findAllProjection");
 
 		List<Map<String, Object>> source = new ArrayList<Map<String, Object>>(
 				Arrays.asList(Collections.<String, Object> singletonMap("lastname", "Matthews")));
@@ -110,7 +111,7 @@ public class ResultProcessorUnitTests {
 	@Test
 	public void createsListOfProjectionsFromEntity() throws Exception {
 
-		ResultProcessor information = getFactory("findAllProjection");
+		ResultProcessor information = getProcessor("findAllProjection");
 
 		List<Sample> source = new ArrayList<Sample>(Arrays.asList(new Sample("Dave", "Matthews")));
 		List<SampleProjection> result = information.processResult(source);
@@ -125,7 +126,7 @@ public class ResultProcessorUnitTests {
 	@Test
 	public void createsPageOfProjectionsFromEntity() throws Exception {
 
-		ResultProcessor information = getFactory("findPageProjection", Pageable.class);
+		ResultProcessor information = getProcessor("findPageProjection", Pageable.class);
 
 		Page<Sample> source = new PageImpl<Sample>(Arrays.asList(new Sample("Dave", "Matthews")));
 		Page<SampleProjection> result = information.processResult(source);
@@ -140,7 +141,7 @@ public class ResultProcessorUnitTests {
 	@Test
 	public void createsDynamicProjectionFromEntity() throws Exception {
 
-		ResultProcessor information = getFactory("findOneOpenProjection");
+		ResultProcessor information = getProcessor("findOneOpenProjection");
 
 		OpenProjection result = information.processResult(new Sample("Dave", "Matthews"));
 
@@ -156,7 +157,7 @@ public class ResultProcessorUnitTests {
 
 		ParameterAccessor accessor = mock(ParameterAccessor.class);
 
-		ResultProcessor factory = getFactory("findOneDynamic", Class.class);
+		ResultProcessor factory = getProcessor("findOneDynamic", Class.class);
 		assertThat(factory.withDynamicProjection(null), is(factory));
 		assertThat(factory.withDynamicProjection(accessor), is(factory));
 
@@ -166,7 +167,26 @@ public class ResultProcessorUnitTests {
 		assertThat(processor.getReturnedType().getReturnedType(), is(typeCompatibleWith(SampleProjection.class)));
 	}
 
-	private static ResultProcessor getFactory(String methodName, Class<?>... parameters) throws Exception {
+	/**
+	 * @see DATACMNS-89
+	 */
+	@Test
+	public void refrainsFromProjectingIfThePreparingConverterReturnsACompatibleInstance() throws Exception {
+
+		ResultProcessor processor = getProcessor("findAllDtos");
+
+		Object result = processor.processResult(new Sample("Dave", "Matthews"), new Converter<Object, Object>() {
+
+			@Override
+			public Object convert(Object source) {
+				return new SampleDTO();
+			}
+		});
+
+		assertThat(result, is(instanceOf(SampleDTO.class)));
+	}
+
+	private static ResultProcessor getProcessor(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor();
 	}
 
