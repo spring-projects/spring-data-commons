@@ -17,6 +17,7 @@
 
 	<properties>
 		<dist.key>DATACMNS</dist.key>
+		<scala>2.11.7</scala>
 	</properties>
 
 	<dependencies>
@@ -188,6 +189,14 @@
 			<artifactId>groovy-all</artifactId>
 			<version>2.4.4</version>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- Scala -->
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>${scala}</version>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>

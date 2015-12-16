@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.util;
 
+import scala.Option;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +37,15 @@ import com.google.common.base.Optional;
 
 /**
  * Converters to potentially wrap the execution of a repository method into a variety of wrapper types potentially being
- * available on the classpath.
+ * available on the classpath. Currently supported:
+ * <ul>
+ * <li>{@code java.util.Optional}</li>
+ * <li>{@code com.google.common.base.Optional}</li>
+ * <li>{@code scala.Option}</li>
+ * <li>{@code java.util.concurrent.Future}</li>
+ * <li>{@code java.util.concurrent.CompletableFuture}</li>
+ * <li>{@code org.springframework.util.concurrent.ListenableFuture<}</li>
+ * </ul>
  * 
  * @author Oliver Gierke
  * @since 1.8
@@ -49,6 +59,8 @@ public abstract class QueryExecutionConverters {
 	private static final boolean GUAVA_PRESENT = ClassUtils.isPresent("com.google.common.base.Optional",
 			QueryExecutionConverters.class.getClassLoader());
 	private static final boolean JDK_8_PRESENT = ClassUtils.isPresent("java.util.Optional",
+			QueryExecutionConverters.class.getClassLoader());
+	private static final boolean SCALA_PRESENT = ClassUtils.isPresent("scala.Option",
 			QueryExecutionConverters.class.getClassLoader());
 
 	private static final Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
@@ -71,6 +83,11 @@ public abstract class QueryExecutionConverters {
 
 		if (JDK_8_PRESENT && SPRING_4_2_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToCompletableFutureConverter.getWrapperType());
+		}
+
+		if (SCALA_PRESENT) {
+			WRAPPER_TYPES.add(NullableWrapperToScalaOptionConverter.getWrapperType());
+			UNWRAPPERS.add(ScalOptionUnwrapper.INSTANCE);
 		}
 	}
 
@@ -113,6 +130,10 @@ public abstract class QueryExecutionConverters {
 			conversionService.addConverter(new NullableWrapperToCompletableFutureConverter(conversionService));
 		}
 
+		if (SCALA_PRESENT) {
+			conversionService.addConverter(new NullableWrapperToScalaOptionConverter(conversionService));
+		}
+
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
 	}
 
@@ -151,6 +172,7 @@ public abstract class QueryExecutionConverters {
 		@SuppressWarnings("unused") //
 		private final ConversionService conversionService;
 		private final Class<?>[] wrapperTypes;
+		private final Object nullValue;
 
 		/**
 		 * Creates a new {@link AbstractWrapperTypeConverter} using the given {@link ConversionService} and wrapper type.
@@ -158,13 +180,15 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 * @param wrapperTypes must not be {@literal null}.
 		 */
-		protected AbstractWrapperTypeConverter(ConversionService conversionService, Class<?>... wrapperTypes) {
+		protected AbstractWrapperTypeConverter(ConversionService conversionService, Object nullValue,
+				Class<?>... wrapperTypes) {
 
 			Assert.notNull(conversionService, "ConversionService must not be null!");
 			Assert.notEmpty(wrapperTypes, "Wrapper type must not be empty!");
 
 			this.conversionService = conversionService;
 			this.wrapperTypes = wrapperTypes;
+			this.nullValue = nullValue;
 		}
 
 		/* 
@@ -194,15 +218,8 @@ public abstract class QueryExecutionConverters {
 			Object value = wrapper.getValue();
 
 			// TODO: Add Recursive conversion once we move to Spring 4
-			return value == null ? getNullValue() : wrap(value);
+			return value == null ? nullValue : wrap(value);
 		}
-
-		/**
-		 * Return the object that shall be used as a replacement for {@literal null}.
-		 * 
-		 * @return must not be {@literal null}.
-		 */
-		protected abstract Object getNullValue();
 
 		/**
 		 * Wrap the given, non-{@literal null} value into the wrapper type.
@@ -226,16 +243,7 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToGuavaOptionalConverter(ConversionService conversionService) {
-			super(conversionService, Optional.class);
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#getNullValue()
-		 */
-		@Override
-		protected Object getNullValue() {
-			return Optional.absent();
+			super(conversionService, Optional.absent(), Optional.class);
 		}
 
 		/* 
@@ -265,16 +273,7 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToJdk8OptionalConverter(ConversionService conversionService) {
-			super(conversionService, java.util.Optional.class);
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#getNullValue()
-		 */
-		@Override
-		protected Object getNullValue() {
-			return java.util.Optional.empty();
+			super(conversionService, java.util.Optional.empty(), java.util.Optional.class);
 		}
 
 		/* 
@@ -298,24 +297,13 @@ public abstract class QueryExecutionConverters {
 	 */
 	private static class NullableWrapperToFutureConverter extends AbstractWrapperTypeConverter {
 
-		private static final AsyncResult<Object> NULL_OBJECT = new AsyncResult<Object>(null);
-
 		/**
 		 * Creates a new {@link NullableWrapperToFutureConverter} using the given {@link ConversionService}.
 		 * 
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToFutureConverter(ConversionService conversionService) {
-			super(conversionService, Future.class, ListenableFuture.class);
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#getNullValue()
-		 */
-		@Override
-		protected Object getNullValue() {
-			return NULL_OBJECT;
+			super(conversionService, new AsyncResult<Object>(null), Future.class, ListenableFuture.class);
 		}
 
 		/* 
@@ -335,24 +323,13 @@ public abstract class QueryExecutionConverters {
 	 */
 	private static class NullableWrapperToCompletableFutureConverter extends AbstractWrapperTypeConverter {
 
-		private static final CompletableFuture<Object> NULL_OBJECT = CompletableFuture.completedFuture(null);
-
 		/**
 		 * Creates a new {@link NullableWrapperToCompletableFutureConverter} using the given {@link ConversionService}.
 		 * 
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToCompletableFutureConverter(ConversionService conversionService) {
-			super(conversionService, CompletableFuture.class);
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#getNullValue()
-		 */
-		@Override
-		protected Object getNullValue() {
-			return NULL_OBJECT;
+			super(conversionService, CompletableFuture.completedFuture(null), CompletableFuture.class);
 		}
 
 		/* 
@@ -366,6 +343,32 @@ public abstract class QueryExecutionConverters {
 
 		public static Class<?> getWrapperType() {
 			return CompletableFuture.class;
+		}
+	}
+
+	/**
+	 * A Spring {@link Converter} to support Scala's {@link Option}.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.13
+	 */
+	private static class NullableWrapperToScalaOptionConverter extends AbstractWrapperTypeConverter {
+
+		public NullableWrapperToScalaOptionConverter(ConversionService conversionService) {
+			super(conversionService, Option.empty(), Option.class);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
+		 */
+		@Override
+		protected Object wrap(Object source) {
+			return Option.apply(source);
+		}
+
+		public static Class<?> getWrapperType() {
+			return Option.class;
 		}
 	}
 
@@ -406,6 +409,26 @@ public abstract class QueryExecutionConverters {
 		@Override
 		public Object convert(Object source) {
 			return source instanceof java.util.Optional ? ((java.util.Optional<?>) source).orElse(null) : source;
+		}
+	}
+
+	/**
+	 * A {@link Converter} to unwrap a Scala {@link Option} instance.
+	 *
+	 * @author Oliver Gierke
+	 * @author 1.13
+	 */
+	private static enum ScalOptionUnwrapper implements Converter<Object, Object> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		public Object convert(Object source) {
+			return source instanceof Option ? ((Option<?>) source).orNull(null) : source;
 		}
 	}
 }

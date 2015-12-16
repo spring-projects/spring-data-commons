@@ -19,6 +19,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
+import scala.Option;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -60,6 +62,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(java.util.Optional.class), is(true));
 		assertThat(QueryExecutionConverters.supports(Future.class), is(true));
 		assertThat(QueryExecutionConverters.supports(ListenableFuture.class), is(true));
+		assertThat(QueryExecutionConverters.supports(Option.class), is(true));
 	}
 
 	/**
@@ -140,5 +143,24 @@ public class QueryExecutionConvertersUnitTests {
 	@Test
 	public void unwrapsNonWrapperTypeToItself() {
 		assertThat(QueryExecutionConverters.unwrap("Foo"), is((Object) "Foo"));
+	}
+
+	/**
+	 * @see DATACMNS-795
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void turnsNullIntoScalaOptionEmpty() {
+
+		assertThat((Option<Object>) conversionService.convert(new NullableWrapper(null), Option.class),
+				is(Option.<Object> empty()));
+	}
+
+	/**
+	 * @see DATACMNS-795
+	 */
+	@Test
+	public void unwrapsScalaOption() {
+		assertThat(QueryExecutionConverters.unwrap(Option.apply("foo")), is((Object) "foo"));
 	}
 }
