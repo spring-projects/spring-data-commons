@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.11.2.RELEASE (2015-12-18)
+----------------------------------------------
+* DATACMNS-797 - Release 1.11.2 (Gosling).
+* DATACMNS-793 - Some inline code formatting broken in reference documentation.
+* DATACMNS-791 - Improve exception message in QueryMethodParameterConversionException and ReflectionRepositoryInvoker.
+* DATACMNS-789 - Fix typo in JavaDoc of Page.
+* DATACMNS-788 - template.mf should use placeholder for Slf4j version.
+* DATACMNS-786 - Typo in example of declaring Jackson repository populator of reference documentation.
+
+
 Changes in version 1.11.1.RELEASE (2015-11-15)
 ----------------------------------------------
 * DATACMNS-784 - Release 1.11.1 (Gosling).
