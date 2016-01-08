@@ -296,6 +296,7 @@ public abstract class ReturnedType {
 			return !Object.class.equals(type) && //
 					!isDomainSubtype() && //
 					!isPrimitiveOrWrapper() && //
+					!Number.class.isAssignableFrom(type) && //
 					!VOID_TYPES.contains(type) && //
 					!type.getPackage().getName().startsWith("java.lang");
 		}

@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.util.List;
 
 import org.junit.Test;
@@ -116,6 +117,19 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.getTypeToRead(), is(typeCompatibleWith(Sample.class)));
 	}
 
+	/**
+	 * @see DATACMNS-89
+	 */
+	@Test
+	public void detectsComplexNumberTypes() throws Exception {
+
+		ReturnedType type = getReturnedType("countQuery");
+
+		assertThat(type.isProjecting(), is(false));
+		assertThat(type.needsCustomConstruction(), is(false));
+		assertThat(type.getTypeToRead(), is(typeCompatibleWith(BigInteger.class)));
+	}
+
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor().getReturnedType();
 	}
@@ -146,6 +160,8 @@ public class ReturnedTypeUnitTests {
 		OpenProjection findOneOpenProjection();
 
 		Page<SampleProjection> findPageProjection(Pageable pageable);
+
+		BigInteger countQuery();
 	}
 
 	static class Sample {
