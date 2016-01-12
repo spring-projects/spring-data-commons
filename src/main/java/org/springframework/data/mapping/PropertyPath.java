@@ -16,6 +16,7 @@
 package org.springframework.data.mapping;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
@@ -53,7 +54,7 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 * @param owningType must not be {@literal null}.
 	 */
 	PropertyPath(String name, Class<?> owningType) {
-		this(name, ClassTypeInformation.from(owningType), null);
+		this(name, ClassTypeInformation.from(owningType), Collections.<PropertyPath> emptyList());
 	}
 
 	/**
@@ -65,8 +66,9 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 */
 	PropertyPath(String name, TypeInformation<?> owningType, List<PropertyPath> base) {
 
-		Assert.hasText(name);
-		Assert.notNull(owningType);
+		Assert.hasText(name, "Name must not be null or empty!");
+		Assert.notNull(owningType, "Owning type must not be null!");
+		Assert.notNull(base, "Perviously found properties must not be null!");
 
 		String propertyName = name.matches(ALL_UPPERCASE) ? name : StringUtils.uncapitalize(name);
 		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
