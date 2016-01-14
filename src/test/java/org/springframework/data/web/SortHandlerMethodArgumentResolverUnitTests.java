@@ -34,6 +34,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 
+import java.util.Arrays;
+
 /**
  * Unit tests for {@link SortHandlerMethodArgumentResolver}.
  * 
@@ -184,6 +186,26 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		request.addParameter("sort", "");
 
 		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property")));
+	}
+
+	@Test
+	public void sortParamHandlesSortOrderAndIgnoreCase() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,DESC,IgnoreCase");
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, PARAMETER), is(new Sort(Arrays.asList(new Order(DESC, "property").ignoreCase()))));
+	}
+
+	@Test
+	public void sortParamHandlesIgnoreCase() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,IgnoreCase");
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, PARAMETER), is(new Sort(Arrays.asList(new Order(ASC, "property").ignoreCase()))));
 	}
 
 	/**
