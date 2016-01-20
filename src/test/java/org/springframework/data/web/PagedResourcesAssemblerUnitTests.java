@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -33,6 +34,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.ResourceSupport;
@@ -273,6 +275,18 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=0&size=20"));
 	}
 
+	/**
+	 * @see DATACMNS-802
+	 */
+	@Test
+	public void usesCustomPagedResources() {
+
+		ResourceAssembler<Page<Person>, PagedResources<Resource<Person>>> assembler = new CustomPagedResourcesAssembler<Person>(
+				resolver, null);
+
+		assertThat(assembler.toResource(EMPTY_PAGE), is(instanceOf(CustomPagedResources.class)));
+	}
+
 	private static Page<Person> createPage(int index) {
 
 		AbstractPageRequest request = new PageRequest(index, 1);
@@ -308,6 +322,26 @@ public class PagedResourcesAssemblerUnitTests {
 			PersonResource resource = new PersonResource();
 			resource.name = entity.name;
 			return resource;
+		}
+	}
+
+	static class CustomPagedResourcesAssembler<T> extends PagedResourcesAssembler<T> {
+
+		public CustomPagedResourcesAssembler(HateoasPageableHandlerMethodArgumentResolver resolver, UriComponents baseUri) {
+			super(resolver, baseUri);
+		}
+
+		@Override
+		protected <R extends ResourceSupport, S> PagedResources<R> createPagedResource(List<R> resources,
+				PageMetadata metadata, Page<S> page) {
+			return new CustomPagedResources<R>(resources, metadata);
+		}
+	}
+
+	static class CustomPagedResources<R extends ResourceSupport> extends PagedResources<R> {
+
+		public CustomPagedResources(Collection<R> content, PageMetadata metadata) {
+			super(content, metadata);
 		}
 	}
 }

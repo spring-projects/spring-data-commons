@@ -170,6 +170,24 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		return createLink(new UriTemplate(link.getHref()), null, link.getRel());
 	}
 
+	/**
+	 * Creates the {@link PagedResources} to be equipped with pagination links downstream.
+	 * 
+	 * @param resources the original page's elements mapped into {@link ResourceSupport} instances.
+	 * @param metadata the calculated {@link PageMetadata}, must not be {@literal null}.
+	 * @param page the original page handed to the assembler, must not be {@literal null}.
+	 * @return must not be {@literal null}.
+	 */
+	protected <R extends ResourceSupport, S> PagedResources<R> createPagedResource(List<R> resources,
+			PageMetadata metadata, Page<S> page) {
+
+		Assert.notNull(resources, "Content resources must not be null!");
+		Assert.notNull(metadata, "PageMetadata must not be null!");
+		Assert.notNull(page, "Page must not be null!");
+
+		return new PagedResources<R>(resources, metadata);
+	}
+
 	private <S, R extends ResourceSupport> PagedResources<R> createResource(Page<S> page,
 			ResourceAssembler<S, R> assembler, Link link) {
 
@@ -182,7 +200,9 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			resources.add(assembler.toResource(element));
 		}
 
-		return addPaginationLinks(new PagedResources<R>(resources, asPageMetadata(page)), page, link);
+		PagedResources<R> resource = createPagedResource(resources, asPageMetadata(page), page);
+
+		return addPaginationLinks(resource, page, link);
 	}
 
 	private <R> PagedResources<R> addPaginationLinks(PagedResources<R> resources, Page<?> page, Link link) {
