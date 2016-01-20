@@ -23,7 +23,9 @@ import java.util.Iterator;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * Unit tests for {@link ParametersParameterAccessor}.
@@ -52,6 +54,25 @@ public class ParametersParameterAccessorUnitTests {
 		assertThat(iterator.hasNext(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-804
+     */
+	@Test
+	public void accessorIteratorHasNextSkipsNonBindables() throws NoSuchMethodException {
+		Method method = Sample.class.getMethod("method", Pageable.class, String.class, Sort.class, String.class);
+		DefaultParameters parameters = new DefaultParameters(method);
+
+		ParametersParameterAccessor accessor = new ParametersParameterAccessor(parameters,
+				new Object[]{new PageRequest(0, 1), "Foo", new Sort("propertyA"), null});
+
+		Iterator<Object> iterator = accessor.iterator();
+		assertThat(iterator.hasNext(), is(true));
+		assertThat(iterator.next(), is((Object) "Foo"));
+		assertThat(iterator.hasNext(), is(true));
+		assertThat(iterator.next(), is((Object) null));
+		assertThat(iterator.hasNext(), is(false));
+	}
+
 	@Test
 	public void detectsNullValue() throws Exception {
 
@@ -70,5 +91,7 @@ public class ParametersParameterAccessorUnitTests {
 		void method(String string, int integer);
 
 		void method(Pageable pageable, String string);
+
+		void method(Pageable pageable, String string, Sort sort, String otherString);
 	}
 }

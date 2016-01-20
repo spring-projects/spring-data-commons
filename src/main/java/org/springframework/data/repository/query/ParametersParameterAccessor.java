@@ -33,6 +33,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 	private final Parameters<?, ?> parameters;
 	private final List<Object> values;
+	private final int bindableParametersSize;
 
 	/**
 	 * Creates a new {@link ParametersParameterAccessor}.
@@ -48,6 +49,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		Assert.isTrue(parameters.getNumberOfParameters() == values.length, "Invalid number of parameters given!");
 
 		this.parameters = parameters;
+		this.bindableParametersSize = parameters.getBindableParameters().getNumberOfParameters();
 
 		List<Object> unwrapped = new ArrayList<Object>(values.length);
 
@@ -171,7 +173,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext() {
-			return values.size() > currentIndex;
+			return bindableParametersSize > currentIndex;
 		}
 
 		/*
