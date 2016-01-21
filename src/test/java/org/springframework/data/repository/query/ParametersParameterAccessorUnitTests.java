@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
@@ -23,6 +23,7 @@ import java.util.Iterator;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 /**
@@ -63,6 +64,21 @@ public class ParametersParameterAccessorUnitTests {
 
 		accessor = new ParametersParameterAccessor(parameters, new Object[] { null, "Foo" });
 		assertThat(accessor.hasBindableNullValue(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-804
+	 */
+	@Test
+	public void iteratesonlyOverBindableValues() throws Exception {
+
+		Method method = Sample.class.getMethod("method", Pageable.class, String.class);
+		DefaultParameters parameters = new DefaultParameters(method);
+
+		ParametersParameterAccessor accessor = new ParametersParameterAccessor(parameters,
+				new Object[] { new PageRequest(0, 10), "Foo" });
+
+		assertThat(accessor, is(iterableWithSize(1)));
 	}
 
 	interface Sample {
