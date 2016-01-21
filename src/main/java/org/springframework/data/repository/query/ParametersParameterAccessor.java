@@ -128,7 +128,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 */
 	public BindableParameterIterator iterator() {
 
-		return new BindableParameterIterator();
+		return new BindableParameterIterator(this);
 	}
 
 	/**
@@ -136,9 +136,25 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private class BindableParameterIterator implements Iterator<Object> {
+	private static class BindableParameterIterator implements Iterator<Object> {
+
+		private final int bindableParameterCount;
+		private final ParameterAccessor accessor;
 
 		private int currentIndex = 0;
+
+		/**
+		 * Creates a new {@link BindableParameterIterator}.
+		 * 
+		 * @param accessor must not be {@literal null}.
+		 */
+		public BindableParameterIterator(ParametersParameterAccessor accessor) {
+
+			Assert.notNull(accessor, "ParametersParameterAccessor must not be null!");
+
+			this.accessor = accessor;
+			this.bindableParameterCount = accessor.getParameters().getBindableParameters().getNumberOfParameters();
+		}
 
 		/**
 		 * Returns the next bindable parameter.
@@ -146,8 +162,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		 * @return
 		 */
 		public Object next() {
-
-			return getBindableValue(currentIndex++);
+			return accessor.getBindableValue(currentIndex++);
 		}
 
 		/*
@@ -155,8 +170,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext() {
-
-			return values.length > currentIndex;
+			return bindableParameterCount > currentIndex;
 		}
 
 		/*
@@ -164,7 +178,6 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		 * @see java.util.Iterator#remove()
 		 */
 		public void remove() {
-
 			throw new UnsupportedOperationException();
 		}
 	}
