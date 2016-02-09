@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 * @param accessor must not be {@literal null}.
 	 */
 	public DefaultTypeMapper(TypeAliasAccessor<S> accessor) {
-		this(accessor, Arrays.asList(SimpleTypeInformationMapper.INSTANCE));
+		this(accessor, Arrays.asList(new SimpleTypeInformationMapper()));
 	}
 
 	/**
