@@ -5,14 +5,14 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>1.11.3.BUILD-SNAPSHOT</version>
+	<version>1.11.4.BUILD-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.7.3.BUILD-SNAPSHOT</version>
+		<version>1.7.4.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<properties>
