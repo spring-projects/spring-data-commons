@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.springframework.util.ReflectionUtils;
  * Method interceptor to forward a delegation to bean property accessor methods to the property of a given target.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.10
  */
 class PropertyAccessingMethodInterceptor implements MethodInterceptor {
@@ -66,6 +67,20 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 			throw new IllegalStateException("Invoked method is not a property accessor!");
 		}
 
+        if (isSetterMethod(method, descriptor)) {
+            if (invocation.getArguments().length != 1) {
+                throw new IllegalStateException("Invoked setter method requires exactly one argument!");
+            }
+
+            target.setPropertyValue(descriptor.getName(), invocation.getArguments()[0]);
+            return null;
+        }
+
 		return target.getPropertyValue(descriptor.getName());
 	}
+
+	private boolean isSetterMethod(Method method, PropertyDescriptor descriptor) {
+		return method.equals(descriptor.getWriteMethod());
+	}
+
 }
