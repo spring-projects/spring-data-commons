@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.NotWritablePropertyException;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 public class SpelAwareProxyProjectionFactoryUnitTests {
 
@@ -51,6 +53,42 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 		assertThat(excerpt.getFullName(), is("Dave Matthews"));
+	}
+
+	/**
+	 * @see DATACMNS-820
+	 */
+	@Test
+	public void setsValueUsingProjection() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+
+		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+		excerpt.setFirstname("Carl");
+
+		assertThat(customer.firstname, is("Carl"));
+	}
+
+	/**
+	 * @see DATACMNS-820
+	 */
+	@Test
+	public void settingNotWriteablePropertyFails() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+
+		ProjectionWithNotWriteableProperty projection = factory.createProjection(ProjectionWithNotWriteableProperty.class,
+				customer);
+
+		try {
+			projection.setFirstName("Carl");
+			fail("Missing NotWritablePropertyException");
+		} catch (NotWritablePropertyException e) {
+			assertThat(e, instanceOf(NotWritablePropertyException.class));
+		}
+
 	}
 
 	/**
@@ -87,5 +125,12 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		String getFullName();
 
 		String getFirstname();
+
+		void setFirstname(String firstname);
+	}
+
+	interface ProjectionWithNotWriteableProperty {
+
+		void setFirstName(String firstname);
 	}
 }
