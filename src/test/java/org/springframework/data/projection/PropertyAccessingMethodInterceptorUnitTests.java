@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.beans.NotWritablePropertyException;
  * Unit tests for {@link PropertyAccessingMethodInterceptor}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyAccessingMethodInterceptorUnitTests {
@@ -63,50 +64,6 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 		new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation);
 	}
 
-    /**
-     * @see DATACMNS-820
-     */
-    @Test
-    public void triggersWritePropertyAccessOnTarget() throws Throwable {
-
-        Source source = new Source();
-        source.firstname = "Dave";
-
-        when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setFirstname", String.class));
-        when(invocation.getArguments()).thenReturn(new Object[] { "Carl" });
-        MethodInterceptor interceptor = new PropertyAccessingMethodInterceptor(source);
-
-        interceptor.invoke(invocation);
-
-        assertThat(source.firstname, is((Object) "Carl"));
-    }
-
-    /**
-     * @see DATACMNS-820
-     */
-    @Test(expected = IllegalStateException.class)
-    public void throwsAppropriateExceptionIfTheInvocationHasNoArguments() throws Throwable {
-
-        Source source = new Source();
-
-        when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setFirstname", String.class));
-        when(invocation.getArguments()).thenReturn(new Object[0]);
-        MethodInterceptor interceptor = new PropertyAccessingMethodInterceptor(source);
-
-        interceptor.invoke(invocation);
-    }
-
-    /**
-     * @see DATACMNS-820
-     */
-    @Test(expected = NotWritablePropertyException.class)
-    public void throwsAppropriateExceptionIfThePropertyCannotWritten() throws Throwable {
-
-        when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setGarbage", String.class));
-        when(invocation.getArguments()).thenReturn(new Object[] { "Carl" });
-        new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation);
-    }
-
 	/**
 	 * @see DATAREST-221
 	 */
@@ -114,6 +71,7 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 	public void forwardsObjectMethodInvocation() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Object.class.getMethod("toString"));
+
 		new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation);
 	}
 
@@ -124,6 +82,50 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 	public void rejectsNonAccessorMethod() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("someGarbage"));
+
+		new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation);
+	}
+
+	/**
+	 * @see DATACMNS-820
+	 */
+	@Test
+	public void triggersWritePropertyAccessOnTarget() throws Throwable {
+
+		Source source = new Source();
+		source.firstname = "Dave";
+
+		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setFirstname", String.class));
+		when(invocation.getArguments()).thenReturn(new Object[] { "Carl" });
+
+		new PropertyAccessingMethodInterceptor(source).invoke(invocation);
+
+		assertThat(source.firstname, is((Object) "Carl"));
+	}
+
+	/**
+	 * @see DATACMNS-820
+	 */
+	@Test(expected = IllegalStateException.class)
+	public void throwsAppropriateExceptionIfTheInvocationHasNoArguments() throws Throwable {
+
+		Source source = new Source();
+
+		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setFirstname", String.class));
+		when(invocation.getArguments()).thenReturn(new Object[0]);
+
+		new PropertyAccessingMethodInterceptor(source).invoke(invocation);
+	}
+
+	/**
+	 * @see DATACMNS-820
+	 */
+	@Test(expected = NotWritablePropertyException.class)
+	public void throwsAppropriateExceptionIfThePropertyCannotWritten() throws Throwable {
+
+		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setGarbage", String.class));
+		when(invocation.getArguments()).thenReturn(new Object[] { "Carl" });
+
 		new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation);
 	}
 

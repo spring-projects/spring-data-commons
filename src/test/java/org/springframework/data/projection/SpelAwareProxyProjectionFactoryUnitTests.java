@@ -21,7 +21,9 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.beans.NotWritablePropertyException;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -34,7 +36,9 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public class SpelAwareProxyProjectionFactoryUnitTests {
 
-	private SpelAwareProxyProjectionFactory factory;
+	public @Rule ExpectedException exception = ExpectedException.none();
+
+	SpelAwareProxyProjectionFactory factory;
 
 	@Before
 	public void setup() {
@@ -53,6 +57,29 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 		assertThat(excerpt.getFullName(), is("Dave Matthews"));
+	}
+
+	/**
+	 * @see DATACMNS-630
+	 */
+	@Test
+	public void excludesAtValueAnnotatedMethodsForInputProperties() {
+
+		List<String> properties = factory.getInputProperties(CustomerExcerpt.class);
+
+		assertThat(properties, hasSize(1));
+		assertThat(properties, hasItem("firstname"));
+	}
+
+	/**
+	 * @see DATACMNS-89
+	 */
+	@Test
+	public void considersProjectionUsingAtValueNotClosed() {
+
+		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
+
+		assertThat(information.isClosed(), is(false));
 	}
 
 	/**
@@ -82,36 +109,8 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		ProjectionWithNotWriteableProperty projection = factory.createProjection(ProjectionWithNotWriteableProperty.class,
 				customer);
 
-		try {
-			projection.setFirstName("Carl");
-			fail("Missing NotWritablePropertyException");
-		} catch (NotWritablePropertyException e) {
-			assertThat(e, instanceOf(NotWritablePropertyException.class));
-		}
-
-	}
-
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
-	public void excludesAtValueAnnotatedMethodsForInputProperties() {
-
-		List<String> properties = factory.getInputProperties(CustomerExcerpt.class);
-
-		assertThat(properties, hasSize(1));
-		assertThat(properties, hasItem("firstname"));
-	}
-
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
-	public void considersProjectionUsingAtValueNotClosed() {
-
-		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
-
-		assertThat(information.isClosed(), is(false));
+		exception.expect(NotWritablePropertyException.class);
+		projection.setFirstName("Carl");
 	}
 
 	static class Customer {
