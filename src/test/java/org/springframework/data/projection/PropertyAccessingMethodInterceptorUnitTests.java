@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.NotReadablePropertyException;
+import org.springframework.beans.NotWritablePropertyException;
 
 /**
  * Unit tests for {@link PropertyAccessingMethodInterceptor}.
@@ -62,6 +63,50 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 		new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation);
 	}
 
+    /**
+     * @see DATACMNS-820
+     */
+    @Test
+    public void triggersWritePropertyAccessOnTarget() throws Throwable {
+
+        Source source = new Source();
+        source.firstname = "Dave";
+
+        when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setFirstname", String.class));
+        when(invocation.getArguments()).thenReturn(new Object[] { "Carl" });
+        MethodInterceptor interceptor = new PropertyAccessingMethodInterceptor(source);
+
+        interceptor.invoke(invocation);
+
+        assertThat(source.firstname, is((Object) "Carl"));
+    }
+
+    /**
+     * @see DATACMNS-820
+     */
+    @Test(expected = IllegalStateException.class)
+    public void throwsAppropriateExceptionIfTheInvocationHasNoArguments() throws Throwable {
+
+        Source source = new Source();
+
+        when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setFirstname", String.class));
+        when(invocation.getArguments()).thenReturn(new Object[0]);
+        MethodInterceptor interceptor = new PropertyAccessingMethodInterceptor(source);
+
+        interceptor.invoke(invocation);
+    }
+
+    /**
+     * @see DATACMNS-820
+     */
+    @Test(expected = NotWritablePropertyException.class)
+    public void throwsAppropriateExceptionIfThePropertyCannotWritten() throws Throwable {
+
+        when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setGarbage", String.class));
+        when(invocation.getArguments()).thenReturn(new Object[] { "Carl" });
+        new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation);
+    }
+
 	/**
 	 * @see DATAREST-221
 	 */
@@ -90,6 +135,10 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 	interface Projection {
 
 		String getFirstname();
+
+		void setFirstname(String firstname);
+
+		void setGarbage(String garbage);
 
 		String getLastname();
 
