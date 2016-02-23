@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.11.4.RELEASE (2016-02-23)
+----------------------------------------------
+* DATACMNS-820 - Allow setter invocations in projections backed by beans.
+* DATACMNS-817 - Release 1.11.4 (Gosling SR4).
+* DATACMNS-815 - Make static cache in SimpleTypeInformationMapper non-static.
+* DATACMNS-804 - IndexOutOfBoundException in ParametersParameterAccessor iterator when non-bindable parameter(s) used.
+* DATACMNS-801 - PropertyReferenceException lists potential matches twice for classes following the Java beans specification.
+
+
 Changes in version 1.12.0.M1 (2016-02-12)
 -----------------------------------------
 * DATACMNS-815 - Make static cache in SimpleTypeInformationMapper non-static.
