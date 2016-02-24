@@ -118,7 +118,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 			contentType = content.get(0).getClass().getName();
 		}
 
-		return String.format("Page %s of %d containing %s instances", getNumber(), getTotalPages(), contentType);
+		return String.format("Page %s of %d containing %s instances", getNumber()+1, getTotalPages(), contentType);
 	}
 
 	/*
