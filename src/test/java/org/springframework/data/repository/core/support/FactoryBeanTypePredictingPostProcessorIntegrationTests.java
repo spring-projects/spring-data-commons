@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,26 +20,22 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.core.SpringVersion;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.repository.Repository;
 
 /**
  * Integration test to make sure Spring Data repository factory beans are found without the factories already
- * instantiated. Only executed for Spring version newer than 3.2.2.RELEASE.
+ * instantiated.
  * 
  * @see SPR-10517
  * @author Oliver Gierke
  */
-public class RepositoryInterfaceAwareBeanPostProcessorIntegrationTests {
-
-	static final String LAST_ERROR_VERSION = "3.2.2.RELEASE";
+public class FactoryBeanTypePredictingPostProcessorIntegrationTests {
 
 	DefaultListableBeanFactory factory;
 
@@ -54,15 +50,14 @@ public class RepositoryInterfaceAwareBeanPostProcessorIntegrationTests {
 		factory.registerBeanDefinition("repository", builder.getBeanDefinition());
 
 		// Register predicting BeanPostProcessor
-		RepositoryInterfaceAwareBeanPostProcessor processor = new RepositoryInterfaceAwareBeanPostProcessor();
+		FactoryBeanTypePredictingBeanPostProcessor processor = new FactoryBeanTypePredictingBeanPostProcessor(
+				RepositoryFactoryBeanSupport.class, "repositoryInterface");
 		processor.setBeanFactory(factory);
 		factory.addBeanPostProcessor(processor);
 	}
 
 	@Test
 	public void lookupBeforeInstantiation() {
-
-		Assume.assumeTrue(isFixedSpringVersion());
 
 		String[] strings = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory, RepositoryFactoryInformation.class,
 				false, false);
@@ -72,8 +67,6 @@ public class RepositoryInterfaceAwareBeanPostProcessorIntegrationTests {
 	@Test
 	public void lookupAfterInstantiation() {
 
-		Assume.assumeTrue(isFixedSpringVersion());
-
 		factory.getBean(UserRepository.class);
 
 		String[] strings = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory, RepositoryFactoryInformation.class,
@@ -81,11 +74,5 @@ public class RepositoryInterfaceAwareBeanPostProcessorIntegrationTests {
 		assertThat(Arrays.asList(strings), hasItem("&repository"));
 	}
 
-	private static boolean isFixedSpringVersion() {
-		return SpringVersion.getVersion().compareTo(LAST_ERROR_VERSION) == 1;
-	}
-
-	interface UserRepository extends Repository<User, Long> {
-
-	}
+	interface UserRepository extends Repository<User, Long> {}
 }

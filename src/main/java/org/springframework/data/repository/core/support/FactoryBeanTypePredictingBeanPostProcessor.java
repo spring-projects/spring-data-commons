@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,30 +25,55 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.beans.factory.config.TypedStringValue;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * A {@link org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor} implementing
- * {@code #predictBeanType(Class, String)} to return the configured repository interface from
- * {@link RepositoryFactoryBeanSupport}s. This is done as shortcut to prevent the need of instantiating
- * {@link RepositoryFactoryBeanSupport}s just to find out what repository interface they actually create.
+ * {@link InstantiationAwareBeanPostProcessorAdapter} to predict the bean type for {@link FactoryBean} implementations
+ * by interpreting a configured property of the {@link BeanDefinition} as type to be created eventually.
  * 
  * @author Oliver Gierke
+ * @since 1.12
+ * @soundtrack Ron Spielmann - Lock Me Up (Electric Tales)
  */
-class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
-		BeanFactoryAware, PriorityOrdered {
+public class FactoryBeanTypePredictingBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
+		implements BeanFactoryAware, PriorityOrdered {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryInterfaceAwareBeanPostProcessor.class);
-	private static final Class<?> REPOSITORY_TYPE = RepositoryFactoryBeanSupport.class;
+	private static final Logger LOGGER = LoggerFactory.getLogger(FactoryBeanTypePredictingBeanPostProcessor.class);
 
 	private final Map<String, Class<?>> cache = new ConcurrentHashMap<String, Class<?>>();
+	private final Class<?> factoryBeanType;
+	private final List<String> properties;
 	private ConfigurableListableBeanFactory context;
+
+	/**
+	 * Creates a new {@link FactoryBeanTypePredictingBeanPostProcessor} predicting the type created by the
+	 * {@link FactoryBean} of the given type by inspecting the {@link BeanDefinition} and considering the value for the
+	 * given property as type to be created eventually.
+	 * 
+	 * @param factoryBeanType must not be {@literal null}.
+	 * @param properties must not be {@literal null} or empty.
+	 */
+	public FactoryBeanTypePredictingBeanPostProcessor(Class<?> factoryBeanType, String... properties) {
+
+		Assert.notNull(factoryBeanType, "FactoryBean type must not be null!");
+		Assert.isTrue(FactoryBean.class.isAssignableFrom(factoryBeanType), "Given type is not a FactoryBean type!");
+		Assert.notEmpty(properties, "Properties must not be empty!");
+
+		for (String property : properties) {
+			Assert.hasText(property, "Type property must not be null!");
+		}
+
+		this.factoryBeanType = factoryBeanType;
+		this.properties = Arrays.asList(properties);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -66,7 +93,7 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 	@Override
 	public Class<?> predictBeanType(Class<?> beanClass, String beanName) {
 
-		if (null == context || !REPOSITORY_TYPE.isAssignableFrom(beanClass)) {
+		if (null == context || !factoryBeanType.isAssignableFrom(beanClass)) {
 			return null;
 		}
 
@@ -77,23 +104,41 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 		}
 
 		BeanDefinition definition = context.getBeanDefinition(beanName);
-		PropertyValue value = definition.getPropertyValues().getPropertyValue("repositoryInterface");
 
-		resolvedBeanClass = getClassForPropertyValue(value, beanName);
-		cache.put(beanName, resolvedBeanClass);
+		try {
 
-		return resolvedBeanClass == Void.class ? null : resolvedBeanClass;
+			for (String property : properties) {
+
+				PropertyValue value = definition.getPropertyValues().getPropertyValue(property);
+				resolvedBeanClass = getClassForPropertyValue(value, beanName);
+
+				if (Void.class.equals(resolvedBeanClass)) {
+					continue;
+				}
+
+				return resolvedBeanClass;
+			}
+
+			return null;
+
+		} finally {
+			cache.put(beanName, resolvedBeanClass);
+		}
 	}
 
 	/**
 	 * Returns the class which is configured in the given {@link PropertyValue}. In case it is not a
-	 * {@link TypedStringValue} or the value contained cannot be interpreted as {@link Class} it will return null.
+	 * {@link TypedStringValue} or the value contained cannot be interpreted as {@link Class} it will return {@link Void}.
 	 * 
-	 * @param propertyValue
-	 * @param beanName
+	 * @param propertyValue can be {@literal null}.
+	 * @param beanName must not be {@literal null}.
 	 * @return
 	 */
 	private Class<?> getClassForPropertyValue(PropertyValue propertyValue, String beanName) {
+
+		if (propertyValue == null) {
+			return Void.class;
+		}
 
 		Object value = propertyValue.getValue();
 		String className = null;
@@ -104,6 +149,16 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 			className = (String) value;
 		} else if (value instanceof Class<?>) {
 			return (Class<?>) value;
+		} else if (value instanceof String[]) {
+
+			String[] values = (String[]) value;
+
+			if (values.length == 0) {
+				return Void.class;
+			} else {
+				className = values[0];
+			}
+
 		} else {
 			return Void.class;
 		}
@@ -111,8 +166,8 @@ class RepositoryInterfaceAwareBeanPostProcessor extends InstantiationAwareBeanPo
 		try {
 			return ClassUtils.resolveClassName(className, context.getBeanClassLoader());
 		} catch (IllegalArgumentException ex) {
-			LOGGER.warn(String.format("Couldn't load class %s referenced as repository interface in bean %s!", className,
-					beanName));
+			LOGGER.warn(
+					String.format("Couldn't load class %s referenced as repository interface in bean %s!", className, beanName));
 			return Void.class;
 		}
 	}

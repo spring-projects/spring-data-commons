@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,11 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,8 +31,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
-import org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor;
+import org.springframework.jndi.JndiObjectFactoryBean;
 
 /**
  * Unit tests for {@link RepositoryInterfaceAwareBeanPostProcessor}.
@@ -38,29 +39,26 @@ import org.springframework.data.repository.core.support.RepositoryInterfaceAware
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-public class RepositoryInterfaceAwareBeanPostProcessorUnitTests {
+public class FactoryBeanTypePredictingPostProcessorUnitTests {
 
 	private static final Class<?> FACTORY_CLASS = RepositoryFactoryBeanSupport.class;
 	private static final String BEAN_NAME = "foo";
 	private static final String DAO_INTERFACE_PROPERTY = "repositoryInterface";
 
-	private RepositoryInterfaceAwareBeanPostProcessor processor;
+	FactoryBeanTypePredictingBeanPostProcessor processor;
+	BeanDefinition beanDefinition;
 
-	@Mock
-	private ConfigurableListableBeanFactory beanFactory;
-	private BeanDefinition beanDefinition;
+	@Mock ConfigurableListableBeanFactory beanFactory;
 
 	@Before
 	public void setUp() {
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(FACTORY_CLASS).addPropertyValue(
-				DAO_INTERFACE_PROPERTY, UserDao.class);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(FACTORY_CLASS)
+				.addPropertyValue(DAO_INTERFACE_PROPERTY, UserDao.class);
 		this.beanDefinition = builder.getBeanDefinition();
+		this.processor = new FactoryBeanTypePredictingBeanPostProcessor(FACTORY_CLASS, "repositoryInterface");
 
 		when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(beanDefinition);
-
-		processor = new RepositoryInterfaceAwareBeanPostProcessor();
-
 	}
 
 	@Test
@@ -80,8 +78,8 @@ public class RepositoryInterfaceAwareBeanPostProcessorUnitTests {
 	@Test
 	public void doesNotResolveInterfaceForUnloadableClass() throws Exception {
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(FACTORY_CLASS).addPropertyValue(
-				DAO_INTERFACE_PROPERTY, "com.acme.Foo");
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(FACTORY_CLASS)
+				.addPropertyValue(DAO_INTERFACE_PROPERTY, "com.acme.Foo");
 
 		when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(builder.getBeanDefinition());
 
@@ -97,16 +95,36 @@ public class RepositoryInterfaceAwareBeanPostProcessorUnitTests {
 		assertNotTypeDetected(FACTORY_CLASS);
 	}
 
-	private void assertNotTypeDetected(Class<?> beanClass) {
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNonFactoryBeanType() {
+		new FactoryBeanTypePredictingBeanPostProcessor(Object.class, "property");
+	}
 
+	/**
+	 * @see DATACMNS-821
+	 */
+	@Test
+	public void usesFirstValueIfPropertyIsOfArrayType() {
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(JndiObjectFactoryBean.class);
+		builder.addPropertyValue("proxyInterfaces",
+				new String[] { Serializable.class.getName(), Iterable.class.getName() });
+
+		when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(builder.getBeanDefinition());
+
+		processor = new FactoryBeanTypePredictingBeanPostProcessor(JndiObjectFactoryBean.class, "proxyInterface",
+				"proxyInterfaces");
+		processor.setBeanFactory(beanFactory);
+
+		assertThat(processor.predictBeanType(JndiObjectFactoryBean.class, BEAN_NAME),
+				is(typeCompatibleWith(Serializable.class)));
+	}
+
+	private void assertNotTypeDetected(Class<?> beanClass) {
 		assertThat(processor.predictBeanType(beanClass, BEAN_NAME), is(nullValue()));
 	}
 
-	private class User {
+	private class User {}
 
-	}
-
-	private interface UserDao extends Repository<User, Long> {
-
-	}
+	private interface UserDao extends Repository<User, Long> {}
 }
