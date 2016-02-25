@@ -15,24 +15,18 @@
  */
 package org.springframework.data.domain;
 
-import static org.hamcrest.collection.IsEmptyCollection.*;
-import static org.hamcrest.core.Is.*;
-import static org.hamcrest.core.IsCollectionContaining.*;
 import static org.hamcrest.core.IsEqual.*;
-import static org.hamcrest.core.IsInstanceOf.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.domain.Example.*;
-import static org.springframework.data.domain.PropertySpecifier.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.domain.Example.NullHandler;
-import org.springframework.data.domain.Example.StringMatcher;
-import org.springframework.data.domain.PropertySpecifier.NoOpPropertyValueTransformer;
-import org.springframework.data.domain.PropertySpecifier.PropertyValueTransformer;
 
 /**
+ * Test for {@link Example}.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class ExampleUnitTests {
 
@@ -45,7 +39,7 @@ public class ExampleUnitTests {
 		person = new Person();
 		person.firstname = "rand";
 
-		example = exampleOf(person);
+		example = of(person);
 	}
 
 	/**
@@ -53,196 +47,7 @@ public class ExampleUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void exampleOfNullThrowsException() {
-		new Example<Object>(null);
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void exampleShouldUseDefaultStringMatcher() {
-		assertThat(example.getDefaultStringMatcher(), equalTo(StringMatcher.DEFAULT));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void exampleShouldUseDefaultStringMatcherForPathThatDoesNotHavePropertySpecifier() {
-		assertThat(example.getStringMatcherForPath("firstname"), equalTo(example.getDefaultStringMatcher()));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void exampleShouldUseConfiguredStringMatcherAsDefaultForPathThatDoesNotHavePropertySpecifier() {
-
-		example = newExampleOf(person).withStringMatcher(StringMatcher.CONTAINING).get();
-
-		assertThat(example.getDefaultStringMatcher(), equalTo(StringMatcher.CONTAINING));
-		assertThat(example.getStringMatcherForPath("firstname"), equalTo(StringMatcher.CONTAINING));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void exampleShouldUseDefinedStringMatcherForPathThatDoesHavePropertySpecifierWithStringMatcher() {
-
-		example = newExampleOf(person).withPropertySpecifier(
-				PropertySpecifier.newPropertySpecifier("firstname").matchString(StringMatcher.CONTAINING).get()).get();
-
-		assertThat(example.getStringMatcherForPath("firstname"), equalTo(StringMatcher.CONTAINING));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void exampleShouldFavorStringMatcherDefinedForPathOverConfiguredDefaultStringMatcher() {
-
-		example = newExampleOf(person)
-				.withStringMatcher(StringMatcher.STARTING)
-				.withPropertySpecifier(
-						PropertySpecifier.newPropertySpecifier("firstname").matchString(StringMatcher.CONTAINING).get()).get();
-
-		assertThat(example.getDefaultStringMatcher(), equalTo(StringMatcher.STARTING));
-		assertThat(example.getStringMatcherForPath("firstname"), equalTo(StringMatcher.CONTAINING));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void exampleShouldUseDefaultStringMatcherForPathThatHasPropertySpecifierWithoutStringMatcher() {
-
-		example = newExampleOf(person).withStringMatcher(StringMatcher.STARTING)
-				.withPropertySpecifier(ignoreCase("firstname")).get();
-
-		assertThat(example.getStringMatcherForPath("firstname"), equalTo(StringMatcher.STARTING));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void isIgnoredPathShouldReturnFalseWhenNoPathsIgnored() {
-
-		assertThat(example.getIgnoredPaths(), is(empty()));
-		assertThat(example.isIgnoredPath("firstname"), is(false));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void isIgnoredPathShouldReturnTrueWhenNoPathsIgnored() {
-
-		example = newExampleOf(person).ignore("firstname").get();
-
-		assertThat(example.getIgnoredPaths(), hasItem("firstname"));
-		assertThat(example.isIgnoredPath("firstname"), is(true));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test(expected = UnsupportedOperationException.class)
-	public void ignoredPathsShouldNotAllowModification() {
-		example.getIgnoredPaths().add("o_O");
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void ignoreCaseShouldReturnFalseByDefault() {
-
-		assertThat(example.isIngnoreCaseEnabled(), is(false));
-		assertThat(example.isIgnoreCaseForPath("firstname"), is(false));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseIsEnabled() {
-
-		example = newExampleOf(person).matchStringsWithIgnoreCase().get();
-
-		assertThat(example.isIngnoreCaseEnabled(), is(true));
-		assertThat(example.isIgnoreCaseForPath("firstname"), is(true));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void ignoreCaseShouldFavorPathSpecificSettings() {
-
-		example = newExampleOf(person).withPropertySpecifier(ignoreCase("firstname")).get();
-
-		assertThat(example.isIngnoreCaseEnabled(), is(false));
-		assertThat(example.isIgnoreCaseForPath("firstname"), is(true));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void getValueTransformerForPathReturnsNoOpValueTransformerByDefault() {
-		assertThat(example.getValueTransformerForPath("firstname"), instanceOf(NoOpPropertyValueTransformer.class));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void getValueTransformerForPathReturnsConfigurtedTransformerForPath() {
-
-		PropertyValueTransformer transformer = new PropertyValueTransformer() {
-
-			@Override
-			public Object convert(Object source) {
-				return source.toString();
-			}
-		};
-
-		example = newExampleOf(person).withPropertySpecifier(
-				newPropertySpecifier("firstname").withValueTransformer(transformer).get()).get();
-
-		assertThat(example.getValueTransformerForPath("firstname"), equalTo(transformer));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void hasPropertySpecifiersReturnsFalseIfNoneDefined() {
-		assertThat(example.hasPropertySpecifiers(), is(false));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test(expected = UnsupportedOperationException.class)
-	public void getPropertiesSpecifiersShouldNotAllowAddingSpecifiers() {
-		example.getPropertySpecifiers().add(ignoreCase("firstname"));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void hasPropertySpecifiersReturnsTrueWhenAtLeastOneIsSet() {
-
-		example = newExampleOf(person)
-				.withStringMatcher(StringMatcher.STARTING)
-				.withPropertySpecifier(
-						PropertySpecifier.newPropertySpecifier("firstname").matchString(StringMatcher.CONTAINING).get()).get();
-
-		assertThat(example.hasPropertySpecifiers(), is(true));
+		Example.of(null);
 	}
 
 	/**
@@ -250,25 +55,38 @@ public class ExampleUnitTests {
 	 */
 	@Test
 	public void getSampleTypeRetunsSampleObjectsClass() {
-		assertThat(example.getSampleType(), equalTo(Person.class));
+		assertThat(example.getProbeType(), equalTo(Person.class));
 	}
 
 	/**
 	 * @see DATACMNS-810
 	 */
 	@Test
-	public void getNullHandlerShouldReturnIgnoreByDefault() {
-		assertThat(example.getNullHandler(), is(NullHandler.IGNORE));
+	public void createTypedExample() {
+
+		Example<Person> example = of(new Person(), ExampleSpec.typed(Contact.class));
+
+		assertThat(example.getProbeType(), equalTo(Person.class));
+		assertThat(example.getResultType(), equalTo((Class) Contact.class));
+		assertThat(example.getProbeType(), equalTo(Person.class));
 	}
 
 	/**
 	 * @see DATACMNS-810
 	 */
 	@Test
-	public void getNullHandlerShouldReturnConfiguredHandler() {
+	public void createUntypedExample() {
 
-		example = newExampleOf(person).handleNullValues(NullHandler.INCLUDE).get();
-		assertThat(example.getNullHandler(), is(NullHandler.INCLUDE));
+		Example<Person> example = of(new Person(), ExampleSpec.untyped());
+
+		assertThat(example.getProbeType(), equalTo(Person.class));
+		assertThat(example.getResultType(), equalTo((Class) Person.class));
+		assertThat(example.getProbeType(), equalTo(Person.class));
+	}
+
+	static class Contact {
+
+		String label;
 	}
 
 	static class Person {
