@@ -1,0 +1,173 @@
+[[query.by.example]]
+= Query by Example
+
+== Introduction
+
+This chapter will give you an introduction to Query by Example and explain how to use Examples.
+
+Query by Example (QBE) is a user-friendly querying technique with a simple interface. It allows dynamic query creation and does not require to write queries containing field names. In fact, Query by Example does not require to write queries using store-specific query languages at all.
+
+== Usage
+
+The Query by Example API consists of three parts:
+
+* Probe: That is the actual example of a domain object with populated fields.
+* `ExampleSpec`: The `ExampleSpec` carries details on how to match particular fields. It can be reused across multiple Examples.
+* `Example`: An Example consists of the probe and the ExampleSpec. It is used to create the query. An `Example` takes a probe (usually the domain object or a subtype of it) and the `ExampleSpec`.
+
+Query by Example is suited for several use-cases but also comes with limitations:
+
+**When to use**
+
+* Querying your data store with a set of static or dynamic constraints
+* Frequent refactoring of the domain objects without worrying about breaking existing queries
+* Works independently from the underlying data store API
+
+**Limitations**
+
+* Query predicates are combined using the `AND` keyword
+* No support for nested/grouped property constraints like `firstname = ?0 or (firstname = ?1 and lastname = ?2)`
+* Only supports starts/contains/ends/regex matching for strings and exact matching for other property types
+
+Before getting started with Query by Example, you need to have a domain object. To get started, simply create an interface for your repository:
+
+.Sample Person object
+====
+[source,java]
+----
+public class Person {
+
+  @Id
+  private String id;
+  private String firstname;
+  private String lastname;
+  private Address address;
+
+  // … getters and setters omitted
+}
+----
+====
+
+This is a simple domain object. You can use it to create an `Example`. By default, fields having `null` values are ignored, and strings are matched using the store specific defaults. Examples can be built by either using the `of` factory method or by using <<query.by.example.examplespec,`ExampleSpec`>>. Once the `Example` is constructed it is immutable.
+
+.Simple Example
+====
+[source,java]
+----
+Person person = new Person();                         <1>
+
+person.setFirstname("Dave");                          <2>
+
+Example<Person> example = Example.of(person);         <3>
+----
+<1> Create a new instance of the domain object
+<2> Set the properties to query
+<3> Create the `Example`
+====
+
+NOTE: Property names of the sample object must correlate with the property names of the queried domain object.
+
+Examples can be executed ideally with Repositories. To do so, let your repository extend from `QueryByExampleExecutor`, here's an excerpt from the `QueryByExampleExecutor` interface:
+
+.The `QueryByExampleExecutor`
+====
+[source, java]
+----
+public interface QueryByExampleExecutor<T> {
+
+    <S extends T> T findOne(Example<S> example);
+
+    <S extends T> Iterable<T> findAll(Example<S> example);
+
+  // … more functionality omitted.
+}
+----
+====
+
+You can read more about <<query.by.example.execution, Query by Example Execution>> below.
+
+[[query.by.example.examplespec]]
+== Example Spec
+
+Examples are not limited to default settings. You can specify own defaults for string matching, null handling and property-specific settings using the `ExampleSpec`.
+
+.Example Spec with customized matching
+====
+[source,java]
+----
+Person person = new Person();                                                 <1>
+
+person.setFirstname("Dave");                                                  <2>
+
+ExampleSpec<Person> exampleSpec = ExampleSpec.of(Person.class)                <3>
+
+                                         .withIgnorePaths("lastname")         <4>
+
+                                         .withIncludeNullValues()             <5>
+
+                                         .withStringMatcherEnding();          <6>
+
+Example example = Example.of(person, exampleSpec);                            <7>
+
+----
+<1> Create a new instance of the domain object
+<2> Set properties
+<3> Create an `ExampleSpec` for the `Person` type. The `ExampleSpec` is usable at this stage.
+<4> Construct a new `ExampleSpec` to ignore the property path `lastname`
+<5> Construct a new `ExampleSpec` to ignore the property path `lastname` and to include null values
+<6> Construct a new `ExampleSpec` to ignore the property path `lastname`, to include null values, and use perform suffix string matching
+<7> Create a new `Example` based on the domain object and the configured `ExampleSpec`
+====
+
+`ExampleSpec` is immutable once it is created. Calls to `with…(…)` create each time a new `ExampleSpec` that carry all settings from the originating instance and setting the specific configuration of the `with…(…)` so intermediate objects can be safely reused. An `ExampleSpec` can be used to create ad-hoc example specs or to be reused across the application as a specification for `Example`. You can use `ExampleSpec` as a template to configure a default behavior for your example spec. You also can derive from it a more specific `ExampleSpec` where you need to customize it.
+
+You can specify behavior for individual properties (e.g. "firstname" and "lastname", "address.city" for nested properties). You can tune it with matching options and case sensitivity.
+
+.Configuring matcher options
+====
+[source,java]
+----
+ExampleSpec<Person> example = ExampleSpec.of(Person.class)
+        .withMatcher("firstname", endsWith())
+        .withMatcher("lastname", startsWith().ignoreCase());
+}
+----
+====
+
+Another style to configure matcher options is by using Java 8 lambdas. This approach is a callback that asks the implementor to modify the matcher. It's not required to return the matcher because configuration options are held within the matcher instance.
+
+.Configuring matcher options with lambdas
+====
+[source,java]
+----
+ExampleSpec<Person> example = ExampleSpec.of(Person.class)
+        .withMatcher("firstname", matcher -> matcher.endsWith())
+        .withMatcher("firstname", matcher -> matcher.startsWith());
+}
+----
+====
+
+Queries created by `Example` use a merged view of the configuration. Default matching settings can be set at `ExampleSpec` level while individual settings can be applied to particular property paths. Settings that are set on `ExampleSpec` are inherited by property path settings unless they are defined explicitly. Settings on a property patch have higher precedence than default settings.
+
+[cols="1,2", options="header"]
+.Scope of `ExampleSpec` settings
+|===
+| Setting
+| Scope
+
+| Null-handling
+| `ExampleSpec`
+
+| String matching
+| `ExampleSpec` and property path
+
+| Ignoring properties
+| Property path
+
+| Case sensitivity
+| `ExampleSpec` and property path
+
+| Value transformation
+| Property path
+
+|===
