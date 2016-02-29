@@ -29,7 +29,7 @@ import org.springframework.util.ClassUtils;
 public class Example<T> {
 
 	private final T probe;
-	private final ExampleSpec<? extends T> exampleSpec;
+	private final ExampleSpec exampleSpec;
 
 	/**
 	 * Create a new {@link Example} including all non-null properties by default.
@@ -37,12 +37,12 @@ public class Example<T> {
 	 * @param probe The probe to use. Must not be {@literal null}.
 	 */
 	@SuppressWarnings("unchecked")
-	public Example(T probe) {
+	private Example(T probe) {
 
 		Assert.notNull(probe, "Probe must not be null!");
 
 		this.probe = probe;
-		this.exampleSpec = ExampleSpec.of((Class<T>) probe.getClass());
+		this.exampleSpec = ExampleSpec.untyped();
 	}
 
 	/**
@@ -51,42 +51,12 @@ public class Example<T> {
 	 * @param probe The probe to use. Must not be {@literal null}.
 	 * @param exampleSpec The example specification to use. Must not be {@literal null}.
 	 */
-	public Example(T probe, ExampleSpec<? extends T> exampleSpec) {
+	private Example(T probe, ExampleSpec exampleSpec) {
 
 		Assert.notNull(probe, "Probe must not be null!");
 
 		this.probe = probe;
 		this.exampleSpec = exampleSpec;
-	}
-
-	/**
-	 * Get the example used.
-	 *
-	 * @return never {@literal null}.
-	 */
-	public T getProbe() {
-		return probe;
-	}
-
-	/**
-	 * Get the {@link ExampleSpec} used.
-	 *
-	 * @return never {@literal null}.
-	 */
-	public ExampleSpec<? extends T> getExampleSpec() {
-		return exampleSpec;
-	}
-
-	/**
-	 * Get the actual type for the probe used. This is usually the given class, but the original class in case of a
-	 * CGLIB-generated subclass.
-	 *
-	 * @return
-	 * @see ClassUtils#getUserClass(Class)
-	 */
-	@SuppressWarnings("unchecked")
-	public Class<T> getProbeType() {
-		return (Class<T>) ClassUtils.getUserClass(probe.getClass());
 	}
 
 	/**
@@ -106,8 +76,61 @@ public class Example<T> {
 	 * @param exampleSpec must not be {@literal null}.
 	 * @return
 	 */
-	public static <T> Example<T> of(T probe, ExampleSpec<? extends T> exampleSpec) {
+	public static <T> Example<T> of(T probe, ExampleSpec exampleSpec) {
 		return new Example<T>(probe, exampleSpec);
+	}
+
+	/**
+	 * Create a new {@link Example} with a configured {@link TypedExampleSpec}.
+	 *
+	 * @param probe must not be {@literal null}.
+	 * @param exampleSpec must not be {@literal null}.
+	 * @return
+	 */
+	public static <T, S extends T> Example<S> of(S probe, TypedExampleSpec<T> exampleSpec) {
+		return new Example<S>(probe, exampleSpec);
+	}
+
+	/**
+	 * Get the example used.
+	 *
+	 * @return never {@literal null}.
+	 */
+	public T getProbe() {
+		return probe;
+	}
+
+	/**
+	 * Get the {@link ExampleSpec} used.
+	 *
+	 * @return never {@literal null}.
+	 */
+	public ExampleSpec getExampleSpec() {
+		return exampleSpec;
+	}
+
+	/**
+	 * Get the actual type for the probe used. This is usually the given class, but the original class in case of a
+	 * CGLIB-generated subclass.
+	 *
+	 * @return
+	 * @see ClassUtils#getUserClass(Class)
+	 */
+	@SuppressWarnings("unchecked")
+	public Class<T> getProbeType() {
+		return (Class<T>) ClassUtils.getUserClass(probe.getClass());
+	}
+
+	/**
+	 * Get the actual result type for the query. The result type can be different when using {@link TypedExampleSpec}.
+	 *
+	 * @return
+	 * @see ClassUtils#getUserClass(Class)
+	 */
+	@SuppressWarnings("unchecked")
+	public <S extends T> Class<S> getResultType() {
+		return (Class<S>) (exampleSpec instanceof TypedExampleSpec<?> ? ((TypedExampleSpec<T>) exampleSpec).getType()
+				: getProbeType());
 	}
 
 }

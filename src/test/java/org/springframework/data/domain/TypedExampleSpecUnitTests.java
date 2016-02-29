@@ -15,9 +15,12 @@
  */
 package org.springframework.data.domain;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,15 +31,23 @@ import org.springframework.data.domain.ExampleSpec.StringMatcher;
  * Unit test for {@link ExampleSpec}.
  *
  * @author Mark Paluch
- * @soundtrack K2 - Der Berg Ruft (Club Mix)
+ * @soundtrack Harmonic Rush - The Dark Side of Persia (ahmed romel remix)
  */
-public class ExampleSpecUnitTests {
+public class TypedExampleSpecUnitTests {
 
-	ExampleSpec exampleSpec;
+	TypedExampleSpec<Person> exampleSpec;
 
 	@Before
 	public void setUp() throws Exception {
-		exampleSpec = ExampleSpec.untyped();
+		exampleSpec = ExampleSpec.typed(Person.class);
+	}
+
+	/**
+	 * @see DATACMNS-810
+	 */
+	@Test
+	public void typeShouldReturnConfiguredType() throws Exception {
+		assertThat(exampleSpec.getType(), equalTo(Person.class));
 	}
 
 	/**
@@ -53,7 +64,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void defaultStringMatcherShouldReturnContainingWhenConfigured() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withStringMatcherContaining();
+		exampleSpec = ExampleSpec.typed(Person.class).withStringMatcherContaining();
 		assertThat(exampleSpec.getDefaultStringMatcher(), is(StringMatcher.CONTAINING));
 	}
 
@@ -63,7 +74,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void defaultStringMatcherShouldReturnStartingWhenConfigured() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withStringMatcherStarting();
+		exampleSpec = ExampleSpec.typed(Person.class).withStringMatcherStarting();
 		assertThat(exampleSpec.getDefaultStringMatcher(), is(StringMatcher.STARTING));
 	}
 
@@ -73,7 +84,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void defaultStringMatcherShouldReturnEndingWhenConfigured() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withStringMatcherEnding();
+		exampleSpec = ExampleSpec.typed(Person.class).withStringMatcherEnding();
 		assertThat(exampleSpec.getDefaultStringMatcher(), is(StringMatcher.ENDING));
 	}
 
@@ -123,7 +134,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseEnabled() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withIgnoreCase();
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnoreCase();
 
 		assertThat(exampleSpec.isIgnoreCaseEnabled(), is(true));
 	}
@@ -134,7 +145,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseSet() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withIgnoreCase(true);
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnoreCase(true);
 
 		assertThat(exampleSpec.isIgnoreCaseEnabled(), is(true));
 	}
@@ -145,7 +156,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void nullHandlerShouldReturnInclude() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withIncludeNullValues();
+		exampleSpec = ExampleSpec.typed(Person.class).withIncludeNullValues();
 
 		assertThat(exampleSpec.getNullHandler(), is(NullHandler.INCLUDE));
 	}
@@ -156,7 +167,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void nullHandlerShouldReturnIgnore() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withIgnoreNullValues();
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnoreNullValues();
 
 		assertThat(exampleSpec.getNullHandler(), is(NullHandler.IGNORE));
 	}
@@ -167,7 +178,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void nullHandlerShouldReturnConfiguredValue() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withNullHandler(NullHandler.INCLUDE);
+		exampleSpec = ExampleSpec.typed(Person.class).withNullHandler(NullHandler.INCLUDE);
 
 		assertThat(exampleSpec.getNullHandler(), is(NullHandler.INCLUDE));
 	}
@@ -178,7 +189,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void ignoredPathsShouldReturnCorrectProperties() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withIgnorePaths("foo", "bar", "baz");
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnorePaths("foo", "bar", "baz");
 
 		assertThat(exampleSpec.getIgnoredPaths(), contains("foo", "bar", "baz"));
 		assertThat(exampleSpec.getIgnoredPaths(), hasSize(3));
@@ -190,7 +201,7 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void ignoredPathsShouldReturnUniqueProperties() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withIgnorePaths("foo", "bar", "foo");
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnorePaths("foo", "bar", "foo");
 
 		assertThat(exampleSpec.getIgnoredPaths(), contains("foo", "bar"));
 		assertThat(exampleSpec.getIgnoredPaths(), hasSize(2));
@@ -202,8 +213,8 @@ public class ExampleSpecUnitTests {
 	@Test
 	public void withCreatesNewInstance() throws Exception {
 
-		exampleSpec = ExampleSpec.untyped().withIgnorePaths("foo", "bar", "foo");
-		ExampleSpec configuredExampleSpec = exampleSpec.withIgnoreCase();
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnorePaths("foo", "bar", "foo");
+		TypedExampleSpec<Person> configuredExampleSpec = exampleSpec.withIgnoreCase();
 
 		assertThat(exampleSpec, is(not(sameInstance(configuredExampleSpec))));
 		assertThat(exampleSpec.getIgnoredPaths(), hasSize(2));

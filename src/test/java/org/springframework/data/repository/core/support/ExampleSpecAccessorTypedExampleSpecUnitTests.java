@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.domain;
+package org.springframework.data.repository.core.support;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.domain.ExampleSpec;
 import org.springframework.data.domain.ExampleSpec.GenericPropertyMatcher;
 import org.springframework.data.domain.ExampleSpec.GenericPropertyMatchers;
 import org.springframework.data.domain.ExampleSpec.MatcherConfigurer;
@@ -27,6 +28,7 @@ import org.springframework.data.domain.ExampleSpec.NoOpPropertyValueTransformer;
 import org.springframework.data.domain.ExampleSpec.NullHandler;
 import org.springframework.data.domain.ExampleSpec.PropertyValueTransformer;
 import org.springframework.data.domain.ExampleSpec.StringMatcher;
+import org.springframework.data.domain.TypedExampleSpec;
 
 /**
  * Test for {@link ExampleSpecAccessor}.
@@ -34,10 +36,10 @@ import org.springframework.data.domain.ExampleSpec.StringMatcher;
  * @author Mark Paluch
  * @soundtrack Cabballero - Dancing With Tears In My Eyes (Dance Maxi)
  */
-public class ExampleSpecAccessorUnitTests {
+public class ExampleSpecAccessorTypedExampleSpecUnitTests {
 
 	private Person person;
-	private ExampleSpec<Person> exampleSpec;
+	private TypedExampleSpec<Person> exampleSpec;
 	private ExampleSpecAccessor exampleSpecAccessor;
 
 	@Before
@@ -46,8 +48,16 @@ public class ExampleSpecAccessorUnitTests {
 		person = new Person();
 		person.firstname = "rand";
 
-		exampleSpec = ExampleSpec.of(Person.class);
+		exampleSpec = ExampleSpec.typed(Person.class);
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
+	}
+
+	/**
+	 * @see DATACMNS-810
+	 */
+	@Test
+	public void isTypedShouldReturnTrue() {
+		assertThat(exampleSpecAccessor.isTyped(), is(true));
 	}
 
 	/**
@@ -64,7 +74,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void nullHandlerShouldReturnInclude() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withIncludeNullValues();
+		exampleSpec = ExampleSpec.typed(Person.class).withIncludeNullValues();
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpecAccessor.getNullHandler(), equalTo(NullHandler.INCLUDE));
@@ -76,7 +86,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void exampleShouldIgnorePaths() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withIgnorePaths("firstname");
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnorePaths("firstname");
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpecAccessor.isIgnoredPath("firstname"), equalTo(true));
@@ -98,7 +108,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void exampleShouldUseConfiguredStringMatcherAsDefaultForPathThatDoesNotHavePropertySpecifier() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withStringMatcher(StringMatcher.CONTAINING);
+		exampleSpec = ExampleSpec.typed(Person.class).withStringMatcher(StringMatcher.CONTAINING);
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpecAccessor.getStringMatcherForPath("firstname"), equalTo(StringMatcher.CONTAINING));
@@ -110,7 +120,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void exampleShouldUseDefaultIgnoreCaseForPathThatDoesHavePropertySpecifierWithMatcher() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withIgnoreCase().withMatcher("firstname",
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnoreCase().withMatcher("firstname",
 				new GenericPropertyMatcher().contains());
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
@@ -123,7 +133,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void exampleShouldUseConfiguredIgnoreCaseForPathThatDoesHavePropertySpecifierWithMatcher() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withIgnoreCase().withMatcher("firstname",
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnoreCase().withMatcher("firstname",
 				new GenericPropertyMatcher().contains().caseSensitive());
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
@@ -136,7 +146,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void exampleShouldUseDefinedStringMatcherForPathThatDoesHavePropertySpecifierWithStringMatcherStarting() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withMatcher("firstname", GenericPropertyMatchers.startsWith());
+		exampleSpec = ExampleSpec.typed(Person.class).withMatcher("firstname", GenericPropertyMatchers.startsWith());
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpecAccessor.getStringMatcherForPath("firstname"), equalTo(StringMatcher.STARTING));
@@ -148,7 +158,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void exampleShouldUseDefinedStringMatcherForPathThatDoesHavePropertySpecifierWithStringMatcherContaining() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withMatcher("firstname", GenericPropertyMatchers.contains());
+		exampleSpec = ExampleSpec.typed(Person.class).withMatcher("firstname", GenericPropertyMatchers.contains());
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpecAccessor.getStringMatcherForPath("firstname"), equalTo(StringMatcher.CONTAINING));
@@ -160,7 +170,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void exampleShouldUseDefinedStringMatcherForPathThatDoesHavePropertySpecifierWithStringMatcherRegex() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withMatcher("firstname", GenericPropertyMatchers.regex());
+		exampleSpec = ExampleSpec.typed(Person.class).withMatcher("firstname", GenericPropertyMatchers.regex());
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpecAccessor.getStringMatcherForPath("firstname"), equalTo(StringMatcher.REGEX));
@@ -172,7 +182,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void exampleShouldFavorStringMatcherDefinedForPathOverConfiguredDefaultStringMatcher() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withStringMatcher(StringMatcher.ENDING)
+		exampleSpec = ExampleSpec.typed(Person.class).withStringMatcher(StringMatcher.ENDING)
 				.withMatcher("firstname", new GenericPropertyMatcher().contains())
 				.withMatcher("address.city", new GenericPropertyMatcher().startsWith())
 				.withMatcher("lastname", new MatcherConfigurer<GenericPropertyMatcher>() {
@@ -196,7 +206,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void exampleShouldUseDefaultStringMatcherForPathThatHasPropertySpecifierWithoutStringMatcher() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withStringMatcher(StringMatcher.STARTING).withMatcher("firstname",
+		exampleSpec = ExampleSpec.typed(Person.class).withStringMatcher(StringMatcher.STARTING).withMatcher("firstname",
 				new MatcherConfigurer<GenericPropertyMatcher>() {
 					@Override
 					public void configureMatcher(GenericPropertyMatcher matcher) {
@@ -227,7 +237,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseIsEnabled() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withIgnoreCase();
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnoreCase();
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpecAccessor.isIgnoreCaseEnabled(), is(true));
@@ -240,7 +250,7 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void ignoreCaseShouldFavorPathSpecificSettings() {
 
-		exampleSpec = ExampleSpec.of(Person.class).withIgnoreCase("firstname");
+		exampleSpec = ExampleSpec.typed(Person.class).withIgnoreCase("firstname");
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpec.isIgnoreCaseEnabled(), is(false));
@@ -270,7 +280,7 @@ public class ExampleSpecAccessorUnitTests {
 			}
 		};
 
-		ExampleSpec<Person> exampleSpec = ExampleSpec.of(Person.class).withTransformer("firstname", transformer);
+		exampleSpec = ExampleSpec.typed(Person.class).withTransformer("firstname", transformer);
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpecAccessor.getValueTransformerForPath("firstname"), equalTo(transformer));
@@ -290,8 +300,8 @@ public class ExampleSpecAccessorUnitTests {
 	@Test
 	public void hasPropertySpecifiersReturnsTrueWhenAtLeastOneIsSet() {
 
-		ExampleSpec<Person> exampleSpec = ExampleSpec.of(Person.class).withStringMatcher(StringMatcher.STARTING)
-				.withMatcher("firstname", new GenericPropertyMatcher().contains());
+		exampleSpec = ExampleSpec.typed(Person.class).withStringMatcher(StringMatcher.STARTING).withMatcher("firstname",
+				new GenericPropertyMatcher().contains());
 		exampleSpecAccessor = new ExampleSpecAccessor(exampleSpec);
 
 		assertThat(exampleSpecAccessor.hasPropertySpecifiers(), is(true));

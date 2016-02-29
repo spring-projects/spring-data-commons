@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.domain;
+package org.springframework.data.repository.core.support;
 
 import java.util.Collection;
+
+import org.springframework.data.domain.ExampleSpec;
+import org.springframework.data.domain.TypedExampleSpec;
 
 /**
  * Accessor for the {@link ExampleSpec} to use in modules that support query by example (QBE) querying.
@@ -25,9 +28,9 @@ import java.util.Collection;
  */
 public class ExampleSpecAccessor {
 
-	private final ExampleSpec<?> exampleSpec;
+	private final ExampleSpec exampleSpec;
 
-	public ExampleSpecAccessor(ExampleSpec<?> exampleSpec) {
+	public ExampleSpecAccessor(ExampleSpec exampleSpec) {
 		this.exampleSpec = exampleSpec;
 	}
 
@@ -144,6 +147,13 @@ public class ExampleSpecAccessor {
 		}
 
 		return getPropertySpecifier(path).getPropertyValueTransformer();
+	}
+
+	/**
+	 * @return {@literal true} if the {@link ExampleSpec} is typed.
+	 */
+	public boolean isTyped() {
+		return exampleSpec instanceof TypedExampleSpec<?>;
 	}
 
 }

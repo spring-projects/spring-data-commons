@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.repository.query.parser.Part;
-import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.util.Assert;
 
 /**
@@ -40,20 +38,16 @@ import org.springframework.util.Assert;
  * @param <T>
  * @since 1.12
  */
-public class ExampleSpec<T> {
+public class ExampleSpec {
 
-	private final Class<T> type;
-	private final NullHandler nullHandler;
-	private final StringMatcher defaultStringMatcher;
-	private final boolean defaultIgnoreCase;
-	private final PropertySpecifiers propertySpecifiers;
-	private final Set<String> ignoredPaths;
+	protected final NullHandler nullHandler;
+	protected final StringMatcher defaultStringMatcher;
+	protected final boolean defaultIgnoreCase;
+	protected final PropertySpecifiers propertySpecifiers;
+	protected final Set<String> ignoredPaths;
 
-	private ExampleSpec(Class<T> type) {
+	ExampleSpec() {
 
-		Assert.notNull(type, "Type must not be null!");
-
-		this.type = type;
 		this.nullHandler = NullHandler.IGNORE;
 		this.defaultStringMatcher = StringMatcher.DEFAULT;
 		this.propertySpecifiers = new PropertySpecifiers();
@@ -61,12 +55,9 @@ public class ExampleSpec<T> {
 		this.ignoredPaths = Collections.emptySet();
 	}
 
-	private ExampleSpec(Class<T> type, NullHandler nullHandler, StringMatcher defaultStringMatcher,
-			PropertySpecifiers propertySpecifiers, Set<String> ignoredPaths, boolean defaultIgnoreCase) {
+	ExampleSpec(NullHandler nullHandler, StringMatcher defaultStringMatcher, PropertySpecifiers propertySpecifiers,
+			Set<String> ignoredPaths, boolean defaultIgnoreCase) {
 
-		Assert.notNull(type, "Type must not be null!");
-
-		this.type = type;
 		this.nullHandler = nullHandler;
 		this.defaultStringMatcher = defaultStringMatcher;
 		this.propertySpecifiers = propertySpecifiers;
@@ -75,12 +66,32 @@ public class ExampleSpec<T> {
 	}
 
 	/**
+	 * Create a new {@link ExampleSpec} including all non-null properties by default.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	public static ExampleSpec untyped() {
+		return new ExampleSpec();
+	}
+
+	/**
+	 * Create a new {@link ExampleSpec} including all non-null properties by default.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	public static <T> TypedExampleSpec<T> typed(Class<T> type) {
+		return new TypedExampleSpec<T>(type);
+	}
+
+	/**
 	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and ignore the {@code propertyPaths}.
 	 *
 	 * @param ignoredPaths must not be {@literal null} and not empty.
 	 * @return
 	 */
-	public ExampleSpec<T> withIgnorePaths(String... ignoredPaths) {
+	public ExampleSpec withIgnorePaths(String... ignoredPaths) {
 
 		Assert.notEmpty(ignoredPaths, "IgnoredPaths must not be empty!");
 		Assert.noNullElements(ignoredPaths, "IgnoredPaths must not contain null elements!");
@@ -88,8 +99,7 @@ public class ExampleSpec<T> {
 		Set<String> newIgnoredPaths = new LinkedHashSet<String>(this.ignoredPaths);
 		newIgnoredPaths.addAll(Arrays.asList(ignoredPaths));
 
-		return new ExampleSpec<T>(type, nullHandler, defaultStringMatcher, propertySpecifiers, newIgnoredPaths,
-				defaultIgnoreCase);
+		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, newIgnoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -98,9 +108,8 @@ public class ExampleSpec<T> {
 	 *
 	 * @return
 	 */
-	public ExampleSpec<T> withStringMatcherStarting() {
-		return new ExampleSpec<T>(type, nullHandler, StringMatcher.STARTING, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+	public ExampleSpec withStringMatcherStarting() {
+		return new ExampleSpec(nullHandler, StringMatcher.STARTING, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -109,9 +118,8 @@ public class ExampleSpec<T> {
 	 *
 	 * @return
 	 */
-	public ExampleSpec<T> withStringMatcherEnding() {
-		return new ExampleSpec<T>(type, nullHandler, StringMatcher.ENDING, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+	public ExampleSpec withStringMatcherEnding() {
+		return new ExampleSpec(nullHandler, StringMatcher.ENDING, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -120,9 +128,8 @@ public class ExampleSpec<T> {
 	 *
 	 * @return
 	 */
-	public ExampleSpec<T> withStringMatcherContaining() {
-		return new ExampleSpec<T>(type, nullHandler, StringMatcher.CONTAINING, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+	public ExampleSpec withStringMatcherContaining() {
+		return new ExampleSpec(nullHandler, StringMatcher.CONTAINING, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -131,12 +138,11 @@ public class ExampleSpec<T> {
 	 * @param defaultStringMatcher must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec<T> withStringMatcher(StringMatcher defaultStringMatcher) {
+	public ExampleSpec withStringMatcher(StringMatcher defaultStringMatcher) {
 
 		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty!");
 
-		return new ExampleSpec<T>(type, nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -145,7 +151,7 @@ public class ExampleSpec<T> {
 	 *
 	 * @return
 	 */
-	public ExampleSpec<T> withIgnoreCase() {
+	public ExampleSpec withIgnoreCase() {
 		return withIgnoreCase(true);
 	}
 
@@ -155,9 +161,8 @@ public class ExampleSpec<T> {
 	 * @param defaultIgnoreCase
 	 * @return
 	 */
-	public ExampleSpec<T> withIgnoreCase(boolean defaultIgnoreCase) {
-		return new ExampleSpec<T>(type, nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+	public ExampleSpec withIgnoreCase(boolean defaultIgnoreCase) {
+		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -168,7 +173,7 @@ public class ExampleSpec<T> {
 	 * @param matcherConfigurer callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec<T> withMatcher(String propertyPath, MatcherConfigurer<GenericPropertyMatcher> matcherConfigurer) {
+	public ExampleSpec withMatcher(String propertyPath, MatcherConfigurer<GenericPropertyMatcher> matcherConfigurer) {
 
 		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
 		Assert.notNull(matcherConfigurer, "MatcherConfigurer must not be empty!");
@@ -187,7 +192,7 @@ public class ExampleSpec<T> {
 	 * @param genericPropertyMatcher callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec<T> withMatcher(String propertyPath, GenericPropertyMatcher genericPropertyMatcher) {
+	public ExampleSpec withMatcher(String propertyPath, GenericPropertyMatcher genericPropertyMatcher) {
 
 		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
 		Assert.notNull(genericPropertyMatcher, "GenericPropertyMatcher must not be empty!");
@@ -195,14 +200,21 @@ public class ExampleSpec<T> {
 		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
 		PropertySpecifier propertySpecifier = new PropertySpecifier(propertyPath);
 
-		propertySpecifier.stringMatcher = genericPropertyMatcher.stringMatcher;
-		propertySpecifier.ignoreCase = genericPropertyMatcher.ignoreCase;
-		propertySpecifier.valueTransformer = genericPropertyMatcher.valueTransformer;
+		if (genericPropertyMatcher.ignoreCase != null) {
+			propertySpecifier = propertySpecifier.withIgnoreCase(genericPropertyMatcher.ignoreCase);
+		}
+
+		if (genericPropertyMatcher.stringMatcher != null) {
+			propertySpecifier = propertySpecifier.withStringMatcher(genericPropertyMatcher.stringMatcher);
+		}
+
+		if (genericPropertyMatcher.valueTransformer != null) {
+			propertySpecifier = propertySpecifier.withValueTransformer(genericPropertyMatcher.valueTransformer);
+		}
 
 		propertySpecifiers.add(propertySpecifier);
 
-		return new ExampleSpec<T>(type, nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -213,20 +225,17 @@ public class ExampleSpec<T> {
 	 * @param propertyValueTransformer must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec<T> withTransformer(String propertyPath, PropertyValueTransformer propertyValueTransformer) {
+	public ExampleSpec withTransformer(String propertyPath, PropertyValueTransformer propertyValueTransformer) {
 
 		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
 		Assert.notNull(propertyValueTransformer, "PropertyValueTransformer must not be empty!");
 
 		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
-		PropertySpecifier propertySpecifier = createOrClonePropertySpecifier(propertyPath, propertySpecifiers);
+		PropertySpecifier propertySpecifier = getOrCreatePropertySpecifier(propertyPath, propertySpecifiers);
 
-		propertySpecifier.valueTransformer = propertyValueTransformer;
+		propertySpecifiers.add(propertySpecifier.withValueTransformer(propertyValueTransformer));
 
-		propertySpecifiers.add(propertySpecifier);
-
-		return new ExampleSpec<T>(type, nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -236,7 +245,7 @@ public class ExampleSpec<T> {
 	 * @param propertyPaths must not be {@literal null} and not empty.
 	 * @return
 	 */
-	public ExampleSpec<T> withIgnoreCase(String... propertyPaths) {
+	public ExampleSpec withIgnoreCase(String... propertyPaths) {
 
 		Assert.notEmpty(propertyPaths, "PropertyPaths must not be empty!");
 		Assert.noNullElements(propertyPaths, "PropertyPaths must not contain null elements!");
@@ -244,27 +253,20 @@ public class ExampleSpec<T> {
 		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
 
 		for (String propertyPath : propertyPaths) {
-			PropertySpecifier propertySpecifier = createOrClonePropertySpecifier(propertyPath, propertySpecifiers);
-			propertySpecifier.ignoreCase = true;
-			propertySpecifiers.add(propertySpecifier);
+			PropertySpecifier propertySpecifier = getOrCreatePropertySpecifier(propertyPath, propertySpecifiers);
+			propertySpecifiers.add(propertySpecifier.withIgnoreCase(true));
 		}
 
-		return new ExampleSpec<T>(type, nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
-	private PropertySpecifier createOrClonePropertySpecifier(String propertyPath, PropertySpecifiers propertySpecifiers) {
-		PropertySpecifier propertySpecifier;
+	protected PropertySpecifier getOrCreatePropertySpecifier(String propertyPath, PropertySpecifiers propertySpecifiers) {
 
 		if (propertySpecifiers.hasSpecifierForPath(propertyPath)) {
-			propertySpecifier = new PropertySpecifier(propertyPath);
-			PropertySpecifier existing = propertySpecifiers.getForPath(propertyPath);
-			propertySpecifier.ignoreCase = existing.ignoreCase;
-			propertySpecifier.stringMatcher = existing.stringMatcher;
-		} else {
-			propertySpecifier = new PropertySpecifier(propertyPath);
+			return propertySpecifiers.getForPath(propertyPath);
 		}
-		return propertySpecifier;
+
+		return new PropertySpecifier(propertyPath);
 	}
 
 	/**
@@ -273,8 +275,8 @@ public class ExampleSpec<T> {
 	 *
 	 * @return
 	 */
-	public ExampleSpec<T> withIncludeNullValues() {
-		return new ExampleSpec<T>(type, NullHandler.INCLUDE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
+	public ExampleSpec withIncludeNullValues() {
+		return new ExampleSpec(NullHandler.INCLUDE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
 				defaultIgnoreCase);
 	}
 
@@ -284,8 +286,8 @@ public class ExampleSpec<T> {
 	 *
 	 * @return
 	 */
-	public ExampleSpec<T> withIgnoreNullValues() {
-		return new ExampleSpec<T>(type, NullHandler.IGNORE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
+	public ExampleSpec withIgnoreNullValues() {
+		return new ExampleSpec(NullHandler.IGNORE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
 				defaultIgnoreCase);
 	}
 
@@ -296,21 +298,10 @@ public class ExampleSpec<T> {
 	 * @param nullHandler must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec<T> withNullHandler(NullHandler nullHandler) {
+	public ExampleSpec withNullHandler(NullHandler nullHandler) {
 
 		Assert.notNull(nullHandler, "NullHandler must not be null!");
-		return new ExampleSpec<T>(type, nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
-	}
-
-	/**
-	 * Create a new {@link Example} containing the {@code probe}.
-	 *
-	 * @param probe must not be {@literal null}.
-	 * @return
-	 */
-	public Example<T> createExample(T probe) {
-		return Example.of(probe, this);
+		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -353,18 +344,11 @@ public class ExampleSpec<T> {
 		return ignoredPaths;
 	}
 
-	PropertySpecifiers getPropertySpecifiers() {
-		return propertySpecifiers;
-	}
-
 	/**
-	 * Create a new {@link ExampleSpec} including all non-null properties by default.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return the {@link PropertySpecifiers} within the {@link ExampleSpec}.
 	 */
-	public static <T> ExampleSpec<T> of(Class<T> type) {
-		return new ExampleSpec<T>(type);
+	public PropertySpecifiers getPropertySpecifiers() {
+		return propertySpecifiers;
 	}
 
 	/**
@@ -394,124 +378,14 @@ public class ExampleSpec<T> {
 	 */
 	public static class GenericPropertyMatcher {
 
-		private StringMatcher stringMatcher = null;
-		private Boolean ignoreCase = null;
-		private PropertyValueTransformer valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
+		StringMatcher stringMatcher = null;
+		Boolean ignoreCase = null;
+		PropertyValueTransformer valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
 
 		/**
-		 * Sets ignores case to {@literal true}.
-		 *
-		 * @return
+		 * Creates an unconfigured {@link GenericPropertyMatcher}.
 		 */
-		public GenericPropertyMatcher ignoreCase() {
-			this.ignoreCase = true;
-			return this;
-		}
-
-		/**
-		 * Sets ignores case to {@code ignoreCase}.
-		 *
-		 * @param ignoreCase
-		 * @return
-		 */
-		public GenericPropertyMatcher ignoreCase(boolean ignoreCase) {
-			this.ignoreCase = ignoreCase;
-			return this;
-		}
-
-		/**
-		 * Sets ignores case to {@literal false}.
-		 *
-		 * @return
-		 */
-		public GenericPropertyMatcher caseSensitive() {
-			this.ignoreCase = false;
-			return this;
-		}
-
-		/**
-		 * Sets string matcher to {@link StringMatcher#CONTAINING}.
-		 *
-		 * @return
-		 */
-		public GenericPropertyMatcher contains() {
-			this.stringMatcher = StringMatcher.CONTAINING;
-			return this;
-		}
-
-		/**
-		 * Sets string matcher to {@link StringMatcher#ENDING}.
-		 *
-		 * @return
-		 */
-		public GenericPropertyMatcher endsWith() {
-			this.stringMatcher = StringMatcher.ENDING;
-			return this;
-		}
-
-		/**
-		 * Sets string matcher to {@link StringMatcher#STARTING}.
-		 *
-		 * @return
-		 */
-		public GenericPropertyMatcher startsWith() {
-			this.stringMatcher = StringMatcher.STARTING;
-			return this;
-		}
-
-		/**
-		 * Sets string matcher to {@link StringMatcher#EXACT}.
-		 *
-		 * @return
-		 */
-		public GenericPropertyMatcher exact() {
-			this.stringMatcher = StringMatcher.EXACT;
-			return this;
-		}
-
-		/**
-		 * Sets string matcher to {@link StringMatcher#DEFAULT}.
-		 *
-		 * @return
-		 */
-		public GenericPropertyMatcher storeDefaultMatching() {
-			this.stringMatcher = StringMatcher.DEFAULT;
-			return this;
-		}
-
-		/**
-		 * Sets string matcher to {@link StringMatcher#REGEX}.
-		 *
-		 * @return
-		 */
-		public GenericPropertyMatcher regex() {
-			this.stringMatcher = StringMatcher.REGEX;
-			return this;
-		}
-
-		/**
-		 * Sets string matcher to {@code stringMatcher}.
-		 *
-		 * @param stringMatcher must not be {@literal null}.
-		 * @return
-		 */
-		public GenericPropertyMatcher stringMatcher(StringMatcher stringMatcher) {
-			Assert.notNull(stringMatcher, "StringMatcher must not be null!");
-			this.stringMatcher = stringMatcher;
-			return this;
-		}
-
-		/**
-		 * Sets the {@link PropertyValueTransformer} to {@code propertyValueTransformer}.
-		 *
-		 * @param propertyValueTransformer must not be {@literal null}.
-		 * @return
-		 */
-		public GenericPropertyMatcher transform(PropertyValueTransformer propertyValueTransformer) {
-			Assert.notNull(propertyValueTransformer, "PropertyValueTransformer must not be null!");
-			this.valueTransformer = propertyValueTransformer;
-			return this;
-		}
+		public GenericPropertyMatcher() {}
 
 		/**
 		 * Creates a new {@link GenericPropertyMatcher} with a {@link StringMatcher} and {@code ignoreCase}.
@@ -532,6 +406,132 @@ public class ExampleSpec<T> {
 		 */
 		public static GenericPropertyMatcher of(StringMatcher stringMatcher) {
 			return new GenericPropertyMatcher().stringMatcher(stringMatcher);
+		}
+
+		/**
+		 * Sets ignores case to {@literal true}.
+		 *
+		 * @return
+		 */
+		public GenericPropertyMatcher ignoreCase() {
+
+			this.ignoreCase = true;
+			return this;
+		}
+
+		/**
+		 * Sets ignores case to {@code ignoreCase}.
+		 *
+		 * @param ignoreCase
+		 * @return
+		 */
+		public GenericPropertyMatcher ignoreCase(boolean ignoreCase) {
+
+			this.ignoreCase = ignoreCase;
+			return this;
+		}
+
+		/**
+		 * Sets ignores case to {@literal false}.
+		 *
+		 * @return
+		 */
+		public GenericPropertyMatcher caseSensitive() {
+
+			this.ignoreCase = false;
+			return this;
+		}
+
+		/**
+		 * Sets string matcher to {@link StringMatcher#CONTAINING}.
+		 *
+		 * @return
+		 */
+		public GenericPropertyMatcher contains() {
+
+			this.stringMatcher = StringMatcher.CONTAINING;
+			return this;
+		}
+
+		/**
+		 * Sets string matcher to {@link StringMatcher#ENDING}.
+		 *
+		 * @return
+		 */
+		public GenericPropertyMatcher endsWith() {
+
+			this.stringMatcher = StringMatcher.ENDING;
+			return this;
+		}
+
+		/**
+		 * Sets string matcher to {@link StringMatcher#STARTING}.
+		 *
+		 * @return
+		 */
+		public GenericPropertyMatcher startsWith() {
+
+			this.stringMatcher = StringMatcher.STARTING;
+			return this;
+		}
+
+		/**
+		 * Sets string matcher to {@link StringMatcher#EXACT}.
+		 *
+		 * @return
+		 */
+		public GenericPropertyMatcher exact() {
+
+			this.stringMatcher = StringMatcher.EXACT;
+			return this;
+		}
+
+		/**
+		 * Sets string matcher to {@link StringMatcher#DEFAULT}.
+		 *
+		 * @return
+		 */
+		public GenericPropertyMatcher storeDefaultMatching() {
+
+			this.stringMatcher = StringMatcher.DEFAULT;
+			return this;
+		}
+
+		/**
+		 * Sets string matcher to {@link StringMatcher#REGEX}.
+		 *
+		 * @return
+		 */
+		public GenericPropertyMatcher regex() {
+
+			this.stringMatcher = StringMatcher.REGEX;
+			return this;
+		}
+
+		/**
+		 * Sets string matcher to {@code stringMatcher}.
+		 *
+		 * @param stringMatcher must not be {@literal null}.
+		 * @return
+		 */
+		public GenericPropertyMatcher stringMatcher(StringMatcher stringMatcher) {
+
+			Assert.notNull(stringMatcher, "StringMatcher must not be null!");
+			this.stringMatcher = stringMatcher;
+			return this;
+		}
+
+		/**
+		 * Sets the {@link PropertyValueTransformer} to {@code propertyValueTransformer}.
+		 *
+		 * @param propertyValueTransformer must not be {@literal null}.
+		 * @return
+		 */
+		public GenericPropertyMatcher transform(PropertyValueTransformer propertyValueTransformer) {
+
+			Assert.notNull(propertyValueTransformer, "PropertyValueTransformer must not be null!");
+			this.valueTransformer = propertyValueTransformer;
+			return this;
 		}
 
 	}
@@ -628,42 +628,27 @@ public class ExampleSpec<T> {
 		/**
 		 * Store specific default.
 		 */
-		DEFAULT(null),
+		DEFAULT,
 		/**
 		 * Matches the exact string
 		 */
-		EXACT(Type.SIMPLE_PROPERTY),
+		EXACT,
 		/**
 		 * Matches string starting with pattern
 		 */
-		STARTING(Type.STARTING_WITH),
+		STARTING,
 		/**
 		 * Matches string ending with pattern
 		 */
-		ENDING(Type.ENDING_WITH),
+		ENDING,
 		/**
 		 * Matches string containing pattern
 		 */
-		CONTAINING(Type.CONTAINING),
+		CONTAINING,
 		/**
 		 * Treats strings as regular expression patterns
 		 */
-		REGEX(Type.REGEX);
-
-		private Type type;
-
-		private StringMatcher(Type type) {
-			this.type = type;
-		}
-
-		/**
-		 * Get the according {@link Part.Type}.
-		 *
-		 * @return {@literal null} for {@link StringMatcher#DEFAULT}.
-		 */
-		public Type getPartType() {
-			return type;
-		}
+		REGEX;
 
 	}
 
@@ -678,7 +663,7 @@ public class ExampleSpec<T> {
 	 * @author Christoph Strobl
 	 * @since 1.12
 	 */
-	static enum NoOpPropertyValueTransformer implements ExampleSpec.PropertyValueTransformer {
+	public static enum NoOpPropertyValueTransformer implements ExampleSpec.PropertyValueTransformer {
 
 		INSTANCE;
 
@@ -695,13 +680,13 @@ public class ExampleSpec<T> {
 	 * @author Christoph Strobl
 	 * @since 1.12
 	 */
-	static class PropertySpecifier {
+	public static class PropertySpecifier {
 
 		private final String path;
 
-		private StringMatcher stringMatcher;
-		private Boolean ignoreCase;
-		private PropertyValueTransformer valueTransformer;
+		private final StringMatcher stringMatcher;
+		private final Boolean ignoreCase;
+		private final PropertyValueTransformer valueTransformer;
 
 		/**
 		 * Creates new {@link PropertySpecifier} for given path.
@@ -712,6 +697,56 @@ public class ExampleSpec<T> {
 
 			Assert.hasText(path, "Path must not be null/empty!");
 			this.path = path;
+
+			this.stringMatcher = null;
+			this.ignoreCase = null;
+			this.valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
+		}
+
+		private PropertySpecifier(String path, StringMatcher stringMatcher, Boolean ignoreCase,
+				PropertyValueTransformer valueTransformer) {
+
+			this.path = path;
+			this.stringMatcher = stringMatcher;
+			this.ignoreCase = ignoreCase;
+			this.valueTransformer = valueTransformer;
+		}
+
+		/**
+		 * Creates a new {@link PropertySpecifier} containing all values from the current instance and sets
+		 * {@link StringMatcher} in the returned instance.
+		 *
+		 * @param stringMatcher must not be {@literal null}.
+		 * @return
+		 */
+		public PropertySpecifier withStringMatcher(StringMatcher stringMatcher) {
+
+			Assert.notNull(stringMatcher, "StringMatcher must not be null!");
+			return new PropertySpecifier(this.path, stringMatcher, this.ignoreCase, this.valueTransformer);
+		}
+
+		/**
+		 * Creates a new {@link PropertySpecifier} containing all values from the current instance and sets
+		 * {@code ignoreCase}.
+		 *
+		 * @param ignoreCase must not be {@literal null}.
+		 * @return
+		 */
+		public PropertySpecifier withIgnoreCase(boolean ignoreCase) {
+			return new PropertySpecifier(this.path, this.stringMatcher, ignoreCase, this.valueTransformer);
+		}
+
+		/**
+		 * Creates a new {@link PropertySpecifier} containing all values from the current instance and sets
+		 * {@link PropertyValueTransformer} in the returned instance.
+		 *
+		 * @param valueTransformer must not be {@literal null}.
+		 * @return
+		 */
+		public PropertySpecifier withValueTransformer(PropertyValueTransformer valueTransformer) {
+
+			Assert.notNull(valueTransformer, "PropertyValueTransformer must not be null!");
+			return new PropertySpecifier(this.path, this.stringMatcher, this.ignoreCase, valueTransformer);
 		}
 
 		/**
@@ -760,11 +795,13 @@ public class ExampleSpec<T> {
 
 	}
 
-	static class PropertySpecifiers {
+	public static class PropertySpecifiers {
 
 		private final Map<String, PropertySpecifier> propertySpecifiers = new LinkedHashMap<String, PropertySpecifier>();
 
-		public PropertySpecifiers() {}
+		PropertySpecifiers() {
+
+		}
 
 		PropertySpecifiers(PropertySpecifiers propertySpecifiers) {
 			this.propertySpecifiers.putAll(propertySpecifiers.propertySpecifiers);

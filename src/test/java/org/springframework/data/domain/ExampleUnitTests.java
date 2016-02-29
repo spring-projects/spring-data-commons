@@ -47,7 +47,7 @@ public class ExampleUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void exampleOfNullThrowsException() {
-		new Example<Object>(null);
+		Example.of(null);
 	}
 
 	/**
@@ -56,6 +56,37 @@ public class ExampleUnitTests {
 	@Test
 	public void getSampleTypeRetunsSampleObjectsClass() {
 		assertThat(example.getProbeType(), equalTo(Person.class));
+	}
+
+	/**
+	 * @see DATACMNS-810
+	 */
+	@Test
+	public void createTypedExample() {
+
+		Example<Person> example = of(new Person(), ExampleSpec.typed(Contact.class));
+
+		assertThat(example.getProbeType(), equalTo(Person.class));
+		assertThat(example.getResultType(), equalTo((Class) Contact.class));
+		assertThat(example.getProbeType(), equalTo(Person.class));
+	}
+
+	/**
+	 * @see DATACMNS-810
+	 */
+	@Test
+	public void createUntypedExample() {
+
+		Example<Person> example = of(new Person(), ExampleSpec.untyped());
+
+		assertThat(example.getProbeType(), equalTo(Person.class));
+		assertThat(example.getResultType(), equalTo((Class) Person.class));
+		assertThat(example.getProbeType(), equalTo(Person.class));
+	}
+
+	static class Contact {
+
+		String label;
 	}
 
 	static class Person {
