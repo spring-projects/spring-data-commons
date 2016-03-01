@@ -28,10 +28,12 @@ import org.springframework.util.Assert;
 
 /**
  * Specification for property path matching to use in query by example (QBE). An {@link ExampleSpec} can be created for
- * a {@link Class object type}. Instances of {@link ExampleSpec} but they can be refined using the various
- * {@code with...} methods in a fluent style. A {@code with...} method creates a new instance of {@link ExampleSpec}
- * containing all settings from the current instance but sets the value in the new instance. Null-handling defaults to
+ * a {@link Class object type}. Instances of {@link ExampleSpec} can be either {@link #untyped()} or
+ * {@link #typed(Class)} and settings can be tuned {@code with...} methods in a fluent style. {@code with...} methods
+ * return a copy of the {@link ExampleSpec} instance with the specified setting. Null-handling defaults to
  * {@link NullHandler#IGNORE} and case-sensitive {@link StringMatcher#DEFAULT} string matching.
+ * <p>
+ * This class is immutable.
  *
  * @author Christoph Strobl
  * @author Mark Paluch
@@ -66,7 +68,7 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} including all non-null properties by default.
+	 * Create a new untyped {@link ExampleSpec} including all non-null properties by default.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return
@@ -76,7 +78,7 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} including all non-null properties by default.
+	 * Create a new {@link TypedExampleSpec} including all non-null properties by default.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return
@@ -86,7 +88,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and ignore the {@code propertyPaths}.
+	 * Returns a copy of this {@link ExampleSpec} with the specified {@code propertyPaths}. This instance is immutable and
+	 * unaffected by this method call.
 	 *
 	 * @param ignoredPaths must not be {@literal null} and not empty.
 	 * @return
@@ -103,8 +106,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set string matching to
-	 * {@link StringMatcher#STARTING}.
+	 * Returns a copy of this {@link ExampleSpec} with the specified string matching of {@link StringMatcher#STARTING}.
+	 * This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -113,8 +116,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set string matching to
-	 * {@link StringMatcher#ENDING}.
+	 * Returns a copy of this {@link ExampleSpec} with the specified string matching of {@link StringMatcher#ENDING}. This
+	 * instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -123,8 +126,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set string matching to
-	 * {@link StringMatcher#CONTAINING}.
+	 * Returns a copy of this {@link ExampleSpec} with the specified string matching of {@link StringMatcher#CONTAINING}.
+	 * This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -133,7 +136,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set the {@code defaultStringMatcher}.
+	 * Returns a copy of this {@link ExampleSpec} with the specified string matching of {@code defaultStringMatcher}. This
+	 * instance is immutable and unaffected by this method call.
 	 *
 	 * @param defaultStringMatcher must not be {@literal null}.
 	 * @return
@@ -146,8 +150,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} with ignoring case sensitivity by
-	 * default.
+	 * Returns a copy of this {@link ExampleSpec} with ignoring case sensitivity by default. This instance is immutable
+	 * and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -156,7 +160,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} with {@code defaultIgnoreCase}.
+	 * Returns a copy of this {@link ExampleSpec} with {@code defaultIgnoreCase}. This instance is immutable and
+	 * unaffected by this method call.
 	 *
 	 * @param defaultIgnoreCase
 	 * @return
@@ -166,8 +171,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and configure a
-	 * {@code GenericPropertyMatcher} for the {@code propertyPath}.
+	 * Returns a copy of this {@link ExampleSpec} with the specified {@code GenericPropertyMatcher} for the
+	 * {@code propertyPath}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @param matcherConfigurer callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
@@ -185,8 +190,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and configure a
-	 * {@code GenericPropertyMatcher} for the {@code propertyPath}.
+	 * Returns a copy of this {@link ExampleSpec} with the specified {@code GenericPropertyMatcher} for the
+	 * {@code propertyPath}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @param genericPropertyMatcher callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
@@ -218,8 +223,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and configure a
-	 * {@code PropertyValueTransformer} for the {@code propertyPath}.
+	 * Returns a copy of this {@link ExampleSpec} with the specified {@code PropertyValueTransformer} for the
+	 * {@code propertyPath}.
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @param propertyValueTransformer must not be {@literal null}.
@@ -239,8 +244,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and ignore case sensitivity for the
-	 * {@code propertyPaths}.
+	 * Returns a copy of this {@link ExampleSpec} with ignore case sensitivity for the {@code propertyPaths}. This
+	 * instance is immutable and unaffected by this method call.
 	 *
 	 * @param propertyPaths must not be {@literal null} and not empty.
 	 * @return
@@ -270,8 +275,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set treatment of {@literal null}
-	 * values to {@link NullHandler#INCLUDE}.
+	 * Returns a copy of this {@link ExampleSpec} with treatment for {@literal null} values of {@link NullHandler#INCLUDE}
+	 * . This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -281,8 +286,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set treatment of {@literal null}
-	 * values to {@link NullHandler#IGNORE}.
+	 * Returns a copy of this {@link ExampleSpec} with treatment for {@literal null} values of {@link NullHandler#IGNORE}.
+	 * This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -292,8 +297,8 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set treatment of {@literal null}
-	 * values to {@code nullHandler}.
+	 * Returns a copy of this {@link ExampleSpec} with the specified {@code nullHandler}. This instance is immutable and
+	 * unaffected by this method call.
 	 *
 	 * @param nullHandler must not be {@literal null}.
 	 * @return
@@ -795,6 +800,12 @@ public class ExampleSpec {
 
 	}
 
+	/**
+	 * Define specific property handling for Dot-Paths.
+	 *
+	 * @author Christoph Strobl
+	 * @since 1.12
+	 */
 	public static class PropertySpecifiers {
 
 		private final Map<String, PropertySpecifier> propertySpecifiers = new LinkedHashMap<String, PropertySpecifier>();

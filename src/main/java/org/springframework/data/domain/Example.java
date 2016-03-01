@@ -19,7 +19,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * Support for query by example (QBE).
+ * Support for query by example (QBE). An {@link Example} takes a {@code probe} to define the example. Matching options
+ * and type safety can be tuned using {@link ExampleSpec}. {@link Example} uses {@link ExampleSpec#untyped()}
+ * {@link ExampleSpec} by default.
+ * <p>
+ * This class is immutable.
  *
  * @author Christoph Strobl
  * @author Mark Paluch
@@ -60,7 +64,7 @@ public class Example<T> {
 	}
 
 	/**
-	 * Create a new {@link Example} including all non-null properties by default.
+	 * Create a new {@link Example} including all non-null properties by default using an untyped {@link ExampleSpec}.
 	 *
 	 * @param probe must not be {@literal null}.
 	 * @return
@@ -70,7 +74,7 @@ public class Example<T> {
 	}
 
 	/**
-	 * Create a new {@link Example} with a configured {@link ExampleSpec}.
+	 * Create a new {@link Example} with a configured untyped {@link ExampleSpec}.
 	 *
 	 * @param probe must not be {@literal null}.
 	 * @param exampleSpec must not be {@literal null}.

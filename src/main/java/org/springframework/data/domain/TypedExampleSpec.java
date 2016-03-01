@@ -61,7 +61,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and ignore the {@code propertyPaths}.
+	 * Returns a copy of this {@link TypedExampleSpec} with the specified {@code propertyPaths}. This instance is
+	 * immutable and unaffected by this method call.
 	 *
 	 * @param ignoredPaths must not be {@literal null} and not empty.
 	 * @return
@@ -80,8 +81,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set string matching to
-	 * {@link StringMatcher#STARTING}.
+	 * Returns a copy of this {@link TypedExampleSpec} with the specified string matching of
+	 * {@link StringMatcher#STARTING}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -92,8 +93,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set string matching to
-	 * {@link StringMatcher#ENDING}.
+	 * Returns a copy of this {@link TypedExampleSpec} with the specified string matching of {@link StringMatcher#ENDING}.
+	 * This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -104,8 +105,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set string matching to
-	 * {@link StringMatcher#CONTAINING}.
+	 * Returns a copy of this {@link TypedExampleSpec} with the specified string matching of
+	 * {@link StringMatcher#CONTAINING}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -116,7 +117,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set the {@code defaultStringMatcher}.
+	 * Returns a copy of this {@link TypedExampleSpec} with the specified string matching of {@code defaultStringMatcher}.
+	 * This instance is immutable and unaffected by this method call.
 	 *
 	 * @param defaultStringMatcher must not be {@literal null}.
 	 * @return
@@ -131,8 +133,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} with ignoring case sensitivity by
-	 * default.
+	 * Returns a copy of this {@link TypedExampleSpec} with ignoring case sensitivity by default. This instance is
+	 * immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -142,7 +144,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} with {@code defaultIgnoreCase}.
+	 * Returns a copy of this {@link TypedExampleSpec} with {@code defaultIgnoreCase}. This instance is immutable and
+	 * unaffected by this method call.
 	 *
 	 * @param defaultIgnoreCase
 	 * @return
@@ -154,8 +157,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and configure a
-	 * {@code GenericPropertyMatcher} for the {@code propertyPath}.
+	 * Returns a copy of this {@link TypedExampleSpec} with the specified {@code GenericPropertyMatcher} for the
+	 * {@code propertyPath}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @param matcherConfigurer callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
@@ -175,8 +178,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and configure a
-	 * {@code GenericPropertyMatcher} for the {@code propertyPath}.
+	 * Returns a copy of this {@link TypedExampleSpec} with the specified {@code GenericPropertyMatcher} for the
+	 * {@code propertyPath}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @param genericPropertyMatcher callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
@@ -210,8 +213,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and configure a
-	 * {@code PropertyValueTransformer} for the {@code propertyPath}.
+	 * Returns a copy of this {@link TypedExampleSpec} with the specified {@code PropertyValueTransformer} for the
+	 * {@code propertyPath}.
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @param propertyValueTransformer must not be {@literal null}.
@@ -233,8 +236,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and ignore case sensitivity for the
-	 * {@code propertyPaths}.
+	 * Returns a copy of this {@link TypedExampleSpec} with ignore case sensitivity for the {@code propertyPaths}. This
+	 * instance is immutable and unaffected by this method call.
 	 *
 	 * @param propertyPaths must not be {@literal null} and not empty.
 	 * @return
@@ -257,8 +260,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set treatment of {@literal null}
-	 * values to {@link NullHandler#INCLUDE}.
+	 * Returns a copy of this {@link TypedExampleSpec} with treatment for {@literal null} values of
+	 * {@link NullHandler#INCLUDE} . This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -269,8 +272,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set treatment of {@literal null}
-	 * values to {@link NullHandler#IGNORE}.
+	 * Returns a copy of this {@link TypedExampleSpec} with treatment for {@literal null} values of
+	 * {@link NullHandler#IGNORE}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
@@ -281,8 +284,8 @@ public class TypedExampleSpec<T> extends ExampleSpec {
 	}
 
 	/**
-	 * Create a new {@link ExampleSpec} based on the current {@link ExampleSpec} and set treatment of {@literal null}
-	 * values to {@code nullHandler}.
+	 * Returns a copy of this {@link TypedExampleSpec} with the specified {@code nullHandler}. This instance is immutable
+	 * and unaffected by this method call.
 	 *
 	 * @param nullHandler must not be {@literal null}.
 	 * @return

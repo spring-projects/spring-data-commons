@@ -1,18 +1,18 @@
 [[query.by.example]]
-= Query by Example
+== Query by Example
 
-== Introduction
+=== Introduction
 
 This chapter will give you an introduction to Query by Example and explain how to use Examples.
 
 Query by Example (QBE) is a user-friendly querying technique with a simple interface. It allows dynamic query creation and does not require to write queries containing field names. In fact, Query by Example does not require to write queries using store-specific query languages at all.
 
-== Usage
+=== Usage
 
 The Query by Example API consists of three parts:
 
 * Probe: That is the actual example of a domain object with populated fields.
-* `ExampleSpec`: The `ExampleSpec` carries details on how to match particular fields. It can be reused across multiple Examples.
+* `ExampleSpec`: The `ExampleSpec` carries details on how to match particular fields. It can be reused across multiple Examples. `ExampleSpec` comes in two flavors: <<query.by.example.examplespec,untyped>> and <<query.by.example.examplespec.typed,typed>>.
 * `Example`: An Example consists of the probe and the ExampleSpec. It is used to create the query. An `Example` takes a probe (usually the domain object or a subtype of it) and the `ExampleSpec`.
 
 Query by Example is suited for several use-cases but also comes with limitations:
@@ -48,7 +48,7 @@ public class Person {
 ----
 ====
 
-This is a simple domain object. You can use it to create an `Example`. By default, fields having `null` values are ignored, and strings are matched using the store specific defaults. Examples can be built by either using the `of` factory method or by using <<query.by.example.examplespec,`ExampleSpec`>>. Once the `Example` is constructed it is immutable.
+This is a simple domain object. You can use it to create an `Example`. By default, fields having `null` values are ignored, and strings are matched using the store specific defaults. Examples can be built by either using the `of` factory method or by using <<query.by.example.examplespec,`ExampleSpec`>>. `Example` is immutable.
 
 .Simple Example
 ====
@@ -75,9 +75,9 @@ Examples can be executed ideally with Repositories. To do so, let your repositor
 ----
 public interface QueryByExampleExecutor<T> {
 
-    <S extends T> T findOne(Example<S> example);
+    <S extends T> S findOne(Example<S> example);
 
-    <S extends T> Iterable<T> findAll(Example<S> example);
+    <S extends T> Iterable<S> findAll(Example<S> example);
 
   // … more functionality omitted.
 }
@@ -87,39 +87,39 @@ public interface QueryByExampleExecutor<T> {
 You can read more about <<query.by.example.execution, Query by Example Execution>> below.
 
 [[query.by.example.examplespec]]
-== Example Spec
+=== Example Spec
 
-Examples are not limited to default settings. You can specify own defaults for string matching, null handling and property-specific settings using the `ExampleSpec`.
+Examples are not limited to default settings. You can specify own defaults for string matching, null handling and property-specific settings using the `ExampleSpec`. `ExampleSpec` comes in two flavors: untyped and typed. By default `Example.of(Person.class)` uses an untyped `ExampleSpec`. Using untyped `ExampleSpec` will use the Repository entity information to determine the type to query and has no control over inheritance queries. Also, untyped `ExampleSpec` will use the probe type when using with a Template to determine the type to query. Read more about <<query.by.example.examplespec.typed,typed `ExampleSpec`>> below.
 
-.Example Spec with customized matching
+.Untyped Example Spec with customized matching
 ====
 [source,java]
 ----
-Person person = new Person();                                                 <1>
+Person person = new Person();                                          <1>
 
-person.setFirstname("Dave");                                                  <2>
+person.setFirstname("Dave");                                           <2>
 
-ExampleSpec<Person> exampleSpec = ExampleSpec.of(Person.class)                <3>
+ExampleSpec exampleSpec = ExampleSpec.untyped()                        <3>
 
-                                         .withIgnorePaths("lastname")         <4>
+                                  .withIgnorePaths("lastname")         <4>
 
-                                         .withIncludeNullValues()             <5>
+                                  .withIncludeNullValues()             <5>
 
-                                         .withStringMatcherEnding();          <6>
+                                  .withStringMatcherEnding();          <6>
 
-Example example = Example.of(person, exampleSpec);                            <7>
+Example<Person> example = Example.of(person, exampleSpec);             <7>
 
 ----
-<1> Create a new instance of the domain object
-<2> Set properties
-<3> Create an `ExampleSpec` for the `Person` type. The `ExampleSpec` is usable at this stage.
-<4> Construct a new `ExampleSpec` to ignore the property path `lastname`
-<5> Construct a new `ExampleSpec` to ignore the property path `lastname` and to include null values
-<6> Construct a new `ExampleSpec` to ignore the property path `lastname`, to include null values, and use perform suffix string matching
-<7> Create a new `Example` based on the domain object and the configured `ExampleSpec`
+<1> Create a new instance of the domain object.
+<2> Set properties.
+<3> Create an untyped `ExampleSpec`. The `ExampleSpec` is usable at this stage.
+<4> Construct a new `ExampleSpec` to ignore the property path `lastname`.
+<5> Construct a new `ExampleSpec` to ignore the property path `lastname` and to include null values.
+<6> Construct a new `ExampleSpec` to ignore the property path `lastname`, to include null values, and use perform suffix string matching.
+<7> Create a new `Example` based on the domain object and the configured `ExampleSpec`.
 ====
 
-`ExampleSpec` is immutable once it is created. Calls to `with…(…)` create each time a new `ExampleSpec` that carry all settings from the originating instance and setting the specific configuration of the `with…(…)` so intermediate objects can be safely reused. An `ExampleSpec` can be used to create ad-hoc example specs or to be reused across the application as a specification for `Example`. You can use `ExampleSpec` as a template to configure a default behavior for your example spec. You also can derive from it a more specific `ExampleSpec` where you need to customize it.
+`ExampleSpec` is immutable. Calls to `with…(…)` return a copy of `ExampleSpec` with the specific setting applied. Intermediate objects can be safely reused. An `ExampleSpec` can be used to create ad-hoc example specs or to be reused across the application as a specification for `Example`. You can use `ExampleSpec` as a template to configure a default behavior for your example spec. You also can derive from it a more specific `ExampleSpec` where you need to customize it.
 
 You can specify behavior for individual properties (e.g. "firstname" and "lastname", "address.city" for nested properties). You can tune it with matching options and case sensitivity.
 
@@ -127,7 +127,7 @@ You can specify behavior for individual properties (e.g. "firstname" and "lastna
 ====
 [source,java]
 ----
-ExampleSpec<Person> example = ExampleSpec.of(Person.class)
+ExampleSpec exampleSpec = ExampleSpec.untyped()
         .withMatcher("firstname", endsWith())
         .withMatcher("lastname", startsWith().ignoreCase());
 }
@@ -140,7 +140,7 @@ Another style to configure matcher options is by using Java 8 lambdas. This appr
 ====
 [source,java]
 ----
-ExampleSpec<Person> example = ExampleSpec.of(Person.class)
+ExampleSpec exampleSpec = ExampleSpec.untyped()
         .withMatcher("firstname", matcher -> matcher.endsWith())
         .withMatcher("firstname", matcher -> matcher.startsWith());
 }
@@ -171,3 +171,43 @@ Queries created by `Example` use a merged view of the configuration. Default mat
 | Property path
 
 |===
+
+[[query.by.example.examplespec.typed]]
+==== Typed Example Spec
+You have now seen the usage of untyped `ExampleSpec`. The second flavor of `ExampleSpec` is typed which adds more control over the result type. When executing an `Example` containing a typed `ExampleSpec` the type of the `ExampleSpec` is used as domain type. Control over the domain type is useful in particular when querying along the inheritance hierarchy or the repository contains multiple types within one table/collection/keyspace.
+
+.Sample Person object
+====
+[source,java]
+----
+public class SpecialPerson extends Person {
+
+  // … more functionality omitted.
+}
+----
+====
+
+.Typed Example Spec with customized matching
+====
+[source,java]
+----
+QueryByExampleExecutor<Person> personRepository = … ;
+
+Person person = new Person();                                                    <1>
+
+person.setFirstname("Dave");                                                     <2>
+
+ExampleSpec<SpecialPerson> exampleSpec = ExampleSpec.typed(SpecialPerson.class); <3>
+
+Example<Person> example = Example.of(person, exampleSpec);                       <4>
+
+List<Person> result = personRepository.findAll(example);                         <5>
+
+----
+<1> Create a new instance of the domain object.
+<2> Set properties.
+<3> Create a typed `ExampleSpec` for `SpecialPerson` that extends `Person`.
+<4> Construct a new `Example` using the typed `ExampleSpec` and the `Person` probe.
+<5> Run a query to select all instances of `SpecialPerson` in the repository. Note that the result type is the base class `Person`.
+====
+
