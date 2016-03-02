@@ -15,84 +15,51 @@
  */
 package org.springframework.data.domain;
 
-import org.springframework.util.Assert;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+
 import org.springframework.util.ClassUtils;
 
 /**
  * Support for query by example (QBE). An {@link Example} takes a {@code probe} to define the example. Matching options
- * and type safety can be tuned using {@link ExampleSpec}. {@link Example} uses {@link ExampleSpec#untyped()}
- * {@link ExampleSpec} by default.
- * <p>
- * This class is immutable.
+ * and type safety can be tuned using {@link ExampleMatcher}.
  *
  * @author Christoph Strobl
  * @author Mark Paluch
- * @param <T>
+ * @author Oliver Gierke
+ * @param <T> the type of the probe.
  * @since 1.12
  */
+@ToString
+@EqualsAndHashCode
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Example<T> {
 
-	private final T probe;
-	private final ExampleSpec exampleSpec;
+	private final @NonNull T probe;
+	private final @NonNull ExampleMatcher matcher;
 
 	/**
 	 * Create a new {@link Example} including all non-null properties by default.
-	 *
-	 * @param probe The probe to use. Must not be {@literal null}.
-	 */
-	@SuppressWarnings("unchecked")
-	private Example(T probe) {
-
-		Assert.notNull(probe, "Probe must not be null!");
-
-		this.probe = probe;
-		this.exampleSpec = ExampleSpec.untyped();
-	}
-
-	/**
-	 * Create a new {@link Example} including all non-null properties by default.
-	 *
-	 * @param probe The probe to use. Must not be {@literal null}.
-	 * @param exampleSpec The example specification to use. Must not be {@literal null}.
-	 */
-	private Example(T probe, ExampleSpec exampleSpec) {
-
-		Assert.notNull(probe, "Probe must not be null!");
-
-		this.probe = probe;
-		this.exampleSpec = exampleSpec;
-	}
-
-	/**
-	 * Create a new {@link Example} including all non-null properties by default using an untyped {@link ExampleSpec}.
 	 *
 	 * @param probe must not be {@literal null}.
 	 * @return
 	 */
 	public static <T> Example<T> of(T probe) {
-		return new Example<T>(probe);
+		return new Example<T>(probe, ExampleMatcher.matching());
 	}
 
 	/**
-	 * Create a new {@link Example} with a configured untyped {@link ExampleSpec}.
+	 * Create a new {@link Example} using the given {@link ExampleMatcher}.
 	 *
 	 * @param probe must not be {@literal null}.
-	 * @param exampleSpec must not be {@literal null}.
+	 * @param matcher must not be {@literal null}.
 	 * @return
 	 */
-	public static <T> Example<T> of(T probe, ExampleSpec exampleSpec) {
-		return new Example<T>(probe, exampleSpec);
-	}
-
-	/**
-	 * Create a new {@link Example} with a configured {@link TypedExampleSpec}.
-	 *
-	 * @param probe must not be {@literal null}.
-	 * @param exampleSpec must not be {@literal null}.
-	 * @return
-	 */
-	public static <T, S extends T> Example<S> of(S probe, TypedExampleSpec<T> exampleSpec) {
-		return new Example<S>(probe, exampleSpec);
+	public static <T> Example<T> of(T probe, ExampleMatcher matcher) {
+		return new Example<T>(probe, matcher);
 	}
 
 	/**
@@ -105,12 +72,12 @@ public class Example<T> {
 	}
 
 	/**
-	 * Get the {@link ExampleSpec} used.
+	 * Get the {@link ExampleMatcher} used.
 	 *
 	 * @return never {@literal null}.
 	 */
-	public ExampleSpec getExampleSpec() {
-		return exampleSpec;
+	public ExampleMatcher getMatcher() {
+		return matcher;
 	}
 
 	/**
@@ -124,17 +91,4 @@ public class Example<T> {
 	public Class<T> getProbeType() {
 		return (Class<T>) ClassUtils.getUserClass(probe.getClass());
 	}
-
-	/**
-	 * Get the actual result type for the query. The result type can be different when using {@link TypedExampleSpec}.
-	 *
-	 * @return
-	 * @see ClassUtils#getUserClass(Class)
-	 */
-	@SuppressWarnings("unchecked")
-	public <S extends T> Class<S> getResultType() {
-		return (Class<S>) (exampleSpec instanceof TypedExampleSpec<?> ? ((TypedExampleSpec<T>) exampleSpec).getType()
-				: getProbeType());
-	}
-
 }

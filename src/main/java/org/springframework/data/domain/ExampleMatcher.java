@@ -15,6 +15,12 @@
  */
 package org.springframework.data.domain;
 
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.FieldDefaults;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,10 +33,10 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 
 /**
- * Specification for property path matching to use in query by example (QBE). An {@link ExampleSpec} can be created for
- * a {@link Class object type}. Instances of {@link ExampleSpec} can be either {@link #untyped()} or
+ * Specification for property path matching to use in query by example (QBE). An {@link ExampleMatcher} can be created
+ * for a {@link Class object type}. Instances of {@link ExampleMatcher} can be either {@link #matching()} or
  * {@link #typed(Class)} and settings can be tuned {@code with...} methods in a fluent style. {@code with...} methods
- * return a copy of the {@link ExampleSpec} instance with the specified setting. Null-handling defaults to
+ * return a copy of the {@link ExampleMatcher} instance with the specified setting. Null-handling defaults to
  * {@link NullHandler#IGNORE} and case-sensitive {@link StringMatcher#DEFAULT} string matching.
  * <p>
  * This class is immutable.
@@ -40,61 +46,40 @@ import org.springframework.util.Assert;
  * @param <T>
  * @since 1.12
  */
-public class ExampleSpec {
+@ToString
+@EqualsAndHashCode
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+public class ExampleMatcher {
 
-	protected final NullHandler nullHandler;
-	protected final StringMatcher defaultStringMatcher;
-	protected final boolean defaultIgnoreCase;
-	protected final PropertySpecifiers propertySpecifiers;
-	protected final Set<String> ignoredPaths;
+	NullHandler nullHandler;
+	StringMatcher defaultStringMatcher;
+	PropertySpecifiers propertySpecifiers;
+	Set<String> ignoredPaths;
+	boolean defaultIgnoreCase;
 
-	ExampleSpec() {
-
-		this.nullHandler = NullHandler.IGNORE;
-		this.defaultStringMatcher = StringMatcher.DEFAULT;
-		this.propertySpecifiers = new PropertySpecifiers();
-		this.defaultIgnoreCase = false;
-		this.ignoredPaths = Collections.emptySet();
-	}
-
-	ExampleSpec(NullHandler nullHandler, StringMatcher defaultStringMatcher, PropertySpecifiers propertySpecifiers,
-			Set<String> ignoredPaths, boolean defaultIgnoreCase) {
-
-		this.nullHandler = nullHandler;
-		this.defaultStringMatcher = defaultStringMatcher;
-		this.propertySpecifiers = propertySpecifiers;
-		this.ignoredPaths = Collections.unmodifiableSet(ignoredPaths);
-		this.defaultIgnoreCase = defaultIgnoreCase;
+	private ExampleMatcher() {
+		this(NullHandler.IGNORE, StringMatcher.DEFAULT, new PropertySpecifiers(), Collections.<String> emptySet(), false);
 	}
 
 	/**
-	 * Create a new untyped {@link ExampleSpec} including all non-null properties by default.
+	 * Create a new untyped {@link ExampleMatcher} including all non-null properties by default.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	public static ExampleSpec untyped() {
-		return new ExampleSpec();
+	public static ExampleMatcher matching() {
+		return new ExampleMatcher();
 	}
 
 	/**
-	 * Create a new {@link TypedExampleSpec} including all non-null properties by default.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @return
-	 */
-	public static <T> TypedExampleSpec<T> typed(Class<T> type) {
-		return new TypedExampleSpec<T>(type);
-	}
-
-	/**
-	 * Returns a copy of this {@link ExampleSpec} with the specified {@code propertyPaths}. This instance is immutable and
-	 * unaffected by this method call.
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code propertyPaths}. This instance is immutable
+	 * and unaffected by this method call.
 	 *
 	 * @param ignoredPaths must not be {@literal null} and not empty.
 	 * @return
 	 */
-	public ExampleSpec withIgnorePaths(String... ignoredPaths) {
+	public ExampleMatcher withIgnorePaths(String... ignoredPaths) {
 
 		Assert.notEmpty(ignoredPaths, "IgnoredPaths must not be empty!");
 		Assert.noNullElements(ignoredPaths, "IgnoredPaths must not contain null elements!");
@@ -102,83 +87,54 @@ public class ExampleSpec {
 		Set<String> newIgnoredPaths = new LinkedHashSet<String>(this.ignoredPaths);
 		newIgnoredPaths.addAll(Arrays.asList(ignoredPaths));
 
-		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, newIgnoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, newIgnoredPaths,
+				defaultIgnoreCase);
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with the specified string matching of {@link StringMatcher#STARTING}.
+	 * Returns a copy of this {@link ExampleMatcher} with the specified string matching of {@code defaultStringMatcher}.
 	 * This instance is immutable and unaffected by this method call.
-	 *
-	 * @return
-	 */
-	public ExampleSpec withStringMatcherStarting() {
-		return new ExampleSpec(nullHandler, StringMatcher.STARTING, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
-	}
-
-	/**
-	 * Returns a copy of this {@link ExampleSpec} with the specified string matching of {@link StringMatcher#ENDING}. This
-	 * instance is immutable and unaffected by this method call.
-	 *
-	 * @return
-	 */
-	public ExampleSpec withStringMatcherEnding() {
-		return new ExampleSpec(nullHandler, StringMatcher.ENDING, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
-	}
-
-	/**
-	 * Returns a copy of this {@link ExampleSpec} with the specified string matching of {@link StringMatcher#CONTAINING}.
-	 * This instance is immutable and unaffected by this method call.
-	 *
-	 * @return
-	 */
-	public ExampleSpec withStringMatcherContaining() {
-		return new ExampleSpec(nullHandler, StringMatcher.CONTAINING, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
-	}
-
-	/**
-	 * Returns a copy of this {@link ExampleSpec} with the specified string matching of {@code defaultStringMatcher}. This
-	 * instance is immutable and unaffected by this method call.
 	 *
 	 * @param defaultStringMatcher must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec withStringMatcher(StringMatcher defaultStringMatcher) {
+	public ExampleMatcher withStringMatcher(StringMatcher defaultStringMatcher) {
 
 		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty!");
 
-		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with ignoring case sensitivity by default. This instance is immutable
+	 * Returns a copy of this {@link ExampleMatcher} with ignoring case sensitivity by default. This instance is immutable
 	 * and unaffected by this method call.
 	 *
 	 * @return
 	 */
-	public ExampleSpec withIgnoreCase() {
+	public ExampleMatcher withIgnoreCase() {
 		return withIgnoreCase(true);
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with {@code defaultIgnoreCase}. This instance is immutable and
+	 * Returns a copy of this {@link ExampleMatcher} with {@code defaultIgnoreCase}. This instance is immutable and
 	 * unaffected by this method call.
 	 *
 	 * @param defaultIgnoreCase
 	 * @return
 	 */
-	public ExampleSpec withIgnoreCase(boolean defaultIgnoreCase) {
-		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+	public ExampleMatcher withIgnoreCase(boolean defaultIgnoreCase) {
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with the specified {@code GenericPropertyMatcher} for the
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code GenericPropertyMatcher} for the
 	 * {@code propertyPath}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @param matcherConfigurer callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec withMatcher(String propertyPath, MatcherConfigurer<GenericPropertyMatcher> matcherConfigurer) {
+	public ExampleMatcher withMatcher(String propertyPath, MatcherConfigurer<GenericPropertyMatcher> matcherConfigurer) {
 
 		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
 		Assert.notNull(matcherConfigurer, "MatcherConfigurer must not be empty!");
@@ -190,14 +146,14 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with the specified {@code GenericPropertyMatcher} for the
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code GenericPropertyMatcher} for the
 	 * {@code propertyPath}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @param genericPropertyMatcher callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec withMatcher(String propertyPath, GenericPropertyMatcher genericPropertyMatcher) {
+	public ExampleMatcher withMatcher(String propertyPath, GenericPropertyMatcher genericPropertyMatcher) {
 
 		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
 		Assert.notNull(genericPropertyMatcher, "GenericPropertyMatcher must not be empty!");
@@ -219,18 +175,18 @@ public class ExampleSpec {
 
 		propertySpecifiers.add(propertySpecifier);
 
-		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with the specified {@code PropertyValueTransformer} for the
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code PropertyValueTransformer} for the
 	 * {@code propertyPath}.
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @param propertyValueTransformer must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec withTransformer(String propertyPath, PropertyValueTransformer propertyValueTransformer) {
+	public ExampleMatcher withTransformer(String propertyPath, PropertyValueTransformer propertyValueTransformer) {
 
 		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
 		Assert.notNull(propertyValueTransformer, "PropertyValueTransformer must not be empty!");
@@ -240,17 +196,17 @@ public class ExampleSpec {
 
 		propertySpecifiers.add(propertySpecifier.withValueTransformer(propertyValueTransformer));
 
-		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with ignore case sensitivity for the {@code propertyPaths}. This
+	 * Returns a copy of this {@link ExampleMatcher} with ignore case sensitivity for the {@code propertyPaths}. This
 	 * instance is immutable and unaffected by this method call.
 	 *
 	 * @param propertyPaths must not be {@literal null} and not empty.
 	 * @return
 	 */
-	public ExampleSpec withIgnoreCase(String... propertyPaths) {
+	public ExampleMatcher withIgnoreCase(String... propertyPaths) {
 
 		Assert.notEmpty(propertyPaths, "PropertyPaths must not be empty!");
 		Assert.noNullElements(propertyPaths, "PropertyPaths must not contain null elements!");
@@ -262,10 +218,10 @@ public class ExampleSpec {
 			propertySpecifiers.add(propertySpecifier.withIgnoreCase(true));
 		}
 
-		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
-	protected PropertySpecifier getOrCreatePropertySpecifier(String propertyPath, PropertySpecifiers propertySpecifiers) {
+	private PropertySpecifier getOrCreatePropertySpecifier(String propertyPath, PropertySpecifiers propertySpecifiers) {
 
 		if (propertySpecifiers.hasSpecifierForPath(propertyPath)) {
 			return propertySpecifiers.getForPath(propertyPath);
@@ -275,38 +231,38 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with treatment for {@literal null} values of {@link NullHandler#INCLUDE}
-	 * . This instance is immutable and unaffected by this method call.
+	 * Returns a copy of this {@link ExampleMatcher} with treatment for {@literal null} values of
+	 * {@link NullHandler#INCLUDE} . This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
-	public ExampleSpec withIncludeNullValues() {
-		return new ExampleSpec(NullHandler.INCLUDE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
+	public ExampleMatcher withIncludeNullValues() {
+		return new ExampleMatcher(NullHandler.INCLUDE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
 				defaultIgnoreCase);
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with treatment for {@literal null} values of {@link NullHandler#IGNORE}.
-	 * This instance is immutable and unaffected by this method call.
+	 * Returns a copy of this {@link ExampleMatcher} with treatment for {@literal null} values of
+	 * {@link NullHandler#IGNORE}. This instance is immutable and unaffected by this method call.
 	 *
 	 * @return
 	 */
-	public ExampleSpec withIgnoreNullValues() {
-		return new ExampleSpec(NullHandler.IGNORE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
+	public ExampleMatcher withIgnoreNullValues() {
+		return new ExampleMatcher(NullHandler.IGNORE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
 				defaultIgnoreCase);
 	}
 
 	/**
-	 * Returns a copy of this {@link ExampleSpec} with the specified {@code nullHandler}. This instance is immutable and
-	 * unaffected by this method call.
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code nullHandler}. This instance is immutable
+	 * and unaffected by this method call.
 	 *
 	 * @param nullHandler must not be {@literal null}.
 	 * @return
 	 */
-	public ExampleSpec withNullHandler(NullHandler nullHandler) {
+	public ExampleMatcher withNullHandler(NullHandler nullHandler) {
 
 		Assert.notNull(nullHandler, "NullHandler must not be null!");
-		return new ExampleSpec(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
 	}
 
 	/**
@@ -314,16 +270,16 @@ public class ExampleSpec {
 	 *
 	 * @return never {@literal null}
 	 */
-	public ExampleSpec.NullHandler getNullHandler() {
+	public ExampleMatcher.NullHandler getNullHandler() {
 		return nullHandler;
 	}
 
 	/**
-	 * Get defined {@link ExampleSpec.StringMatcher}.
+	 * Get defined {@link ExampleMatcher.StringMatcher}.
 	 *
 	 * @return never {@literal null}.
 	 */
-	public ExampleSpec.StringMatcher getDefaultStringMatcher() {
+	public ExampleMatcher.StringMatcher getDefaultStringMatcher() {
 		return defaultStringMatcher;
 	}
 
@@ -350,7 +306,7 @@ public class ExampleSpec {
 	}
 
 	/**
-	 * @return the {@link PropertySpecifiers} within the {@link ExampleSpec}.
+	 * @return the {@link PropertySpecifiers} within the {@link ExampleMatcher}.
 	 */
 	public PropertySpecifiers getPropertySpecifiers() {
 		return propertySpecifiers;
@@ -538,7 +494,6 @@ public class ExampleSpec {
 			this.valueTransformer = propertyValueTransformer;
 			return this;
 		}
-
 	}
 
 	/**
@@ -620,7 +575,6 @@ public class ExampleSpec {
 		public static GenericPropertyMatcher regex() {
 			return new GenericPropertyMatcher().regex();
 		}
-
 	}
 
 	/**
@@ -660,15 +614,13 @@ public class ExampleSpec {
 	/**
 	 * Allows to transform the property value before it is used in the query.
 	 */
-	public static interface PropertyValueTransformer extends Converter<Object, Object> {
-		// TODO: should we use the converter interface directly or not at all?
-	}
+	public static interface PropertyValueTransformer extends Converter<Object, Object> {}
 
 	/**
 	 * @author Christoph Strobl
 	 * @since 1.12
 	 */
-	public static enum NoOpPropertyValueTransformer implements ExampleSpec.PropertyValueTransformer {
+	public static enum NoOpPropertyValueTransformer implements ExampleMatcher.PropertyValueTransformer {
 
 		INSTANCE;
 
@@ -676,7 +628,6 @@ public class ExampleSpec {
 		public Object convert(Object source) {
 			return source;
 		}
-
 	}
 
 	/**
@@ -685,13 +636,14 @@ public class ExampleSpec {
 	 * @author Christoph Strobl
 	 * @since 1.12
 	 */
+	@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class PropertySpecifier {
 
-		private final String path;
-
-		private final StringMatcher stringMatcher;
-		private final Boolean ignoreCase;
-		private final PropertyValueTransformer valueTransformer;
+		String path;
+		StringMatcher stringMatcher;
+		Boolean ignoreCase;
+		PropertyValueTransformer valueTransformer;
 
 		/**
 		 * Creates new {@link PropertySpecifier} for given path.
@@ -706,15 +658,6 @@ public class ExampleSpec {
 			this.stringMatcher = null;
 			this.ignoreCase = null;
 			this.valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
-		}
-
-		private PropertySpecifier(String path, StringMatcher stringMatcher, Boolean ignoreCase,
-				PropertyValueTransformer valueTransformer) {
-
-			this.path = path;
-			this.stringMatcher = stringMatcher;
-			this.ignoreCase = ignoreCase;
-			this.valueTransformer = valueTransformer;
 		}
 
 		/**
@@ -797,7 +740,6 @@ public class ExampleSpec {
 		public Object transformValue(Object source) {
 			return getPropertyValueTransformer().convert(source);
 		}
-
 	}
 
 	/**
@@ -810,9 +752,7 @@ public class ExampleSpec {
 
 		private final Map<String, PropertySpecifier> propertySpecifiers = new LinkedHashMap<String, PropertySpecifier>();
 
-		PropertySpecifiers() {
-
-		}
+		PropertySpecifiers() {}
 
 		PropertySpecifiers(PropertySpecifiers propertySpecifiers) {
 			this.propertySpecifiers.putAll(propertySpecifiers.propertySpecifiers);
@@ -839,7 +779,5 @@ public class ExampleSpec {
 		public Collection<PropertySpecifier> getSpecifiers() {
 			return propertySpecifiers.values();
 		}
-
 	}
-
 }

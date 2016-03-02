@@ -15,9 +15,8 @@
  */
 package org.springframework.data.domain;
 
-import static org.hamcrest.core.IsEqual.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.data.domain.Example.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,11 +26,12 @@ import org.junit.Test;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Oliver Gierke
  */
 public class ExampleUnitTests {
 
-	private Person person;
-	private Example<Person> example;
+	Person person;
+	Example<Person> example;
 
 	@Before
 	public void setUp() {
@@ -39,14 +39,14 @@ public class ExampleUnitTests {
 		person = new Person();
 		person.firstname = "rand";
 
-		example = of(person);
+		example = Example.of(person);
 	}
 
 	/**
 	 * @see DATACMNS-810
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void exampleOfNullThrowsException() {
+	public void rejectsNullProbe() {
 		Example.of(null);
 	}
 
@@ -54,44 +54,11 @@ public class ExampleUnitTests {
 	 * @see DATACMNS-810
 	 */
 	@Test
-	public void getSampleTypeRetunsSampleObjectsClass() {
-		assertThat(example.getProbeType(), equalTo(Person.class));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void createTypedExample() {
-
-		Example<Person> example = of(new Person(), ExampleSpec.typed(Contact.class));
-
-		assertThat(example.getProbeType(), equalTo(Person.class));
-		assertThat(example.getResultType(), equalTo((Class) Contact.class));
-		assertThat(example.getProbeType(), equalTo(Person.class));
-	}
-
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
-	public void createUntypedExample() {
-
-		Example<Person> example = of(new Person(), ExampleSpec.untyped());
-
-		assertThat(example.getProbeType(), equalTo(Person.class));
-		assertThat(example.getResultType(), equalTo((Class) Person.class));
-		assertThat(example.getProbeType(), equalTo(Person.class));
-	}
-
-	static class Contact {
-
-		String label;
+	public void retunsSampleObjectsClassAsProbeType() {
+		assertThat(example.getProbeType(), is(equalTo(Person.class)));
 	}
 
 	static class Person {
-
 		String firstname;
 	}
-
 }
