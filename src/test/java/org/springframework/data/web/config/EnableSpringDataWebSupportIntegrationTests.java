@@ -39,6 +39,7 @@ import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.SpringDataWebConfigurationImportSelector;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.ReflectionUtils;
@@ -52,6 +53,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * Integration tests for {@link EnableSpringDataWebSupport}.
  * 
  * @author Oliver Gierke
+ * @author Vedran Pavic
  */
 public class EnableSpringDataWebSupportIntegrationTests {
 
@@ -66,6 +68,44 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		public @Bean SampleController controller() {
 			return new SampleController();
 		}
+	}
+
+	@Configuration
+	@EnableWebMvc
+	@EnableSpringDataWebSupport
+	static class PageableResolverCustomizerConfig extends SampleConfig {
+
+		@Bean
+		public PageableHandlerMethodArgumentResolverCustomizer testPageableResolverCustomizer() {
+			return new PageableHandlerMethodArgumentResolverCustomizer() {
+
+				@Override
+				public void customize(PageableHandlerMethodArgumentResolver pageableResolver) {
+					pageableResolver.setMaxPageSize(100);
+				}
+
+			};
+		}
+
+	}
+
+	@Configuration
+	@EnableWebMvc
+	@EnableSpringDataWebSupport
+	static class SortResolverCustomizerConfig extends SampleConfig {
+
+		@Bean
+		public SortHandlerMethodArgumentResolverCustomizer testSortResolverCustomizer() {
+			return new SortHandlerMethodArgumentResolverCustomizer() {
+
+				@Override
+				public void customize(SortHandlerMethodArgumentResolver sortResolver) {
+					sortResolver.setSortParameter("foo");
+				}
+
+			};
+		}
+
 	}
 
 	@After
@@ -166,6 +206,26 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names, hasItem("sampleBean"));
+	}
+
+	@Test // DATACMNS-822
+	public void picksUpPageableResolverCustomizer() {
+		ApplicationContext context = WebTestUtils.createApplicationContext(PageableResolverCustomizerConfig.class);
+		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+		PageableHandlerMethodArgumentResolver resolver = context.getBean(PageableHandlerMethodArgumentResolver.class);
+
+		assertThat(names, hasItem("testPageableResolverCustomizer"));
+		assertThat((Integer) ReflectionTestUtils.getField(resolver, "maxPageSize"), equalTo(100));
+	}
+
+	@Test // DATACMNS-822
+	public void picksUpSortResolverCustomizer() {
+		ApplicationContext context = WebTestUtils.createApplicationContext(SortResolverCustomizerConfig.class);
+		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+		SortHandlerMethodArgumentResolver resolver = context.getBean(SortHandlerMethodArgumentResolver.class);
+
+		assertThat(names, hasItem("testSortResolverCustomizer"));
+		assertThat((String) ReflectionTestUtils.getField(resolver, "sortParameter"), equalTo("foo"));
 	}
 
 	@SuppressWarnings("unchecked")
