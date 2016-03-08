@@ -359,15 +359,14 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#findAnnotation(java.lang.Class)
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 
-		A annotation = annotationType.getAnnotation(annotationType);
-
-		if (annotation != null) {
-			return annotation;
+		if (annotationCache.containsKey(annotationType)) {
+			return (A) annotationCache.get(annotationType);
 		}
 
-		annotation = AnnotatedElementUtils.findMergedAnnotation(getType(), annotationType);
+		A annotation = AnnotatedElementUtils.findMergedAnnotation(getType(), annotationType);
 		annotationCache.put(annotationType, annotation);
 
 		return annotation;

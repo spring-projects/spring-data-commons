@@ -274,9 +274,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	}
 
 	@ComposedTypeAlias
-	static class AliasEntityUsingComposedAnnotation {
-
-	}
+	static class AliasEntityUsingComposedAnnotation {}
 
 	static class Subtype extends Entity {}
 }
