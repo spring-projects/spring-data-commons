@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 by the original author(s).
+ * Copyright 2011-2016 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
@@ -50,6 +50,7 @@ import org.springframework.util.StringUtils;
  * @author Jon Brisbin
  * @author Patryk Wasik
  * @author Thomas Darimont
+ * @author Christoph Strobl
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
@@ -284,7 +285,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public Object getTypeAlias() {
 
-		TypeAlias alias = getType().getAnnotation(TypeAlias.class);
+		TypeAlias alias = AnnotatedElementUtils.findMergedAnnotation(getType(), TypeAlias.class);
 		return alias == null ? null : StringUtils.hasText(alias.value()) ? alias.value() : null;
 	}
 
@@ -366,7 +367,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			return annotation;
 		}
 
-		annotation = AnnotationUtils.findAnnotation(getType(), annotationType);
+		annotation = AnnotatedElementUtils.findMergedAnnotation(getType(), annotationType);
 		annotationCache.put(annotationType, annotation);
 
 		return annotation;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.springframework.data.util;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
@@ -26,6 +26,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * {@link MethodCallback} to find annotations of a given type.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class AnnotationDetectionMethodCallback<A extends Annotation> implements MethodCallback {
 
@@ -94,7 +95,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 			return;
 		}
 
-		A foundAnnotation = AnnotationUtils.findAnnotation(method, annotationType);
+		A foundAnnotation = AnnotatedElementUtils.findMergedAnnotation(method, annotationType);
 
 		if (foundAnnotation != null) {
 
