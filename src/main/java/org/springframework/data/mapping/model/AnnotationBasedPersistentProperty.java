@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
@@ -223,14 +223,15 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 				continue;
 			}
 
-			A annotation = AnnotationUtils.findAnnotation(method, annotationType);
+			A annotation = AnnotatedElementUtils.findMergedAnnotation(method, annotationType);
 
 			if (annotation != null) {
 				return cacheAndReturn(annotationType, annotation);
 			}
 		}
 
-		return cacheAndReturn(annotationType, field == null ? null : AnnotationUtils.getAnnotation(field, annotationType));
+		return cacheAndReturn(annotationType,
+				field == null ? null : AnnotatedElementUtils.findMergedAnnotation(field, annotationType));
 	}
 
 	/* 
