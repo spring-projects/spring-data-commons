@@ -37,6 +37,8 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 
 /**
+ * Unit tests for {@link ResultProcessor}.
+ * 
  * @author Oliver Gierke
  */
 public class ResultProcessorUnitTests {
