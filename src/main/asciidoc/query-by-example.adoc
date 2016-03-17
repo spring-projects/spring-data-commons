@@ -86,9 +86,9 @@ You can read more about <<query.by.example.execution, Query by Example Execution
 [[query.by.example.matcher]]
 === Example matchers
 
-Examples are not limited to default settings. You can specify own defaults for string matching, null handling and property-specific settings using the `ExampleMatcher`. `ExampleMatcher` comes in two flavors: untyped and typed. By default `Example.of(Person.class)` uses an untyped `ExampleMatcher`. Using untyped `ExampleMatcher` will use the Repository entity information to determine the type to query and has no control over inheritance queries. Also, untyped `ExampleMatcher` will use the probe type when using with a Template to determine the type to query. Read more about <<query.by.example.matcher.typed,typed `ExampleMatcher`>> below.
+Examples are not limited to default settings. You can specify own defaults for string matching, null handling and property-specific settings using the `ExampleMatcher`.
 
-.Untyped Example Spec with customized matching
+.Example matcher with customized matching
 ====
 [source,java]
 ----
@@ -118,7 +118,7 @@ You can specify behavior for individual properties (e.g. "firstname" and "lastna
 ====
 [source,java]
 ----
-ExampleMatcher exampleSpec = ExampleMatcher.untyped()
+ExampleMatcher matcher = ExampleMatcher.matching()
   .withMatcher("firstname", endsWith())
   .withMatcher("lastname", startsWith().ignoreCase());
 }
@@ -131,9 +131,9 @@ Another style to configure matcher options is by using Java 8 lambdas. This appr
 ====
 [source,java]
 ----
-ExampleMatcher exampleSpec = ExampleMatcher.untyped()
-  .withMatcher("firstname", matcher -> matcher.endsWith())
-  .withMatcher("firstname", matcher -> matcher.startsWith());
+ExampleMatcher matcher = ExampleMatcher.matching()
+  .withMatcher("firstname", match -> match.endsWith())
+  .withMatcher("firstname", match -> match.startsWith());
 }
 ----
 ====
