@@ -1,13 +1,15 @@
-[[query.by.example]]
-== Query by Example
+[[query-by-example]]
+= Query by Example
 
-=== Introduction
+[[query-by-example.introduction]]
+== Introduction
 
 This chapter will give you an introduction to Query by Example and explain how to use Examples.
 
 Query by Example (QBE) is a user-friendly querying technique with a simple interface. It allows dynamic query creation and does not require to write queries containing field names. In fact, Query by Example does not require to write queries using store-specific query languages at all.
 
-=== Usage
+[[query-by-example.usage]]
+== Usage
 
 The Query by Example API consists of three parts:
 
@@ -48,7 +50,7 @@ public class Person {
 ----
 ====
 
-This is a simple domain object. You can use it to create an `Example`. By default, fields having `null` values are ignored, and strings are matched using the store specific defaults. Examples can be built by either using the `of` factory method or by using <<query.by.example.matcher,`ExampleMatcher`>>. `Example` is immutable.
+This is a simple domain object. You can use it to create an `Example`. By default, fields having `null` values are ignored, and strings are matched using the store specific defaults. Examples can be built by either using the `of` factory method or by using <<query-by-example.matcher,`ExampleMatcher`>>. `Example` is immutable.
 
 .Simple Example
 ====
@@ -81,10 +83,10 @@ public interface QueryByExampleExecutor<T> {
 ----
 ====
 
-You can read more about <<query.by.example.execution, Query by Example Execution>> below.
+You can read more about <<query-by-example.execution, Query by Example Execution>> below.
 
-[[query.by.example.matcher]]
-=== Example matchers
+[[query-by-example.matchers]]
+== Example matchers
 
 Examples are not limited to default settings. You can specify own defaults for string matching, null handling and property-specific settings using the `ExampleMatcher`.
 
