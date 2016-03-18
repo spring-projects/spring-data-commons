@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link Tuple}.
+ * Unit tests for {@link Pair}.
  * 
  * @author Oliver Gierke
  */
-public class TupleUnitTests {
+public class PairUnitTests {
 
 	/**
 	 * @see DATACMNS-790
@@ -33,10 +33,10 @@ public class TupleUnitTests {
 	@Test
 	public void setsUpSimpleInstance() {
 
-		Tuple<Integer, Integer> tuple = Tuple.of(1, 2);
+		Pair<Integer, Integer> pair = Pair.of(1, 2);
 
-		assertThat(tuple.getFirst(), is(1));
-		assertThat(tuple.getSecond(), is(2));
+		assertThat(pair.getFirst(), is(1));
+		assertThat(pair.getSecond(), is(2));
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class TupleUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullFirstElement() {
-		Tuple.of(null, 1);
+		Pair.of(null, 1);
 	}
 
 	/**
@@ -52,7 +52,7 @@ public class TupleUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullSecondElement() {
-		Tuple.of(1, null);
+		Pair.of(1, null);
 	}
 
 	/**
@@ -61,8 +61,8 @@ public class TupleUnitTests {
 	@Test
 	public void hasCorrectEquals() {
 
-		Tuple<Integer, Integer> first = Tuple.of(1, 2);
-		Tuple<Integer, Integer> second = Tuple.of(1, 2);
+		Pair<Integer, Integer> first = Pair.of(1, 2);
+		Pair<Integer, Integer> second = Pair.of(1, 2);
 
 		assertThat(first, is(first));
 		assertThat(first, is(second));
@@ -75,9 +75,9 @@ public class TupleUnitTests {
 	@Test
 	public void hasCorrectHashCode() {
 
-		Tuple<Integer, Integer> first = Tuple.of(1, 2);
-		Tuple<Integer, Integer> second = Tuple.of(1, 2);
-		Tuple<Integer, Integer> third = Tuple.of(2, 2);
+		Pair<Integer, Integer> first = Pair.of(1, 2);
+		Pair<Integer, Integer> second = Pair.of(1, 2);
+		Pair<Integer, Integer> third = Pair.of(2, 2);
 
 		assertThat(first.hashCode(), is(second.hashCode()));
 		assertThat(first.hashCode(), is(not(third.hashCode())));
