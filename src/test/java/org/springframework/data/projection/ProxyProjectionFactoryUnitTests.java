@@ -224,18 +224,6 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
-	public void exposesProjectionInformationCorrectly() {
-
-		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
-
-		assertThat(information.getType(), is(typeCompatibleWith(CustomerExcerpt.class)));
-		assertThat(information.isClosed(), is(true));
-	}
-
-	/**
 	 * @see DATACMNS-829
 	 */
 	@Test
