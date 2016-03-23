@@ -288,11 +288,16 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @return
 	 */
 	protected E addPersistentEntity(TypeInformation<?> typeInformation) {
+		
+		try {
+			read.lock();
+			E persistentEntity = persistentEntities.get(typeInformation);
 
-		E persistentEntity = persistentEntities.get(typeInformation);
-
-		if (persistentEntity != null) {
-			return persistentEntity;
+			if (persistentEntity != null) {
+				return persistentEntity;
+			}
+		} finally {
+			read.unlock();
 		}
 
 		Class<?> type = typeInformation.getType();
