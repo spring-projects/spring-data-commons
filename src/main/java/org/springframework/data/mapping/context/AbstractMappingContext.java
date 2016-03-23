@@ -82,6 +82,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
 	 */
+	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
@@ -122,6 +123,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntities()
 	 */
+	@Override
 	public Collection<E> getPersistentEntities() {
 		try {
 			read.lock();
@@ -135,6 +137,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
 	 */
+	@Override
 	public E getPersistentEntity(Class<?> type) {
 		return getPersistentEntity(ClassTypeInformation.from(type));
 	}
@@ -152,6 +155,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
 	 */
+	@Override
 	public E getPersistentEntity(TypeInformation<?> type) {
 
 		Assert.notNull(type);
@@ -183,6 +187,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentEntity(org.springframework.data.mapping.PersistentProperty)
 	 */
+	@Override
 	public E getPersistentEntity(P persistentProperty) {
 
 		if (persistentProperty == null) {
@@ -197,6 +202,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.Class, java.lang.String)
 	 */
+	@Override
 	public PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath) {
 
 		Assert.notNull(propertyPath, "Property path must not be null!");
@@ -208,6 +214,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.String, java.lang.Class)
 	 */
+	@Override
 	public PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type) {
 
 		Assert.notNull(propertyPath, "Property path must not be null!");
@@ -283,11 +290,16 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @return
 	 */
 	protected E addPersistentEntity(TypeInformation<?> typeInformation) {
+		
+		try {
+			read.lock();
+			E persistentEntity = persistentEntities.get(typeInformation);
 
-		E persistentEntity = persistentEntities.get(typeInformation);
-
-		if (persistentEntity != null) {
-			return persistentEntity;
+			if (persistentEntity != null) {
+				return persistentEntity;
+			}
+		} finally {
+			read.unlock();
 		}
 
 		Class<?> type = typeInformation.getType();
@@ -438,6 +450,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 * (non-Javadoc)
 		 * @see org.springframework.util.ReflectionUtils.FieldCallback#doWith(java.lang.reflect.Field)
 		 */
+		@Override
 		public void doWith(Field field) {
 
 			String fieldName = field.getName();
@@ -517,6 +530,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 * (non-Javadoc)
 		 * @see org.springframework.util.ReflectionUtils.FieldFilter#matches(java.lang.reflect.Field)
 		 */
+		@Override
 		public boolean matches(Field field) {
 
 			if (Modifier.isStatic(field.getModifiers())) {
