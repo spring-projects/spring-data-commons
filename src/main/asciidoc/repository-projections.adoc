@@ -1,0 +1,163 @@
+[[projections]]
+= Projections
+
+Spring Data Repositories usually return the domain model when using query methods. However, sometimes, you may need to alter the view of that model for various reasons. In this section, you will learn how to define projections to serve up simplified and reduced views of resources.
+
+Look at the following domain model:
+
+[source,java]
+----
+@Entity
+public class Person {
+
+  @Id @GeneratedValue
+  private Long id;
+  private String firstName, lastName;
+
+  @OneToOne
+  private Address address;
+  …
+}
+
+@Entity
+public class Address {
+
+  @Id @GeneratedValue
+  private Long id;
+  private String street, state, country;
+
+  …
+}
+----
+
+This `Person` has several attributes:
+
+* `id` is the primary key
+* `firstName` and `lastName` are data attributes
+* `address` is a link to another domain object
+
+Now assume we create a corresponding repository as follows:
+
+[source,java]
+----
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+  Person findPersonByFirstName(String firstName);
+}
+----
+
+Spring Data will return this domain object including all of its attributes. There are two options just to retrieve the `address` attribute. One option is to define a repository for `Address` objects like this:
+
+[source,java]
+----
+interface AddressRepository extends CrudRepository<Address, Long> {}
+----
+
+In this situation, using `PersonRepository` will still return the whole `Person` object. Using `AddressRepository` will return just the `Address`.
+
+However, what if you don't want to expose `address` details at all? You can offer the consumer of your repository service an alternative by defining one or more projections.
+
+.Simple Projection
+====
+[source,java]
+----
+interface NoAddresses {  <1>
+
+  String getFirstName(); <2>
+
+  String getLastName();  <3>
+}
+----
+This projection has the following details:
+
+<1> It's a plain Java interface making it declarative.
+<2> It exports the `firstName`.
+<3> It exports the `lastName`.
+====
+
+The `NoAddresses` projection only has getters for `firstName` and `lastName` meaning that it will not serve up any address information. The query method definition returns in this case `NoAdresses` instead of `Person`. 
+
+[source,java]
+----
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+  NoAddresses findByFirstName(String firstName);
+}
+----
+
+Projections declare a contract between the underlying type and the method signatures related to the exposed properties. Hence it's required to name getter methods according to the property name of the underlying type. If the underlying property is named `firstName`, then the getter method must be named `getFirstName` otherwise Spring Data is not able to look up the source property. This type of projection is also called _closed projection_. Closed projections expose a subset of properties hence they can be used to optimize the query in a way to reduce the selected fields from the data store. The other type is, as you might imagine, an _open projection_. 
+
+[[projections.remodelling-data]]
+== Remodelling data
+
+So far, you have seen how projections can be used to reduce the information that is presented to the user. Projections can be used to adjust the exposed data model. You can add virtual properties to your projection. Look at the following projection interface:
+
+.Renaming a property
+====
+[source,java]
+----
+interface RenamedProperty {    <1>
+
+  String getFirstName();       <2>
+
+  @Value("#{target.lastName}")
+  String getName();            <3>
+}
+----
+This projection has the following details:
+
+<1> It's a plain Java interface making it declarative.
+<2> It exports the `firstName`.
+<3> It exports the `name` property. Since this property is virtual it requires `@Value("#{target.lastName}")` to specify the property source.
+====
+
+The backing domain model does not have this property so we need to tell Spring Data from where this property is obtained.
+Virtual properties are the place where `@Value` comes into play. The `name` getter is annotated with `@Value` to use SpEL expressions pointing to the backing property `lastName`. You may have noticed `lastName` is prefixed with `target.` which is the variable name pointing to the backing object. Using `@Value` on methods allows defining where and how the value is obtained.
+
+Some applications require the full name of a person. Concatenating strings with `String.format("%s %s", person.getFirstName(), person.getLastName())` would be one possibility but this piece of code needs to be called in every place the full name is required. Virtual properties on projections leverage the need for repeating that code all over.
+
+[source,java]
+----
+interface FullNameAndCountry {
+
+  @Value("#{target.firstName} #{target.lastName}")
+  String getFullName();
+  
+  @Value("#{target.address.country}")
+  String getCountry();
+}
+----
+
+In fact, `@Value` gives full access to the target object and its nested properties. SpEL expressions are extremly powerful as the definition is always applied to the projection method. Let's take SpEL expressions in projections to the next level.
+
+
+Imagine you had the following domain model definition: 
+
+[source,java]
+----
+@Entity
+public class User {
+
+  @Id @GeneratedValue
+  private Long id;
+  private String name;
+
+  private String password;
+  …
+}
+----
+
+IMPORTANT: This example may seem a bit contrived, but it's possible with a richer domain model and many projections, to accidentally leak such details. Since Spring Data cannot discern the sensitivity of such data, it is up to the developers to avoid such situations. Storing a password as plain-text is discouraged. You really shouldn't do this. For this example, you could also replace `password` with anything else that is secret.
+
+In some cases, you might keep the `password` as secret as possible and not expose it more than it should be. The solution is to create a projection using `@Value` together with a SpEL expression.
+
+[source,java]
+----
+interface PasswordProjection {
+  @Value("#{(target.password == null || target.password.empty) ? null : '******'}")
+  String getPassword();
+}
+----
+
+The expression checks whether the password is `null` or empty and returns `null` in this case, otherwise six asterisks to indicate a password was set.
+
