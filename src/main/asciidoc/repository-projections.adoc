@@ -85,7 +85,7 @@ interface PersonRepository extends CrudRepository<Person, Long> {
 }
 ----
 
-Projections declare a contract between the underlying type and the method signatures related to the exposed properties. Hence it's required to name getter methods according to the property name of the underlying type. If the underlying property is named `firstName`, then the getter method must be named `getFirstName` otherwise Spring Data is not able to look up the source property. 
+Projections declare a contract between the underlying type and the method signatures related to the exposed properties. Hence it's required to name getter methods according to the property name of the underlying type. If the underlying property is named `firstName`, then the getter method must be named `getFirstName` otherwise Spring Data is not able to look up the source property. This type of projection is also called _closed projection_. Closed projections expose a subset of properties hence they can be used to optimize the query in a way to reduce the selected fields from the data store. The other type is, as you might imagine, an _open projection_. 
 
 [[projections.remodelling-data]]
 == Remodelling data
