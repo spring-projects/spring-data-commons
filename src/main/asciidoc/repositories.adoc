@@ -211,6 +211,115 @@ In this first step you defined a common base interface for all your domain repos
 
 NOTE: Note, that the intermediate repository interface is annotated with `@NoRepositoryBean`. Make sure you add that annotation to all repository interfaces that Spring Data should not create instances for at runtime.
 
+
+[[repositories.multiple-modules]]
+=== Using Repositories with multiple Spring Data modules
+
+Using a unique Spring Data module in your application makes things simple hence, all repository interfaces in the defined scope are bound to the Spring Data module. Sometimes applications require using more than one Spring Data module. In such case, it's required for a repository definition to distinguish between persistence technologies. Spring Data enters strict repository configuration mode because it detects multiple repository factories on the class path. Strict configuration requires details on the repository or the domain class to decide about Spring Data module binding for a repository definition:
+ 
+1. If the repository definition <<repositories.multiple-modules.types,extends the module-specific repository>>, then it's a valid candidate for the particular Spring Data module.
+2. If the domain class is <<repositories.multiple-modules.annotations,annotated with the module-specific type annotation>>, then it's a valid candidate for the particular Spring Data module. Spring Data modules accept either 3rd party annotations (such as JPA's `@Entity`) or provide own annotations such as `@Document` for Spring Data MongoDB/Spring Data Elasticsearch. 
+
+[[repositories.multiple-modules.types]]
+.Repository definitions using Module-specific Interfaces
+====
+[source, java]
+----
+interface MyRepository extends JpaRepository<User, Long> { }
+
+@NoRepositoryBean
+interface MyBaseRepository<T, ID extends Serializable> extends JpaRepository<T, ID> { 
+  …
+}
+
+interface UserRepository extends MyBaseRepository<User, Long> { 
+  … 
+}
+----
+`MyRepository` and `UserRepository` extend `JpaRepository` in their type hierarchy. They are valid candidates for the Spring Data JPA module.
+====
+
+.Repository definitions using generic Interfaces
+====
+[source, java]
+----
+interface AmbiguousRepository extends Repository<User, Long> {
+ …
+}
+
+@NoRepositoryBean
+interface MyBaseRepository<T, ID extends Serializable> extends CrudRepository<T, ID> { 
+  …
+}
+
+interface AmbiguousUserRepository extends MyBaseRepository<User, Long> { 
+  …
+}
+----
+`AmbiguousRepository` and `AmbiguousUserRepository` extend only `Repository` and `CrudRepository` in their type hierarchy. While this is perfectly fine using a unique Spring Data module, multiple modules cannot distinguish to which particular Spring Data these repositories should be bound.
+====
+
+[[repositories.multiple-modules.annotations]]
+.Repository definitions using Domain Classes with Annotations
+====
+[source, java]
+----
+interface PersonRepository extends Repository<Person, Long> {
+ …
+}
+
+@Entity
+public class Person {
+  …
+}
+
+interface UserRepository extends Repository<User, Long> {
+ …
+}
+
+@Document
+public class User {
+  …
+}
+----
+`PersonRepository` references `Person` which is annotated with the JPA annotation `@Entity` so this repository clearly belongs to Spring Data JPA. `UserRepository` uses `User` annotated with Spring Data MongoDB's `@Document` annotation.
+====
+
+.Repository definitions using Domain Classes with mixed Annotations
+====
+[source, java]
+----
+interface JpaPersonRepository extends Repository<Person, Long> {
+ …
+}
+
+interface MongoDBPersonRepository extends Repository<Person, Long> { 
+ …
+}
+
+@Entity
+@Document
+public class Person {
+  …
+}
+----
+This example shows a domain class using both JPA and Spring Data MongoDB annotations. It defines two repositories, `JpaPersonRepository` and `MongoDBPersonRepository`. One is intended for JPA and the other for MongoDB usage. Spring Data is no longer able to tell the repositories apart which leads to undefined behavior.
+====
+
+<<repositories.multiple-modules.types,Repository type details>> and <<repositories.multiple-modules.annotations,identifying domain class annotations>> are used for strict repository configuration identify repository candidates for a particular Spring Data module. Using multiple persistence technology-specific annotations on the same domain type is possible to reuse domain types across multiple persistence technologies, but then Spring Data is no longer able to determine a unique module to bind the repository. 
+
+The last way to distinguish repositories is scoping repository base packages. Base packages define the starting points for scanning for repository interface definitions which  implies to have repository definitions located in the appropriate packages. By default, annotation-driven configuration uses the package of the configuration class. The <<repositories.create-instances.spring,base package in XML-based configuration>> mandatory.
+ 
+.Annotation-driven configuration of base packages
+====
+[source, java]
+----
+@EnableJpaRepositories(basePackages = "com.acme.repositories.jpa")
+@EnableMongoRepositories(basePackages = "com.acme.repositories.mongo")
+interface Configuration { }
+----
+====
+
 [[repositories.query-methods.details]]
 == Defining query methods
 
