@@ -741,6 +741,58 @@ A corresponding attribute is available in the XML namespace.
 
 This section documents a set of Spring Data extensions that enable Spring Data usage in a variety of contexts. Currently most of the integration is targeted towards Spring MVC.
 
+[[core.extensions.querydsl]]
+=== Querydsl Extension
+
+http://www.querydsl.com/[Querydsl] is a framework which enables the construction of statically typed SQL-like queries via its fluent API.
+
+Several Spring Data modules offer integration with Querydsl via `QueryDslPredicateExecutor`.
+
+.QueryDslPredicateExecutor interface
+====
+[source, java]
+----
+public interface QueryDslPredicateExecutor<T> {
+
+    T findOne(Predicate predicate);             <1>
+
+    Iterable<T> findAll(Predicate predicate);   <2>
+
+    long count(Predicate predicate);            <3>
+
+    boolean exists(Predicate predicate);        <4>
+
+    // … more functionality omitted.
+}
+----
+<1> Finds and returns a single entity matching the `Predicate`.
+<2> Finds and returns all entities matching the `Predicate`.
+<3> Returns the number of entities matching the `Predicate`.
+<4> Returns if an entity that matches the `Predicate` exists.
+====
+
+To make use of Querydsl support simply extend `QueryDslPredicateExecutor` on your repository interface.
+
+.Querydsl integration on repositories
+====
+[source, java]
+----
+interface UserRepository extends CrudRepository<User, Long>, QueryDslPredicateExecutor<User> {
+
+}
+----
+====
+
+The above enables to write typesafe queries using Querydsl `Predicate` s.
+
+[source, java]
+----
+Predicate predicate = user.firstname.equalsIgnoreCase("dave")
+	.and(user.lastname.startsWithIgnoreCase("mathews"));
+
+userRepository.findAll(predicate);
+----
+
 [[core.web]]
 === Web support
 
@@ -908,7 +960,7 @@ Assume we have 30 Person instances in the database. You can now trigger a reques
 You see that the assembler produced the correct URI and also picks up the default configuration present to resolve the parameters into a `Pageable` for an upcoming request. This means, if you change that configuration, the links will automatically adhere to the change. By default the assembler points to the controller method it was invoked in but that can be customized by handing in a custom `Link` to be used as base to build the pagination links to overloads of the `PagedResourcesAssembler.toResource(…)` method.
 
 [[core.web.type-safe]]
-==== QueryDSL web support
+==== Querydsl web support
 
 For those stores having http://www.querydsl.com/[QueryDSL] integration it is possible to derive queries from the attributes contained in a `Request` query string.
 
