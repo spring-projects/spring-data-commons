@@ -46,7 +46,7 @@ interface PersonRepository extends CrudRepository<Person, Long> {
 }
 ----
 
-Spring Data will return this domain object including all of its attributes. There are two options just to retrieve the `address` attribute. One option is to define a repository for `Address` objects like this:
+Spring Data will return the domain object including all of its attributes. There are two options just to retrieve the `address` attribute. One option is to define a repository for `Address` objects like this:
 
 [source,java]
 ----
@@ -55,7 +55,7 @@ interface AddressRepository extends CrudRepository<Address, Long> {}
 
 In this situation, using `PersonRepository` will still return the whole `Person` object. Using `AddressRepository` will return just the `Address`.
 
-However, what if you don't want to expose `address` details at all? You can offer the consumer of your repository service an alternative by defining one or more projections.
+However, what if you do not want to expose `address` details at all? You can offer the consumer of your repository service an alternative by defining one or more projections.
 
 .Simple Projection
 ====
@@ -70,9 +70,9 @@ interface NoAddresses {  <1>
 ----
 This projection has the following details:
 
-<1> It's a plain Java interface making it declarative.
-<2> It exports the `firstName`.
-<3> It exports the `lastName`.
+<1> A plain Java interface making it declarative.
+<2> Export the `firstName`.
+<3> Export the `lastName`.
 ====
 
 The `NoAddresses` projection only has getters for `firstName` and `lastName` meaning that it will not serve up any address information. The query method definition returns in this case `NoAdresses` instead of `Person`. 
@@ -85,7 +85,7 @@ interface PersonRepository extends CrudRepository<Person, Long> {
 }
 ----
 
-Projections declare a contract between the underlying type and the method signatures related to the exposed properties. Hence it's required to name getter methods according to the property name of the underlying type. If the underlying property is named `firstName`, then the getter method must be named `getFirstName` otherwise Spring Data is not able to look up the source property. This type of projection is also called _closed projection_. Closed projections expose a subset of properties hence they can be used to optimize the query in a way to reduce the selected fields from the data store. The other type is, as you might imagine, an _open projection_. 
+Projections declare a contract between the underlying type and the method signatures related to the exposed properties. Hence it is required to name getter methods according to the property name of the underlying type. If the underlying property is named `firstName`, then the getter method must be named `getFirstName` otherwise Spring Data is not able to look up the source property. This type of projection is also called _closed projection_. Closed projections expose a subset of properties hence they can be used to optimize the query in a way to reduce the selected fields from the data store. The other type is, as you might imagine, an _open projection_. 
 
 [[projections.remodelling-data]]
 == Remodelling data
@@ -106,13 +106,13 @@ interface RenamedProperty {    <1>
 ----
 This projection has the following details:
 
-<1> It's a plain Java interface making it declarative.
-<2> It exports the `firstName`.
-<3> It exports the `name` property. Since this property is virtual it requires `@Value("#{target.lastName}")` to specify the property source.
+<1> A plain Java interface making it declarative.
+<2> Export the `firstName`.
+<3> Export the `name` property. Since this property is virtual it requires `@Value("#{target.lastName}")` to specify the property source.
 ====
 
 The backing domain model does not have this property so we need to tell Spring Data from where this property is obtained.
-Virtual properties are the place where `@Value` comes into play. The `name` getter is annotated with `@Value` to use SpEL expressions pointing to the backing property `lastName`. You may have noticed `lastName` is prefixed with `target.` which is the variable name pointing to the backing object. Using `@Value` on methods allows defining where and how the value is obtained.
+Virtual properties are the place where `@Value` comes into play. The `name` getter is annotated with `@Value` to use http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/html/expressions.html[SpEL expressions] pointing to the backing property `lastName`. You may have noticed `lastName` is prefixed with `target` which is the variable name pointing to the backing object. Using `@Value` on methods allows defining where and how the value is obtained.
 
 Some applications require the full name of a person. Concatenating strings with `String.format("%s %s", person.getFirstName(), person.getLastName())` would be one possibility but this piece of code needs to be called in every place the full name is required. Virtual properties on projections leverage the need for repeating that code all over.
 
@@ -122,7 +122,7 @@ interface FullNameAndCountry {
 
   @Value("#{target.firstName} #{target.lastName}")
   String getFullName();
-  
+
   @Value("#{target.address.country}")
   String getCountry();
 }
@@ -131,7 +131,7 @@ interface FullNameAndCountry {
 In fact, `@Value` gives full access to the target object and its nested properties. SpEL expressions are extremly powerful as the definition is always applied to the projection method. Let's take SpEL expressions in projections to the next level.
 
 
-Imagine you had the following domain model definition: 
+Imagine you had the following domain model definition:
 
 [source,java]
 ----
@@ -147,7 +147,7 @@ public class User {
 }
 ----
 
-IMPORTANT: This example may seem a bit contrived, but it's possible with a richer domain model and many projections, to accidentally leak such details. Since Spring Data cannot discern the sensitivity of such data, it is up to the developers to avoid such situations. Storing a password as plain-text is discouraged. You really shouldn't do this. For this example, you could also replace `password` with anything else that is secret.
+IMPORTANT: This example may seem a bit contrived, but it is possible with a richer domain model and many projections, to accidentally leak such details. Since Spring Data cannot discern the sensitivity of such data, it is up to the developers to avoid such situations. Storing a password as plain-text is discouraged. You really should not do this. For this example, you could also replace `password` with anything else that is secret.
 
 In some cases, you might keep the `password` as secret as possible and not expose it more than it should be. The solution is to create a projection using `@Value` together with a SpEL expression.
 
