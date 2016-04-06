@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -60,6 +61,7 @@ import org.springframework.util.ObjectUtils;
  * detection strategy can be configured by setting {@link QueryLookupStrategy.Key}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
@@ -77,6 +79,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private ClassLoader classLoader = org.springframework.util.ClassUtils.getDefaultClassLoader();
 	private EvaluationContextProvider evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
 	private BeanFactory beanFactory;
+	private ConversionService conversionService;
 
 	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
@@ -100,6 +103,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	public void setNamedQueries(NamedQueries namedQueries) {
 		this.namedQueries = namedQueries == null ? PropertiesBasedNamedQueries.EMPTY : namedQueries;
+	}
+
+	/**
+	 * Configures a {@link ConversionService} instance to convert method parameters when calling implementation methods on
+	 * the base class or a custom implementation.
+	 *
+	 * @param conversionService the conversionService to set.
+	 */
+	public void setConversionService(ConversionService conversionService) {
+		this.conversionService = conversionService;
 	}
 
 	/* 
@@ -217,7 +230,14 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
-		result.addAdvice(new QueryExecutorMethodInterceptor(information, customImplementation, target));
+		result.addAdvice(new QueryExecutorMethodInterceptor(information));
+
+		if (conversionService == null) {
+			result.addAdvice(new ImplementationMethodExecutionInterceptor(information, customImplementation, target));
+		} else {
+			result.addAdvice(new ConvertingImplementationMethodExecutionInterceptor(information, customImplementation, target,
+					conversionService));
+		}
 
 		return (T) result.getProxy(classLoader);
 	}
@@ -252,7 +272,17 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		Class<?> repositoryBaseClass = this.repositoryBaseClass == null ? getRepositoryBaseClass(metadata)
 				: this.repositoryBaseClass;
 
-		repositoryInformation = new DefaultRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass);
+		if (conversionService == null) {
+			repositoryInformation = new DefaultRepositoryInformation(metadata, repositoryBaseClass,
+					customImplementationClass);
+		} else {
+			// TODO: Not sure this is the best idea but at some point we need to distinguish between
+			// methods that want to get unwrapped data from wrapped parameters and those which are
+			// just fine with wrappers because at some point a converting interceptor kicks in
+			repositoryInformation = new ReactiveRepositoryInformation(metadata, repositoryBaseClass,
+					customImplementationClass, conversionService);
+		}
+
 		repositoryInformationCache.put(cacheKey, repositoryInformation);
 		return repositoryInformation;
 	}
@@ -390,25 +420,15 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		private final Map<Method, RepositoryQuery> queries = new ConcurrentHashMap<Method, RepositoryQuery>();
 
-		private final Object customImplementation;
-		private final RepositoryInformation repositoryInformation;
 		private final QueryExecutionResultHandler resultHandler;
-		private final Object target;
 
 		/**
 		 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model of {@link QueryMethod}s to be invoked on
 		 * execution of repository interface methods.
 		 */
-		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation, Object customImplementation,
-				Object target) {
-
-			Assert.notNull(repositoryInformation, "RepositoryInformation must not be null!");
-			Assert.notNull(target, "Target must not be null!");
+		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation) {
 
 			this.resultHandler = new QueryExecutionResultHandler();
-			this.repositoryInformation = repositoryInformation;
-			this.customImplementation = customImplementation;
-			this.target = target;
 
 			QueryLookupStrategy lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 					RepositoryFactorySupport.this.evaluationContextProvider);
@@ -472,14 +492,64 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			Method method = invocation.getMethod();
 			Object[] arguments = invocation.getArguments();
 
+			if (hasQueryFor(method)) {
+				return queries.get(method).execute(arguments);
+			}
+
+			return invocation.proceed();
+		}
+
+		/**
+		 * Returns whether we know of a query to execute for the given {@link Method};
+		 * 
+		 * @param method
+		 * @return
+		 */
+		private boolean hasQueryFor(Method method) {
+			return queries.containsKey(method);
+		}
+	}
+
+	/**
+	 * Method interceptor that calls methods on either the base implementation or the custom repository implementation.
+	 *
+	 * @author Mark Paluch
+	 */
+	public class ImplementationMethodExecutionInterceptor implements MethodInterceptor {
+
+		private final Object customImplementation;
+		private final RepositoryInformation repositoryInformation;
+		private final Object target;
+
+		/**
+		 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model of {@link QueryMethod}s to be invoked on
+		 * execution of repository interface methods.
+		 */
+		public ImplementationMethodExecutionInterceptor(RepositoryInformation repositoryInformation,
+				Object customImplementation, Object target) {
+
+			Assert.notNull(repositoryInformation, "RepositoryInformation must not be null!");
+			Assert.notNull(target, "Target must not be null!");
+
+			this.repositoryInformation = repositoryInformation;
+			this.customImplementation = customImplementation;
+			this.target = target;
+
+		}
+
+		/* (non-Javadoc)
+		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
+		 */
+		@Override
+		public Object invoke(MethodInvocation invocation) throws Throwable {
+
+			Method method = invocation.getMethod();
+			Object[] arguments = invocation.getArguments();
+
 			if (isCustomMethodInvocation(invocation)) {
 
 				Method actualMethod = repositoryInformation.getTargetClassMethod(method);
 				return executeMethodOn(customImplementation, actualMethod, arguments);
-			}
-
-			if (hasQueryFor(method)) {
-				return queries.get(method).execute(arguments);
 			}
 
 			// Lookup actual method as it might be redeclared in the interface
@@ -497,7 +567,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 * @return
 		 * @throws Throwable
 		 */
-		private Object executeMethodOn(Object target, Method method, Object[] parameters) throws Throwable {
+		protected Object executeMethodOn(Object target, Method method, Object[] parameters) throws Throwable {
 
 			try {
 				return method.invoke(target, parameters);
@@ -506,16 +576,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			}
 
 			throw new IllegalStateException("Should not occur!");
-		}
-
-		/**
-		 * Returns whether we know of a query to execute for the given {@link Method};
-		 * 
-		 * @param method
-		 * @return
-		 */
-		private boolean hasQueryFor(Method method) {
-			return queries.containsKey(method);
 		}
 
 		/**
@@ -532,6 +592,69 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			}
 
 			return repositoryInformation.isCustomMethod(invocation.getMethod());
+		}
+	}
+
+	/**
+	 * Method interceptor that converts parameters before invoking a method.
+	 *
+	 * @author Mark Paluch
+	 */
+	public class ConvertingImplementationMethodExecutionInterceptor extends ImplementationMethodExecutionInterceptor {
+
+		private final ConversionService conversionService;
+
+		/**
+		 * @param repositoryInformation
+		 * @param customImplementation
+		 * @param target
+		 * @param conversionService
+		 */
+		public ConvertingImplementationMethodExecutionInterceptor(RepositoryInformation repositoryInformation,
+				Object customImplementation, Object target, ConversionService conversionService) {
+			super(repositoryInformation, customImplementation, target);
+			this.conversionService = conversionService;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport.ImplementationMethodExecutionInterceptor#executeMethodOn(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+		 */
+		@Override
+		protected Object executeMethodOn(Object target, Method method, Object[] parameters) throws Throwable {
+			return super.executeMethodOn(target, method, convertParameters(method.getParameterTypes(), parameters));
+		}
+
+		/**
+		 * @param parameterTypes
+		 * @param parameters
+		 * @return
+		 */
+		private Object[] convertParameters(Class<?>[] parameterTypes, Object[] parameters) {
+
+			if (parameters.length == 0) {
+				return parameters;
+			}
+
+			Object[] result = new Object[parameters.length];
+
+			for (int i = 0; i < parameters.length; i++) {
+
+				if (parameters[i] == null) {
+					continue;
+				}
+
+				if (parameterTypes[i].isAssignableFrom(parameters[i].getClass())
+						|| !conversionService.canConvert(parameters[i].getClass(), parameterTypes[i])) {
+
+					result[i] = parameters[i];
+
+				} else {
+					result[i] = conversionService.convert(parameters[i], parameterTypes[i]);
+				}
+
+			}
+
+			return result;
 		}
 	}
 

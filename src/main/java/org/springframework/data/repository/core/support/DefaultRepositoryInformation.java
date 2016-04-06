@@ -336,7 +336,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 
 	/**
 	 * Checks the given method's parameters to match the ones of the given base class method. Matches generic arguments
-	 * agains the ones bound in the given repository interface.
+	 * against the ones bound in the given repository interface.
 	 * 
 	 * @param method
 	 * @param baseClassMethod
@@ -381,7 +381,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 * @param parameterType must not be {@literal null}.
 	 * @return
 	 */
-	private boolean matchesGenericType(TypeVariable<?> variable, ResolvableType parameterType) {
+	protected boolean matchesGenericType(TypeVariable<?> variable, ResolvableType parameterType) {
 
 		GenericDeclaration declaration = variable.getGenericDeclaration();
 
