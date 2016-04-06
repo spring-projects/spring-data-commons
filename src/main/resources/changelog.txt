@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.12.1.RELEASE (2016-04-06)
+----------------------------------------------
+* DATACMNS-837 - Release 1.12.1 (Hopper SR1).
+
+
 Changes in version 1.12.0.RELEASE (2016-04-06)
 ----------------------------------------------
 * DATACMNS-835 - Add pull request template.
