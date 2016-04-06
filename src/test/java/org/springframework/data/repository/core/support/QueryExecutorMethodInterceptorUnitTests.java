@@ -51,16 +51,16 @@ public class QueryExecutorMethodInterceptorUnitTests {
 		when(information.getQueryMethods()).thenReturn(Arrays.asList(Object.class.getMethod("toString")));
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(null);
 
-		factory.new QueryExecutorMethodInterceptor(information, null, new Object());
+		factory.new QueryExecutorMethodInterceptor(information);
 	}
 
 	@Test
 	public void skipsQueryLookupsIfQueryLookupStrategyIsNull() {
 
-		when(information.getQueryMethods()).thenReturn(Collections.<Method> emptySet());
+		when(information.getQueryMethods()).thenReturn(Collections.<Method>emptySet());
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(strategy);
 
-		factory.new QueryExecutorMethodInterceptor(information, null, new Object());
+		factory.new QueryExecutorMethodInterceptor(information);
 		verify(strategy, times(0)).resolveQuery(any(Method.class), any(RepositoryMetadata.class),
 				any(ProjectionFactory.class), any(NamedQueries.class));
 	}

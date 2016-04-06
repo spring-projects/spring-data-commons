@@ -105,6 +105,15 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!--  RxJava -->
+
+		<dependency>
+			<groupId>io.reactivex</groupId>
+			<artifactId>rxjava</artifactId>
+			<version>${rxjava}</version>
+			<optional>true</optional>
+		</dependency>
+
 		<!--  Querydsl -->
 
 		<dependency>

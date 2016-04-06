@@ -40,10 +40,16 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import rx.Observable;
+import rx.Single;
+
 /**
  * Unit tests for {@link ResultProcessor}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class ResultProcessorUnitTests {
 
@@ -260,6 +266,99 @@ public class ResultProcessorUnitTests {
 		processor.processResult(specialList);
 	}
 
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void supportsMonoWrapper() throws Exception {
+
+		Mono<Sample> samples = Mono.just(new Sample("Dave", "Matthews"));
+
+		Object result = getProcessor("findMonoSample").processResult(samples);
+
+		assertThat(result, is(instanceOf(Mono.class)));
+		Object content = ((Mono<Object>) result).block();
+
+		assertThat(content, is(instanceOf(Sample.class)));
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void supportsSingleWrapper() throws Exception {
+
+		Single<Sample> samples = Single.just(new Sample("Dave", "Matthews"));
+
+		Object result = getProcessor("findSingleSample").processResult(samples);
+
+		assertThat(result, is(instanceOf(Single.class)));
+		Object content = ((Single<Object>) result).toBlocking().value();
+
+		assertThat(content, is(instanceOf(Sample.class)));
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	public void refrainsFromProjectingUsingReactiveWrappersIfThePreparingConverterReturnsACompatibleInstance()
+			throws Exception {
+
+		ResultProcessor processor = getProcessor("findMonoSampleDto");
+
+		Object result = processor.processResult(Mono.just(new Sample("Dave", "Matthews")), new Converter<Object, Object>() {
+
+			@Override
+			public Object convert(Object source) {
+				return new SampleDto();
+			}
+		});
+
+		assertThat(result, is(instanceOf(Mono.class)));
+		Object content = ((Mono<Object>) result).block();
+
+		assertThat(content, is(instanceOf(SampleDto.class)));
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void supportsFluxProjections() throws Exception {
+
+		Flux<Sample> samples = Flux.just(new Sample("Dave", "Matthews"));
+
+		Object result = getProcessor("findFluxProjection").processResult(samples);
+
+		assertThat(result, is(instanceOf(Flux.class)));
+		List<Object> content = ((Flux<Object>) result).collectList().block();
+
+		assertThat(content, is(not(empty())));
+		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void supportsObservableProjections() throws Exception {
+
+		Observable<Sample> samples = Observable.just(new Sample("Dave", "Matthews"));
+
+		Object result = getProcessor("findObservableProjection").processResult(samples);
+
+		assertThat(result, is(instanceOf(Observable.class)));
+		List<Object> content = ((Observable<Object>) result).toList().toBlocking().single();
+
+		assertThat(content, is(not(empty())));
+		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
+	}
+
 	private static ResultProcessor getProcessor(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor();
 	}
@@ -296,6 +395,16 @@ public class ResultProcessorUnitTests {
 		<T> T findOneDynamic(Class<T> type);
 
 		Stream<SampleProjection> findStreamProjection();
+
+		Mono<Sample> findMonoSample();
+
+		Mono<SampleDto> findMonoSampleDto();
+
+		Single<Sample> findSingleSample();
+
+		Flux<SampleProjection> findFluxProjection();
+
+		Observable<SampleProjection> findObservableProjection();
 	}
 
 	static class Sample {

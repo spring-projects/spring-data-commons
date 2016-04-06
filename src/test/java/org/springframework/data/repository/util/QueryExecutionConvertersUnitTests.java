@@ -19,6 +19,11 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import rx.Completable;
+import rx.Observable;
+import rx.Single;
 import scala.Option;
 
 import java.util.concurrent.CompletableFuture;
@@ -26,6 +31,7 @@ import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.reactivestreams.Publisher;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.util.Version;
@@ -64,6 +70,47 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(Future.class), is(true));
 		assertThat(QueryExecutionConverters.supports(ListenableFuture.class), is(true));
 		assertThat(QueryExecutionConverters.supports(Option.class), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	public void registersReactiveWrapperTypes() {
+
+		assertThat(QueryExecutionConverters.supports(Publisher.class), is(true));
+		assertThat(QueryExecutionConverters.supports(Mono.class), is(true));
+		assertThat(QueryExecutionConverters.supports(Flux.class), is(true));
+		assertThat(QueryExecutionConverters.supports(Single.class), is(true));
+		assertThat(QueryExecutionConverters.supports(Completable.class), is(true));
+		assertThat(QueryExecutionConverters.supports(Observable.class), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	public void registersUnwrapperTypes() {
+
+		assertThat(QueryExecutionConverters.supportsUnwrapping(Optional.class), is(true));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(java.util.Optional.class), is(true));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(Future.class), is(true));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(ListenableFuture.class), is(true));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(Option.class), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	public void doesNotRegisterReactiveUnwrapperTypes() {
+
+		assertThat(QueryExecutionConverters.supportsUnwrapping(Publisher.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(Mono.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(Flux.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(Single.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(Completable.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(Observable.class), is(false));
 	}
 
 	/**

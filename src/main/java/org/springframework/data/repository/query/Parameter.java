@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * Class to abstract a single parameter of a query method. It is held in the context of a {@link Parameters} instance.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class Parameter {
 
@@ -205,7 +206,30 @@ public class Parameter {
 	}
 
 	/**
-	 * Returns the component type if the given {@link MethodParameter} is a wrapper type.
+	 * Returns whether the {@link MethodParameter} is wrapped in a wrapper type.
+	 *
+	 * @param parameter must not be {@literal null}.
+	 * @return
+	 * @see QueryExecutionConverters
+	 */
+	private static boolean isWrapped(MethodParameter parameter) {
+		return QueryExecutionConverters.supports(parameter.getParameterType());
+	}
+
+	/**
+	 * Returns whether the {@link MethodParameter} should be unwrapped.
+	 *
+	 * @param parameter must not be {@literal null}.
+	 * @return
+	 * @see QueryExecutionConverters
+	 */
+	private static boolean shouldUnwrap(MethodParameter parameter) {
+		return QueryExecutionConverters.supportsUnwrapping(parameter.getParameterType());
+	}
+
+	/**
+	 * Returns the component type if the given {@link MethodParameter} is a wrapper type and the wrapper should be
+	 * unwrapped.
 	 * 
 	 * @param parameter must not be {@literal null}.
 	 * @return
@@ -214,7 +238,10 @@ public class Parameter {
 
 		Class<?> originalType = parameter.getParameterType();
 
-		return QueryExecutionConverters.supports(originalType)
-				? ResolvableType.forMethodParameter(parameter).getGeneric(0).getRawClass() : originalType;
+		if (isWrapped(parameter) && shouldUnwrap(parameter)) {
+			return ResolvableType.forMethodParameter(parameter).getGeneric(0).getRawClass();
+		}
+
+		return originalType;
 	}
 }

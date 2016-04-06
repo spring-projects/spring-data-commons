@@ -17,12 +17,14 @@ package org.springframework.data.repository.query;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import rx.Single;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.reactivestreams.Publisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -31,6 +33,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Unit test for {@link Parameters}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class ParametersUnitTests {
 
@@ -176,6 +179,28 @@ public class ParametersUnitTests {
 		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(String.class)));
 	}
 
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	public void keepsReactiveStreamsWrapper() throws Exception {
+
+		Parameters<?, Parameter> parameters = getParametersFor("methodWithPublisher", Publisher.class);
+
+		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(Publisher.class)));
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	public void keepsRxJavaWrapper() throws Exception {
+
+		Parameters<?, Parameter> parameters = getParametersFor("methodWithSingle", Single.class);
+
+		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(Single.class)));
+	}
+
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
@@ -209,5 +234,9 @@ public class ParametersUnitTests {
 		<T> T dynamicBind(Class<T> type, Class<?> one, Class<Object> two);
 
 		void methodWithOptional(Optional<String> optional);
+
+		void methodWithPublisher(Publisher<String> publisher);
+
+		void methodWithSingle(Single<String> single);
 	}
 }

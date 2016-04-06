@@ -28,6 +28,7 @@ import org.springframework.data.repository.util.QueryExecutionConverters;
  * Simple domain service to convert query results into a dedicated type.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 class QueryExecutionResultHandler {
 
@@ -50,25 +51,36 @@ class QueryExecutionResultHandler {
 	 * Post-processes the given result of a query invocation to the given type.
 	 * 
 	 * @param result can be {@literal null}.
-	 * @param returnTypeDesciptor can be {@literal null}, if so, no conversion is performed.
+	 * @param returnTypeDescriptor can be {@literal null}, if so, no conversion is performed.
 	 * @return
 	 */
-	public Object postProcessInvocationResult(Object result, TypeDescriptor returnTypeDesciptor) {
+	public Object postProcessInvocationResult(Object result, TypeDescriptor returnTypeDescriptor) {
 
-		if (returnTypeDesciptor == null) {
+		if (returnTypeDescriptor == null) {
 			return result;
 		}
 
-		Class<?> expectedReturnType = returnTypeDesciptor.getType();
+		Class<?> expectedReturnType = returnTypeDescriptor.getType();
 
 		if (result != null && expectedReturnType.isInstance(result)) {
 			return result;
 		}
 
-		if (QueryExecutionConverters.supports(expectedReturnType)
-				&& conversionService.canConvert(WRAPPER_TYPE, returnTypeDesciptor)
-				&& !conversionService.canBypassConvert(WRAPPER_TYPE, TypeDescriptor.valueOf(expectedReturnType))) {
-			return conversionService.convert(new NullableWrapper(result), expectedReturnType);
+		if (QueryExecutionConverters.supports(expectedReturnType)) {
+
+			TypeDescriptor targetType = TypeDescriptor.valueOf(expectedReturnType);
+
+			if(conversionService.canConvert(WRAPPER_TYPE, returnTypeDescriptor)
+				&& !conversionService.canBypassConvert(WRAPPER_TYPE, targetType)) {
+
+				return conversionService.convert(new NullableWrapper(result), expectedReturnType);
+			}
+
+			if(result != null && conversionService.canConvert(TypeDescriptor.valueOf(result.getClass()), returnTypeDescriptor)
+				&& !conversionService.canBypassConvert(TypeDescriptor.valueOf(result.getClass()), targetType)) {
+
+				return conversionService.convert(result, expectedReturnType);
+			}
 		}
 
 		if (result != null) {
@@ -82,4 +94,5 @@ class QueryExecutionResultHandler {
 
 		return null;
 	}
+
 }

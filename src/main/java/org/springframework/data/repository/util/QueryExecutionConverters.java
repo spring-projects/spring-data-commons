@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+import org.reactivestreams.Publisher;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
@@ -37,6 +38,14 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
 
+import reactor.core.converter.DependencyUtils;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import rx.Completable;
+import rx.Observable;
+import rx.Single;
+import scala.Option;
+
 /**
  * Converters to potentially wrap the execution of a repository method into a variety of wrapper types potentially being
  * available on the classpath. Currently supported:
@@ -47,6 +56,12 @@ import com.google.common.base.Optional;
  * <li>{@code java.util.concurrent.Future}</li>
  * <li>{@code java.util.concurrent.CompletableFuture}</li>
  * <li>{@code org.springframework.util.concurrent.ListenableFuture<}</li>
+ * <li>{@code rx.Single}</li>
+ * <li>{@code rx.Observable}</li>
+ * <li>{@code rx.Completable}</li>
+ * <li>{@code reactor.core.publisher.Mono}</li>
+ * <li>{@code reactor.core.publisher.Flux}</li>
+ * <li>{@code org.reactivestreams.Publisher}</li>
  * </ul>
  * 
  * @author Oliver Gierke
@@ -66,31 +81,65 @@ public abstract class QueryExecutionConverters {
 	private static final boolean SCALA_PRESENT = ClassUtils.isPresent("scala.Option",
 			QueryExecutionConverters.class.getClassLoader());
 
+	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.converter.DependencyUtils",
+			QueryExecutionConverters.class.getClassLoader());
+	private static final boolean RXJAVA_SINGLE_PRESENT = ClassUtils.isPresent("rx.Single",
+			QueryExecutionConverters.class.getClassLoader());
+	private static final boolean RXJAVA_OBSERVABLE_PRESENT = ClassUtils.isPresent("rx.Observable",
+			QueryExecutionConverters.class.getClassLoader());
+	private static final boolean RXJAVA_COMPLETABLE_PRESENT = ClassUtils.isPresent("rx.Completable",
+			QueryExecutionConverters.class.getClassLoader());
+
 	private static final Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
+	private static final Set<Class<?>> UNWRAPPER_TYPES = new HashSet<Class<?>>();
 	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
 
 	static {
 
 		WRAPPER_TYPES.add(Future.class);
+		UNWRAPPER_TYPES.add(Future.class);
 		WRAPPER_TYPES.add(ListenableFuture.class);
+		UNWRAPPER_TYPES.add(ListenableFuture.class);
 
 		if (GUAVA_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToGuavaOptionalConverter.getWrapperType());
+			UNWRAPPER_TYPES.add(NullableWrapperToGuavaOptionalConverter.getWrapperType());
 			UNWRAPPERS.add(GuavaOptionalUnwrapper.INSTANCE);
 		}
 
 		if (JDK_8_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToJdk8OptionalConverter.getWrapperType());
+			UNWRAPPER_TYPES.add(NullableWrapperToJdk8OptionalConverter.getWrapperType());
 			UNWRAPPERS.add(Jdk8OptionalUnwrapper.INSTANCE);
 		}
 
 		if (JDK_8_PRESENT && SPRING_4_2_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToCompletableFutureConverter.getWrapperType());
+			UNWRAPPER_TYPES.add(NullableWrapperToCompletableFutureConverter.getWrapperType());
 		}
 
 		if (SCALA_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToScalaOptionConverter.getWrapperType());
+			UNWRAPPER_TYPES.add(NullableWrapperToScalaOptionConverter.getWrapperType());
 			UNWRAPPERS.add(ScalOptionUnwrapper.INSTANCE);
+		}
+
+		if (PROJECT_REACTOR_PRESENT) {
+			WRAPPER_TYPES.add(Publisher.class);
+			WRAPPER_TYPES.add(Mono.class);
+			WRAPPER_TYPES.add(Flux.class);
+		}
+
+		if (RXJAVA_SINGLE_PRESENT) {
+			WRAPPER_TYPES.add(Single.class);
+		}
+
+		if (RXJAVA_COMPLETABLE_PRESENT) {
+			WRAPPER_TYPES.add(Completable.class);
+		}
+
+		if (RXJAVA_OBSERVABLE_PRESENT) {
+			WRAPPER_TYPES.add(Observable.class);
 		}
 	}
 
@@ -107,6 +156,25 @@ public abstract class QueryExecutionConverters {
 		Assert.notNull(type, "Type must not be null!");
 
 		for (Class<?> candidate : WRAPPER_TYPES) {
+			if (candidate.isAssignableFrom(type)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns whether the given wrapper type supports unwrapping.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	public static boolean supportsUnwrapping(Class<?> type) {
+
+		Assert.notNull(type, "Type must not be null!");
+
+		for (Class<?> candidate : UNWRAPPER_TYPES) {
 			if (candidate.isAssignableFrom(type)) {
 				return true;
 			}
@@ -138,6 +206,37 @@ public abstract class QueryExecutionConverters {
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
+
+		if (PROJECT_REACTOR_PRESENT) {
+
+			if (RXJAVA_COMPLETABLE_PRESENT) {
+				conversionService.addConverter(PublisherToCompletableConverter.INSTANCE);
+				conversionService.addConverter(CompletableToPublisherConverter.INSTANCE);
+				conversionService.addConverter(CompletableToMonoConverter.INSTANCE);
+			}
+
+			if (RXJAVA_SINGLE_PRESENT) {
+				conversionService.addConverter(PublisherToSingleConverter.INSTANCE);
+				conversionService.addConverter(SingleToPublisherConverter.INSTANCE);
+				conversionService.addConverter(SingleToMonoConverter.INSTANCE);
+				conversionService.addConverter(SingleToFluxConverter.INSTANCE);
+			}
+
+			if (RXJAVA_OBSERVABLE_PRESENT) {
+				conversionService.addConverter(PublisherToObservableConverter.INSTANCE);
+				conversionService.addConverter(ObservableToPublisherConverter.INSTANCE);
+				conversionService.addConverter(ObservableToMonoConverter.INSTANCE);
+				conversionService.addConverter(ObservableToFluxConverter.INSTANCE);
+			}
+
+			conversionService.addConverter(PublisherToMonoConverter.INSTANCE);
+			conversionService.addConverter(PublisherToFluxConverter.INSTANCE);
+		}
+
+		if (RXJAVA_SINGLE_PRESENT && RXJAVA_OBSERVABLE_PRESENT) {
+			conversionService.addConverter(SingleToObservableConverter.INSTANCE);
+			conversionService.addConverter(ObservableToSingleConverter.INSTANCE);
+		}
 	}
 
 	/**
@@ -445,6 +544,246 @@ public abstract class QueryExecutionConverters {
 		@Override
 		public Object convert(Object source) {
 			return source instanceof Option ? ((Option<?>) source).getOrElse(alternative) : source;
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Publisher} to {@link Flux}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum PublisherToFluxConverter implements Converter<Publisher<?>, Flux<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Flux<?> convert(Publisher<?> source) {
+			return Flux.from(source);
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Publisher} to {@link Mono}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum PublisherToMonoConverter implements Converter<Publisher<?>, Mono<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Mono<?> convert(Publisher<?> source) {
+			return Mono.from(source);
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Publisher} to {@link Single}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum PublisherToSingleConverter implements Converter<Publisher<?>, Single<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Single<?> convert(Publisher<?> source) {
+			return DependencyUtils.convertFromPublisher(source, Single.class);
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Publisher} to {@link Completable}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum PublisherToCompletableConverter implements Converter<Publisher<?>, Completable> {
+
+		INSTANCE;
+
+		@Override
+		public Completable convert(Publisher<?> source) {
+			return DependencyUtils.convertFromPublisher(source, Completable.class);
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Publisher} to {@link Observable}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum PublisherToObservableConverter implements Converter<Publisher<?>, Observable<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Observable<?> convert(Publisher<?> source) {
+			return DependencyUtils.convertFromPublisher(source, Observable.class);
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Single} to {@link Publisher}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum SingleToPublisherConverter implements Converter<Single<?>, Publisher<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Publisher<?> convert(Single<?> source) {
+			return DependencyUtils.convertToPublisher(source);
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Single} to {@link Mono}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum SingleToMonoConverter implements Converter<Single<?>, Mono<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Mono<?> convert(Single<?> source) {
+			return PublisherToMonoConverter.INSTANCE.convert(DependencyUtils.convertToPublisher(source));
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Single} to {@link Publisher}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum SingleToFluxConverter implements Converter<Single<?>, Flux<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Flux<?> convert(Single<?> source) {
+			return PublisherToFluxConverter.INSTANCE.convert(DependencyUtils.convertToPublisher(source));
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Completable} to {@link Publisher}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum CompletableToPublisherConverter implements Converter<Completable, Publisher<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Publisher<?> convert(Completable source) {
+			return DependencyUtils.convertToPublisher(source);
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Completable} to {@link Mono}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum CompletableToMonoConverter implements Converter<Completable, Mono<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Mono<?> convert(Completable source) {
+			return Mono.from(CompletableToPublisherConverter.INSTANCE.convert(source));
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert an {@link Observable} to {@link Publisher}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum ObservableToPublisherConverter implements Converter<Observable<?>, Publisher<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Publisher<?> convert(Observable<?> source) {
+			return DependencyUtils.convertToPublisher(source);
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Observable} to {@link Mono}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum ObservableToMonoConverter implements Converter<Observable<?>, Mono<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Mono<?> convert(Observable<?> source) {
+			return PublisherToMonoConverter.INSTANCE.convert(DependencyUtils.convertToPublisher(source));
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Observable} to {@link Flux}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum ObservableToFluxConverter implements Converter<Observable<?>, Flux<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Flux<?> convert(Observable<?> source) {
+			return PublisherToFluxConverter.INSTANCE.convert(DependencyUtils.convertToPublisher(source));
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Observable} to {@link Single}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum ObservableToSingleConverter implements Converter<Observable<?>, Single<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Single<?> convert(Observable<?> source) {
+			return source.toSingle();
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Single} to {@link Single}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum SingleToObservableConverter implements Converter<Single<?>, Observable<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Observable<?> convert(Single<?> source) {
+			return source.toObservable();
 		}
 	}
 }
