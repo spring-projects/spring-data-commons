@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.12.0.RELEASE (2016-04-06)
+----------------------------------------------
+* DATACMNS-835 - Add pull request template.
+* DATACMNS-833 - Release 1.12 GA (Hopper).
+* DATACMNS-830 - Update documentation for Spring Data Commons 1.12.
+* DATACMNS-726 - Document the rules/limitations around using multiple Spring Data implementations with the same Domain object.
+
+
 Changes in version 1.12.0.RC1 (2016-03-18)
 ------------------------------------------
 * DATACMNS-829 - Projecting a Map with a null value causes an exception.
