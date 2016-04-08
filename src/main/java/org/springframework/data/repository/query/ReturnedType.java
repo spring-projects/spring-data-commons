@@ -283,6 +283,11 @@ public abstract class ReturnedType {
 
 			PreferredConstructorDiscoverer<?, ?> discoverer = new PreferredConstructorDiscoverer(type);
 			PreferredConstructor<?, ?> constructor = discoverer.getConstructor();
+
+			if (constructor == null) {
+				return Collections.emptyList();
+			}
+
 			List<String> properties = new ArrayList<String>();
 
 			for (PreferredConstructor.Parameter<Object, ?> parameter : constructor.getParameters()) {
