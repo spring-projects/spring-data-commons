@@ -262,7 +262,7 @@ public abstract class ReturnedType {
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedType#needsCustomConstruction()
 		 */
 		public boolean needsCustomConstruction() {
-			return isDto();
+			return isDto() && !inputProperties.isEmpty();
 		}
 
 		/* 
