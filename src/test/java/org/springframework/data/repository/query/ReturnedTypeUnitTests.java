@@ -130,6 +130,17 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.getTypeToRead(), is(typeCompatibleWith(BigInteger.class)));
 	}
 
+	/**
+	 * @see DATACMNS-840
+	 */
+	@Test
+	public void detectsSampleDtoWithDefaultConstructor() throws Exception {
+
+		ReturnedType type = getReturnedType("dtoWithMultipleConstructors");
+
+		assertThat(type.getInputProperties(), is(empty()));
+	}
+
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor().getReturnedType();
 	}
@@ -162,6 +173,8 @@ public class ReturnedTypeUnitTests {
 		Page<SampleProjection> findPageProjection(Pageable pageable);
 
 		BigInteger countQuery();
+
+		SampleDtoWithMultipleConstructors dtoWithMultipleConstructors();
 	}
 
 	static class Sample {
@@ -178,6 +191,13 @@ public class ReturnedTypeUnitTests {
 		public SampleDto(String firstname) {
 
 		}
+	}
+
+	static class SampleDtoWithMultipleConstructors {
+
+		SampleDtoWithMultipleConstructors(String firstname) {}
+
+		SampleDtoWithMultipleConstructors(int age) {}
 	}
 
 	interface SampleProjection {
