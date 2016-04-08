@@ -139,6 +139,7 @@ public class ReturnedTypeUnitTests {
 		ReturnedType type = getReturnedType("dtoWithMultipleConstructors");
 
 		assertThat(type.getInputProperties(), is(empty()));
+		assertThat(type.needsCustomConstruction(), is(false));
 	}
 
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
