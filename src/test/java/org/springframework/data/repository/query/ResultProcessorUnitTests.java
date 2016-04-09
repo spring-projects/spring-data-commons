@@ -32,6 +32,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
@@ -196,6 +198,23 @@ public class ResultProcessorUnitTests {
 		assertThat(getProcessor("findOneDto").processResult(null), is(nullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-842
+	 */
+	@Test
+	public void supportsSlicesAsReturnWrapper() throws Exception {
+
+		Slice<Sample> slice = new SliceImpl<Sample>(Collections.singletonList(new Sample("Dave", "Matthews")));
+
+		Object result = getProcessor("findSliceProjection", Pageable.class).processResult(slice);
+
+		assertThat(result, is(instanceOf(Slice.class)));
+
+		List<?> content = ((Slice<?>) result).getContent();
+		assertThat(content, is(not(empty())));
+		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
+	}
+
 	private static ResultProcessor getProcessor(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor();
 	}
@@ -224,6 +243,8 @@ public class ResultProcessorUnitTests {
 		OpenProjection findOneOpenProjection();
 
 		Page<SampleProjection> findPageProjection(Pageable pageable);
+
+		Slice<SampleProjection> findSliceProjection(Pageable pageable);
 
 		<T> T findOneDynamic(Class<T> type);
 	}
