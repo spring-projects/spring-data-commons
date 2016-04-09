@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.util.Assert;
 
@@ -129,8 +129,8 @@ public class ResultProcessor {
 
 		ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
 
-		if (source instanceof Page && method.isPageQuery()) {
-			return (T) ((Page<?>) source).map(converter);
+		if (source instanceof Slice && method.isPageQuery() || method.isSliceQuery()) {
+			return (T) ((Slice<?>) source).map(converter);
 		}
 
 		if (source instanceof Collection && method.isCollectionQuery()) {
