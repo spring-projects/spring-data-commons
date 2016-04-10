@@ -299,6 +299,7 @@ public abstract class ReturnedType {
 
 		private boolean isDto() {
 			return !Object.class.equals(type) && //
+					!type.isEnum() && //
 					!isDomainSubtype() && //
 					!isPrimitiveOrWrapper() && //
 					!Number.class.isAssignableFrom(type) && //
