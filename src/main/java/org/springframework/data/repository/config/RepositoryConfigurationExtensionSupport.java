@@ -273,7 +273,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 			}
 		}
 
-		LOGGER.debug(MULTI_STORE_DROPPED, getModuleName(), repositoryInterface);
+		LOGGER.info(MULTI_STORE_DROPPED, getModuleName(), repositoryInterface);
 
 		return false;
 	}
