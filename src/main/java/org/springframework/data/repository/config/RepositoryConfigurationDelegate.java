@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,7 +166,7 @@ public class RepositoryConfigurationDelegate {
 
 		if (scanner.findCandidateComponents(MODULE_DETECTION_PACKAGE).size() > 1) {
 
-			LOGGER.debug(MULTIPLE_MODULES);
+			LOGGER.info(MULTIPLE_MODULES);
 			return true;
 		}
 
@@ -196,7 +196,8 @@ public class RepositoryConfigurationDelegate {
 		 * @see org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilter#match(org.springframework.core.type.classreading.MetadataReader, org.springframework.core.type.classreading.MetadataReaderFactory)
 		 */
 		@Override
-		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
+		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
+				throws IOException {
 
 			try {
 				return super.match(metadataReader, metadataReaderFactory);
