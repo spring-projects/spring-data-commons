@@ -142,6 +142,18 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.needsCustomConstruction(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-840
+	 */
+	@Test
+	public void doesNotConsiderAnEnumProjecting() throws Exception {
+
+		ReturnedType type = getReturnedType("findEnum");
+
+		assertThat(type.needsCustomConstruction(), is(false));
+		assertThat(type.isProjecting(), is(false));
+	}
+
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor().getReturnedType();
 	}
@@ -176,6 +188,12 @@ public class ReturnedTypeUnitTests {
 		BigInteger countQuery();
 
 		SampleDtoWithMultipleConstructors dtoWithMultipleConstructors();
+
+		MyEnum findEnum();
+
+		static enum MyEnum {
+			VALUE
+		}
 	}
 
 	static class Sample {
