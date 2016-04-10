@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +30,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
@@ -162,7 +159,7 @@ public class RepositoryConfigurationDelegate {
 		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
 		scanner.setEnvironment(environment);
 		scanner.setResourceLoader(resourceLoader);
-		scanner.addIncludeFilter(new LenientAssignableTypeFilter(RepositoryFactorySupport.class));
+		scanner.addIncludeFilter(new AssignableTypeFilter(RepositoryFactorySupport.class));
 
 		if (scanner.findCandidateComponents(MODULE_DETECTION_PACKAGE).size() > 1) {
 
@@ -171,39 +168,5 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Special {@link AssignableTypeFilter} that generally considers exceptions during type matching indicating a
-	 * non-match. TODO: Remove after upgrade to Spring 4.0.7.
-	 * 
-	 * @see https://jira.spring.io/browse/SPR-12042
-	 * @author Oliver Gierke
-	 */
-	private static class LenientAssignableTypeFilter extends AssignableTypeFilter {
-
-		/**
-		 * Creates a new {@link LenientAssignableTypeFilter} for the given target type.
-		 * 
-		 * @param targetType must not be {@literal null}.
-		 */
-		public LenientAssignableTypeFilter(Class<?> targetType) {
-			super(targetType);
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilter#match(org.springframework.core.type.classreading.MetadataReader, org.springframework.core.type.classreading.MetadataReaderFactory)
-		 */
-		@Override
-		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
-				throws IOException {
-
-			try {
-				return super.match(metadataReader, metadataReaderFactory);
-			} catch (Exception o_O) {
-				return false;
-			}
-		}
 	}
 }
