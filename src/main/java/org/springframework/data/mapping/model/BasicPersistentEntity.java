@@ -45,12 +45,13 @@ import org.springframework.util.StringUtils;
 
 /**
  * Simple value object to capture information of {@link PersistentEntity}s.
- * 
+ *
  * @author Oliver Gierke
  * @author Jon Brisbin
  * @author Patryk Wasik
  * @author Thomas Darimont
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
@@ -66,9 +67,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private P idProperty;
 	private P versionProperty;
 
+	private final PersistentPropertyAccessorFactory propertyAccessorFactory;
+
 	/**
 	 * Creates a new {@link BasicPersistentEntity} from the given {@link TypeInformation}.
-	 * 
+	 *
 	 * @param information must not be {@literal null}.
 	 */
 	public BasicPersistentEntity(TypeInformation<T> information) {
@@ -79,7 +82,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * Creates a new {@link BasicPersistentEntity} for the given {@link TypeInformation} and {@link Comparator}. The given
 	 * {@link Comparator} will be used to define the order of the {@link PersistentProperty} instances added to the
 	 * entity.
-	 * 
+	 *
 	 * @param information must not be {@literal null}.
 	 * @param comparator can be {@literal null}.
 	 */
@@ -91,14 +94,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.properties = new ArrayList<P>();
 		this.comparator = comparator;
 		this.constructor = new PreferredConstructorDiscoverer<T, P>(information, this).getConstructor();
-		this.associations = comparator == null ? new HashSet<Association<P>>() : new TreeSet<Association<P>>(
-				new AssociationComparator<P>(comparator));
+		this.associations = comparator == null ? new HashSet<Association<P>>()
+				: new TreeSet<Association<P>>(new AssociationComparator<P>(comparator));
 
 		this.propertyCache = new HashMap<String, P>();
 		this.annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
+		this.propertyAccessorFactory = new DefaultPersistentPropertyAccessorFactory();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistenceConstructor()
 	 */
@@ -122,7 +126,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return this.idProperty == null ? false : this.idProperty.equals(property);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#isVersionProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -146,7 +150,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return idProperty;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getVersionProperty()
 	 */
@@ -154,7 +158,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return versionProperty;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#hasIdProperty()
 	 */
@@ -162,7 +166,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return idProperty != null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#hasVersionProperty()
 	 */
@@ -170,7 +174,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return versionProperty != null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.MutablePersistentEntity#addPersistentProperty(P)
 	 */
@@ -197,9 +201,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		if (property.isVersionProperty()) {
 
 			if (this.versionProperty != null) {
-				throw new MappingException(String.format(
-						"Attempt to add version property %s but already have property %s registered "
-								+ "as version. Check your mapping configuration!", property.getField(), versionProperty.getField()));
+				throw new MappingException(
+						String.format(
+								"Attempt to add version property %s but already have property %s registered "
+										+ "as version. Check your mapping configuration!",
+								property.getField(), versionProperty.getField()));
 			}
 
 			this.versionProperty = property;
@@ -208,7 +214,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	/**
 	 * Returns the given property if it is a better candidate for the id property than the current id property.
-	 * 
+	 *
 	 * @param property the new id property candidate, will never be {@literal null}.
 	 * @return the given id property or {@literal null} if the given property is not an id property.
 	 */
@@ -244,7 +250,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return propertyCache.get(name);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperty(java.lang.Class)
 	 */
@@ -279,7 +285,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return information.getType();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getTypeAlias()
 	 */
@@ -312,7 +318,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#doWithProperties(org.springframework.data.mapping.PropertyHandler.Simple)
 	 */
@@ -354,7 +360,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#findAnnotation(java.lang.Class)
 	 */
@@ -372,7 +378,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return annotation;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.MutablePersistentEntity#verify()
 	 */
@@ -383,7 +389,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(java.lang.Object)
 	 */
@@ -393,10 +399,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		Assert.notNull(bean, "Target bean must not be null!");
 		Assert.isTrue(getType().isInstance(bean), "Target bean is not of type of the persistent entity!");
 
-		return new BeanWrapper<Object>(bean);
+		return propertyAccessorFactory.getPropertyAccessor(this, bean);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getIdentifierAccessor(java.lang.Object)
 	 */
@@ -419,7 +425,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.mapping.IdentifierAccessor#getIdentifier()
 		 */
@@ -431,11 +437,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	/**
 	 * Simple {@link Comparator} adaptor to delegate ordering to the inverse properties of the association.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
-	private static final class AssociationComparator<P extends PersistentProperty<P>> implements
-			Comparator<Association<P>>, Serializable {
+	private static final class AssociationComparator<P extends PersistentProperty<P>>
+			implements Comparator<Association<P>>, Serializable {
 
 		private static final long serialVersionUID = 4508054194886854513L;
 		private final Comparator<P> delegate;
