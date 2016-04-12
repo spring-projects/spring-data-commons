@@ -17,6 +17,7 @@ package org.springframework.data.mapping.model;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
@@ -25,6 +26,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -49,7 +51,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit test for {@link BasicPersistentEntity}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -181,6 +183,8 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test
 	public void returnsBeanWrapperForPropertyAccessor() {
 
+		assumeThat(System.getProperty("java.version"), CoreMatchers.startsWith("1.6"));
+
 		SampleMappingContext context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
 
@@ -188,6 +192,25 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
 
 		assertThat(accessor, is(instanceOf(BeanWrapper.class)));
+		assertThat(accessor.getBean(), is((Object) value));
+	}
+
+	/**
+	 * @see DATACMNS-809
+	 */
+	@Test
+	public void returnsGeneratedPropertyAccessorForPropertyAccessor() {
+
+		assumeThat(System.getProperty("java.version"), not(CoreMatchers.startsWith("1.6")));
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+
+		Entity value = new Entity();
+		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
+
+		assertThat(accessor, is(not(instanceOf(BeanWrapper.class))));
+		assertThat(accessor.getClass().getName(), containsString("_Accessor_"));
 		assertThat(accessor.getBean(), is((Object) value));
 	}
 
