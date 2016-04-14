@@ -1,5 +1,6 @@
 /*
  * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +29,16 @@ import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
@@ -100,8 +105,23 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
 				conversionService.getObject());
 		resolver.setBeanFactory(context);
-		resolver.setResourceLoader(context);
+		resolver.setBeanClassLoader(context.getClassLoader());
 
 		argumentResolvers.add(resolver);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#extendMessageConverters(java.util.List)
+	 */
+	@Override
+	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+
+		ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(new ObjectMapper());
+
+		converter.setBeanClassLoader(context.getClassLoader());
+		converter.setBeanFactory(context);
+
+		converters.add(0, converter);
 	}
 }

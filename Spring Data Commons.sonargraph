@@ -21,7 +21,6 @@
                     <element type="TypeFilter" name="Assignment">
                         <element type="WeakTypePattern" name="**.querydsl.**"/>
                     </element>
-                    <stereotype name="Unrestricted"/>
                 </element>
                 <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
                 <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
@@ -280,6 +279,7 @@
             <element type="Subsystem" name="Querydsl">
                 <element type="TypeFilter" name="Assignment">
                     <element type="IncludeTypePattern" name="com.mysema.query.**"/>
+                    <element type="IncludeTypePattern" name="com.querydsl.**"/>
                 </element>
             </element>
             <element type="Subsystem" name="Java Beans">
@@ -419,58 +419,58 @@
         </item>
     </itemDefinition>
     <attributeConfiguration type="AttributeConfiguration">
-        <property value="disabled" name="AverageTypeDependency"/>
-        <property value="disabled" name="NumberOfRefactorings"/>
-        <property value="disabled" name="NumberOfNamedInterfaces"/>
-        <property value="disabled" name="DistributedOverPathContainers"/>
-        <property value="disabled" name="NumberOfCyclicVerticalSlices"/>
-        <property value="disabled" name="NormalizedCumulativeTypeDependency"/>
-        <property value="disabled" name="NumberOfCyclicVerticalSliceGroups"/>
-        <property value="disabled" name="NumberOfWorkspaceWarnings"/>
-        <property value="disabled" name="RelativeAverageTypeDependency"/>
-        <property value="disabled" name="AverageExtendedCyclomaticComplexityPerMethod"/>
-        <property value="disabled" name="NumberOfMetricWarnings"/>
-        <property value="disabled" name="NumberOfTypesWithImplementation"/>
-        <property value="disabled" name="NumberOfSubsystems"/>
-        <property value="disabled" name="NumberOfFixWarnings"/>
-        <property value="disabled" name="NumberOfLayers"/>
-        <property value="disabled" name="NumberOfCyclicLayers"/>
-        <property value="disabled" name="NumberOfIgnoredViolations"/>
-        <property value="disabled" name="AccumulatedCyclomaticComplexity"/>
+        <property value="disabled" name="ExtendedCyclomaticComplexity"/>
+        <property value="disabled" name="MaxExtendedCyclomaticComplexityPerMethod"/>
+        <property value="disabled" name="NumberOfWarnings"/>
+        <property value="disabled" name="AverageCyclomaticComplexityPerMethod"/>
+        <property value="disabled" name="NumberOfAbstractTypes"/>
+        <property value="disabled" name="JdkVersion"/>
+        <property value="disabled" name="NumberOfCyclicDirectories"/>
+        <property value="disabled" name="CyclomaticComplexity"/>
         <property value="disabled" name="NumberOfMethodsWithImplementation"/>
         <property value="disabled" name="NumberOfIgnoredWarnings"/>
-        <property value="disabled" name="NumberOfVerticalSliceGroups"/>
-        <property value="disabled" name="NumberOfExcludedTargetFiles"/>
-        <property value="disabled" name="NumberOfNameParts"/>
-        <property value="disabled" name="Level"/>
-        <property value="disabled" name="ExtendedCyclomaticComplexity"/>
-        <property value="disabled" name="NumberOfCyclicLayerGroups"/>
+        <property value="disabled" name="NumberOfNamedInterfaces"/>
         <property value="disabled" name="NumberOfCyclicProjects"/>
-        <property value="disabled" name="JdkVersion"/>
-        <property value="disabled" name="NumberOfExcludedSourceFiles"/>
-        <property value="disabled" name="NumberOfTasks"/>
-        <property value="disabled" name="NumberOfAbstractTypes"/>
-        <property value="disabled" name="AverageAccumulatedExtendedCyclomaticComplexityPerType"/>
-        <property value="disabled" name="CyclomaticComplexity"/>
-        <property value="disabled" name="MaxAccumulatedCyclomaticComplexityPerType"/>
-        <property value="disabled" name="MaxCyclomaticComplexityPerMethod"/>
+        <property value="disabled" name="NumberOfRefactorings"/>
         <property value="disabled" name="DependsUpon"/>
-        <property value="disabled" name="AverageAccumulatedCyclomaticComplexityPerType"/>
-        <property value="disabled" name="NumberOfCyclicNamespaces"/>
-        <property value="disabled" name="NumberOfLayerGroups"/>
+        <property value="disabled" name="NumberOfVerticalSliceGroups"/>
+        <property value="disabled" name="DistributedOverPathContainers"/>
+        <property value="disabled" name="AverageExtendedCyclomaticComplexityPerMethod"/>
+        <property value="disabled" name="AverageTypeDependency"/>
         <property value="disabled" name="NumberOfDuplicateCodeBlocksWarnings"/>
-        <property value="disabled" name="AccumulatedExtendedCyclomaticComplexity"/>
-        <property value="disabled" name="NumberOfAbstractMethods"/>
+        <property value="disabled" name="RelativeAverageTypeDependency"/>
+        <property value="disabled" name="AverageAccumulatedExtendedCyclomaticComplexityPerType"/>
+        <property value="disabled" name="NumberOfLayerGroups"/>
+        <property value="disabled" name="NumberOfIgnoredViolations"/>
+        <property value="disabled" name="NumberOfFixWarnings"/>
+        <property value="disabled" name="NumberOfExcludedSourceFiles"/>
         <property value="disabled" name="NumberOfVerticalSlices"/>
-        <property value="disabled" name="AverageAssertionUsage"/>
-        <property value="disabled" name="AverageCyclomaticComplexityPerMethod"/>
-        <property value="disabled" name="MaxExtendedCyclomaticComplexityPerMethod"/>
-        <property value="disabled" name="NumberOfCyclicSubsystems"/>
-        <property value="disabled" name="MaxAccumulatedExtendedCyclomaticComplexityPerType"/>
-        <property value="disabled" name="NumberOfCyclicDirectories"/>
-        <property value="disabled" name="NumberOfCyclicSourceFiles"/>
+        <property value="disabled" name="AverageAccumulatedCyclomaticComplexityPerType"/>
         <property value="disabled" name="Timestamp"/>
+        <property value="disabled" name="AverageAssertionUsage"/>
+        <property value="disabled" name="NumberOfCyclicSubsystems"/>
+        <property value="disabled" name="NumberOfCyclicNamespaces"/>
+        <property value="disabled" name="NumberOfExcludedTargetFiles"/>
+        <property value="disabled" name="NumberOfCyclicVerticalSliceGroups"/>
+        <property value="disabled" name="AccumulatedExtendedCyclomaticComplexity"/>
+        <property value="disabled" name="NumberOfLayers"/>
+        <property value="disabled" name="NumberOfCyclicSourceFiles"/>
+        <property value="disabled" name="MaxAccumulatedCyclomaticComplexityPerType"/>
+        <property value="disabled" name="MaxAccumulatedExtendedCyclomaticComplexityPerType"/>
+        <property value="disabled" name="NumberOfCyclicLayerGroups"/>
         <property value="disabled" name="NumberOfAssertions"/>
-        <property value="disabled" name="NumberOfWarnings"/>
+        <property value="disabled" name="NumberOfCyclicVerticalSlices"/>
+        <property value="disabled" name="NormalizedCumulativeTypeDependency"/>
+        <property value="disabled" name="AccumulatedCyclomaticComplexity"/>
+        <property value="disabled" name="NumberOfMetricWarnings"/>
+        <property value="disabled" name="NumberOfNameParts"/>
+        <property value="disabled" name="NumberOfTasks"/>
+        <property value="disabled" name="NumberOfWorkspaceWarnings"/>
+        <property value="disabled" name="NumberOfAbstractMethods"/>
+        <property value="disabled" name="NumberOfTypesWithImplementation"/>
+        <property value="disabled" name="Level"/>
+        <property value="disabled" name="NumberOfSubsystems"/>
+        <property value="disabled" name="NumberOfCyclicLayers"/>
+        <property value="disabled" name="MaxCyclomaticComplexityPerMethod"/>
     </attributeConfiguration>
 </context>
