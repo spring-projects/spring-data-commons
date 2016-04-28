@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.Test;
@@ -154,6 +155,18 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.isProjecting(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-850
+	 */
+	@Test
+	public void considersAllJavaTypesAsNotProjecting() throws Exception {
+
+		ReturnedType type = getReturnedType("timeQuery");
+
+		assertThat(type.needsCustomConstruction(), is(false));
+		assertThat(type.isProjecting(), is(false));
+	}
+
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor().getReturnedType();
 	}
@@ -190,6 +203,8 @@ public class ReturnedTypeUnitTests {
 		SampleDtoWithMultipleConstructors dtoWithMultipleConstructors();
 
 		MyEnum findEnum();
+
+		LocalDateTime timeQuery();
 
 		static enum MyEnum {
 			VALUE
