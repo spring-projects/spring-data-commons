@@ -49,9 +49,9 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	private final ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
 	private final SampleMappingContext mappingContext = new SampleMappingContext();
 
-	private Object bean;
-	private String propertyName;
-	private Class<?> expectedConstructorType;
+	private final Object bean;
+	private final String propertyName;
+	private final Class<?> expectedConstructorType;
 
 	public ClassGeneratingPropertyAccessorFactoryTests(Object bean, String propertyName, Class<?> expectedConstructorType,
 			String displayName) {
@@ -65,9 +65,9 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	public static List<Object[]> parameters() {
 
 		List<Object[]> parameters = new ArrayList<Object[]>();
-
 		List<String> propertyNames = Arrays.asList("privateField", "packageDefaultField", "protectedField", "publicField",
 				"privateProperty", "packageDefaultProperty", "protectedProperty", "publicProperty", "syntheticProperty");
+
 		parameters.addAll(parameters(new InnerPrivateType(), propertyNames, Object.class));
 		parameters.addAll(parameters(new InnerTypeWithPrivateAncesor(), propertyNames, InnerTypeWithPrivateAncesor.class));
 		parameters.addAll(parameters(new InnerPackageDefaultType(), propertyNames, InnerPackageDefaultType.class));
@@ -77,8 +77,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 				ClassGeneratingPropertyAccessorPackageDefaultType.class));
 		parameters.addAll(parameters(new ClassGeneratingPropertyAccessorPublicType(), propertyNames,
 				ClassGeneratingPropertyAccessorPublicType.class));
-		parameters.addAll(parameters(new SubtypeOfTypeInOtherPackage(), propertyNames,
-				SubtypeOfTypeInOtherPackage.class));
+		parameters.addAll(parameters(new SubtypeOfTypeInOtherPackage(), propertyNames, SubtypeOfTypeInOtherPackage.class));
 
 		return parameters;
 	}
@@ -114,6 +113,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	 * @throws Exception
 	 */
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void accessorShouldDeclareConstructor() throws Exception {
 
 		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
@@ -170,6 +170,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	/**
 	 * @see DATACMNS-809
 	 */
+	@SuppressWarnings("unused")
 	private static class InnerPrivateType {
 
 		private String privateField;
@@ -238,6 +239,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	/**
 	 * @see DATACMNS-809
 	 */
+	@SuppressWarnings("unused")
 	static class InnerPackageDefaultType {
 
 		private String privateField;
@@ -299,6 +301,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	/**
 	 * @see DATACMNS-809
 	 */
+	@SuppressWarnings("unused")
 	protected static class InnerProtectedType {
 
 		private String privateField;
@@ -360,6 +363,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	/**
 	 * @see DATACMNS-809
 	 */
+	@SuppressWarnings("unused")
 	public static class InnerPublicType {
 
 		private String privateField;
@@ -418,16 +422,15 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		}
 	}
 
-	public static class SubtypeOfTypeInOtherPackage extends TypeInOtherPackage{
-
-	}
+	public static class SubtypeOfTypeInOtherPackage extends TypeInOtherPackage {}
 
 	/**
 	 * @see DATACMNS-809
 	 */
+	@SuppressWarnings("unused")
 	private static class Dummy {
+
 		private String dummy;
 		public String publicField;
 	}
-
 }

@@ -15,6 +15,9 @@
  */
 package org.springframework.data.mapping.model;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -63,11 +66,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private final Map<String, P> propertyCache;
 	private final Map<Class<? extends Annotation>, Annotation> annotationCache;
+	private final PersistentPropertyAccessorFactory propertyAccessorFactory;
 
 	private P idProperty;
 	private P versionProperty;
-
-	private final PersistentPropertyAccessorFactory propertyAccessorFactory;
 
 	/**
 	 * Creates a new {@link BasicPersistentEntity} from the given {@link TypeInformation}.
@@ -440,17 +442,17 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 *
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	private static final class AssociationComparator<P extends PersistentProperty<P>>
 			implements Comparator<Association<P>>, Serializable {
 
 		private static final long serialVersionUID = 4508054194886854513L;
-		private final Comparator<P> delegate;
+		private final @NonNull Comparator<P> delegate;
 
-		public AssociationComparator(Comparator<P> delegate) {
-			Assert.notNull(delegate);
-			this.delegate = delegate;
-		}
-
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+		 */
 		public int compare(Association<P> left, Association<P> right) {
 			return delegate.compare(left.getInverse(), right.getInverse());
 		}
