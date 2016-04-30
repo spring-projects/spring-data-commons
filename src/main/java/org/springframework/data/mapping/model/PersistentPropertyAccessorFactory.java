@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.mapping.model;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 
 /**
- * Factory to create {@link PersistentPropertyAccessor} for a given {@link PersistentEntity} and {@code bean}.
+ * Factory to create {@link PersistentPropertyAccessor} for a given {@link PersistentEntity} and bean instance.
  * 
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @since 1.13
  */
 public interface PersistentPropertyAccessorFactory {
@@ -30,9 +30,9 @@ public interface PersistentPropertyAccessorFactory {
 	/**
 	 * Returns a {@link PersistentPropertyAccessor} for a given {@link PersistentEntity} and {@code bean}.
 	 * 
-	 * @param bean
-	 * @return
+	 * @param entity must not be {@literal null}.
+	 * @param bean must not be {@literal null}.
+	 * @return will never be {@literal null}.
 	 */
 	PersistentPropertyAccessor getPropertyAccessor(PersistentEntity<?, ?> entity, Object bean);
-
 }

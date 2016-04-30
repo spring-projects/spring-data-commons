@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.mapping.model;
 
 import org.springframework.data.annotation.AccessType;
@@ -21,8 +20,10 @@ import org.springframework.data.annotation.AccessType.Type;
 
 /**
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @see DATACMNS-809
  */
+@SuppressWarnings("unused")
 public class ClassGeneratingPropertyAccessorPublicType {
 
 	private String privateField;
@@ -83,12 +84,12 @@ public class ClassGeneratingPropertyAccessorPublicType {
 	}
 
 	public Object set(Object e) {
+
 		aa = (Integer) e;
 		bb = (Integer) e;
+
 		return bb;
 	}
 
-	public static void main(String[] args) {
-
-	}
+	public static void main(String[] args) {}
 }

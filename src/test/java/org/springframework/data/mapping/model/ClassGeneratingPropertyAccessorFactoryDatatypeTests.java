@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.mapping.model;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
+
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,12 +36,11 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 
-import lombok.Data;
-
 /**
  * Unit tests for {@link ClassGeneratingPropertyAccessorFactory}
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @see DATACMNS-809
  */
 @RunWith(Parameterized.class)
@@ -49,9 +49,9 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	private final ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
 	private final SampleMappingContext mappingContext = new SampleMappingContext();
 
-	private Object bean;
-	private String propertyName;
-	private Object value;
+	private final Object bean;
+	private final String propertyName;
+	private final Object value;
 
 	public ClassGeneratingPropertyAccessorFactoryDatatypeTests(Object bean, String propertyName, Object value,
 			String displayName) {
@@ -62,10 +62,10 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	}
 
 	@Parameters(name = "{3}")
+	@SuppressWarnings("unchecked")
 	public static List<Object[]> parameters() throws Exception {
 
 		List<Object[]> parameters = new ArrayList<Object[]>();
-
 		List<Class<?>> types = Arrays.asList(FieldAccess.class, PropertyAccess.class);
 
 		parameters.addAll(parameters(types, "primitiveInteger", Integer.valueOf(1)));
@@ -120,7 +120,6 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 
 	/**
 	 * @see DATACMNS-809
-	 * @throws Exception
 	 */
 	@Test
 	public void shouldSetAndGetProperty() throws Exception {
@@ -243,5 +242,4 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		String string;
 		String stringArray[];
 	}
-
 }

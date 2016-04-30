@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.mapping.model;
 
 import org.springframework.data.annotation.AccessType;
@@ -21,8 +20,10 @@ import org.springframework.data.annotation.AccessType.Type;
 
 /**
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @see DATACMNS-809
  */
+@SuppressWarnings("unused")
 class ClassGeneratingPropertyAccessorPackageDefaultType {
 
 	private String privateField;
@@ -79,5 +80,4 @@ class ClassGeneratingPropertyAccessorPackageDefaultType {
 	public void setSyntheticProperty(String syntheticProperty) {
 		backing = syntheticProperty;
 	}
-
 }

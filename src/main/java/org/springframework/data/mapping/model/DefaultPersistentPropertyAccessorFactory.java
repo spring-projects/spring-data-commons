@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.mapping.model;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -24,22 +23,21 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
  * reflection or use generated classes with direct field/method access.
  * 
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @since 1.13
  */
 public class DefaultPersistentPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
 	private final ClassGeneratingPropertyAccessorFactory classGeneratingPropertyAccessorFactory = new ClassGeneratingPropertyAccessorFactory();
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.PersistentPropertyAccessorFactory#getPropertyAccessor(org.springframework.data.mapping.PersistentEntity, java.lang.Object)
 	 */
 	@Override
 	public PersistentPropertyAccessor getPropertyAccessor(PersistentEntity<?, ?> entity, Object bean) {
 
-		if (ClassGeneratingPropertyAccessorFactory.canGenerateAccessorClass(entity)) {
-			return classGeneratingPropertyAccessorFactory.getPropertyAccessor(entity, bean);
-		}
-		return new BeanWrapper<Object>(bean);
+		return ClassGeneratingPropertyAccessorFactory.canGenerateAccessorClass(entity)
+				? classGeneratingPropertyAccessorFactory.getPropertyAccessor(entity, bean) : new BeanWrapper<Object>(bean);
 	}
-
 }
