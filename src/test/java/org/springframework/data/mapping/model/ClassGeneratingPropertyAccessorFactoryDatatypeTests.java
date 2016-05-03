@@ -15,7 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -35,6 +36,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link ClassGeneratingPropertyAccessorFactory}
@@ -140,7 +142,8 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
 				.getPersistentEntity(bean.getClass());
 
-		assertThat(persistentEntity.getPropertyAccessorFactory(), is(instanceOf(DefaultPersistentPropertyAccessorFactory.class)));
+		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"),
+				is(instanceOf(ClassGeneratingPropertyAccessorFactory.class)));
 	}
 
 	private PersistentPropertyAccessor getPersistentPropertyAccessor(Object bean) {

@@ -59,7 +59,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @since 1.13
  */
-class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
+public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
 	private static final boolean IS_JAVA_7_OR_BETTER = org.springframework.util.ClassUtils
 			.isPresent("java.lang.invoke.MethodHandle", ClassGeneratingPropertyAccessorFactory.class.getClassLoader());
@@ -67,7 +67,8 @@ class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccess
 	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor>> propertyAccessorClasses = new HashMap<TypeInformation<?>, Class<PersistentPropertyAccessor>>(
 			32);
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.PersistentPropertyAccessorFactory#getPropertyAccessor(org.springframework.data.mapping.PersistentEntity, java.lang.Object)
 	 */
 	@Override
@@ -86,24 +87,18 @@ class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccess
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.PersistentPropertyAccessorFactory#isSupported(org.springframework.data.mapping.PersistentEntity)
-	 */
-	@Override
-	public boolean isSupported(PersistentEntity<?, ?> entity) {
-
-		Assert.notNull(entity, "PersistentEntity must not be null!");
-		return canGenerateAccessorClass(entity);
-	}
-
 	/**
 	 * Checks whether an accessor class can be generated.
 	 *
 	 * @param entity
 	 * @return {@literal true} if the runtime is equal or greater to Java 1.7, property name hash codes are unique and the
 	 *         type has a class loader we can use to re-inject types.
+	 * @see PersistentPropertyAccessorFactory#isSupported(PersistentEntity)
 	 */
-	public static boolean canGenerateAccessorClass(PersistentEntity<?, ?> entity) {
+	@Override
+	public boolean isSupported(PersistentEntity<?, ?> entity) {
+
+		Assert.notNull(entity, "PersistentEntity must not be null!");
 
 		if (!IS_JAVA_7_OR_BETTER) {
 			return false;

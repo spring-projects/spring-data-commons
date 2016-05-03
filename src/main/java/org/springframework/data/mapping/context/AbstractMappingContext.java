@@ -37,9 +37,10 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.model.DefaultPersistentPropertyAccessorFactory;
+import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
+import org.springframework.data.mapping.model.PersistentPropertyAccessorFactory;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -69,7 +70,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
 
 	private final Map<TypeInformation<?>, E> persistentEntities = new HashMap<TypeInformation<?>, E>();
-	private final DefaultPersistentPropertyAccessorFactory persistentPropertyAccessorFactory = new DefaultPersistentPropertyAccessorFactory();
+	private final PersistentPropertyAccessorFactory persistentPropertyAccessorFactory = new ClassGeneratingPropertyAccessorFactory();
 
 	private ApplicationEventPublisher applicationEventPublisher;
 
@@ -126,6 +127,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntities()
 	 */
 	public Collection<E> getPersistentEntities() {
+
 		try {
 			read.lock();
 			return Collections.unmodifiableSet(new HashSet<E>(persistentEntities.values()));
@@ -322,6 +324,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				if (persistentPropertyAccessorFactory.isSupported(entity)) {
 					entity.setPersistentPropertyAccessorFactory(persistentPropertyAccessorFactory);
 				}
+
 			} catch (MappingException e) {
 				persistentEntities.remove(typeInformation);
 				throw e;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 by the original author(s).
+ * Copyright 2011-2016 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> ext
 	 * Sets the {@link PersistentPropertyAccessorFactory} for the entity. A {@link PersistentPropertyAccessorFactory}
 	 * creates {@link PersistentPropertyAccessor}s for instances of this entity.
 	 *
-	 * @param factory
+	 * @param factory must not be {@literal null}.
 	 */
 	void setPersistentPropertyAccessorFactory(PersistentPropertyAccessorFactory factory);
 }

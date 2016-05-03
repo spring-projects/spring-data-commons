@@ -69,7 +69,6 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private P idProperty;
 	private P versionProperty;
-
 	private PersistentPropertyAccessorFactory propertyAccessorFactory;
 
 	/**
@@ -102,6 +101,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		this.propertyCache = new HashMap<String, P>();
 		this.annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
+		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 	}
 
 	/*
@@ -391,7 +391,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.MutablePersistentEntity#setPersistentPropertyAccessorFactory(org.springframework.data.mapping.model.PersistentPropertyAccessorFactory)
 	 */
 	@Override
@@ -399,23 +400,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.propertyAccessorFactory = factory;
 	}
 
-	public PersistentPropertyAccessorFactory getPropertyAccessorFactory() {
-		return propertyAccessorFactory;
-	}
-
 	/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(java.lang.Object)
-		 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(java.lang.Object)
+	 */
 	@Override
 	public PersistentPropertyAccessor getPropertyAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
 		Assert.isTrue(getType().isInstance(bean), "Target bean is not of type of the persistent entity!");
-
-		if (propertyAccessorFactory == null) {
-			return new BeanWrapper<Object>(bean);
-		}
 
 		return propertyAccessorFactory.getPropertyAccessor(this, bean);
 	}
