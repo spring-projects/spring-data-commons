@@ -16,7 +16,7 @@
 
 package org.springframework.data.mapping.model;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -154,6 +154,18 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
 
 		persistentPropertyAccessor.setProperty(property, null);
+	}
+
+	/**
+	 * @see DATACMNS-809
+	 */
+	@Test
+	public void shouldUseClassPropertyAccessorFactory() throws Exception {
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
+				.getPersistentEntity(bean.getClass());
+
+		assertThat(persistentEntity.getPropertyAccessorFactory(), is(instanceOf(DefaultPersistentPropertyAccessorFactory.class)));
 	}
 
 	private PersistentPropertyAccessor getPersistentPropertyAccessor(Object bean) {

@@ -21,7 +21,7 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 /**
  * Default implementation of {@link PersistentPropertyAccessorFactory}. Accessors can access bean properties either via
  * reflection or use generated classes with direct field/method access.
- * 
+ *
  * @author Mark Paluch
  * @author Oliver Gierke
  * @since 1.13
@@ -37,7 +37,13 @@ public class DefaultPersistentPropertyAccessorFactory implements PersistentPrope
 	@Override
 	public PersistentPropertyAccessor getPropertyAccessor(PersistentEntity<?, ?> entity, Object bean) {
 
-		return ClassGeneratingPropertyAccessorFactory.canGenerateAccessorClass(entity)
-				? classGeneratingPropertyAccessorFactory.getPropertyAccessor(entity, bean) : new BeanWrapper<Object>(bean);
+		return classGeneratingPropertyAccessorFactory.getPropertyAccessor(entity, bean);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.PersistentPropertyAccessorFactory#isSupported(org.springframework.data.mapping.PersistentEntity)
+	 */
+	public boolean isSupported(PersistentEntity<?, ?> entity) {
+		return classGeneratingPropertyAccessorFactory.isSupported(entity);
 	}
 }

@@ -37,6 +37,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.model.DefaultPersistentPropertyAccessorFactory;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -54,7 +55,7 @@ import org.springframework.util.StringUtils;
  * <p>
  * The implementation uses a {@link ReentrantReadWriteLock} to make sure {@link PersistentEntity} are completely
  * populated before accessing them from outside.
- * 
+ *
  * @param E the concrete {@link PersistentEntity} type the {@link MappingContext} implementation creates
  * @param P the concrete {@link PersistentProperty} type the {@link MappingContext} implementation creates
  * @author Jon Brisbin
@@ -62,11 +63,13 @@ import org.springframework.util.StringUtils;
  * @author Michael Hunger
  * @author Thomas Darimont
  * @author Tomasz Wysocki
+ * @author Mark Paluch
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
 
 	private final Map<TypeInformation<?>, E> persistentEntities = new HashMap<TypeInformation<?>, E>();
+	private final DefaultPersistentPropertyAccessorFactory persistentPropertyAccessorFactory = new DefaultPersistentPropertyAccessorFactory();
 
 	private ApplicationEventPublisher applicationEventPublisher;
 
@@ -78,7 +81,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private final Lock read = lock.readLock();
 	private final Lock write = lock.writeLock();
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
 	 */
@@ -88,7 +91,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Sets the {@link Set} of types to populate the context initially.
-	 * 
+	 *
 	 * @param initialEntitySet
 	 */
 	public void setInitialEntitySet(Set<? extends Class<?>> initialEntitySet) {
@@ -100,7 +103,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * {@link MappingException}s in case one tries to lookup a {@link PersistentEntity} not already in the context. This
 	 * defaults to {@literal false} so that unknown types will be transparently added to the MappingContext if not known
 	 * in advance.
-	 * 
+	 *
 	 * @param strict
 	 */
 	public void setStrict(boolean strict) {
@@ -111,7 +114,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * Configures the {@link SimpleTypeHolder} to be used by the {@link MappingContext}. Allows customization of what
 	 * types will be regarded as simple types and thus not recursively analysed. Setting this to {@literal null} will
 	 * reset the context to use the default {@link SimpleTypeHolder}.
-	 * 
+	 *
 	 * @param simpleTypes
 	 */
 	public void setSimpleTypeHolder(SimpleTypeHolder simpleTypes) {
@@ -139,7 +142,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		return getPersistentEntity(ClassTypeInformation.from(type));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#hasPersistentEntityFor(java.lang.Class)
 	 */
@@ -216,7 +219,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		return getPersistentPropertyPath(propertyPath, ClassTypeInformation.from(type));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(org.springframework.data.mapping.context.InvalidPersistentPropertyPath)
 	 */
@@ -231,7 +234,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Creates a {@link PersistentPropertyPath} for the given parts and {@link TypeInformation}.
-	 * 
+	 *
 	 * @param parts must not be {@literal null} or empty.
 	 * @param type must not be {@literal null}.
 	 * @return
@@ -268,7 +271,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Adds the given type to the {@link MappingContext}.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -278,7 +281,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Adds the given {@link TypeInformation} to the {@link MappingContext}.
-	 * 
+	 *
 	 * @param typeInformation
 	 * @return
 	 */
@@ -316,6 +319,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 				entity.verify();
 
+				if (persistentPropertyAccessorFactory.isSupported(entity)) {
+					entity.setPersistentPropertyAccessorFactory(persistentPropertyAccessorFactory);
+				}
 			} catch (MappingException e) {
 				persistentEntities.remove(typeInformation);
 				throw e;
@@ -335,7 +341,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentEntityAware#getManagedTypes()
 	 */
@@ -354,7 +360,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Creates the concrete {@link PersistentEntity} instance.
-	 * 
+	 *
 	 * @param <T>
 	 * @param typeInformation
 	 * @return
@@ -363,7 +369,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Creates the concrete instance of {@link PersistentProperty}.
-	 * 
+	 *
 	 * @param field
 	 * @param descriptor
 	 * @param owner
@@ -373,7 +379,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner,
 			SimpleTypeHolder simpleTypeHolder);
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
@@ -398,7 +404,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * default this will reject this for all types considered simple, but it might be necessary to tweak that in case you
 	 * have registered custom converters for top level types (which renders them to be considered simple) but still need
 	 * meta-information about them.
-	 * 
+	 *
 	 * @param type will never be {@literal null}.
 	 * @return
 	 */
@@ -408,7 +414,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * {@link FieldCallback} to create {@link PersistentProperty} instances.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private final class PersistentPropertyCreator implements FieldCallback {
@@ -420,7 +426,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		/**
 		 * Creates a new {@link PersistentPropertyCreator} for the given {@link PersistentEntity} and
 		 * {@link PropertyDescriptor}s.
-		 * 
+		 *
 		 * @param entity must not be {@literal null}.
 		 * @param descriptors must not be {@literal null}.
 		 */
@@ -451,7 +457,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		/**
 		 * Adds {@link PersistentProperty} instances for all suitable {@link PropertyDescriptor}s without a backing
 		 * {@link Field}.
-		 * 
+		 *
 		 * @see PersistentPropertyFilter
 		 */
 		public void addPropertiesForRemainingDescriptors() {
@@ -494,7 +500,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	/**
 	 * Filter rejecting static fields as well as artifically introduced ones. See
 	 * {@link PersistentPropertyFilter#UNMAPPED_PROPERTIES} for details.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	static enum PersistentPropertyFilter implements FieldFilter {
@@ -513,7 +519,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			UNMAPPED_PROPERTIES = Collections.unmodifiableCollection(matches);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.util.ReflectionUtils.FieldFilter#matches(java.lang.reflect.Field)
 		 */
@@ -534,7 +540,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		/**
 		 * Returns whether the given {@link PropertyDescriptor} is one to create a {@link PersistentProperty} for.
-		 * 
+		 *
 		 * @param descriptor must not be {@literal null}.
 		 * @return
 		 */
@@ -557,7 +563,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		/**
 		 * Value object to help defining property exclusion based on name patterns and types.
-		 * 
+		 *
 		 * @since 1.4
 		 * @author Oliver Gierke
 		 */
@@ -569,7 +575,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			/**
 			 * Creates a new {@link PropertyMatch} for the given name pattern and type name. At least one of the paramters
 			 * must not be {@literal null}.
-			 * 
+			 *
 			 * @param namePattern a regex pattern to match field names, can be {@literal null}.
 			 * @param typeName the name of the type to exclude, can be {@literal null}.
 			 */
@@ -583,7 +589,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			/**
 			 * Returns whether the given {@link Field} matches the defined {@link PropertyMatch}.
-			 * 
+			 *
 			 * @param field must not be {@literal null}.
 			 * @return
 			 */
