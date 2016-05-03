@@ -47,6 +47,7 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -83,6 +84,16 @@ class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccess
 		} catch (Exception e) {
 			throw new IllegalArgumentException(String.format("Cannot create persistent property accessor for %s", entity), e);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.PersistentPropertyAccessorFactory#isSupported(org.springframework.data.mapping.PersistentEntity)
+	 */
+	@Override
+	public boolean isSupported(PersistentEntity<?, ?> entity) {
+
+		Assert.notNull(entity, "PersistentEntity must not be null!");
+		return canGenerateAccessorClass(entity);
 	}
 
 	/**

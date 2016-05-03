@@ -66,10 +66,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private final Map<String, P> propertyCache;
 	private final Map<Class<? extends Annotation>, Annotation> annotationCache;
-	private final PersistentPropertyAccessorFactory propertyAccessorFactory;
 
 	private P idProperty;
 	private P versionProperty;
+
+	private PersistentPropertyAccessorFactory propertyAccessorFactory;
 
 	/**
 	 * Creates a new {@link BasicPersistentEntity} from the given {@link TypeInformation}.
@@ -101,7 +102,6 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		this.propertyCache = new HashMap<String, P>();
 		this.annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
-		this.propertyAccessorFactory = new DefaultPersistentPropertyAccessorFactory();
 	}
 
 	/*
@@ -391,15 +391,31 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(java.lang.Object)
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.MutablePersistentEntity#setPersistentPropertyAccessorFactory(org.springframework.data.mapping.model.PersistentPropertyAccessorFactory)
 	 */
+	@Override
+	public void setPersistentPropertyAccessorFactory(PersistentPropertyAccessorFactory factory) {
+		this.propertyAccessorFactory = factory;
+	}
+
+	public PersistentPropertyAccessorFactory getPropertyAccessorFactory() {
+		return propertyAccessorFactory;
+	}
+
+	/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(java.lang.Object)
+		 */
 	@Override
 	public PersistentPropertyAccessor getPropertyAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
 		Assert.isTrue(getType().isInstance(bean), "Target bean is not of type of the persistent entity!");
+
+		if (propertyAccessorFactory == null) {
+			return new BeanWrapper<Object>(bean);
+		}
 
 		return propertyAccessorFactory.getPropertyAccessor(this, bean);
 	}
