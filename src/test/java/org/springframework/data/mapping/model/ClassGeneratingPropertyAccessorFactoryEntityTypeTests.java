@@ -34,7 +34,7 @@ import org.springframework.data.repository.core.support.PersistentEntityInformat
  * and concrete class entity types.
  *
  * @author John Blum
- * @see <a href="https://jira.spring.io/browse/DATACMNS-809">DATACMNS-809</a>
+ * @see DATACMNS-809
  */
 public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
