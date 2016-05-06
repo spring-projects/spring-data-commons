@@ -43,7 +43,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
- * @see DATACMNS-809
+ * @see <a href="https://jira.spring.io/browse/DATACMNS-809">DATACMNS-809</a>
  */
 @RunWith(Parameterized.class)
 public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
@@ -121,7 +121,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	}
 
 	/**
-	 * @see DATACMNS-809
+	 * @see <a href="https://jira.spring.io/browse/DATACMNS-809">DATACMNS-809</a>
 	 */
 	@Test
 	public void shouldSetAndGetProperty() throws Exception {
@@ -134,7 +134,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	}
 
 	/**
-	 * @see DATACMNS-809
+	 * @see <a href="https://jira.spring.io/browse/DATACMNS-809">DATACMNS-809</a>
 	 */
 	@Test
 	public void shouldUseClassPropertyAccessorFactory() throws Exception {
@@ -158,7 +158,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	}
 
 	/**
-	 * @see DATACMNS-809
+	 * @see <a href="https://jira.spring.io/browse/DATACMNS-809">DATACMNS-809</a>
 	 */
 	@AccessType(Type.FIELD)
 	public static class FieldAccess {
@@ -208,7 +208,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	}
 
 	/**
-	 * @see DATACMNS-809
+	 * @see <a href="https://jira.spring.io/browse/DATACMNS-809">DATACMNS-809</a>
 	 */
 	@AccessType(Type.PROPERTY)
 	@Data
