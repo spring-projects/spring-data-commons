@@ -876,8 +876,17 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				} else {
 					// bean.get...
 					mv.visitVarInsn(ALOAD, 2);
-					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(getter.getDeclaringClass()), getter.getName(),
-							String.format("()%s", signatureTypeName(getter.getReturnType())), false);
+
+					int invokeOpCode = INVOKEVIRTUAL;
+					Class<?> declaringClass = getter.getDeclaringClass();
+					boolean interfaceDefinition = declaringClass.isInterface();
+
+					if(interfaceDefinition){
+						invokeOpCode = INVOKEINTERFACE;
+					}
+
+					mv.visitMethodInsn(invokeOpCode, Type.getInternalName(declaringClass), getter.getName(),
+							String.format("()%s", signatureTypeName(getter.getReturnType())), interfaceDefinition);
 					autoboxIfNeeded(getter.getReturnType(), autoboxType(getter.getReturnType()), mv);
 				}
 			} else {
@@ -1051,8 +1060,17 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					Class<?> parameterType = setter.getParameterTypes()[0];
 					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(autoboxType(parameterType)));
 					autoboxIfNeeded(autoboxType(parameterType), parameterType, mv);
-					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(setter.getDeclaringClass()), setter.getName(),
-							String.format("(%s)V", signatureTypeName(parameterType)), false);
+
+					int invokeOpCode = INVOKEVIRTUAL;
+					Class<?> declaringClass = setter.getDeclaringClass();
+					boolean interfaceDefinition = declaringClass.isInterface();
+
+					if(interfaceDefinition){
+						invokeOpCode = INVOKEINTERFACE;
+					}
+
+					mv.visitMethodInsn(invokeOpCode, Type.getInternalName(setter.getDeclaringClass()), setter.getName(),
+							String.format("(%s)V", signatureTypeName(parameterType)), interfaceDefinition);
 				}
 			} else {
 
