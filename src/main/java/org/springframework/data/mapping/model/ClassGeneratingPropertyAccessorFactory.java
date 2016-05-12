@@ -881,7 +881,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					Class<?> declaringClass = getter.getDeclaringClass();
 					boolean interfaceDefinition = declaringClass.isInterface();
 
-					if(interfaceDefinition){
+					if (interfaceDefinition) {
 						invokeOpCode = INVOKEINTERFACE;
 					}
 
@@ -1065,7 +1065,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					Class<?> declaringClass = setter.getDeclaringClass();
 					boolean interfaceDefinition = declaringClass.isInterface();
 
-					if(interfaceDefinition){
+					if (interfaceDefinition) {
 						invokeOpCode = INVOKEINTERFACE;
 					}
 
