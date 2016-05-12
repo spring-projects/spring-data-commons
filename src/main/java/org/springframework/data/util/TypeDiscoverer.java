@@ -15,6 +15,10 @@
  */
 package org.springframework.data.util;
 
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -558,23 +562,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @author Oliver Gierke
 	 * @since 1.11
 	 */
+	@EqualsAndHashCode
+	@RequiredArgsConstructor
 	private static class SyntheticParamterizedType implements ParameterizedType {
 
-		private final ClassTypeInformation<?> typeInformation;
-		private final List<TypeInformation<?>> typeParameters;
-
-		/**
-		 * @param typeInformation must not be {@literal null}.
-		 * @param typeParameters must not be {@literal null}.
-		 */
-		public SyntheticParamterizedType(ClassTypeInformation<?> typeInformation, List<TypeInformation<?>> typeParameters) {
-
-			Assert.notNull(typeInformation, "Type must not be null!");
-			Assert.notNull(typeParameters, "Type parameters must not be null!");
-
-			this.typeInformation = typeInformation;
-			this.typeParameters = typeParameters;
-		}
+		private final @NonNull ClassTypeInformation<?> typeInformation;
+		private final @NonNull List<TypeInformation<?>> typeParameters;
 
 		/*
 		 * (non-Javadoc)
