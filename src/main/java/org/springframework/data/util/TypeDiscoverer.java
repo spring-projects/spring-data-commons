@@ -609,5 +609,40 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 			return result;
 		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+
+			if (this == obj) {
+				return true;
+			}
+
+			if (!(obj instanceof SyntheticParamterizedType)) {
+				return false;
+			}
+
+			SyntheticParamterizedType that = (SyntheticParamterizedType) obj;
+
+			return this.typeInformation.equals(that.typeInformation) && this.typeParameters.equals(that.typeParameters);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+
+			int result = 17;
+
+			result += 31 * typeInformation.hashCode();
+			result += 31 * typeParameters.hashCode();
+
+			return result;
+		}
 	}
 }

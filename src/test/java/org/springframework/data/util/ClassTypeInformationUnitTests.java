@@ -382,6 +382,24 @@ public class ClassTypeInformationUnitTests {
 		assertThat(property.specialize(from), is((TypeInformation) from));
 	}
 
+	/**
+	 * @see DATACMNS-855
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void specializedTypeEqualsAndHashCode() {
+
+		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
+		TypeInformation<?> property = root.getProperty("abstractBar");
+
+		TypeInformation left = property.specialize(ClassTypeInformation.from(Bar.class));
+		TypeInformation right = property.specialize(ClassTypeInformation.from(Bar.class));
+
+		assertThat(left, is(right));
+		assertThat(right, is(left));
+		assertThat(left.hashCode(), is(right.hashCode()));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
