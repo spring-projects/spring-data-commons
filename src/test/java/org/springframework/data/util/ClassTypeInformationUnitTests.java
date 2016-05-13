@@ -355,6 +355,7 @@ public class ClassTypeInformationUnitTests {
 
 	/**
 	 * @see DATACMNS-783
+	 * @see DATACMNS-853
 	 */
 	@Test
 	public void specializesTypeUsingTypeVariableContext() {
@@ -366,6 +367,7 @@ public class ClassTypeInformationUnitTests {
 
 		assertThat(specialized.getType(), is((Object) Bar.class));
 		assertThat(specialized.getProperty("field").getType(), is((Object) Character.class));
+		assertThat(specialized.getProperty("anotherField").getType(), is((Object) Integer.class));
 	}
 
 	/**
@@ -575,16 +577,17 @@ public class ClassTypeInformationUnitTests {
 
 	static class Leaf {}
 
-	static class TypeWithAbstractGenericType<T> {
-		AbstractBar<T> abstractBar;
+	static class TypeWithAbstractGenericType<T, S> {
+		AbstractBar<T, S> abstractBar;
 		Object object;
 	}
 
-	static class Foo extends TypeWithAbstractGenericType<Character> {}
+	static class Foo extends TypeWithAbstractGenericType<Character, Integer> {}
 
-	static abstract class AbstractBar<T> {}
+	static abstract class AbstractBar<T, S> {}
 
-	static class Bar<T> extends AbstractBar<T> {
+	static class Bar<T, S> extends AbstractBar<T, S> {
 		T field;
+		S anotherField;
 	}
 }

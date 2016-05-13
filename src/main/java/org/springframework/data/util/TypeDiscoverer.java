@@ -604,7 +604,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			Type[] result = new Type[typeParameters.size()];
 
 			for (int i = 0; i < typeParameters.size(); i++) {
-				result[i] = typeParameters.get(0).getType();
+				result[i] = typeParameters.get(i).getType();
 			}
 
 			return result;
