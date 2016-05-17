@@ -94,6 +94,22 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getTargetClassMethod(source), is(expected));
 	}
 
+	/**
+	 * @see DATACMNS-854
+	 */
+	@Test
+	public void discoversCustomlyImplementedCrudMethodWithGenerics() throws SecurityException, NoSuchMethodException {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+			customImplementation.getClass());
+
+		Method source = FooRepositoryCustom.class.getMethod("exists", Object.class);
+		Method expected = customImplementation.getClass().getMethod("exists", Object.class);
+
+		assertThat(information.getTargetClassMethod(source), is(expected));
+	}
+
 	@Test
 	public void considersIntermediateMethodsAsFinderMethods() {
 
@@ -248,8 +264,11 @@ public class DefaultRepositoryInformationUnitTests {
 		User findOne(Long primaryKey);
 	}
 
-	interface FooRepositoryCustom {
+	interface FooSuperInterfaceWithGenerics<T> {
+		boolean exists(T id);
+	}
 
+	interface FooRepositoryCustom extends FooSuperInterfaceWithGenerics<User> {
 		User save(User user);
 	}
 
