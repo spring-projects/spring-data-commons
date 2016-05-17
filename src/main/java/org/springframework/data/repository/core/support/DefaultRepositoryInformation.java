@@ -356,7 +356,10 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 					return false;
 				}
 			} else {
-				if (!types[i].equals(parameterType)) {
+				// We must either have an exact match, or,
+				if (!types[i].equals(parameterType) &&
+						// the tpes must be assignable _and_ signature definition types must be identical.
+						!(types[i].isAssignableFrom(parameterType) && types[i].equals(method.getParameterTypes()[i]))) {
 					return false;
 				}
 			}
