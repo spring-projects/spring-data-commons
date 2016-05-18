@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,22 +90,6 @@ public class DefaultRepositoryInformationUnitTests {
 
 		Method source = FooRepositoryCustom.class.getMethod("save", User.class);
 		Method expected = customImplementation.getClass().getMethod("save", User.class);
-
-		assertThat(information.getTargetClassMethod(source), is(expected));
-	}
-
-	/**
-	 * @see DATACMNS-854
-	 */
-	@Test
-	public void discoversCustomlyImplementedCrudMethodWithGenerics() throws SecurityException, NoSuchMethodException {
-
-		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-			customImplementation.getClass());
-
-		Method source = FooRepositoryCustom.class.getMethod("exists", Object.class);
-		Method expected = customImplementation.getClass().getMethod("exists", Object.class);
 
 		assertThat(information.getTargetClassMethod(source), is(expected));
 	}
@@ -239,12 +223,30 @@ public class DefaultRepositoryInformationUnitTests {
 		}
 	}
 
-	private Method getMethodFrom(Class<?> type, String name) {
+	/**
+	 * @see DATACMNS-854
+	 */
+	@Test
+	public void discoversCustomlyImplementedCrudMethodWithGenerics() throws SecurityException, NoSuchMethodException {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				customImplementation.getClass());
+
+		Method source = FooRepositoryCustom.class.getMethod("exists", Object.class);
+		Method expected = customImplementation.getClass().getMethod("exists", Object.class);
+
+		assertThat(information.getTargetClassMethod(source), is(expected));
+	}
+
+	private static Method getMethodFrom(Class<?> type, String name) {
+
 		for (Method method : type.getMethods()) {
 			if (method.getName().equals(name)) {
 				return method;
 			}
 		}
+
 		return null;
 	}
 
@@ -252,7 +254,6 @@ public class DefaultRepositoryInformationUnitTests {
 	@Retention(RetentionPolicy.RUNTIME)
 	@QueryAnnotation
 	@interface MyQuery {
-
 	}
 
 	interface FooRepository extends CrudRepository<User, Integer>, FooRepositoryCustom {

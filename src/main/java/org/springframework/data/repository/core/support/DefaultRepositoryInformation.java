@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -342,26 +342,28 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 */
 	private boolean parametersMatch(Method method, Method baseClassMethod) {
 
+		Class<?>[] methodParameterTypes = method.getParameterTypes();
 		Type[] genericTypes = baseClassMethod.getGenericParameterTypes();
 		Class<?>[] types = baseClassMethod.getParameterTypes();
 
 		for (int i = 0; i < genericTypes.length; i++) {
 
-			Type type = genericTypes[i];
+			Type genericType = genericTypes[i];
+			Class<?> type = types[i];
 			MethodParameter parameter = new MethodParameter(method, i);
 			Class<?> parameterType = resolveParameterType(parameter, metadata.getRepositoryInterface());
 
-			if (type instanceof TypeVariable<?>) {
-				if (!matchesGenericType((TypeVariable<?>) type, parameterType)) {
+			if (genericType instanceof TypeVariable<?>) {
+
+				if (!matchesGenericType((TypeVariable<?>) genericType, parameterType)) {
 					return false;
 				}
-			} else {
-				// We must either have an exact match, or,
-				if (!types[i].equals(parameterType) &&
-						// the tpes must be assignable _and_ signature definition types must be identical.
-						!(types[i].isAssignableFrom(parameterType) && types[i].equals(method.getParameterTypes()[i]))) {
-					return false;
-				}
+
+				continue;
+			}
+
+			if (!type.isAssignableFrom(parameterType) || !type.equals(methodParameterTypes[i])) {
+				return false;
 			}
 		}
 
@@ -392,7 +394,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 		boolean isDomainTypeVariableReference = DOMAIN_TYPE_NAME.equals(referenceName);
 		boolean parameterMatchesEntityType = parameterType.isAssignableFrom(entityType);
 
-		// We need this check to besure not to match save(Iterable) for entities implementing Iterable
+		// We need this check to be sure not to match save(Iterable) for entities implementing Iterable
 		boolean isNotIterable = !parameterType.equals(Iterable.class);
 
 		if (isDomainTypeVariableReference && parameterMatchesEntityType && isNotIterable) {
