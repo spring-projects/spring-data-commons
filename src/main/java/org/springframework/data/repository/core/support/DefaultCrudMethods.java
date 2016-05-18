@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static java.util.Arrays.*;
 import static org.springframework.util.ClassUtils.*;
 import static org.springframework.util.ReflectionUtils.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -72,7 +72,7 @@ class DefaultCrudMethods implements CrudMethods {
 	 * The most suitable save method is selected as follows: We prefer
 	 * <ol>
 	 * <li>a {@link RepositoryMetadata#getDomainType()} as first parameter over</li>
-	 * <li>an {@link Object} as first parameter</li>
+	 * <li>an {@link Object} as first parameter.</li>
 	 * </ol>
 	 * 
 	 * @param metadata must not be {@literal null}.
@@ -81,8 +81,10 @@ class DefaultCrudMethods implements CrudMethods {
 	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableSaveMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : Arrays.asList(metadata.getDomainType(), Object.class)) {
+		for (Class<?> type : asList(metadata.getDomainType(), Object.class)) {
+
 			Method saveMethodCandidate = findMethod(metadata.getRepositoryInterface(), SAVE, type);
+
 			if (saveMethodCandidate != null) {
 				return getMostSpecificMethod(saveMethodCandidate, metadata.getRepositoryInterface());
 			}
@@ -106,9 +108,10 @@ class DefaultCrudMethods implements CrudMethods {
 	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableDeleteMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : Arrays.asList(metadata.getDomainType(), metadata.getIdType(), Serializable.class,
-				Iterable.class)) {
+		for (Class<?> type : asList(metadata.getDomainType(), metadata.getIdType(), Serializable.class, Iterable.class)) {
+
 			Method candidate = findMethod(metadata.getRepositoryInterface(), DELETE, type);
+
 			if (candidate != null) {
 				return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());
 			}
@@ -122,7 +125,7 @@ class DefaultCrudMethods implements CrudMethods {
 	 * <ol>
 	 * <li>a {@link Pageable} as first parameter over</li>
 	 * <li>a {@link Sort} as first parameter over</li>
-	 * <li>no parameters</li>
+	 * <li>no parameters.</li>
 	 * </ol>
 	 * 
 	 * @param metadata must not be {@literal null}.
@@ -131,9 +134,12 @@ class DefaultCrudMethods implements CrudMethods {
 	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableFindAllMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : Arrays.asList(Pageable.class, Sort.class)) {
+		for (Class<?> type : asList(Pageable.class, Sort.class)) {
+
 			if (hasMethod(metadata.getRepositoryInterface(), FIND_ALL, type)) {
+
 				Method candidate = findMethod(PagingAndSortingRepository.class, FIND_ALL, type);
+
 				if (candidate != null) {
 					return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());
 				}
@@ -160,8 +166,10 @@ class DefaultCrudMethods implements CrudMethods {
 	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableFindOneMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : Arrays.asList(metadata.getIdType(), Serializable.class)) {
+		for (Class<?> type : asList(metadata.getIdType(), Serializable.class)) {
+
 			Method candidate = findMethod(metadata.getRepositoryInterface(), FIND_ONE, type);
+
 			if (candidate != null) {
 				return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());
 			}
