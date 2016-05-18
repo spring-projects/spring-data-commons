@@ -94,9 +94,10 @@ public class DefaultCrudMethods implements CrudMethods {
 	/**
 	 * The most suitable delete method is selected as follows: We prefer
 	 * <ol>
+	 * <li>a {@link RepositoryMetadata#getDomainType()} as first parameter over</li>
 	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over</li>
 	 * <li>a {@link Serializable} as first parameter over</li>
-	 * <li>an {@link Iterable} as first parameter</li>
+	 * <li>an {@link Iterable} as first parameter.</li>
 	 * </ol>
 	 * 
 	 * @param metadata must not be {@literal null}.

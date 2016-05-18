@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public interface CrudMethods {
 	boolean hasFindOneMethod();
 
 	/**
-	 * Returns the delete method of the repository. Will prefer a delete-by-id method over a delete-by-entity method.
+	 * Returns the delete method of the repository. Will prefer a delete-by-entity method over a delete-by-id method.
 	 * 
 	 * @return the delete method of the repository or {@literal null} if not available.
 	 * @see #hasDelete()
