@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -183,11 +185,11 @@ public class ResultProcessorUnitTests {
 
 			@Override
 			public Object convert(Object source) {
-				return new SampleDTO();
+				return new SampleDto();
 			}
 		});
 
-		assertThat(result, is(instanceOf(SampleDTO.class)));
+		assertThat(result, is(instanceOf(SampleDto.class)));
 	}
 
 	/**
@@ -215,6 +217,34 @@ public class ResultProcessorUnitTests {
 		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
 	}
 
+	/**
+	 * @see DATACMNS-859
+	 */
+	@Test
+	public void supportsStreamAsReturnWrapper() throws Exception {
+
+		Stream<Sample> samples = Arrays.asList(new Sample("Dave", "Matthews")).stream();
+
+		Object result = getProcessor("findStreamProjection").processResult(samples);
+
+		assertThat(result, is(instanceOf(Stream.class)));
+		List<?> content = ((Stream<?>) result).collect(Collectors.toList());
+
+		assertThat(content, is(not(empty())));
+		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
+	}
+
+	/**
+	 * @see DATACMNS-860
+	 */
+	@Test
+	public void supportsWrappingDto() throws Exception {
+
+		Object result = getProcessor("findOneWrappingDto").processResult(new Sample("Dave", "Matthews"));
+
+		assertThat(result, is(instanceOf(WrappingDto.class)));
+	}
+
 	private static ResultProcessor getProcessor(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor();
 	}
@@ -230,13 +260,15 @@ public class ResultProcessorUnitTests {
 
 		List<Sample> findAll();
 
-		List<SampleDTO> findAllDtos();
+		List<SampleDto> findAllDtos();
 
 		List<SampleProjection> findAllProjection();
 
 		Sample findOne();
 
-		SampleDTO findOneDto();
+		SampleDto findOneDto();
+
+		WrappingDto findOneWrappingDto();
 
 		SampleProjection findOneProjection();
 
@@ -247,6 +279,8 @@ public class ResultProcessorUnitTests {
 		Slice<SampleProjection> findSliceProjection(Pageable pageable);
 
 		<T> T findOneDynamic(Class<T> type);
+
+		Stream<SampleProjection> findStreamProjection();
 	}
 
 	static class Sample {
@@ -258,10 +292,15 @@ public class ResultProcessorUnitTests {
 		}
 	}
 
-	static class SampleDTO {}
+	static class SampleDto {}
+
+	@lombok.Value
+	// Needs to be public until https://jira.spring.io/browse/SPR-14304 is resolved
+	public static class WrappingDto {
+		Sample sample;
+	}
 
 	interface SampleProjection {
-
 		String getLastname();
 	}
 
