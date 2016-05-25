@@ -23,11 +23,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.springframework.core.CollectionFactory;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -127,7 +132,8 @@ public class ResultProcessor {
 
 		Assert.notNull(preparingConverter, "Preparing converter must not be null!");
 
-		ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
+		final ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter)
+				.and(this.converter);
 
 		if (source instanceof Slice && method.isPageQuery() || method.isSliceQuery()) {
 			return (T) ((Slice<?>) source).map(converter);
@@ -143,6 +149,17 @@ public class ResultProcessor {
 			}
 
 			return (T) target;
+		}
+
+		if (ReflectionUtils.isJava8StreamType(source.getClass()) && method.isStreamQuery()) {
+
+			return (T) ((Stream<Object>) source).map(new Function<Object, T>() {
+
+				@Override
+				public T apply(Object t) {
+					return (T) (type.isInstance(t) ? t : converter.convert(t));
+				}
+			});
 		}
 
 		return (T) converter.convert(source);
@@ -211,6 +228,7 @@ public class ResultProcessor {
 
 		private final @NonNull ReturnedType type;
 		private final @NonNull ProjectionFactory factory;
+		private final ConversionService conversionService = new DefaultConversionService();
 
 		/* 
 		 * (non-Javadoc)
@@ -218,7 +236,14 @@ public class ResultProcessor {
 		 */
 		@Override
 		public Object convert(Object source) {
-			return factory.createProjection(type.getReturnedType(), getProjectionTarget(source));
+
+			Class<?> targetType = type.getReturnedType();
+
+			if (targetType.isInterface()) {
+				return factory.createProjection(targetType, getProjectionTarget(source));
+			}
+
+			return conversionService.convert(source, targetType);
 		}
 
 		private Object getProjectionTarget(Object source) {
