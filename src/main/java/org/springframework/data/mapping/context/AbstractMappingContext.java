@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 by the original author(s).
+ * Copyright 2011-2016 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Tomasz Wysocki
  * @author Mark Paluch
+ * @author Mikael Klamra
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
@@ -274,7 +275,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	/**
 	 * Adds the given type to the {@link MappingContext}.
 	 *
-	 * @param type
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	protected E addPersistentEntity(Class<?> type) {
@@ -284,13 +285,17 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	/**
 	 * Adds the given {@link TypeInformation} to the {@link MappingContext}.
 	 *
-	 * @param typeInformation
+	 * @param typeInformation must not be {@literal null}.
 	 * @return
 	 */
 	protected E addPersistentEntity(TypeInformation<?> typeInformation) {
-		
+
+		Assert.notNull(typeInformation, "TypeInformation must not be null!");
+
 		try {
+
 			read.lock();
+
 			E persistentEntity = persistentEntities.get(typeInformation);
 
 			if (persistentEntity != null) {
