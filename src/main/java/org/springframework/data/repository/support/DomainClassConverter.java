@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class DomainClassConverter<T extends ConversionService & ConverterRegistry> implements
-		ConditionalGenericConverter, ApplicationContextAware {
+public class DomainClassConverter<T extends ConversionService & ConverterRegistry>
+		implements ConditionalGenericConverter, ApplicationContextAware {
 
 	private final T conversionService;
 	private Repositories repositories = Repositories.NONE;
@@ -73,8 +73,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 */
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		return repositories.hasRepositoryFor(targetType.getType()) ? toEntityConverter.convert(source, sourceType,
-				targetType) : toIdConverter.convert(source, sourceType, targetType);
+		return repositories.hasRepositoryFor(targetType.getType())
+				? toEntityConverter.convert(source, sourceType, targetType)
+				: toIdConverter.convert(source, sourceType, targetType);
 	}
 
 	/* 
@@ -84,11 +85,8 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		try {
-			return toEntityConverter.matches(sourceType, targetType) || toIdConverter.matches(sourceType, targetType);
-		} catch (ConversionMatchAbbreviationException o_O) {
-			return false;
-		}
+		return repositories.hasRepositoryFor(targetType.getType()) ? toEntityConverter.matches(sourceType, targetType)
+				: toIdConverter.matches(sourceType, targetType);
 	}
 
 	/*
@@ -176,13 +174,8 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 			Class<?> rawIdType = repositories.getRepositoryInformationFor(targetType.getType()).getIdType();
 
-			if (sourceType.equals(TypeDescriptor.valueOf(rawIdType))
-					|| conversionService.canConvert(sourceType.getType(), rawIdType)) {
-				return true;
-			}
-
-			// Throw an exception to indicate it should have matched an no further resolution should be tried
-			throw new ConversionMatchAbbreviationException();
+			return sourceType.equals(TypeDescriptor.valueOf(rawIdType))
+					|| conversionService.canConvert(sourceType.getType(), rawIdType);
 		}
 	}
 
@@ -246,7 +239,4 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 					|| conversionService.canConvert(rawIdType, targetType.getType());
 		}
 	}
-
-	@SuppressWarnings("serial")
-	private static final class ConversionMatchAbbreviationException extends RuntimeException {}
 }
