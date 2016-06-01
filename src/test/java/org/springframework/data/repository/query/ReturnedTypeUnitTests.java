@@ -167,6 +167,18 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.isProjecting(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-862
+	 */
+	@Test
+	public void considersInterfaceImplementedByDomainTypeNotProjecting() throws Exception {
+
+		ReturnedType type = getReturnedType("findOneInterface");
+
+		assertThat(type.needsCustomConstruction(), is(false));
+		assertThat(type.isProjecting(), is(false));
+	}
+
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor().getReturnedType();
 	}
@@ -206,12 +218,16 @@ public class ReturnedTypeUnitTests {
 
 		LocalDateTime timeQuery();
 
+		SampleInterface findOneInterface();
+
 		static enum MyEnum {
 			VALUE
 		}
 	}
 
-	static class Sample {
+	static interface SampleInterface {}
+
+	static class Sample implements SampleInterface {
 		public String firstname, lastname;
 
 		public Sample(String firstname, String lastname) {

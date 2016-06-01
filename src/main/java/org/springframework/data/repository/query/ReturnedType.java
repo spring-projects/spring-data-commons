@@ -160,7 +160,7 @@ public abstract class ReturnedType {
 		 * @see org.springframework.data.repository.query.ReturnedType#needsCustomConstruction()
 		 */
 		public boolean needsCustomConstruction() {
-			return information.isClosed();
+			return isProjecting() && information.isClosed();
 		}
 
 		/* 
@@ -169,7 +169,7 @@ public abstract class ReturnedType {
 		 */
 		@Override
 		public boolean isProjecting() {
-			return true;
+			return !information.getType().isAssignableFrom(domainType);
 		}
 
 		/* 
@@ -178,7 +178,7 @@ public abstract class ReturnedType {
 		 */
 		@Override
 		public Class<?> getTypeToRead() {
-			return information.isClosed() ? null : domainType;
+			return isProjecting() && information.isClosed() ? null : domainType;
 		}
 
 		/* 
