@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -47,7 +48,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private final Type type;
 	private final Map<TypeVariable<?>, Type> typeVariableMap;
-	private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
+	private final Map<String, ValueHolder> fieldTypes = new ConcurrentHashMap<String, ValueHolder>();
 	private final int hashCode;
 
 	private boolean componentTypeResolved = false;
@@ -188,14 +189,14 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		int separatorIndex = fieldname.indexOf('.');
 
 		if (separatorIndex == -1) {
+
 			if (fieldTypes.containsKey(fieldname)) {
-				return fieldTypes.get(fieldname);
+				return fieldTypes.get(fieldname).getType();
 			}
 
 			TypeInformation<?> propertyInformation = getPropertyInformation(fieldname);
-			if (propertyInformation != null) {
-				fieldTypes.put(fieldname, propertyInformation);
-			}
+			fieldTypes.put(fieldname, ValueHolder.of(propertyInformation));
+
 			return propertyInformation;
 		}
 
@@ -643,6 +644,75 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			result += 31 * typeParameters.hashCode();
 
 			return result;
+		}
+	}
+
+	/**
+	 * Simple wrapper type to cache {@literal null} {@link TypeInformation}s.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private static class ValueHolder {
+
+		private static final ValueHolder NULL_HOLDER = new ValueHolder(null);
+
+		private final TypeInformation<?> type;
+
+		/**
+		 * Creates a new {@link ValueHolder} for the given {@link TypeInformation}.
+		 * 
+		 * @param value can be {@literal null}.
+		 */
+		private ValueHolder(TypeInformation<?> value) {
+			this.type = value;
+		}
+
+		/**
+		 * Returns a {@link ValueHolder} for the given {@link TypeInformation}.
+		 * 
+		 * @param value can be {@literal null}.
+		 * @return will never be {@literal null}.
+		 */
+		public static ValueHolder of(TypeInformation<?> value) {
+			return value == null ? NULL_HOLDER : new ValueHolder(value);
+		}
+
+		/**
+		 * Returns the {@link TypeInformation} contained in the {@link ValueHolder}.
+		 * 
+		 * @return can be {@literal null}.
+		 */
+		public TypeInformation<?> getType() {
+			return type;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+
+			if (obj == this) {
+				return true;
+			}
+
+			if (!(obj instanceof ValueHolder)) {
+				return false;
+			}
+
+			ValueHolder that = (ValueHolder) obj;
+
+			return ObjectUtils.nullSafeEquals(this.type, that.type);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHashCode(type);
 		}
 	}
 }
