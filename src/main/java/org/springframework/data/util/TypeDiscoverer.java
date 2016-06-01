@@ -15,9 +15,11 @@
  */
 package org.springframework.data.util;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
@@ -51,7 +53,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private final Type type;
 	private final Map<TypeVariable<?>, Type> typeVariableMap;
-	private final Map<String, TypeInformation<?>> fieldTypes = new ConcurrentHashMap<String, TypeInformation<?>>();
+	private final Map<String, ValueHolder> fieldTypes = new ConcurrentHashMap<String, ValueHolder>();
 	private final int hashCode;
 
 	private boolean componentTypeResolved = false;
@@ -192,14 +194,14 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		int separatorIndex = fieldname.indexOf('.');
 
 		if (separatorIndex == -1) {
+
 			if (fieldTypes.containsKey(fieldname)) {
-				return fieldTypes.get(fieldname);
+				return fieldTypes.get(fieldname).getType();
 			}
 
 			TypeInformation<?> propertyInformation = getPropertyInformation(fieldname);
-			if (propertyInformation != null) {
-				fieldTypes.put(fieldname, propertyInformation);
-			}
+			fieldTypes.put(fieldname, ValueHolder.of(propertyInformation));
+
 			return propertyInformation;
 		}
 
@@ -601,6 +603,24 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			}
 
 			return result;
+		}
+	}
+
+	/**
+	 * Simple wrapper to be able to store {@literal null} values in a {@link ConcurrentHashMap}.
+	 *
+	 * @author Oliver Gierke
+	 */
+	@Value
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	private static class ValueHolder {
+
+		static ValueHolder NULL_HOLDER = new ValueHolder(null);
+
+		TypeInformation<?> type;
+
+		public static ValueHolder of(TypeInformation<?> type) {
+			return null == type ? NULL_HOLDER : new ValueHolder(type);
 		}
 	}
 }
