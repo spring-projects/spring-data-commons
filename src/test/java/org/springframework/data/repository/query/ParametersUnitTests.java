@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,11 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -151,6 +152,17 @@ public class ParametersUnitTests {
 		assertThat(parameter.isExplicitlyNamed(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-863
+	 */
+	@Test
+	public void unwrapsOptionals() throws Exception {
+
+		Parameters<?, ?> parameters = getParametersFor("methodWithOptional", Optional.class);
+
+		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(String.class)));
+	}
+
 	private Parameters<?, ?> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
@@ -181,5 +193,6 @@ public class ParametersUnitTests {
 
 		User emptyParameters();
 
+		void methodWithOptional(Optional<String> optional);
 	}
 }

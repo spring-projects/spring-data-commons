@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.util.Assert;
 
 /**
@@ -38,6 +40,7 @@ public class Parameter {
 	private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
 
 	private final MethodParameter parameter;
+	private final Class<?> parameterType;
 
 	/**
 	 * Creates a new {@link Parameter} for the given {@link MethodParameter}.
@@ -48,6 +51,7 @@ public class Parameter {
 
 		Assert.notNull(parameter);
 		this.parameter = parameter;
+		this.parameterType = potentiallyUnwrapParameterType(parameter);
 	}
 
 	/**
@@ -118,7 +122,7 @@ public class Parameter {
 	 * @return the type
 	 */
 	public Class<?> getType() {
-		return parameter.getParameterType();
+		return parameterType;
 	}
 
 	/**
@@ -156,5 +160,19 @@ public class Parameter {
 	 */
 	boolean isSort() {
 		return Sort.class.isAssignableFrom(getType());
+	}
+
+	/**
+	 * Returns the component type if the given {@link MethodParameter} is a wrapper type.
+	 * 
+	 * @param parameter must not be {@literal null}.
+	 * @return
+	 */
+	private static Class<?> potentiallyUnwrapParameterType(MethodParameter parameter) {
+
+		Class<?> originalType = parameter.getParameterType();
+
+		return QueryExecutionConverters.supports(originalType)
+				? ResolvableType.forMethodParameter(parameter).getGeneric(0).getRawClass() : originalType;
 	}
 }
