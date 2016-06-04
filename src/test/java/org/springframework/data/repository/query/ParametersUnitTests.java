@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,11 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -164,6 +165,17 @@ public class ParametersUnitTests {
 		assertThat(parameters.getParameter(2).isDynamicProjectionParameter(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-863
+	 */
+	@Test
+	public void unwrapsOptionals() throws Exception {
+
+		Parameters<?, Parameter> parameters = getParametersFor("methodWithOptional", Optional.class);
+
+		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(String.class)));
+	}
+
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
@@ -195,5 +207,7 @@ public class ParametersUnitTests {
 		User emptyParameters();
 
 		<T> T dynamicBind(Class<T> type, Class<?> one, Class<Object> two);
+
+		void methodWithOptional(Optional<String> optional);
 	}
 }
