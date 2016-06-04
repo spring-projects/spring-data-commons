@@ -22,8 +22,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -41,6 +43,7 @@ public class Parameter {
 	private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
 
 	private final MethodParameter parameter;
+	private final Class<?> parameterType;
 	private final boolean isDynamicProjectionParameter;
 
 	/**
@@ -53,6 +56,7 @@ public class Parameter {
 		Assert.notNull(parameter);
 
 		this.parameter = parameter;
+		this.parameterType = potentiallyUnwrapParameterType(parameter);
 		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter);
 	}
 
@@ -133,7 +137,7 @@ public class Parameter {
 	 * @return the type
 	 */
 	public Class<?> getType() {
-		return parameter.getParameterType();
+		return parameterType;
 	}
 
 	/**
@@ -198,5 +202,19 @@ public class Parameter {
 
 		TypeInformation<?> bound = parameterTypes.getTypeArguments().get(0);
 		return bound.equals(returnType.getActualType());
+	}
+
+	/**
+	 * Returns the component type if the given {@link MethodParameter} is a wrapper type.
+	 * 
+	 * @param parameter must not be {@literal null}.
+	 * @return
+	 */
+	private static Class<?> potentiallyUnwrapParameterType(MethodParameter parameter) {
+
+		Class<?> originalType = parameter.getParameterType();
+
+		return QueryExecutionConverters.supports(originalType)
+				? ResolvableType.forMethodParameter(parameter).getGeneric(0).getRawClass() : originalType;
 	}
 }
