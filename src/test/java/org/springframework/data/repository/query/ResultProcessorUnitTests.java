@@ -221,6 +221,7 @@ public class ResultProcessorUnitTests {
 	 * @see DATACMNS-859
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void supportsStreamAsReturnWrapper() throws Exception {
 
 		Stream<Sample> samples = Arrays.asList(new Sample("Dave", "Matthews")).stream();
@@ -228,7 +229,7 @@ public class ResultProcessorUnitTests {
 		Object result = getProcessor("findStreamProjection").processResult(samples);
 
 		assertThat(result, is(instanceOf(Stream.class)));
-		List<?> content = ((Stream<?>) result).collect(Collectors.toList());
+		List<Object> content = ((Stream<Object>) result).collect(Collectors.toList());
 
 		assertThat(content, is(not(empty())));
 		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));

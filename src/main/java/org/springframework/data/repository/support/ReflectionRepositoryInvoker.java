@@ -154,7 +154,6 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeDelete(java.io.Serializable)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public void invokeDelete(Serializable id) {
 
 		Assert.notNull(id, "Identifier must not be null!");
@@ -167,7 +166,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		if (idTypes.contains(parameterType)) {
 			invoke(method, convertId(id));
 		} else {
-			invoke(method, invokeFindOne(id));
+			invoke(method, this.<Object> invokeFindOne(id));
 		}
 	}
 
