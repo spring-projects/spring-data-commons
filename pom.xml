@@ -5,18 +5,17 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>1.13.0.BUILD-SNAPSHOT</version>
+	<version>2.0.0.BUILD-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.9.0.BUILD-SNAPSHOT</version>
+		<version>2.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<properties>
-		<dist.key>DATACMNS</dist.key>
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.8</xmlbeam>
 	</properties>
