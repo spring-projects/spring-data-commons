@@ -60,7 +60,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 			AnnotationDetectionFieldCallback revisionCallback = new AnnotationDetectionFieldCallback(
 					revisionTimeStampAnnotation);
 			ReflectionUtils.doWithFields(entity.getClass(), revisionCallback);
-			this.revisionDate = new DateTime(revisionCallback.getValue(entity));
+			this.revisionDate = new DateTime(revisionCallback.<Object> getValue(entity));
 		} else {
 			this.revisionDate = null;
 		}
