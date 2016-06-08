@@ -224,6 +224,20 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getPropertyAccessor(new Subtype()), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATACMNS-866
+	 */
+	@Test
+	public void invalidBeanAccessCreatesDescriptiveErrorMessage() {
+
+		PersistentEntity<Entity, T> entity = createEntity(Entity.class);
+
+		exception.expectMessage(Entity.class.getName());
+		exception.expectMessage(Object.class.getName());
+
+		entity.getPropertyAccessor(new Object());
+	}
+
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
 		return createEntity(type, null);
 	}
