@@ -58,6 +58,8 @@ import org.springframework.util.StringUtils;
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
+	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)!";
+
 	private final PreferredConstructor<T, P> constructor;
 	private final TypeInformation<T> information;
 	private final List<P> properties;
@@ -408,7 +410,9 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public PersistentPropertyAccessor getPropertyAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
-		Assert.isTrue(getType().isInstance(bean), "Target bean is not of type of the persistent entity!");
+
+		Assert.isTrue(getType().isInstance(bean),
+				String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
 
 		return propertyAccessorFactory.getPropertyAccessor(this, bean);
 	}

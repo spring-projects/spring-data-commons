@@ -17,7 +17,7 @@ package org.springframework.data.mapping.model;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
@@ -259,6 +259,20 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		PersistentEntity<AliasEntityUsingComposedAnnotation, T> entity = createEntity(
 				AliasEntityUsingComposedAnnotation.class);
 		assertThat(entity.getTypeAlias(), is((Object) "bar"));
+	}
+
+	/**
+	 * @see DATACMNS-866
+	 */
+	@Test
+	public void invalidBeanAccessCreatesDescriptiveErrorMessage() {
+
+		PersistentEntity<Entity, T> entity = createEntity(Entity.class);
+
+		exception.expectMessage(Entity.class.getName());
+		exception.expectMessage(Object.class.getName());
+
+		entity.getPropertyAccessor(new Object());
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
