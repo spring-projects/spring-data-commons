@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  * query results into projections and data transfer objects.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  * @since 1.12
  */
 public class ResultProcessor {
@@ -152,14 +153,7 @@ public class ResultProcessor {
 		}
 
 		if (ReflectionUtils.isJava8StreamType(source.getClass()) && method.isStreamQuery()) {
-
-			return (T) ((Stream<Object>) source).map(new Function<Object, T>() {
-
-				@Override
-				public T apply(Object t) {
-					return (T) (type.isInstance(t) ? t : converter.convert(t));
-				}
-			});
+			return (T) new StreamQueryResultHandler(type, converter).handle(source);
 		}
 
 		return (T) converter.convert(source);
@@ -269,6 +263,41 @@ public class ResultProcessor {
 			}
 
 			return result;
+		}
+	}
+
+	/**
+	 * Handler for Repository query methods returning a Java 8 Stream result by ensuring the {@link Stream} elements match
+	 * the expected return type of the query method.
+	 *
+	 * @author John Blum
+	 * @author Oliver Gierke
+	 */
+	@RequiredArgsConstructor
+	static class StreamQueryResultHandler {
+
+		private final @NonNull ReturnedType returnType;
+		private final @NonNull Converter<Object, Object> converter;
+
+		/**
+		 * Processes the given source object as a {@link Stream}, mapping each element to the required return type,
+		 * converting if necessary.
+		 *
+		 * @param source the {@link Stream} of elements to process, must not be {@literal null}.
+		 * @return a new {@link Stream} with the source {@link Stream}'s elements mapped to the target type.
+		 */
+		@SuppressWarnings("unchecked")
+		public Object handle(Object source) {
+
+			Assert.isInstanceOf(Stream.class, source, "Source must not be null and an instance of Stream!");
+
+			return ((Stream<Object>) source).map(new Function<Object, Object>() {
+
+				@Override
+				public Object apply(Object element) {
+					return returnType.isInstance(element) ? element : converter.convert(element);
+				}
+			});
 		}
 	}
 }
