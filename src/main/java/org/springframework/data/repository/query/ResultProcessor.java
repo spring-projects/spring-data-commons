@@ -23,8 +23,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
@@ -152,14 +150,7 @@ public class ResultProcessor {
 		}
 
 		if (ReflectionUtils.isJava8StreamType(source.getClass()) && method.isStreamQuery()) {
-
-			return (T) ((Stream<Object>) source).map(new Function<Object, T>() {
-
-				@Override
-				public T apply(Object t) {
-					return (T) (type.isInstance(t) ? t : converter.convert(t));
-				}
-			});
+			return new StreamQueryResultHandler<T>(type, converter).handle(source);
 		}
 
 		return (T) converter.convert(source);
