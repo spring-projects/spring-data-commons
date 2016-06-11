@@ -26,8 +26,8 @@ import lombok.ToString;
  * 
  * @author Tobias Trelle
  * @author Oliver Gierke
- * @param <T> Type of the first thing.
- * @param <S> Type of the second thing.
+ * @param <S> Type of the first thing.
+ * @param <T> Type of the second thing.
  * @since 1.12
  */
 @ToString
