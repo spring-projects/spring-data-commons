@@ -1,6 +1,30 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.12.2.RELEASE (2016-06-15)
+----------------------------------------------
+* DATACMNS-869 - Fix Javadoc in Pair.java.
+* DATACMNS-868 - Unguarded reference to JDK 8 Function interface renders Hopper SR2 snapshots incompatible with Java 6.
+* DATACMNS-866 - Provide more descriptive error message in BasicPersistentEntity.getPropertyAccessor(…).
+* DATACMNS-863 - Query method Parameter should return element type for wrapper ones (e.g. Optional).
+* DATACMNS-862 - ReturnedInterface should not consider super interfaces of domain type projecting.
+* DATACMNS-860 - ResultProcessor should use ConversionService as fallback if target is a class.
+* DATACMNS-859 - ResultProcessor doesn't handle Stream instances correctly.
+* DATACMNS-858 - JavaDoc of CrudMethods states wrong preferences of selected delete methods.
+* DATACMNS-856 - DomainClassConverter throws erroneous exception in matches.
+* DATACMNS-855 - Missing equals(…) and hashCode() in SyntheticParamterizedType are causing a memory leak.
+* DATACMNS-854 - Custom implementation of repository fails when overriding methods containing generics.
+* DATACMNS-850 - Result projection should not be applied to JDK types.
+* DATACMNS-844 - Remove LenientAssignableTypeFilter in RepositoryConfigurationDelegate.
+* DATACMNS-843 - Raise log level of repositories that get dropped in strict configuration mode to INFO.
+* DATACMNS-842 - Projections on repository query methods should support Slice.
+* DATACMNS-840 - ReturnedClass fails on types with ambiguous constructors.
+* DATACMNS-839 - Release 1.12.2 (Hopper SR2).
+* DATACMNS-831 - AbstractMappingContext.getPersistentEntity sometimes returns an empty entity when called by multiple threads.
+* DATACMNS-743 - Optimisation CPU consumption.
+* DATACMNS-685 - ConversionMatchAbbreviationException being thrown from ToEntityConverter.matches(…).
+
+
 Changes in version 1.12.1.RELEASE (2016-04-06)
 ----------------------------------------------
 * DATACMNS-837 - Release 1.12.1 (Hopper SR1).
