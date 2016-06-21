@@ -16,15 +16,11 @@
 package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,7 +28,6 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource;
@@ -52,15 +47,6 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 	@Mock ListableBeanFactory beanFactory;
 	@Mock ProxyFactory proxyFactory;
 	@Mock RepositoryInformation repositoryInformation;
-
-	@Before
-	public void setUp() {
-
-		Map<String, PersistenceExceptionTranslator> beans = new HashMap<String, PersistenceExceptionTranslator>();
-		beans.put("foo", mock(PersistenceExceptionTranslator.class));
-		when(beanFactory.getBeansOfType(eq(PersistenceExceptionTranslator.class), anyBoolean(), anyBoolean()))
-				.thenReturn(beans);
-	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullBeanFactory() throws Exception {

@@ -85,7 +85,7 @@ public class TypeFilterParser {
 	public Collection<TypeFilter> parseTypeFilters(Element element, Type type) {
 
 		NodeList nodeList = element.getChildNodes();
-		Collection<TypeFilter> filters = new HashSet<TypeFilter>();
+		Collection<TypeFilter> filters = new HashSet<>();
 
 		for (int i = 0; i < nodeList.getLength(); i++) {
 

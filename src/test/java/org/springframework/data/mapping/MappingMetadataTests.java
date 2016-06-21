@@ -40,7 +40,7 @@ public class MappingMetadataTests {
 	@Test
 	public void testPojoWithId() {
 
-		PersistentEntity<?, SamplePersistentProperty> person = ctx.getPersistentEntity(PersonWithId.class);
+		PersistentEntity<?, SamplePersistentProperty> person = ctx.getRequiredPersistentEntity(PersonWithId.class);
 
 		assertThat(person.getIdProperty()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
@@ -48,7 +48,7 @@ public class MappingMetadataTests {
 	@Test
 	public void testAssociations() {
 
-		PersistentEntity<?, SamplePersistentProperty> person = ctx.getPersistentEntity(PersonWithChildren.class);
+		PersistentEntity<?, SamplePersistentProperty> person = ctx.getRequiredPersistentEntity(PersonWithChildren.class);
 
 		person.doWithAssociations((AssociationHandler<SamplePersistentProperty>) association -> assertThat(
 				association.getInverse().getComponentType()).isEqualTo(Child.class));

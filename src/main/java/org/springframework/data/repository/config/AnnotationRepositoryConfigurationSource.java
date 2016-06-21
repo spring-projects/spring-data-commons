@@ -124,7 +124,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			return Collections.singleton(ClassUtils.getPackageName(className));
 		}
 
-		Set<String> packages = new HashSet<String>();
+		Set<String> packages = new HashSet<>();
 		packages.addAll(Arrays.asList(value));
 		packages.addAll(Arrays.asList(basePackages));
 
@@ -187,7 +187,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	private Set<TypeFilter> parseFilters(String attributeName) {
 
-		Set<TypeFilter> result = new HashSet<TypeFilter>();
+		Set<TypeFilter> result = new HashSet<>();
 		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);
 
 		for (AnnotationAttributes filter : filters) {
@@ -259,7 +259,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	private List<TypeFilter> typeFiltersFor(AnnotationAttributes filterAttributes) {
 
-		List<TypeFilter> typeFilters = new ArrayList<TypeFilter>();
+		List<TypeFilter> typeFilters = new ArrayList<>();
 		FilterType filterType = filterAttributes.getEnum("type");
 
 		for (Class<?> filterClass : filterAttributes.getClassArray("value")) {

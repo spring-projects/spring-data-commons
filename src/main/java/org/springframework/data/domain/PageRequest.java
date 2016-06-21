@@ -15,6 +15,8 @@
  */
 package org.springframework.data.domain;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Sort.Direction;
 
 /**
@@ -35,9 +37,11 @@ public class PageRequest extends AbstractPageRequest {
 	 * 
 	 * @param page zero-based page index.
 	 * @param size the size of the page to be returned.
+	 * @deprecated use {@link #of(int, int)} instead.
 	 */
+	@Deprecated
 	public PageRequest(int page, int size) {
-		this(page, size, null);
+		this(page, size, Sort.unsorted());
 	}
 
 	/**
@@ -47,7 +51,9 @@ public class PageRequest extends AbstractPageRequest {
 	 * @param size the size of the page to be returned.
 	 * @param direction the direction of the {@link Sort} to be specified, can be {@literal null}.
 	 * @param properties the properties to sort by, must not be {@literal null} or empty.
+	 * @deprecated use {@link #of(int, int, Direction, String...)} instead.
 	 */
+	@Deprecated
 	public PageRequest(int page, int size, Direction direction, String... properties) {
 		this(page, size, new Sort(direction, properties));
 	}
@@ -58,10 +64,26 @@ public class PageRequest extends AbstractPageRequest {
 	 * @param page zero-based page index.
 	 * @param size the size of the page to be returned.
 	 * @param sort can be {@literal null}.
+	 * @deprecated use {@link #of(int, int, Optional)} instead.
 	 */
+	@Deprecated
 	public PageRequest(int page, int size, Sort sort) {
+
 		super(page, size);
+
 		this.sort = sort;
+	}
+
+	public static PageRequest of(int page, int site) {
+		return of(page, site, Sort.unsorted());
+	}
+
+	public static PageRequest of(int page, int site, Sort sort) {
+		return new PageRequest(page, site, sort);
+	}
+
+	public static PageRequest of(int page, int size, Direction direction, String... properties) {
+		return of(page, size, new Sort(direction, properties));
 	}
 
 	/*
@@ -113,9 +135,7 @@ public class PageRequest extends AbstractPageRequest {
 
 		PageRequest that = (PageRequest) obj;
 
-		boolean sortEqual = this.sort == null ? that.sort == null : this.sort.equals(that.sort);
-
-		return super.equals(that) && sortEqual;
+		return super.equals(that) && this.sort.equals(that.sort);
 	}
 
 	/*
@@ -124,7 +144,7 @@ public class PageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public int hashCode() {
-		return 31 * super.hashCode() + (null == sort ? 0 : sort.hashCode());
+		return 31 * super.hashCode() + sort.hashCode();
 	}
 
 	/* 
@@ -133,7 +153,6 @@ public class PageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public String toString() {
-		return String.format("Page request [number: %d, size %d, sort: %s]", getPageNumber(), getPageSize(),
-				sort == null ? null : sort.toString());
+		return String.format("Page request [number: %d, size %d, sort: %s]", getPageNumber(), getPageSize(), sort);
 	}
 }

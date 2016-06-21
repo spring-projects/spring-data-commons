@@ -119,7 +119,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	 */
 	private Set<Annotation> getQualifiers(final Class<?> type) {
 
-		Set<Annotation> qualifiers = new HashSet<Annotation>();
+		Set<Annotation> qualifiers = new HashSet<>();
 		Annotation[] annotations = type.getAnnotations();
 		for (Annotation annotation : annotations) {
 			Class<? extends Annotation> annotationType = annotation.annotationType();

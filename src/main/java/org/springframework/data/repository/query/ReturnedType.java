@@ -189,7 +189,7 @@ public abstract class ReturnedType {
 		@Override
 		public List<String> getInputProperties() {
 
-			List<String> properties = new ArrayList<String>();
+			List<String> properties = new ArrayList<>();
 
 			for (PropertyDescriptor descriptor : information.getInputProperties()) {
 				if (!properties.contains(descriptor.getName())) {
@@ -291,7 +291,7 @@ public abstract class ReturnedType {
 						.flatMap(parameter -> Optionals.toStream(parameter.getName()))//
 						.collect(Collectors.toList());
 
-			}).orElse(Collections.emptyList());
+			}).orElseGet(() -> Collections.emptyList());
 		}
 
 		private boolean isDto() {

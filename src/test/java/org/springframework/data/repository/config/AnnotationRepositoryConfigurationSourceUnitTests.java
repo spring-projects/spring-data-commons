@@ -101,7 +101,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	public void findsStringAttributeByName() {
 
 		RepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithBasePackage.class);
-		assertThat(source.getAttribute("namedQueriesLocation")).isEqualTo("bar");
+		assertThat(source.getAttribute("namedQueriesLocation")).hasValue("bar");
 	}
 
 	@Test // DATACMNS-502
@@ -129,7 +129,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				SampleAnnotation.class, resourceLoader, environment);
 
-		assertThat(configurationSource.getRepositoryBaseClassName()).isNull();
+		assertThat(configurationSource.getRepositoryBaseClassName()).isNotPresent();
 	}
 
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {

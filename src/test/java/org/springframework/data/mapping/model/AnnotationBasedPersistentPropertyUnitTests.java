@@ -55,7 +55,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	public void setUp() {
 
 		context = new SampleMappingContext();
-		entity = context.getPersistentEntity(Sample.class);
+		entity = context.getRequiredPersistentEntity(Sample.class);
 	}
 
 	@Test // DATACMNS-269
@@ -215,7 +215,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	}
 
 	private SamplePersistentProperty getProperty(Class<?> type, String name) {
-		return context.getPersistentEntity(type).getPersistentProperty(name).orElse(null);
+		return context.getRequiredPersistentEntity(type).getPersistentProperty(name).orElse(null);
 	}
 
 	static class Sample {

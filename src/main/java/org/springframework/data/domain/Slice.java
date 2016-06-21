@@ -18,6 +18,7 @@ package org.springframework.data.domain;
 import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.util.Streamable;
 
 /**
  * A slice of data that indicates whether there's a next or previous slice available. Allows to obtain a
@@ -26,7 +27,7 @@ import org.springframework.core.convert.converter.Converter;
  * @author Oliver Gierke
  * @since 1.8
  */
-public interface Slice<T> extends Iterable<T> {
+public interface Slice<T> extends Streamable<T> {
 
 	/**
 	 * Returns the number of the current {@link Slice}. Is always non-negative.
@@ -123,5 +124,5 @@ public interface Slice<T> extends Iterable<T> {
 	 * @return a new {@link Slice} with the content of the current one mapped by the given {@link Converter}.
 	 * @since 1.10
 	 */
-	<S> Slice<S> map(Converter<? super T, ? extends S> converter);
+	<U> Slice<U> map(Converter<? super T, ? extends U> converter);
 }

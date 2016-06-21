@@ -98,7 +98,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-917
 	public void defaultsNullToEmptyMap() throws Exception {
-		assertThat(handler.postProcessInvocationResult(null, getTypeDescriptorFor("map")), is(instanceOf(Map.class)));
+		assertThat(handler.postProcessInvocationResult(null, getTypeDescriptorFor("map"))).isInstanceOf(Map.class);
 	}
 
 	@Test // DATACMNS-836

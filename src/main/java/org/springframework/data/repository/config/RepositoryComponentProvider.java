@@ -85,13 +85,13 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	@Override
 	public void addIncludeFilter(TypeFilter includeFilter) {
 
-		List<TypeFilter> filterPlusInterface = new ArrayList<TypeFilter>(2);
+		List<TypeFilter> filterPlusInterface = new ArrayList<>(2);
 		filterPlusInterface.add(includeFilter);
 		filterPlusInterface.add(new InterfaceTypeFilter(Repository.class));
 
 		super.addIncludeFilter(new AllTypeFilter(filterPlusInterface));
 
-		List<TypeFilter> filterPlusAnnotation = new ArrayList<TypeFilter>(2);
+		List<TypeFilter> filterPlusAnnotation = new ArrayList<>(2);
 		filterPlusAnnotation.add(includeFilter);
 		filterPlusAnnotation.add(new AnnotationTypeFilter(RepositoryDefinition.class, true, true));
 

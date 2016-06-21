@@ -163,7 +163,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		this.extensions = Collections.emptyList();
 
 		beanFactory.ifPresent(it -> {
-			this.extensions = new ArrayList<EvaluationContextExtension>(
+			this.extensions = new ArrayList<>(
 					it.getBeansOfType(EvaluationContextExtension.class, true, false).values());
 		});
 

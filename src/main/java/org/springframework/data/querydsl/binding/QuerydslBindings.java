@@ -81,9 +81,9 @@ public class QuerydslBindings {
 
 		this.pathSpecs = new LinkedHashMap<String, PathAndBinding<?, ?>>();
 		this.typeSpecs = new LinkedHashMap<Class<?>, PathAndBinding<?, ?>>();
-		this.whiteList = new HashSet<String>();
-		this.blackList = new HashSet<String>();
-		this.aliases = new HashSet<String>();
+		this.whiteList = new HashSet<>();
+		this.blackList = new HashSet<>();
+		this.aliases = new HashSet<>();
 
 	}
 
@@ -115,7 +115,7 @@ public class QuerydslBindings {
 	 * @return
 	 */
 	public final <T> TypeBinder<T> bind(Class<T> type) {
-		return new TypeBinder<T>(type);
+		return new TypeBinder<>(type);
 	}
 
 	/**
@@ -502,7 +502,7 @@ public class QuerydslBindings {
 
 			Assert.notNull(binding, "Binding must not be null!");
 
-			QuerydslBindings.this.typeSpecs.put(type, PathAndBinding.<T, P> withoutPath().with(binding));
+			QuerydslBindings.this.typeSpecs.put(type, PathAndBinding.<T, P>withoutPath().with(binding));
 		}
 	}
 

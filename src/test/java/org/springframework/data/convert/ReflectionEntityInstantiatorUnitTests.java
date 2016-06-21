@@ -16,7 +16,7 @@
 package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.convert.ReflectionEntityInstantiator.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
@@ -81,7 +81,6 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 		Optional<? extends PreferredConstructor<Foo, P>> constructor = new PreferredConstructorDiscoverer<Foo, P>(Foo.class)
 				.getConstructor();
 
-		doReturn(Foo.class).when(entity).getType();
 		doReturn(constructor).when(entity).getPersistenceConstructor();
 		doReturn(Optional.empty()).when(provider).getParameterValue(any());
 

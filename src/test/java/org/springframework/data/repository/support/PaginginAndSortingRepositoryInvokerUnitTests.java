@@ -45,8 +45,8 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 		Repository repository = mock(Repository.class);
 		Method method = PagingAndSortingRepository.class.getMethod("findAll", Pageable.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new PageRequest(0, 10));
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Pageable) null);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.NONE);
 	}
 
 	@Test // DATACMNS-589
@@ -55,8 +55,8 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 		Repository repository = mock(Repository.class);
 		Method method = PagingAndSortingRepository.class.getMethod("findAll", Sort.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new Sort("foo"));
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Sort) null);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Sort.by("foo"));
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Sort.unsorted());
 	}
 
 	@Test // DATACMNS-589
@@ -65,8 +65,8 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 		RepositoryWithRedeclaredFindAllWithPageable repository = mock(RepositoryWithRedeclaredFindAllWithPageable.class);
 		Method method = RepositoryWithRedeclaredFindAllWithPageable.class.getMethod("findAll", Pageable.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new PageRequest(0, 10));
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Pageable) null);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.NONE);
 	}
 
 	@Test // DATACMNS-589
@@ -75,8 +75,8 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 		RepositoryWithRedeclaredFindAllWithSort repository = mock(RepositoryWithRedeclaredFindAllWithSort.class);
 		Method method = RepositoryWithRedeclaredFindAllWithSort.class.getMethod("findAll", Sort.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new Sort("foo"));
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Sort) null);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Sort.by("foo"));
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Sort.unsorted());
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

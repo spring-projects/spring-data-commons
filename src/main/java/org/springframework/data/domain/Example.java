@@ -48,7 +48,7 @@ public class Example<T> {
 	 * @return
 	 */
 	public static <T> Example<T> of(T probe) {
-		return new Example<T>(probe, ExampleMatcher.matching());
+		return new Example<>(probe, ExampleMatcher.matching());
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class Example<T> {
 	 * @return
 	 */
 	public static <T> Example<T> of(T probe, ExampleMatcher matcher) {
-		return new Example<T>(probe, matcher);
+		return new Example<>(probe, matcher);
 	}
 
 	/**

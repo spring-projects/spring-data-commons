@@ -148,7 +148,37 @@ public class QuerydslPredicateBuilder {
 
 		Optional<Path<?>> resolvedPath = bindings.getExistingPath(path);
 
-		return resolvedPath.orElseGet(() -> paths.computeIfAbsent(path, it -> path.reifyPath(resolver)));
+		return resolvedPath.orElseGet(() -> paths.computeIfAbsent(path, it -> reifyPath(path, Optional.empty())));
+	}
+
+	/**
+	 * Tries to reify a Querydsl {@link Path} from the given {@link PropertyPath} and base.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @param base can be empty.
+	 * @return
+	 */
+	private Path<?> reifyPath(PropertyPath path, Optional<Path<?>> base) {
+
+		Optional<Path<?>> map = base.filter(it -> it instanceof CollectionPathBase)
+				.map(it -> CollectionPathBase.class.cast(it))//
+				.map(CollectionPathBase::any)//
+				.map(it -> Path.class.cast(it))//
+				.map(it -> reifyPath(path, Optional.of(it)));
+
+		return map.orElseGet(() -> {
+
+			Path<?> entityPath = base.orElseGet(() -> resolver.createPath(path.getOwningType().getType()));
+
+			Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
+			Object value = ReflectionUtils.getField(field, entityPath);
+
+			if (path.hasNext()) {
+				return reifyPath(path.next(), Optional.of((Path<?>) value));
+			}
+
+			return (Path<?>) value;
+		});
 	}
 
 	/**
@@ -162,13 +192,13 @@ public class QuerydslPredicateBuilder {
 	 */
 	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PathInformation path) {
 
-		Class<?> targetType = path.getLeafType();
+		Class<?> targetType = path.getLeafProperty().getType();
 
 		if (source.isEmpty() || isSingleElementCollectionWithoutText(source)) {
 			return Collections.emptyList();
 		}
 
-		Collection<Object> target = new ArrayList<Object>(source.size());
+		Collection<Object> target = new ArrayList<>(source.size());
 
 		for (String value : source) {
 

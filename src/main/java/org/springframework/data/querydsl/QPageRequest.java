@@ -17,6 +17,7 @@ package org.springframework.data.querydsl;
 
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import com.querydsl.core.types.OrderSpecifier;
 
@@ -39,7 +40,7 @@ public class QPageRequest extends AbstractPageRequest {
 	 * @param size
 	 */
 	public QPageRequest(int page, int size) {
-		this(page, size, (QSort) null);
+		this(page, size, QSort.unsorted());
 	}
 
 	/**
@@ -71,7 +72,7 @@ public class QPageRequest extends AbstractPageRequest {
 	 * @see org.springframework.data.domain.Pageable#getSort()
 	 */
 	@Override
-	public QSort getSort() {
+	public Sort getSort() {
 		return sort;
 	}
 
@@ -81,7 +82,7 @@ public class QPageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public Pageable next() {
-		return new QPageRequest(getPageNumber() + 1, getPageSize(), getSort());
+		return new QPageRequest(getPageNumber() + 1, getPageSize(), sort);
 	}
 
 	/* 
@@ -90,7 +91,7 @@ public class QPageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public Pageable previous() {
-		return new QPageRequest(getPageNumber() - 1, getPageSize(), getSort());
+		return new QPageRequest(getPageNumber() - 1, getPageSize(), sort);
 	}
 
 	/* 
@@ -99,6 +100,6 @@ public class QPageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public Pageable first() {
-		return new QPageRequest(0, getPageSize(), getSort());
+		return new QPageRequest(0, getPageSize(), sort);
 	}
 }

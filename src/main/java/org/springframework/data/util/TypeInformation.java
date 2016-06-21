@@ -18,6 +18,7 @@ package org.springframework.data.util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Interface to access property types and resolving generics on the way. Starting with a {@link ClassTypeInformation}
@@ -36,13 +37,18 @@ public interface TypeInformation<S> {
 	List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor);
 
 	/**
-	 * Returns the property information for the property with the given name. Supports proeprty traversal through dot
+	 * Returns the property information for the property with the given name. Supports property traversal through dot
 	 * notation.
 	 * 
-	 * @param fieldname
+	 * @param property
 	 * @return
 	 */
-	TypeInformation<?> getProperty(String fieldname);
+	Optional<TypeInformation<?>> getProperty(String property);
+
+	default TypeInformation<?> getRequiredProperty(String property) {
+		return getProperty(property).orElseThrow(() -> new IllegalArgumentException(
+				String.format("Could not find required property %s on %s!", property, getType())));
+	}
 
 	/**
 	 * Returns whether the type can be considered a collection, which means it's a container of elements, e.g. a
@@ -58,7 +64,20 @@ public interface TypeInformation<S> {
 	 * 
 	 * @return
 	 */
-	TypeInformation<?> getComponentType();
+	Optional<TypeInformation<?>> getComponentType();
+
+	/**
+	 * Returns the component type for {@link java.util.Collection}s, the key type for {@link java.util.Map}s or the single
+	 * generic type if available throwing an exception if it can't be resolved.
+	 * 
+	 * @return
+	 * @throws IllegalStateException if the component type cannot be resolved, e.g. if a raw type is used or the type is
+	 *           not generic in the first place.
+	 */
+	default TypeInformation<?> getRequiredComponentType() {
+		return getComponentType().orElseThrow(
+				() -> new IllegalStateException(String.format("Can't resolve required component type for %s!", getType())));
+	}
 
 	/**
 	 * Returns whether the property is a {@link java.util.Map}. If this returns {@literal true} you can expect
@@ -73,7 +92,12 @@ public interface TypeInformation<S> {
 	 * 
 	 * @return
 	 */
-	TypeInformation<?> getMapValueType();
+	Optional<TypeInformation<?>> getMapValueType();
+
+	default TypeInformation<?> getRequiredMapValueType() {
+		return getMapValueType().orElseThrow(
+				() -> new IllegalStateException(String.format("Can't resolve required map value type for %s!", getType())));
+	}
 
 	/**
 	 * Returns the type of the property. Will resolve generics and the generic context of
@@ -149,5 +173,5 @@ public interface TypeInformation<S> {
 	 * @param type must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	TypeInformation<?> specialize(ClassTypeInformation<?> type);
+	TypeInformation<? extends S> specialize(ClassTypeInformation<?> type);
 }

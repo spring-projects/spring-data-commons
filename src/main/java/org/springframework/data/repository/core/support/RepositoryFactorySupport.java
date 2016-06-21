@@ -40,8 +40,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -73,8 +73,6 @@ import org.springframework.util.Assert;
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
-	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
-			RepositoryFactorySupport.class.getClassLoader());
 	private static final Class<?> TRANSACTION_PROXY_TYPE = getTransactionProxyType();
 
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache;
@@ -206,8 +204,21 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @param customImplementation
 	 * @return
 	 */
+	public <T> T getRepository(Class<T> repositoryInterface, Object customImplementation) {
+		return getRepository(repositoryInterface, Optional.of(customImplementation));
+	}
+
+	/**
+	 * Returns a repository instance for the given interface backed by an instance providing implementation logic for
+	 * custom logic.
+	 * 
+	 * @param <T>
+	 * @param repositoryInterface
+	 * @param customImplementation
+	 * @return
+	 */
 	@SuppressWarnings({ "unchecked" })
-	public <T> T getRepository(Class<T> repositoryInterface, Optional<Object> customImplementation) {
+	protected <T> T getRepository(Class<T> repositoryInterface, Optional<Object> customImplementation) {
 
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
 		RepositoryInformation information = getRepositoryInformation(metadata, customImplementation.map(Object::getClass));
@@ -230,10 +241,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		postProcessors.forEach(processor -> processor.postProcess(result, information));
 
-		if (IS_JAVA_8) {
-			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
-		}
-
+		result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		result.addAdvice(new QueryExecutorMethodInterceptor(information));
 
 		result.addAdvice(information.isReactiveRepository()
@@ -265,15 +273,14 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, customImplementationClass);
 
-		return repositoryInformationCache.computeIfAbsent(cacheKey, key -> new DefaultRepositoryInformation(metadata,
-				repositoryBaseClass.orElse(getRepositoryBaseClass(metadata)), customImplementationClass));
+		return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
 
-		/*
-		repositoryInformation = metadata.isReactiveRepository()
-						? new ReactiveRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass)
-						: new DefaultRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass);
-		*/
+			Class<?> baseClass = repositoryBaseClass.orElse(getRepositoryBaseClass(metadata));
 
+			return metadata.isReactiveRepository()
+					? new ReactiveRepositoryInformation(metadata, baseClass, customImplementationClass)
+					: new DefaultRepositoryInformation(metadata, baseClass, customImplementationClass);
+		});
 	}
 
 	protected List<QueryMethod> getQueryMethods() {
@@ -432,9 +439,11 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		private void invokeListeners(RepositoryQuery query) {
 
 			for (QueryCreationListener listener : queryPostProcessors) {
-				Class<?> typeArgument = GenericTypeResolver.resolveTypeArgument(listener.getClass(),
-						QueryCreationListener.class);
-				if (typeArgument != null && typeArgument.isAssignableFrom(query.getClass())) {
+
+				ResolvableType typeArgument = ResolvableType.forClass(QueryCreationListener.class, listener.getClass())
+						.getGeneric(0);
+
+				if (typeArgument != null && typeArgument.isAssignableFrom(ResolvableType.forClass(query.getClass()))) {
 					listener.onCreation(query);
 				}
 			}
@@ -620,7 +629,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		/**
 		 * All {@link QueryMethod}s.
 		 */
-		private List<QueryMethod> queryMethods = new ArrayList<QueryMethod>();
+		private List<QueryMethod> queryMethods = new ArrayList<>();
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.QueryCreationListener#onCreation(org.springframework.data.repository.query.RepositoryQuery)

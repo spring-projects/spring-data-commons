@@ -15,24 +15,21 @@
  */
 package org.springframework.data.mapping.context;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.util.Optional;
-
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 public class SamplePersistentProperty extends AnnotationBasedPersistentProperty<SamplePersistentProperty> {
 
-	public SamplePersistentProperty(Optional<Field> field, PropertyDescriptor propertyDescriptor,
-			BasicPersistentEntity<?, SamplePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
-		super(field, propertyDescriptor, owner, simpleTypeHolder);
+	public SamplePersistentProperty(Property property, BasicPersistentEntity<?, SamplePersistentProperty> owner,
+			SimpleTypeHolder simpleTypeHolder) {
+		super(property, owner, simpleTypeHolder);
 	}
 
 	@Override
 	protected Association<SamplePersistentProperty> createAssociation() {
-		return new Association<SamplePersistentProperty>(this, null);
+		return new Association<>(this, null);
 	}
 }

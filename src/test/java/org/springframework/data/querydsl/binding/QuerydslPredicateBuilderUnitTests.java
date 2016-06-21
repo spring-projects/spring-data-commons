@@ -173,7 +173,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate).isEqualTo((Predicate) QUser.user.addresses.any().street.eq("VALUE"));
+		assertThat(predicate).isEqualTo(QUser.user.addresses.any().street.eq("VALUE"));
 	}
 
 	@Test // DATACMNS-941

@@ -63,7 +63,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 	 * @return will never be {@literal null}.
 	 */
 	public static Range<Distance> between(Distance min, Distance max) {
-		return new Range<Distance>(min, max);
+		return new Range<>(min, max);
 	}
 
 	/**

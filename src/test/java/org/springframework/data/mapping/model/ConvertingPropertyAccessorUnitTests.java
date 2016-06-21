@@ -43,7 +43,7 @@ public class ConvertingPropertyAccessorUnitTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
 	public void rejectsNullConversionService() {
-		new ConvertingPropertyAccessor(new BeanWrapper<Object>(new Object()), null);
+		new ConvertingPropertyAccessor(new BeanWrapper<>(new Object()), null);
 	}
 
 	@Test // DATACMNS-596
@@ -111,14 +111,15 @@ public class ConvertingPropertyAccessorUnitTests {
 
 	private static ConvertingPropertyAccessor getAccessor(Object entity, ConversionService conversionService) {
 
-		PersistentPropertyAccessor wrapper = new BeanWrapper<Object>(entity);
+		PersistentPropertyAccessor wrapper = new BeanWrapper<>(entity);
 		return new ConvertingPropertyAccessor(wrapper, conversionService);
 	}
 
 	private static Optional<SamplePersistentProperty> getIdProperty() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
-		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Entity.class);
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
+				.getRequiredPersistentEntity(Entity.class);
 		return entity.getPersistentProperty("id");
 	}
 

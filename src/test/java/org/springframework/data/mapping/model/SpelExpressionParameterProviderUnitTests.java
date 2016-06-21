@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -24,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
@@ -47,11 +47,9 @@ public class SpelExpressionParameterProviderUnitTests {
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setUp() {
-		provider = new SpELExpressionParameterValueProvider<SamplePersistentProperty>(evaluator, conversionService,
-				delegate);
+		provider = new SpELExpressionParameterValueProvider<>(evaluator, conversionService, delegate);
 
 		parameter = mock(Parameter.class);
-		when(parameter.hasSpelExpression()).thenReturn(true);
 		when(parameter.getSpelExpression()).thenReturn(Optional.empty());
 		when(parameter.getRawType()).thenReturn(Object.class);
 	}
@@ -61,7 +59,6 @@ public class SpelExpressionParameterProviderUnitTests {
 	public void delegatesIfParameterDoesNotHaveASpELExpression() {
 
 		Parameter<Object, SamplePersistentProperty> parameter = mock(Parameter.class);
-		when(parameter.hasSpelExpression()).thenReturn(false);
 
 		provider.getParameterValue(parameter);
 		verify(delegate, times(1)).getParameterValue(parameter);
@@ -81,9 +78,11 @@ public class SpelExpressionParameterProviderUnitTests {
 	@Test
 	public void handsSpELValueToConversionService() {
 
-		when(evaluator.evaluate(Mockito.any(String.class))).thenReturn("value");
+		doReturn(Optional.of("source")).when(parameter).getSpelExpression();
+		doReturn("value").when(evaluator).evaluate(any());
 
 		provider.getParameterValue(parameter);
+
 		verify(delegate, times(0)).getParameterValue(parameter);
 		verify(conversionService, times(1)).convert("value", Object.class);
 	}
@@ -91,9 +90,11 @@ public class SpelExpressionParameterProviderUnitTests {
 	@Test
 	public void doesNotConvertNullValue() {
 
-		when(evaluator.evaluate(Mockito.any(String.class))).thenReturn(null);
+		doReturn(Optional.of("source")).when(parameter).getSpelExpression();
+		doReturn(null).when(evaluator).evaluate(any());
 
 		provider.getParameterValue(parameter);
+
 		verify(delegate, times(0)).getParameterValue(parameter);
 		verify(conversionService, times(0)).convert("value", Object.class);
 	}
@@ -103,6 +104,7 @@ public class SpelExpressionParameterProviderUnitTests {
 
 		provider = new SpELExpressionParameterValueProvider<SamplePersistentProperty>(evaluator, conversionService,
 				delegate) {
+
 			@Override
 			@SuppressWarnings("unchecked")
 			protected <T> T potentiallyConvertSpelValue(Object object, Parameter<T, SamplePersistentProperty> parameter) {
@@ -110,10 +112,11 @@ public class SpelExpressionParameterProviderUnitTests {
 			}
 		};
 
-		when(evaluator.evaluate(Mockito.anyString())).thenReturn("value");
+		doReturn(Optional.of("source")).when(parameter).getSpelExpression();
+		doReturn("value").when(evaluator).evaluate(any());
 
-		Object result = provider.getParameterValue(parameter);
-		assertThat(result).isEqualTo("FOO");
+		assertThat(provider.getParameterValue(parameter)).hasValue("FOO");
+
 		verify(delegate, times(0)).getParameterValue(parameter);
 	}
 }

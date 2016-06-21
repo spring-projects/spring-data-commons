@@ -56,7 +56,7 @@ public class IdPropertyIdentifierAccessor implements IdentifierAccessor {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.keyvalue.core.IdentifierAccessor#getIdentifier()
 	 */
-	public Optional<? extends Object> getIdentifier() {
-		return idProperty.map(it -> accessor.getProperty(it));
+	public Optional<Object> getIdentifier() {
+		return idProperty.flatMap(it -> accessor.getProperty(it));
 	}
 }

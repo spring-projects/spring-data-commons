@@ -35,7 +35,7 @@ public class AnnotationDetectionMethodCallbackUnitTests {
 	@Test // DATACMNS-452
 	public void findsMethodWithAnnotation() throws Exception {
 
-		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
+		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class);
 		ReflectionUtils.doWithMethods(Sample.class, callback);
 
 		assertThat(callback.hasFoundAnnotation()).isTrue();
@@ -52,7 +52,7 @@ public class AnnotationDetectionMethodCallbackUnitTests {
 		exception.expectMessage("getValue");
 		exception.expectMessage("getOtherValue");
 
-		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<Value>(Value.class, true);
+		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class, true);
 		ReflectionUtils.doWithMethods(Multiple.class, callback);
 	}
 

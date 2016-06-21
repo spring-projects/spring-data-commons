@@ -62,13 +62,10 @@ public class SpELExpressionParameterValueProvider<P extends PersistentProperty<P
 	 */
 	public <T> Optional<T> getParameterValue(Parameter<T, P> parameter) {
 
-		if (!parameter.hasSpelExpression()) {
-			return delegate.getParameterValue(parameter);
-		}
-
-		Optional<Object> object = Optional.ofNullable(evaluator.evaluate(parameter.getSpelExpression().orElse(null)));
-
-		return object.map(it -> potentiallyConvertSpelValue(object, parameter));
+		return parameter.getSpelExpression()//
+				.map(it -> Optional.ofNullable(evaluator.evaluate(it))//
+						.map(result -> potentiallyConvertSpelValue(result, parameter)))
+				.orElseGet(() -> delegate.getParameterValue(parameter));
 	}
 
 	/**

@@ -107,11 +107,11 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 				sources.size());
 
 		for (Object source : sources) {
-			result.add(getProjection(source, type.getComponentType().getType()));
+			result.add(getProjection(source, type.getRequiredComponentType().getType()));
 		}
 
 		if (rawType.isArray()) {
-			return result.toArray((Object[]) Array.newInstance(type.getComponentType().getType(), result.size()));
+			return result.toArray((Object[]) Array.newInstance(type.getRequiredComponentType().getType(), result.size()));
 		}
 
 		return result;
@@ -130,7 +130,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 		Map<Object, Object> result = CollectionFactory.createMap(type.getType(), sources.size());
 
 		for (Entry<?, ?> source : sources.entrySet()) {
-			result.put(source.getKey(), getProjection(source.getValue(), type.getMapValueType().getType()));
+			result.put(source.getKey(), getProjection(source.getValue(), type.getRequiredMapValueType().getType()));
 		}
 
 		return result;

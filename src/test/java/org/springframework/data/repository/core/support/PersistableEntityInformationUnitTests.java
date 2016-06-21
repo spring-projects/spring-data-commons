@@ -43,9 +43,10 @@ public class PersistableEntityInformationUnitTests {
 	public void usesPersistablesGetId() throws Exception {
 
 		when(persistable.getId()).thenReturn(2L, 1L, 3L);
-		assertThat(metadata.getId(persistable)).isEqualTo(2L);
-		assertThat(metadata.getId(persistable)).isEqualTo(1L);
-		assertThat(metadata.getId(persistable)).isEqualTo(3L);
+
+		assertThat(metadata.getId(persistable)).hasValue(2L);
+		assertThat(metadata.getId(persistable)).hasValue(1L);
+		assertThat(metadata.getId(persistable)).hasValue(3L);
 	}
 
 	@Test
@@ -53,6 +54,7 @@ public class PersistableEntityInformationUnitTests {
 	public void usesPersistablesIsNew() throws Exception {
 
 		when(persistable.isNew()).thenReturn(true, false);
+
 		assertThat(metadata.isNew(persistable)).isTrue();
 		assertThat(metadata.isNew(persistable)).isFalse();
 	}

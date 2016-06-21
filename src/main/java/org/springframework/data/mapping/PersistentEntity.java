@@ -135,7 +135,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * 
 	 * @return
 	 */
-	Optional<? extends Object> getTypeAlias();
+	Alias getTypeAlias();
 
 	/**
 	 * Returns the {@link TypeInformation} backing this {@link PersistentEntity}.

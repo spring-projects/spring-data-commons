@@ -231,7 +231,7 @@ public class DefaultRepositoryInformationUnitTests {
 		GenericsSaveRepositoryImpl customImplementation = new GenericsSaveRepositoryImpl();
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericsSaveRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, RepositoryFactorySupport.class,
-				customImplementation.getClass());
+				Optional.of(customImplementation.getClass()));
 
 		Method customBaseRepositoryMethod = GenericsSaveRepository.class.getMethod("save", Object.class);
 		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));

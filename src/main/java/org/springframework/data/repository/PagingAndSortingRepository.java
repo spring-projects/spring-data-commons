@@ -47,5 +47,5 @@ public interface PagingAndSortingRepository<T, ID extends Serializable> extends 
 	 * @param pageable
 	 * @return a page of entities
 	 */
-	Page<T> findAll(Pageable pageable);
+	<S extends Sort> Page<T> findAll(Pageable pageable);
 }

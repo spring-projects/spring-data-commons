@@ -70,7 +70,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 
 		if (!typeCache.containsKey(projectionType)) {
 
-			AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
+			AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class);
 			ReflectionUtils.doWithMethods(projectionType, callback);
 
 			typeCache.put(projectionType, callback.hasFoundAnnotation());

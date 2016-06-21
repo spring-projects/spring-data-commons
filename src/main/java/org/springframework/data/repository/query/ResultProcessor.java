@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.core.CollectionFactory;
@@ -48,8 +49,7 @@ public class ResultProcessor {
 	private final QueryMethod method;
 	private final ProjectingConverter converter;
 	private final ProjectionFactory factory;
-
-	private ReturnedType type;
+	private final ReturnedType type;
 
 	/**
 	 * Creates a new {@link ResultProcessor} from the given {@link QueryMethod} and {@link ProjectionFactory}.
@@ -86,15 +86,11 @@ public class ResultProcessor {
 	 * @param accessor can be {@literal null}.
 	 * @return
 	 */
-	public ResultProcessor withDynamicProjection(ParameterAccessor accessor) {
+	public ResultProcessor withDynamicProjection(Optional<ParameterAccessor> accessor) {
 
-		if (accessor == null) {
-			return this;
-		}
-
-		Class<?> projectionType = accessor.getDynamicProjection();
-
-		return projectionType == null ? this : new ResultProcessor(method, factory, projectionType);
+		return accessor.flatMap(it -> it.getDynamicProjection())//
+				.map(it -> new ResultProcessor(method, factory, it))//
+				.orElse(this);
 	}
 
 	/**
@@ -278,36 +274,6 @@ public class ResultProcessor {
 			}
 
 			return result;
-		}
-	}
-
-	/**
-	 * Handler for Repository query methods returning a Java 8 Stream result by ensuring the {@link Stream} elements match
-	 * the expected return type of the query method.
-	 *
-	 * @author John Blum
-	 * @author Oliver Gierke
-	 */
-	@RequiredArgsConstructor
-	static class StreamQueryResultHandler {
-
-		private final @NonNull ReturnedType returnType;
-		private final @NonNull Converter<Object, Object> converter;
-
-		/**
-		 * Processes the given source object as a {@link Stream}, mapping each element to the required return type,
-		 * converting if necessary.
-		 *
-		 * @param source the {@link Stream} of elements to process, must not be {@literal null}.
-		 * @return a new {@link Stream} with the source {@link Stream}'s elements mapped to the target type.
-		 */
-		@SuppressWarnings("unchecked")
-		public Object handle(Object source) {
-
-			Assert.isInstanceOf(Stream.class, source, "Source must not be null and an instance of Stream!");
-
-			return ((Stream<Object>) source)
-					.map(element -> returnType.isInstance(element) ? element : converter.convert(element));
 		}
 	}
 }

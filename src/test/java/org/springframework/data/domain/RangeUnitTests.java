@@ -29,13 +29,13 @@ public class RangeUnitTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-651
 	public void rejectsNullReferenceValuesForContains() {
-		new Range<Long>(10L, 20L).contains(null);
+		new Range<>(10L, 20L).contains(null);
 	}
 
 	@Test // DATACMNS-651
 	public void usesBoundsInclusivelyByDefault() {
 
-		Range<Long> range = new Range<Long>(10L, 20L);
+		Range<Long> range = new Range<>(10L, 20L);
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();
@@ -47,7 +47,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-651
 	public void excludesLowerBoundIfConfigured() {
 
-		Range<Long> range = new Range<Long>(10L, 20L, false, true);
+		Range<Long> range = new Range<>(10L, 20L, false, true);
 
 		assertThat(range.contains(10L)).isFalse();
 		assertThat(range.contains(20L)).isTrue();
@@ -59,7 +59,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-651
 	public void excludesUpperBoundIfConfigured() {
 
-		Range<Long> range = new Range<Long>(10L, 20L, true, false);
+		Range<Long> range = new Range<>(10L, 20L, true, false);
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isFalse();
@@ -71,7 +71,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-651
 	public void handlesOpenUpperBoundCorrectly() {
 
-		Range<Long> range = new Range<Long>(10L, null);
+		Range<Long> range = new Range<>(10L, null);
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();
@@ -83,7 +83,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-651
 	public void handlesOpenLowerBoundCorrectly() {
 
-		Range<Long> range = new Range<Long>(null, 20L);
+		Range<Long> range = new Range<>(null, 20L);
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();

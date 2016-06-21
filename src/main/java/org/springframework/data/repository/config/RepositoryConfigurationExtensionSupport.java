@@ -239,7 +239,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 */
 	protected <T extends RepositoryConfigurationSource> RepositoryConfiguration<T> getRepositoryConfiguration(
 			BeanDefinition definition, T configSource) {
-		return new DefaultRepositoryConfiguration<T>(configSource, definition);
+		return new DefaultRepositoryConfiguration<>(configSource, definition);
 	}
 
 	/**

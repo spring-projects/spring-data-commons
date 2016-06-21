@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
@@ -48,18 +49,22 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 	 */
 	public boolean isNew(T entity) {
 
-		ID id = getId(entity);
+		Optional<ID> id = getId(entity);
 		Class<ID> idType = getIdType();
 
 		if (!idType.isPrimitive()) {
-			return id == null;
+			return !id.isPresent();
 		}
 
-		if (id instanceof Number) {
-			return ((Number) id).longValue() == 0L;
-		}
+		return id.map(it -> {
 
-		throw new IllegalArgumentException(String.format("Unsupported primitive id type %s!", idType));
+			if (it instanceof Number) {
+				return ((Number) it).longValue() == 0L;
+			}
+
+			return null;
+
+		}).orElseThrow(() -> new IllegalArgumentException(String.format("Unsupported primitive id type %s!", idType)));
 	}
 
 	/*

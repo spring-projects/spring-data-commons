@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -37,9 +36,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.SpringVersion;
 import org.springframework.data.domain.Page;
@@ -121,7 +118,7 @@ public class RepositoryFactorySupportUnitTests {
 	@Test
 	public void invokesCustomMethodIfItRedeclaresACRUDOne() {
 
-		ObjectRepository repository = factory.getRepository(ObjectRepository.class, Optional.of(customImplementation));
+		ObjectRepository repository = factory.getRepository(ObjectRepository.class, customImplementation);
 		repository.findOne(1);
 
 		verify(customImplementation, times(1)).findOne(1);
@@ -132,7 +129,7 @@ public class RepositoryFactorySupportUnitTests {
 	public void createsRepositoryInstanceWithCustomIntermediateRepository() {
 
 		CustomRepository repository = factory.getRepository(CustomRepository.class);
-		Pageable pageable = new PageRequest(0, 10);
+		Pageable pageable = PageRequest.of(0, 10);
 		repository.findAll(pageable);
 
 		verify(backingRepo, times(1)).findAll(pageable);
@@ -160,12 +157,9 @@ public class RepositoryFactorySupportUnitTests {
 
 		final Object reference = new Object();
 
-		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(new Answer<Object>() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				Thread.sleep(500);
-				return reference;
-			}
+		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(invocation -> {
+			Thread.sleep(500);
+			return reference;
 		});
 
 		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
@@ -295,13 +289,9 @@ public class RepositoryFactorySupportUnitTests {
 
 	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {
 
-		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(new Answer<Object>() {
-
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				Thread.sleep(200);
-				return expectedValue;
-			}
+		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(invocation -> {
+			Thread.sleep(200);
+			return expectedValue;
 		});
 
 		AsyncAnnotationBeanPostProcessor processor = new AsyncAnnotationBeanPostProcessor();

@@ -110,7 +110,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 */
 	private final String createPassivationId(Set<Annotation> qualifiers, Class<?> repositoryType) {
 
-		List<String> qualifierNames = new ArrayList<String>(qualifiers.size());
+		List<String> qualifierNames = new ArrayList<>(qualifiers.size());
 
 		for (Annotation qualifier : qualifiers) {
 			qualifierNames.add(qualifier.annotationType().getName());
@@ -131,11 +131,11 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	@SuppressWarnings("rawtypes")
 	public Set<Type> getTypes() {
 
-		Set<Class> interfaces = new HashSet<Class>();
+		Set<Class> interfaces = new HashSet<>();
 		interfaces.add(repositoryType);
 		interfaces.addAll(Arrays.asList(repositoryType.getInterfaces()));
 
-		return new HashSet<Type>(interfaces);
+		return new HashSet<>(interfaces);
 	}
 
 	/**

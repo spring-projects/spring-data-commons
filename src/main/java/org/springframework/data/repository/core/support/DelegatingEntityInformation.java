@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
@@ -62,7 +63,7 @@ public class DelegatingEntityInformation<T, ID extends Serializable> implements 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
-	public ID getId(T entity) {
+	public Optional<ID> getId(T entity) {
 		return delegate.getId(entity);
 	}
 

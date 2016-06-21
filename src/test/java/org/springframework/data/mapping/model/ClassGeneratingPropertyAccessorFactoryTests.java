@@ -16,7 +16,8 @@
 
 package org.springframework.data.mapping.model;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.mapping.PersistentProperty;
@@ -68,7 +70,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 				"privateProperty", "packageDefaultProperty", "protectedProperty", "publicProperty", "syntheticProperty");
 
 		parameters.addAll(parameters(new InnerPrivateType(), propertyNames, Object.class));
-		parameters.addAll(parameters(new InnerTypeWithPrivateAncestor(), propertyNames, InnerTypeWithPrivateAncestor.class));
+		parameters
+				.addAll(parameters(new InnerTypeWithPrivateAncestor(), propertyNames, InnerTypeWithPrivateAncestor.class));
 		parameters.addAll(parameters(new InnerPackageDefaultType(), propertyNames, InnerPackageDefaultType.class));
 		parameters.addAll(parameters(new InnerProtectedType(), propertyNames, InnerProtectedType.class));
 		parameters.addAll(parameters(new InnerPublicType(), propertyNames, InnerPublicType.class));
@@ -119,10 +122,10 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-809
 	public void shouldFailOnNullBean() {
-		factory.getPropertyAccessor(mappingContext.getPersistentEntity(bean.getClass()), null);
+		factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), null);
 	}
 
-	@Test(expected = UnsupportedOperationException.class) // DATACMNS-809
+	@Test // DATACMNS-809
 	public void getPropertyShouldFailOnUnhandledProperty() {
 
 		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> {
@@ -132,33 +135,34 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		});
 	}
 
-	@Test(expected = UnsupportedOperationException.class) // DATACMNS-809
+	@Test // DATACMNS-809
 	public void setPropertyShouldFailOnUnhandledProperty() {
 
 		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> {
-			getPersistentPropertyAccessor(bean).setProperty(property, Optional.empty());
-		});
 
+			assertThatExceptionOfType(UnsupportedOperationException.class)//
+					.isThrownBy(() -> getPersistentPropertyAccessor(bean).setProperty(property, Optional.empty()));
+		});
 	}
 
 	@Test // DATACMNS-809
 	public void shouldUseClassPropertyAccessorFactory() throws Exception {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
-				.getPersistentEntity(bean.getClass());
+				.getRequiredPersistentEntity(bean.getClass());
 
 		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"))
 				.isInstanceOf(ClassGeneratingPropertyAccessorFactory.class);
 	}
 
 	private PersistentPropertyAccessor getPersistentPropertyAccessor(Object bean) {
-		return factory.getPropertyAccessor(mappingContext.getPersistentEntity(bean.getClass()), bean);
+		return factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), bean);
 	}
 
 	private Optional<? extends PersistentProperty<?>> getProperty(Object bean, String name) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
-				.getPersistentEntity(bean.getClass());
+				.getRequiredPersistentEntity(bean.getClass());
 		return persistentEntity.getPersistentProperty(name);
 	}
 

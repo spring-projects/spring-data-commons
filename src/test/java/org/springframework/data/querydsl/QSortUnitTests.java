@@ -42,11 +42,6 @@ import com.querydsl.core.types.dsl.StringPath;
 public class QSortUnitTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-402
-	public void shouldThrowIfNoOrderSpecifiersAreGiven() {
-		new QSort();
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-402
 	public void shouldThrowIfNullIsGiven() {
 		new QSort((List<OrderSpecifier<?>>) null);
 	}
@@ -165,7 +160,7 @@ public class QSortUnitTests {
 
 		StringPath path = new PathBuilderFactory().create(User.class).getString("firstname");
 
-		QSort sort = new QSort(new OrderSpecifier<String>(com.querydsl.core.types.Order.ASC, path));
+		QSort sort = new QSort(new OrderSpecifier<>(com.querydsl.core.types.Order.ASC, path));
 
 		assertThat(sort).contains(new Order(Direction.ASC, "firstname"));
 	}

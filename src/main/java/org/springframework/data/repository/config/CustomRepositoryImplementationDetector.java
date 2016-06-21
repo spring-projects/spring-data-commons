@@ -94,7 +94,7 @@ public class CustomRepositoryImplementationDetector {
 			provider.addExcludeFilter(excludeFilter);
 		}
 
-		Set<BeanDefinition> definitions = new HashSet<BeanDefinition>();
+		Set<BeanDefinition> definitions = new HashSet<>();
 
 		for (String basePackage : basePackages) {
 			definitions.addAll(provider.findCandidateComponents(basePackage));

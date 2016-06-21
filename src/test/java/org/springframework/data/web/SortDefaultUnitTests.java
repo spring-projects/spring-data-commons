@@ -46,17 +46,16 @@ public abstract class SortDefaultUnitTests {
 
 	static final Sort SORT = new Sort(SORT_DIRECTION, SORT_FIELDS);
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void parsesSimpleSortStringCorrectly() {
 
-		assertSortStringParsedInto(new Sort(new Order("username")), SORT_1);
-		assertSortStringParsedInto(new Sort(new Order(ASC, "username")), SORT_1);
-		assertSortStringParsedInto(new Sort(new Order(ASC, "username"), //
+		assertSortStringParsedInto(Sort.by(new Order("username")), SORT_1);
+		assertSortStringParsedInto(Sort.by(new Order(ASC, "username")), SORT_1);
+		assertSortStringParsedInto(Sort.by(new Order(ASC, "username"), //
 				new Order(DESC, "lastname"), new Order(DESC, "firstname")), SORT_2);
-		assertSortStringParsedInto(new Sort("firstname", "lastname"), SORT_3);
+		assertSortStringParsedInto(Sort.by("firstname", "lastname"), SORT_3);
 	}
 
 	private static void assertSortStringParsedInto(Sort expected, String... source) {
@@ -74,12 +73,12 @@ public abstract class SortDefaultUnitTests {
 
 	@Test
 	public void returnsNullForNoDefault() throws Exception {
-		assertSupportedAndResolvedTo(getParameterOfMethod("supportedMethod"), null);
+		assertSupportedAndResolvedTo(getParameterOfMethod("supportedMethod"), Sort.unsorted());
 	}
 
 	@Test
 	public void discoversSimpleDefault() throws Exception {
-		assertSupportedAndResolvedTo(getParameterOfMethod("simpleDefault"), new Sort(Direction.ASC, SORT_FIELDS));
+		assertSupportedAndResolvedTo(getParameterOfMethod("simpleDefault"), Sort.by(SORT_FIELDS).ascending());
 	}
 
 	@Test
@@ -114,7 +113,7 @@ public abstract class SortDefaultUnitTests {
 	public void discoversContaineredDefault() throws Exception {
 
 		MethodParameter parameter = getParameterOfMethod("containeredDefault");
-		Sort reference = new Sort("foo", "bar");
+		Sort reference = Sort.by("foo", "bar");
 
 		assertSupportedAndResolvedTo(parameter, reference);
 	}

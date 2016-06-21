@@ -110,7 +110,7 @@ public class PartTree implements Streamable<OrPart> {
 	 * @return the sort
 	 */
 	public Sort getSort() {
-		return predicate.getOrderBySource().flatMap(OrderBySource::toSort).orElse(null);
+		return predicate.getOrderBySource().toSort();
 	}
 
 	/**
@@ -193,12 +193,15 @@ public class PartTree implements Streamable<OrPart> {
 				.collect(Collectors.toList()));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 
-		Optional<OrderBySource> orderBySource = predicate.getOrderBySource();
-		return String.format("%s%s", StringUtils.collectionToDelimitedString(predicate.nodes, " or "),
-				orderBySource.map(it -> " ".concat(it.toString())).orElse(""));
+		return String.format("%s %s", StringUtils.collectionToDelimitedString(predicate.nodes, " or "),
+				predicate.getOrderBySource().toString()).trim();
 	}
 
 	/**
@@ -347,13 +350,13 @@ public class PartTree implements Streamable<OrPart> {
 	 * @author Oliver Gierke
 	 * @author Phil Webb
 	 */
-	private static class Predicate implements Iterable<OrPart> {
+	private static class Predicate implements Streamable<OrPart> {
 
 		private static final Pattern ALL_IGNORE_CASE = Pattern.compile("AllIgnor(ing|e)Case");
 		private static final String ORDER_BY = "OrderBy";
 
 		private final List<OrPart> nodes;
-		private final @Getter Optional<OrderBySource> orderBySource;
+		private final @Getter OrderBySource orderBySource;
 		private boolean alwaysIgnoreCase;
 
 		public Predicate(String predicate, Class<?> domainClass) {
@@ -368,7 +371,8 @@ public class PartTree implements Streamable<OrPart> {
 					.map(part -> new OrPart(part, domainClass, alwaysIgnoreCase))//
 					.collect(Collectors.toList());
 
-			this.orderBySource = Optional.ofNullable(parts.length == 2 ? new OrderBySource(parts[1], domainClass) : null);
+			this.orderBySource = parts.length == 2 ? new OrderBySource(parts[1], Optional.of(domainClass))
+					: OrderBySource.EMPTY;
 		}
 
 		private String detectAndSetAllIgnoreCase(String predicate) {

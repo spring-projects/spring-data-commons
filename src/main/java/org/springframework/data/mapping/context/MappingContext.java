@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.context;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -48,7 +49,9 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	E getPersistentEntity(Class<?> type);
+	Optional<E> getPersistentEntity(Class<?> type);
+
+	E getRequiredPersistentEntity(Class<?> type);
 
 	/**
 	 * Returns whether the {@link MappingContext} currently contains a {@link PersistentEntity} for the type.
@@ -67,25 +70,30 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	E getPersistentEntity(TypeInformation<?> type);
+	Optional<E> getPersistentEntity(TypeInformation<?> type);
+
+	E getRequiredPersistentEntity(TypeInformation<?> type);
 
 	/**
 	 * Returns the {@link PersistentEntity} mapped by the given {@link PersistentProperty}.
 	 * 
-	 * @param persistentProperty
+	 * @param persistentProperty must not be {@literal null}.
 	 * @return the {@link PersistentEntity} mapped by the given {@link PersistentProperty} or null if no
 	 *         {@link PersistentEntity} exists for it or the {@link PersistentProperty} does not refer to an entity (the
 	 *         type of the property is considered simple see
 	 *         {@link org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)}).
 	 */
-	E getPersistentEntity(P persistentProperty);
+	Optional<E> getPersistentEntity(P persistentProperty);
+
+	E getRequiredPersistentEntity(P persistentProperty);
 
 	/**
 	 * Returns all {@link PersistentProperty}s for the given path expression based on the given {@link PropertyPath}.
 	 * 
 	 * @param propertyPath must not be {@literal null}.
 	 * @return the {@link PersistentPropertyPath} representing the given {@link PropertyPath}.
-	 * @throws InvalidPersistentPropertyPath in case not all of the segments of the given {@link PropertyPath} can be resolved.
+	 * @throws InvalidPersistentPropertyPath in case not all of the segments of the given {@link PropertyPath} can be
+	 *           resolved.
 	 */
 	PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath);
 
@@ -100,10 +108,12 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type);
 
 	/**
-	 * Returns the {@link PersistentPropertyPath} for the resolvable part of the given {@link InvalidPersistentPropertyPath}.
+	 * Returns the {@link PersistentPropertyPath} for the resolvable part of the given
+	 * {@link InvalidPersistentPropertyPath}.
 	 * 
 	 * @param invalidPath must not be {@literal null}.
-	 * @return the {@link PersistentPropertyPath} for the resolvable part of the given {@link InvalidPersistentPropertyPath}.
+	 * @return the {@link PersistentPropertyPath} for the resolvable part of the given
+	 *         {@link InvalidPersistentPropertyPath}.
 	 * @since 1.11
 	 */
 	PersistentPropertyPath<P> getPersistentPropertyPath(InvalidPersistentPropertyPath invalidPath);

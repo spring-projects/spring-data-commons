@@ -15,6 +15,9 @@
  */
 package org.springframework.data.convert;
 
+import java.util.Optional;
+
+import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -30,7 +33,7 @@ public interface TypeInformationMapper {
 	 * @param alias can be {@literal null}.
 	 * @return
 	 */
-	TypeInformation<?> resolveTypeFrom(Object alias);
+	Optional<TypeInformation<?>> resolveTypeFrom(Alias alias);
 
 	/**
 	 * Returns the alias to be used for the given {@link TypeInformation}.
@@ -38,5 +41,5 @@ public interface TypeInformationMapper {
 	 * @param type
 	 * @return
 	 */
-	Object createAliasFor(TypeInformation<?> type);
+	Alias createAliasFor(TypeInformation<?> type);
 }

@@ -80,12 +80,12 @@ public class Jackson2ResourceReader implements ResourceReader {
 	public Object readFrom(Resource resource, ClassLoader classLoader) throws Exception {
 
 		InputStream stream = resource.getInputStream();
-		JsonNode node = mapper.reader(JsonNode.class).readTree(stream);
+		JsonNode node = mapper.readerFor(JsonNode.class).readTree(stream);
 
 		if (node.isArray()) {
 
 			Iterator<JsonNode> elements = node.elements();
-			List<Object> result = new ArrayList<Object>();
+			List<Object> result = new ArrayList<>();
 
 			while (elements.hasNext()) {
 				JsonNode element = elements.next();
@@ -112,6 +112,6 @@ public class Jackson2ResourceReader implements ResourceReader {
 
 		Class<?> type = ClassUtils.resolveClassName(typeName, classLoader);
 
-		return mapper.reader(type).readValue(node);
+		return mapper.readerFor(type).readValue(node);
 	}
 }

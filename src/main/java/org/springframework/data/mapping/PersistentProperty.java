@@ -89,7 +89,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	Optional<String> getSpelExpression();
 
-	Association<P> getAssociation();
+	Optional<Association<P>> getAssociation();
 
 	/**
 	 * Returns whether the type of the {@link PersistentProperty} is actually to be regarded as {@link PersistentEntity}
@@ -199,7 +199,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * potentially backing field and traverse accessor methods to potentially available super types.
 	 * 
 	 * @param annotationType the annotation to look up, must not be {@literal null}.
-	 * @return the annotation of the given type if present or {@literal null} otherwise.
+	 * @return the annotation of the given type.
 	 * @see AnnotationUtils#findAnnotation(Method, Class)
 	 */
 	<A extends Annotation> Optional<A> findAnnotation(Class<A> annotationType);

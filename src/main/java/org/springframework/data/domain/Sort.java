@@ -18,10 +18,14 @@ package org.springframework.data.domain;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,6 +38,9 @@ import org.springframework.util.StringUtils;
 public class Sort implements Iterable<org.springframework.data.domain.Sort.Order>, Serializable {
 
 	private static final long serialVersionUID = 5737186511678863905L;
+
+	private static final Sort UNSORTED = new Sort(new Order[0]);
+
 	public static final Direction DEFAULT_DIRECTION = Direction.ASC;
 
 	private final List<Order> orders;
@@ -43,6 +50,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 * 
 	 * @param orders must not be {@literal null}.
 	 */
+	@Deprecated
 	public Sort(Order... orders) {
 		this(Arrays.asList(orders));
 	}
@@ -51,21 +59,23 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 * Creates a new {@link Sort} instance.
 	 * 
 	 * @param orders must not be {@literal null} or contain {@literal null}.
+	 * @deprecated see {@link Sort#by(List)}
 	 */
+	@Deprecated
 	public Sort(List<Order> orders) {
 
-		if (null == orders || orders.isEmpty()) {
-			throw new IllegalArgumentException("You have to provide at least one sort property to sort by!");
-		}
+		Assert.notNull(orders, "Orders must not be null!");
 
-		this.orders = orders;
+		this.orders = Collections.unmodifiableList(orders);
 	}
 
 	/**
 	 * Creates a new {@link Sort} instance. Order defaults to {@value Direction#ASC}.
 	 * 
 	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings
+	 * @deprecated use {@link Sort#by(String...)}
 	 */
+	@Deprecated
 	public Sort(String... properties) {
 		this(DEFAULT_DIRECTION, properties);
 	}
@@ -77,7 +87,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 * @param properties must not be {@literal null}, empty or contain {@literal null} or empty strings.
 	 */
 	public Sort(Direction direction, String... properties) {
-		this(direction, properties == null ? new ArrayList<String>() : Arrays.asList(properties));
+		this(direction, properties == null ? new ArrayList<>() : Arrays.asList(properties));
 	}
 
 	/**
@@ -92,11 +102,43 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 			throw new IllegalArgumentException("You have to provide at least one property to sort by!");
 		}
 
-		this.orders = new ArrayList<Order>(properties.size());
+		this.orders = new ArrayList<>(properties.size());
 
 		for (String property : properties) {
 			this.orders.add(new Order(direction, property));
 		}
+	}
+
+	public static Sort by(String... properties) {
+		return properties.length == 0 ? Sort.unsorted() : new Sort(properties);
+	}
+
+	public static Sort by(List<Order> orders) {
+		return orders.isEmpty() ? Sort.unsorted() : new Sort(orders);
+	}
+
+	public static Sort by(Order... orders) {
+		return new Sort(orders);
+	}
+
+	public static Sort unsorted() {
+		return UNSORTED;
+	}
+
+	public Sort descending() {
+		return withDirection(Direction.DESC);
+	}
+
+	public Sort ascending() {
+		return withDirection(Direction.ASC);
+	}
+
+	private Sort withDirection(Direction direction) {
+		return new Sort(orders.stream().map(it -> new Order(direction, it.getProperty())).collect(Collectors.toList()));
+	}
+
+	public boolean isSorted() {
+		return !orders.isEmpty();
 	}
 
 	/**
@@ -112,7 +154,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 			return this;
 		}
 
-		ArrayList<Order> these = new ArrayList<Order>(this.orders);
+		ArrayList<Order> these = new ArrayList<>(this.orders);
 
 		for (Order order : sort) {
 			these.add(order);
@@ -184,7 +226,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	 */
 	@Override
 	public String toString() {
-		return StringUtils.collectionToCommaDelimitedString(orders);
+		return orders.isEmpty() ? "UNSORTED" : StringUtils.collectionToCommaDelimitedString(orders);
 	}
 
 	/**
@@ -240,12 +282,12 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @param value
 		 * @return
 		 */
-		public static Direction fromStringOrNull(String value) {
+		public static Optional<Direction> fromOptionalString(String value) {
 
 			try {
-				return fromString(value);
+				return Optional.of(fromString(value));
 			} catch (IllegalArgumentException e) {
-				return null;
+				return Optional.empty();
 			}
 		}
 	}

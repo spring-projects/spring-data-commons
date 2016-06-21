@@ -40,15 +40,15 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 		QUser user = QUser.user;
 		QPageRequest pageRequest = new QPageRequest(0, 10, user.firstname.asc());
 
-		assertThat(pageRequest.getSort()).isEqualTo(new QSort(user.firstname.asc()));
+		assertThat(pageRequest.getSort()).isEqualTo(QSort.by(user.firstname.asc()));
 	}
 
 	@Test
 	public void constructsQPageRequestWithQSort() {
 
 		QUser user = QUser.user;
-		QPageRequest pageRequest = new QPageRequest(0, 10, new QSort(user.firstname.asc()));
+		QPageRequest pageRequest = new QPageRequest(0, 10, QSort.by(user.firstname.asc()));
 
-		assertThat(pageRequest.getSort()).isEqualTo(new QSort(user.firstname.asc()));
+		assertThat(pageRequest.getSort()).isEqualTo(QSort.by(user.firstname.asc()));
 	}
 }

@@ -64,9 +64,6 @@ import org.springframework.util.ReflectionUtils;
  */
 public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
-	private static final boolean IS_JAVA_7_OR_BETTER = org.springframework.util.ClassUtils
-			.isPresent("java.lang.invoke.MethodHandle", ClassGeneratingPropertyAccessorFactory.class.getClassLoader());
-
 	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor>> propertyAccessorClasses = new HashMap<TypeInformation<?>, Class<PersistentPropertyAccessor>>(
 			32);
 
@@ -103,15 +100,11 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 
-		if (!IS_JAVA_7_OR_BETTER) {
-			return false;
-		}
-
 		if (entity.getType().getClassLoader() == null || entity.getType().getPackage().getName().startsWith("java")) {
 			return false;
 		}
 
-		final Set<Integer> hashCodes = new HashSet<Integer>();
+		final Set<Integer> hashCodes = new HashSet<>();
 		final AtomicInteger propertyCount = new AtomicInteger();
 
 		entity.doWithProperties(new SimplePropertyHandler() {
@@ -821,7 +814,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			int[] hashes = new int[propertyStackMap.size()];
 			Label[] switchJumpLabels = new Label[propertyStackMap.size()];
-			List<PropertyStackAddress> stackmap = new ArrayList<PropertyStackAddress>(propertyStackMap.values());
+			List<PropertyStackAddress> stackmap = new ArrayList<>(propertyStackMap.values());
 			Collections.sort(stackmap);
 
 			for (int i = 0; i < stackmap.size(); i++) {
@@ -983,8 +976,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l1, 0);
 			mv.visitLocalVariable("property", "Lorg/springframework/data/mapping/PersistentProperty;",
 					"Lorg/springframework/data/mapping/PersistentProperty<*>;", l0, l1, 1);
-			mv.visitLocalVariable("optional", referenceName(JAVA_UTIL_OPTIONAL),
-					"Ljava/util/Optional<+Ljava/lang/Object;>;", l0, l1, 2);
+			mv.visitLocalVariable("optional", referenceName(JAVA_UTIL_OPTIONAL), "Ljava/util/Optional<+Ljava/lang/Object;>;",
+					l0, l1, 2);
 
 			if (isAccessible(entity)) {
 				mv.visitLocalVariable(BEAN_FIELD, referenceName(entity.getType()), null, l0, l1, 3);
@@ -1022,7 +1015,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			int[] hashes = new int[propertyStackMap.size()];
 			Label[] switchJumpLabels = new Label[propertyStackMap.size()];
-			List<PropertyStackAddress> stackmap = new ArrayList<PropertyStackAddress>(propertyStackMap.values());
+			List<PropertyStackAddress> stackmap = new ArrayList<>(propertyStackMap.values());
 			Collections.sort(stackmap);
 
 			for (int i = 0; i < stackmap.size(); i++) {

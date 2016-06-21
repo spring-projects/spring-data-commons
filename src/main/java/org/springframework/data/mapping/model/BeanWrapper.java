@@ -80,7 +80,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
-	public Optional<? extends Object> getProperty(PersistentProperty<?> property) {
+	public Optional<Object> getProperty(PersistentProperty<?> property) {
 		return getProperty(property, property.getType());
 	}
 

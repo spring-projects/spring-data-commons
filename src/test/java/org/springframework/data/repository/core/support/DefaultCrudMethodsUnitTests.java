@@ -142,7 +142,7 @@ public class DefaultCrudMethodsUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, PagingAndSortingRepository.class,
-				null);
+				Optional.empty());
 
 		return new DefaultCrudMethods(information);
 	}

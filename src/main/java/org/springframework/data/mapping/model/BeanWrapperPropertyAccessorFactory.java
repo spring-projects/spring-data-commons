@@ -33,7 +33,7 @@ enum BeanWrapperPropertyAccessorFactory implements PersistentPropertyAccessorFac
 	 */
 	@Override
 	public PersistentPropertyAccessor getPropertyAccessor(PersistentEntity<?, ?> entity, Object bean) {
-		return new BeanWrapper<Object>(bean);
+		return new BeanWrapper<>(bean);
 	}
 
 	/* 

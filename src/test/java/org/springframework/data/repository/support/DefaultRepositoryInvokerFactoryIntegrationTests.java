@@ -23,7 +23,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.sample.Product;
 import org.springframework.data.repository.sample.ProductRepository;
@@ -56,7 +55,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 	@Test // DATACMNS-410, DATACMNS-589
 	public void findOneShouldDelegateToAppropriateRepository() {
 
-		Mockito.reset(productRepository);
+		// Mockito.reset(productRepository);
 		Product product = new Product();
 		when(productRepository.findOne(4711L)).thenReturn(product);
 

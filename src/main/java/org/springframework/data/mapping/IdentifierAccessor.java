@@ -29,5 +29,5 @@ public interface IdentifierAccessor {
 	 * 
 	 * @return
 	 */
-	Optional<? extends Object> getIdentifier();
+	Optional<Object> getIdentifier();
 }

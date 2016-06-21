@@ -33,32 +33,32 @@ public class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 	 */
 	@Override
 	public AbstractPageRequest newPageRequest(int page, int size) {
-		return this.newPageRequest(page, size, null);
+		return PageRequest.of(page, size);
 	}
 
 	public AbstractPageRequest newPageRequest(int page, int size, Sort sort) {
-		return new PageRequest(page, size, sort);
+		return PageRequest.of(page, size, sort);
 	}
 
 	@Test
 	public void equalsRegardsSortCorrectly() {
 
 		Sort sort = new Sort(Direction.DESC, "foo");
-		AbstractPageRequest request = new PageRequest(0, 10, sort);
+		AbstractPageRequest request = PageRequest.of(0, 10, sort);
 
 		// Equals itself
 		assertEqualsAndHashcode(request, request);
 
 		// Equals another instance with same setup
-		assertEqualsAndHashcode(request, new PageRequest(0, 10, sort));
+		assertEqualsAndHashcode(request, PageRequest.of(0, 10, sort));
 
 		// Equals without sort entirely
-		assertEqualsAndHashcode(new PageRequest(0, 10), new PageRequest(0, 10));
+		assertEqualsAndHashcode(PageRequest.of(0, 10), PageRequest.of(0, 10));
 
 		// Is not equal to instance without sort
-		assertNotEqualsAndHashcode(request, new PageRequest(0, 10));
+		assertNotEqualsAndHashcode(request, PageRequest.of(0, 10));
 
 		// Is not equal to instance with another sort
-		assertNotEqualsAndHashcode(request, new PageRequest(0, 10, Direction.ASC, "foo"));
+		assertNotEqualsAndHashcode(request, PageRequest.of(0, 10, Direction.ASC, "foo"));
 	}
 }
