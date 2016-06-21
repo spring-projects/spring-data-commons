@@ -740,7 +740,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * <pre>
 		 * {
 		 * 	&#064;code
-		 * 		 public Object getProperty(PersistentProperty<?> property){
+		 * 		 public Optional<? extends Object> getProperty(PersistentProperty<?> property){
 		 * 			Object bean = this.bean;
 		 * 			switch (property.getName().hashCode()) {
 		 * 				case 3355:
@@ -767,8 +767,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, ClassWriter cw) {
 
 			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getProperty",
-					"(Lorg/springframework/data/mapping/PersistentProperty;)Ljava/lang/Object;",
-					"(Lorg/springframework/data/mapping/PersistentProperty<*>;)Ljava/lang/Object;", null);
+					"(Lorg/springframework/data/mapping/PersistentProperty;)Ljava/util/Optional;",
+					"(Lorg/springframework/data/mapping/PersistentProperty<*>;)Ljava/util/Optional<+Ljava/lang/Object;>;", null);
 			mv.visitCode();
 
 			Label l0 = new Label();
@@ -919,6 +919,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				return null;
 			});
 
+			mv.visitMethodInsn(INVOKESTATIC, JAVA_UTIL_OPTIONAL, "ofNullable",
+					String.format("(%s)%s", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_UTIL_OPTIONAL)), false);
 			mv.visitInsn(ARETURN);
 		}
 
@@ -928,7 +930,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * <pre>
 		 * {
 		 * 	&#064;code
-		 * 		public void setProperty(PersistentProperty<?> property, Object value) {
+		 * 		public void setProperty(PersistentProperty<?> property, Optional<? extends Object> value) {
 		 * 			Object bean = this.bean;
 		 * 			switch (property.getName().hashCode()) {
 		 * 				case 3355:
@@ -951,14 +953,15 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, ClassWriter cw) {
 
 			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "setProperty",
-					"(Lorg/springframework/data/mapping/PersistentProperty;Ljava/lang/Object;)V",
-					"(Lorg/springframework/data/mapping/PersistentProperty<*>;Ljava/lang/Object;)V", null);
+					"(Lorg/springframework/data/mapping/PersistentProperty;Ljava/util/Optional;)V",
+					"(Lorg/springframework/data/mapping/PersistentProperty<*>;Ljava/util/Optional<+Ljava/lang/Object;>)V", null);
 			mv.visitCode();
 
 			Label l0 = new Label();
 			mv.visitLabel(l0);
 
 			visitAssertNotNull(mv);
+			visitUnwrapValue(mv);
 
 			mv.visitVarInsn(ALOAD, 0);
 
@@ -980,7 +983,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l1, 0);
 			mv.visitLocalVariable("property", "Lorg/springframework/data/mapping/PersistentProperty;",
 					"Lorg/springframework/data/mapping/PersistentProperty<*>;", l0, l1, 1);
-			mv.visitLocalVariable("value", referenceName(JAVA_LANG_OBJECT), null, l0, l1, 2);
+			mv.visitLocalVariable("optional", referenceName(JAVA_UTIL_OPTIONAL),
+					"Ljava/util/Optional<+Ljava/lang/Object;>;", l0, l1, 2);
 
 			if (isAccessible(entity)) {
 				mv.visitLocalVariable(BEAN_FIELD, referenceName(entity.getType()), null, l0, l1, 3);
@@ -988,8 +992,19 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				mv.visitLocalVariable(BEAN_FIELD, referenceName(JAVA_LANG_OBJECT), null, l0, l1, 3);
 			}
 
+			mv.visitLocalVariable("value", referenceName(JAVA_LANG_OBJECT), null, l0, l1, 4);
+
 			mv.visitMaxs(0, 0);
 			mv.visitEnd();
+		}
+
+		private static void visitUnwrapValue(MethodVisitor mv) {
+
+			mv.visitVarInsn(ALOAD, 2);
+			mv.visitInsn(ACONST_NULL);
+			mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_UTIL_OPTIONAL, "orElse",
+					String.format("(%s)%s", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT)), false);
+			mv.visitVarInsn(ASTORE, 4);
 		}
 
 		/**
@@ -1061,13 +1076,13 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					mv.visitFieldInsn(GETSTATIC, internalClassName, setterName(property),
 							referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
 					mv.visitVarInsn(ALOAD, 3);
-					mv.visitVarInsn(ALOAD, 2);
+					mv.visitVarInsn(ALOAD, 4);
 					mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
 							String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT)), false);
 				} else {
 					// bean.set...(object)
 					mv.visitVarInsn(ALOAD, 3);
-					mv.visitVarInsn(ALOAD, 2);
+					mv.visitVarInsn(ALOAD, 4);
 
 					Class<?> parameterType = it.getParameterTypes()[0];
 					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(autoboxType(parameterType)));
@@ -1095,13 +1110,13 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 						mv.visitFieldInsn(GETSTATIC, internalClassName, fieldSetterName(property),
 								referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
 						mv.visitVarInsn(ALOAD, 3);
-						mv.visitVarInsn(ALOAD, 2);
+						mv.visitVarInsn(ALOAD, 4);
 						mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
 								String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT)), false);
 					} else {
 						// bean.field
 						mv.visitVarInsn(ALOAD, 3);
-						mv.visitVarInsn(ALOAD, 2);
+						mv.visitVarInsn(ALOAD, 4);
 
 						Class<?> fieldType = it.getType();
 
