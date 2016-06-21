@@ -82,8 +82,8 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#delete(Serializable)}.
 	 * The given id is assumed to be of a type convertable into the actual identifier type of the backing repository.
 	 * 
-	 * @param id must not be {@literal null}. throws {@link IllegalStateException} if the repository does not expose a
-	 *          delete-method.
+	 * @param id must not be {@literal null}.
+	 * @throws {@link IllegalStateException} if the repository does not expose a delete-method.
 	 */
 	void invokeDelete(Serializable id);
 
@@ -93,8 +93,8 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	 * 
 	 * @param method must not be {@literal null}.
 	 * @param parameters must not be {@literal null}.
-	 * @param pageable can be {@literal null}.
-	 * @param sort can be {@literal null}.
+	 * @param pageable must not be {@literal null}.
+	 * @param sort must not be {@literal null}.
 	 * @return the result of the invoked query method.
 	 * @since 1.11
 	 */

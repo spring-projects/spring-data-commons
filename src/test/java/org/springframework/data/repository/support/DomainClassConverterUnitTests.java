@@ -16,7 +16,7 @@
 package org.springframework.data.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
@@ -46,7 +46,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class DomainClassConverterUnitTests {
 
 	static final User USER = new User();
@@ -119,8 +119,7 @@ public class DomainClassConverterUnitTests {
 		ApplicationContext context = initContextWithRepo();
 		converter.setApplicationContext(context);
 
-		when(service.canConvert(String.class, Long.class)).thenReturn(true);
-		when(service.convert(anyString(), eq(Long.class))).thenReturn(1L);
+		doReturn(1L).when(service).convert(any(), eq(Long.class));
 
 		converter.convert("1", STRING_TYPE, USER_TYPE);
 

@@ -71,7 +71,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#getOffset()
 	 */
-	public int getOffset() {
+	public long getOffset() {
 		return page * size;
 	}
 

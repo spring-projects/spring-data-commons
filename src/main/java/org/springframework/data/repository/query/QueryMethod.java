@@ -248,7 +248,9 @@ public class QueryMethod {
 
 		if (QueryExecutionConverters.supports(method.getReturnType())) {
 			// unwrap only one level to handle cases like Future<List<Entity>> correctly.
-			return ClassTypeInformation.fromReturnTypeOf(method).getComponentType().getType();
+			return ClassTypeInformation.fromReturnTypeOf(method).getComponentType().map(it -> it.getType())
+					.orElseThrow(() -> new IllegalStateException(
+							String.format("Couldn't find component type for return value of method %s!", method)));
 		}
 
 		return method.getReturnType();

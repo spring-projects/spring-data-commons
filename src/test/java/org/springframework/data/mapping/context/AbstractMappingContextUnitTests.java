@@ -117,7 +117,7 @@ public class AbstractMappingContextUnitTests {
 	public void returnsNullPersistentEntityForSimpleTypes() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		assertThat(context.getPersistentEntity(String.class)).isNull();
+		assertThat(context.getPersistentEntity(String.class)).isEmpty();
 	}
 
 	/**
@@ -145,7 +145,8 @@ public class AbstractMappingContextUnitTests {
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
 
-		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Sample.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
+				.getRequiredPersistentEntity(Sample.class);
 		assertThat(entity.getPersistentProperty("metaClass")).isNotPresent();
 	}
 
@@ -156,7 +157,8 @@ public class AbstractMappingContextUnitTests {
 	public void usesMostConcreteProperty() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Extension.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
+				.getRequiredPersistentEntity(Extension.class);
 
 		assertThat(entity.getPersistentProperty("foo")).hasValueSatisfying(it -> {
 			assertThat(it.isIdProperty()).isTrue();
@@ -170,16 +172,14 @@ public class AbstractMappingContextUnitTests {
 	public void returnsEntityForComponentType() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Sample.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
+				.getRequiredPersistentEntity(Sample.class);
 
 		assertThat(entity.getPersistentProperty("persons")).hasValueSatisfying(it -> {
-
-			PersistentEntity<Object, SamplePersistentProperty> propertyEntity = mappingContext.getPersistentEntity(it);
-
-			assertThat(propertyEntity).isNotNull();
-			assertThat(propertyEntity.getType()).isEqualTo(Person.class);
+			assertThat(mappingContext.getPersistentEntity(it)).hasValueSatisfying(inner -> {
+				assertThat(inner.getType()).isEqualTo(Person.class);
+			});
 		});
-
 	}
 
 	/**
@@ -229,7 +229,7 @@ public class AbstractMappingContextUnitTests {
 	public void shouldReturnNullForSimpleTypesIfInStrictIsEnabled() {
 
 		context.setStrict(true);
-		assertThat(context.getPersistentEntity(Integer.class)).isNull();
+		assertThat(context.getPersistentEntity(Integer.class)).isEmpty();
 	}
 
 	/**

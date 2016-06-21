@@ -15,10 +15,11 @@
  */
 package org.springframework.data.support;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.util.Assert;
 
 /**
  * {@link IsNewStrategyFactory} that caches resolved {@link IsNewStrategy} instances per type to avoid re-resolving them
@@ -26,37 +27,17 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
+@RequiredArgsConstructor
 public class CachingIsNewStrategyFactory implements IsNewStrategyFactory {
 
+	private final @NonNull IsNewStrategyFactory delegate;
 	private final Map<Class<?>, IsNewStrategy> cache = new ConcurrentHashMap<Class<?>, IsNewStrategy>();
-	private final IsNewStrategyFactory delegate;
-
-	/**
-	 * Creates a new {@link CachingIsNewStrategyFactory} delegating to the given {@link IsNewStrategyFactory}.
-	 * 
-	 * @param delegate must not be {@literal null}.
-	 */
-	public CachingIsNewStrategyFactory(IsNewStrategyFactory delegate) {
-
-		Assert.notNull(delegate, "IsNewStrategyFactory delegate must not be null!");
-		this.delegate = delegate;
-	}
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.IsNewStrategyFactory#getIsNewStrategy(java.lang.Class)
 	 */
 	public IsNewStrategy getIsNewStrategy(Class<?> type) {
-
-		IsNewStrategy strategy = cache.get(type);
-
-		if (strategy != null) {
-			return strategy;
-		}
-
-		IsNewStrategy isNewStrategy = delegate.getIsNewStrategy(type);
-
-		cache.put(type, isNewStrategy);
-		return isNewStrategy;
+		return cache.computeIfAbsent(type, it -> delegate.getIsNewStrategy(it));
 	}
 }

@@ -57,18 +57,18 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 		this.predicate = predicate;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Pageable)
+	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokePagedFindAll(org.springframework.data.domain.Pageable)
 	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Pageable pageable) {
 		return executor.findAll(predicate, pageable);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Sort)
+	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeSortedFindAll(org.springframework.data.domain.Sort)
 	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Sort sort) {
@@ -129,7 +129,7 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 		return delegate.invokeFindOne(id);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, org.springframework.util.MultiValueMap, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
 	 */

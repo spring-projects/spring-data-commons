@@ -45,14 +45,6 @@ public class QSortUnitTests {
 	 * @see DATACMNS-402
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void shouldThrowIfNoOrderSpecifiersAreGiven() {
-		new QSort();
-	}
-
-	/**
-	 * @see DATACMNS-402
-	 */
-	@Test(expected = IllegalArgumentException.class)
 	public void shouldThrowIfNullIsGiven() {
 		new QSort((List<OrderSpecifier<?>>) null);
 	}
@@ -204,7 +196,7 @@ public class QSortUnitTests {
 
 		StringPath path = new PathBuilderFactory().create(User.class).getString("firstname");
 
-		QSort sort = new QSort(new OrderSpecifier<String>(com.querydsl.core.types.Order.ASC, path));
+		QSort sort = new QSort(new OrderSpecifier<>(com.querydsl.core.types.Order.ASC, path));
 
 		assertThat(sort).contains(new Order(Direction.ASC, "firstname"));
 	}

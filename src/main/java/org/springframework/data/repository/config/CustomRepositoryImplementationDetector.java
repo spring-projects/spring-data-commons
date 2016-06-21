@@ -72,7 +72,7 @@ public class CustomRepositoryImplementationDetector {
 		provider.setMetadataReaderFactory(metadataReaderFactory);
 		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
 
-		Set<BeanDefinition> definitions = new HashSet<BeanDefinition>();
+		Set<BeanDefinition> definitions = new HashSet<>();
 
 		for (String basePackage : basePackages) {
 			definitions.addAll(provider.findCandidateComponents(basePackage));

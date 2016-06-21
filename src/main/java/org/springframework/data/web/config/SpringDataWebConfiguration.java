@@ -94,7 +94,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 		FormattingConversionService conversionService = (FormattingConversionService) registry;
 
-		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<FormattingConversionService>(
+		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<>(
 				conversionService);
 		converter.setApplicationContext(context);
 	}

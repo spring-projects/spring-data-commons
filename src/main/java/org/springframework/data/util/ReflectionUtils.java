@@ -24,10 +24,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -269,6 +273,17 @@ public abstract class ReflectionUtils {
 		Stream<Class<?>> parameterTypes = Arrays.stream(method.getParameterTypes());
 
 		return Stream.concat(returnType, parameterTypes);
+	}
+
+	public static Optional<Method> getMethod(Class<?> type, String name, ResolvableType... parameterTypes) {
+
+		List<Class<?>> collect = Arrays.stream(parameterTypes).map(it -> it.getRawClass()).collect(Collectors.toList());
+
+		Optional<Method> method = Optional.ofNullable(
+				org.springframework.util.ReflectionUtils.findMethod(type, name, collect.toArray(new Class<?>[collect.size()])));
+
+		return method.filter(it -> IntStream.range(0, it.getParameterCount())//
+				.allMatch(index -> ResolvableType.forMethodParameter(it, index).equals(parameterTypes[index])));
 	}
 
 	private static final boolean argumentsMatch(Class<?>[] parameterTypes, Object[] arguments) {

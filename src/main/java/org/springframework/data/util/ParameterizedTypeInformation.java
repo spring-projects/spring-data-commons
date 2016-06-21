@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.util.StringUtils;
@@ -57,36 +58,34 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetMapValueType()
 	 */
 	@Override
-	protected TypeInformation<?> doGetMapValueType() {
+	protected Optional<TypeInformation<?>> doGetMapValueType() {
 
 		if (Map.class.isAssignableFrom(getType())) {
 
 			Type[] arguments = type.getActualTypeArguments();
 
 			if (arguments.length > 1) {
-				return createInfo(arguments[1]);
+				return Optional.of(createInfo(arguments[1]));
 			}
 		}
 
 		Class<?> rawType = getType();
 
-		Set<Type> supertypes = new HashSet<Type>();
-		supertypes.add(rawType.getGenericSuperclass());
+		Set<Type> supertypes = new HashSet<>();
+		Optional.ofNullable(rawType.getGenericSuperclass()).ifPresent(it -> supertypes.add(it));
 		supertypes.addAll(Arrays.asList(rawType.getGenericInterfaces()));
 
-		for (Type supertype : supertypes) {
+		Optional<TypeInformation<?>> result = supertypes.stream()//
+				.map(it -> Pair.of(it, resolveType(it)))//
+				.filter(it -> Map.class.isAssignableFrom(it.getSecond()))//
+				.<TypeInformation<?>>map(it -> {
 
-			Class<?> rawSuperType = resolveType(supertype);
+					ParameterizedType parameterizedSupertype = (ParameterizedType) it.getFirst();
+					Type[] arguments = parameterizedSupertype.getActualTypeArguments();
+					return createInfo(arguments[1]);
+				}).findFirst();
 
-			if (Map.class.isAssignableFrom(rawSuperType)) {
-
-				ParameterizedType parameterizedSupertype = (ParameterizedType) supertype;
-				Type[] arguments = parameterizedSupertype.getActualTypeArguments();
-				return createInfo(arguments[1]);
-			}
-		}
-
-		return super.doGetMapValueType();
+		return result.isPresent() ? result : super.doGetMapValueType();
 	}
 
 	/*
@@ -123,8 +122,8 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 			return false;
 		}
 
-		TypeInformation<?> otherTypeInformation = rawType.equals(rawTargetType) ? target : target
-				.getSuperTypeInformation(rawType);
+		TypeInformation<?> otherTypeInformation = rawType.equals(rawTargetType) ? target
+				: target.getSuperTypeInformation(rawType);
 
 		List<TypeInformation<?>> myParameters = getTypeArguments();
 		List<TypeInformation<?>> typeParameters = otherTypeInformation.getTypeArguments();
@@ -147,8 +146,8 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
 	 */
 	@Override
-	protected TypeInformation<?> doGetComponentType() {
-		return createInfo(type.getActualTypeArguments()[0]);
+	protected Optional<TypeInformation<?>> doGetComponentType() {
+		return Optional.of(createInfo(type.getActualTypeArguments()[0]));
 	}
 
 	/* 

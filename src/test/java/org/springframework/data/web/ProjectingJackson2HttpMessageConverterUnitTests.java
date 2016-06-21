@@ -15,7 +15,6 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;

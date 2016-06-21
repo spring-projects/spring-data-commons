@@ -68,9 +68,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 * @return
 	 */
 	public T createQuery() {
-
-		Sort dynamicSort = parameters != null ? parameters.getSort() : null;
-		return createQuery(dynamicSort);
+		return createQuery(parameters.getSort());
 	}
 
 	/**
@@ -82,10 +80,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 */
 	public T createQuery(Sort dynamicSort) {
 
-		Sort staticSort = tree.getSort();
-		Sort sort = staticSort != null ? staticSort.and(dynamicSort) : dynamicSort;
-
-		return complete(createCriteria(tree), sort);
+		return complete(createCriteria(tree), tree.getSort().and(dynamicSort));
 	}
 
 	/**

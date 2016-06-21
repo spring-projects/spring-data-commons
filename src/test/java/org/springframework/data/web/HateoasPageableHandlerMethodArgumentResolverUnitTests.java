@@ -55,7 +55,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
 		UriComponentsContributor resolver = new HateoasPageableHandlerMethodArgumentResolver();
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://localhost:8080?page=0&size=10");
-		resolver.enhance(builder, parameter, new PageRequest(1, 20));
+		resolver.enhance(builder, parameter, PageRequest.of(1, 20));
 
 		MultiValueMap<String, String> params = builder.build().getQueryParams();
 
@@ -73,7 +73,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	 */
 	@Test
 	public void preventsPageSizeFromExceedingMayValueIfConfiguredOnWrite() throws Exception {
-		assertUriStringFor(new PageRequest(0, 200), "page=0&size=100");
+		assertUriStringFor(PageRequest.of(0, 200), "page=0&size=100");
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
 
-		resolver.enhance(builder, null, new PageRequest(0, 10));
+		resolver.enhance(builder, null, PageRequest.of(0, 10));
 
 		MultiValueMap<String, String> params = builder.build().getQueryParams();
 

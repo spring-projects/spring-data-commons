@@ -226,9 +226,11 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		}
 
 		private static Optional<String> getValue(Annotation[] annotations) {
-			return Arrays.stream(annotations).//
-					filter(it -> it.annotationType() == Value.class).//
-					findFirst().map(it -> ((Value) it).value());
+
+			return Arrays.stream(annotations)//
+					.filter(it -> it.annotationType() == Value.class)//
+					.findFirst().map(it -> ((Value) it).value())//
+					.filter(it -> StringUtils.hasText(it));
 		}
 
 		/**

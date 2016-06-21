@@ -16,6 +16,7 @@
 package org.springframework.data.domain;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.core.convert.converter.Converter;
 
@@ -45,8 +46,13 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		super(content, pageable);
 
 		this.pageable = pageable;
-		this.total = !content.isEmpty() && pageable != null && pageable.getOffset() + pageable.getPageSize() > total
-				? pageable.getOffset() + content.size() : total;
+
+		Optional<Pageable> foo = Pageable.NONE == pageable ? Optional.empty() : Optional.of(pageable);
+
+		this.total = foo.filter(it -> !content.isEmpty())//
+				.filter(it -> it.getOffset() + it.getPageSize() > total)//
+				.map(it -> it.getOffset() + content.size())//
+				.orElse(total);
 	}
 
 	/**
@@ -56,7 +62,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 * @param content must not be {@literal null}.
 	 */
 	public PageImpl(List<T> content) {
-		this(content, null, null == content ? 0 : content.size());
+		this(content, Pageable.NONE, null == content ? 0 : content.size());
 	}
 
 	/*
@@ -100,8 +106,8 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 * @see org.springframework.data.domain.Slice#transform(org.springframework.core.convert.converter.Converter)
 	 */
 	@Override
-	public <S> Page<S> map(Converter<? super T, ? extends S> converter) {
-		return new PageImpl<S>(getConvertedContent(converter), pageable, total);
+	public <U> Page<U> map(Converter<? super T, ? extends U> converter) {
+		return new PageImpl<>(getConvertedContent(converter), pageable, total);
 	}
 
 	/*

@@ -68,7 +68,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 
 		assertThat(controller.assembler).isNotNull();
 
-		PagedResources<Resource<Person>> resources = controller.sample(new PageRequest(1, 1));
+		PagedResources<Resource<Person>> resources = controller.sample(PageRequest.of(1, 1));
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS)).isNotNull();
 		assertThat(resources.getLink(Link.REL_NEXT)).isNotNull();
@@ -105,7 +105,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 		@RequestMapping("/persons")
 		PagedResources<Resource<Person>> sample(Pageable pageable) {
 
-			Page<Person> page = new PageImpl<Person>(Arrays.asList(new Person()), pageable,
+			Page<Person> page = new PageImpl<>(Arrays.asList(new Person()), pageable,
 					pageable.getOffset() + pageable.getPageSize() + 1);
 
 			return assembler.toResource(page);

@@ -98,12 +98,8 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 	@Test(expected = IllegalStateException.class)
 	public void rejectsEmptySpelExpression() throws Throwable {
 
-		when(invocation.getMethod()).thenReturn(InvalidProjection.class.getMethod("getAddress"));
-
-		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(),
-				new DefaultListableBeanFactory(), parser, InvalidProjection.class);
-
-		interceptor.invoke(invocation);
+		new SpelEvaluatingMethodInterceptor(delegate, new Target(), new DefaultListableBeanFactory(), parser,
+				InvalidProjection.class);
 	}
 
 	/**

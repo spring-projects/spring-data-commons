@@ -119,7 +119,7 @@ public class RepositoryConfigurationDelegate {
 
 		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader,
 				environment);
-		List<BeanComponentDefinition> definitions = new ArrayList<BeanComponentDefinition>();
+		List<BeanComponentDefinition> definitions = new ArrayList<>();
 
 		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : extension
 				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode)) {

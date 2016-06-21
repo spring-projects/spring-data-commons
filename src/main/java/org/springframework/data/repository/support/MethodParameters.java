@@ -19,10 +19,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 
 /**
@@ -42,7 +45,7 @@ class MethodParameters {
 	 * @param method must not be {@literal null}.
 	 */
 	public MethodParameters(Method method) {
-		this(method, null);
+		this(method, Optional.empty());
 	}
 
 	/**
@@ -50,12 +53,12 @@ class MethodParameters {
 	 * is given, method parameter names will be looked up from the annotation attribute if present.
 	 * 
 	 * @param method must not be {@literal null}.
-	 * @param namingAnnotation can be {@literal null}.
+	 * @param namingAnnotation must not be {@literal null}.
 	 */
-	public MethodParameters(Method method, AnnotationAttribute namingAnnotation) {
+	public MethodParameters(Method method, Optional<AnnotationAttribute> namingAnnotation) {
 
 		Assert.notNull(method);
-		this.parameters = new ArrayList<MethodParameter>();
+		this.parameters = new ArrayList<>();
 
 		for (int i = 0; i < method.getParameterTypes().length; i++) {
 
@@ -80,17 +83,12 @@ class MethodParameters {
 	 * @param name must not be {@literal null} or empty.
 	 * @return
 	 */
-	public MethodParameter getParameter(String name) {
+	public Optional<MethodParameter> getParameter(String name) {
 
 		Assert.hasText(name, "Parameter name must not be null!");
 
-		for (MethodParameter parameter : parameters) {
-			if (name.equals(parameter.getParameterName())) {
-				return parameter;
-			}
-		}
-
-		return null;
+		return getParameters().stream()//
+				.filter(it -> name.equals(it.getParameterName())).findFirst();
 	}
 
 	/**
@@ -103,15 +101,10 @@ class MethodParameters {
 	public List<MethodParameter> getParametersOfType(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null!");
-		List<MethodParameter> result = new ArrayList<MethodParameter>();
 
-		for (MethodParameter parameter : getParameters()) {
-			if (parameter.getParameterType().equals(type)) {
-				result.add(parameter);
-			}
-		}
-
-		return result;
+		return getParameters().stream()//
+				.filter(it -> it.getParameterType().equals(type))//
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -123,15 +116,10 @@ class MethodParameters {
 	public List<MethodParameter> getParametersWith(Class<? extends Annotation> annotation) {
 
 		Assert.notNull(annotation);
-		List<MethodParameter> result = new ArrayList<MethodParameter>();
 
-		for (MethodParameter parameter : getParameters()) {
-			if (parameter.hasParameterAnnotation(annotation)) {
-				result.add(parameter);
-			}
-		}
-
-		return result;
+		return getParameters().stream()//
+				.filter(it -> it.hasParameterAnnotation(annotation))//
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -142,8 +130,8 @@ class MethodParameters {
 	 */
 	private static class AnnotationNamingMethodParameter extends MethodParameter {
 
-		private final AnnotationAttribute attribute;
-		private String name;
+		private final Optional<AnnotationAttribute> attribute;
+		private final Lazy<String> name;
 
 		/**
 		 * Creates a new {@link AnnotationNamingMethodParameter} for the given {@link Method}'s parameter with the given
@@ -153,11 +141,17 @@ class MethodParameters {
 		 * @param parameterIndex
 		 * @param attribute can be {@literal null}
 		 */
-		public AnnotationNamingMethodParameter(Method method, int parameterIndex, AnnotationAttribute attribute) {
+		public AnnotationNamingMethodParameter(Method method, int parameterIndex, Optional<AnnotationAttribute> attribute) {
 
 			super(method, parameterIndex);
-			this.attribute = attribute;
 
+			this.attribute = attribute;
+			this.name = Lazy.of(() -> {
+
+				return this.attribute.//
+						flatMap(it -> it.getValueFrom(this).map(Object::toString)).//
+						orElseGet(() -> super.getParameterName());
+			});
 		}
 
 		/* 
@@ -166,21 +160,7 @@ class MethodParameters {
 		 */
 		@Override
 		public String getParameterName() {
-
-			if (name != null) {
-				return name;
-			}
-
-			if (attribute != null) {
-				Object foundName = attribute.getValueFrom(this);
-				if (foundName != null) {
-					name = foundName.toString();
-					return name;
-				}
-			}
-
-			name = super.getParameterName();
-			return name;
+			return name.get();
 		}
 	}
 }

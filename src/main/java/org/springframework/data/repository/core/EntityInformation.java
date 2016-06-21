@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Extension of {@link EntityMetadata} to add functionality to query information of entity instances.
@@ -38,7 +39,7 @@ public interface EntityInformation<T, ID extends Serializable> extends EntityMet
 	 * @param entity must never be {@literal null}
 	 * @return
 	 */
-	ID getId(T entity);
+	Optional<ID> getId(T entity);
 
 	/**
 	 * Returns the type of the id of the entity.

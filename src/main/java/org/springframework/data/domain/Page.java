@@ -47,5 +47,5 @@ public interface Page<T> extends Slice<T> {
 	 * @return a new {@link Page} with the content of the current one mapped by the given {@link Converter}.
 	 * @since 1.10
 	 */
-	<S> Page<S> map(Converter<? super T, ? extends S> converter);
+	<U> Page<U> map(Converter<? super T, ? extends U> converter);
 }

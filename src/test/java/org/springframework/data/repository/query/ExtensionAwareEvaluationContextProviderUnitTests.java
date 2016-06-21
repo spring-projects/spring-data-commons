@@ -55,7 +55,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	public void setUp() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class);
-		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.<EvaluationContextExtension> emptyList());
+		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.<EvaluationContextExtension>emptyList());
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test
 	public void secondExtensionOverridesFirstOne() {
 
-		List<EvaluationContextExtension> extensions = new ArrayList<EvaluationContextExtension>();
+		List<EvaluationContextExtension> extensions = new ArrayList<>();
 		extensions.add(new DummyExtension("_first", "first"));
 		extensions.add(new DummyExtension("_second", "second"));
 
@@ -91,7 +91,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test
 	public void allowsDirectAccessToExtensionViaKey() {
 
-		List<EvaluationContextExtension> extensions = new ArrayList<EvaluationContextExtension>();
+		List<EvaluationContextExtension> extensions = new ArrayList<>();
 		extensions.add(new DummyExtension("_first", "first"));
 		extensions.add(new DummyExtension("_second", "second"));
 
@@ -142,9 +142,9 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	public void exposesPageableParameter() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Pageable.class);
-		PageRequest pageable = new PageRequest(2, 3, new Sort(Direction.DESC, "lastname"));
+		PageRequest pageable = PageRequest.of(2, 3, new Sort(Direction.DESC, "lastname"));
 
-		assertThat(evaluateExpression("#pageable.offset", new Object[] { "test", pageable })).isEqualTo(6);
+		assertThat(evaluateExpression("#pageable.offset", new Object[] { "test", pageable })).isEqualTo(6L);
 		assertThat(evaluateExpression("#pageable.pageSize", new Object[] { "test", pageable })).isEqualTo(3);
 		assertThat(evaluateExpression("#pageable.sort.toString()", new Object[] { "test", pageable }))
 				.isEqualTo("lastname: DESC");

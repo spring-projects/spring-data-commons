@@ -78,7 +78,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 			return (ClassTypeInformation<S>) cachedTypeInfo;
 		}
 
-		ClassTypeInformation<S> result = new ClassTypeInformation<S>(type);
+		ClassTypeInformation<S> result = new ClassTypeInformation<>(type);
 		CACHE.put(type, new WeakReference<ClassTypeInformation<?>>(result));
 		return result;
 	}
@@ -112,7 +112,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @return
 	 */
 	private static Map<TypeVariable<?>, Type> getTypeVariableMap(Class<?> type) {
-		return getTypeVariableMap(type, new HashSet<Type>());
+		return getTypeVariableMap(type, new HashSet<>());
 	}
 
 	@SuppressWarnings("deprecation")
@@ -177,8 +177,8 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @see org.springframework.data.util.TypeDiscoverer#specialize(org.springframework.data.util.ClassTypeInformation)
 	 */
 	@Override
-	public TypeInformation<?> specialize(ClassTypeInformation<?> type) {
-		return type;
+	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
+		return (TypeInformation<? extends S>) type;
 	}
 
 	/* 

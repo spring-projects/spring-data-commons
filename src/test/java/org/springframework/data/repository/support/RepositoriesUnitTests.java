@@ -54,7 +54,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class RepositoriesUnitTests {
 
 	GenericApplicationContext context;
@@ -186,7 +186,7 @@ public class RepositoriesUnitTests {
 		}
 
 		public PersistentEntity<?, ?> getPersistentEntity() {
-			return mappingContext.getPersistentEntity(repositoryMetadata.getDomainType());
+			return mappingContext.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
 		}
 
 		public List<QueryMethod> getQueryMethods() {
@@ -229,7 +229,7 @@ public class RepositoriesUnitTests {
 		 */
 		@Override
 		public Set<Class<?>> getAlternativeDomainTypes() {
-			return Collections.<Class<?>> singleton(super.getDomainType());
+			return Collections.<Class<?>>singleton(super.getDomainType());
 		}
 	}
 

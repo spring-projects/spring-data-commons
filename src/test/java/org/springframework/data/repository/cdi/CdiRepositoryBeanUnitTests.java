@@ -53,23 +53,23 @@ public class CdiRepositoryBeanUnitTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void voidRejectsNullQualifiers() {
-		new DummyCdiRepositoryBean<SampleRepository>(null, SampleRepository.class, beanManager);
+		new DummyCdiRepositoryBean<>(null, SampleRepository.class, beanManager);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void voidRejectsNullRepositoryType() {
-		new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS, null, beanManager);
+		new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, null, beanManager);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void voidRejectsNullBeanManager() {
-		new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS, SampleRepository.class, null);
+		new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class, null);
 	}
 
 	@Test
 	public void returnsBasicMetadata() {
 
-		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
+		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS,
 				SampleRepository.class, beanManager);
 
 		assertThat(bean.getBeanClass()).isEqualTo(SampleRepository.class);
@@ -80,7 +80,7 @@ public class CdiRepositoryBeanUnitTests {
 	@Test
 	public void returnsAllImplementedTypes() {
 
-		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
+		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS,
 				SampleRepository.class, beanManager);
 
 		Set<Type> types = bean.getTypes();
@@ -91,7 +91,7 @@ public class CdiRepositoryBeanUnitTests {
 	@SuppressWarnings("unchecked")
 	public void detectsStereotypes() {
 
-		DummyCdiRepositoryBean<StereotypedSampleRepository> bean = new DummyCdiRepositoryBean<StereotypedSampleRepository>(
+		DummyCdiRepositoryBean<StereotypedSampleRepository> bean = new DummyCdiRepositoryBean<>(
 				NO_ANNOTATIONS, StereotypedSampleRepository.class, beanManager);
 
 		assertThat(bean.getStereotypes()).containsExactly(StereotypeAnnotation.class);
@@ -103,7 +103,7 @@ public class CdiRepositoryBeanUnitTests {
 	@Test
 	public void scopeDefaultsToApplicationScoped() {
 
-		Bean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS, SampleRepository.class,
+		Bean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class,
 				beanManager);
 		assertThat(bean.getScope()).isEqualTo(ApplicationScoped.class);
 	}
@@ -114,7 +114,7 @@ public class CdiRepositoryBeanUnitTests {
 	@Test
 	public void createsPassivationId() {
 
-		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(SINGLE_ANNOTATION,
+		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(SINGLE_ANNOTATION,
 				SampleRepository.class, beanManager);
 		assertThat(bean.getId()).isEqualTo(PASSIVATION_ID);
 	}

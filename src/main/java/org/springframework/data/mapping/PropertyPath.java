@@ -16,6 +16,7 @@
 package org.springframework.data.mapping;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +46,8 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 	private final TypeInformation<?> owningType;
 	private final String name;
-	private final TypeInformation<?> type;
+	private final @Getter TypeInformation<?> typeInformation;
+	private final TypeInformation<?> actualTypeInformation;
 	private final boolean isCollection;
 
 	private PropertyPath next;
@@ -57,7 +59,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @param owningType must not be {@literal null}.
 	 */
 	PropertyPath(String name, Class<?> owningType) {
-		this(name, ClassTypeInformation.from(owningType), Collections.<PropertyPath> emptyList());
+		this(name, ClassTypeInformation.from(owningType), Collections.<PropertyPath>emptyList());
 	}
 
 	/**
@@ -74,15 +76,13 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.notNull(base, "Perviously found properties must not be null!");
 
 		String propertyName = name.matches(ALL_UPPERCASE) ? name : StringUtils.uncapitalize(name);
-		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
-
-		if (propertyType == null) {
-			throw new PropertyReferenceException(propertyName, owningType, base);
-		}
+		TypeInformation<?> propertyType = owningType.getProperty(propertyName)
+				.orElseThrow(() -> new PropertyReferenceException(propertyName, owningType, base));
 
 		this.owningType = owningType;
+		this.typeInformation = propertyType;
 		this.isCollection = propertyType.isCollectionLike();
-		this.type = propertyType.getActualType();
+		this.actualTypeInformation = propertyType.getActualType();
 		this.name = propertyName;
 	}
 
@@ -127,7 +127,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @return
 	 */
 	public Class<?> getType() {
-		return this.type.getType();
+		return this.actualTypeInformation.getType();
 	}
 
 	/**
@@ -221,7 +221,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.hasText(source, "Source must not be null or empty!");
 		Assert.notNull(type, "TypeInformation must not be null or empty!");
 
-		List<String> iteratorSource = new ArrayList<String>();
+		List<String> iteratorSource = new ArrayList<>();
 		Matcher matcher = SPLITTER.matcher("_" + source);
 
 		while (matcher.find()) {
@@ -231,7 +231,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Iterator<String> parts = iteratorSource.iterator();
 
 		PropertyPath result = null;
-		Stack<PropertyPath> current = new Stack<PropertyPath>();
+		Stack<PropertyPath> current = new Stack<>();
 
 		while (parts.hasNext()) {
 			if (result == null) {
@@ -256,7 +256,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 		PropertyPath previous = base.peek();
 
-		PropertyPath propertyPath = create(source, previous.type, base);
+		PropertyPath propertyPath = create(source, previous.typeInformation.getActualType(), base);
 		previous.next = propertyPath;
 		return propertyPath;
 	}
@@ -298,11 +298,11 @@ public class PropertyPath implements Streamable<PropertyPath> {
 				base.get(base.size() - 1).next = current;
 			}
 
-			List<PropertyPath> newBase = new ArrayList<PropertyPath>(base);
+			List<PropertyPath> newBase = new ArrayList<>(base);
 			newBase.add(current);
 
 			if (StringUtils.hasText(addTail)) {
-				current.next = create(addTail, current.type, newBase);
+				current.next = create(addTail, current.actualTypeInformation, newBase);
 			}
 
 			return current;

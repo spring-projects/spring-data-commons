@@ -39,10 +39,12 @@ import org.springframework.util.StringUtils;
  */
 class OrderBySource {
 
+	public static OrderBySource EMPTY = new OrderBySource("");
+
 	private static final String BLOCK_SPLIT = "(?<=Asc|Desc)(?=\\p{Lu})";
 	private static final Pattern DIRECTION_SPLIT = Pattern.compile("(.+?)(Asc|Desc)?$");
 	private static final String INVALID_ORDER_SYNTAX = "Invalid order syntax for part %s!";
-	private static final Set<String> DIRECTION_KEYWORDS = new HashSet<String>(Arrays.asList("Asc", "Desc"));
+	private static final Set<String> DIRECTION_KEYWORDS = new HashSet<>(Arrays.asList("Asc", "Desc"));
 
 	private final List<Order> orders;
 
@@ -53,7 +55,7 @@ class OrderBySource {
 	 * @param clause must not be {@literal null}.
 	 */
 	public OrderBySource(String clause) {
-		this(clause, null);
+		this(clause, Optional.empty());
 	}
 
 	/**
@@ -61,11 +63,15 @@ class OrderBySource {
 	 * type.
 	 * 
 	 * @param clause must not be {@literal null}.
-	 * @param domainClass can be {@literal null}.
+	 * @param domainClass must not be {@literal null}.
 	 */
-	public OrderBySource(String clause, Class<?> domainClass) {
+	public OrderBySource(String clause, Optional<Class<?>> domainClass) {
 
 		this.orders = new ArrayList<Sort.Order>();
+
+		if (!StringUtils.hasText(clause)) {
+			return;
+		}
 
 		for (String part : clause.split(BLOCK_SPLIT)) {
 
@@ -83,8 +89,7 @@ class OrderBySource {
 				throw new IllegalArgumentException(String.format(INVALID_ORDER_SYNTAX, part));
 			}
 
-			Direction direction = StringUtils.hasText(directionString) ? Direction.fromString(directionString) : null;
-			this.orders.add(createOrder(propertyString, direction, domainClass));
+			this.orders.add(createOrder(propertyString, Direction.fromOptionalString(directionString), domainClass));
 		}
 	}
 
@@ -98,13 +103,17 @@ class OrderBySource {
 	 * @return
 	 * @see PropertyPath#from(String, Class)
 	 */
-	private Order createOrder(String propertySource, Direction direction, Class<?> domainClass) {
+	private Order createOrder(String propertySource, Optional<Direction> direction, Optional<Class<?>> domainClass) {
 
-		if (null == domainClass) {
-			return new Order(direction, StringUtils.uncapitalize(propertySource));
-		}
-		PropertyPath propertyPath = PropertyPath.from(propertySource, domainClass);
-		return new Order(direction, propertyPath.toDotPath());
+		return domainClass.map(type -> {
+
+			PropertyPath propertyPath = PropertyPath.from(propertySource, type);
+			return direction.map(it -> new Order(it, propertyPath.toDotPath()))
+					.orElseGet(() -> new Order(propertyPath.toDotPath()));
+
+		}).orElseGet(() -> direction//
+				.map(it -> new Order(it, StringUtils.uncapitalize(propertySource)))
+				.orElseGet(() -> new Order(StringUtils.uncapitalize(propertySource))));
 	}
 
 	/**
@@ -112,8 +121,8 @@ class OrderBySource {
 	 * 
 	 * @return the {@link Sort}.
 	 */
-	public Optional<Sort> toSort() {
-		return this.orders.isEmpty() ? Optional.empty() : Optional.of(new Sort(this.orders));
+	public Sort toSort() {
+		return Sort.by(this.orders);
 	}
 
 	/*

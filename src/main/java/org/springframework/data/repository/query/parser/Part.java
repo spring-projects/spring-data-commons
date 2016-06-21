@@ -168,7 +168,7 @@ public class Part {
 		public static final Collection<String> ALL_KEYWORDS;
 
 		static {
-			List<String> allKeywords = new ArrayList<String>();
+			List<String> allKeywords = new ArrayList<>();
 			for (Type type : ALL) {
 				allKeywords.addAll(type.keywords);
 			}

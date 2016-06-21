@@ -190,9 +190,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public PersistentEntity<?, ?> getPersistentEntity() {
 
-		return mappingContext//
-				.map(context -> context.getPersistentEntity(repositoryMetadata.getDomainType()))//
-				.orElseGet(null);
+		return mappingContext.orElseThrow(() -> new IllegalStateException("No MappingContext available!"))
+				.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
 	}
 
 	/* (non-Javadoc)

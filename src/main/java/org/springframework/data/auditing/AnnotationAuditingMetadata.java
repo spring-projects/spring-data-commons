@@ -60,7 +60,7 @@ final class AnnotationAuditingMetadata {
 
 	static {
 
-		List<String> types = new ArrayList<String>(5);
+		List<String> types = new ArrayList<>(5);
 		types.add("org.joda.time.DateTime");
 		types.add("org.joda.time.LocalDateTime");
 		types.add(Date.class.getName());

@@ -75,7 +75,7 @@ public class ParametersParameterAccessorUnitTests {
 		DefaultParameters parameters = new DefaultParameters(method);
 
 		ParametersParameterAccessor accessor = new ParametersParameterAccessor(parameters,
-				new Object[] { new PageRequest(0, 10), "Foo" });
+				new Object[] { PageRequest.of(0, 10), "Foo" });
 
 		assertThat(accessor).hasSize(1);
 	}

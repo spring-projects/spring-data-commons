@@ -42,6 +42,7 @@ public class SliceImpl<T> extends Chunk<T> {
 	public SliceImpl(List<T> content, Pageable pageable, boolean hasNext) {
 
 		super(content, pageable);
+
 		this.hasNext = hasNext;
 		this.pageable = pageable;
 	}
@@ -69,8 +70,8 @@ public class SliceImpl<T> extends Chunk<T> {
 	 * @see org.springframework.data.domain.Slice#transform(org.springframework.core.convert.converter.Converter)
 	 */
 	@Override
-	public <S> Slice<S> map(Converter<? super T, ? extends S> converter) {
-		return new SliceImpl<S>(getConvertedContent(converter), pageable, hasNext);
+	public <U> Slice<U> map(Converter<? super T, ? extends U> converter) {
+		return new SliceImpl<>(getConvertedContent(converter), pageable, hasNext);
 	}
 
 	/*

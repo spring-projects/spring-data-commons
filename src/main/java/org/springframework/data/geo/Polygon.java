@@ -53,7 +53,7 @@ public class Polygon implements Iterable<Point>, Shape {
 		Assert.notNull(z, "Z coordinate must not be null!");
 		Assert.notNull(others);
 
-		List<Point> points = new ArrayList<Point>(3 + others.length);
+		List<Point> points = new ArrayList<>(3 + others.length);
 		points.addAll(Arrays.asList(x, y, z));
 		points.addAll(Arrays.asList(others));
 
@@ -70,7 +70,7 @@ public class Polygon implements Iterable<Point>, Shape {
 
 		Assert.notNull(points);
 
-		List<Point> pointsToSet = new ArrayList<Point>(points.size());
+		List<Point> pointsToSet = new ArrayList<>(points.size());
 
 		for (Point point : points) {
 

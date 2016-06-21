@@ -86,9 +86,9 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 		MethodParameter pageableParameter = findMatchingPageableParameter(parameter);
 
 		if (pageableParameter != null) {
-			return new MethodParameterAwarePagedResourcesAssembler<Object>(pageableParameter, resolver, fromUriString);
+			return new MethodParameterAwarePagedResourcesAssembler<>(pageableParameter, resolver, fromUriString);
 		} else {
-			return new PagedResourcesAssembler<Object>(resolver, fromUriString);
+			return new PagedResourcesAssembler<>(resolver, fromUriString);
 		}
 	}
 

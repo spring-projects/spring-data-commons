@@ -18,10 +18,7 @@ package org.springframework.data.mapping.context;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.util.Collections;
-import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
@@ -29,6 +26,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -73,7 +71,8 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 	public void createsPersistentEntityForInterfaceCorrectly() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(InterfaceOnly.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = context
+				.getRequiredPersistentEntity(InterfaceOnly.class);
 
 		assertThat(entity.getIdProperty()).isNotNull();
 	}
@@ -86,25 +85,19 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 
 		final DummyMappingContext context = new DummyMappingContext();
 
-		Thread a = new Thread(new Runnable() {
-			public void run() {
-				context.getPersistentEntity(Person.class);
-			}
-		});
+		Thread a = new Thread(() -> context.getPersistentEntity(Person.class));
 
 		Thread b = new Thread(new Runnable() {
 
 			public void run() {
 
-				PersistentEntity<Object, T> entity = context.getPersistentEntity(Person.class);
+				PersistentEntity<Object, T> entity = context.getRequiredPersistentEntity(Person.class);
 
-				entity.doWithProperties(new PropertyHandler<T>() {
-					public void doWithPersistentProperty(T persistentProperty) {
-						try {
-							Thread.sleep(250);
-						} catch (InterruptedException e) {
-							throw new RuntimeException(e);
-						}
+				entity.doWithProperties((PropertyHandler<T>) persistentProperty -> {
+					try {
+						Thread.sleep(250);
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
 					}
 				});
 			}
@@ -128,13 +121,13 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 
 		@Override
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		protected T createPersistentProperty(Optional<Field> field, PropertyDescriptor descriptor,
-				final BasicPersistentEntity<Object, T> owner, SimpleTypeHolder simpleTypeHolder) {
+		protected T createPersistentProperty(Property property, BasicPersistentEntity<Object, T> owner,
+				SimpleTypeHolder simpleTypeHolder) {
 
 			PersistentProperty prop = mock(PersistentProperty.class);
 
 			when(prop.getTypeInformation()).thenReturn(owner.getTypeInformation());
-			when(prop.getName()).thenReturn(field.map(Field::getName).orElse(descriptor.getName()));
+			when(prop.getName()).thenReturn(property.getName());
 			when(prop.getPersistentEntityType()).thenReturn(Collections.EMPTY_SET);
 
 			try {

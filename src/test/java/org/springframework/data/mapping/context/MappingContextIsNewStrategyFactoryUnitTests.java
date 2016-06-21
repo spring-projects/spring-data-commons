@@ -27,8 +27,6 @@ import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory.PropertyIsNullIsNewStrategy;
-import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory.PropertyIsNullOrZeroNumberIsNewStrategy;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
 
@@ -55,7 +53,6 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	public void returnsPropertyIsNullOrZeroIsNewStrategyForVersionedEntity() {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(VersionedEntity.class);
-		assertThat(strategy).isInstanceOf(PropertyIsNullOrZeroNumberIsNewStrategy.class);
 
 		Optional<VersionedEntity> entity = Optional.of(new VersionedEntity());
 		assertThat(strategy.isNew(entity)).isTrue();
@@ -74,7 +71,6 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	public void returnsPropertyIsNullOrZeroIsNewStrategyForPrimitiveVersionedEntity() {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(VersionedEntity.class);
-		assertThat(strategy).isInstanceOf(PropertyIsNullOrZeroNumberIsNewStrategy.class);
 
 		Optional<VersionedEntity> entity = Optional.of(new VersionedEntity());
 		assertThat(strategy.isNew(entity)).isTrue();
@@ -90,7 +86,6 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	public void returnsPropertyIsNullIsNewStrategyForEntity() {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(Entity.class);
-		assertThat(strategy).isInstanceOf(PropertyIsNullIsNewStrategy.class);
 
 		Optional<Entity> entity = Optional.of(new Entity());
 		assertThat(strategy.isNew(entity)).isTrue();

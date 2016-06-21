@@ -57,7 +57,6 @@ public class QuerydslBindingsFactoryUnitTests {
 	 * @see DATACMNS-669
 	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void createBindingsShouldHonorQuerydslBinderCustomizerHookWhenPresent() {
 
 		Repositories repositories = mock(Repositories.class);
@@ -69,11 +68,11 @@ public class QuerydslBindingsFactoryUnitTests {
 		ReflectionTestUtils.setField(factory, "repositories", Optional.of(repositories));
 
 		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, Optional.empty());
-		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
+		Optional<MultiValueBinding<Path<String>, String>> binding = bindings
 				.getBindingForPath(PropertyPath.from("firstname", User.class));
 
 		assertThat(binding).hasValueSatisfying(it -> {
-			assertThat(it.bind((Path) QUser.user.firstname, Collections.singleton("rand")))
+			assertThat(it.bind(QUser.user.firstname, Collections.singleton("rand")))
 					.hasValue(QUser.user.firstname.contains("rand"));
 		});
 	}
@@ -82,7 +81,6 @@ public class QuerydslBindingsFactoryUnitTests {
 	 * @see DATACMNS-669
 	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void shouldReuseExistingQuerydslBinderCustomizer() {
 
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
@@ -92,11 +90,11 @@ public class QuerydslBindingsFactoryUnitTests {
 		ReflectionTestUtils.setField(factory, "beanFactory", Optional.of(beanFactory));
 
 		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, Optional.of(SpecificBinding.class));
-		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
+		Optional<MultiValueBinding<Path<String>, String>> binding = bindings
 				.getBindingForPath(PropertyPath.from("firstname", User.class));
 
 		assertThat(binding).hasValueSatisfying(it -> {
-			assertThat(it.bind((Path) QUser.user.firstname, Collections.singleton("rand")))
+			assertThat(it.bind(QUser.user.firstname, Collections.singleton("rand")))
 					.hasValue(QUser.user.firstname.eq("RAND"));
 		});
 	}

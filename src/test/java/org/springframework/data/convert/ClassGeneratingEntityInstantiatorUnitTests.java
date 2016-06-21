@@ -16,7 +16,7 @@
 package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
 
@@ -24,9 +24,7 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -207,7 +205,6 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 	 * @see DATACMNS-578
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void instantiateObjCtor1ParamString() {
 
 		doReturn(ObjCtor1ParamString.class).when(entity).getType();
@@ -253,7 +250,6 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 	 * @see DATACMNS-578
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void instantiateObjectCtor1ParamInt() {
 
 		doReturn(ObjectCtor1ParamInt.class).when(entity).getType();
@@ -301,12 +297,6 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 			assertThat(toTest.param6).isEqualTo(5);
 			assertThat(toTest.param7).isEqualTo("B");
 		});
-	}
-
-	@Test
-	public void testname() {
-
-		List<String> result = Stream.of("1", null).map(it -> (String) null).collect(Collectors.toList());
 	}
 
 	static class Foo {

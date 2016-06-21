@@ -45,7 +45,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
 		Algorithm quickSort = new QuickSort();
 
-		assertThat(getEntityInformation(Algorithm.class).getId(quickSort)).isEqualTo(quickSort.getName());
+		assertThat(getEntityInformation(Algorithm.class).getId(quickSort)).hasValue(quickSort.getName());
 	}
 
 	/**
@@ -56,12 +56,12 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
 		Person jonDoe = new Person("JonDoe");
 
-		assertThat(getEntityInformation(Person.class).getId(jonDoe)).isEqualTo(jonDoe.name);
+		assertThat(getEntityInformation(Person.class).getId(jonDoe)).hasValue(jonDoe.name);
 	}
 
-	private EntityInformation<Object, ?> getEntityInformation(Class<?> type) {
+	private EntityInformation<Object, Serializable> getEntityInformation(Class<?> type) {
 
-		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(type);
+		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getRequiredPersistentEntity(type);
 		return new PersistentEntityInformation<Object, Serializable>(entity);
 	}
 

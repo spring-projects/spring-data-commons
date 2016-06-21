@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
@@ -36,13 +37,14 @@ import com.querydsl.core.types.Path;
 public class QSort extends Sort implements Serializable {
 
 	private static final long serialVersionUID = -6701117396842171930L;
+	private static final QSort UNSORTED = new QSort();
 
 	private final List<OrderSpecifier<?>> orderSpecifiers;
 
 	/**
 	 * Creates a new {@link QSort} instance with the given {@link OrderSpecifier}s.
 	 * 
-	 * @param orderSpecifiers must not be {@literal null} or empty.
+	 * @param orderSpecifiers must not be {@literal null} .
 	 */
 	public QSort(OrderSpecifier<?>... orderSpecifiers) {
 		this(Arrays.asList(orderSpecifiers));
@@ -51,14 +53,22 @@ public class QSort extends Sort implements Serializable {
 	/**
 	 * Creates a new {@link QSort} instance with the given {@link OrderSpecifier}s.
 	 * 
-	 * @param orderSpecifiers must not be {@literal null} or empty.
+	 * @param orderSpecifiers must not be {@literal null}.
 	 */
+
 	public QSort(List<OrderSpecifier<?>> orderSpecifiers) {
 
 		super(toOrders(orderSpecifiers));
 
-		Assert.notEmpty(orderSpecifiers, "Order specifiers must not be null or empty!");
 		this.orderSpecifiers = orderSpecifiers;
+	}
+
+	public static QSort by(OrderSpecifier<?>... orderSpecifiers) {
+		return new QSort(orderSpecifiers);
+	}
+
+	public static QSort unsorted() {
+		return UNSORTED;
 	}
 
 	/**
@@ -69,14 +79,9 @@ public class QSort extends Sort implements Serializable {
 	 */
 	private static List<Order> toOrders(List<OrderSpecifier<?>> orderSpecifiers) {
 
-		Assert.notEmpty(orderSpecifiers, "Order specifiers must not be null or empty!");
+		Assert.notNull(orderSpecifiers, "Order specifiers must not be null!");
 
-		List<Order> orders = new ArrayList<Sort.Order>();
-		for (OrderSpecifier<?> orderSpecifier : orderSpecifiers) {
-			orders.add(toOrder(orderSpecifier));
-		}
-
-		return orders;
+		return orderSpecifiers.stream().map(QSort::toOrder).collect(Collectors.toList());
 	}
 
 	/**

@@ -16,9 +16,6 @@
 package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
@@ -28,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,6 +37,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentEntitySpec;
 import org.springframework.data.mapping.PersistentProperty;
@@ -83,14 +80,14 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	public void returnsNullForTypeAliasIfNoneConfigured() {
 
 		PersistentEntity<Entity, T> entity = createEntity(Entity.class);
-		assertThat(entity.getTypeAlias()).isNotPresent();
+		assertThat(entity.getTypeAlias()).isEqualTo(Alias.NONE);
 	}
 
 	@Test
 	public void returnsTypeAliasIfAnnotated() {
 
 		PersistentEntity<AliasedEntity, T> entity = createEntity(AliasedEntity.class);
-		assertThat(entity.getTypeAlias()).isEqualTo("foo");
+		assertThat(entity.getTypeAlias()).isEqualTo(Alias.of("foo"));
 	}
 
 	/**
@@ -100,11 +97,8 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@SuppressWarnings("unchecked")
 	public void considersComparatorForPropertyOrder() {
 
-		BasicPersistentEntity<Person, T> entity = createEntity(Person.class, new Comparator<T>() {
-			public int compare(T o1, T o2) {
-				return o1.getName().compareTo(o2.getName());
-			}
-		});
+		BasicPersistentEntity<Person, T> entity = createEntity(Person.class,
+				Comparator.comparing(PersistentProperty::getName));
 
 		T lastName = (T) Mockito.mock(PersistentProperty.class);
 		when(lastName.getName()).thenReturn("lastName");
@@ -124,9 +118,10 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 		assertThat(properties).hasSize(3);
 		Iterator<T> iterator = properties.iterator();
-		assertThat(iterator.next()).isEqualTo(entity.getPersistentProperty("firstName"));
-		assertThat(iterator.next()).isEqualTo(entity.getPersistentProperty("lastName"));
-		assertThat(iterator.next()).isEqualTo(entity.getPersistentProperty("ssn"));
+
+		assertThat(entity.getPersistentProperty("firstName")).hasValue(iterator.next());
+		assertThat(entity.getPersistentProperty("lastName")).hasValue(iterator.next());
+		assertThat(entity.getPersistentProperty("ssn")).hasValue(iterator.next());
 	}
 
 	/**
@@ -136,11 +131,11 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	public void addingAndIdPropertySetsIdPropertyInternally() {
 
 		MutablePersistentEntity<Person, T> entity = createEntity(Person.class);
-		assertThat(entity.getIdProperty()).isNull();
+		assertThat(entity.getIdProperty()).isNotPresent();
 
 		when(property.isIdProperty()).thenReturn(true);
 		entity.addPersistentProperty(property);
-		assertThat(entity.getIdProperty()).isEqualTo(property);
+		assertThat(entity.getIdProperty()).hasValue(property);
 	}
 
 	/**
@@ -166,7 +161,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	public void detectsPropertyWithAnnotation() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		Optional<SamplePersistentProperty> property = entity.getPersistentProperty(LastModifiedBy.class);
 
@@ -184,38 +179,18 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	}
 
 	/**
-	 * @see DATACMNS-596
-	 */
-	@Test
-	public void returnsBeanWrapperForPropertyAccessor() {
-
-		assumeThat(System.getProperty("java.version"), CoreMatchers.startsWith("1.6"));
-
-		SampleMappingContext context = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
-
-		Entity value = new Entity();
-		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
-
-		assertThat(accessor).isEqualTo(instanceOf(BeanWrapper.class));
-		assertThat(accessor.getBean()).isEqualTo(value);
-	}
-
-	/**
 	 * @see DATACMNS-809
 	 */
 	@Test
 	public void returnsGeneratedPropertyAccessorForPropertyAccessor() {
 
-		assumeThat(System.getProperty("java.version"), not(CoreMatchers.startsWith("1.6")));
-
 		SampleMappingContext context = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		Entity value = new Entity();
 		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
 
-		assertThat(accessor).isNotEqualTo(instanceOf(BeanWrapper.class));
+		assertThat(accessor).isNotInstanceOf(BeanWrapper.class);
 		assertThat(accessor.getClass().getName()).contains("_Accessor_");
 		assertThat(accessor.getBean()).isEqualTo(value);
 	}
@@ -227,7 +202,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	public void rejectsNullBeanForPropertyAccessor() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		entity.getPropertyAccessor(null);
 	}
@@ -239,7 +214,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	public void rejectsNonMatchingBeanForPropertyAccessor() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		entity.getPropertyAccessor("foo");
 	}
@@ -251,7 +226,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	public void supportsSubtypeInstancesOnPropertyAccessorLookup() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		assertThat(entity.getPropertyAccessor(new Subtype())).isNotNull();
 	}
@@ -264,7 +239,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 		PersistentEntity<AliasEntityUsingComposedAnnotation, T> entity = createEntity(
 				AliasEntityUsingComposedAnnotation.class);
-		assertThat(entity.getTypeAlias()).isEqualTo("bar");
+		assertThat(entity.getTypeAlias()).isEqualTo(Alias.of("bar"));
 	}
 
 	/**

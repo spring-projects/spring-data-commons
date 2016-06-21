@@ -117,8 +117,8 @@ public class CrudRepositoryInvokerUnitTests {
 
 		Method method = CrudRepository.class.getMethod("findAll");
 
-		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll((Pageable) null);
-		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll((Sort) null);
+		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll(Sort.unsorted());
 	}
 
 	/**
@@ -131,9 +131,9 @@ public class CrudRepositoryInvokerUnitTests {
 
 		Method findAllWithSort = CrudWithFindAllWithSort.class.getMethod("findAll", Sort.class);
 
-		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll((Pageable) null);
-		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(new PageRequest(0, 10));
-		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll((Sort) null);
+		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(Sort.unsorted());
+		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(PageRequest.of(0, 10));
+		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(Pageable.NONE);
 	}
 
 	/**
@@ -146,8 +146,8 @@ public class CrudRepositoryInvokerUnitTests {
 
 		Method findAllWithPageable = CrudWithFindAllWithPageable.class.getMethod("findAll", Pageable.class);
 
-		getInvokerFor(repository, expectInvocationOf(findAllWithPageable)).invokeFindAll((Pageable) null);
-		getInvokerFor(repository, expectInvocationOf(findAllWithPageable)).invokeFindAll(new PageRequest(0, 10));
+		getInvokerFor(repository, expectInvocationOf(findAllWithPageable)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(repository, expectInvocationOf(findAllWithPageable)).invokeFindAll(PageRequest.of(0, 10));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -177,7 +177,7 @@ public class CrudRepositoryInvokerUnitTests {
 
 	static class Person {}
 
-	interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
+	public interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
 
 		Page<Person> findByFirstName(@Param("firstName") String firstName, Pageable pageable);
 

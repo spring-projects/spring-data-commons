@@ -15,13 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -29,7 +25,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.dao.support.PersistenceExceptionTranslationInterceptor;
-import org.springframework.dao.support.PersistenceExceptionTranslator;
 
 /**
  * Unit test for {@link TransactionalRepositoryProxyPostProcessor}.
@@ -43,21 +38,11 @@ public class PersistenceExceptionTranslationRepositoryProxyPostProcessorUnitTest
 	@Mock ListableBeanFactory beanFactory;
 	@Mock ProxyFactory proxyFactory;
 
-	@Before
-	public void setUp() {
-
-		Map<String, PersistenceExceptionTranslator> beans = new HashMap<String, PersistenceExceptionTranslator>();
-		beans.put("foo", mock(PersistenceExceptionTranslator.class));
-		when(beanFactory.getBeansOfType(eq(PersistenceExceptionTranslator.class), anyBoolean(), anyBoolean())).thenReturn(
-				beans);
-	}
-
 	/**
 	 * @see DATACMNS-318
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullBeanFactory() throws Exception {
-
 		new PersistenceExceptionTranslationRepositoryProxyPostProcessor(null);
 	}
 

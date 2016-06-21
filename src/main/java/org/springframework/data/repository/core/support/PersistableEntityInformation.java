@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.domain.Persistable;
@@ -27,8 +28,8 @@ import org.springframework.data.repository.core.EntityMetadata;
  * 
  * @author Oliver Gierke
  */
-public class PersistableEntityInformation<T extends Persistable<ID>, ID extends Serializable> extends
-		AbstractEntityInformation<T, ID> {
+public class PersistableEntityInformation<T extends Persistable<ID>, ID extends Serializable>
+		extends AbstractEntityInformation<T, ID> {
 
 	private Class<ID> idClass;
 
@@ -45,33 +46,28 @@ public class PersistableEntityInformation<T extends Persistable<ID>, ID extends 
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.support.IsNewAware#isNew(java.lang
-			 * .Object)
-			 */
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.AbstractEntityInformation#isNew(java.lang.Object)
+	 */
 	@Override
 	public boolean isNew(T entity) {
-
 		return entity.isNew();
 	}
 
 	/*
-			 * (non-Javadoc)
-			 *
-			 * @see
-			 * org.springframework.data.repository.support.IdAware#getId(java.lang.Object
-			 * )
-			 */
-	public ID getId(T entity) {
-
-		return entity.getId();
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
+	 */
+	@Override
+	public Optional<ID> getId(T entity) {
+		return Optional.ofNullable(entity.getId());
 	}
 
-	/* (non-Javadoc)
-			 * @see org.springframework.data.repository.support.EntityInformation#getIdType()
-			 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
+	 */
+	@Override
 	public Class<ID> getIdType() {
 		return this.idClass;
 	}

@@ -22,7 +22,11 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
+ * Simple value type to delay the creation of an object using a {@link Supplier} returning the produced object for
+ * subsequent lookups.
+ * 
  * @author Oliver Gierke
+ * @since 2.0
  */
 @RequiredArgsConstructor
 @EqualsAndHashCode
@@ -31,12 +35,20 @@ public class Lazy<T> {
 	private final Supplier<T> supplier;
 	private Optional<T> value;
 
+	/**
+	 * Creates a new {@link Lazy} to produce an object lazily.
+	 * 
+	 * @param <T> the type of which to produce an object of eventually.
+	 * @param supplier the {@link Supplier} to create the object lazily.
+	 * @return
+	 */
 	public static <T> Lazy<T> of(Supplier<T> supplier) {
-		return new Lazy<T>(supplier);
+		return new Lazy<>(supplier);
 	}
 
 	/**
-	 * Returns the value created by the configured {@link Supplier}.
+	 * Returns the value created by the configured {@link Supplier}. Will return the calculated instance for subsequent
+	 * lookups.
 	 * 
 	 * @return
 	 */

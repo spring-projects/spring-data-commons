@@ -1,10 +1,7 @@
 package org.springframework.data.mapping.context;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.util.Optional;
-
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
@@ -19,9 +16,9 @@ public class SampleMappingContext
 	}
 
 	@Override
-	protected SamplePersistentProperty createPersistentProperty(Optional<Field> field, PropertyDescriptor descriptor,
+	protected SamplePersistentProperty createPersistentProperty(Property property,
 			BasicPersistentEntity<Object, SamplePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
 
-		return new SamplePersistentProperty(field, descriptor, owner, simpleTypeHolder);
+		return new SamplePersistentProperty(property, owner, simpleTypeHolder);
 	}
 }

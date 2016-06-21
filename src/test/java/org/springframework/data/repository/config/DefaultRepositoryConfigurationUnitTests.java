@@ -37,7 +37,7 @@ public class DefaultRepositoryConfigurationUnitTests {
 	@Test
 	public void supportsBasicConfiguration() {
 
-		RepositoryConfiguration<RepositoryConfigurationSource> configuration = new DefaultRepositoryConfiguration<RepositoryConfigurationSource>(
+		RepositoryConfiguration<RepositoryConfigurationSource> configuration = new DefaultRepositoryConfiguration<>(
 				source, new RootBeanDefinition("com.acme.MyRepository"));
 
 		assertThat(configuration.getConfigurationSource()).isEqualTo(source);

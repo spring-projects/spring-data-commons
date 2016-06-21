@@ -28,10 +28,10 @@ import org.springframework.util.SerializationUtils;
  */
 public class GeoResultUnitTests {
 
-	GeoResult<String> first = new GeoResult<String>("Foo", new Distance(2.5));
-	GeoResult<String> second = new GeoResult<String>("Foo", new Distance(2.5));
-	GeoResult<String> third = new GeoResult<String>("Bar", new Distance(2.5));
-	GeoResult<String> fourth = new GeoResult<String>("Foo", new Distance(5.2));
+	GeoResult<String> first = new GeoResult<>("Foo", new Distance(2.5));
+	GeoResult<String> second = new GeoResult<>("Foo", new Distance(2.5));
+	GeoResult<String> third = new GeoResult<>("Bar", new Distance(2.5));
+	GeoResult<String> fourth = new GeoResult<>("Foo", new Distance(5.2));
 
 	/**
 	 * @see DATACMNS-437
@@ -71,7 +71,7 @@ public class GeoResultUnitTests {
 	@Test
 	public void testSerialization() {
 
-		GeoResult<String> result = new GeoResult<String>("test", new Distance(2));
+		GeoResult<String> result = new GeoResult<>("test", new Distance(2));
 
 		@SuppressWarnings("unchecked")
 		GeoResult<String> serialized = (GeoResult<String>) SerializationUtils.deserialize(SerializationUtils.serialize(result));

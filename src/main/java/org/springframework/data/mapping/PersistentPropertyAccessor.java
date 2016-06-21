@@ -49,7 +49,7 @@ public interface PersistentPropertyAccessor {
 	 * @param property must not be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
-	Optional<? extends Object> getProperty(PersistentProperty<?> property);
+	Optional<Object> getProperty(PersistentProperty<?> property);
 
 	/**
 	 * Returns the underlying bean.

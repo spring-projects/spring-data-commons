@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.util;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.util.OptionalAssert.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,29 +33,34 @@ public class DataCmns511Tests {
 	 * @see DATACMNS-511
 	 */
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void detectsEqualTypeVariableTypeInformationInstances() {
 
-		TypeInformation<AbstractRole> firstRoleType = ClassTypeInformation.from(AbstractRole.class);
-		TypeInformation<?> firstCreatedBy = firstRoleType.getProperty("createdBy");
-		TypeInformation<?> secondRoleType = firstCreatedBy.getProperty("roles").getActualType();
-		TypeInformation secondCreatedBy = secondRoleType.getProperty("createdBy");
-		TypeInformation<?> thirdRoleType = secondCreatedBy.getProperty("roles").getActualType();
-		TypeInformation thirdCreatedBy = thirdRoleType.getProperty("createdBy");
+		OptionalAssert<TypeInformation<?>> assertion = assertOptional(
+				ClassTypeInformation.from(AbstractRole.class).getProperty("createdBy"));
 
-		assertThat(secondCreatedBy).isEqualTo(thirdCreatedBy);
-		assertThat(secondCreatedBy.hashCode()).isEqualTo(thirdCreatedBy.hashCode());
+		assertion.flatMap(it -> it.getProperty("roles"))//
+				.map(it -> it.getActualType())//
+				.flatMap(it -> it.getProperty("createdBy"))//
+				.andAssert(second -> {
+
+					OptionalAssert<TypeInformation<?>> third = second.flatMap(it -> it.getProperty("roles"))//
+							.map(it -> it.getActualType())//
+							.flatMap(it -> it.getProperty("createdBy"));
+
+					second.isEqualTo(third);
+					second.value(it -> it.hashCode()).isEqualTo(third.getActual().hashCode());
+				});
 	}
 
-	static class AbstractRole<USER extends AbstractUser<USER, ROLE>, ROLE extends AbstractRole<USER, ROLE>> extends
-			AuditingEntity<USER> {
+	static class AbstractRole<USER extends AbstractUser<USER, ROLE>, ROLE extends AbstractRole<USER, ROLE>>
+			extends AuditingEntity<USER> {
 
 		String name;
 	}
 
 	static abstract class AbstractUser<USER extends AbstractUser<USER, ROLE>, ROLE extends AbstractRole<USER, ROLE>> {
 
-		Set<ROLE> roles = new HashSet<ROLE>();
+		Set<ROLE> roles = new HashSet<>();
 	}
 
 	static abstract class AuditingEntity<USER extends AbstractUser<USER, ?>> {

@@ -284,11 +284,8 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		private ObjectInstantiatorClassGenerator() {
 
-			this.classLoader = AccessController.doPrivileged(new PrivilegedAction<ByteArrayClassLoader>() {
-				public ByteArrayClassLoader run() {
-					return new ByteArrayClassLoader(ClassUtils.getDefaultClassLoader());
-				}
-			});
+			this.classLoader = AccessController.doPrivileged(
+					(PrivilegedAction<ByteArrayClassLoader>) () -> new ByteArrayClassLoader(ClassUtils.getDefaultClassLoader()));
 		}
 
 		/**

@@ -66,7 +66,8 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	public static List<Object[]> parameters() throws Exception {
 
 		List<Object[]> parameters = new ArrayList<>();
-		List<Class<?>> types = Arrays.asList(FieldAccess.class, PropertyAccess.class, PrivateFinalFieldAccess.class, PrivateFinalPropertyAccess.class);
+		List<Class<?>> types = Arrays.asList(FieldAccess.class, PropertyAccess.class, PrivateFinalFieldAccess.class,
+				PrivateFinalPropertyAccess.class);
 
 		parameters.addAll(parameters(types, "primitiveInteger", Integer.valueOf(1)));
 		parameters.addAll(parameters(types, "primitiveIntegerArray", new int[] { 1, 2, 3 }));
@@ -114,8 +115,8 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 
 			Constructor<?>[] constructors = type.getDeclaredConstructors();
 			constructors[0].setAccessible(true);
-			parameters
-					.add(new Object[] { constructors[0].newInstance(), propertyName, value, type.getSimpleName() + "/" + propertyName });
+			parameters.add(new Object[] { constructors[0].newInstance(), propertyName, value,
+					type.getSimpleName() + "/" + propertyName });
 		}
 
 		return parameters;
@@ -143,20 +144,20 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	public void shouldUseClassPropertyAccessorFactory() throws Exception {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
-				.getPersistentEntity(bean.getClass());
+				.getRequiredPersistentEntity(bean.getClass());
 
 		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"))
 				.isInstanceOf(ClassGeneratingPropertyAccessorFactory.class);
 	}
 
 	private PersistentPropertyAccessor getPersistentPropertyAccessor(Object bean) {
-		return factory.getPropertyAccessor(mappingContext.getPersistentEntity(bean.getClass()), bean);
+		return factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), bean);
 	}
 
 	private Optional<? extends PersistentProperty<?>> getProperty(Object bean, String name) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
-				.getPersistentEntity(bean.getClass());
+				.getRequiredPersistentEntity(bean.getClass());
 		return persistentEntity.getPersistentProperty(name);
 	}
 

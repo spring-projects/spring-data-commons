@@ -65,7 +65,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Override
-	public Optional<? extends Object> getProperty(PersistentProperty<?> property) {
+	public Optional<Object> getProperty(PersistentProperty<?> property) {
 		return accessor.getProperty(property);
 	}
 

@@ -58,7 +58,7 @@ import org.springframework.util.MultiValueMap;
 @RunWith(MockitoJUnitRunner.class)
 public class ReflectionRepositoryInvokerUnitTests {
 
-	static final Page<Person> EMPTY_PAGE = new PageImpl<Person>(Collections.<Person> emptyList());
+	static final Page<Person> EMPTY_PAGE = new PageImpl<>(Collections.emptyList());
 
 	ConversionService conversionService;
 
@@ -116,10 +116,10 @@ public class ReflectionRepositoryInvokerUnitTests {
 		Method method = ManualCrudRepository.class.getMethod("findAll");
 		ManualCrudRepository repository = mock(ManualCrudRepository.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Pageable) null);
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new PageRequest(0, 10));
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Sort) null);
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new Sort("foo"));
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Sort.unsorted());
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Sort.by("foo"));
 	}
 
 	/**
@@ -131,10 +131,10 @@ public class ReflectionRepositoryInvokerUnitTests {
 		Method method = RepoWithFindAllWithSort.class.getMethod("findAll", Sort.class);
 		RepoWithFindAllWithSort repository = mock(RepoWithFindAllWithSort.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Pageable) null);
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new PageRequest(0, 10));
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Sort) null);
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new Sort("foo"));
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Sort.unsorted());
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Sort.by("foo"));
 	}
 
 	/**
@@ -146,8 +146,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 		Method method = RepoWithFindAllWithPageable.class.getMethod("findAll", Pageable.class);
 		RepoWithFindAllWithPageable repository = mock(RepoWithFindAllWithPageable.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Pageable) null);
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new PageRequest(0, 10));
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));
 	}
 
 	/**
@@ -162,7 +162,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 		Method method = PersonRepository.class.getMethod("findByFirstName", String.class, Pageable.class);
 		PersonRepository repository = mock(PersonRepository.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, null, null);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, Pageable.NONE,
+				Sort.unsorted());
 	}
 
 	/**
@@ -177,7 +178,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 		Method method = PersonRepository.class.getMethod("findByCreatedUsingISO8601Date", Date.class, Pageable.class);
 		PersonRepository repository = mock(PersonRepository.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, null, null);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, Pageable.NONE,
+				Sort.unsorted());
 	}
 
 	/**
@@ -225,7 +227,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
 		assertThat(invoker.hasFindAllMethod()).isFalse();
-		invoker.invokeFindAll((Pageable) null);
+		invoker.invokeFindAll(Sort.unsorted());
 	}
 
 	/**
@@ -254,7 +256,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 			Method method = PersonRepository.class.getMethod("findByIdIn", Collection.class);
 			PersonRepository repository = mock(PersonRepository.class);
 
-			getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, null, null);
+			getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, Pageable.NONE,
+					Sort.unsorted());
 		}
 	}
 
@@ -272,7 +275,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		Method method = SimpleRepository.class.getMethod("findByClass", int.class);
 
 		try {
-			invoker.invokeQueryMethod(method, parameters, null, null);
+			invoker.invokeQueryMethod(method, parameters, Pageable.NONE, Sort.unsorted());
 		} catch (QueryMethodParameterConversionException o_O) {
 
 			assertThat(o_O.getParameter()).isEqualTo(new MethodParameters(method).getParameters().get(0));

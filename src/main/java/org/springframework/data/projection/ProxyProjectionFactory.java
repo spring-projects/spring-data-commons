@@ -144,7 +144,7 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 
 		Assert.notNull(projectionType, "Projection type must not be null!");
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		for (PropertyDescriptor descriptor : getProjectionInformation(projectionType).getInputProperties()) {
 			result.add(descriptor.getName());

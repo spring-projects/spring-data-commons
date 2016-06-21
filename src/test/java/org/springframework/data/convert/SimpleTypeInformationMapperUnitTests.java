@@ -17,7 +17,10 @@ package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Optional;
+
 import org.junit.Test;
+import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
@@ -28,46 +31,38 @@ import org.springframework.data.util.TypeInformation;
  */
 public class SimpleTypeInformationMapperUnitTests {
 
+	TypeInformationMapper mapper = new SimpleTypeInformationMapper();
+
 	@Test
-	@SuppressWarnings({ "rawtypes" })
 	public void resolvesTypeByLoadingClass() {
 
-		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
-		TypeInformation type = mapper.resolveTypeFrom("java.lang.String");
+		Optional<TypeInformation<?>> type = mapper.resolveTypeFrom(Alias.of("java.lang.String"));
 
-		TypeInformation expected = ClassTypeInformation.from(String.class);
+		TypeInformation<?> expected = ClassTypeInformation.from(String.class);
 
-		assertThat(type).isEqualTo(expected);
+		assertThat(type).hasValue(expected);
 	}
 
 	@Test
 	public void returnsNullForNonStringKey() {
-
-		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
-		assertThat(mapper.resolveTypeFrom(new Object())).isNull();
+		assertThat(mapper.resolveTypeFrom(Alias.of(new Object()))).isEmpty();
 	}
 
 	@Test
 	public void returnsNullForEmptyTypeKey() {
-
-		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
-		assertThat(mapper.resolveTypeFrom("")).isNull();
+		assertThat(mapper.resolveTypeFrom(Alias.of(""))).isEmpty();
 	}
 
 	@Test
 	public void returnsNullForUnloadableClass() {
 
-		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
-		assertThat(mapper.resolveTypeFrom("Foo")).isNull();
+		assertThat(mapper.resolveTypeFrom(Alias.of("Foo"))).isEmpty();
 	}
 
 	@Test
 	public void usesFullyQualifiedClassNameAsTypeKey() {
 
-		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
-		Object alias = mapper.createAliasFor(ClassTypeInformation.from(String.class));
-
-		assertThat(alias).isInstanceOf(String.class);
-		assertThat(alias).isEqualTo(String.class.getName());
+		assertThat(mapper.createAliasFor(ClassTypeInformation.from(String.class)))
+				.isEqualTo(Alias.of(String.class.getName()));
 	}
 }

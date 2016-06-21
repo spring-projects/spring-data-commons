@@ -16,12 +16,13 @@
 package org.springframework.data.convert;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Basic {@link TypeInformationMapper} implementation that interprets the alias handles as fully qualified class name
@@ -32,7 +33,7 @@ import org.springframework.util.StringUtils;
  */
 public class SimpleTypeInformationMapper implements TypeInformationMapper {
 
-	private final Map<String, ClassTypeInformation<?>> CACHE = new ConcurrentHashMap<String, ClassTypeInformation<?>>();
+	private final Map<String, Optional<ClassTypeInformation<?>>> CACHE = new ConcurrentHashMap<>();
 
 	/**
 	 * Returns the {@link TypeInformation} that shall be used when the given {@link String} value is found as type hint.
@@ -43,35 +44,11 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 	 * @return the type to be used for the given {@link String} representation or {@literal null} if nothing found or the
 	 *         class cannot be loaded.
 	 */
-	public ClassTypeInformation<?> resolveTypeFrom(Object alias) {
+	@Override
+	public Optional<TypeInformation<?>> resolveTypeFrom(Alias alias) {
 
-		if (!(alias instanceof String)) {
-			return null;
-		}
-
-		String value = (String) alias;
-
-		if (!StringUtils.hasText(value)) {
-			return null;
-		}
-
-		ClassTypeInformation<?> information = CACHE.get(value);
-
-		if (information != null) {
-			return information;
-		}
-
-		try {
-			information = ClassTypeInformation.from(ClassUtils.forName(value, null));
-		} catch (ClassNotFoundException e) {
-			return null;
-		}
-
-		if (information != null) {
-			CACHE.put(value, information);
-		}
-
-		return information;
+		return alias.mapTyped(String.class)//
+				.flatMap(it -> CACHE.computeIfAbsent(it, SimpleTypeInformationMapper::loadClass).map(type -> type));
 	}
 
 	/**
@@ -81,7 +58,16 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 	 * @param typeInformation must not be {@literal null}.
 	 * @return the String representation to be stored or {@literal null} if no type information shall be stored.
 	 */
-	public String createAliasFor(TypeInformation<?> type) {
-		return type.getType().getName();
+	public Alias createAliasFor(TypeInformation<?> type) {
+		return Alias.of(type.getType().getName());
+	}
+
+	private static Optional<ClassTypeInformation<?>> loadClass(String typeName) {
+
+		try {
+			return Optional.of(ClassTypeInformation.from(ClassUtils.forName(typeName, null)));
+		} catch (ClassNotFoundException e) {
+			return Optional.empty();
+		}
 	}
 }

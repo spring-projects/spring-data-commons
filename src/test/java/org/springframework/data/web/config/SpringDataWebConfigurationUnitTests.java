@@ -52,7 +52,7 @@ public class SpringDataWebConfigurationUnitTests {
 		Object config = classLoader.loadClass("org.springframework.data.web.config.SpringDataWebConfiguration")
 				.getDeclaredConstructors()[0].newInstance(context, objectFactory);
 
-		List<HandlerMethodArgumentResolver> argumentResolvers = new ArrayList<HandlerMethodArgumentResolver>();
+		List<HandlerMethodArgumentResolver> argumentResolvers = new ArrayList<>();
 
 		invokeMethod(config, "addArgumentResolvers", argumentResolvers);
 

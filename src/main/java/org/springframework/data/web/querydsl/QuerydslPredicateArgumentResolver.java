@@ -61,7 +61,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 			Optional<ConversionService> conversionService) {
 
 		this.bindingsFactory = factory;
-		this.predicateBuilder = new QuerydslPredicateBuilder(conversionService.orElse(new DefaultConversionService()),
+		this.predicateBuilder = new QuerydslPredicateBuilder(conversionService.orElseGet(DefaultConversionService::new),
 				factory.getEntityPathResolver());
 	}
 
@@ -104,7 +104,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 		TypeInformation<?> domainType = extractTypeInfo(parameter).getActualType();
 
 		Optional<? extends Class<? extends QuerydslBinderCustomizer>> map = annotation
-				.<Class<? extends QuerydslBinderCustomizer>> map(it -> it.bindings());
+				.<Class<? extends QuerydslBinderCustomizer>>map(it -> it.bindings());
 
 		QuerydslBindings bindings = bindingsFactory.createBindingsFor(domainType,
 				(Optional<Class<? extends QuerydslBinderCustomizer<?>>>) map);
@@ -125,7 +125,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
 
 		return annotation.filter(it -> !Object.class.equals(it.root()))//
-				.<TypeInformation<?>> map(it -> ClassTypeInformation.from(it.root()))//
+				.<TypeInformation<?>>map(it -> ClassTypeInformation.from(it.root()))//
 				.orElseGet(() -> detectDomainType(ClassTypeInformation.fromReturnTypeOf(parameter.getMethod())));
 	}
 
@@ -145,6 +145,6 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 			return source;
 		}
 
-		return detectDomainType(source.getComponentType());
+		return detectDomainType(source.getRequiredComponentType());
 	}
 }

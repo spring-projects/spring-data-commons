@@ -116,7 +116,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	 */
 	@Test
 	public void defaultsNullToEmptyMap() throws Exception {
-		assertThat(handler.postProcessInvocationResult(null, getTypeDescriptorFor("map")), is(instanceOf(Map.class)));
+		assertThat(handler.postProcessInvocationResult(null, getTypeDescriptorFor("map"))).isInstanceOf(Map.class);
 	}
 
 	/**

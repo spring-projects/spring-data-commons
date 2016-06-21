@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.IdentifierAccessor;
@@ -75,7 +76,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private Optional<P> versionProperty = Optional.empty();
 	private PersistentPropertyAccessorFactory propertyAccessorFactory;
 
-	private final Lazy<Optional<? extends Object>> typeAlias;
+	private final Lazy<Alias> typeAlias;
 
 	/**
 	 * Creates a new {@link BasicPersistentEntity} from the given {@link TypeInformation}.
@@ -102,16 +103,17 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.properties = new ArrayList<>();
 		this.comparator = comparator;
 		this.constructor = new PreferredConstructorDiscoverer<>(this).getConstructor();
-		this.associations = comparator.<Set<Association<P>>> map(it -> new TreeSet<>(new AssociationComparator<>(it)))
-				.orElse(new HashSet<>());
+		this.associations = comparator.<Set<Association<P>>>map(it -> new TreeSet<>(new AssociationComparator<>(it)))
+				.orElseGet(() -> new HashSet<>());
 
 		this.propertyCache = new HashMap<>();
 		this.annotationCache = new HashMap<>();
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 
-		this.typeAlias = Lazy
-				.of(() -> Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(getType(), TypeAlias.class))//
-						.map(TypeAlias::value).filter(it -> StringUtils.hasText(it)));
+		this.typeAlias = Lazy.of(() -> Alias
+				.ofOptional(Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(getType(), TypeAlias.class))//
+						.map(TypeAlias::value)//
+						.filter(it -> StringUtils.hasText(it))));
 	}
 
 	/*
@@ -294,7 +296,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getTypeAlias()
 	 */
-	public Optional<? extends Object> getTypeAlias() {
+	public Alias getTypeAlias() {
 		return typeAlias.get();
 	}
 
@@ -431,7 +433,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		 * @see org.springframework.data.mapping.IdentifierAccessor#getIdentifier()
 		 */
 		@Override
-		public Optional<? extends Object> getIdentifier() {
+		public Optional<Object> getIdentifier() {
 			return Optional.empty();
 		}
 	}

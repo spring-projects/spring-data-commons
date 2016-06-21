@@ -23,12 +23,12 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link MappingContextTypeInformationMapper}.
@@ -58,7 +58,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
 
-		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Entity.class))).isEqualTo("foo");
+		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Entity.class)).hasValue("foo")).isTrue();
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
 
-		assertThat(mapper.createAliasFor(from(Entity.class))).isEqualTo("foo");
+		assertThat(mapper.createAliasFor(from(Entity.class)).hasValue("foo")).isTrue();
 	}
 
 	@Test
@@ -79,23 +79,22 @@ public class MappingContextTypeInformationMapperUnitTests {
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
-		assertThat(mapper.createAliasFor(from(String.class))).isNull();
+		assertThat(mapper.createAliasFor(from(String.class)).isPresent()).isFalse();
 	}
 
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void detectsTypeForUnknownEntity() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
-		assertThat(mapper.resolveTypeFrom("foo")).isNull();
+		assertThat(mapper.resolveTypeFrom(Alias.of("foo"))).isEmpty();
 
-		PersistentEntity<?, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Entity.class);
+		PersistentEntity<?, SamplePersistentProperty> entity = mappingContext.getRequiredPersistentEntity(Entity.class);
 
 		assertThat(entity).isNotNull();
-		assertThat(mapper.resolveTypeFrom("foo")).isEqualTo((TypeInformation) from(Entity.class));
+		assertThat(mapper.resolveTypeFrom(Alias.of("foo"))).hasValue(from(Entity.class));
 	}
 
 	/**

@@ -60,7 +60,7 @@ public abstract class SpringDataJaxb {
 	public static class PageRequestDto {
 
 		@XmlAttribute int page, size;
-		@XmlElement(name = "order", namespace = NAMESPACE) List<OrderDto> orders = new ArrayList<OrderDto>();
+		@XmlElement(name = "order", namespace = NAMESPACE) List<OrderDto> orders = new ArrayList<>();
 	}
 
 	/**
@@ -72,7 +72,7 @@ public abstract class SpringDataJaxb {
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class SortDto {
 
-		@XmlElement(name = "order", namespace = SpringDataJaxb.NAMESPACE) List<OrderDto> orders = new ArrayList<OrderDto>();
+		@XmlElement(name = "order", namespace = SpringDataJaxb.NAMESPACE) List<OrderDto> orders = new ArrayList<>();
 	}
 
 	/**
@@ -116,7 +116,7 @@ public abstract class SpringDataJaxb {
 			return Collections.emptyList();
 		}
 
-		List<T> result = new ArrayList<T>(source.size());
+		List<T> result = new ArrayList<>(source.size());
 
 		for (S element : source) {
 			try {
@@ -144,7 +144,7 @@ public abstract class SpringDataJaxb {
 			return Collections.emptyList();
 		}
 
-		List<S> result = new ArrayList<S>();
+		List<S> result = new ArrayList<>();
 
 		for (T element : source) {
 			try {

@@ -35,7 +35,7 @@ public class IdPropertyIdentifierAccessorUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsEntityWithoutIdentifierProperty() {
 
-		new IdPropertyIdentifierAccessor(mappingContext.getPersistentEntity(Sample.class), new Sample());
+		new IdPropertyIdentifierAccessor(mappingContext.getRequiredPersistentEntity(Sample.class), new Sample());
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class IdPropertyIdentifierAccessorUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullBean() {
 
-		new IdPropertyIdentifierAccessor(mappingContext.getPersistentEntity(SampleWithId.class), null);
+		new IdPropertyIdentifierAccessor(mappingContext.getRequiredPersistentEntity(SampleWithId.class), null);
 	}
 
 	/**
@@ -57,9 +57,9 @@ public class IdPropertyIdentifierAccessorUnitTests {
 		sample.id = 1L;
 
 		IdentifierAccessor accessor = new IdPropertyIdentifierAccessor(
-				mappingContext.getPersistentEntity(SampleWithId.class), sample);
+				mappingContext.getRequiredPersistentEntity(SampleWithId.class), sample);
 
-		assertThat(accessor.getIdentifier()).isEqualTo(sample.id);
+		assertThat(accessor.getIdentifier()).hasValue(sample.id);
 	}
 
 	static class Sample {}

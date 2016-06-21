@@ -15,11 +15,9 @@
  */
 package org.springframework.data.util;
 
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
@@ -37,7 +35,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.GenericTypeResolver;
@@ -53,19 +53,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private final Type type;
 	private final Map<TypeVariable<?>, Type> typeVariableMap;
-	private final Map<String, ValueHolder> fieldTypes = new ConcurrentHashMap<String, ValueHolder>();
+	private final Map<String, Optional<TypeInformation<?>>> fieldTypes = new ConcurrentHashMap<>();
 	private final int hashCode;
 
-	private boolean componentTypeResolved = false;
-	private TypeInformation<?> componentType;
-
-	private boolean valueTypeResolved = false;
-	private TypeInformation<?> valueType;
-
-	private Class<S> resolvedType;
+	private final Lazy<Class<S>> resolvedType;
+	private final Lazy<Optional<TypeInformation<?>>> componentType;
+	private final Lazy<Optional<TypeInformation<?>>> valueType;
 
 	/**
-	 * Creates a ne {@link TypeDiscoverer} for the given type, type variable map and parent.
+	 * Creates a new {@link TypeDiscoverer} for the given type, type variable map and parent.
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @param typeVariableMap must not be {@literal null}.
@@ -76,6 +72,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.notNull(typeVariableMap);
 
 		this.type = type;
+		this.resolvedType = Lazy.of(() -> resolveType(type));
+		this.componentType = Lazy.of(() -> doGetComponentType());
+		this.valueType = Lazy.of(() -> doGetMapValueType());
 		this.typeVariableMap = typeVariableMap;
 		this.hashCode = 17 + (31 * type.hashCode()) + (31 * typeVariableMap.hashCode());
 	}
@@ -87,6 +86,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	protected Map<TypeVariable<?>, Type> getTypeVariableMap() {
 		return typeVariableMap;
+	}
+
+	private TypeInformation<?> createInfo(Optional<Type> fieldType) {
+		return fieldType.map(it -> createInfo(it)).orElseThrow(() -> new IllegalArgumentException());
 	}
 
 	/**
@@ -189,25 +192,18 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getProperty(java.lang.String)
 	 */
-	public TypeInformation<?> getProperty(String fieldname) {
+	public Optional<TypeInformation<?>> getProperty(String fieldname) {
 
 		int separatorIndex = fieldname.indexOf('.');
 
 		if (separatorIndex == -1) {
-
-			if (fieldTypes.containsKey(fieldname)) {
-				return fieldTypes.get(fieldname).getType();
-			}
-
-			TypeInformation<?> propertyInformation = getPropertyInformation(fieldname);
-			fieldTypes.put(fieldname, ValueHolder.of(propertyInformation));
-
-			return propertyInformation;
+			return fieldTypes.computeIfAbsent(fieldname, it -> getPropertyInformation(it));
 		}
 
 		String head = fieldname.substring(0, separatorIndex);
-		TypeInformation<?> info = getProperty(head);
-		return info == null ? null : info.getProperty(fieldname.substring(separatorIndex + 1));
+		Optional<TypeInformation<?>> info = getProperty(head);
+
+		return info.map(it -> it.getProperty(fieldname.substring(separatorIndex + 1))).orElseGet(() -> Optional.empty());
 	}
 
 	/**
@@ -218,17 +214,17 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param fieldname
 	 * @return
 	 */
-	private TypeInformation<?> getPropertyInformation(String fieldname) {
+	private Optional<TypeInformation<?>> getPropertyInformation(String fieldname) {
 
 		Class<?> rawType = getType();
 		Field field = ReflectionUtils.findField(rawType, fieldname);
 
 		if (field != null) {
-			return createInfo(field.getGenericType());
+			return Optional.of(createInfo(field.getGenericType()));
 		}
 
-		PropertyDescriptor descriptor = findPropertyDescriptor(rawType, fieldname);
-		return descriptor == null ? null : createInfo(getGenericType(descriptor));
+		return findPropertyDescriptor(rawType, fieldname).map(it -> createInfo(getGenericType(it)));
+
 	}
 
 	/**
@@ -238,26 +234,21 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param fieldname must not be {@literal null} or empty.
 	 * @return
 	 */
-	private static PropertyDescriptor findPropertyDescriptor(Class<?> type, String fieldname) {
+	private static Optional<PropertyDescriptor> findPropertyDescriptor(Class<?> type, String fieldname) {
 
 		PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(type, fieldname);
 
 		if (descriptor != null) {
-			return descriptor;
+			return Optional.of(descriptor);
 		}
 
 		List<Class<?>> superTypes = new ArrayList<Class<?>>();
 		superTypes.addAll(Arrays.asList(type.getInterfaces()));
 		superTypes.add(type.getSuperclass());
 
-		for (Class<?> interfaceType : type.getInterfaces()) {
-			descriptor = findPropertyDescriptor(interfaceType, fieldname);
-			if (descriptor != null) {
-				return descriptor;
-			}
-		}
-
-		return null;
+		return Streamable.of(type.getInterfaces()).stream()//
+				.flatMap(it -> Optionals.toStream(findPropertyDescriptor(it, fieldname)))//
+				.findFirst();
 	}
 
 	/**
@@ -267,22 +258,22 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param descriptor must not be {@literal null}
 	 * @return
 	 */
-	private static Type getGenericType(PropertyDescriptor descriptor) {
+	private static Optional<Type> getGenericType(PropertyDescriptor descriptor) {
 
 		Method method = descriptor.getReadMethod();
 
 		if (method != null) {
-			return method.getGenericReturnType();
+			return Optional.of(method.getGenericReturnType());
 		}
 
 		method = descriptor.getWriteMethod();
 
 		if (method == null) {
-			return null;
+			return Optional.empty();
 		}
 
 		Type[] parameterTypes = method.getGenericParameterTypes();
-		return parameterTypes.length == 0 ? null : parameterTypes[0];
+		return Optional.ofNullable(parameterTypes.length == 0 ? null : parameterTypes[0]);
 	}
 
 	/*
@@ -290,12 +281,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#getType()
 	 */
 	public Class<S> getType() {
-
-		if (resolvedType == null) {
-			this.resolvedType = resolveType(type);
-		}
-
-		return this.resolvedType;
+		return resolvedType.get();
 	}
 
 	/* 
@@ -314,11 +300,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public TypeInformation<?> getActualType() {
 
 		if (isMap()) {
-			return getMapValueType();
+			return getMapValueType().orElse(null);
 		}
 
 		if (isCollectionLike()) {
-			return getComponentType();
+			return getComponentType().orElse(null);
 		}
 
 		return this;
@@ -336,29 +322,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getMapValueType()
 	 */
-	public TypeInformation<?> getMapValueType() {
-
-		if (!valueTypeResolved) {
-			this.valueType = doGetMapValueType();
-			this.valueTypeResolved = true;
-		}
-
-		return this.valueType;
+	public Optional<TypeInformation<?>> getMapValueType() {
+		return valueType.get();
 	}
 
-	protected TypeInformation<?> doGetMapValueType() {
-
-		if (isMap()) {
-			return getTypeArgument(Map.class, 1);
-		}
-
-		List<TypeInformation<?>> arguments = getTypeArguments();
-
-		if (arguments.size() > 1) {
-			return arguments.get(1);
-		}
-
-		return null;
+	protected Optional<TypeInformation<?>> doGetMapValueType() {
+		return isMap() ? getTypeArgument(Map.class, 1) : getTypeArguments().stream().skip(1).findFirst();
 	}
 
 	/*
@@ -369,33 +338,23 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Class<?> rawType = getType();
 
-		if (rawType.isArray() || Iterable.class.equals(rawType)) {
-			return true;
-		}
-
-		return Collection.class.isAssignableFrom(rawType);
+		return rawType.isArray() || Iterable.class.equals(rawType) || Collection.class.isAssignableFrom(rawType);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getComponentType()
 	 */
-	public final TypeInformation<?> getComponentType() {
-
-		if (!componentTypeResolved) {
-			this.componentType = doGetComponentType();
-			this.componentTypeResolved = true;
-		}
-
-		return this.componentType;
+	public final Optional<TypeInformation<?>> getComponentType() {
+		return componentType.get();
 	}
 
-	protected TypeInformation<?> doGetComponentType() {
+	protected Optional<TypeInformation<?>> doGetComponentType() {
 
 		Class<S> rawType = getType();
 
 		if (rawType.isArray()) {
-			return createInfo(rawType.getComponentType());
+			return Optional.of(createInfo(rawType.getComponentType()));
 		}
 
 		if (isMap()) {
@@ -408,11 +367,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
 
-		if (arguments.size() > 0) {
-			return arguments.get(0);
-		}
-
-		return null;
+		return arguments.size() > 0 ? Optional.of(arguments.get(0)) : Optional.empty();
 	}
 
 	/* 
@@ -433,14 +388,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Assert.notNull(method, "Method most not be null!");
 
-		Type[] types = method.getGenericParameterTypes();
-		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>(types.length);
-
-		for (Type parameterType : types) {
-			result.add(createInfo(parameterType));
-		}
-
-		return result;
+		return Streamable.of(method.getGenericParameterTypes()).stream()//
+				.map(it -> createInfo(it))//
+				.collect(Collectors.toList());
 	}
 
 	/* 
@@ -459,7 +409,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return this;
 		}
 
-		List<Type> candidates = new ArrayList<Type>();
+		List<Type> candidates = new ArrayList<>();
 
 		Type genericSuperclass = rawType.getGenericSuperclass();
 		if (genericSuperclass != null) {
@@ -504,25 +454,27 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#specialize(org.springframework.data.util.ClassTypeInformation)
 	 */
 	@Override
-	public TypeInformation<?> specialize(ClassTypeInformation<?> type) {
+	@SuppressWarnings("unchecked")
+	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
 
 		Assert.isTrue(getType().isAssignableFrom(type.getType()));
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
 
-		return arguments.isEmpty() ? type : createInfo(new SyntheticParamterizedType(type, arguments));
+		return (TypeInformation<? extends S>) (arguments.isEmpty() ? type
+				: createInfo(new SyntheticParamterizedType(type, arguments)));
 	}
 
-	private TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
+	private Optional<TypeInformation<?>> getTypeArgument(Class<?> bound, int index) {
 
 		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
 
 		if (arguments == null) {
-			return getSuperTypeInformation(bound) instanceof ParameterizedTypeInformation ? ClassTypeInformation.OBJECT
-					: null;
+			return Optional.ofNullable(
+					getSuperTypeInformation(bound) instanceof ParameterizedTypeInformation ? ClassTypeInformation.OBJECT : null);
 		}
 
-		return createInfo(arguments[index]);
+		return Optional.of(createInfo(arguments[index]));
 	}
 
 	/*
@@ -603,24 +555,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			}
 
 			return result;
-		}
-	}
-
-	/**
-	 * Simple wrapper to be able to store {@literal null} values in a {@link ConcurrentHashMap}.
-	 *
-	 * @author Oliver Gierke
-	 */
-	@Value
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	private static class ValueHolder {
-
-		static ValueHolder NULL_HOLDER = new ValueHolder(null);
-
-		TypeInformation<?> type;
-
-		public static ValueHolder of(TypeInformation<?> type) {
-			return null == type ? NULL_HOLDER : new ValueHolder(type);
 		}
 	}
 }

@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -120,7 +121,7 @@ public class ResultProcessorUnitTests {
 
 		ResultProcessor information = getProcessor("findAllProjection");
 
-		List<Sample> source = new ArrayList<Sample>(Arrays.asList(new Sample("Dave", "Matthews")));
+		List<Sample> source = new ArrayList<>(Arrays.asList(new Sample("Dave", "Matthews")));
 		List<SampleProjection> result = information.processResult(source);
 
 		assertThat(result).hasSize(1);
@@ -135,7 +136,7 @@ public class ResultProcessorUnitTests {
 
 		ResultProcessor information = getProcessor("findPageProjection", Pageable.class);
 
-		Page<Sample> source = new PageImpl<Sample>(Arrays.asList(new Sample("Dave", "Matthews")));
+		Page<Sample> source = new PageImpl<>(Arrays.asList(new Sample("Dave", "Matthews")));
 		Page<SampleProjection> result = information.processResult(source);
 
 		assertThat(result.getContent()).hasSize(1);
@@ -165,12 +166,12 @@ public class ResultProcessorUnitTests {
 		ParameterAccessor accessor = mock(ParameterAccessor.class);
 
 		ResultProcessor factory = getProcessor("findOneDynamic", Class.class);
-		assertThat(factory.withDynamicProjection(null)).isEqualTo(factory);
-		assertThat(factory.withDynamicProjection(accessor)).isEqualTo(factory);
+		assertThat(factory.withDynamicProjection(Optional.empty())).isEqualTo(factory);
+		assertThat(factory.withDynamicProjection(Optional.of(accessor))).isEqualTo(factory);
 
-		doReturn(SampleProjection.class).when(accessor).getDynamicProjection();
+		doReturn(Optional.of(SampleProjection.class)).when(accessor).getDynamicProjection();
 
-		ResultProcessor processor = factory.withDynamicProjection(accessor);
+		ResultProcessor processor = factory.withDynamicProjection(Optional.of(accessor));
 		assertThat(processor.getReturnedType().getReturnedType()).isEqualTo(SampleProjection.class);
 	}
 
@@ -201,7 +202,7 @@ public class ResultProcessorUnitTests {
 	@Test
 	public void supportsSlicesAsReturnWrapper() throws Exception {
 
-		Slice<Sample> slice = new SliceImpl<Sample>(Collections.singletonList(new Sample("Dave", "Matthews")));
+		Slice<Sample> slice = new SliceImpl<>(Collections.singletonList(new Sample("Dave", "Matthews")));
 
 		Object result = getProcessor("findSliceProjection", Pageable.class).processResult(slice);
 

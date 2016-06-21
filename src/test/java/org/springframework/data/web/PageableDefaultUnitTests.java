@@ -48,10 +48,10 @@ public abstract class PageableDefaultUnitTests {
 	static final int PAGE_SIZE = 47;
 	static final int PAGE_NUMBER = 23;
 
-	static final AbstractPageRequest REFERENCE_WITHOUT_SORT = new PageRequest(PAGE_NUMBER, PAGE_SIZE);
-	static final AbstractPageRequest REFERENCE_WITH_SORT = new PageRequest(PAGE_NUMBER, PAGE_SIZE, SORT);
-	static final AbstractPageRequest REFERENCE_WITH_SORT_FIELDS = new PageRequest(PAGE_NUMBER, PAGE_SIZE, new Sort(
-			SORT_FIELDS));
+	static final AbstractPageRequest REFERENCE_WITHOUT_SORT = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
+	static final AbstractPageRequest REFERENCE_WITH_SORT = PageRequest.of(PAGE_NUMBER, PAGE_SIZE, SORT);
+	static final AbstractPageRequest REFERENCE_WITH_SORT_FIELDS = PageRequest.of(PAGE_NUMBER, PAGE_SIZE,
+			Sort.by(SORT_FIELDS));
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 
@@ -69,8 +69,8 @@ public abstract class PageableDefaultUnitTests {
 
 	@Test
 	public void returnsDefaultIfNoRequestParametersAndNoDefault() throws Exception {
-		assertSupportedAndResult(getParameterOfMethod("supportedMethod"),
-				(Pageable) ReflectionTestUtils.getField(getResolver(), "fallbackPageable"));
+		assertSupportedAndResult(getParameterOfMethod("supportedMethod"), (Pageable) ReflectionTestUtils
+				.invokeMethod(ReflectionTestUtils.getField(getResolver(), "fallbackPageable"), "get"));
 	}
 
 	@Test

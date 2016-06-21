@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Dummy implementation of {@link AbstractEntityInformation}.
@@ -37,8 +38,8 @@ public class DummyEntityInformation<T> extends AbstractEntityInformation<T, Seri
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
-	public Serializable getId(Object entity) {
-		return entity == null ? null : entity.toString();
+	public Optional<Serializable> getId(Object entity) {
+		return Optional.ofNullable(entity == null ? null : entity.toString());
 	}
 
 	/*

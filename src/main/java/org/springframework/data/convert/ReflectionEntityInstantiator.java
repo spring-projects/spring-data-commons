@@ -49,7 +49,7 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 					.map(it -> constructor.getParameters().stream()//
 							.map(parameter -> it.getParameterValue(parameter).orElse(null))//
 							.collect(Collectors.toList()))//
-					.orElse(Collections.emptyList());
+					.orElseGet(() -> Collections.emptyList());
 
 			try {
 				return (T) BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());

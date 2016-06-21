@@ -209,7 +209,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 
 	private <T> Iterable<T> reverse(Collection<T> collection) {
 
-		List<T> list = new ArrayList<T>(collection);
+		List<T> list = new ArrayList<>(collection);
 		Collections.reverse(list);
 		return list;
 	}

@@ -16,11 +16,11 @@
 package org.springframework.data.repository.query.parser;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.domain.Sort.Direction.*;
+
+import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
 
 /**
  * Unit test for {@link OrderBySource}.
@@ -31,19 +31,20 @@ public class OrderBySourceUnitTests {
 
 	@Test
 	public void handlesSingleDirectionAndPropertyCorrectly() throws Exception {
-		assertThat(new OrderBySource("UsernameDesc").toSort()).hasValue(new Sort(DESC, "username"));
+		assertThat(new OrderBySource("UsernameDesc").toSort()).isEqualTo(Sort.by("username").descending());
 	}
 
 	@Test
 	public void handlesCamelCasePropertyCorrecty() throws Exception {
-		assertThat(new OrderBySource("LastnameUsernameDesc").toSort()).hasValue(new Sort(DESC, "lastnameUsername"));
+		assertThat(new OrderBySource("LastnameUsernameDesc").toSort()).isEqualTo(Sort.by("lastnameUsername").descending());
 	}
 
 	@Test
 	public void handlesMultipleDirectionsCorrectly() throws Exception {
 
 		OrderBySource orderBySource = new OrderBySource("LastnameAscUsernameDesc");
-		assertThat(orderBySource.toSort()).hasValue(new Sort(new Order(ASC, "lastname"), new Order(DESC, "username")));
+		assertThat(orderBySource.toSort()).isEqualTo(Sort.by("lastname").ascending().and(Sort.by("username").descending()));
+		// assertThat(orderBySource.toSort()).hasValue(new Sort(new Order(ASC, "lastname"), new Order(DESC, "username")));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -55,8 +56,8 @@ public class OrderBySourceUnitTests {
 	@Test
 	public void usesNestedPropertyCorrectly() throws Exception {
 
-		OrderBySource source = new OrderBySource("BarNameDesc", Foo.class);
-		assertThat(source.toSort()).hasValue(new Sort(new Order(DESC, "bar.name")));
+		OrderBySource source = new OrderBySource("BarNameDesc", Optional.of(Foo.class));
+		assertThat(source.toSort()).isEqualTo(Sort.by("bar.name").descending());
 	}
 
 	/**
@@ -66,7 +67,12 @@ public class OrderBySourceUnitTests {
 	public void defaultsSortOrderToAscendingSort() {
 
 		OrderBySource source = new OrderBySource("lastname");
-		assertThat(source.toSort()).hasValue(new Sort("lastname"));
+		assertThat(source.toSort()).isEqualTo(Sort.by("lastname"));
+	}
+
+	@Test
+	public void orderBySourceFromEmptyStringResultsInUnsorted() {
+		assertThat(new OrderBySource("").toSort()).isEqualTo(Sort.unsorted());
 	}
 
 	@SuppressWarnings("unused")

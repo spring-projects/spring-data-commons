@@ -25,9 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link ConfigurableTypeMapper}.
@@ -62,15 +62,14 @@ public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProp
 	@Test
 	public void writesMapKeyForType() {
 
-		assertThat(mapper.createAliasFor(ClassTypeInformation.from(String.class))).isEqualTo("1");
-		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Object.class))).isNull();
+		assertThat(mapper.createAliasFor(ClassTypeInformation.from(String.class))).isEqualTo(Alias.of("1"));
+		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Object.class))).isEqualTo(Alias.NONE);
 	}
 
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void readsTypeForMapKey() {
 
-		assertThat(mapper.resolveTypeFrom("1")).isEqualTo((TypeInformation) ClassTypeInformation.from(String.class));
-		assertThat(mapper.resolveTypeFrom("unmapped")).isNull();
+		assertThat(mapper.resolveTypeFrom(Alias.of("1"))).hasValue(ClassTypeInformation.from(String.class));
+		assertThat(mapper.resolveTypeFrom(Alias.of("unmapped"))).isEmpty();
 	}
 }

@@ -118,7 +118,7 @@ public @interface EnableSpringDataWebSupport {
 		@Override
 		public String[] selectImports(AnnotationMetadata importingClassMetadata) {
 
-			List<String> imports = new ArrayList<String>();
+			List<String> imports = new ArrayList<>();
 
 			imports.add(HATEOAS_PRESENT ? HateoasAwareSpringDataWebConfiguration.class.getName()
 					: SpringDataWebConfiguration.class.getName());

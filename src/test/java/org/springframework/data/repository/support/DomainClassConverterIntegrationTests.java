@@ -33,9 +33,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.support.DummyEntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 
@@ -65,16 +63,10 @@ public class DomainClassConverterIntegrationTests {
 		beanFactory.registerBeanDefinition("postProcessor", new RootBeanDefinition(PredictingProcessor.class));
 		beanFactory.registerBeanDefinition("repoFactory", new RootBeanDefinition(RepositoryFactoryBeanSupport.class));
 
-		doReturn(PersonRepository.class).when(information).getRepositoryInterface();
 		doReturn(Person.class).when(information).getDomainType();
 		doReturn(Serializable.class).when(information).getIdType();
-
-		EntityInformation<Person, Serializable> entityInformation = new DummyEntityInformation<Person>(Person.class);
-
-		when(factory.getObject()).thenReturn(repository);
-		when(factory.getObjectType()).thenReturn(PersonRepository.class);
-		when(factory.getEntityInformation()).thenReturn(entityInformation);
-		when(factory.getRepositoryInformation()).thenReturn(information);
+		doReturn(PersonRepository.class).when(factory).getObjectType();
+		doReturn(information).when(factory).getRepositoryInformation();
 
 		GenericApplicationContext context = new GenericApplicationContext(beanFactory);
 		context.refresh();

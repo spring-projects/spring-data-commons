@@ -157,7 +157,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		 */
 		public CustomAnnotationTransactionAttributeSource(boolean publicMethodsOnly) {
 			this.publicMethodsOnly = publicMethodsOnly;
-			this.annotationParsers = new LinkedHashSet<TransactionAnnotationParser>(2);
+			this.annotationParsers = new LinkedHashSet<>(2);
 			this.annotationParsers.add(new SpringTransactionAnnotationParser());
 			if (jta12Present) {
 				this.annotationParsers.add(new JtaTransactionAnnotationParser());
@@ -186,7 +186,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		public CustomAnnotationTransactionAttributeSource(TransactionAnnotationParser... annotationParsers) {
 			this.publicMethodsOnly = true;
 			Assert.notEmpty(annotationParsers, "At least one TransactionAnnotationParser needs to be specified");
-			Set<TransactionAnnotationParser> parsers = new LinkedHashSet<TransactionAnnotationParser>(
+			Set<TransactionAnnotationParser> parsers = new LinkedHashSet<>(
 					annotationParsers.length);
 			Collections.addAll(parsers, annotationParsers);
 			this.annotationParsers = parsers;

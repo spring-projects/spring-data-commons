@@ -15,7 +15,9 @@
  */
 package org.springframework.data.mapping.model;
 
-import java.beans.PropertyDescriptor;
+import lombok.AccessLevel;
+import lombok.Getter;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -26,6 +28,8 @@ import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -46,42 +50,32 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	}
 
 	protected final String name;
-	protected final Optional<PropertyDescriptor> propertyDescriptor;
 	protected final TypeInformation<?> information;
 	protected final Class<?> rawType;
-	protected final Optional<Field> field;
-	protected final Association<P> association;
-	protected final PersistentEntity<?, P> owner;
+	protected final Optional<Association<P>> association;
+	private final @Getter PersistentEntity<?, P> owner;
+	private final @Getter(AccessLevel.PROTECTED) Property property;
 	private final SimpleTypeHolder simpleTypeHolder;
-	private final int hashCode;
+	private final Lazy<Integer> hashCode;
 
-	public AbstractPersistentProperty(Optional<Field> field, PropertyDescriptor propertyDescriptor,
-			PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
+	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,
+			SimpleTypeHolder simpleTypeHolder) {
 
 		Assert.notNull(simpleTypeHolder);
 		Assert.notNull(owner);
 
-		this.name = field.map(Field::getName).orElseGet(() -> propertyDescriptor.getName());
-		this.rawType = field.<Class<?>> map(Field::getType).orElseGet(() -> propertyDescriptor.getPropertyType());
-		this.information = owner.getTypeInformation().getProperty(this.name);
-		this.propertyDescriptor = Optional.ofNullable(propertyDescriptor);
-		this.field = field;
-		this.association = isAssociation() ? createAssociation() : null;
+		this.name = property.getName();
+		this.rawType = property.getRawType();
+
+		this.information = PropertyPath.from(property.getName(), owner.getTypeInformation()).getTypeInformation();
+		this.property = property;
+		this.association = isAssociation() ? Optional.of(createAssociation()) : Optional.empty();
 		this.owner = owner;
 		this.simpleTypeHolder = simpleTypeHolder;
-		this.hashCode = this.field == null ? this.propertyDescriptor.hashCode() : this.field.hashCode();
+		this.hashCode = Lazy.of(() -> property.hashCode());
 	}
 
 	protected abstract Association<P> createAssociation();
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#getOwner()
-	 */
-	@Override
-	public PersistentEntity<?, P> getOwner() {
-		return owner;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -131,7 +125,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		}
 
 		TypeInformation<?> candidate = getTypeInformationIfEntityCandidate();
-		return candidate != null ? Collections.singleton(candidate) : Collections.<TypeInformation<?>> emptySet();
+		return candidate != null ? Collections.singleton(candidate) : Collections.<TypeInformation<?>>emptySet();
 	}
 
 	private TypeInformation<?> getTypeInformationIfEntityCandidate() {
@@ -151,8 +145,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Optional<Method> getGetter() {
-		return propertyDescriptor.map(it -> it.getReadMethod())//
-				.filter(it -> rawType.isAssignableFrom(it.getReturnType()));
+		return property.getGetter();
 	}
 
 	/* 
@@ -161,8 +154,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Optional<Method> getSetter() {
-		return propertyDescriptor.map(it -> it.getWriteMethod())//
-				.filter(it -> it.getParameterTypes()[0].isAssignableFrom(rawType));
+		return property.getSetter();
 	}
 
 	/*
@@ -171,7 +163,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Optional<Field> getField() {
-		return field;
+		return property.getField();
 	}
 
 	/*
@@ -215,7 +207,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#getAssociation()
 	 */
 	@Override
-	public Association<P> getAssociation() {
+	public Optional<Association<P>> getAssociation() {
 		return association;
 	}
 
@@ -266,8 +258,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 			return null;
 		}
 
-		TypeInformation<?> componentType = information.getComponentType();
-		return componentType == null ? null : componentType.getType();
+		return information.getRequiredComponentType().getType();
 	}
 
 	/*
@@ -276,7 +267,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Class<?> getMapValueType() {
-		return isMap() ? information.getMapValueType().getType() : null;
+		return isMap() ? information.getMapValueType().map(it -> it.getType()).orElse(null) : null;
 	}
 
 	/* 
@@ -293,7 +284,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mongodb.core.mapping.MongoPersistentProperty#usePropertyAccess()
 	 */
 	public boolean usePropertyAccess() {
-		return owner.getType().isInterface() || CAUSE_FIELD.equals(getField());
+		return owner.getType().isInterface() || getField().map(it -> it.equals(CAUSE_FIELD)).orElse(false);
 	}
 
 	/* 
@@ -313,7 +304,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 		AbstractPersistentProperty<?> that = (AbstractPersistentProperty<?>) obj;
 
-		return this.field == null ? this.propertyDescriptor.equals(that.propertyDescriptor) : this.field.equals(that.field);
+		return this.property.equals(that.property);
 	}
 
 	/* 
@@ -322,7 +313,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public int hashCode() {
-		return this.hashCode;
+		return this.hashCode.get();
 	}
 
 	/* 
@@ -331,8 +322,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public String toString() {
-		return field.map(Object::toString)//
-				.orElseGet(() -> propertyDescriptor.map(Object::toString)//
-						.orElseThrow(() -> new IllegalStateException("Either Field or PropertyDescriptor has to be present!")));
+		return property.toString();
 	}
 }

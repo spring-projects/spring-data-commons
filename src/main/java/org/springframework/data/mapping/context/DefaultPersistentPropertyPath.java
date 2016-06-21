@@ -62,7 +62,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * @return
 	 */
 	public static <T extends PersistentProperty<T>> DefaultPersistentPropertyPath<T> empty() {
-		return new DefaultPersistentPropertyPath<T>(Collections.<T> emptyList());
+		return new DefaultPersistentPropertyPath<>(Collections.<T> emptyList());
 	}
 
 	/**
@@ -77,17 +77,17 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		Assert.notNull(property, "Property must not be null!");
 
 		if (isEmpty()) {
-			return new DefaultPersistentPropertyPath<T>(Arrays.asList(property));
+			return new DefaultPersistentPropertyPath<>(Arrays.asList(property));
 		}
 
 		Class<?> leafPropertyType = getLeafProperty().getActualType();
 		Assert.isTrue(property.getOwner().getType().equals(leafPropertyType),
 				String.format("Cannot append property %s to type %s!", property.getName(), leafPropertyType.getName()));
 
-		List<T> properties = new ArrayList<T>(this.properties);
+		List<T> properties = new ArrayList<>(this.properties);
 		properties.add(property);
 
-		return new DefaultPersistentPropertyPath<T>(properties);
+		return new DefaultPersistentPropertyPath<>(properties);
 	}
 
 	/* 
@@ -125,7 +125,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 				? PropertyNameConverter.INSTANCE : converter);
 		String delimiterToUse = delimiter == null ? "." : delimiter;
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		for (T property : properties) {
 
@@ -193,7 +193,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 			return this;
 		}
 
-		List<T> result = new ArrayList<T>();
+		List<T> result = new ArrayList<>();
 		Iterator<T> iterator = iterator();
 
 		for (int i = 0; i < base.getLength(); i++) {
@@ -204,7 +204,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 			result.add(iterator.next());
 		}
 
-		return new DefaultPersistentPropertyPath<T>(result);
+		return new DefaultPersistentPropertyPath<>(result);
 	}
 
 	/*
@@ -216,7 +216,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		if (size <= 1) {
 			return this;
 		}
-		return new DefaultPersistentPropertyPath<T>(properties.subList(0, size - 1));
+		return new DefaultPersistentPropertyPath<>(properties.subList(0, size - 1));
 	}
 
 	/*

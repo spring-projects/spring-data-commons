@@ -108,16 +108,12 @@ public abstract class ClassUtils {
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notEmpty(types, "Types must not be null or empty!");
 
-		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
-		returnType = QueryExecutionConverters.supports(returnType.getType()) ? returnType.getComponentType() : returnType;
+		TypeInformation<?> returnType = getEffectivelyReturnedTypeFrom(method);
 
-		for (Class<?> type : types) {
-			if (type.isAssignableFrom(returnType.getType())) {
-				return;
-			}
-		}
-
-		throw new IllegalStateException("Method has to have one of the following return types! " + Arrays.toString(types));
+		Arrays.stream(types)//
+				.filter(it -> it.isAssignableFrom(returnType.getType()))//
+				.findAny().orElseThrow(() -> new IllegalStateException(
+						"Method has to have one of the following return types! " + Arrays.toString(types)));
 	}
 
 	/**
@@ -133,13 +129,7 @@ public abstract class ClassUtils {
 			return false;
 		}
 
-		for (Class<?> type : types) {
-			if (type.isAssignableFrom(object.getClass())) {
-				return true;
-			}
-		}
-
-		return false;
+		return types.stream().anyMatch(it -> it.isAssignableFrom(object.getClass()));
 	}
 
 	/**
@@ -150,7 +140,6 @@ public abstract class ClassUtils {
 	 * @return
 	 */
 	public static boolean hasParameterOfType(Method method, Class<?> type) {
-
 		return Arrays.asList(method.getParameterTypes()).contains(type);
 	}
 
@@ -167,5 +156,11 @@ public abstract class ClassUtils {
 		}
 
 		throw ex;
+	}
+
+	private static TypeInformation<?> getEffectivelyReturnedTypeFrom(Method method) {
+
+		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+		return QueryExecutionConverters.supports(returnType.getType()) ? returnType.getRequiredComponentType() : returnType;
 	}
 }

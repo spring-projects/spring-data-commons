@@ -64,7 +64,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 			scanner.addExcludeFilter(filter);
 		}
 
-		Set<BeanDefinition> result = new HashSet<BeanDefinition>();
+		Set<BeanDefinition> result = new HashSet<>();
 
 		for (String basePackage : getBasePackages()) {
 			Set<BeanDefinition> candidate = scanner.findCandidateComponents(basePackage);

@@ -73,17 +73,16 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			}
 
 			Class<?> type = it.getClass();
-			PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
 
-			if (entity == null) {
-				return super.getBeanWrapperFor(source);
-			}
+			return entities.getPersistentEntity(type).map(entity -> {
 
-			MappingAuditingMetadata metadata = metadataCache.computeIfAbsent(type,
-					foo -> new MappingAuditingMetadata(entity));
+				MappingAuditingMetadata metadata = metadataCache.computeIfAbsent(type,
+						key -> new MappingAuditingMetadata(entity));
 
-			return Optional.ofNullable(metadata.isAuditable()
-					? new MappingMetadataAuditableBeanWrapper(entity.getPropertyAccessor(it), metadata) : null);
+				return Optional.<AuditableBeanWrapper>ofNullable(metadata.isAuditable()
+						? new MappingMetadataAuditableBeanWrapper(entity.getPropertyAccessor(it), metadata) : null);
+
+			}).orElseGet(() -> super.getBeanWrapperFor(source));
 		});
 	}
 

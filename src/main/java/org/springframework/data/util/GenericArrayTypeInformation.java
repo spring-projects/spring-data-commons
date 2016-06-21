@@ -20,6 +20,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Special {@link TypeDiscoverer} handling {@link GenericArrayType}s.
@@ -60,10 +61,10 @@ class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
 	 */
 	@Override
-	protected TypeInformation<?> doGetComponentType() {
+	protected Optional<TypeInformation<?>> doGetComponentType() {
 
 		Type componentType = type.getGenericComponentType();
-		return createInfo(componentType);
+		return Optional.of(createInfo(componentType));
 	}
 
 	/* 

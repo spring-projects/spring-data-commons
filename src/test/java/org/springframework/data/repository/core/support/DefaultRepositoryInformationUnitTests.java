@@ -255,10 +255,10 @@ public class DefaultRepositoryInformationUnitTests {
 		SampleRepositoryImpl customImplementation = new SampleRepositoryImpl();
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, RepositoryFactorySupport.class,
-				customImplementation.getClass());
+				Optional.of(customImplementation.getClass()));
 
 		Method customBaseRepositoryMethod = SampleRepository.class.getMethod("save", Object.class);
-		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
+		assertThat(information.isCustomMethod(customBaseRepositoryMethod)).isTrue();
 	}
 
 	/**

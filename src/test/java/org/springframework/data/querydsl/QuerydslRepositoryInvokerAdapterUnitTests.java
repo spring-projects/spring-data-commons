@@ -15,11 +15,10 @@
  */
 package org.springframework.data.querydsl;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,10 +26,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
-import org.springframework.util.MultiValueMap;
 
 import com.querydsl.core.types.Predicate;
 
@@ -60,7 +57,7 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 	@Test
 	public void forwardsFindAllToExecutorWithPredicate() {
 
-		Sort sort = new Sort("firstname");
+		Sort sort = Sort.by("firstname");
 		adapter.invokeFindAll(sort);
 
 		verify(executor, times(1)).findAll(predicate, sort);
@@ -73,7 +70,7 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 	@Test
 	public void forwardsFindAllWithPageableToExecutorWithPredicate() {
 
-		PageRequest pageable = new PageRequest(0, 10);
+		PageRequest pageable = PageRequest.of(0, 10);
 		adapter.invokeFindAll(pageable);
 
 		verify(executor, times(1)).findAll(predicate, pageable);
@@ -84,7 +81,7 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 	 * @see DATACMNS-669
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
+
 	public void forwardsMethodsToDelegate() {
 
 		adapter.hasDeleteMethod();
@@ -100,15 +97,14 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 		verify(delegate, times(1)).hasSaveMethod();
 
 		adapter.invokeDelete(any(Serializable.class));
-		verify(delegate, times(1)).invokeDelete(any(Serializable.class));
+		verify(delegate, times(1)).invokeDelete(any());
 
 		adapter.invokeFindOne(any(Serializable.class));
-		verify(delegate, times(1)).invokeFindOne(any(Serializable.class));
+		verify(delegate, times(1)).invokeFindOne(any());
 
-		adapter.invokeQueryMethod(any(Method.class), (MultiValueMap<String, String>) any(MultiValueMap.class),
-				any(Pageable.class), any(Sort.class));
-		verify(delegate, times(1)).invokeQueryMethod(any(Method.class),
-				(MultiValueMap<String, String>) any(MultiValueMap.class), any(Pageable.class), any(Sort.class));
+		adapter.invokeQueryMethod(any(), any(), any(), any());
+
+		verify(delegate, times(1)).invokeQueryMethod(any(), any(), any(), any());
 
 		adapter.invokeSave(any());
 		verify(delegate, times(1)).invokeSave(any());

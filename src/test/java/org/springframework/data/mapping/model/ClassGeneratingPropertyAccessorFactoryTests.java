@@ -69,7 +69,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 				"privateProperty", "packageDefaultProperty", "protectedProperty", "publicProperty", "syntheticProperty");
 
 		parameters.addAll(parameters(new InnerPrivateType(), propertyNames, Object.class));
-		parameters.addAll(parameters(new InnerTypeWithPrivateAncestor(), propertyNames, InnerTypeWithPrivateAncestor.class));
+		parameters
+				.addAll(parameters(new InnerTypeWithPrivateAncestor(), propertyNames, InnerTypeWithPrivateAncestor.class));
 		parameters.addAll(parameters(new InnerPackageDefaultType(), propertyNames, InnerPackageDefaultType.class));
 		parameters.addAll(parameters(new InnerProtectedType(), propertyNames, InnerProtectedType.class));
 		parameters.addAll(parameters(new InnerPublicType(), propertyNames, InnerPublicType.class));
@@ -130,7 +131,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void shouldFailOnNullBean() {
-		factory.getPropertyAccessor(mappingContext.getPersistentEntity(bean.getClass()), null);
+		factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), null);
 	}
 
 	/**
@@ -165,20 +166,20 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	public void shouldUseClassPropertyAccessorFactory() throws Exception {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
-				.getPersistentEntity(bean.getClass());
+				.getRequiredPersistentEntity(bean.getClass());
 
 		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"))
 				.isInstanceOf(ClassGeneratingPropertyAccessorFactory.class);
 	}
 
 	private PersistentPropertyAccessor getPersistentPropertyAccessor(Object bean) {
-		return factory.getPropertyAccessor(mappingContext.getPersistentEntity(bean.getClass()), bean);
+		return factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), bean);
 	}
 
 	private Optional<? extends PersistentProperty<?>> getProperty(Object bean, String name) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
-				.getPersistentEntity(bean.getClass());
+				.getRequiredPersistentEntity(bean.getClass());
 		return persistentEntity.getPersistentProperty(name);
 	}
 

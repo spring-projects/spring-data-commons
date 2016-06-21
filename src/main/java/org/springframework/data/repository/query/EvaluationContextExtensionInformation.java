@@ -91,7 +91,7 @@ class EvaluationContextExtensionInformation {
 	 */
 	public RootObjectInformation getRootObjectInformation(Optional<Object> target) {
 
-		return target.map(it -> rootObjectInformation.orElse(new RootObjectInformation(it.getClass())))
+		return target.map(it -> rootObjectInformation.orElseGet(() -> new RootObjectInformation(it.getClass())))
 				.orElse(RootObjectInformation.NONE);
 	}
 
@@ -215,8 +215,8 @@ class EvaluationContextExtensionInformation {
 			Assert.notNull(type, "Type must not be null!");
 
 			this.accessors = new HashMap<String, Method>();
-			this.methods = new HashSet<Method>();
-			this.fields = new ArrayList<Field>();
+			this.methods = new HashSet<>();
+			this.fields = new ArrayList<>();
 
 			if (Object.class.equals(type)) {
 				return;
@@ -232,7 +232,7 @@ class EvaluationContextExtensionInformation {
 						.filter(it -> method.equals(it.getReadMethod()))//
 						.forEach(it -> RootObjectInformation.this.accessors.put(it.getName(), method));
 
-			} , PublicMethodAndFieldFilter.NON_STATIC);
+			}, PublicMethodAndFieldFilter.NON_STATIC);
 
 			ReflectionUtils.doWithFields(type, field -> RootObjectInformation.this.fields.add(field),
 					PublicMethodAndFieldFilter.NON_STATIC);
@@ -250,7 +250,7 @@ class EvaluationContextExtensionInformation {
 					.collect(Collectors.toMap(//
 							Method::getName, //
 							method -> new Function(method, it))))
-					.orElse(Collections.emptyMap());
+					.orElseGet(() -> Collections.emptyMap());
 		}
 
 		/**
@@ -271,7 +271,7 @@ class EvaluationContextExtensionInformation {
 
 				return Collections.unmodifiableMap(properties);
 
-			}).orElse(Collections.emptyMap());
+			}).orElseGet(() -> Collections.emptyMap());
 		}
 	}
 

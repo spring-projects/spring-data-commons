@@ -185,14 +185,14 @@ class MapDataBinder extends WebDataBinder {
 
 			PropertyPath leafProperty = getPropertyPath(propertyName).getLeafProperty();
 			TypeInformation<?> owningType = leafProperty.getOwningType();
-			TypeInformation<?> propertyType = owningType.getProperty(leafProperty.getSegment());
+			TypeInformation<?> propertyType = leafProperty.getTypeInformation();
 
 			propertyType = propertyName.endsWith("]") ? propertyType.getActualType() : propertyType;
 
 			if (conversionRequired(value, propertyType.getType())) {
 
-				PropertyDescriptor descriptor = BeanUtils
-						.getPropertyDescriptor(owningType.getType(), leafProperty.getSegment());
+				PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(owningType.getType(),
+						leafProperty.getSegment());
 				MethodParameter methodParameter = new MethodParameter(descriptor.getReadMethod(), -1);
 				TypeDescriptor typeDescriptor = TypeDescriptor.nested(methodParameter, 0);
 
@@ -289,11 +289,11 @@ class MapDataBinder extends WebDataBinder {
 
 				Class<?> actualPropertyType = path.getType();
 
-				TypeDescriptor valueDescriptor = conversionService.canConvert(String.class, actualPropertyType) ? TypeDescriptor
-						.valueOf(String.class) : TypeDescriptor.valueOf(HashMap.class);
+				TypeDescriptor valueDescriptor = conversionService.canConvert(String.class, actualPropertyType)
+						? TypeDescriptor.valueOf(String.class) : TypeDescriptor.valueOf(HashMap.class);
 
-				return path.isCollection() ? TypeDescriptor.collection(emptyValue.getClass(), valueDescriptor) : TypeDescriptor
-						.map(emptyValue.getClass(), TypeDescriptor.valueOf(String.class), valueDescriptor);
+				return path.isCollection() ? TypeDescriptor.collection(emptyValue.getClass(), valueDescriptor)
+						: TypeDescriptor.map(emptyValue.getClass(), TypeDescriptor.valueOf(String.class), valueDescriptor);
 
 			}
 		}

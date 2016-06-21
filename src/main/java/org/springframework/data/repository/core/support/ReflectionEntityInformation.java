@@ -18,13 +18,12 @@ package org.springframework.data.repository.core.support;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.support.AbstractEntityInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
 
 /**
  * {@link EntityInformation} implementation that inspects fields for an annotation and looks up this field's value to
@@ -60,12 +59,10 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 		super(domainClass);
 		Assert.notNull(annotation);
 
-		ReflectionUtils.doWithFields(domainClass, new FieldCallback() {
-			public void doWith(Field field) {
-				if (field.getAnnotation(annotation) != null) {
-					ReflectionEntityInformation.this.field = field;
-					return;
-				}
+		ReflectionUtils.doWithFields(domainClass, field -> {
+			if (field.getAnnotation(annotation) != null) {
+				ReflectionEntityInformation.this.field = field;
+				return;
 			}
 		});
 
@@ -78,8 +75,8 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
-	public ID getId(Object entity) {
-		return entity == null ? null : (ID) ReflectionUtils.getField(field, entity);
+	public Optional<ID> getId(Object entity) {
+		return entity == null ? null : Optional.of((ID) ReflectionUtils.getField(field, entity));
 	}
 
 	/* 

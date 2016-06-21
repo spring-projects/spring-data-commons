@@ -38,10 +38,21 @@ public interface Streamable<T> extends Iterable<T> {
 		return StreamSupport.stream(spliterator(), false);
 	}
 
+	/**
+	 * Returns an empty {@link Streamable}.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
 	public static <T> Streamable<T> empty() {
 		return () -> Collections.emptyIterator();
 	}
 
+	/**
+	 * Returns a {@link Streamable} with the given elements.
+	 * 
+	 * @param t the elements to return.
+	 * @return
+	 */
 	@SafeVarargs
 	public static <T> Streamable<T> of(T... t) {
 		return () -> Arrays.asList(t).iterator();

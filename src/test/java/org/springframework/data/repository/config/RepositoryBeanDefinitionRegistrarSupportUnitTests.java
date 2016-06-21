@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
@@ -31,7 +31,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
-import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
+import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 
 /**
  * Integration test for {@link RepositoryBeanDefinitionRegistrarSupport}.
@@ -125,7 +125,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	static class DummyConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
 		public String getRepositoryFactoryClassName() {
-			return RepositoryFactoryBeanSupport.class.getName();
+			return DummyRepositoryFactoryBean.class.getName();
 		}
 
 		@Override

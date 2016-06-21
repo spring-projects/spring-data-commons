@@ -58,10 +58,10 @@ public class PersistentEntitiesUnitTests {
 		new PersistentEntities(Arrays.asList(first, second)).getPersistentEntity(Sample.class);
 
 		verify(first, times(1)).hasPersistentEntityFor(Sample.class);
-		verify(first, times(0)).getPersistentEntity(Sample.class);
+		verify(first, times(0)).getRequiredPersistentEntity(Sample.class);
 
 		verify(second, times(1)).hasPersistentEntityFor(Sample.class);
-		verify(second, times(1)).getPersistentEntity(Sample.class);
+		verify(second, times(1)).getRequiredPersistentEntity(Sample.class);
 	}
 
 	/**
@@ -76,10 +76,14 @@ public class PersistentEntitiesUnitTests {
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
 
-		assertThat(entities.getPersistentEntity(Sample.class)).isNotNull();
-		assertThat(entities.getPersistentEntity(Object.class)).isNull();
+		assertThat(entities.getPersistentEntity(Sample.class)).isPresent();
+		assertThat(entities.getPersistentEntity(Object.class)).isNotPresent();
 		assertThat(entities.getManagedTypes()).contains(ClassTypeInformation.from(Sample.class));
-		assertThat(entities).contains(entities.getPersistentEntity(Sample.class));
+
+		assertThat(entities.getPersistentEntity(Sample.class)).hasValueSatisfying(it -> {
+			assertThat(entities).contains(it);
+		});
+
 	}
 
 	static class Sample {

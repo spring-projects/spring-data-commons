@@ -183,15 +183,16 @@ public class Repositories implements Iterable<Class<?>> {
 	 * Returns the {@link RepositoryInformation} for the given domain class.
 	 * 
 	 * @param domainClass must not be {@literal null}.
-	 * @return the {@link RepositoryInformation} for the given domain class or {@literal null} if no repository registered
-	 *         for this domain class.
+	 * @return the {@link RepositoryInformation} for the given domain class or {@literal Optional#empty()} if no
+	 *         repository registered for this domain class.
 	 */
-	public RepositoryInformation getRepositoryInformationFor(Class<?> domainClass) {
+	public Optional<RepositoryInformation> getRepositoryInformationFor(Class<?> domainClass) {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
 		RepositoryFactoryInformation<Object, Serializable> information = getRepositoryFactoryInfoFor(domainClass);
-		return information == EMPTY_REPOSITORY_FACTORY_INFO ? null : information.getRepositoryInformation();
+		return information == EMPTY_REPOSITORY_FACTORY_INFO ? Optional.empty()
+				: Optional.of(information.getRepositoryInformation());
 	}
 
 	/**
@@ -270,7 +271,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		@Override
 		public List<QueryMethod> getQueryMethods() {
-			return Collections.<QueryMethod> emptyList();
+			return Collections.<QueryMethod>emptyList();
 		}
 	}
 }

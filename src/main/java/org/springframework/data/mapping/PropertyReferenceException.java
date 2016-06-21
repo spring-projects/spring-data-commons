@@ -142,7 +142,7 @@ public class PropertyReferenceException extends RuntimeException {
 	 */
 	private static Set<String> detectPotentialMatches(String propertyName, Class<?> type) {
 
-		Set<String> result = new HashSet<String>();
+		Set<String> result = new HashSet<>();
 		result.addAll(Arrays.asList(PropertyMatches.forField(propertyName, type).getPossibleMatches()));
 		result.addAll(Arrays.asList(PropertyMatches.forProperty(propertyName, type).getPossibleMatches()));
 

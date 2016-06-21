@@ -18,7 +18,9 @@ package org.springframework.data.convert;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
+import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
@@ -34,7 +36,8 @@ import org.springframework.util.Assert;
  */
 public class ConfigurableTypeInformationMapper implements TypeInformationMapper {
 
-	private final Map<ClassTypeInformation<?>, Object> typeMap;
+	private final Map<ClassTypeInformation<?>, Alias> typeToAlias;
+	private final Map<Alias, ClassTypeInformation<?>> aliasToType;
 
 	/**
 	 * Creates a new {@link ConfigurableTypeMapper} for the given type map.
@@ -44,18 +47,22 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 	public ConfigurableTypeInformationMapper(Map<? extends Class<?>, String> sourceTypeMap) {
 
 		Assert.notNull(sourceTypeMap);
-		this.typeMap = new HashMap<ClassTypeInformation<?>, Object>(sourceTypeMap.size());
+
+		this.typeToAlias = new HashMap<>(sourceTypeMap.size());
+		this.aliasToType = new HashMap<>(sourceTypeMap.size());
 
 		for (Entry<? extends Class<?>, String> entry : sourceTypeMap.entrySet()) {
-			ClassTypeInformation<?> key = ClassTypeInformation.from(entry.getKey());
-			String value = entry.getValue();
 
-			if (typeMap.containsValue(value)) {
-				throw new IllegalArgumentException(String.format(
-						"Detected mapping ambiguity! String %s cannot be mapped to more than one type!", value));
+			ClassTypeInformation<?> type = ClassTypeInformation.from(entry.getKey());
+			Alias alias = Alias.of(entry.getValue());
+
+			if (typeToAlias.containsValue(alias)) {
+				throw new IllegalArgumentException(
+						String.format("Detected mapping ambiguity! String %s cannot be mapped to more than one type!", alias));
 			}
 
-			this.typeMap.put(key, value);
+			this.typeToAlias.put(type, alias);
+			this.aliasToType.put(alias, type);
 		}
 	}
 
@@ -63,26 +70,16 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.TypeInformationMapper#createAliasFor(org.springframework.data.util.TypeInformation)
 	 */
-	public Object createAliasFor(TypeInformation<?> type) {
-		return typeMap.get(type);
+	public Alias createAliasFor(TypeInformation<?> type) {
+		return typeToAlias.getOrDefault(type, Alias.NONE);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.TypeInformationMapper#resolveTypeFrom(java.lang.Object)
+	 * @see org.springframework.data.convert.TypeInformationMapper#resolveTypeFrom(org.springframework.data.mapping.Alias)
 	 */
-	public ClassTypeInformation<?> resolveTypeFrom(Object alias) {
-
-		if (alias == null) {
-			return null;
-		}
-
-		for (Entry<ClassTypeInformation<?>, Object> entry : typeMap.entrySet()) {
-			if (entry.getValue().equals(alias)) {
-				return entry.getKey();
-			}
-		}
-
-		return null;
+	@Override
+	public Optional<TypeInformation<?>> resolveTypeFrom(Alias alias) {
+		return Optional.ofNullable(aliasToType.get(alias));
 	}
 }

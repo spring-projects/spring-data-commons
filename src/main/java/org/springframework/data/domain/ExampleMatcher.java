@@ -112,7 +112,7 @@ public class ExampleMatcher {
 		Assert.notEmpty(ignoredPaths, "IgnoredPaths must not be empty!");
 		Assert.noNullElements(ignoredPaths, "IgnoredPaths must not contain null elements!");
 
-		Set<String> newIgnoredPaths = new LinkedHashSet<String>(this.ignoredPaths);
+		Set<String> newIgnoredPaths = new LinkedHashSet<>(this.ignoredPaths);
 		newIgnoredPaths.addAll(Arrays.asList(ignoredPaths));
 
 		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, newIgnoredPaths, defaultIgnoreCase,

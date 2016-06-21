@@ -15,7 +15,6 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.Matchers.*;
 import static org.assertj.core.api.Assertions.*;
 
 import lombok.AllArgsConstructor;

@@ -81,6 +81,7 @@ public class FactoryBeanTypePredictingPostProcessorUnitTests {
 				.addPropertyValue(DAO_INTERFACE_PROPERTY, "com.acme.Foo");
 
 		when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(builder.getBeanDefinition());
+		processor.setBeanFactory(beanFactory);
 
 		assertNotTypeDetected(FACTORY_CLASS);
 	}

@@ -16,6 +16,7 @@
 package org.springframework.data.repository.support;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.context.ApplicationContext;
@@ -150,11 +151,12 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			}
 
 			Class<?> domainType = targetType.getType();
-
-			RepositoryInformation info = repositories.getRepositoryInformationFor(domainType);
 			RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(domainType);
 
-			return invoker.invokeFindOne(conversionService.convert(source, info.getIdType()));
+			return repositories.getRepositoryInformationFor(domainType)//
+					.map(it -> invoker.invokeFindOne(conversionService.convert(source, it.getIdType())))//
+					.orElseThrow(() -> new IllegalStateException(
+							String.format("Couldn't find RepositoryInformation for %s!", domainType)));
 		}
 
 		/*
@@ -168,14 +170,22 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 				return false;
 			}
 
-			if (!repositories.hasRepositoryFor(targetType.getType())) {
+			Class<?> domainType = targetType.getType();
+
+			if (!repositories.hasRepositoryFor(domainType)) {
 				return false;
 			}
 
-			Class<?> rawIdType = repositories.getRepositoryInformationFor(targetType.getType()).getIdType();
+			Optional<RepositoryInformation> repositoryInformation = repositories.getRepositoryInformationFor(domainType);
 
-			return sourceType.equals(TypeDescriptor.valueOf(rawIdType))
-					|| conversionService.canConvert(sourceType.getType(), rawIdType);
+			return repositoryInformation.map(it -> {
+
+				Class<?> rawIdType = it.getIdType();
+
+				return sourceType.equals(TypeDescriptor.valueOf(rawIdType))
+						|| conversionService.canConvert(sourceType.getType(), rawIdType);
+			}).orElseThrow(
+					() -> new IllegalStateException(String.format("Couldn't find RepositoryInformation for %s!", domainType)));
 		}
 	}
 
@@ -229,14 +239,23 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 				return false;
 			}
 
-			if (!repositories.hasRepositoryFor(sourceType.getType())) {
+			Class<?> domainType = sourceType.getType();
+
+			if (!repositories.hasRepositoryFor(domainType)) {
 				return false;
 			}
 
-			Class<?> rawIdType = repositories.getRepositoryInformationFor(sourceType.getType()).getIdType();
+			Optional<RepositoryInformation> information = repositories.getRepositoryInformationFor(domainType);
 
-			return targetType.equals(TypeDescriptor.valueOf(rawIdType))
-					|| conversionService.canConvert(rawIdType, targetType.getType());
+			return information.map(it -> {
+
+				Class<?> rawIdType = it.getIdType();
+
+				return targetType.equals(TypeDescriptor.valueOf(rawIdType))
+						|| conversionService.canConvert(rawIdType, targetType.getType());
+
+			}).orElseThrow(
+					() -> new IllegalStateException(String.format("Couldn't find RepositoryInformation for %s!", domainType)));
 		}
 	}
 }

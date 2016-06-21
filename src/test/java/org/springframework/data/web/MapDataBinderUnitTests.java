@@ -70,7 +70,7 @@ public class MapDataBinderUnitTests {
 
 		Map<String, Object> result = bind(values);
 
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		list.add("String");
 
 		assertThat(result).isEqualTo((Map) singletonMap("foo", singletonMap("bar", singletonMap("fooBar", list))));

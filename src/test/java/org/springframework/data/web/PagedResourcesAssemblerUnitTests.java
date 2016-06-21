@@ -49,11 +49,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class PagedResourcesAssemblerUnitTests {
 
-	static final Pageable PAGEABLE = new PageRequest(0, 20);
-	static final Page<Person> EMPTY_PAGE = new PageImpl<Person>(Collections.<Person> emptyList(), PAGEABLE, 0);
+	static final Pageable PAGEABLE = PageRequest.of(0, 20);
+	static final Page<Person> EMPTY_PAGE = new PageImpl<>(Collections.emptyList(), PAGEABLE, 0);
 
 	HateoasPageableHandlerMethodArgumentResolver resolver = new HateoasPageableHandlerMethodArgumentResolver();
-	PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
+	PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, null);
 
 	@Before
 	public void setUp() {
@@ -95,7 +95,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 		UriComponents baseUri = UriComponentsBuilder.fromUriString("http://foo:9090").build();
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, baseUri);
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, baseUri);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref()).startsWith(baseUri.toUriString());
@@ -123,8 +123,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		resolver.setOneIndexedParameters(true);
 
-		AbstractPageRequest request = new PageRequest(0, 1);
-		Page<Person> page = new PageImpl<Person>(Collections.<Person> emptyList(), request, 0);
+		AbstractPageRequest request = PageRequest.of(0, 1);
+		Page<Person> page = new PageImpl<>(Collections.emptyList(), request, 0);
 
 		assembler.toResource(page);
 	}
@@ -168,7 +168,7 @@ public class PagedResourcesAssemblerUnitTests {
 		HateoasPageableHandlerMethodArgumentResolver argumentResolver = new HateoasPageableHandlerMethodArgumentResolver();
 		argumentResolver.setOneIndexedParameters(true);
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(argumentResolver, null);
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(argumentResolver, null);
 		PagedResources<Resource<Person>> resource = assembler.toResource(createPage(1));
 
 		assertThat(resource.hasLink("prev")).isTrue();
@@ -265,7 +265,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void alwaysAddsFirstAndLastLinkIfConfiguredTo() {
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
+		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, null);
 		assembler.setForceFirstAndLastRels(true);
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(EMPTY_PAGE);
@@ -280,7 +280,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void usesCustomPagedResources() {
 
-		ResourceAssembler<Page<Person>, PagedResources<Resource<Person>>> assembler = new CustomPagedResourcesAssembler<Person>(
+		ResourceAssembler<Page<Person>, PagedResources<Resource<Person>>> assembler = new CustomPagedResourcesAssembler<>(
 				resolver, null);
 
 		assertThat(assembler.toResource(EMPTY_PAGE)).isInstanceOf(CustomPagedResources.class);
@@ -288,12 +288,12 @@ public class PagedResourcesAssemblerUnitTests {
 
 	private static Page<Person> createPage(int index) {
 
-		AbstractPageRequest request = new PageRequest(index, 1);
+		Pageable request = PageRequest.of(index, 1);
 
 		Person person = new Person();
 		person.name = "Dave";
 
-		return new PageImpl<Person>(Arrays.asList(person), request, 3);
+		return new PageImpl<>(Arrays.asList(person), request, 3);
 	}
 
 	private static Map<String, String> getQueryParameters(Link link) {
@@ -333,7 +333,7 @@ public class PagedResourcesAssemblerUnitTests {
 		@Override
 		protected <R extends ResourceSupport, S> PagedResources<R> createPagedResource(List<R> resources,
 				PageMetadata metadata, Page<S> page) {
-			return new CustomPagedResources<R>(resources, metadata);
+			return new CustomPagedResources<>(resources, metadata);
 		}
 	}
 

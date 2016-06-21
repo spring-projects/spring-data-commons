@@ -18,10 +18,9 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
+import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -35,18 +34,16 @@ import org.springframework.util.ReflectionUtils;
  */
 public class AbstractEntityInformationUnitTests {
 
-	@Rule public ExpectedException exception = ExpectedException.none();
-
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullDomainClass() throws Exception {
-
-		new DummyEntityInformation<Object>(null);
+		new DummyEntityInformation<>(null);
 	}
 
 	@Test
 	public void considersEntityNewIfGetIdReturnsNull() throws Exception {
 
-		EntityInformation<Object, Serializable> metadata = new DummyEntityInformation<Object>(Object.class);
+		EntityInformation<Object, Serializable> metadata = new DummyEntityInformation<>(Object.class);
+
 		assertThat(metadata.isNew(null)).isTrue();
 		assertThat(metadata.isNew(new Object())).isFalse();
 	}
@@ -57,7 +54,8 @@ public class AbstractEntityInformationUnitTests {
 	@Test
 	public void detectsNewStateForPrimitiveIds() {
 
-		FooEn<PrimitiveIdEntity, Serializable> fooEn = new FooEn<PrimitiveIdEntity, Serializable>(PrimitiveIdEntity.class);
+		CustomEntityInformation<PrimitiveIdEntity, Serializable> fooEn = new CustomEntityInformation<PrimitiveIdEntity, Serializable>(
+				PrimitiveIdEntity.class);
 
 		PrimitiveIdEntity entity = new PrimitiveIdEntity();
 		assertThat(fooEn.isNew(entity)).isTrue();
@@ -72,7 +70,7 @@ public class AbstractEntityInformationUnitTests {
 	@Test
 	public void detectsNewStateForPrimitiveWrapperIds() {
 
-		FooEn<PrimitiveWrapperIdEntity, Serializable> fooEn = new FooEn<PrimitiveWrapperIdEntity, Serializable>(
+		CustomEntityInformation<PrimitiveWrapperIdEntity, Serializable> fooEn = new CustomEntityInformation<PrimitiveWrapperIdEntity, Serializable>(
 				PrimitiveWrapperIdEntity.class);
 
 		PrimitiveWrapperIdEntity entity = new PrimitiveWrapperIdEntity();
@@ -88,12 +86,12 @@ public class AbstractEntityInformationUnitTests {
 	@Test
 	public void rejectsUnsupportedPrimitiveIdType() {
 
-		FooEn<UnsupportedPrimitiveIdEntity, ?> information = new FooEn<UnsupportedPrimitiveIdEntity, Boolean>(
+		CustomEntityInformation<UnsupportedPrimitiveIdEntity, ?> information = new CustomEntityInformation<UnsupportedPrimitiveIdEntity, Boolean>(
 				UnsupportedPrimitiveIdEntity.class);
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(boolean.class.getName());
-		information.isNew(new UnsupportedPrimitiveIdEntity());
+		assertThatExceptionOfType(IllegalArgumentException.class)//
+				.isThrownBy(() -> information.isNew(new UnsupportedPrimitiveIdEntity()))//
+				.withMessageContaining(boolean.class.getName());
 	}
 
 	static class PrimitiveIdEntity {
@@ -111,19 +109,19 @@ public class AbstractEntityInformationUnitTests {
 		@Id boolean id;
 	}
 
-	static class FooEn<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
+	static class CustomEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
 
 		private final Class<T> type;
 
-		private FooEn(Class<T> type) {
+		private CustomEntityInformation(Class<T> type) {
 			super(type);
 			this.type = type;
 		}
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public ID getId(T entity) {
-			return (ID) ReflectionTestUtils.getField(entity, "id");
+		public Optional<ID> getId(T entity) {
+			return Optional.ofNullable((ID) ReflectionTestUtils.getField(entity, "id"));
 		}
 
 		@Override

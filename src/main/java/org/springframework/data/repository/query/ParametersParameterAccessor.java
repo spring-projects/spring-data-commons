@@ -18,6 +18,7 @@ package org.springframework.data.repository.query;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
@@ -70,10 +71,12 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	public Pageable getPageable() {
 
 		if (!parameters.hasPageableParameter()) {
-			return null;
+			return Pageable.NONE;
 		}
 
-		return (Pageable) values.get(parameters.getPageableIndex());
+		Pageable pageable = (Pageable) values.get(parameters.getPageableIndex());
+
+		return pageable == null ? Pageable.NONE : pageable;
 	}
 
 	/*
@@ -83,14 +86,16 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	public Sort getSort() {
 
 		if (parameters.hasSortParameter()) {
-			return (Sort) values.get(parameters.getSortIndex());
+
+			Sort sort = (Sort) values.get(parameters.getSortIndex());
+			return sort == null ? Sort.unsorted() : sort;
 		}
 
-		if (parameters.hasPageableParameter() && getPageable() != null) {
+		if (parameters.hasPageableParameter()) {
 			return getPageable().getSort();
 		}
 
-		return null;
+		return Sort.unsorted();
 	}
 
 	/**
@@ -98,8 +103,9 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 * 
 	 * @return
 	 */
-	public Class<?> getDynamicProjection() {
-		return parameters.hasDynamicProjection() ? (Class<?>) values.get(parameters.getDynamicProjectionIndex()) : null;
+	public Optional<Class<?>> getDynamicProjection() {
+		return Optional.ofNullable(
+				parameters.hasDynamicProjection() ? (Class<?>) values.get(parameters.getDynamicProjectionIndex()) : null);
 	}
 
 	/**

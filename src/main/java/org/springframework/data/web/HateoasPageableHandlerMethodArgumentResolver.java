@@ -77,7 +77,7 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 		String pagePropertyName = getParameterNameToUse(getPageParameterName(), parameter);
 		String sizePropertyName = getParameterNameToUse(getSizeParameterName(), parameter);
 
-		List<TemplateVariable> names = new ArrayList<TemplateVariable>();
+		List<TemplateVariable> names = new ArrayList<>();
 		MultiValueMap<String, String> queryParameters = template.getQueryParams();
 		boolean append = !queryParameters.isEmpty();
 

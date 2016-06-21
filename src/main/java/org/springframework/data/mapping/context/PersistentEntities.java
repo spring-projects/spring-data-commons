@@ -15,14 +15,12 @@
  */
 package org.springframework.data.mapping.context;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -32,9 +30,9 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.8
  */
-public class PersistentEntities implements Iterable<PersistentEntity<?, ?>> {
+public class PersistentEntities implements Streamable<PersistentEntity<?, ?>> {
 
-	private final Iterable<? extends MappingContext<?, ?>> contexts;
+	private final Streamable<? extends MappingContext<?, ?>> contexts;
 
 	/**
 	 * Creates a new {@link PersistentEntities} for the given {@link MappingContext}s.
@@ -44,7 +42,7 @@ public class PersistentEntities implements Iterable<PersistentEntity<?, ?>> {
 	public PersistentEntities(Iterable<? extends MappingContext<?, ?>> contexts) {
 
 		Assert.notNull(contexts, "MappingContexts must not be null!");
-		this.contexts = contexts;
+		this.contexts = Streamable.of(contexts);
 	}
 
 	/**
@@ -55,16 +53,11 @@ public class PersistentEntities implements Iterable<PersistentEntity<?, ?>> {
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
-	public PersistentEntity<?, ?> getPersistentEntity(Class<?> type) {
+	public Optional<PersistentEntity<?, ?>> getPersistentEntity(Class<?> type) {
 
-		for (MappingContext<?, ?> context : contexts) {
-
-			if (context.hasPersistentEntityFor(type)) {
-				return context.getPersistentEntity(type);
-			}
-		}
-
-		return null;
+		return contexts.stream()//
+				.filter(it -> it.hasPersistentEntityFor(type))//
+				.findFirst().map(it -> it.getRequiredPersistentEntity(type));
 	}
 
 	/**
@@ -72,15 +65,11 @@ public class PersistentEntities implements Iterable<PersistentEntity<?, ?>> {
 	 * 
 	 * @return
 	 */
-	public Iterable<TypeInformation<?>> getManagedTypes() {
+	public Streamable<TypeInformation<?>> getManagedTypes() {
 
-		Set<TypeInformation<?>> informations = new HashSet<TypeInformation<?>>();
-
-		for (MappingContext<?, ?> context : contexts) {
-			informations.addAll(context.getManagedTypes());
-		}
-
-		return Collections.unmodifiableSet(informations);
+		return Streamable.of(contexts.stream()//
+				.flatMap(it -> it.getManagedTypes().stream())//
+				.collect(Collectors.toSet()));
 	}
 
 	/* 
@@ -90,12 +79,7 @@ public class PersistentEntities implements Iterable<PersistentEntity<?, ?>> {
 	@Override
 	public Iterator<PersistentEntity<?, ?>> iterator() {
 
-		List<PersistentEntity<?, ?>> entities = new ArrayList<PersistentEntity<?, ?>>();
-
-		for (MappingContext<?, ?> context : contexts) {
-			entities.addAll(context.getPersistentEntities());
-		}
-
-		return entities.iterator();
+		return contexts.stream().<PersistentEntity<?, ?>>flatMap(it -> it.getPersistentEntities().stream())
+				.collect(Collectors.toList()).iterator();
 	}
 }

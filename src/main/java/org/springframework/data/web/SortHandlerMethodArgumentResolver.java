@@ -18,6 +18,7 @@ package org.springframework.data.web;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
@@ -46,7 +47,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	private static final String DEFAULT_PARAMETER = "sort";
 	private static final String DEFAULT_PROPERTY_DELIMITER = ",";
 	private static final String DEFAULT_QUALIFIER_DELIMITER = "_";
-	private static final Sort DEFAULT_SORT = null;
+	private static final Sort DEFAULT_SORT = Sort.unsorted();
 
 	private static final String SORT_DEFAULTS_NAME = SortDefaults.class.getSimpleName();
 	private static final String SORT_DEFAULT_NAME = SortDefault.class.getSimpleName();
@@ -142,14 +143,17 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 		}
 
 		if (annotatedDefault != null) {
-			return appendOrCreateSortTo(annotatedDefault, null);
+			return appendOrCreateSortTo(annotatedDefault, Sort.unsorted());
 		}
 
 		if (annotatedDefaults != null) {
-			Sort sort = null;
+
+			Sort sort = Sort.unsorted();
+
 			for (SortDefault currentAnnotatedDefault : annotatedDefaults.value()) {
 				sort = appendOrCreateSortTo(currentAnnotatedDefault, sort);
 			}
+
 			return sort;
 		}
 
@@ -169,11 +173,10 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 		String[] fields = SpringDataAnnotationUtils.getSpecificPropertyOrDefaultFromValue(sortDefault, "sort");
 
 		if (fields.length == 0) {
-			return null;
+			return Sort.unsorted();
 		}
 
-		Sort sort = new Sort(sortDefault.direction(), fields);
-		return sortOrNull == null ? sort : sortOrNull.and(sort);
+		return sortOrNull.and(new Sort(sortDefault.direction(), fields));
 	}
 
 	/**
@@ -213,25 +216,27 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 			}
 
 			String[] elements = part.split(delimiter);
-			Direction direction = elements.length == 0 ? null : Direction.fromStringOrNull(elements[elements.length - 1]);
 
-			for (int i = 0; i < elements.length; i++) {
+			Optional<Direction> direction = elements.length == 0 ? Optional.empty()
+					: Direction.fromOptionalString(elements[elements.length - 1]);
 
-				if (i == elements.length - 1 && direction != null) {
-					continue;
-				}
+			int lastIndex = direction.map(it -> elements.length - 1).orElseGet(() -> elements.length);
 
-				String property = elements[i];
-
-				if (!StringUtils.hasText(property)) {
-					continue;
-				}
-
-				allOrders.add(new Order(direction, property));
+			for (int i = 0; i < lastIndex; i++) {
+				toOrder(elements[i], direction).ifPresent(it -> allOrders.add(it));
 			}
 		}
 
-		return allOrders.isEmpty() ? null : new Sort(allOrders);
+		return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
+	}
+
+	private static Optional<Order> toOrder(String property, Optional<Direction> direction) {
+
+		if (!StringUtils.hasText(property)) {
+			return Optional.empty();
+		}
+
+		return Optional.of(direction.map(it -> new Order(it, property)).orElseGet(() -> new Order(property)));
 	}
 
 	/**
@@ -243,7 +248,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 */
 	protected List<String> foldIntoExpressions(Sort sort) {
 
-		List<String> expressions = new ArrayList<String>();
+		List<String> expressions = new ArrayList<>();
 		ExpressionBuilder builder = null;
 
 		for (Order order : sort) {
@@ -260,7 +265,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 			builder.add(order.getProperty());
 		}
 
-		return builder == null ? Collections.<String> emptyList() : builder.dumpExpressionIfPresentInto(expressions);
+		return builder == null ? Collections.<String>emptyList() : builder.dumpExpressionIfPresentInto(expressions);
 	}
 
 	/**
@@ -273,7 +278,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 */
 	protected List<String> legacyFoldExpressions(Sort sort) {
 
-		List<String> expressions = new ArrayList<String>();
+		List<String> expressions = new ArrayList<>();
 		ExpressionBuilder builder = null;
 
 		for (Order order : sort) {
@@ -290,7 +295,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 			builder.add(order.getProperty());
 		}
 
-		return builder == null ? Collections.<String> emptyList() : builder.dumpExpressionIfPresentInto(expressions);
+		return builder == null ? Collections.<String>emptyList() : builder.dumpExpressionIfPresentInto(expressions);
 	}
 
 	/**
@@ -300,7 +305,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 */
 	class ExpressionBuilder {
 
-		private final List<String> elements = new ArrayList<String>();
+		private final List<String> elements = new ArrayList<>();
 		private final Direction direction;
 
 		/**
