@@ -106,7 +106,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 			PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
 
 			persistentPropertyAccessor.setProperty(property, Optional.of("value"));
-			assertThat(persistentPropertyAccessor.getProperty(property)).isEqualTo("value");
+			assertThat(persistentPropertyAccessor.getProperty(property)).isEqualTo(Optional.of("value"));
 		});
 	}
 
