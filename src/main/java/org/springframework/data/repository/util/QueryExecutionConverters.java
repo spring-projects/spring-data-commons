@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package org.springframework.data.repository.util;
 
+import scala.Function0;
 import scala.Option;
+import scala.runtime.AbstractFunction0;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -48,6 +50,7 @@ import com.google.common.base.Optional;
  * </ul>
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.8
  */
 public abstract class QueryExecutionConverters {
@@ -416,19 +419,32 @@ public abstract class QueryExecutionConverters {
 	 * A {@link Converter} to unwrap a Scala {@link Option} instance.
 	 *
 	 * @author Oliver Gierke
+	 * @author Mark Paluch
 	 * @author 1.13
 	 */
 	private static enum ScalOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
-		/* 
+		private final Function0<Object> alternative = new AbstractFunction0<Object>() {
+
+			/*
+			 * (non-Javadoc)
+			 * @see scala.Function0#apply()
+			 */
+			@Override
+			public Option<Object> apply() {
+				return null;
+			}
+		};
+
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
 		@Override
 		public Object convert(Object source) {
-			return source instanceof Option ? ((Option<?>) source).orNull(null) : source;
+			return source instanceof Option ? ((Option<?>) source).getOrElse(alternative) : source;
 		}
 	}
 }
