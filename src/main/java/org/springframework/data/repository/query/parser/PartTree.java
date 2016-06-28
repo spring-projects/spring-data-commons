@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class PartTree implements Iterable<OrPart> {
 
@@ -52,9 +53,10 @@ public class PartTree implements Iterable<OrPart> {
 	private static final String KEYWORD_TEMPLATE = "(%s)(?=(\\p{Lu}|\\P{InBASIC_LATIN}))";
 	private static final String QUERY_PATTERN = "find|read|get|query|stream";
 	private static final String COUNT_PATTERN = "count";
+	private static final String EXISTS_PATTERN = "exists";
 	private static final String DELETE_PATTERN = "delete|remove";
 	private static final Pattern PREFIX_TEMPLATE = Pattern.compile( //
-			"^(" + QUERY_PATTERN + "|" + COUNT_PATTERN + "|" + DELETE_PATTERN + ")((\\p{Lu}.*?))??By");
+			"^(" + QUERY_PATTERN + "|" + COUNT_PATTERN + "|" + EXISTS_PATTERN + "|" + DELETE_PATTERN + ")((\\p{Lu}.*?))??By");
 
 	/**
 	 * The subject, for example "findDistinctUserByNameOrderByAge" would have the subject "DistinctUser".
@@ -123,6 +125,16 @@ public class PartTree implements Iterable<OrPart> {
 	 */
 	public Boolean isCountProjection() {
 		return subject.isCountProjection();
+	}
+
+	/**
+	 * Returns whether an exists projection shall be applied.
+	 *
+	 * @return
+	 * @since 1.13
+	 */
+	public Boolean isExistsProjection() {
+		return subject.isExistsProjection();
 	}
 
 	/**
@@ -262,6 +274,7 @@ public class PartTree implements Iterable<OrPart> {
 
 		private static final String DISTINCT = "Distinct";
 		private static final Pattern COUNT_BY_TEMPLATE = Pattern.compile("^count(\\p{Lu}.*?)??By");
+		private static final Pattern EXISTS_BY_TEMPLATE = Pattern.compile("^(" + EXISTS_PATTERN + ")(\\p{Lu}.*?)??By");
 		private static final Pattern DELETE_BY_TEMPLATE = Pattern.compile("^(" + DELETE_PATTERN + ")(\\p{Lu}.*?)??By");
 		private static final String LIMITING_QUERY_PATTERN = "(First|Top)(\\d*)?";
 		private static final Pattern LIMITED_QUERY_TEMPLATE = Pattern.compile("^(" + QUERY_PATTERN + ")(" + DISTINCT + ")?"
@@ -269,6 +282,7 @@ public class PartTree implements Iterable<OrPart> {
 
 		private final boolean distinct;
 		private final boolean count;
+		private final boolean exists;
 		private final boolean delete;
 		private final Integer maxResults;
 
@@ -276,6 +290,7 @@ public class PartTree implements Iterable<OrPart> {
 
 			this.distinct = subject == null ? false : subject.contains(DISTINCT);
 			this.count = matches(subject, COUNT_BY_TEMPLATE);
+			this.exists = matches(subject, EXISTS_BY_TEMPLATE);
 			this.delete = matches(subject, DELETE_BY_TEMPLATE);
 			this.maxResults = returnMaxResultsIfFirstKSubjectOrNull(subject);
 		}
@@ -312,6 +327,16 @@ public class PartTree implements Iterable<OrPart> {
 
 		public boolean isCountProjection() {
 			return count;
+		}
+
+		/**
+		 * Returns {@literal true} if {@link Subject} matches {@link #EXISTS_BY_TEMPLATE}.
+		 *
+		 * @return
+		 * @since 1.13
+		 */
+		public boolean isExistsProjection() {
+			return exists;
 		}
 
 		public boolean isDistinct() {
