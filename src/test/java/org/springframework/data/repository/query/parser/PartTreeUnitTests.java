@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,10 +44,11 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * @author Thomas Darimont
  * @author Martin Baumgartner
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class PartTreeUnitTests {
 
-	private String[] PREFIXES = { "find", "read", "get", "query", "stream", "count", "delete", "remove" };
+	private String[] PREFIXES = { "find", "read", "get", "query", "stream", "count", "delete", "remove", "exists" };
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullSource() throws Exception {
@@ -437,6 +438,16 @@ public class PartTreeUnitTests {
 	}
 
 	/**
+	 * @see DATACMNS-875
+	 */
+	@Test
+	public void identifiesSimpleExistsByCorrectly() {
+
+		PartTree tree = new PartTree("existsByLastname", User.class);
+		assertThat(tree.isExistsProjection(), is(true));
+	}
+
+	/**
 	 * @see DATACMNS-399
 	 */
 	@Test
@@ -650,6 +661,16 @@ public class PartTreeUnitTests {
 	public void shouldNotSupportLimitingCountQueries() {
 		assertLimiting("countFirst10DistinctUsersByLastname", User.class, false, null, true);
 		assertLimiting("countTop10DistinctUsersByLastname", User.class, false, null, true);
+	}
+
+	/**
+	 * @see DATACMNS-875
+	 */
+	@Test
+	public void shouldNotSupportLimitingExistQueries() {
+
+		assertLimiting("existsFirst10DistinctUsersByLastname", User.class, false, null, true);
+		assertLimiting("existsTop10DistinctUsersByLastname", User.class, false, null, true);
 	}
 
 	/**
