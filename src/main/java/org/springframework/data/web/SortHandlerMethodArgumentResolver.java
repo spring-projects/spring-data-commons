@@ -53,7 +53,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 
 	private Sort fallbackSort = DEFAULT_SORT;
 	private String sortParameter = DEFAULT_PARAMETER;
-	private String propertyDelimiter = DEFAULT_PROPERTY_DELIMITER;
+	protected String propertyDelimiter = DEFAULT_PROPERTY_DELIMITER;
 	private String qualifierDelimiter = DEFAULT_QUALIFIER_DELIMITER;
 
 	/**
@@ -130,7 +130,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 	 * @return the default {@link Sort} instance derived from the parameter annotations or the configured fallback-sort
 	 *         {@link #setFallbackSort(Sort)}.
 	 */
-	private Sort getDefaultFromAnnotationOrFallback(MethodParameter parameter) {
+	protected Sort getDefaultFromAnnotationOrFallback(MethodParameter parameter) {
 
 		SortDefaults annotatedDefaults = parameter.getParameterAnnotation(SortDefaults.class);
 		SortDefault annotatedDefault = parameter.getParameterAnnotation(SortDefault.class);

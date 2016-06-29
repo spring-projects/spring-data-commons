@@ -15,12 +15,6 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.springframework.data.domain.Sort.Direction.*;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,22 +29,33 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
+import javax.servlet.http.HttpServletRequest;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.springframework.data.domain.Sort.Direction.*;
+
 /**
- * Unit tests for {@link SortHandlerMethodArgumentResolver}.
- * 
+ * Unit tests for {@link SimpleSortHandlerMethodArgumentResolver}.
+ *
  * @since 1.6
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Nick Williams
+ * @author Muhammad Ichsan
  */
-public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
+public class SimpleSortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
 	static MethodParameter PARAMETER;
 
 	static final String SORT_0 = "username";
-	static final String SORT_1 = "username,asc";
-	static final String[] SORT_2 = new String[] { "username,ASC", "lastname,firstname,DESC" };
-	static final String SORT_3 = "firstname,lastname";
+	static final String SORT_1 = "firstname,lastname";
+	static final String SORT_2 = "-created,title";
+	static final String SORT_3 = "username,asc";
 
 	@BeforeClass
 	public static void setUp() throws Exception {
@@ -59,23 +64,38 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 	@Override
 	protected HandlerMethodArgumentResolver getResolver() {
-		return new SortHandlerMethodArgumentResolver();
+		return new SimpleSortHandlerMethodArgumentResolver();
 	}
 
+	/**
+	 * @see DATACMNS-531
+	 */
 	@Test
 	public void parsesSimpleSortStringCorrectly() {
-		assertSortStringParsedInto(new Sort(new Order("username")), SORT_1);
-		assertSortStringParsedInto(new Sort(new Order(ASC, "username")), SORT_1);
-		assertSortStringParsedInto(new Sort(new Order(ASC, "username"), //
-				new Order(DESC, "lastname"), new Order(DESC, "firstname")), SORT_2);
-		assertSortStringParsedInto(new Sort("firstname", "lastname"), SORT_3);
+		assertSortStringParsedInto(new Sort(new Order("username")), SORT_0);
+		assertSortStringParsedInto(new Sort("firstname", "lastname"), SORT_1);
+		assertSortStringParsedInto(new Sort(new Order(DESC, "created"), new Order(ASC, "title")), SORT_2);
+		assertSortStringParsedInto(new Sort("username", "asc"), SORT_3);
 	}
 
-	private static void assertSortStringParsedInto(Sort expected, String... source) {
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+	private static void assertSortStringParsedInto(Sort expected, String source) {
+		SimpleSortHandlerMethodArgumentResolver resolver = new SimpleSortHandlerMethodArgumentResolver();
 		Sort sort = resolver.parseParameterIntoSort(source, ",");
 
 		assertThat(sort, is(expected));
+	}
+
+	/**
+	 * @see DATACMNS-531
+	 */
+	@Test
+	public void supportsCustomAscendingSign() {
+		SimpleSortHandlerMethodArgumentResolver resolver = new SimpleSortHandlerMethodArgumentResolver();
+		resolver.setAscendingSign("+");
+		Sort sort = resolver.parseParameterIntoSort("+name,-created,-modified,+subject", ",");
+
+		assertThat(sort, is(new Sort(new Order("name"), new Order(DESC, "created"),
+				new Order(DESC, "modified"), new Order("subject"))));
 	}
 
 	/**
@@ -85,7 +105,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	public void fallbackToGivenDefaultSort() throws Exception {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		SimpleSortHandlerMethodArgumentResolver resolver = new SimpleSortHandlerMethodArgumentResolver();
 		Sort fallbackSort = new Sort(Direction.ASC, "ID");
 		resolver.setFallbackSort(fallbackSort);
 
@@ -100,7 +120,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	public void fallbackToDefaultDefaultSort() throws Exception {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		SimpleSortHandlerMethodArgumentResolver resolver = new SimpleSortHandlerMethodArgumentResolver();
 
 		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
 		assertThat(sort, is(nullValue()));
@@ -142,7 +162,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("sort", (String) null);
 
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		SimpleSortHandlerMethodArgumentResolver resolver = new SimpleSortHandlerMethodArgumentResolver();
 		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
 		assertThat(result, is(nullValue()));
 	}
@@ -157,9 +177,9 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		MethodParameter parameter = getParameterOfMethod("supportedMethod");
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addParameter("sort", SORT_3);
+		request.addParameter("sort", SORT_1);
 
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		SimpleSortHandlerMethodArgumentResolver resolver = new SimpleSortHandlerMethodArgumentResolver();
 		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
 		assertThat(result, is(new Sort(Direction.ASC, "firstname", "lastname")));
 	}
@@ -181,9 +201,8 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	 */
 	@Test
 	public void sortParamIsInvalidProperty() throws Exception {
-
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addParameter("sort", ",DESC");
+		request.addParameter("sort", "-");
 
 		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
 	}
@@ -193,21 +212,16 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	 */
 	@Test
 	public void sortParamIsInvalidPropertyWhenMultiProperty() throws Exception {
-
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addParameter("sort", "property1,,DESC");
+		request.addParameter("sort", "-property1,,");
 
 		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property1")));
 	}
 
-	/**
-	 * @see DATACMNS-408
-	 */
 	@Test
-	public void sortParamIsEmptyWhenMultiParams() throws Exception {
-
+	public void sortParamOnlyTakeTheFirstSort() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addParameter("sort", "property,DESC");
+		request.addParameter("sort", "-property");
 		request.addParameter("sort", "");
 
 		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property")));
@@ -240,13 +254,13 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
 
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		SimpleSortHandlerMethodArgumentResolver resolver = new SimpleSortHandlerMethodArgumentResolver();
 		return resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
 	}
 
 	private static void assertSupportedAndResolvedTo(NativeWebRequest request, MethodParameter parameter, Sort sort) {
 
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		SimpleSortHandlerMethodArgumentResolver resolver = new SimpleSortHandlerMethodArgumentResolver();
 		assertThat(resolver.supportsParameter(parameter), is(true));
 
 		try {
@@ -260,6 +274,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		return getRequestWithSort(sort, null);
 	}
 
+	// Specialized for DATACMNS-531
 	private static NativeWebRequest getRequestWithSort(Sort sort, String qualifier) {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -268,11 +283,17 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 			return new ServletWebRequest(request);
 		}
 
+		String prefix = StringUtils.hasText(qualifier) ? qualifier + "_" : "";
+		List<String> construction = new ArrayList<String>();
 		for (Order order : sort) {
-
-			String prefix = StringUtils.hasText(qualifier) ? qualifier + "_" : "";
-			request.addParameter(prefix + "sort", String.format("%s,%s", order.getProperty(), order.getDirection().name()));
+			String sign = "";
+			if (order.getDirection() == DESC) {
+				sign = "-";
+			}
+			construction.add(String.format("%s%s", sign, order.getProperty()));
 		}
+
+		request.addParameter(prefix + "sort", StringUtils.arrayToDelimitedString(construction.toArray(), ","));
 
 		return new ServletWebRequest(request);
 	}
@@ -290,13 +311,13 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 		void qualifiedSort(@Qualifier("qual") Sort sort);
 
-		void simpleDefault(@SortDefault({ "firstname", "lastname" }) Sort sort);
+		void simpleDefault(@SortDefault({"firstname", "lastname"}) Sort sort);
 
 		void simpleDefaultWithDirection(
-				@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC) Sort sort);
+				@SortDefault(sort = {"firstname", "lastname"}, direction = Direction.DESC) Sort sort);
 
-		void containeredDefault(@SortDefaults(@SortDefault({ "foo", "bar" })) Sort sort);
+		void containeredDefault(@SortDefaults(@SortDefault({"foo", "bar"})) Sort sort);
 
-		void invalid(@SortDefaults(@SortDefault({ "foo", "bar" })) @SortDefault({ "bar", "foo" }) Sort sort);
+		void invalid(@SortDefaults(@SortDefault({"foo", "bar"})) @SortDefault({"bar", "foo"}) Sort sort);
 	}
 }
