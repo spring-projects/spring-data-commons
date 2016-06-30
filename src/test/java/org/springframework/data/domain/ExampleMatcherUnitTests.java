@@ -29,6 +29,7 @@ import org.springframework.data.domain.ExampleMatcher.StringMatcher;
  * Unit test for {@link ExampleMatcher}.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @soundtrack K2 - Der Berg Ruft (Club Mix)
  */
 public class ExampleMatcherUnitTests {
@@ -174,6 +175,36 @@ public class ExampleMatcherUnitTests {
 
 		assertThat(configuredExampleSpec.getIgnoredPaths(), hasSize(2));
 		assertThat(configuredExampleSpec.isIgnoreCaseEnabled(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-879
+	 */
+	@Test
+	public void defaultMatcherRequiresAllMatching() {
+
+		assertThat(matching().isAllMatching(), is(true));
+		assertThat(matching().isAnyMatching(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-879
+	 */
+	@Test
+	public void allMatcherRequiresAllMatching() {
+
+		assertThat(matchingAll().isAllMatching(), is(true));
+		assertThat(matchingAll().isAnyMatching(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-879
+	 */
+	@Test
+	public void anyMatcherYieldsAnyMatching() {
+
+		assertThat(matchingAny().isAnyMatching(), is(true));
+		assertThat(matchingAny().isAllMatching(), is(false));
 	}
 
 	static class Person {

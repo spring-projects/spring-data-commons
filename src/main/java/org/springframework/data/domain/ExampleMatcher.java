@@ -20,6 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.Wither;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,6 +44,7 @@ import org.springframework.util.Assert;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @param <T>
  * @since 1.12
  */
@@ -57,19 +59,45 @@ public class ExampleMatcher {
 	PropertySpecifiers propertySpecifiers;
 	Set<String> ignoredPaths;
 	boolean defaultIgnoreCase;
+	@Wither(AccessLevel.PRIVATE) MatchMode mode;
 
 	private ExampleMatcher() {
-		this(NullHandler.IGNORE, StringMatcher.DEFAULT, new PropertySpecifiers(), Collections.<String> emptySet(), false);
+		this(NullHandler.IGNORE, StringMatcher.DEFAULT, new PropertySpecifiers(), Collections.<String>emptySet(), false,
+				MatchMode.ALL);
 	}
 
 	/**
-	 * Create a new untyped {@link ExampleMatcher} including all non-null properties by default.
+	 * Create a new {@link ExampleMatcher} including all non-null properties by default exposing that all resulting
+	 * predicates are supposed to be AND-concatenated.
 	 *
-	 * @param type must not be {@literal null}.
+	 * @param type will never be {@literal null}.
 	 * @return
+	 * @see #matchingAll()
 	 */
 	public static ExampleMatcher matching() {
-		return new ExampleMatcher();
+		return matchingAll();
+	}
+
+	/**
+	 * Create a new {@link ExampleMatcher} including all non-null properties by default matching any predicate derived
+	 * from the example.
+	 *
+	 * @param type will never be {@literal null}.
+	 * @return
+	 */
+	public static ExampleMatcher matchingAny() {
+		return new ExampleMatcher().withMode(MatchMode.ANY);
+	}
+
+	/**
+	 * Create a new {@link ExampleMatcher} including all non-null properties by default matching all predicates derived
+	 * from the example.
+	 *
+	 * @param type will never be {@literal null}.
+	 * @return
+	 */
+	public static ExampleMatcher matchingAll() {
+		return new ExampleMatcher().withMode(MatchMode.ALL);
 	}
 
 	/**
@@ -87,8 +115,8 @@ public class ExampleMatcher {
 		Set<String> newIgnoredPaths = new LinkedHashSet<String>(this.ignoredPaths);
 		newIgnoredPaths.addAll(Arrays.asList(ignoredPaths));
 
-		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, newIgnoredPaths,
-				defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, newIgnoredPaths, defaultIgnoreCase,
+				mode);
 	}
 
 	/**
@@ -102,7 +130,8 @@ public class ExampleMatcher {
 
 		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty!");
 
-		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
+				mode);
 	}
 
 	/**
@@ -123,7 +152,8 @@ public class ExampleMatcher {
 	 * @return
 	 */
 	public ExampleMatcher withIgnoreCase(boolean defaultIgnoreCase) {
-		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
+				mode);
 	}
 
 	/**
@@ -175,7 +205,8 @@ public class ExampleMatcher {
 
 		propertySpecifiers.add(propertySpecifier);
 
-		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
+				mode);
 	}
 
 	/**
@@ -196,7 +227,8 @@ public class ExampleMatcher {
 
 		propertySpecifiers.add(propertySpecifier.withValueTransformer(propertyValueTransformer));
 
-		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
+				mode);
 	}
 
 	/**
@@ -218,7 +250,8 @@ public class ExampleMatcher {
 			propertySpecifiers.add(propertySpecifier.withIgnoreCase(true));
 		}
 
-		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
+				mode);
 	}
 
 	private PropertySpecifier getOrCreatePropertySpecifier(String propertyPath, PropertySpecifiers propertySpecifiers) {
@@ -237,8 +270,7 @@ public class ExampleMatcher {
 	 * @return
 	 */
 	public ExampleMatcher withIncludeNullValues() {
-		return new ExampleMatcher(NullHandler.INCLUDE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+		return withNullHandler(NullHandler.INCLUDE);
 	}
 
 	/**
@@ -248,8 +280,7 @@ public class ExampleMatcher {
 	 * @return
 	 */
 	public ExampleMatcher withIgnoreNullValues() {
-		return new ExampleMatcher(NullHandler.IGNORE, defaultStringMatcher, propertySpecifiers, ignoredPaths,
-				defaultIgnoreCase);
+		return withNullHandler(NullHandler.IGNORE);
 	}
 
 	/**
@@ -262,7 +293,8 @@ public class ExampleMatcher {
 	public ExampleMatcher withNullHandler(NullHandler nullHandler) {
 
 		Assert.notNull(nullHandler, "NullHandler must not be null!");
-		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase);
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
+				mode);
 	}
 
 	/**
@@ -310,6 +342,26 @@ public class ExampleMatcher {
 	 */
 	public PropertySpecifiers getPropertySpecifiers() {
 		return propertySpecifiers;
+	}
+
+	/**
+	 * Returns whether all of the predicates of the {@link Example} are supposed to match. If {@literal false} is
+	 * returned, it's sufficient if any of the predicates derived from the {@link Example} match.
+	 * 
+	 * @return whether all of the predicates of the {@link Example} are supposed to match or any of them is sufficient.
+	 */
+	public boolean isAllMatching() {
+		return mode.equals(MatchMode.ALL);
+	}
+
+	/**
+	 * Returns whether it's sufficient that any of the predicates of the {@link Example} match. If {@literal false} is
+	 * returned, all predicates derived from the example need to match to produce results.
+	 * 
+	 * @return whether it's sufficient that any of the predicates of the {@link Example} match or all need to match.
+	 */
+	public boolean isAnyMatching() {
+		return mode.equals(MatchMode.ANY);
 	}
 
 	/**
@@ -779,5 +831,16 @@ public class ExampleMatcher {
 		public Collection<PropertySpecifier> getSpecifiers() {
 			return propertySpecifiers.values();
 		}
+	}
+
+	/**
+	 * The match modes to expose so that clients can find about how to concatenate the predicates.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.13
+	 * @see ExampleMatcher#isAllMatching()
+	 */
+	private static enum MatchMode {
+		ALL, ANY;
 	}
 }

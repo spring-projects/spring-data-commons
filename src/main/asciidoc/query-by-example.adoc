@@ -27,7 +27,6 @@ Query by Example is suited for several use-cases but also comes with limitations
 
 **Limitations**
 
-* Query predicates are combined using the `AND` keyword
 * No support for nested/grouped property constraints like `firstname = ?0 or (firstname = ?1 and lastname = ?2)`
 * Only supports starts/contains/ends/regex matching for strings and exact matching for other property types
 
@@ -107,12 +106,14 @@ Example<Person> example = Example.of(person, matcher); <7>
 ----
 <1> Create a new instance of the domain object.
 <2> Set properties.
-<3> Create an `ExampleMatcher` which is usable at this stage even without further configuration.
+<3> Create an `ExampleMatcher` to expect all values to match. It's usable at this stage even without further configuration.
 <4> Construct a new `ExampleMatcher` to ignore the property path `lastname`.
 <5> Construct a new `ExampleMatcher` to ignore the property path `lastname` and to include null values.
 <6> Construct a new `ExampleMatcher` to ignore the property path `lastname`, to include null values, and use perform suffix string matching.
 <7> Create a new `Example` based on the domain object and the configured `ExampleMatcher`.
 ====
+
+By default the `ExampleMatcher` will expect all values set on the probe to match. If you want to get results matching any of the predicates defined implicitly, use `ExampleMatcher.matchingAny()`.
 
 You can specify behavior for individual properties (e.g. "firstname" and "lastname", "address.city" for nested properties). You can tune it with matching options and case sensitivity.
 
@@ -164,4 +165,3 @@ Queries created by `Example` use a merged view of the configuration. Default mat
 | Property path
 
 |===
-
