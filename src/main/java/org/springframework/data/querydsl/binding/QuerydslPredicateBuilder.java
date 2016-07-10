@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.CollectionPathBase;
 
 /**
  * Builder assembling {@link Predicate} out of {@link PropertyValues}.
@@ -101,7 +102,7 @@ public class QuerydslPredicateBuilder {
 
 			String path = entry.getKey();
 
-			if (!bindings.isPathVisible(path, type.getType())) {
+			if (!bindings.isPathAvailable(path, type)) {
 				continue;
 			}
 
@@ -178,6 +179,10 @@ public class QuerydslPredicateBuilder {
 	 * @return
 	 */
 	private Path<?> reifyPath(PropertyPath path, Path<?> base) {
+
+		if (base instanceof CollectionPathBase) {
+			return reifyPath(path, (Path<?>) ((CollectionPathBase<?, ?, ?>) base).any());
+		}
 
 		Path<?> entityPath = base != null ? base : resolver.createPath(path.getOwningType().getType());
 
