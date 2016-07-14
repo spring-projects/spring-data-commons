@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.PropertySpecifier;
+import org.springframework.util.Assert;
 
 /**
  * Accessor for the {@link ExampleMatcher} to use in modules that support query by example (QBE) querying.
@@ -29,10 +30,18 @@ import org.springframework.data.domain.ExampleMatcher.PropertySpecifier;
  */
 public class ExampleMatcherAccessor {
 
-	private final ExampleMatcher specification;
+	private final ExampleMatcher matcher;
 
-	public ExampleMatcherAccessor(ExampleMatcher specification) {
-		this.specification = specification;
+	/**
+	 * Creates a new {@link ExampleMatcherAccessor} for the given {@link ExampleMatcher}.
+	 * 
+	 * @param matcher must not be {@literal null}.
+	 */
+	public ExampleMatcherAccessor(ExampleMatcher matcher) {
+
+		Assert.notNull(matcher, "ExampleMatcher must not be null!");
+
+		this.matcher = matcher;
 	}
 
 	/**
@@ -41,7 +50,7 @@ public class ExampleMatcherAccessor {
 	 * @return unmodifiable {@link Collection} of {@link ExampleMatcher.PropertySpecifier}s.
 	 */
 	public Collection<ExampleMatcher.PropertySpecifier> getPropertySpecifiers() {
-		return specification.getPropertySpecifiers().getSpecifiers();
+		return matcher.getPropertySpecifiers().getSpecifiers();
 	}
 
 	/**
@@ -51,7 +60,7 @@ public class ExampleMatcherAccessor {
 	 * @return {@literal true} in case {@link ExampleMatcher.PropertySpecifier} defined for given path.
 	 */
 	public boolean hasPropertySpecifier(String path) {
-		return specification.getPropertySpecifiers().hasSpecifierForPath(path);
+		return matcher.getPropertySpecifiers().hasSpecifierForPath(path);
 	}
 
 	/**
@@ -62,14 +71,14 @@ public class ExampleMatcherAccessor {
 	 * @return {@literal null} when no {@link ExampleMatcher.PropertySpecifier} defined for path.
 	 */
 	public ExampleMatcher.PropertySpecifier getPropertySpecifier(String path) {
-		return specification.getPropertySpecifiers().getForPath(path);
+		return matcher.getPropertySpecifiers().getForPath(path);
 	}
 
 	/**
 	 * @return true if at least one {@link ExampleMatcher.PropertySpecifier} defined.
 	 */
 	public boolean hasPropertySpecifiers() {
-		return specification.getPropertySpecifiers().hasValues();
+		return matcher.getPropertySpecifiers().hasValues();
 	}
 
 	/**
@@ -81,12 +90,11 @@ public class ExampleMatcherAccessor {
 	public ExampleMatcher.StringMatcher getStringMatcherForPath(String path) {
 
 		if (!hasPropertySpecifier(path)) {
-			return specification.getDefaultStringMatcher();
+			return matcher.getDefaultStringMatcher();
 		}
 
 		ExampleMatcher.PropertySpecifier specifier = getPropertySpecifier(path);
-		return specifier.getStringMatcher() != null ? specifier.getStringMatcher()
-				: specification.getDefaultStringMatcher();
+		return specifier.getStringMatcher() != null ? specifier.getStringMatcher() : matcher.getDefaultStringMatcher();
 	}
 
 	/**
@@ -95,7 +103,7 @@ public class ExampleMatcherAccessor {
 	 * @return never {@literal null}
 	 */
 	public ExampleMatcher.NullHandler getNullHandler() {
-		return specification.getNullHandler();
+		return matcher.getNullHandler();
 	}
 
 	/**
@@ -104,14 +112,14 @@ public class ExampleMatcherAccessor {
 	 * @return never {@literal null}.
 	 */
 	public ExampleMatcher.StringMatcher getDefaultStringMatcher() {
-		return specification.getDefaultStringMatcher();
+		return matcher.getDefaultStringMatcher();
 	}
 
 	/**
 	 * @return {@literal true} if {@link String} should be matched with ignore case option.
 	 */
 	public boolean isIgnoreCaseEnabled() {
-		return specification.isIgnoreCaseEnabled();
+		return matcher.isIgnoreCaseEnabled();
 	}
 
 	/**
@@ -119,7 +127,7 @@ public class ExampleMatcherAccessor {
 	 * @return return {@literal true} if path was set to be ignored.
 	 */
 	public boolean isIgnoredPath(String path) {
-		return specification.isIgnoredPath(path);
+		return matcher.isIgnoredPath(path);
 	}
 
 	/**
@@ -131,12 +139,11 @@ public class ExampleMatcherAccessor {
 	public boolean isIgnoreCaseForPath(String path) {
 
 		if (!hasPropertySpecifier(path)) {
-			return specification.isIgnoreCaseEnabled();
+			return matcher.isIgnoreCaseEnabled();
 		}
 
 		ExampleMatcher.PropertySpecifier specifier = getPropertySpecifier(path);
-		return specifier.getIgnoreCase() != null ? specifier.getIgnoreCase().booleanValue()
-				: specification.isIgnoreCaseEnabled();
+		return specifier.getIgnoreCase() != null ? specifier.getIgnoreCase().booleanValue() : matcher.isIgnoreCaseEnabled();
 	}
 
 	/**
