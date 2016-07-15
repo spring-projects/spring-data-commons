@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.querydsl.binding;
+
+import static org.springframework.data.querydsl.QueryDslUtils.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,7 +34,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Path;
-import com.querydsl.core.types.PathMetadata;
 import com.querydsl.core.types.Predicate;
 
 /**
@@ -158,8 +159,34 @@ public class QuerydslBindings {
 		return this;
 	}
 
-	public boolean isPathVisible(String path, Class<?> type) {
-		return getPropertyPath(path, ClassTypeInformation.from(type)) != null;
+	/**
+	 * Returns whether the given path is available on the given type.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	boolean isPathAvailable(String path, Class<?> type) {
+
+		Assert.notNull(path, "Path must not be null!");
+		Assert.notNull(type, "Type must not be null!");
+
+		return isPathAvailable(path, ClassTypeInformation.from(type));
+	}
+
+	/**
+	 * Returns whether the given path is available on the given type.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @param type
+	 * @return
+	 */
+	boolean isPathAvailable(String path, TypeInformation<?> type) {
+
+		Assert.notNull(path, "Path must not be null!");
+		Assert.notNull(type, "Type must not be null!");
+
+		return getPropertyPath(path, type) != null;
 	}
 
 	/**
@@ -198,6 +225,8 @@ public class QuerydslBindings {
 	 */
 	Path<?> getExistingPath(PropertyPath path) {
 
+		Assert.notNull(path, "PropertyPath must not be null!");
+
 		PathAndBinding<?, ?> pathAndBuilder = pathSpecs.get(path.toDotPath());
 		return pathAndBuilder == null ? null : pathAndBuilder.getPath();
 	}
@@ -208,6 +237,8 @@ public class QuerydslBindings {
 	 * @return
 	 */
 	PropertyPath getPropertyPath(String path, TypeInformation<?> type) {
+
+		Assert.notNull(path, "Path must not be null!");
 
 		if (!isPathVisible(path)) {
 			return null;
@@ -270,23 +301,6 @@ public class QuerydslBindings {
 		}
 
 		return whiteList.contains(path);
-	}
-
-	/**
-	 * Returns the property path for the given {@link Path}.
-	 * 
-	 * @param path can be {@literal null}.
-	 * @return
-	 */
-	private static String toDotPath(Path<?> path) {
-
-		if (path == null) {
-			return "";
-		}
-
-		PathMetadata metadata = path.getMetadata();
-
-		return path.toString().substring(metadata.getRootPath().getMetadata().getName().length() + 1);
 	}
 
 	/**

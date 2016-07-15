@@ -129,7 +129,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.bind(String.class).first(CONTAINS_BINDING);
 
-		assertThat(bindings.isPathVisible("inceptionYear", User.class), is(true));
+		assertThat(bindings.isPathAvailable("inceptionYear", User.class), is(true));
 	}
 
 	/**
@@ -140,7 +140,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.including(QUser.user.inceptionYear);
 
-		assertThat(bindings.isPathVisible("inceptionYear", User.class), is(true));
+		assertThat(bindings.isPathAvailable("inceptionYear", User.class), is(true));
 	}
 
 	/**
@@ -151,7 +151,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.including(QUser.user.inceptionYear);
 
-		assertThat(bindings.isPathVisible("firstname", User.class), is(false));
+		assertThat(bindings.isPathAvailable("firstname", User.class), is(false));
 	}
 
 	/**
@@ -162,7 +162,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.excluding(QUser.user.inceptionYear);
 
-		assertThat(bindings.isPathVisible("inceptionYear", User.class), is(false));
+		assertThat(bindings.isPathAvailable("inceptionYear", User.class), is(false));
 	}
 
 	/**
@@ -173,7 +173,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.excluding(QUser.user.inceptionYear);
 
-		assertThat(bindings.isPathVisible("firstname", User.class), is(true));
+		assertThat(bindings.isPathAvailable("firstname", User.class), is(true));
 	}
 
 	/**
@@ -185,7 +185,7 @@ public class QuerydslBindingsUnitTests {
 		bindings.excluding(QUser.user.firstname);
 		bindings.including(QUser.user.firstname);
 
-		assertThat(bindings.isPathVisible("firstname", User.class), is(true));
+		assertThat(bindings.isPathAvailable("firstname", User.class), is(true));
 	}
 
 	/**
@@ -196,7 +196,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.excluding(QUser.user.address);
 
-		assertThat(bindings.isPathVisible("address.city", User.class), is(false));
+		assertThat(bindings.isPathAvailable("address.city", User.class), is(false));
 	}
 
 	/**
@@ -208,7 +208,7 @@ public class QuerydslBindingsUnitTests {
 		bindings.excluding(QUser.user.address);
 		bindings.including(QUser.user.address.city);
 
-		assertThat(bindings.isPathVisible("address.city", User.class), is(true));
+		assertThat(bindings.isPathAvailable("address.city", User.class), is(true));
 	}
 
 	/**
@@ -220,7 +220,7 @@ public class QuerydslBindingsUnitTests {
 		bindings.excluding(QUser.user.address);
 		bindings.including(QUser.user.address.city);
 
-		assertThat(bindings.isPathVisible("address.street", User.class), is(false));
+		assertThat(bindings.isPathAvailable("address.street", User.class), is(false));
 	}
 
 	/**
@@ -231,10 +231,10 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.including(QUser.user.firstname, QUser.user.address.street);
 
-		assertThat(bindings.isPathVisible("firstname", User.class), is(true));
-		assertThat(bindings.isPathVisible("address.street", User.class), is(true));
-		assertThat(bindings.isPathVisible("lastname", User.class), is(false));
-		assertThat(bindings.isPathVisible("address.city", User.class), is(false));
+		assertThat(bindings.isPathAvailable("firstname", User.class), is(true));
+		assertThat(bindings.isPathAvailable("address.street", User.class), is(true));
+		assertThat(bindings.isPathAvailable("lastname", User.class), is(false));
+		assertThat(bindings.isPathAvailable("address.city", User.class), is(false));
 	}
 
 	/**
@@ -264,10 +264,10 @@ public class QuerydslBindingsUnitTests {
 		PropertyPath path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
 
 		assertThat(path, is(notNullValue()));
-		assertThat(bindings.isPathVisible("city", User.class), is(true));
+		assertThat(bindings.isPathAvailable("city", User.class), is(true));
 
 		// Aliasing implicitly blacklists original path
-		assertThat(bindings.isPathVisible("address.city", User.class), is(false));
+		assertThat(bindings.isPathAvailable("address.city", User.class), is(false));
 	}
 
 	/**
@@ -282,9 +282,9 @@ public class QuerydslBindingsUnitTests {
 		PropertyPath path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
 
 		assertThat(path, is(notNullValue()));
-		assertThat(bindings.isPathVisible("city", User.class), is(true));
+		assertThat(bindings.isPathAvailable("city", User.class), is(true));
 
-		assertThat(bindings.isPathVisible("address.city", User.class), is(true));
+		assertThat(bindings.isPathAvailable("address.city", User.class), is(true));
 
 		PropertyPath propertyPath = bindings.getPropertyPath("address.city", ClassTypeInformation.from(User.class));
 		assertThat(propertyPath, is(notNullValue()));
