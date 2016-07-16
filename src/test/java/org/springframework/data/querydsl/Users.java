@@ -16,6 +16,7 @@
 package org.springframework.data.querydsl;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,9 +30,13 @@ public class Users {
 
 	static {
 
-		OLIVER = new User("Oliver", "Gierke", new Address("Somewhere", "Dresden"));
-		CHRISTOPH = new User("Christoph", "Strobl", new Address("Somewhere", "Linz"));
+		Address linz = new Address("Somewhere", "Linz");
+		Address dresden = new Address("Somewhere", "Dresden");
+
+		OLIVER = new User("Oliver", "Gierke", dresden, Arrays.asList(linz));
+		CHRISTOPH = new User("Christoph", "Strobl", linz, Collections.EMPTY_LIST);
 
 		USERS = Arrays.asList(OLIVER, CHRISTOPH);
 	}
+
 }

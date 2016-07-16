@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.querydsl.core.types.dsl.ListPath;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
@@ -47,6 +48,7 @@ import com.querydsl.core.types.Predicate;
  * 
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author Tanapol Nearunchorn
  * @since 1.11
  */
 public class QuerydslPredicateBuilder {
@@ -185,6 +187,10 @@ public class QuerydslPredicateBuilder {
 		Object value = ReflectionUtils.getField(field, entityPath);
 
 		if (path.hasNext()) {
+			if (value instanceof ListPath) {
+				ListPath listPath = (ListPath) value;
+				return reifyPath(path.next(), (Path<?>) listPath.any());
+			}
 			return reifyPath(path.next(), (Path<?>) value);
 		}
 

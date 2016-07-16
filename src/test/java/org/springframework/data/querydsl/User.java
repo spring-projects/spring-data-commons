@@ -36,11 +36,13 @@ public class User {
 	public Address address;
 	public List<String> nickNames;
 	public Long inceptionYear;
+	public List<Address> oldAddresses;
 
-	public User(String firstname, String lastname, Address address) {
+	public User(String firstname, String lastname, Address address, List<Address> oldAddresses) {
 
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.address = address;
+		this.oldAddresses = oldAddresses;
 	}
 }

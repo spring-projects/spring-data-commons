@@ -37,6 +37,7 @@ import com.querydsl.core.types.dsl.StringPath;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Tanapol Nearunchorn
  */
 public class QuerydslBindingsUnitTests {
 
@@ -305,6 +306,43 @@ public class QuerydslBindingsUnitTests {
 
 		MultiValueBinding<Path<? extends Object>, Object> binding = bindings.getBindingForPath(path);
 		assertThat(binding, is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-883
+	 */
+	@Test
+	public void registerAliasForListPath() {
+
+		bindings.bind(QUser.user.oldAddresses.any().city).as("oldCity").withDefaultBinding();
+
+		PropertyPath path = bindings.getPropertyPath("oldCity", ClassTypeInformation.from(User.class));
+		assertThat(path, is(notNullValue()));
+
+		MultiValueBinding<Path<? extends Object>, Object> binding = bindings.getBindingForPath(path);
+		assertThat(binding, is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-883
+	 */
+	@Test
+	public void explicitlyIncludesListPath() {
+
+		bindings.including(QUser.user.oldAddresses.any().city);
+		bindings.bind(QUser.user.oldAddresses.any().city).as("oldCity").first(CONTAINS_BINDING);
+
+		PropertyPath path = bindings.getPropertyPath("oldCity", ClassTypeInformation.from(User.class));
+
+		assertThat(path, is(notNullValue()));
+		assertThat(bindings.isPathVisible("oldCity", User.class), is(true));
+
+		assertThat(bindings.isPathVisible("oldAddresses.city", User.class), is(true));
+
+		PropertyPath propertyPath = bindings.getPropertyPath("oldAddresses.city", ClassTypeInformation.from(User.class));
+		assertThat(propertyPath, is(notNullValue()));
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(propertyPath), CONTAINS_BINDING);
 	}
 
 	private static <P extends Path<? extends S>, S> void assertAdapterWithTargetBinding(MultiValueBinding<P, S> binding,

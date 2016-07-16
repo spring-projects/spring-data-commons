@@ -46,6 +46,7 @@ import com.querydsl.core.types.dsl.StringPath;
  * 
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author Tanapol Nearunchorn
  */
 public class QuerydslPredicateBuilderUnitTests {
 
@@ -205,5 +206,22 @@ public class QuerydslPredicateBuilderUnitTests {
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate, is((Predicate) QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate())));
+	}
+
+	/**
+	 * @see DATACMNS-883
+	 */
+	@Test
+	public void resolveArgumentShouldReifyListPathCorrectly() {
+		values.add("oldAddresses.city", "Linz");
+
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+
+		assertThat(predicate, is((Predicate) QUser.user.oldAddresses.any().city.eq("Linz")));
+
+		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
+
+		assertThat(result, hasSize(1));
+		assertThat(result, hasItem(Users.OLIVER));
 	}
 }

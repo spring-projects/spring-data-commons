@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.querydsl.core.types.PathType;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.util.ClassTypeInformation;
@@ -59,6 +60,7 @@ import com.querydsl.core.types.Predicate;
  * 
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author Tanapol Nearunchorn
  * @since 1.11
  * @see QuerydslBinderCustomizer
  */
@@ -286,7 +288,21 @@ public class QuerydslBindings {
 
 		PathMetadata metadata = path.getMetadata();
 
-		return path.toString().substring(metadata.getRootPath().getMetadata().getName().length() + 1);
+		if (metadata.isRoot()) {
+			return "";
+		}
+
+		String stringPath = toDotPath(metadata.getParent());
+
+		if (stringPath.isEmpty()) {
+			return metadata.getName();
+		}
+
+		if (metadata.getPathType() == PathType.COLLECTION_ANY) {
+			return stringPath;
+		}
+
+		return String.format("%s.%s", stringPath, metadata.getName());
 	}
 
 	/**
