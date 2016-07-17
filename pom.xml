@@ -206,6 +206,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.jayway.jsonpath</groupId>
+			<artifactId>json-path</artifactId>
+			<version>${jsonpath}</version>
+			<optional>true</optional>
+		</dependency>
+
 	</dependencies>
 
 	<build>

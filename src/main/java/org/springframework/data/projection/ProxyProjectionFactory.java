@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2105 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,18 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
 			ProxyProjectionFactory.class.getClassLoader());
 
+	private final List<MethodInterceptorFactory> factories;
 	private ClassLoader classLoader;
+
+	/**
+	 * Creates a new {@link ProxyProjectionFactory}.
+	 */
+	protected ProxyProjectionFactory() {
+
+		this.factories = new ArrayList<MethodInterceptorFactory>();
+		this.factories.add(MapAccessingMethodInterceptorFactory.INSTANCE);
+		this.factories.add(PropertyAccessingMethodInvokerFactory.INSTANCE);
+	}
 
 	/**
 	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
@@ -66,6 +77,20 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader;
+	}
+
+	/**
+	 * Registers the given {@link MethodInterceptorFactory} to be used with the factory. Factories registered later enjoy
+	 * precedence over previously registered ones.
+	 * 
+	 * @param factory must not be {@literal null}.
+	 * @since 1.13
+	 */
+	public void registerMethodInvokerFactory(MethodInterceptorFactory factory) {
+
+		Assert.notNull(factory, "MethodInterceptorFactory must not be null!");
+
+		this.factories.add(0, factory);
 	}
 
 	/* 
@@ -144,15 +169,31 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 	 * @param projectionType must not be {@literal null}.
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	private MethodInterceptor getMethodInterceptor(Object source, Class<?> projectionType) {
 
-		MethodInterceptor propertyInvocationInterceptor = source instanceof Map
-				? new MapAccessingMethodInterceptor((Map<String, Object>) source)
-				: new PropertyAccessingMethodInterceptor(source);
+		MethodInterceptor propertyInvocationInterceptor = getFactoryFor(source, projectionType)
+				.createMethodInterceptor(source, projectionType);
 
 		return new ProjectingMethodInterceptor(this,
 				postProcessAccessorInterceptor(propertyInvocationInterceptor, source, projectionType));
+	}
+
+	/**
+	 * Returns the {@link MethodInterceptorFactory} to be used with the given source object and target type.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @param projectionType must not be {@literal null}.
+	 * @return
+	 */
+	private MethodInterceptorFactory getFactoryFor(Object source, Class<?> projectionType) {
+
+		for (MethodInterceptorFactory factory : factories) {
+			if (factory.supports(source, projectionType)) {
+				return factory;
+			}
+		}
+
+		throw new IllegalStateException("No MethodInterceptorFactory found for type ".concat(source.getClass().getName()));
 	}
 
 	/**
@@ -216,6 +257,63 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 			}
 
 			return invocation.proceed();
+		}
+	}
+
+	/**
+	 * {@link MethodInterceptorFactory} handling {@link Map}s as target objects.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	private static enum MapAccessingMethodInterceptorFactory implements MethodInterceptorFactory {
+
+		INSTANCE;
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.projection.MethodInterceptorFactory#createMethodInterceptor(java.lang.Object, java.lang.Class)
+		 */
+		@Override
+		@SuppressWarnings("unchecked")
+		public MethodInterceptor createMethodInterceptor(Object source, Class<?> targetType) {
+			return new MapAccessingMethodInterceptor((Map<String, Object>) source);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.projection.MethodInterceptorFactory#supports(java.lang.Object, java.lang.Class)
+		 */
+		@Override
+		public boolean supports(Object source, Class<?> targetType) {
+			return Map.class.isInstance(source);
+		}
+	}
+
+	/**
+	 * {@link MethodInterceptorFactory} to create a {@link PropertyAccessingMethodInterceptor} for arbitrary objects.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private static enum PropertyAccessingMethodInvokerFactory implements MethodInterceptorFactory {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.projection.MethodInterceptorFactory#createMethodInterceptor(java.lang.Object, java.lang.Class)
+		 */
+		@Override
+		public MethodInterceptor createMethodInterceptor(Object source, Class<?> targetType) {
+			return new PropertyAccessingMethodInterceptor(source);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.projection.MethodInterceptorFactory#supports(java.lang.Object, java.lang.Class)
+		 */
+		@Override
+		public boolean supports(Object source, Class<?> targetType) {
+			return true;
 		}
 	}
 }
