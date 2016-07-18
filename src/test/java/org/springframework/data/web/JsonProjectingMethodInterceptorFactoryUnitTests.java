@@ -163,6 +163,16 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 		assertThat(name.getFirstname(), is("Dave"));
 	}
 
+	/**
+	 * @see DATACMNS-885
+	 */
+	@Test
+	public void accessNestedFields() {
+
+		assertThat(customer.getNestedCity(), is("Dresden"));
+		assertThat(customer.getNestedCities(), hasSize(2));
+	}
+
 	interface Customer {
 
 		String getFirstname();
@@ -194,6 +204,12 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 
 		@JsonPath("$.address")
 		Set<AnotherAddressProjection> getAnotherAddressProjectionAsCollection();
+
+		@JsonPath("$..city")
+		String getNestedCity();
+
+		@JsonPath("$..city")
+		List<String> getNestedCities();
 	}
 
 	interface AddressProjection {

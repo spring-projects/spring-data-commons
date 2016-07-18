@@ -22,6 +22,8 @@ import net.minidev.json.JSONObject;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -38,6 +40,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ParseContext;
 import com.jayway.jsonpath.TypeRef;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
@@ -63,6 +66,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		Assert.notNull(mappingProvider, "MappingProvider must not be null!");
 
 		Configuration build = Configuration.builder()//
+				.options(Option.ALWAYS_RETURN_LIST)//
 				.mappingProvider(mappingProvider)//
 				.build();
 
@@ -131,8 +135,24 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 			ResolvableType type = ResolvableType.forMethodReturnType(method);
 			String jsonPath = getJsonPath(method);
 
-			return !returnType.getActualType().getType().isInterface() ? context.read(jsonPath, new ResolvableTypeRef(type))
-					: context.read(jsonPath);
+			if (returnType.getActualType().getType().isInterface()) {
+
+				List<?> result = context.read(jsonPath);
+				return result.isEmpty() ? null : result.get(0);
+			}
+
+			boolean isCollectionResult = Collection.class.isAssignableFrom(type.getRawClass());
+			type = isCollectionResult ? type : ResolvableType.forClassWithGenerics(List.class, type);
+			type = isCollectionResult && JsonPath.isPathDefinite(jsonPath)
+					? ResolvableType.forClassWithGenerics(List.class, type) : type;
+
+			List<?> result = (List<?>) context.read(jsonPath, new ResolvableTypeRef(type));
+
+			if (isCollectionResult && JsonPath.isPathDefinite(jsonPath)) {
+				result = (List<?>) result.get(0);
+			}
+
+			return isCollectionResult ? result : result.isEmpty() ? null : result.get(0);
 		}
 
 		/**
