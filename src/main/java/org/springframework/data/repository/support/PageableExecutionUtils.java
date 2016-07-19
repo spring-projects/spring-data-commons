@@ -23,15 +23,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.util.Assert;
 
 /**
- * Support for query execution using {@link Pageable}. Using {@link PageableExecutionSupport} assumes that data queries
+ * Support for query execution using {@link Pageable}. Using {@link PageableExecutionUtils} assumes that data queries
  * are cheaper than {@code COUNT} queries and so some cases can take advantage of optimizations.
  *
  * @author Mark Paluch
  * @since 1.13
  */
-public abstract class PageableExecutionSupport {
+public abstract class PageableExecutionUtils {
 
-	private PageableExecutionSupport() {}
+	private PageableExecutionUtils() {}
 
 	/**
 	 * Constructs a {@link Page} based on the given {@code content}, {@link Pageable} and {@link TotalSupplier} applying

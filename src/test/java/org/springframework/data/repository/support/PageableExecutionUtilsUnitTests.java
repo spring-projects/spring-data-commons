@@ -28,15 +28,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.repository.support.PageableExecutionSupport.TotalSupplier;
+import org.springframework.data.repository.support.PageableExecutionUtils.TotalSupplier;
 
 /**
- * Unit tests for {@link PageableExecutionSupport}.
+ * Unit tests for {@link PageableExecutionUtils}.
  * 
  * @author Mark Paluch
+ * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PageableExecutionSupportUnitTests {
+public class PageableExecutionUtilsUnitTests {
 
 	@Mock TotalSupplier totalSupplierMock;
 
@@ -46,7 +47,7 @@ public class PageableExecutionSupportUnitTests {
 	@Test
 	public void firstPageRequestIsLessThanOneFullPageDoesNotRequireTotal() {
 
-		Page<Integer> page = PageableExecutionSupport.getPage(Arrays.asList(1, 2, 3), new PageRequest(0, 10),
+		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), new PageRequest(0, 10),
 				totalSupplierMock);
 
 		assertThat(page, hasItems(1, 2, 3));
@@ -60,10 +61,11 @@ public class PageableExecutionSupportUnitTests {
 	@Test
 	public void noPageableRequesDoesNotRequireTotal() {
 
-		Page<Integer> page = PageableExecutionSupport.getPage(Arrays.asList(1, 2, 3), null, totalSupplierMock);
+		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), null, totalSupplierMock);
 
 		assertThat(page, hasItems(1, 2, 3));
 		assertThat(page.getTotalElements(), is(3L));
+
 		verifyZeroInteractions(totalSupplierMock);
 	}
 
@@ -73,11 +75,12 @@ public class PageableExecutionSupportUnitTests {
 	@Test
 	public void subsequentPageRequestIsLessThanOneFullPageDoesNotRequireTotal() {
 
-		Page<Integer> page = PageableExecutionSupport.getPage(Arrays.asList(1, 2, 3), new PageRequest(5, 10),
+		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), new PageRequest(5, 10),
 				totalSupplierMock);
 
 		assertThat(page, hasItems(1, 2, 3));
 		assertThat(page.getTotalElements(), is(53L));
+
 		verifyZeroInteractions(totalSupplierMock);
 	}
 
@@ -87,13 +90,14 @@ public class PageableExecutionSupportUnitTests {
 	@Test
 	public void firstPageRequestHitsUpperBoundRequiresTotal() {
 
-		when(totalSupplierMock.get()).thenReturn(4L);
+		doReturn(4L).when(totalSupplierMock).get();
 
-		Page<Integer> page = PageableExecutionSupport.getPage(Arrays.asList(1, 2, 3), new PageRequest(0, 3),
+		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), new PageRequest(0, 3),
 				totalSupplierMock);
 
 		assertThat(page, hasItems(1, 2, 3));
 		assertThat(page.getTotalElements(), is(4L));
+
 		verify(totalSupplierMock).get();
 	}
 
@@ -103,13 +107,14 @@ public class PageableExecutionSupportUnitTests {
 	@Test
 	public void subsequentPageRequestHitsUpperBoundRequiresTotal() {
 
-		when(totalSupplierMock.get()).thenReturn(7L);
+		doReturn(7L).when(totalSupplierMock).get();
 
-		Page<Integer> page = PageableExecutionSupport.getPage(Arrays.asList(1, 2, 3), new PageRequest(1, 3),
+		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), new PageRequest(1, 3),
 				totalSupplierMock);
 
 		assertThat(page, hasItems(1, 2, 3));
 		assertThat(page.getTotalElements(), is(7L));
+
 		verify(totalSupplierMock).get();
 	}
 
@@ -119,11 +124,12 @@ public class PageableExecutionSupportUnitTests {
 	@Test
 	public void subsequentPageRequestWithoutResultRequiresRequireTotal() {
 
-		when(totalSupplierMock.get()).thenReturn(7L);
-		Page<Integer> page = PageableExecutionSupport.getPage(Collections.<Integer> emptyList(), new PageRequest(5, 10),
+		doReturn(7L).when(totalSupplierMock).get();
+		Page<Integer> page = PageableExecutionUtils.getPage(Collections.<Integer>emptyList(), new PageRequest(5, 10),
 				totalSupplierMock);
 
 		assertThat(page.getTotalElements(), is(7L));
+
 		verify(totalSupplierMock).get();
 	}
 }
