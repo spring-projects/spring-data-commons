@@ -31,6 +31,7 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
+import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -124,6 +125,10 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 			converter.setBeanFactory(context);
 
 			converters.add(0, converter);
+		}
+
+		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
+			converters.add(0, new XmlBeamHttpMessageConverter());
 		}
 	}
 }

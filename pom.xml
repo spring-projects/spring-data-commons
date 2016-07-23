@@ -18,6 +18,7 @@
 	<properties>
 		<dist.key>DATACMNS</dist.key>
 		<scala>2.11.7</scala>
+		<xmlbeam>1.4.8</xmlbeam>
 	</properties>
 
 	<dependencies>
@@ -210,6 +211,13 @@
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
 			<version>${jsonpath}</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.xmlbeam</groupId>
+			<artifactId>xmlprojector</artifactId>
+			<version>${xmlbeam}</version>
 			<optional>true</optional>
 		</dependency>
 

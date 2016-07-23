@@ -40,5 +40,6 @@ Import-Template:
  org.slf4j.*;version="${slf4j:[=.=.=,+1.0.0)}",
  org.threeten.bp.*;version="${threetenbp:[=.=.=,+1.0.0)}";resolution:=optional,
  org.w3c.dom.*;version="0",
+ org.xmlbeam.*;version="${xmlbeam:[=.=.=,+1.0.0)}";resolution:=optional,
  scala.*;version="${scala:[=.=.=,+1.0.0)}";resolution:=optional
 DynamicImport-Package: *
