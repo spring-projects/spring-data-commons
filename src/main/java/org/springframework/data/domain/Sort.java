@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -197,6 +197,26 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		ASC, DESC;
 
 		/**
+		 * Returns whether the direction is ascending.
+		 * 
+		 * @return
+		 * @since 1.13
+		 */
+		public boolean isAscending() {
+			return this.equals(ASC);
+		}
+
+		/**
+		 * Returns whether the direction is descending.
+		 * 
+		 * @return
+		 * @since 1.13
+		 */
+		public boolean isDescending() {
+			return this.equals(DESC);
+		}
+
+		/**
 		 * Returns the {@link Direction} enum for the given {@link String} value.
 		 * 
 		 * @param value
@@ -350,7 +370,17 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @return
 		 */
 		public boolean isAscending() {
-			return this.direction.equals(Direction.ASC);
+			return this.direction.isAscending();
+		}
+
+		/**
+		 * Returns whether sorting for this property shall be descending.
+		 * 
+		 * @return
+		 * @since 1.13
+		 */
+		public boolean isDescending() {
+			return this.direction.isDescending();
 		}
 
 		/**

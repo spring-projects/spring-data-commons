@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.history.Revision;
+import org.springframework.data.history.RevisionSort;
 import org.springframework.data.history.Revisions;
 import org.springframework.data.repository.NoRepositoryBean;
 
@@ -49,10 +50,12 @@ public interface RevisionRepository<T, ID extends Serializable, N extends Number
 	Revisions<N, T> findRevisions(ID id);
 
 	/**
-	 * Returns a {@link Page} of revisions for the entity with the given id.
+	 * Returns a {@link Page} of revisions for the entity with the given id. Note, that it's not guaranteed that
+	 * implementations have to support sorting by all properties.
 	 * 
 	 * @param id must not be {@literal null}.
 	 * @param pageable
+	 * @see RevisionSort
 	 * @return
 	 */
 	Page<Revision<N, T>> findRevisions(ID id, Pageable pageable);
