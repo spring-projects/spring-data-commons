@@ -308,7 +308,7 @@ This example shows a domain class using both JPA and Spring Data MongoDB annotat
 
 <<repositories.multiple-modules.types,Repository type details>> and <<repositories.multiple-modules.annotations,identifying domain class annotations>> are used for strict repository configuration identify repository candidates for a particular Spring Data module. Using multiple persistence technology-specific annotations on the same domain type is possible to reuse domain types across multiple persistence technologies, but then Spring Data is no longer able to determine a unique module to bind the repository. 
 
-The last way to distinguish repositories is scoping repository base packages. Base packages define the starting points for scanning for repository interface definitions which  implies to have repository definitions located in the appropriate packages. By default, annotation-driven configuration uses the package of the configuration class. The <<repositories.create-instances.spring,base package in XML-based configuration>> mandatory.
+The last way to distinguish repositories is scoping repository base packages. Base packages define the starting points for scanning for repository interface definitions which  implies to have repository definitions located in the appropriate packages. By default, annotation-driven configuration uses the package of the configuration class. The <<repositories.create-instances.spring,base package in XML-based configuration>> is mandatory.
 
 .Annotation-driven configuration of base packages
 ====
