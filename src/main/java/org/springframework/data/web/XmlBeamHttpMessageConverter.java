@@ -16,8 +16,6 @@
 package org.springframework.data.web;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.core.ResolvableType;
@@ -25,6 +23,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
@@ -39,7 +38,7 @@ import org.xmlbeam.XBProjector;
  * @see http://www.xmlbeam.org
  * @soundtrack Dr. Kobayashi Maru & The Mothership Connection - Anthem (EPisode One)
  */
-public class XmlBeamHttpMessageConverter implements HttpMessageConverter<Object> {
+public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Object> {
 
 	private final ProjectionFactory projectionFactory;
 	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentReferenceHashMap<Class<?>, Boolean>();
@@ -48,26 +47,27 @@ public class XmlBeamHttpMessageConverter implements HttpMessageConverter<Object>
 	 * Creates a new {@link XmlBeamHttpMessageConverter}.
 	 */
 	public XmlBeamHttpMessageConverter() {
+
+		super(MediaType.APPLICATION_XML, MediaType.parseMediaType("application/*+xml"));
+
 		this.projectionFactory = new XBProjector();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#canRead(java.lang.Class, org.springframework.http.MediaType)
+	 * @see org.springframework.http.converter.AbstractHttpMessageConverter#supports(java.lang.Class)
 	 */
 	@Override
-	public boolean canRead(Class<?> type, MediaType mediaType) {
+	protected boolean supports(Class<?> type) {
 
 		Class<?> rawType = ResolvableType.forType(type).getRawClass();
-
 		Boolean result = supportedTypesCache.get(rawType);
 
 		if (result != null) {
 			return result;
 		}
 
-		result = mediaType.isCompatibleWith(MediaType.APPLICATION_XML) && rawType.isInterface()
-				&& AnnotationUtils.findAnnotation(rawType, ProjectedPayload.class) != null;
+		result = rawType.isInterface() && AnnotationUtils.findAnnotation(rawType, ProjectedPayload.class) != null;
 
 		supportedTypesCache.put(rawType, result);
 
@@ -85,28 +85,19 @@ public class XmlBeamHttpMessageConverter implements HttpMessageConverter<Object>
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#getSupportedMediaTypes()
+	 * @see org.springframework.http.converter.AbstractHttpMessageConverter#readInternal(java.lang.Class, org.springframework.http.HttpInputMessage)
 	 */
 	@Override
-	public List<MediaType> getSupportedMediaTypes() {
-		return Collections.singletonList(MediaType.APPLICATION_XML);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#read(java.lang.Class, org.springframework.http.HttpInputMessage)
-	 */
-	@Override
-	public Object read(Class<? extends Object> clazz, HttpInputMessage inputMessage)
+	protected Object readInternal(Class<? extends Object> clazz, HttpInputMessage inputMessage)
 			throws IOException, HttpMessageNotReadableException {
 		return projectionFactory.io().stream(inputMessage.getBody()).read(clazz);
 	}
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#write(java.lang.Object, org.springframework.http.MediaType, org.springframework.http.HttpOutputMessage)
+	 * @see org.springframework.http.converter.AbstractHttpMessageConverter#writeInternal(java.lang.Object, org.springframework.http.HttpOutputMessage)
 	 */
 	@Override
-	public void write(Object t, MediaType contentType, HttpOutputMessage outputMessage)
+	protected void writeInternal(Object t, HttpOutputMessage outputMessage)
 			throws IOException, HttpMessageNotWritableException {}
 }

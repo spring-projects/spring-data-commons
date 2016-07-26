@@ -26,7 +26,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTests.UnannotatedInterface;
 import org.springframework.http.HttpInputMessage;
+import org.springframework.http.MediaType;
 import org.xmlbeam.annotation.XBRead;
 
 /**
@@ -70,10 +72,45 @@ public class XmlBeamHttpMessageConverterUnitTests {
 		assertThat(customer.getLastname(), is("Matthews"));
 	}
 
+	/**
+	 * @see DATACMNS-885
+	 */
+	@Test
+	public void supportsAnnotatedInterface() {
+		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-885
+	 */
+	@Test
+	public void supportsXmlBasedMediaType() {
+		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_ATOM_XML), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-885
+	 */
+	@Test
+	public void doesNotSupportUnannotatedInterface() {
+		assertThat(converter.canRead(UnannotatedInterface.class, MediaType.APPLICATION_XML), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-885
+	 */
+	@Test
+	public void supportsInterfaceAfterLookupForDifferrentMediaType() {
+
+		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_JSON), is(false));
+		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML), is(true));
+	}
+
 	private void preparePayload(String payload) throws IOException {
 		when(message.getBody()).thenReturn(new ByteArrayInputStream(payload.getBytes()));
 	}
 
+	@ProjectedPayload
 	public interface Customer {
 
 		@XBRead("//firstname")
@@ -82,4 +119,6 @@ public class XmlBeamHttpMessageConverterUnitTests {
 		@XBRead("//lastname")
 		String getLastname();
 	}
+
+	public interface UnnannotatedInterface {}
 }

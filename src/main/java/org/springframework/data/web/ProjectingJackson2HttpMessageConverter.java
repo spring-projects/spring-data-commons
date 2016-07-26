@@ -113,20 +113,30 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 	@Override
 	public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
 
-		Class<?> rawType = ResolvableType.forType(type).getRawClass();
+		if (!canRead(mediaType)) {
+			return false;
+		}
 
+		Class<?> rawType = ResolvableType.forType(type).getRawClass();
 		Boolean result = supportedTypesCache.get(rawType);
 
 		if (result != null) {
 			return result;
 		}
 
-		result = canRead(mediaType) && rawType.isInterface()
-				&& AnnotationUtils.findAnnotation(rawType, ProjectedPayload.class) != null;
-
+		result = rawType.isInterface() && AnnotationUtils.findAnnotation(rawType, ProjectedPayload.class) != null;
 		supportedTypesCache.put(rawType, result);
 
 		return result;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
+	 */
+	@Override
+	public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+		return false;
 	}
 
 	/* 
