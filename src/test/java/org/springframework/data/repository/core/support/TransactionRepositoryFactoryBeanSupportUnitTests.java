@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 /**
@@ -67,9 +68,22 @@ public class TransactionRepositoryFactoryBeanSupportUnitTests {
 		assertThat(found, is(true));
 	}
 
+	/**
+	 * @see DATACMNS-880
+	 */
+	@Test
+	public void propagatesBeanFactoryToSuperClass() {
+
+		SampleTransactionalRepositoryFactoryBean factoryBean = new SampleTransactionalRepositoryFactoryBean();
+		factoryBean.setBeanFactory(new DefaultListableBeanFactory());
+
+		assertThat(ReflectionTestUtils.getField(factoryBean, RepositoryFactoryBeanSupport.class, "beanFactory"),
+				is(notNullValue()));
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static class SampleTransactionalRepositoryFactoryBean extends
-			TransactionalRepositoryFactoryBeanSupport<CrudRepository<Object, Long>, Object, Long> {
+	static class SampleTransactionalRepositoryFactoryBean
+			extends TransactionalRepositoryFactoryBeanSupport<CrudRepository<Object, Long>, Object, Long> {
 
 		private final CrudRepository<Object, Long> repository = mock(CrudRepository.class);
 
