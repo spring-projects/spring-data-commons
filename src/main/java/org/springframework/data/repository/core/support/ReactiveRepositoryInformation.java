@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
  * converted for invocation of implementation methods.
  * 
  * @author Mark Paluch
+ * @since 2.0
  */
 public class ReactiveRepositoryInformation extends DefaultRepositoryInformation {
 
@@ -75,7 +76,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 		boolean wantsWrappers = wantsMethodUsingReactiveWrapperParameters(method);
 
 		if (wantsWrappers) {
-			Method candidate = getMethodCandidate(method, baseClass, new ExactWrapperMatch(method));
+			Method candidate = getMethodCandidate(method, baseClass, new AssignableWrapperMatch(method));
 
 			if (candidate != null) {
 				return candidate;
@@ -171,6 +172,11 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 				&& !QueryExecutionConverters.supportsUnwrapping(parameterType);
 	}
 
+	/**
+	 * {@link BiPredicate} to check whether a method parameter is a {@link #isNonunwrappingWrapper(Class)} and can be
+	 * converted into a different wrapper. Usually {@link rx.Observable} to {@link org.reactivestreams.Publisher}
+	 * conversion.
+	 */
 	static class WrapperConversionMatch implements BiPredicate<Class<?>, Integer> {
 
 		final Method declaredMethod;
@@ -187,7 +193,6 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 		@Override
 		public boolean test(Class<?> candidateParameterType, Integer index) {
 
-			// TODO: should check for component type
 			if (isNonunwrappingWrapper(candidateParameterType) && isNonunwrappingWrapper(declaredParameterTypes[index])) {
 
 				if (conversionService.canConvert(declaredParameterTypes[index], candidateParameterType)) {
@@ -197,15 +202,19 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 
 			return false;
 		}
-
 	}
 
-	static class ExactWrapperMatch implements BiPredicate<Class<?>, Integer> {
+	/**
+	 * {@link BiPredicate} to check parameter assignability between a {@link #isNonunwrappingWrapper(Class)} parameter and
+	 * a declared parameter. Usually {@link reactor.core.publisher.Flux} vs. {@link org.reactivestreams.Publisher}
+	 * conversion.
+	 */
+	static class AssignableWrapperMatch implements BiPredicate<Class<?>, Integer> {
 
 		final Method declaredMethod;
 		final Class<?>[] declaredParameterTypes;
 
-		public ExactWrapperMatch(Method declaredMethod) {
+		public AssignableWrapperMatch(Method declaredMethod) {
 
 			this.declaredMethod = declaredMethod;
 			this.declaredParameterTypes = declaredMethod.getParameterTypes();
@@ -214,7 +223,6 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 		@Override
 		public boolean test(Class<?> candidateParameterType, Integer index) {
 
-			// TODO: should check for component type
 			if (isNonunwrappingWrapper(candidateParameterType) && isNonunwrappingWrapper(declaredParameterTypes[index])) {
 
 				if (declaredParameterTypes[index].isAssignableFrom(candidateParameterType)) {
@@ -224,9 +232,14 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 
 			return false;
 		}
-
 	}
 
+	/**
+	 * {@link BiPredicate} to check parameter assignability between a parameters in which the declared parameter may be
+	 * wrapped but supports unwrapping. Usually types like {@link java.util.Optional} or {@link java.util.stream.Stream}.
+	 * 
+	 * @see QueryExecutionConverters
+	 */
 	static class MatchParameterOrComponentType implements BiPredicate<Class<?>, Integer> {
 
 		final Method declaredMethod;
@@ -253,7 +266,5 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 
 			return true;
 		}
-
 	}
-
 }

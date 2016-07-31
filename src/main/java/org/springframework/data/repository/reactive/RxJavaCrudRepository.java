@@ -26,9 +26,10 @@ import rx.Single;
 
 /**
  * Interface for generic CRUD operations on a repository for a specific type. This repository follows reactive paradigms
- * and uses RxJava types.
+ * and uses RxJava 1 types.
  *
  * @author Mark Paluch
+ * @since 2.0
  * @see Single
  * @see Observable
  */

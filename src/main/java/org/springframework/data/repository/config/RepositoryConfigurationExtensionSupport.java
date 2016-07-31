@@ -43,6 +43,7 @@ import org.springframework.util.StringUtils;
  * {@link #getModulePrefix()}). Stubs out the post-processing methods as they might not be needed by default.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public abstract class RepositoryConfigurationExtensionSupport implements RepositoryConfigurationExtension {
 
@@ -293,7 +294,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * @param loader must not be {@literal null}.
 	 * @return the repository interface or {@literal null} if it can't be loaded.
 	 */
-	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
+	protected Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
 
 		String repositoryInterface = configuration.getRepositoryInterface();
 		ClassLoader classLoader = loader.getClassLoader();

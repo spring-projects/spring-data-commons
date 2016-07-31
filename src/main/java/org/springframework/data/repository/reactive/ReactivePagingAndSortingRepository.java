@@ -31,6 +31,7 @@ import reactor.core.publisher.Mono;
  * and sorting abstraction.
  *
  * @author Mark Paluch
+ * @since 2.0
  * @see Sort
  * @see Pageable
  * @see Mono

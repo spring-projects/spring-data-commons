@@ -31,6 +31,7 @@ import rx.Single;
  * abstraction.
  *
  * @author Mark Paluch
+ * @since 2.0
  * @see Sort
  * @see Pageable
  * @see Single
