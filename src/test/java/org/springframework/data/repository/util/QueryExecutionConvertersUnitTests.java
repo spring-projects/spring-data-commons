@@ -84,6 +84,11 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(Single.class), is(true));
 		assertThat(QueryExecutionConverters.supports(Completable.class), is(true));
 		assertThat(QueryExecutionConverters.supports(Observable.class), is(true));
+		assertThat(QueryExecutionConverters.supports(io.reactivex.Single.class), is(true));
+		assertThat(QueryExecutionConverters.supports(io.reactivex.Maybe.class), is(true));
+		assertThat(QueryExecutionConverters.supports(io.reactivex.Completable.class), is(true));
+		assertThat(QueryExecutionConverters.supports(io.reactivex.Flowable.class), is(true));
+		assertThat(QueryExecutionConverters.supports(io.reactivex.Observable.class), is(true));
 	}
 
 	/**
@@ -111,6 +116,11 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Single.class), is(false));
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Completable.class), is(false));
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Observable.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Single.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Maybe.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Completable.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Flowable.class), is(false));
+		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Observable.class), is(false));
 	}
 
 	/**

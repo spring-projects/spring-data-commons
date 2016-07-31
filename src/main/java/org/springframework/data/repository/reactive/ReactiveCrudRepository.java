@@ -29,9 +29,9 @@ import reactor.core.publisher.Mono;
  * and uses Project Reactor types which are built on top of Reactive Streams.
  *
  * @author Mark Paluch
+ * @since 2.0
  * @see Mono
  * @see Flux
- * @see ReactiveStreamsCrudRepository
  */
 @NoRepositoryBean
 public interface ReactiveCrudRepository<T, ID extends Serializable> extends Repository<T, ID> {
