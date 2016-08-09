@@ -50,6 +50,8 @@ public class RepositoryConfigurationDelegate {
 	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode!";
 	private static final String MODULE_DETECTION_PACKAGE = "org.springframework.data.**.repository.support";
 
+	static final String FACTORY_BEAN_OBJECT_TYPE = "factoryBeanObjectType";
+
 	private final RepositoryConfigurationSource configurationSource;
 	private final ResourceLoader resourceLoader;
 	private final Environment environment;
@@ -139,6 +141,8 @@ public class RepositoryConfigurationDelegate {
 				LOGGER.debug(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName,
 						configuration.getRepositoryInterface(), extension.getRepositoryFactoryClassName());
 			}
+
+			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, configuration.getRepositoryInterface());
 
 			registry.registerBeanDefinition(beanName, beanDefinition);
 			definitions.add(new BeanComponentDefinition(beanDefinition, beanName));
