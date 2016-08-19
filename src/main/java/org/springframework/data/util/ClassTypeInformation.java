@@ -133,7 +133,12 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 			map.put(entry.getKey(), entry.getValue());
 
 			if (value instanceof Class) {
-				map.putAll(getTypeVariableMap((Class<?>) value, visited));
+
+				for (Entry<TypeVariable<?>, Type> nestedEntry : getTypeVariableMap((Class<?>) value, visited).entrySet()) {
+					if (!map.containsKey(nestedEntry.getKey())) {
+						map.put(nestedEntry.getKey(), nestedEntry.getValue());
+					}
+				}
 			}
 		}
 
