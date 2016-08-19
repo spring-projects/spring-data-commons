@@ -106,7 +106,7 @@ public class ClassTypeInformationUnitTests {
 
 		property = information.getProperty("rawSet");
 		assertEquals(Set.class, property.getType());
-		assertThat(property.getComponentType().getType(), is(Matchers.<Class<?>> equalTo(Object.class)));
+		assertThat(property.getComponentType().getType(), is(Matchers.<Class<?>>equalTo(Object.class)));
 		assertNull(property.getMapValueType());
 	}
 
@@ -402,6 +402,17 @@ public class ClassTypeInformationUnitTests {
 		assertThat(left.hashCode(), is(right.hashCode()));
 	}
 
+	/**
+	 * @see DATACMNS-896
+	 */
+	@Test
+	public void prefersLocalTypeMappingOverNestedWithSameGenericType() {
+
+		ClassTypeInformation<Concrete> information = ClassTypeInformation.from(Concrete.class);
+
+		assertThat(information.getProperty("field").getType(), is(typeCompatibleWith(Nested.class)));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -590,4 +601,14 @@ public class ClassTypeInformationUnitTests {
 		T field;
 		S anotherField;
 	}
+
+	// DATACMNS-896
+
+	static class SomeType<T> {
+		T field;
+	}
+
+	static class Nested extends SomeType<String> {}
+
+	static class Concrete extends SomeType<Nested> {}
 }
