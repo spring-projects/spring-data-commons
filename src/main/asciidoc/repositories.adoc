@@ -623,7 +623,7 @@ A corresponding attribute is available in the XML namespace.
 [source, xml]
 ----
 <repositories base-package="com.acme.repository"
-     repository-base-class="….MyRepositoryImpl" />
+     base-class="….MyRepositoryImpl" />
 ----
 ====
 
