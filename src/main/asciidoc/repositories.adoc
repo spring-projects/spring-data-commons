@@ -510,7 +510,7 @@ class UserRepositoryImpl implements UserRepositoryCustom {
 
 NOTE: The most important bit for the class to be found is the `Impl` postfix of the name on it compared to the core repository interface (see below).
 
-The implementation itself does not depend on Spring Data and can be a regular Spring bean. So you can use standard dependency injection behavior to inject references to other beans like a JdbTemplate, take part in aspects, and so on.
+The implementation itself does not depend on Spring Data and can be a regular Spring bean. So you can use standard dependency injection behavior to inject references to other beans like a `JdbcTemplate`, take part in aspects, and so on.
 
 .Changes to the your basic repository interface
 ====
