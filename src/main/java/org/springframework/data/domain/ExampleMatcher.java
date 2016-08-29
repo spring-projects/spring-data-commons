@@ -337,6 +337,7 @@ public class ExampleMatcher {
 	 *
 	 * @author Mark Paluch
 	 */
+	@EqualsAndHashCode
 	public static class GenericPropertyMatcher {
 
 		StringMatcher stringMatcher = null;
@@ -634,10 +635,12 @@ public class ExampleMatcher {
 	 * Define specific property handling for a Dot-Path.
 	 *
 	 * @author Christoph Strobl
+	 * @author Mark Paluch
 	 * @since 1.12
 	 */
 	@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	@EqualsAndHashCode
 	public static class PropertySpecifier {
 
 		String path;
@@ -746,8 +749,10 @@ public class ExampleMatcher {
 	 * Define specific property handling for Dot-Paths.
 	 *
 	 * @author Christoph Strobl
+	 * @author Mark Paluch
 	 * @since 1.12
 	 */
+	@EqualsAndHashCode
 	public static class PropertySpecifiers {
 
 		private final Map<String, PropertySpecifier> propertySpecifiers = new LinkedHashMap<String, PropertySpecifier>();

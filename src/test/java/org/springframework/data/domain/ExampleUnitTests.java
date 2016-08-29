@@ -17,9 +17,11 @@ package org.springframework.data.domain;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.domain.ExampleMatcher.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.domain.ExampleMatcher.*;
 
 /**
  * Test for {@link Example}.
@@ -54,8 +56,26 @@ public class ExampleUnitTests {
 	 * @see DATACMNS-810
 	 */
 	@Test
-	public void retunsSampleObjectsClassAsProbeType() {
+	public void returnsSampleObjectsClassAsProbeType() {
 		assertThat(example.getProbeType(), is(equalTo(Person.class)));
+	}
+
+	/**
+	 * @see DATACMNS-900
+	 */
+	@Test
+	public void shouldCompareUsingHashCodeAndEquals() throws Exception {
+
+		Example<Person> example = Example.of(person, matching().withIgnoreCase("firstname"));
+		Example<Person> sameAsExample = Example.of(person, matching().withIgnoreCase("firstname"));
+
+		Example<Person> different = Example.of(person,
+				matching().withMatcher("firstname", GenericPropertyMatchers.contains()));
+
+		assertThat(example.hashCode(), is(sameAsExample.hashCode()));
+		assertThat(example.hashCode(), is(not(different.hashCode())));
+		assertThat(example, is(equalTo(sameAsExample)));
+		assertThat(example, is(not(equalTo(different))));
 	}
 
 	static class Person {
