@@ -22,8 +22,7 @@ import static org.springframework.data.domain.ExampleMatcher.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.domain.ExampleMatcher.NullHandler;
-import org.springframework.data.domain.ExampleMatcher.StringMatcher;
+import org.springframework.data.domain.ExampleMatcher.*;
 
 /**
  * Unit test for {@link ExampleMatcher}.
@@ -205,6 +204,47 @@ public class ExampleMatcherUnitTests {
 
 		assertThat(matchingAny().isAnyMatching(), is(true));
 		assertThat(matchingAny().isAllMatching(), is(false));
+	}
+
+	/**
+	 * @see DATACMNS-900
+	 */
+	@Test
+	public void shouldCompareUsingHashCodeAndEquals() throws Exception {
+
+		matcher = matching() //
+				.withIgnorePaths("foo", "bar", "baz") //
+				.withNullHandler(NullHandler.IGNORE) //
+				.withIgnoreCase("ignored-case") //
+				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
+				.withMatcher("world", new MatcherConfigurer<GenericPropertyMatcher>() {
+					@Override
+					public void configureMatcher(GenericPropertyMatcher matcher) {
+						matcher.endsWith();
+					}
+				});
+
+		ExampleMatcher sameAsMatcher = matching() //
+				.withIgnorePaths("foo", "bar", "baz") //
+				.withNullHandler(NullHandler.IGNORE) //
+				.withIgnoreCase("ignored-case") //
+				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
+				.withMatcher("world", new MatcherConfigurer<GenericPropertyMatcher>() {
+					@Override
+					public void configureMatcher(GenericPropertyMatcher matcher) {
+						matcher.endsWith();
+					}
+				});
+
+		ExampleMatcher different = matching() //
+				.withIgnorePaths("foo", "bar", "baz") //
+				.withNullHandler(NullHandler.IGNORE) //
+				.withMatcher("hello", GenericPropertyMatchers.contains().ignoreCase());
+
+		assertThat(matcher.hashCode(), is(sameAsMatcher.hashCode()));
+		assertThat(matcher.hashCode(), is(not(different.hashCode())));
+		assertThat(matcher, is(equalTo(sameAsMatcher)));
+		assertThat(matcher, is(not(equalTo(different))));
 	}
 
 	static class Person {
