@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * Unit tests for {@link ParameterizedTypeInformation}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ParameterizedTypeUnitTests {
@@ -137,6 +138,19 @@ public class ParameterizedTypeUnitTests {
 		assertThat(valueType.getProperty("value").getType(), is(typeCompatibleWith(Education.class)));
 	}
 
+	/**
+	 * @see DATACMNS-899
+	 */
+	@Test
+	public void returnsNullMapValueTypeForNonMapProperties(){
+
+		TypeInformation<?> valueType = ClassTypeInformation.from(Bar.class).getProperty("param");
+		TypeInformation<?> mapValueType = valueType.getMapValueType();
+
+		assertThat(valueType, instanceOf(ParameterizedTypeInformation.class));
+		assertThat(mapValueType, is(nullValue()));
+	}
+
 	@SuppressWarnings("serial")
 	class Localized<S> extends HashMap<Locale, S> {
 		S value;
@@ -150,6 +164,10 @@ public class ParameterizedTypeUnitTests {
 	class Foo {
 		Localized<String> param;
 		Localized2<String> param2;
+	}
+
+	class Bar {
+		List<String> param;
 	}
 
 	class Parameterized<T> {
