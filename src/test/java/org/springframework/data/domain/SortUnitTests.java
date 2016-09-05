@@ -164,4 +164,19 @@ public class SortUnitTests {
 	public void orderWithDefaultNullHandlingHint() {
 		assertThat(new Order("foo").getNullHandling(), is(NATIVE));
 	}
+
+	/**
+	 * @see DATACMNS-908
+	 */
+	@Test
+	public void createsNewOrderForDifferentProperty() {
+
+		Order source = new Order(Direction.DESC, "foo").nullsFirst().ignoreCase();
+		Order result = source.withProperty("bar");
+
+		assertThat(result.getProperty(), is("bar"));
+		assertThat(result.getDirection(), is(source.getDirection()));
+		assertThat(result.getNullHandling(), is(source.getNullHandling()));
+		assertThat(result.isIgnoreCase(), is(source.isIgnoreCase()));
+	}
 }

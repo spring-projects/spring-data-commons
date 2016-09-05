@@ -393,13 +393,24 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		}
 
 		/**
-		 * Returns a new {@link Order} with the given {@link Order}.
+		 * Returns a new {@link Order} with the given {@link Direction}.
 		 * 
-		 * @param order
+		 * @param direction
 		 * @return
 		 */
-		public Order with(Direction order) {
-			return new Order(order, this.property, nullHandling);
+		public Order with(Direction direction) {
+			return new Order(direction, this.property, this.ignoreCase, this.nullHandling);
+		}
+
+		/**
+		 * Returns a new {@link Order}
+		 * 
+		 * @param property must not be {@literal null} or empty.
+		 * @return
+		 * @since 1.13
+		 */
+		public Order withProperty(String property) {
+			return new Order(this.direction, property, this.ignoreCase, this.nullHandling);
 		}
 
 		/**
