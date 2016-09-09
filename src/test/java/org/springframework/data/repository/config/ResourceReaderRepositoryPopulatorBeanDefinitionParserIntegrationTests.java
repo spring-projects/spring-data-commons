@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.core.SpringVersion;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.repository.init.Jackson2ResourceReader;
 import org.springframework.data.repository.init.ResourceReaderRepositoryPopulator;
@@ -98,11 +97,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 	}
 
 	private static ClassPathResource getPopulatorResource() {
-
-		String springVersion = SpringVersion.getVersion();
-		String populatorsResourceName = springVersion.startsWith("4") ? "populators-spring-4.0.xml" : "populators.xml";
-
-		return new ClassPathResource(populatorsResourceName,
+		return new ClassPathResource("populators.xml",
 				ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTests.class);
 	}
 }
