@@ -20,6 +20,7 @@ import static org.springframework.data.repository.util.ClassUtils.*;
 import static org.springframework.util.ReflectionUtils.*;
 
 import java.io.Serializable;
+import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.repository.Repository;
@@ -355,7 +357,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 
 			if (genericType instanceof TypeVariable<?>) {
 
-				if (!matchesGenericType((TypeVariable<?>) genericType, parameterType)) {
+				if (!matchesGenericType((TypeVariable<?>) genericType, ResolvableType.forMethodParameter(parameter))) {
 					return false;
 				}
 
@@ -375,30 +377,43 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 * declared, the method ensures that given method parameter is the primary key type declared in the given repository
 	 * interface e.g.
 	 * 
-	 * @param name
-	 * @param parameterType
+	 * @param variable must not be {@literal null}.
+	 * @param parameterType must not be {@literal null}.
 	 * @return
 	 */
-	private boolean matchesGenericType(TypeVariable<?> variable, Class<?> parameterType) {
+	private boolean matchesGenericType(TypeVariable<?> variable, ResolvableType parameterType) {
 
-		Class<?> entityType = getDomainType();
-		Class<?> idClass = getIdType();
+		GenericDeclaration declaration = variable.getGenericDeclaration();
 
-		if (ID_TYPE_NAME.equals(variable.getName()) && parameterType.isAssignableFrom(idClass)) {
-			return true;
+		if (declaration instanceof Class) {
+
+			ResolvableType entityType = ResolvableType.forClass(getDomainType());
+			ResolvableType idClass = ResolvableType.forClass(getIdType());
+
+			if (ID_TYPE_NAME.equals(variable.getName()) && parameterType.isAssignableFrom(idClass)) {
+				return true;
+			}
+
+			Type boundType = variable.getBounds()[0];
+			String referenceName = boundType instanceof TypeVariable ? boundType.toString() : variable.toString();
+
+			boolean isDomainTypeVariableReference = DOMAIN_TYPE_NAME.equals(referenceName);
+			boolean parameterMatchesEntityType = parameterType.isAssignableFrom(entityType);
+
+			// We need this check to be sure not to match save(Iterable) for entities implementing Iterable
+			boolean isNotIterable = !parameterType.equals(Iterable.class);
+
+			if (isDomainTypeVariableReference && parameterMatchesEntityType && isNotIterable) {
+				return true;
+			}
+
+			return false;
 		}
 
-		Type boundType = variable.getBounds()[0];
-		String referenceName = boundType instanceof TypeVariable ? boundType.toString() : variable.toString();
-
-		boolean isDomainTypeVariableReference = DOMAIN_TYPE_NAME.equals(referenceName);
-		boolean parameterMatchesEntityType = parameterType.isAssignableFrom(entityType);
-
-		// We need this check to be sure not to match save(Iterable) for entities implementing Iterable
-		boolean isNotIterable = !parameterType.equals(Iterable.class);
-
-		if (isDomainTypeVariableReference && parameterMatchesEntityType && isNotIterable) {
-			return true;
+		for (Type type : variable.getBounds()) {
+			if (ResolvableType.forType(type).isAssignableFrom(parameterType)) {
+				return true;
+			}
 		}
 
 		return false;

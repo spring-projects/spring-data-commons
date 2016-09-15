@@ -239,6 +239,21 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getTargetClassMethod(source), is(expected));
 	}
 
+	/**
+	 * @see DATACMNS-912
+	 */
+	@Test
+	public void discoversCustomlyImplementedCrudMethodWithGenericParameters() throws Exception {
+
+		SampleRepositoryImpl customImplementation = new SampleRepositoryImpl();
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, RepositoryFactorySupport.class,
+				customImplementation.getClass());
+
+		Method customBaseRepositoryMethod = SampleRepository.class.getMethod("save", Object.class);
+		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
+	}
+
 	private static Method getMethodFrom(Class<?> type, String name) {
 
 		for (Method method : type.getMethods()) {
@@ -288,7 +303,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		@Override
 		public Iterator<User> iterator() {
-			return Collections.<User> emptySet().iterator();
+			return Collections.<User>emptySet().iterator();
 		}
 	}
 
@@ -340,4 +355,15 @@ public class DefaultRepositoryInformationUnitTests {
 		@MyQuery
 		List<User> findAll();
 	}
+
+	interface SampleRepository extends CrudRepository<Sample, Long> {}
+
+	static class SampleRepositoryImpl {
+
+		public <S extends Sample> S save(S entity) {
+			return entity;
+		}
+	}
+
+	static class Sample {}
 }
