@@ -1,6 +1,23 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.12.3.RELEASE (2016-09-20)
+----------------------------------------------
+* DATACMNS-912 - Unable to write custom implementation of CRUD method with generic parameters.
+* DATACMNS-909 - Exclude decoratedClass from JSON links, created from Projection and received with Spring @RestController.
+* DATACMNS-903 - Fix typo in reference documentation.
+* DATACMNS-902 - Fix attribute name in example showing how to define a custom repository base class.
+* DATACMNS-900 - ExampleMatcher.PropertySpecifiers does not implement equals/hashCode.
+* DATACMNS-899 - ParameterizedTypeInformation.getMapValueType for non-map types causes StackOverflowError.
+* DATACMNS-896 - ClassTypeInformation computes incorrect TypeVariable mappings for recursive generics.
+* DATACMNS-892 - Expose repository interface via attribute on bean definition for repository factory beans.
+* DATACMNS-886 - Fix OSGi version ranges for Spring Framework references.
+* DATACMNS-883 - NullPointerException for Querydsl bindings referring to collection element attributes.
+* DATACMNS-880 - TransactionalRepositoryFactoryBeanSupport.setBeanFactory doesn't delegate to super-implementation.
+* DATACMNS-874 - NullPointerException when unwrapping empty Scala Options.
+* DATACMNS-873 - Release 1.12.3 (Hopper SR3).
+
+
 Changes in version 1.13.0.M1 (2016-07-27)
 -----------------------------------------
 * DATACMNS-887 - Update Sonargraph architecture description.
