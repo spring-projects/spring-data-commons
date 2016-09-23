@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -102,6 +103,14 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(optional, is(com.google.common.base.Optional.of(entity)));
 	}
 
+	/**
+	 * @see DATACMNS-917
+	 */
+	@Test
+	public void defaultsNullToEmptyMap() throws Exception {
+		assertThat(handler.postProcessInvocationResult(null, getTypeDescriptorFor("map")), is(instanceOf(Map.class)));
+	}
+
 	private static TypeDescriptor getTypeDescriptorFor(String methodName) throws Exception {
 
 		Method method = Sample.class.getMethod(methodName);
@@ -117,6 +126,8 @@ public class QueryExecutionResultHandlerUnitTests {
 		Optional<Entity> jdk8Optional();
 
 		com.google.common.base.Optional<Entity> guavaOptional();
+
+		Map<Integer, Entity> map();
 	}
 
 	static class Entity {}
