@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.util.Map;
+
+import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -68,11 +71,15 @@ class QueryExecutionResultHandler {
 			return conversionService.convert(new NullableWrapper(result), expectedReturnType);
 		}
 
-		if (result == null) {
-			return null;
+		if (result != null) {
+			return conversionService.canConvert(result.getClass(), expectedReturnType)
+					? conversionService.convert(result, expectedReturnType) : result;
 		}
 
-		return conversionService.canConvert(result.getClass(), expectedReturnType) ? conversionService.convert(result,
-				expectedReturnType) : result;
+		if (Map.class.equals(expectedReturnType)) {
+			return CollectionFactory.createMap(expectedReturnType, 0);
+		}
+
+		return null;
 	}
 }
