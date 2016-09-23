@@ -511,12 +511,15 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			for (PersistentProperty<?> property : persistentProperties) {
 
-				if (property.getGetter() != null && generateMethodHandle(entity, property.getGetter())) {
-					visitPropertyGetterInitializer(property, mv, entityClasses, internalClassName);
-				}
+				if(property.usePropertyAccess()) {
 
-				if (property.getSetter() != null && generateMethodHandle(entity, property.getSetter())) {
-					visitPropertySetterInitializer(property, mv, entityClasses, internalClassName);
+					if (property.getGetter() != null && generateMethodHandle(entity, property.getGetter())) {
+						visitPropertyGetterInitializer(property, mv, entityClasses, internalClassName);
+					}
+
+					if (property.getSetter() != null && generateMethodHandle(entity, property.getSetter())) {
+						visitPropertySetterInitializer(property, mv, entityClasses, internalClassName);
+					}
 				}
 
 				if (property.getField() != null && generateSetterMethodHandle(entity, property.getField())) {
@@ -636,7 +639,15 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				mv.visitTypeInsn(ANEWARRAY, JAVA_LANG_CLASS);
 				mv.visitInsn(DUP);
 				mv.visitInsn(ICONST_0);
-				mv.visitLdcInsn(Type.getType(referenceName(Type.getInternalName(autoboxType(setter.getParameterTypes()[0])))));
+
+				Class<?> parameterType = setter.getParameterTypes()[0];
+				if (parameterType.isPrimitive()) {
+					mv.visitFieldInsn(GETSTATIC, Type.getInternalName(autoboxType(setter.getParameterTypes()[0])), "TYPE",
+								referenceName(JAVA_LANG_CLASS));
+				} else {
+					mv.visitLdcInsn(Type.getType(referenceName(parameterType)));
+				}
+
 				mv.visitInsn(AASTORE);
 
 				mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_CLASS, "getDeclaredMethod", String.format("(%s[%s)%s",
