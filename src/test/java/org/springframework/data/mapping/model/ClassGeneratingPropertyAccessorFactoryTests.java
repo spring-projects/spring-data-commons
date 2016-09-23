@@ -71,7 +71,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 				"privateProperty", "packageDefaultProperty", "protectedProperty", "publicProperty", "syntheticProperty");
 
 		parameters.addAll(parameters(new InnerPrivateType(), propertyNames, Object.class));
-		parameters.addAll(parameters(new InnerTypeWithPrivateAncesor(), propertyNames, InnerTypeWithPrivateAncesor.class));
+		parameters.addAll(parameters(new InnerTypeWithPrivateAncestor(), propertyNames, InnerTypeWithPrivateAncestor.class));
 		parameters.addAll(parameters(new InnerPackageDefaultType(), propertyNames, InnerPackageDefaultType.class));
 		parameters.addAll(parameters(new InnerProtectedType(), propertyNames, InnerProtectedType.class));
 		parameters.addAll(parameters(new InnerPublicType(), propertyNames, InnerPublicType.class));
@@ -247,7 +247,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	/**
 	 * @see DATACMNS-809
 	 */
-	public static class InnerTypeWithPrivateAncesor extends InnerPrivateType {
+	public static class InnerTypeWithPrivateAncestor extends InnerPrivateType {
 
 	}
 

@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 
 import lombok.Data;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -68,7 +69,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	public static List<Object[]> parameters() throws Exception {
 
 		List<Object[]> parameters = new ArrayList<Object[]>();
-		List<Class<?>> types = Arrays.asList(FieldAccess.class, PropertyAccess.class);
+		List<Class<?>> types = Arrays.asList(FieldAccess.class, PropertyAccess.class, PrivateFinalFieldAccess.class, PrivateFinalPropertyAccess.class);
 
 		parameters.addAll(parameters(types, "primitiveInteger", Integer.valueOf(1)));
 		parameters.addAll(parameters(types, "primitiveIntegerArray", new int[] { 1, 2, 3 }));
@@ -113,8 +114,11 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		List<Object[]> parameters = new ArrayList<Object[]>();
 
 		for (Class<?> type : types) {
+
+			Constructor<?>[] constructors = type.getDeclaredConstructors();
+			constructors[0].setAccessible(true);
 			parameters
-					.add(new Object[] { type.newInstance(), propertyName, value, type.getSimpleName() + "/" + propertyName });
+					.add(new Object[] { constructors[0].newInstance(), propertyName, value, type.getSimpleName() + "/" + propertyName });
 		}
 
 		return parameters;
@@ -213,6 +217,107 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	@AccessType(Type.PROPERTY)
 	@Data
 	public static class PropertyAccess {
+
+		int primitiveInteger;
+		int primitiveIntegerArray[];
+		Integer boxedInteger;
+		Integer boxedIntegerArray[];
+
+		short primitiveShort;
+		short primitiveShortArray[];
+		Short boxedShort;
+		Short boxedShortArray[];
+
+		byte primitiveByte;
+		byte primitiveByteArray[];
+		Byte boxedByte;
+		Byte boxedByteArray[];
+
+		char primitiveChar;
+		char primitiveCharArray[];
+		Character boxedChar;
+		Character boxedCharArray[];
+
+		boolean primitiveBoolean;
+		boolean primitiveBooleanArray[];
+		Boolean boxedBoolean;
+		Boolean boxedBooleanArray[];
+
+		float primitiveFloat;
+		float primitiveFloatArray[];
+		Float boxedFloat;
+		Float boxedFloatArray[];
+
+		double primitiveDouble;
+		double primitiveDoubleArray[];
+		Double boxedDouble;
+		Double boxedDoubleArray[];
+
+		long primitiveLong;
+		long primitiveLongArray[];
+		Long boxedLong;
+		Long boxedLongArray[];
+
+		String string;
+		String stringArray[];
+	}
+
+	/**
+	 * @see DATACMNS-916
+	 */
+	@AccessType(Type.FIELD)
+	private final static class PrivateFinalFieldAccess {
+
+		int primitiveInteger;
+		int primitiveIntegerArray[];
+		Integer boxedInteger;
+		Integer boxedIntegerArray[];
+
+		short primitiveShort;
+		short primitiveShortArray[];
+		Short boxedShort;
+		Short boxedShortArray[];
+
+		byte primitiveByte;
+		byte primitiveByteArray[];
+		Byte boxedByte;
+		Byte boxedByteArray[];
+
+		char primitiveChar;
+		char primitiveCharArray[];
+		Character boxedChar;
+		Character boxedCharArray[];
+
+		boolean primitiveBoolean;
+		boolean primitiveBooleanArray[];
+		Boolean boxedBoolean;
+		Boolean boxedBooleanArray[];
+
+		float primitiveFloat;
+		float primitiveFloatArray[];
+		Float boxedFloat;
+		Float boxedFloatArray[];
+
+		double primitiveDouble;
+		double primitiveDoubleArray[];
+		Double boxedDouble;
+		Double boxedDoubleArray[];
+
+		long primitiveLong;
+		long primitiveLongArray[];
+		Long boxedLong;
+		Long boxedLongArray[];
+
+		String string;
+		String stringArray[];
+	}
+
+	/**
+	 * @see DATACMNS-916
+	 */
+	@AccessType(Type.PROPERTY)
+	@Data
+	private final static class PrivateFinalPropertyAccess {
 
 		int primitiveInteger;
 		int primitiveIntegerArray[];
