@@ -511,7 +511,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			for (PersistentProperty<?> property : persistentProperties) {
 
-				if(property.usePropertyAccess()) {
+				if (property.usePropertyAccess()) {
 
 					if (property.getGetter() != null && generateMethodHandle(entity, property.getGetter())) {
 						visitPropertyGetterInitializer(property, mv, entityClasses, internalClassName);
@@ -641,9 +641,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				mv.visitInsn(ICONST_0);
 
 				Class<?> parameterType = setter.getParameterTypes()[0];
+
 				if (parameterType.isPrimitive()) {
 					mv.visitFieldInsn(GETSTATIC, Type.getInternalName(autoboxType(setter.getParameterTypes()[0])), "TYPE",
-								referenceName(JAVA_LANG_CLASS));
+							referenceName(JAVA_LANG_CLASS));
 				} else {
 					mv.visitLdcInsn(Type.getType(referenceName(parameterType)));
 				}
