@@ -245,6 +245,20 @@ public class ResultProcessorUnitTests {
 		assertThat(result, is(instanceOf(WrappingDto.class)));
 	}
 
+	/**
+	 * @see DATACMNS-921
+	 */
+	@Test
+	public void fallsBackToApproximateCollectionIfNecessary() throws Exception {
+
+		ResultProcessor processor = getProcessor("findAllProjection");
+
+		SpecialList<Sample> specialList = new SpecialList<Sample>(new Object());
+		specialList.add(new Sample("Dave", "Matthews"));
+
+		processor.processResult(specialList);
+	}
+
 	private static ResultProcessor getProcessor(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor();
 	}
@@ -310,5 +324,12 @@ public class ResultProcessorUnitTests {
 
 		@Value("#{target.firstname + ' ' + target.lastname}")
 		String getFullName();
+	}
+
+	static class SpecialList<E> extends ArrayList<E> {
+
+		private static final long serialVersionUID = -6539525376878522158L;
+
+		public SpecialList(Object dummy) {}
 	}
 }

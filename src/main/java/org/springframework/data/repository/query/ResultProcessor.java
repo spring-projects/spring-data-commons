@@ -143,7 +143,7 @@ public class ResultProcessor {
 		if (source instanceof Collection && method.isCollectionQuery()) {
 
 			Collection<?> collection = (Collection<?>) source;
-			Collection<Object> target = CollectionFactory.createCollection(collection.getClass(), collection.size());
+			Collection<Object> target = createCollectionFor(collection);
 
 			for (Object columns : collection) {
 				target.add(type.isInstance(columns) ? columns : converter.convert(columns));
@@ -157,6 +157,22 @@ public class ResultProcessor {
 		}
 
 		return (T) converter.convert(source);
+	}
+
+	/**
+	 * Creates a new {@link Collection} for the given source. Will try to create an instance of the source collection's
+	 * type first falling back to creating an approximate collection if the former fails.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @return
+	 */
+	private static Collection<Object> createCollectionFor(Collection<?> source) {
+
+		try {
+			return CollectionFactory.createCollection(source.getClass(), source.size());
+		} catch (RuntimeException o_O) {
+			return CollectionFactory.createApproximateCollection(source, source.size());
+		}
 	}
 
 	@RequiredArgsConstructor(staticName = "of")
