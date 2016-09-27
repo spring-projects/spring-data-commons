@@ -40,7 +40,7 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 		UriComponentsContributor {
 
 	/**
-	 * Returns the tempalte variables for the sort parameter.
+	 * Returns the template variables for the sort parameter.
 	 * 
 	 * @param parameter must not be {@literal null}.
 	 * @return
