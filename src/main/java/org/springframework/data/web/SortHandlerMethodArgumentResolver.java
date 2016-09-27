@@ -40,8 +40,9 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Nick Williams
+ * @author Mark Paluch
  */
-public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
+public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 
 	private static final String DEFAULT_PARAMETER = "sort";
 	private static final String DEFAULT_PROPERTY_DELIMITER = ",";
@@ -260,7 +261,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 			builder.add(order.getProperty());
 		}
 
-		return builder == null ? Collections.<String> emptyList() : builder.dumpExpressionIfPresentInto(expressions);
+		return builder == null ? Collections.<String>emptyList() : builder.dumpExpressionIfPresentInto(expressions);
 	}
 
 	/**
@@ -290,7 +291,7 @@ public class SortHandlerMethodArgumentResolver implements HandlerMethodArgumentR
 			builder.add(order.getProperty());
 		}
 
-		return builder == null ? Collections.<String> emptyList() : builder.dumpExpressionIfPresentInto(expressions);
+		return builder == null ? Collections.<String>emptyList() : builder.dumpExpressionIfPresentInto(expressions);
 	}
 
 	/**
