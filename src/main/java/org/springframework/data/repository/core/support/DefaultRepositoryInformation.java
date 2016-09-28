@@ -397,17 +397,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 			Type boundType = variable.getBounds()[0];
 			String referenceName = boundType instanceof TypeVariable ? boundType.toString() : variable.toString();
 
-			boolean isDomainTypeVariableReference = DOMAIN_TYPE_NAME.equals(referenceName);
-			boolean parameterMatchesEntityType = parameterType.isAssignableFrom(entityType);
-
-			// We need this check to be sure not to match save(Iterable) for entities implementing Iterable
-			boolean isNotIterable = !parameterType.equals(Iterable.class);
-
-			if (isDomainTypeVariableReference && parameterMatchesEntityType && isNotIterable) {
-				return true;
-			}
-
-			return false;
+			return DOMAIN_TYPE_NAME.equals(referenceName) && parameterType.isAssignableFrom(entityType);
 		}
 
 		for (Type type : variable.getBounds()) {
