@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.12.4.RELEASE (2016-09-29)
+----------------------------------------------
+* DATACMNS-923 - Remove obsolete code in DefaultRepositoryInformation.
+* DATACMNS-921 - ResultProcessor should create approximate collection instead of exact one.
+* DATACMNS-917 - Query methods returning Maps shouldn't return null if no result is present.
+* DATACMNS-914 - Release 1.12.4 (Hopper SR4).
+
+
 Changes in version 1.11.6.RELEASE (2016-09-29)
 ----------------------------------------------
 * DATACMNS-923 - Remove obsolete code in DefaultRepositoryInformation.
