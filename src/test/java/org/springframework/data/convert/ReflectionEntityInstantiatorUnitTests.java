@@ -92,6 +92,14 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 		verify(provider, times(1)).getParameterValue((Parameter) constructor.getParameters().iterator().next());
 	}
 
+	@Test(expected = MappingInstantiationException.class)
+	@SuppressWarnings("unchecked")
+	public void interfaceAsEntityShallThrow() {
+		when(entity.getPersistenceConstructor()).thenReturn(null);
+		when(entity.getType()).thenReturn((Class) PersistentEntity.class);
+		INSTANCE.createInstance(entity, provider);
+	}
+
 	/**
 	 * @see DATACMNS-300
 	 */
