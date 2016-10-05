@@ -194,13 +194,13 @@ public class Parameter {
 
 		ClassTypeInformation<?> ownerType = ClassTypeInformation.from(parameter.getDeclaringClass());
 		TypeInformation<?> parameterTypes = ownerType.getParameterTypes(method).get(parameter.getParameterIndex());
-		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 
 		if (!parameterTypes.getType().equals(Class.class)) {
 			return false;
 		}
 
 		TypeInformation<?> bound = parameterTypes.getTypeArguments().get(0);
+		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 		return bound.equals(returnType.getActualType());
 	}
 

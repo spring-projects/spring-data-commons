@@ -62,10 +62,10 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		Assert.notNull(method);
 
-		this.parameters = new ArrayList<T>();
-		this.dynamicProjectionIndex = -1;
-
 		List<Class<?>> types = Arrays.asList(method.getParameterTypes());
+
+		this.parameters = new ArrayList<T>(types.size());
+		this.dynamicProjectionIndex = -1;
 
 		for (int i = 0; i < types.size(); i++) {
 
@@ -98,11 +98,11 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 */
 	protected Parameters(List<T> originals) {
 
-		this.parameters = new ArrayList<T>();
-
 		int pageableIndexTemp = -1;
 		int sortIndexTemp = -1;
 		int dynamicProjectionTemp = -1;
+
+		this.parameters = new ArrayList<T>(originals.size());
 
 		for (int i = 0; i < originals.size(); i++) {
 
