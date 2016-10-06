@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.8
  */
-abstract class Chunk<T> implements Slice<T>, Serializable {
+public abstract class Chunk<T> implements Slice<T>, Serializable {
 
 	private static final long serialVersionUID = 867755909294344406L;
 
