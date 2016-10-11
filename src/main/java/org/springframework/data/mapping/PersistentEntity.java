@@ -97,6 +97,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 */
 	Optional<P> getPersistentProperty(String name);
 
+	P getRequiredPersistentProperty(String name);
+
 	/**
 	 * Returns the property equipped with an annotation of the given type.
 	 * 

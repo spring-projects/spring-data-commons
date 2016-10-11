@@ -107,7 +107,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.properties = new ArrayList<>();
 		this.comparator = comparator;
 		this.constructor = new PreferredConstructorDiscoverer<>(this).getConstructor();
-		this.associations = comparator.<Set<Association<P>>>map(it -> new TreeSet<>(new AssociationComparator<>(it)))
+		this.associations = comparator.<Set<Association<P>>> map(it -> new TreeSet<>(new AssociationComparator<>(it)))
 				.orElseGet(() -> new HashSet<>());
 
 		this.propertyCache = new HashMap<>();
@@ -271,6 +271,17 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public Optional<P> getPersistentProperty(String name) {
 		return Optional.ofNullable(propertyCache.get(name));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getRequiredPersistentProperty(java.lang.String)
+	 */
+	@Override
+	public P getRequiredPersistentProperty(String name) {
+
+		return getPersistentProperty(name).orElseThrow(
+				() -> new IllegalArgumentException(String.format("No property %s found for type %s!", name, getType())));
 	}
 
 	/*
