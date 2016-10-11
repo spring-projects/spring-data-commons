@@ -263,6 +263,17 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return Optional.ofNullable(propertyCache.get(name));
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getRequiredPersistentProperty(java.lang.String)
+	 */
+	@Override
+	public P getRequiredPersistentProperty(String name) {
+
+		return getPersistentProperty(name).orElseThrow(
+				() -> new IllegalArgumentException(String.format("No property %s found for type %s!", name, getType())));
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperty(java.lang.Class)
