@@ -89,8 +89,9 @@ class RepositoryBeanDefinitionBuilder {
 		builder.addConstructorArgValue(configuration.getRepositoryInterface());
 		builder.addPropertyValue("queryLookupStrategyKey", configuration.getQueryLookupStrategyKey());
 		builder.addPropertyValue("lazyInit", configuration.isLazyInit());
-		builder.addPropertyValue("repositoryBaseClass",
-				configuration.getRepositoryBaseClassName().orElseGet(() -> extension.getRepositoryFactoryClassName()));
+
+		configuration.getRepositoryBaseClassName()//
+				.ifPresent(it -> builder.addPropertyValue("repositoryBaseClass", it));
 
 		NamedQueriesBeanDefinitionBuilder definitionBuilder = new NamedQueriesBeanDefinitionBuilder(
 				extension.getDefaultNamedQueryLocation());
@@ -98,9 +99,7 @@ class RepositoryBeanDefinitionBuilder {
 
 		builder.addPropertyValue("namedQueries", definitionBuilder.build(configuration.getSource()));
 
-		Optional<String> customImplementationBeanName = registerCustomImplementation(configuration);
-
-		customImplementationBeanName.ifPresent(it -> {
+		registerCustomImplementation(configuration).ifPresent(it -> {
 			builder.addPropertyReference("customImplementation", it);
 			builder.addDependsOn(it);
 		});
