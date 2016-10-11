@@ -141,13 +141,28 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * Returns an instance of an the given {@link Bean}.
 	 * 
 	 * @param bean the {@link Bean} about to create an instance for.
-	 * @param type the expected type of the component instance created for that {@link Bean}.
 	 * @return the actual component instance.
+	 * @see Bean#getTypes()
+	 */
+	protected <S> S getDependencyInstance(Bean<S> bean) {
+		return getDependencyInstance(bean, bean.getBeanClass());
+	}
+
+	/**
+	 * Returns an instance of an the given {@link Bean} and allows to be specific about the type that is about to be
+	 * created.
+	 * 
+	 * @param bean the {@link Bean} about to create an instance for.
+	 * @param type the expected type of the component instance created for that {@link Bean}. We need to hand this
+	 *          parameter explicitly as the {@link Bean} might carry multiple types but the primary one might not be the
+	 *          first, i.e. the one returned by {@link Bean#getBeanClass()}.
+	 * @return the actual component instance.
+	 * @see Bean#getTypes()
 	 */
 	@SuppressWarnings("unchecked")
-	protected <S> S getDependencyInstance(Bean<S> bean) {
+	protected <S> S getDependencyInstance(Bean<S> bean, Class<?> type) {
 		CreationalContext<S> creationalContext = beanManager.createCreationalContext(bean);
-		return (S) beanManager.getReference(bean, bean.getBeanClass(), creationalContext);
+		return (S) beanManager.getReference(bean, type, creationalContext);
 	}
 
 	/**
