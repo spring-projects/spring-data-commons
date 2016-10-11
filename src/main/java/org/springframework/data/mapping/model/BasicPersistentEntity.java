@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -335,11 +336,9 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void doWithProperties(PropertyHandler<P> handler) {
 
-		Assert.notNull(handler, "Handler must not be null!");
+		Assert.notNull(handler, "PropertyHandler must not be null!");
 
-		properties.stream()//
-				.filter(it -> !it.isTransient() && !it.isAssociation())//
-				.forEach(it -> handler.doWithPersistentProperty(it));
+		getPersistentProperties().forEach(it -> handler.doWithPersistentProperty(it));
 	}
 
 	/*
@@ -351,9 +350,18 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(handler, "Handler must not be null!");
 
-		properties.stream()//
-				.filter(it -> !it.isTransient() && !it.isAssociation())//
-				.forEach(it -> handler.doWithPersistentProperty(it));
+		getPersistentProperties().forEach(it -> handler.doWithPersistentProperty(it));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperties()
+	 */
+	@Override
+	public Stream<P> getPersistentProperties() {
+
+		return properties.stream()//
+				.filter(it -> !it.isTransient() && !it.isAssociation());
 	}
 
 	/*
@@ -380,6 +388,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		for (Association<? extends PersistentProperty<?>> association : associations) {
 			handler.doWithAssociation(association);
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getAssociations()
+	 */
+	@Override
+	public Stream<Association<P>> getAssociations() {
+		return associations.stream();
 	}
 
 	/*
