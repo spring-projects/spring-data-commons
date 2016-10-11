@@ -17,6 +17,7 @@ package org.springframework.data.mapping;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.util.TypeInformation;
@@ -156,6 +157,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
 	void doWithProperties(SimplePropertyHandler handler);
 
+	Stream<P> getPersistentProperties();
+
 	/**
 	 * Applies the given {@link AssociationHandler} to all {@link Association} contained in this {@link PersistentEntity}.
 	 * 
@@ -164,6 +167,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	void doWithAssociations(AssociationHandler<P> handler);
 
 	void doWithAssociations(SimpleAssociationHandler handler);
+
+	Stream<Association<P>> getAssociations();
 
 	/**
 	 * Looks up the annotation of the given type on the {@link PersistentEntity}.
