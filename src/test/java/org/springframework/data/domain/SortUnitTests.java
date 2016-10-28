@@ -18,6 +18,10 @@ package org.springframework.data.domain;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.NullHandling.*;
 
+import lombok.Getter;
+
+import java.util.Collection;
+
 import org.junit.Test;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -171,5 +175,29 @@ public class SortUnitTests {
 		assertThatExceptionOfType(IllegalArgumentException.class)//
 				.isThrownBy(() -> Sort.by((Direction) null, "foo"))//
 				.withMessageContaining("Direction");
+	}
+
+	@Test
+	public void translatesTypedSortCorrectly() {
+
+		assertThat(Sort.by(Sample.class).on(Sample::getNested).on(Nested::getFirstname)) //
+				.containsExactly(Order.by("nested.firstname"));
+
+		assertThat(Sort.by(Sample.class).on((Sample it) -> it.getNested().getFirstname())) //
+				.containsExactly(Order.by("nested.firstname"));
+
+		assertThat(Sort.by(Sample.class).on(Sample::getNesteds).on(Nested::getFirstname)) //
+				.containsExactly(Order.by("nesteds.firstname"));
+	}
+
+	@Getter
+	static class Sample {
+		Nested nested;
+		Collection<Nested> nesteds;
+	}
+
+	@Getter
+	static class Nested {
+		String firstname;
 	}
 }

@@ -23,8 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.util.MethodInvocationRecorder;
+import org.springframework.data.util.MethodInvocationRecorder.Recorded;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -167,6 +170,10 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		return Sort.by(Arrays.stream(properties)//
 				.map(it -> new Order(direction, it))//
 				.collect(Collectors.toList()));
+	}
+
+	public static <T> TypedSort<T> by(Class<T> type) {
+		return new TypedSort<>(type);
 	}
 
 	/**
@@ -690,6 +697,57 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 			}
 
 			return result;
+		}
+	}
+
+	public static class TypedSort<T> extends Sort {
+
+		private static final long serialVersionUID = -3550403511206745880L;
+
+		private final Recorded<T> recorded;
+
+		private TypedSort(Class<T> type) {
+			this(MethodInvocationRecorder.forProxyOf(type));
+		}
+
+		private TypedSort(Recorded<T> recorded) {
+
+			super(new Order[0]);
+			this.recorded = recorded;
+		}
+
+		public <S> TypedSort<S> on(Function<T, S> property) {
+			return new TypedSort<>(recorded.record(property));
+		}
+
+		public <S> TypedSort<S> on(Recorded.ToCollectionConverter<T, S> collectionProperty) {
+			return new TypedSort<>(recorded.record(collectionProperty));
+		}
+
+		public Sort ascending() {
+			return Sort.by(Direction.ASC, recorded.getPropertyPath());
+		}
+
+		public Sort descending() {
+			return Sort.by(Direction.DESC, recorded.getPropertyPath());
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.domain.Sort#iterator()
+		 */
+		@Override
+		public Iterator<Order> iterator() {
+			return Collections.singleton(Order.by(recorded.getPropertyPath())).iterator();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.domain.Sort#toString()
+		 */
+		@Override
+		public String toString() {
+			return Sort.by(recorded.getPropertyPath()).toString();
 		}
 	}
 }
