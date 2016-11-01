@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,6 +268,19 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		Pageable result = resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null);
 
 		assertThat(result.getPageSize(), is(10));
+	}
+
+	/**
+	 * @see DATACMNS-929
+	 */
+	@Test
+	public void detectsFallbackPageableIfNullOneIsConfigured() {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setFallbackPageable(null);
+
+		assertThat(resolver.isFallbackPageable(null), is(false));
+		assertThat(resolver.isFallbackPageable(new PageRequest(0, 10)), is(false));
 	}
 
 	@Override

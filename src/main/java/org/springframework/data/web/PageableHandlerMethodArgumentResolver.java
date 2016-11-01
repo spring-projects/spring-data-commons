@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,12 +95,12 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 	/**
 	 * Returns whether the given {@link Pageable} is the fallback one.
 	 * 
-	 * @param pageable
+	 * @param pageable can be {@literal null}.
 	 * @since 1.9
 	 * @return
 	 */
 	public boolean isFallbackPageable(Pageable pageable) {
-		return this.fallbackPageable.equals(pageable);
+		return fallbackPageable == null ? false : fallbackPageable.equals(pageable);
 	}
 
 	/**
