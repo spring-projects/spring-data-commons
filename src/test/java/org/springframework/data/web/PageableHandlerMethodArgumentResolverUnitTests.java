@@ -278,10 +278,10 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	public void detectsFallbackPageableIfNullOneIsConfigured() {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
-		resolver.setFallbackPageable(null);
+		resolver.setFallbackPageable(Optional.empty());
 
 		assertThat(resolver.isFallbackPageable(null)).isFalse();
-		assertThat(resolver.isFallbackPageable(PageRequest.of(0, 10))).isTrue();
+		assertThat(resolver.isFallbackPageable(PageRequest.of(0, 10))).isFalse();
 	}
 
 	@Override
