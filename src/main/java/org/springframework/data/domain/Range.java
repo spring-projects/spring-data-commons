@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.domain;
 
+import lombok.Value;
+
 import org.springframework.util.Assert;
 
 /**
@@ -23,11 +25,27 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.10
  */
+@Value
 public class Range<T extends Comparable<T>> {
 
+	/**
+	 * The lower bound of the range.
+	 */
 	private final T lowerBound;
+
+	/**
+	 * The upper bound of the range.
+	 */
 	private final T upperBound;
+
+	/**
+	 * Whether the lower bound is considered inclusive.
+	 */
 	private final boolean lowerInclusive;
+
+	/**
+	 * Whether the lower bound is considered inclusive.
+	 */
 	private final boolean upperInclusive;
 
 	/**
@@ -43,7 +61,8 @@ public class Range<T extends Comparable<T>> {
 	}
 
 	/**
-	 * Createsa new {@link Range} with the given lower and upper bound as well as the given inclusive/exclusive semantics.
+	 * Creates a new {@link Range} with the given lower and upper bound as well as the given inclusive/exclusive
+	 * semantics.
 	 * 
 	 * @param lowerBound can be {@literal null}.
 	 * @param upperBound can be {@literal null}.
@@ -59,24 +78,6 @@ public class Range<T extends Comparable<T>> {
 	}
 
 	/**
-	 * Returns the lower bound of the range.
-	 * 
-	 * @return can be {@literal null}.
-	 */
-	public T getLowerBound() {
-		return lowerBound;
-	}
-
-	/**
-	 * Returns the upper bound of the range.
-	 * 
-	 * @return can be {@literal null}.
-	 */
-	public T getUpperBound() {
-		return upperBound;
-	}
-
-	/**
 	 * Returns whether the {@link Range} contains the given value.
 	 * 
 	 * @param value must not be {@literal null}.
@@ -86,10 +87,10 @@ public class Range<T extends Comparable<T>> {
 
 		Assert.notNull(value, "Reference value must not be null!");
 
-		boolean greaterThanLowerBound = lowerBound == null ? true : lowerInclusive ? lowerBound.compareTo(value) <= 0
-				: lowerBound.compareTo(value) < 0;
-		boolean lessThanUpperBound = upperBound == null ? true : upperInclusive ? upperBound.compareTo(value) >= 0
-				: upperBound.compareTo(value) > 0;
+		boolean greaterThanLowerBound = lowerBound == null ? true
+				: lowerInclusive ? lowerBound.compareTo(value) <= 0 : lowerBound.compareTo(value) < 0;
+		boolean lessThanUpperBound = upperBound == null ? true
+				: upperInclusive ? upperBound.compareTo(value) >= 0 : upperBound.compareTo(value) > 0;
 
 		return greaterThanLowerBound && lessThanUpperBound;
 	}
