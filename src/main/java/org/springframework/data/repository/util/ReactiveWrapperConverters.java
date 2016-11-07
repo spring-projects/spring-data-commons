@@ -22,6 +22,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.repository.util.ReactiveWrappers.ReactiveLibrary;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -52,13 +53,13 @@ public class ReactiveWrapperConverters {
 
 	static {
 
-		if (ReactiveWrappers.RXJAVA1_PRESENT) {
+		if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA1)) {
 
 			REACTIVE_WRAPPERS.add(RxJava1SingleWrapper.INSTANCE);
 			REACTIVE_WRAPPERS.add(RxJava1ObservableWrapper.INSTANCE);
 		}
 
-		if (ReactiveWrappers.RXJAVA2_PRESENT) {
+		if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA2)) {
 
 			REACTIVE_WRAPPERS.add(RxJava2SingleWrapper.INSTANCE);
 			REACTIVE_WRAPPERS.add(RxJava2MaybeWrapper.INSTANCE);
@@ -66,7 +67,7 @@ public class ReactiveWrapperConverters {
 			REACTIVE_WRAPPERS.add(RxJava2FlowableWrapper.INSTANCE);
 		}
 
-		if (ReactiveWrappers.PROJECT_REACTOR_PRESENT) {
+		if (ReactiveWrappers.isAvailable(ReactiveLibrary.PROJECT_REACTOR)) {
 
 			REACTIVE_WRAPPERS.add(FluxWrapper.INSTANCE);
 			REACTIVE_WRAPPERS.add(MonoWrapper.INSTANCE);

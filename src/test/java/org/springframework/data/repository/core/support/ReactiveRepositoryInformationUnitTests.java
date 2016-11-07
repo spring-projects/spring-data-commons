@@ -30,12 +30,12 @@ import org.reactivestreams.Publisher;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-import org.springframework.data.repository.reactive.ReactivePagingAndSortingRepository;
-import org.springframework.data.repository.reactive.RxJavaCrudRepository;
+import org.springframework.data.repository.reactive.ReactiveSortingRepository;
+import org.springframework.data.repository.reactive.RxJava1CrudRepository;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 
 /**
- * Unit tests for {@link ConvertingMethodParameterRepositoryInformation}.
+ * Unit tests for {@link ReactiveRepositoryInformation}.
  *
  * @author Mark Paluch
  */
@@ -47,8 +47,8 @@ public class ReactiveRepositoryInformationUnitTests {
 	@Test
 	public void discoversMethodWithoutComparingReturnType() throws Exception {
 
-		Method method = RxJavaInterfaceWithGenerics.class.getMethod("deleteAll");
-		RepositoryMetadata metadata = new DefaultRepositoryMetadata(RxJavaInterfaceWithGenerics.class);
+		Method method = RxJava1InterfaceWithGenerics.class.getMethod("deleteAll");
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(RxJava1InterfaceWithGenerics.class);
 		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY, null);
 
 		Method reference = information.getTargetClassMethod(method);
@@ -62,8 +62,8 @@ public class ReactiveRepositoryInformationUnitTests {
 		DefaultConversionService conversionService = new DefaultConversionService();
 		QueryExecutionConverters.registerConvertersIn(conversionService);
 
-		Method method = RxJavaInterfaceWithGenerics.class.getMethod("save", Observable.class);
-		RepositoryMetadata metadata = new DefaultRepositoryMetadata(RxJavaInterfaceWithGenerics.class);
+		Method method = RxJava1InterfaceWithGenerics.class.getMethod("save", Observable.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(RxJava1InterfaceWithGenerics.class);
 		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null,
 				conversionService);
 
@@ -79,7 +79,7 @@ public class ReactiveRepositoryInformationUnitTests {
 		DefaultConversionService conversionService = new DefaultConversionService();
 		QueryExecutionConverters.registerConvertersIn(conversionService);
 
-		Method method = ReactivePagingAndSortingRepository.class.getMethod("save", Publisher.class);
+		Method method = ReactiveSortingRepository.class.getMethod("save", Publisher.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
 		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null,
 				conversionService);
@@ -124,7 +124,8 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Object.class)));
 	}
 
-	interface RxJavaInterfaceWithGenerics extends RxJavaCrudRepository<User, String> {}
+	interface RxJava1InterfaceWithGenerics extends RxJava1CrudRepository<User, String>
+	{}
 
 	interface ReactiveJavaInterfaceWithGenerics extends ReactiveCrudRepository<User, String> {}
 

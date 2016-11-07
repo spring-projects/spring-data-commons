@@ -15,13 +15,12 @@
  */
 package org.springframework.data.repository.util;
 
-import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import org.junit.Test;
 import org.reactivestreams.Publisher;
 
-import io.reactivex.Flowable;
-import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import io.reactivex.Maybe;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Completable;
@@ -200,6 +199,27 @@ public class ReactiveWrapperConvertersUnitTests {
 
 		io.reactivex.Observable<String> foo = io.reactivex.Observable.just("foo");
 		assertThat(ReactiveWrapperConverters.toWrapper(foo, Flux.class)).isInstanceOf(Flux.class);
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	public void toWrapperShouldConvertRxJava2ObservableToSingle() {
+
+		io.reactivex.Observable<String> foo = io.reactivex.Observable.just("foo");
+		assertThat(ReactiveWrapperConverters.toWrapper(foo, io.reactivex.Single.class))
+				.isInstanceOf(io.reactivex.Single.class);
+	}
+
+	/**
+	 * @see DATACMNS-836
+	 */
+	@Test
+	public void toWrapperShouldConvertRxJava2ObservableToMaybe() {
+
+		io.reactivex.Observable<String> foo = io.reactivex.Observable.empty();
+		assertThat(ReactiveWrapperConverters.toWrapper(foo, Maybe.class)).isInstanceOf(Maybe.class);
 	}
 
 	/**

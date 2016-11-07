@@ -17,9 +17,6 @@ package org.springframework.data.repository.reactive;
 
 import java.io.Serializable;
 
-import org.reactivestreams.Publisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
 
@@ -27,19 +24,18 @@ import rx.Observable;
 import rx.Single;
 
 /**
- * Extension of {@link RxJavaCrudRepository} to provide additional methods to retrieve entities using the pagination and sorting
+ * Extension of {@link RxJava1CrudRepository} to provide additional methods to retrieve entities using the sorting
  * abstraction.
  *
  * @author Mark Paluch
  * @since 2.0
  * @see Sort
- * @see Pageable
  * @see Single
  * @see Observable
- * @see RxJavaCrudRepository
+ * @see RxJava1CrudRepository
  */
 @NoRepositoryBean
-public interface RxJavaPagingAndSortingRepository<T, ID extends Serializable> extends RxJavaCrudRepository<T, ID> {
+public interface RxJava1SortingRepository<T, ID extends Serializable> extends RxJava1CrudRepository<T, ID> {
 
 	/*
 	 * (non-Javadoc)
@@ -69,12 +65,4 @@ public interface RxJavaPagingAndSortingRepository<T, ID extends Serializable> ex
 	 * @return all entities sorted by the given options
 	 */
 	Observable<T> findAll(Sort sort);
-
-	/**
-	 * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
-	 *
-	 * @param pageable
-	 * @return a page of entities
-	 */
-	Single<Page<T>> findAll(Pageable pageable);
 }

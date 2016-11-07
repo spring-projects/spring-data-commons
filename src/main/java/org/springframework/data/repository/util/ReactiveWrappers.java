@@ -59,13 +59,13 @@ import rx.Single;
 @UtilityClass
 public class ReactiveWrappers {
 
-	static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Mono",
+	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Mono",
 			ReactiveWrappers.class.getClassLoader());
 
-	static final boolean RXJAVA1_PRESENT = ClassUtils.isPresent("rx.Completable",
+	private static final boolean RXJAVA1_PRESENT = ClassUtils.isPresent("rx.Completable",
 			ReactiveWrappers.class.getClassLoader());
 
-	static final boolean RXJAVA2_PRESENT = ClassUtils.isPresent("io.reactivex.Flowable",
+	private static final boolean RXJAVA2_PRESENT = ClassUtils.isPresent("io.reactivex.Flowable",
 			ReactiveWrappers.class.getClassLoader());
 
 	private static final Map<Class<?>, Descriptor> REACTIVE_WRAPPERS;
@@ -107,7 +107,30 @@ public class ReactiveWrappers {
 	 * @return {@literal true} if reactive support is available.
 	 */
 	public static boolean isAvailable() {
-		return RXJAVA1_PRESENT || RXJAVA2_PRESENT || PROJECT_REACTOR_PRESENT;
+		return isAvailable(ReactiveLibrary.PROJECT_REACTOR) || isAvailable(ReactiveLibrary.RXJAVA1)
+				|| isAvailable(ReactiveLibrary.RXJAVA2);
+	}
+
+	/**
+	 * Returns {@literal true} if the {@link ReactiveLibrary} is available.
+	 *
+	 * @param reactiveLibrary must not be {@literal null}.
+	 * @return {@literal true} if the {@link ReactiveLibrary} is available.
+	 */
+	public static boolean isAvailable(ReactiveLibrary reactiveLibrary) {
+
+		Assert.notNull(reactiveLibrary, "ReactiveLibrary must not be null!");
+
+		switch (reactiveLibrary) {
+			case PROJECT_REACTOR:
+				return PROJECT_REACTOR_PRESENT;
+			case RXJAVA1:
+				return RXJAVA1_PRESENT;
+			case RXJAVA2:
+				return RXJAVA2_PRESENT;
+		}
+
+		throw new IllegalArgumentException(String.format("ReactiveLibrary %s not supported", reactiveLibrary));
 	}
 
 	/**
@@ -206,5 +229,14 @@ public class ReactiveWrappers {
 			}
 		}
 		return Optional.empty();
+	}
+
+	/**
+	 * Enumeration of supported reactive libraries.
+	 * 
+	 * @author Mark Paluch
+	 */
+	enum ReactiveLibrary {
+		PROJECT_REACTOR, RXJAVA1, RXJAVA2;
 	}
 }

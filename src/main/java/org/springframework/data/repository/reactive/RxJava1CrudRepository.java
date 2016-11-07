@@ -21,6 +21,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 
+import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
@@ -34,7 +35,7 @@ import rx.Single;
  * @see Observable
  */
 @NoRepositoryBean
-public interface RxJavaCrudRepository<T, ID extends Serializable> extends Repository<T, ID> {
+public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repository<T, ID> {
 
 	/**
 	 * Saves a given entity. Use the returned instance for further operations as the save operation might have changed the
@@ -70,7 +71,7 @@ public interface RxJavaCrudRepository<T, ID extends Serializable> extends Reposi
 	 * @return the entity with the given id or {@literal null} if none found
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}
 	 */
-	Single<T> findOne(ID id);
+	Observable<T> findOne(ID id);
 
 	/**
 	 * Retrieves an entity by its id supplied by a {@link Single}.
@@ -79,7 +80,7 @@ public interface RxJavaCrudRepository<T, ID extends Serializable> extends Reposi
 	 * @return the entity with the given id or {@literal null} if none found
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}
 	 */
-	Single<T> findOne(Single<ID> id);
+	Observable<T> findOne(Single<ID> id);
 
 	/**
 	 * Returns whether an entity with the given id exists.
@@ -135,7 +136,7 @@ public interface RxJavaCrudRepository<T, ID extends Serializable> extends Reposi
 	 * @param id must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@code id} is {@literal null}
 	 */
-	Single<Void> delete(ID id);
+	Completable delete(ID id);
 
 	/**
 	 * Deletes a given entity.
@@ -143,7 +144,7 @@ public interface RxJavaCrudRepository<T, ID extends Serializable> extends Reposi
 	 * @param entity
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
 	 */
-	Single<Void> delete(T entity);
+	Completable delete(T entity);
 
 	/**
 	 * Deletes the given entities.
@@ -151,7 +152,7 @@ public interface RxJavaCrudRepository<T, ID extends Serializable> extends Reposi
 	 * @param entities
 	 * @throws IllegalArgumentException in case the given {@link Iterable} is {@literal null}.
 	 */
-	Single<Void> delete(Iterable<? extends T> entities);
+	Completable delete(Iterable<? extends T> entities);
 
 	/**
 	 * Deletes the given entities.
@@ -159,10 +160,10 @@ public interface RxJavaCrudRepository<T, ID extends Serializable> extends Reposi
 	 * @param entityStream
 	 * @throws IllegalArgumentException in case the given {@link Publisher} is {@literal null}.
 	 */
-	Single<Void> delete(Observable<? extends T> entityStream);
+	Completable delete(Observable<? extends T> entityStream);
 
 	/**
 	 * Deletes all entities managed by the repository.
 	 */
-	Single<Void> deleteAll();
+	Completable deleteAll();
 }
