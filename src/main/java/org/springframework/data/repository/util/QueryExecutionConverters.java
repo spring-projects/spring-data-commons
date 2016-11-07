@@ -28,6 +28,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.data.repository.util.ReactiveWrappers.ReactiveLibrary;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -189,7 +190,7 @@ public abstract class QueryExecutionConverters {
 
 		if (ReactiveWrappers.isAvailable()) {
 
-			if (ReactiveWrappers.RXJAVA1_PRESENT) {
+			if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA1)) {
 
 				conversionService.addConverter(PublisherToRxJava1CompletableConverter.INSTANCE);
 				conversionService.addConverter(RxJava1CompletableToPublisherConverter.INSTANCE);
@@ -206,7 +207,7 @@ public abstract class QueryExecutionConverters {
 				conversionService.addConverter(RxJava1ObservableToFluxConverter.INSTANCE);
 			}
 
-			if (ReactiveWrappers.RXJAVA2_PRESENT) {
+			if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA2)) {
 
 				conversionService.addConverter(PublisherToRxJava2CompletableConverter.INSTANCE);
 				conversionService.addConverter(RxJava2CompletableToPublisherConverter.INSTANCE);
@@ -231,19 +232,20 @@ public abstract class QueryExecutionConverters {
 				conversionService.addConverter(RxJava2MaybeToFluxConverter.INSTANCE);
 			}
 
-			if (ReactiveWrappers.PROJECT_REACTOR_PRESENT) {
+			if (ReactiveWrappers.isAvailable(ReactiveLibrary.PROJECT_REACTOR)) {
 				conversionService.addConverter(PublisherToMonoConverter.INSTANCE);
 				conversionService.addConverter(PublisherToFluxConverter.INSTANCE);
 			}
 
-			if (ReactiveWrappers.RXJAVA1_PRESENT) {
+			if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA1)) {
 				conversionService.addConverter(RxJava1SingleToObservableConverter.INSTANCE);
 				conversionService.addConverter(RxJava1ObservableToSingleConverter.INSTANCE);
 			}
 
-			if (ReactiveWrappers.RXJAVA2_PRESENT) {
+			if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA2)) {
 				conversionService.addConverter(RxJava2SingleToObservableConverter.INSTANCE);
 				conversionService.addConverter(RxJava2ObservableToSingleConverter.INSTANCE);
+				conversionService.addConverter(RxJava2ObservableToMaybeConverter.INSTANCE);
 			}
 		}
 	}
@@ -1084,7 +1086,24 @@ public abstract class QueryExecutionConverters {
 
 		@Override
 		public io.reactivex.Single<?> convert(io.reactivex.Observable<?> source) {
-			return source.singleElement().toSingle();
+			return source.singleOrError();
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Observable} to {@link Maybe}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum RxJava2ObservableToMaybeConverter
+			implements Converter<io.reactivex.Observable<?>, io.reactivex.Maybe<?>> {
+
+		INSTANCE;
+
+		@Override
+		public io.reactivex.Maybe<?> convert(io.reactivex.Observable<?> source) {
+			return source.singleElement();
 		}
 	}
 
