@@ -18,8 +18,6 @@ package org.springframework.data.repository.core.support;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import rx.Observable;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
@@ -32,7 +30,9 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.data.repository.reactive.RxJava1CrudRepository;
-import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
+
+import rx.Observable;
 
 /**
  * Unit tests for {@link ReactiveRepositoryInformation}.
@@ -60,7 +60,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	public void discoversMethodWithConvertibleArguments() throws Exception {
 
 		DefaultConversionService conversionService = new DefaultConversionService();
-		QueryExecutionConverters.registerConvertersIn(conversionService);
+		ReactiveWrapperConverters.registerConvertersIn(conversionService);
 
 		Method method = RxJava1InterfaceWithGenerics.class.getMethod("save", Observable.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(RxJava1InterfaceWithGenerics.class);
@@ -77,7 +77,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	public void discoversMethodAssignableArguments() throws Exception {
 
 		DefaultConversionService conversionService = new DefaultConversionService();
-		QueryExecutionConverters.registerConvertersIn(conversionService);
+		ReactiveWrapperConverters.registerConvertersIn(conversionService);
 
 		Method method = ReactiveSortingRepository.class.getMethod("save", Publisher.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
@@ -94,7 +94,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	public void discoversMethodExactIterableArguments() throws Exception {
 
 		DefaultConversionService conversionService = new DefaultConversionService();
-		QueryExecutionConverters.registerConvertersIn(conversionService);
+		ReactiveWrapperConverters.registerConvertersIn(conversionService);
 
 		Method method = ReactiveJavaInterfaceWithGenerics.class.getMethod("save", Iterable.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
@@ -111,7 +111,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	public void discoversMethodExactObjectArguments() throws Exception {
 
 		DefaultConversionService conversionService = new DefaultConversionService();
-		QueryExecutionConverters.registerConvertersIn(conversionService);
+		ReactiveWrapperConverters.registerConvertersIn(conversionService);
 
 		Method method = ReactiveJavaInterfaceWithGenerics.class.getMethod("save", Object.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
@@ -124,8 +124,7 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Object.class)));
 	}
 
-	interface RxJava1InterfaceWithGenerics extends RxJava1CrudRepository<User, String>
-	{}
+	interface RxJava1InterfaceWithGenerics extends RxJava1CrudRepository<User, String> {}
 
 	interface ReactiveJavaInterfaceWithGenerics extends ReactiveCrudRepository<User, String> {}
 
