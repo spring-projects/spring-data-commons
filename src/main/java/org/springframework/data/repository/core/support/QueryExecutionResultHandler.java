@@ -23,6 +23,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.repository.util.NullableWrapper;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 
 /**
  * Simple domain service to convert query results into a dedicated type.
@@ -43,6 +44,7 @@ class QueryExecutionResultHandler {
 
 		GenericConversionService conversionService = new DefaultConversionService();
 		QueryExecutionConverters.registerConvertersIn(conversionService);
+		ReactiveWrapperConverters.registerConvertersIn(conversionService);
 
 		this.conversionService = conversionService;
 	}

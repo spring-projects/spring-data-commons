@@ -15,10 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 
@@ -32,7 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
-import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 
 import reactor.core.publisher.Mono;
 import rx.Single;
@@ -56,7 +53,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 	public void setUp() {
 
 		DefaultConversionService defaultConversionService = new DefaultConversionService();
-		QueryExecutionConverters.registerConvertersIn(defaultConversionService);
+		ReactiveWrapperConverters.registerConvertersIn(defaultConversionService);
 
 		factory = new DummyRepositoryFactory(backingRepo);
 		factory.setConversionService(defaultConversionService);
