@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 /**
  * This {@link RepositoryInformation} uses a {@link ConversionService} to check whether method arguments can be
  * converted for invocation of implementation methods.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
@@ -42,7 +42,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	/**
 	 * Creates a new {@link ReactiveRepositoryInformation} for the given repository interface and repository base class
 	 * using a {@link ConversionService}.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param repositoryBaseClass must not be {@literal null}.
 	 * @param customImplementationClass
@@ -67,15 +67,15 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * @param baseClass
 	 * @return
 	 */
+	@Override
 	Method getTargetClassMethod(Method method, Class<?> baseClass) {
 
 		if (baseClass == null) {
 			return method;
 		}
 
-		boolean wantsWrappers = wantsMethodUsingReactiveWrapperParameters(method);
+		if (usesParametersWithReactiveWrappers(method)) {
 
-		if (wantsWrappers) {
 			Method candidate = getMethodCandidate(method, baseClass, new AssignableWrapperMatch(method));
 
 			if (candidate != null) {
@@ -99,12 +99,13 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 		return method;
 	}
 
-	private boolean wantsMethodUsingReactiveWrapperParameters(Method method) {
+	private boolean usesParametersWithReactiveWrappers(Method method) {
 
 		boolean wantsWrappers = false;
 
 		for (Class<?> parameterType : method.getParameterTypes()) {
-			if (isNonunwrappingWrapper(parameterType)) {
+
+			if (isNonUnwrappingWrapper(parameterType)) {
 				wantsWrappers = true;
 				break;
 			}
@@ -167,13 +168,13 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * @param parameterType
 	 * @return
 	 */
-	static boolean isNonunwrappingWrapper(Class<?> parameterType) {
+	static boolean isNonUnwrappingWrapper(Class<?> parameterType) {
 		return QueryExecutionConverters.supports(parameterType)
 				&& !QueryExecutionConverters.supportsUnwrapping(parameterType);
 	}
 
 	/**
-	 * {@link BiPredicate} to check whether a method parameter is a {@link #isNonunwrappingWrapper(Class)} and can be
+	 * {@link BiPredicate} to check whether a method parameter is a {@link #isNonUnwrappingWrapper(Class)} and can be
 	 * converted into a different wrapper. Usually {@link rx.Observable} to {@link org.reactivestreams.Publisher}
 	 * conversion.
 	 */
@@ -193,7 +194,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 		@Override
 		public boolean test(Class<?> candidateParameterType, Integer index) {
 
-			if (isNonunwrappingWrapper(candidateParameterType) && isNonunwrappingWrapper(declaredParameterTypes[index])) {
+			if (isNonUnwrappingWrapper(candidateParameterType) && isNonUnwrappingWrapper(declaredParameterTypes[index])) {
 
 				if (conversionService.canConvert(declaredParameterTypes[index], candidateParameterType)) {
 					return true;
@@ -205,7 +206,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	}
 
 	/**
-	 * {@link BiPredicate} to check parameter assignability between a {@link #isNonunwrappingWrapper(Class)} parameter and
+	 * {@link BiPredicate} to check parameter assignability between a {@link #isNonUnwrappingWrapper(Class)} parameter and
 	 * a declared parameter. Usually {@link reactor.core.publisher.Flux} vs. {@link org.reactivestreams.Publisher}
 	 * conversion.
 	 */
@@ -223,7 +224,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 		@Override
 		public boolean test(Class<?> candidateParameterType, Integer index) {
 
-			if (isNonunwrappingWrapper(candidateParameterType) && isNonunwrappingWrapper(declaredParameterTypes[index])) {
+			if (isNonUnwrappingWrapper(candidateParameterType) && isNonUnwrappingWrapper(declaredParameterTypes[index])) {
 
 				if (declaredParameterTypes[index].isAssignableFrom(candidateParameterType)) {
 					return true;
