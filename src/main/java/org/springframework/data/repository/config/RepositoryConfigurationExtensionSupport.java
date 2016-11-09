@@ -301,9 +301,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 		try {
 			return org.springframework.util.ClassUtils.forName(repositoryInterface, classLoader);
-		} catch (ClassNotFoundException e) {
-			LOGGER.warn(String.format(CLASS_LOADING_ERROR, getModuleName(), repositoryInterface, classLoader), e);
-		} catch (LinkageError e) {
+		} catch (ClassNotFoundException | LinkageError e) {
 			LOGGER.warn(String.format(CLASS_LOADING_ERROR, getModuleName(), repositoryInterface, classLoader), e);
 		}
 

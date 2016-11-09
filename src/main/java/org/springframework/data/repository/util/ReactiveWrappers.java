@@ -43,6 +43,7 @@ import rx.Single;
  * multiplicity and whether a reactive wrapper type is acceptable for a specific operation.
  * 
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.0
  * @see org.reactivestreams.Publisher
  * @see rx.Single
@@ -72,7 +73,7 @@ public class ReactiveWrappers {
 
 	static {
 
-		Map<Class<?>, Descriptor> reactiveWrappers = new LinkedHashMap<>(3);
+		Map<Class<?>, Descriptor> reactiveWrappers = new LinkedHashMap<>(5);
 
 		if (RXJAVA1_PRESENT) {
 
@@ -140,6 +141,10 @@ public class ReactiveWrappers {
 	 * @return {@literal true} if the {@code type} is a supported reactive wrapper type.
 	 */
 	public static boolean supports(Class<?> type) {
+		return isWrapper(ClassUtils.getUserClass(type));
+	}
+
+	private static boolean isWrapper(Class<?> type) {
 		return isNoValueType(type) || isSingleValueType(type) || isMultiValueType(type);
 	}
 

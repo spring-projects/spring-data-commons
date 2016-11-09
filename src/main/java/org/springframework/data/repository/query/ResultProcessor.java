@@ -159,7 +159,7 @@ public class ResultProcessor {
 		}
 
 		if(ReactiveWrapperConverters.supports(source.getClass())){
-			return (T) ReactiveWrapperConverters.map(source, o -> type.isInstance(o) ? o : converter.convert(o));
+			return (T) ReactiveWrapperConverters.map(source, converter::convert);
 		}
 
 		return (T) converter.convert(source);

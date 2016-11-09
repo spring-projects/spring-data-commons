@@ -19,6 +19,7 @@ import static org.springframework.data.repository.util.ReactiveWrapperConverters
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
 import org.springframework.core.ReactiveAdapterRegistry;
@@ -54,7 +55,7 @@ import rx.Single;
 @UtilityClass
 public class ReactiveWrapperConverters {
 
-	private static final List<AbstractReactiveWrapper<?>> REACTIVE_WRAPPERS = new ArrayList<>();
+	private static final List<ReactiveTypeWrapper<?>> REACTIVE_WRAPPERS = new ArrayList<>();
 	private static final GenericConversionService GENERIC_CONVERSION_SERVICE = new GenericConversionService();
 
 	static {
@@ -194,12 +195,12 @@ public class ReactiveWrapperConverters {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T map(Object stream, Converter<Object, Object> converter) {
+	public static <T> T map(Object stream, Function<Object, Object> converter) {
 
 		Assert.notNull(stream, "Stream must not be null!");
 		Assert.notNull(converter, "Converter must not be null!");
 
-		for (AbstractReactiveWrapper<?> reactiveWrapper : REACTIVE_WRAPPERS) {
+		for (ReactiveTypeWrapper<?> reactiveWrapper : REACTIVE_WRAPPERS) {
 
 			if (ClassUtils.isAssignable(reactiveWrapper.getWrapperClass(), stream.getClass())) {
 				return (T) reactiveWrapper.map(stream, converter);
@@ -214,11 +215,12 @@ public class ReactiveWrapperConverters {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Wrapper descriptor that can apply a {@link Converter} to map (convert) items inside its stream.
+	 * Wrapper descriptor that can apply a {@link Function} to map items inside its stream.
 	 *
 	 * @author Mark Paluch
+	 * @author Christoph Strobl
 	 */
-	private interface AbstractReactiveWrapper<T> {
+	private interface ReactiveTypeWrapper<T> {
 
 		/**
 		 * @return the wrapper class.
@@ -226,19 +228,19 @@ public class ReactiveWrapperConverters {
 		Class<? super T> getWrapperClass();
 
 		/**
-		 * Apply a {@link Converter} to a reactive type.
+		 * Apply a {@link Function} to a reactive type.
 		 *
 		 * @param wrapper the reactive type, must not be {@literal null}.
-		 * @param converter the converter, must not be {@literal null}.
+		 * @param function the converter, must not be {@literal null}.
 		 * @return the reactive type applying conversion.
 		 */
-		Object map(Object wrapper, Converter<Object, Object> converter);
+		Object map(Object wrapper, Function<Object, Object> function);
 	}
 
 	/**
 	 * Wrapper for Project Reactor's {@link Mono}.
 	 */
-	private enum MonoWrapper implements AbstractReactiveWrapper<Mono<?>> {
+	private enum MonoWrapper implements ReactiveTypeWrapper<Mono<?>> {
 
 		INSTANCE;
 
@@ -248,15 +250,15 @@ public class ReactiveWrapperConverters {
 		}
 
 		@Override
-		public Mono<?> map(Object wrapper, Converter<Object, Object> converter) {
-			return ((Mono<?>) wrapper).map(converter::convert);
+		public Mono<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((Mono<?>) wrapper).map(function::apply);
 		}
 	}
 
 	/**
 	 * Wrapper for Project Reactor's {@link Flux}.
 	 */
-	private enum FluxWrapper implements AbstractReactiveWrapper<Flux<?>> {
+	private enum FluxWrapper implements ReactiveTypeWrapper<Flux<?>> {
 
 		INSTANCE;
 
@@ -265,15 +267,15 @@ public class ReactiveWrapperConverters {
 			return Flux.class;
 		}
 
-		public Flux<?> map(Object wrapper, Converter<Object, Object> converter) {
-			return ((Flux<?>) wrapper).map(converter::convert);
+		public Flux<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((Flux<?>) wrapper).map(function::apply);
 		}
 	}
 
 	/**
 	 * Wrapper for Reactive Stream's {@link Publisher}.
 	 */
-	private enum PublisherWrapper implements AbstractReactiveWrapper<Publisher<?>> {
+	private enum PublisherWrapper implements ReactiveTypeWrapper<Publisher<?>> {
 
 		INSTANCE;
 
@@ -283,24 +285,24 @@ public class ReactiveWrapperConverters {
 		}
 
 		@Override
-		public Publisher<?> map(Object wrapper, Converter<Object, Object> converter) {
+		public Publisher<?> map(Object wrapper, Function<Object, Object> function) {
 
 			if (wrapper instanceof Mono) {
-				return MonoWrapper.INSTANCE.map(wrapper, converter);
+				return MonoWrapper.INSTANCE.map(wrapper, function);
 			}
 
 			if (wrapper instanceof Flux) {
-				return FluxWrapper.INSTANCE.map(wrapper, converter);
+				return FluxWrapper.INSTANCE.map(wrapper, function);
 			}
 
-			return FluxWrapper.INSTANCE.map(Flux.from((Publisher<?>) wrapper), converter);
+			return FluxWrapper.INSTANCE.map(Flux.from((Publisher<?>) wrapper), function);
 		}
 	}
 
 	/**
 	 * Wrapper for RxJava 1's {@link Single}.
 	 */
-	private enum RxJava1SingleWrapper implements AbstractReactiveWrapper<Single<?>> {
+	private enum RxJava1SingleWrapper implements ReactiveTypeWrapper<Single<?>> {
 
 		INSTANCE;
 
@@ -310,15 +312,15 @@ public class ReactiveWrapperConverters {
 		}
 
 		@Override
-		public Single<?> map(Object wrapper, Converter<Object, Object> converter) {
-			return ((Single<?>) wrapper).map(converter::convert);
+		public Single<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((Single<?>) wrapper).map(function::apply);
 		}
 	}
 
 	/**
 	 * Wrapper for RxJava 1's {@link Observable}.
 	 */
-	private enum RxJava1ObservableWrapper implements AbstractReactiveWrapper<Observable<?>> {
+	private enum RxJava1ObservableWrapper implements ReactiveTypeWrapper<Observable<?>> {
 
 		INSTANCE;
 
@@ -328,15 +330,15 @@ public class ReactiveWrapperConverters {
 		}
 
 		@Override
-		public Observable<?> map(Object wrapper, Converter<Object, Object> converter) {
-			return ((Observable<?>) wrapper).map(converter::convert);
+		public Observable<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((Observable<?>) wrapper).map(function::apply);
 		}
 	}
 
 	/**
 	 * Wrapper for RxJava 2's {@link io.reactivex.Single}.
 	 */
-	private enum RxJava2SingleWrapper implements AbstractReactiveWrapper<io.reactivex.Single<?>> {
+	private enum RxJava2SingleWrapper implements ReactiveTypeWrapper<io.reactivex.Single<?>> {
 
 		INSTANCE;
 
@@ -346,15 +348,15 @@ public class ReactiveWrapperConverters {
 		}
 
 		@Override
-		public io.reactivex.Single<?> map(Object wrapper, Converter<Object, Object> converter) {
-			return ((io.reactivex.Single<?>) wrapper).map(converter::convert);
+		public io.reactivex.Single<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.reactivex.Single<?>) wrapper).map(function::apply);
 		}
 	}
 
 	/**
 	 * Wrapper for RxJava 2's {@link io.reactivex.Maybe}.
 	 */
-	private enum RxJava2MaybeWrapper implements AbstractReactiveWrapper<io.reactivex.Maybe<?>> {
+	private enum RxJava2MaybeWrapper implements ReactiveTypeWrapper<Maybe<?>> {
 
 		INSTANCE;
 
@@ -364,15 +366,15 @@ public class ReactiveWrapperConverters {
 		}
 
 		@Override
-		public io.reactivex.Maybe<?> map(Object wrapper, Converter<Object, Object> converter) {
-			return ((io.reactivex.Maybe<?>) wrapper).map(converter::convert);
+		public io.reactivex.Maybe<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.reactivex.Maybe<?>) wrapper).map(function::apply);
 		}
 	}
 
 	/**
 	 * Wrapper for RxJava 2's {@link io.reactivex.Observable}.
 	 */
-	private enum RxJava2ObservableWrapper implements AbstractReactiveWrapper<io.reactivex.Observable<?>> {
+	private enum RxJava2ObservableWrapper implements ReactiveTypeWrapper<io.reactivex.Observable<?>> {
 
 		INSTANCE;
 
@@ -382,15 +384,15 @@ public class ReactiveWrapperConverters {
 		}
 
 		@Override
-		public io.reactivex.Observable<?> map(Object wrapper, Converter<Object, Object> converter) {
-			return ((io.reactivex.Observable<?>) wrapper).map(converter::convert);
+		public io.reactivex.Observable<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.reactivex.Observable<?>) wrapper).map(function::apply);
 		}
 	}
 
 	/**
 	 * Wrapper for RxJava 2's {@link io.reactivex.Flowable}.
 	 */
-	private enum RxJava2FlowableWrapper implements AbstractReactiveWrapper<io.reactivex.Flowable<?>> {
+	private enum RxJava2FlowableWrapper implements ReactiveTypeWrapper<Flowable<?>> {
 
 		INSTANCE;
 
@@ -400,8 +402,8 @@ public class ReactiveWrapperConverters {
 		}
 
 		@Override
-		public io.reactivex.Flowable<?> map(Object wrapper, Converter<Object, Object> converter) {
-			return ((io.reactivex.Flowable<?>) wrapper).map(converter::convert);
+		public io.reactivex.Flowable<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.reactivex.Flowable<?>) wrapper).map(function::apply);
 		}
 	}
 
