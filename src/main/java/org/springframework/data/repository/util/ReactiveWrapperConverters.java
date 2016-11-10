@@ -358,6 +358,10 @@ public class ReactiveWrapperConverters {
 		}
 	}
 
+	// -------------------------------------------------------------------------
+	// ReactiveStreams converters
+	// -------------------------------------------------------------------------
+
 	/**
 	 * A {@link Converter} to convert a {@link Publisher} to {@link Flux}.
 	 *
@@ -389,6 +393,10 @@ public class ReactiveWrapperConverters {
 			return Mono.from(source);
 		}
 	}
+
+	// -------------------------------------------------------------------------
+	// RxJava 1 converters
+	// -------------------------------------------------------------------------
 
 	/**
 	 * A {@link Converter} to convert a {@link Publisher} to {@link Single}.
@@ -450,7 +458,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Publisher<?> convert(Single<?> source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Single.class).toPublisher(source);
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Single.class).toPublisher(source));
 		}
 	}
 
@@ -466,7 +474,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Mono<?> convert(Single<?> source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Single.class).toMono(source);
+			return Mono.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Single.class).toMono(source));
 		}
 	}
 
@@ -482,7 +490,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Flux<?> convert(Single<?> source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Single.class).toFlux(source);
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Single.class).toFlux(source));
 		}
 	}
 
@@ -498,7 +506,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Publisher<?> convert(Completable source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Completable.class).toFlux(source);
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Completable.class).toFlux(source));
 		}
 	}
 
@@ -530,7 +538,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Publisher<?> convert(Observable<?> source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Observable.class).toFlux(source);
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Observable.class).toFlux(source));
 		}
 	}
 
@@ -546,7 +554,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Mono<?> convert(Observable<?> source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Observable.class).toMono(source);
+			return Mono.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Observable.class).toMono(source));
 		}
 	}
 
@@ -562,9 +570,45 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Flux<?> convert(Observable<?> source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Observable.class).toFlux(source);
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Observable.class).toFlux(source));
 		}
 	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Observable} to {@link Single}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum RxJava1ObservableToSingleConverter implements Converter<Observable<?>, Single<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Single<?> convert(Observable<?> source) {
+			return source.toSingle();
+		}
+	}
+
+	/**
+	 * A {@link Converter} to convert a {@link Single} to {@link Single}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.0
+	 */
+	public enum RxJava1SingleToObservableConverter implements Converter<Single<?>, Observable<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Observable<?> convert(Single<?> source) {
+			return source.toObservable();
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// RxJava 2 converters
+	// -------------------------------------------------------------------------
 
 	/**
 	 * A {@link Converter} to convert a {@link Publisher} to {@link io.reactivex.Single}.
@@ -838,38 +882,6 @@ public class ReactiveWrapperConverters {
 		@Override
 		public Flux<?> convert(io.reactivex.Maybe<?> source) {
 			return Flux.from(source.toFlowable());
-		}
-	}
-
-	/**
-	 * A {@link Converter} to convert a {@link Observable} to {@link Single}.
-	 *
-	 * @author Mark Paluch
-	 * @author 2.0
-	 */
-	public enum RxJava1ObservableToSingleConverter implements Converter<Observable<?>, Single<?>> {
-
-		INSTANCE;
-
-		@Override
-		public Single<?> convert(Observable<?> source) {
-			return source.toSingle();
-		}
-	}
-
-	/**
-	 * A {@link Converter} to convert a {@link Single} to {@link Single}.
-	 *
-	 * @author Mark Paluch
-	 * @author 2.0
-	 */
-	public enum RxJava1SingleToObservableConverter implements Converter<Single<?>, Observable<?>> {
-
-		INSTANCE;
-
-		@Override
-		public Observable<?> convert(Single<?> source) {
-			return source.toObservable();
 		}
 	}
 
