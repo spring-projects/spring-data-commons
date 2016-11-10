@@ -40,7 +40,8 @@ import rx.Observable;
 import rx.Single;
 
 /**
- * Conversion support for reactive wrapper types. This class is a reactive extension to {@link QueryExecutionConverters}.
+ * Conversion support for reactive wrapper types. This class is a reactive extension to
+ * {@link QueryExecutionConverters}.
  * <p>
  * This class discovers reactive wrapper availability and their conversion support based on the class path. Reactive
  * wrapper types might be supported/on the class path but conversion may require additional dependencies.
@@ -208,13 +209,35 @@ public class ReactiveWrapperConverters {
 		throw new IllegalStateException(String.format("Cannot apply converter to %s", stream));
 	}
 
+	// -------------------------------------------------------------------------
+	// Wrapper descriptors
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Wrapper descriptor that can apply a {@link Converter} to map (convert) items inside its stream.
+	 *
+	 * @author Mark Paluch
+	 */
 	private interface AbstractReactiveWrapper<T> {
 
+		/**
+		 * @return the wrapper class.
+		 */
 		Class<? super T> getWrapperClass();
 
+		/**
+		 * Apply a {@link Converter} to a reactive type.
+		 *
+		 * @param wrapper the reactive type, must not be {@literal null}.
+		 * @param converter the converter, must not be {@literal null}.
+		 * @return the reactive type applying conversion.
+		 */
 		Object map(Object wrapper, Converter<Object, Object> converter);
 	}
 
+	/**
+	 * Wrapper for Project Reactor's {@link Mono}.
+	 */
 	private enum MonoWrapper implements AbstractReactiveWrapper<Mono<?>> {
 
 		INSTANCE;
@@ -230,6 +253,9 @@ public class ReactiveWrapperConverters {
 		}
 	}
 
+	/**
+	 * Wrapper for Project Reactor's {@link Flux}.
+	 */
 	private enum FluxWrapper implements AbstractReactiveWrapper<Flux<?>> {
 
 		INSTANCE;
@@ -244,6 +270,9 @@ public class ReactiveWrapperConverters {
 		}
 	}
 
+	/**
+	 * Wrapper for Reactive Stream's {@link Publisher}.
+	 */
 	private enum PublisherWrapper implements AbstractReactiveWrapper<Publisher<?>> {
 
 		INSTANCE;
@@ -268,6 +297,9 @@ public class ReactiveWrapperConverters {
 		}
 	}
 
+	/**
+	 * Wrapper for RxJava 1's {@link Single}.
+	 */
 	private enum RxJava1SingleWrapper implements AbstractReactiveWrapper<Single<?>> {
 
 		INSTANCE;
@@ -283,6 +315,9 @@ public class ReactiveWrapperConverters {
 		}
 	}
 
+	/**
+	 * Wrapper for RxJava 1's {@link Observable}.
+	 */
 	private enum RxJava1ObservableWrapper implements AbstractReactiveWrapper<Observable<?>> {
 
 		INSTANCE;
@@ -298,6 +333,9 @@ public class ReactiveWrapperConverters {
 		}
 	}
 
+	/**
+	 * Wrapper for RxJava 2's {@link io.reactivex.Single}.
+	 */
 	private enum RxJava2SingleWrapper implements AbstractReactiveWrapper<io.reactivex.Single<?>> {
 
 		INSTANCE;
@@ -313,6 +351,9 @@ public class ReactiveWrapperConverters {
 		}
 	}
 
+	/**
+	 * Wrapper for RxJava 2's {@link io.reactivex.Maybe}.
+	 */
 	private enum RxJava2MaybeWrapper implements AbstractReactiveWrapper<io.reactivex.Maybe<?>> {
 
 		INSTANCE;
@@ -328,6 +369,9 @@ public class ReactiveWrapperConverters {
 		}
 	}
 
+	/**
+	 * Wrapper for RxJava 2's {@link io.reactivex.Observable}.
+	 */
 	private enum RxJava2ObservableWrapper implements AbstractReactiveWrapper<io.reactivex.Observable<?>> {
 
 		INSTANCE;
@@ -343,6 +387,9 @@ public class ReactiveWrapperConverters {
 		}
 	}
 
+	/**
+	 * Wrapper for RxJava 2's {@link io.reactivex.Flowable}.
+	 */
 	private enum RxJava2FlowableWrapper implements AbstractReactiveWrapper<io.reactivex.Flowable<?>> {
 
 		INSTANCE;
