@@ -241,7 +241,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void addAssociation(Association<P> association) {
 
-		if (!associations.contains(association)) {
+		if (association!= null && !associations.contains(association)) {
 			associations.add(association);
 		}
 	}
