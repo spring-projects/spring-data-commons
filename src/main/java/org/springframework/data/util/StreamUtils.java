@@ -51,8 +51,8 @@ public class StreamUtils {
 		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL);
 		Stream<T> stream = StreamSupport.stream(spliterator, false);
 
-		return iterator instanceof CloseableIterator ? stream.onClose(new CloseableIteratorDisposingRunnable(
-				(CloseableIterator<T>) iterator)) : stream;
+		return iterator instanceof CloseableIterator
+				? stream.onClose(new CloseableIteratorDisposingRunnable((CloseableIterator<T>) iterator)) : stream;
 	}
 
 	/**

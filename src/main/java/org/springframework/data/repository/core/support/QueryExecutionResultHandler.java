@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,14 +72,15 @@ class QueryExecutionResultHandler {
 
 			TypeDescriptor targetType = TypeDescriptor.valueOf(expectedReturnType);
 
-			if(conversionService.canConvert(WRAPPER_TYPE, returnTypeDescriptor)
-				&& !conversionService.canBypassConvert(WRAPPER_TYPE, targetType)) {
+			if (conversionService.canConvert(WRAPPER_TYPE, returnTypeDescriptor)
+					&& !conversionService.canBypassConvert(WRAPPER_TYPE, targetType)) {
 
 				return conversionService.convert(new NullableWrapper(result), expectedReturnType);
 			}
 
-			if(result != null && conversionService.canConvert(TypeDescriptor.valueOf(result.getClass()), returnTypeDescriptor)
-				&& !conversionService.canBypassConvert(TypeDescriptor.valueOf(result.getClass()), targetType)) {
+			if (result != null
+					&& conversionService.canConvert(TypeDescriptor.valueOf(result.getClass()), returnTypeDescriptor)
+					&& !conversionService.canBypassConvert(TypeDescriptor.valueOf(result.getClass()), targetType)) {
 
 				return conversionService.convert(result, expectedReturnType);
 			}

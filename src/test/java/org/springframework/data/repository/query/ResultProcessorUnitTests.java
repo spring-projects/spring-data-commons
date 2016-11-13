@@ -19,6 +19,11 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import rx.Observable;
+import rx.Single;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,11 +44,6 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import rx.Observable;
-import rx.Single;
 
 /**
  * Unit tests for {@link ResultProcessor}.
@@ -109,7 +109,7 @@ public class ResultProcessorUnitTests {
 		ResultProcessor information = getProcessor("findAllProjection");
 
 		List<Map<String, Object>> source = new ArrayList<Map<String, Object>>(
-				Arrays.asList(Collections.<String, Object> singletonMap("lastname", "Matthews")));
+				Arrays.asList(Collections.<String, Object>singletonMap("lastname", "Matthews")));
 
 		List<SampleProjection> result = information.processResult(source);
 
@@ -278,6 +278,7 @@ public class ResultProcessorUnitTests {
 		Object result = getProcessor("findMonoSample").processResult(samples);
 
 		assertThat(result, is(instanceOf(Mono.class)));
+
 		Object content = ((Mono<Object>) result).block();
 
 		assertThat(content, is(instanceOf(Sample.class)));
@@ -295,6 +296,7 @@ public class ResultProcessorUnitTests {
 		Object result = getProcessor("findSingleSample").processResult(samples);
 
 		assertThat(result, is(instanceOf(Single.class)));
+
 		Object content = ((Single<Object>) result).toBlocking().value();
 
 		assertThat(content, is(instanceOf(Sample.class)));
@@ -304,20 +306,16 @@ public class ResultProcessorUnitTests {
 	 * @see DATACMNS-836
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void refrainsFromProjectingUsingReactiveWrappersIfThePreparingConverterReturnsACompatibleInstance()
 			throws Exception {
 
 		ResultProcessor processor = getProcessor("findMonoSampleDto");
 
-		Object result = processor.processResult(Mono.just(new Sample("Dave", "Matthews")), new Converter<Object, Object>() {
-
-			@Override
-			public Object convert(Object source) {
-				return new SampleDto();
-			}
-		});
+		Object result = processor.processResult(Mono.just(new Sample("Dave", "Matthews")), source -> new SampleDto());
 
 		assertThat(result, is(instanceOf(Mono.class)));
+
 		Object content = ((Mono<Object>) result).block();
 
 		assertThat(content, is(instanceOf(SampleDto.class)));
@@ -335,6 +333,7 @@ public class ResultProcessorUnitTests {
 		Object result = getProcessor("findFluxProjection").processResult(samples);
 
 		assertThat(result, is(instanceOf(Flux.class)));
+
 		List<Object> content = ((Flux<Object>) result).collectList().block();
 
 		assertThat(content, is(not(empty())));
@@ -353,6 +352,7 @@ public class ResultProcessorUnitTests {
 		Object result = getProcessor("findObservableProjection").processResult(samples);
 
 		assertThat(result, is(instanceOf(Observable.class)));
+
 		List<Object> content = ((Observable<Object>) result).toList().toBlocking().single();
 
 		assertThat(content, is(not(empty())));

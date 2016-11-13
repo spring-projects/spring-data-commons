@@ -15,6 +15,14 @@
  */
 package org.springframework.data.repository.util;
 
+import lombok.experimental.UtilityClass;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import rx.Completable;
+import rx.Observable;
+import rx.Single;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -25,15 +33,9 @@ import java.util.stream.Collectors;
 
 import org.reactivestreams.Publisher;
 import org.springframework.core.ReactiveAdapter.Descriptor;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-
-import lombok.experimental.UtilityClass;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 /**
  * Utility class to expose details about reactive wrapper types. This class exposes whether a reactive wrapper is
@@ -44,6 +46,7 @@ import rx.Single;
  * 
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Oliver Gierke
  * @since 2.0
  * @see org.reactivestreams.Publisher
  * @see rx.Single
@@ -70,6 +73,15 @@ public class ReactiveWrappers {
 			ReactiveWrappers.class.getClassLoader());
 
 	private static final Map<Class<?>, Descriptor> REACTIVE_WRAPPERS;
+
+	/**
+	 * Enumeration of supported reactive libraries.
+	 * 
+	 * @author Mark Paluch
+	 */
+	static enum ReactiveLibrary {
+		PROJECT_REACTOR, RXJAVA1, RXJAVA2;
+	}
 
 	static {
 
@@ -102,14 +114,13 @@ public class ReactiveWrappers {
 	}
 
 	/**
-	 * Returns {@literal true} if reactive support is available. More specifically, whether RxJava1/2 or Project Reactor
-	 * libraries are on the class path.
+	 * Returns {@literal true} if reactive support is available. More specifically, whether any of the libraries defined
+	 * in {@link ReactiveLibrary} are on the class path.
 	 *
 	 * @return {@literal true} if reactive support is available.
 	 */
 	public static boolean isAvailable() {
-		return isAvailable(ReactiveLibrary.PROJECT_REACTOR) || isAvailable(ReactiveLibrary.RXJAVA1)
-				|| isAvailable(ReactiveLibrary.RXJAVA2);
+		return Arrays.stream(ReactiveLibrary.values()).anyMatch(ReactiveWrappers::isAvailable);
 	}
 
 	/**
@@ -120,7 +131,7 @@ public class ReactiveWrappers {
 	 */
 	public static boolean isAvailable(ReactiveLibrary reactiveLibrary) {
 
-		Assert.notNull(reactiveLibrary, "ReactiveLibrary must not be null!");
+		Assert.notNull(reactiveLibrary, "Reactive library must not be null!");
 
 		switch (reactiveLibrary) {
 			case PROJECT_REACTOR:
@@ -129,9 +140,9 @@ public class ReactiveWrappers {
 				return RXJAVA1_PRESENT;
 			case RXJAVA2:
 				return RXJAVA2_PRESENT;
+			default:
+				throw new IllegalArgumentException(String.format("Reactive library %s not supported", reactiveLibrary));
 		}
-
-		throw new IllegalArgumentException(String.format("ReactiveLibrary %s not supported", reactiveLibrary));
 	}
 
 	/**
@@ -144,8 +155,19 @@ public class ReactiveWrappers {
 		return isWrapper(ClassUtils.getUserClass(type));
 	}
 
-	private static boolean isWrapper(Class<?> type) {
-		return isNoValueType(type) || isSingleValueType(type) || isMultiValueType(type);
+	/**
+	 * Returns whether the given type uses any reactive wrapper type in its method signatures.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	public static boolean usesReactiveType(Class<?> type) {
+
+		Assert.notNull(type, "Type must not be null!");
+
+		return Arrays.stream(type.getMethods())//
+				.flatMap(ReflectionUtils::returnTypeAndParameters)//
+				.anyMatch(ReactiveWrappers::supports);
 	}
 
 	/**
@@ -156,7 +178,7 @@ public class ReactiveWrappers {
 	 */
 	public static boolean isNoValueType(Class<?> type) {
 
-		Assert.notNull(type, "Class must not be null!");
+		Assert.notNull(type, "Candidate type must not be null!");
 
 		return findDescriptor(type).map(Descriptor::isNoValue).orElse(false);
 	}
@@ -169,10 +191,9 @@ public class ReactiveWrappers {
 	 */
 	public static boolean isSingleValueType(Class<?> type) {
 
-		Assert.notNull(type, "Class must not be null!");
+		Assert.notNull(type, "Candidate type must not be null!");
 
-		return findDescriptor(type).map((descriptor) -> !descriptor.isMultiValue() && !descriptor.isNoValue())
-				.orElse(false);
+		return findDescriptor(type).map(it -> !it.isMultiValue() && !it.isNoValue()).orElse(false);
 	}
 
 	/**
@@ -185,63 +206,75 @@ public class ReactiveWrappers {
 	 */
 	public static boolean isMultiValueType(Class<?> type) {
 
-		Assert.notNull(type, "Class must not be null!");
+		Assert.notNull(type, "Candidate type must not be null!");
 
 		// Prevent single-types with a multi-hierarchy supertype to be reported as multi type
 		// See Mono implements Publisher
-		if (isSingleValueType(type)) {
-			return false;
-		}
-
-		return findDescriptor(type).map(Descriptor::isMultiValue).orElse(false);
+		return isSingleValueType(type) ? false : findDescriptor(type).map(Descriptor::isMultiValue).orElse(false);
 	}
 
 	/**
-	 * Returns a collection of No-Value wrapper types.
+	 * Returns a collection of no-value wrapper types.
 	 *
-	 * @return a collection of No-Value wrapper types.
+	 * @return a collection of no-value wrapper types.
 	 */
 	public static Collection<Class<?>> getNoValueTypes() {
-		return REACTIVE_WRAPPERS.entrySet().stream().filter(entry -> entry.getValue().isNoValue()).map(Entry::getKey)
-				.collect(Collectors.toList());
+
+		return REACTIVE_WRAPPERS.entrySet().stream()//
+				.filter(entry -> entry.getValue().isNoValue())//
+				.map(Entry::getKey).collect(Collectors.toList());
 	}
 
 	/**
-	 * Returns a collection of Single-Value wrapper types.
+	 * Returns a collection of single-value wrapper types.
 	 *
-	 * @return a collection of Single-Value wrapper types.
+	 * @return a collection of single-value wrapper types.
 	 */
 	public static Collection<Class<?>> getSingleValueTypes() {
-		return REACTIVE_WRAPPERS.entrySet().stream().filter(entry -> !entry.getValue().isMultiValue()).map(Entry::getKey)
-				.collect(Collectors.toList());
+
+		return REACTIVE_WRAPPERS.entrySet().stream()//
+				.filter(entry -> !entry.getValue().isMultiValue())//
+				.map(Entry::getKey).collect(Collectors.toList());
 	}
 
 	/**
-	 * Returns a collection of Multi-Value wrapper types.
+	 * Returns a collection of multi-value wrapper types.
 	 *
-	 * @return a collection of Multi-Value wrapper types.
+	 * @return a collection of multi-value wrapper types.
 	 */
 	public static Collection<Class<?>> getMultiValueTypes() {
-		return REACTIVE_WRAPPERS.entrySet().stream().filter(entry -> entry.getValue().isMultiValue()).map(Entry::getKey)
+
+		return REACTIVE_WRAPPERS.entrySet().stream()//
+				.filter(entry -> entry.getValue().isMultiValue())//
+				.map(Entry::getKey)//
 				.collect(Collectors.toList());
 	}
 
-	private static Optional<Descriptor> findDescriptor(Class<?> rhsType) {
+	/**
+	 * Returns whether the given type is a reactive wrapper type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean isWrapper(Class<?> type) {
 
-		for (Class<?> type : REACTIVE_WRAPPERS.keySet()) {
-			if (org.springframework.util.ClassUtils.isAssignable(type, rhsType)) {
-				return Optional.ofNullable(REACTIVE_WRAPPERS.get(type));
-			}
-		}
-		return Optional.empty();
+		Assert.notNull(type, "Candidate type must not be null!");
+
+		return isNoValueType(type) || isSingleValueType(type) || isMultiValueType(type);
 	}
 
 	/**
-	 * Enumeration of supported reactive libraries.
+	 * Looks up a {@link Descriptor} for the given wrapper type.
 	 * 
-	 * @author Mark Paluch
+	 * @param type must not be {@literal null}.
+	 * @return
 	 */
-	enum ReactiveLibrary {
-		PROJECT_REACTOR, RXJAVA1, RXJAVA2;
+	private static Optional<Descriptor> findDescriptor(Class<?> type) {
+
+		Assert.notNull(type, "Wrapper type must not be null!");
+
+		return REACTIVE_WRAPPERS.entrySet().stream()//
+				.filter(it -> ClassUtils.isAssignable(it.getKey(), type))//
+				.findFirst().map(it -> it.getValue());
 	}
 }

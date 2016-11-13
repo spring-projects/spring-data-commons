@@ -47,11 +47,12 @@ import org.springframework.util.ClassUtils;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 class DefaultRepositoryInformation implements RepositoryInformation {
 
-	@SuppressWarnings("rawtypes") private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class
-			.getTypeParameters();
+	@SuppressWarnings("rawtypes") //
+	private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class.getTypeParameters();
 	private static final String DOMAIN_TYPE_NAME = PARAMETERS[0].getName();
 	private static final String ID_TYPE_NAME = PARAMETERS[1].getName();
 
@@ -334,42 +335,13 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 		return metadata.getAlternativeDomainTypes();
 	}
 
-	/**
-	 * Checks the given method's parameters to match the ones of the given base class method. Matches generic arguments
-	 * against the ones bound in the given repository interface.
-	 * 
-	 * @param method
-	 * @param baseClassMethod
-	 * @return
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#isReactiveRepository()
 	 */
-	private boolean parametersMatch(Method method, Method baseClassMethod) {
-
-		Class<?>[] methodParameterTypes = method.getParameterTypes();
-		Type[] genericTypes = baseClassMethod.getGenericParameterTypes();
-		Class<?>[] types = baseClassMethod.getParameterTypes();
-
-		for (int i = 0; i < genericTypes.length; i++) {
-
-			Type genericType = genericTypes[i];
-			Class<?> type = types[i];
-			MethodParameter parameter = new MethodParameter(method, i);
-			Class<?> parameterType = resolveParameterType(parameter, metadata.getRepositoryInterface());
-
-			if (genericType instanceof TypeVariable<?>) {
-
-				if (!matchesGenericType((TypeVariable<?>) genericType, ResolvableType.forMethodParameter(parameter))) {
-					return false;
-				}
-
-				continue;
-			}
-
-			if (!type.isAssignableFrom(parameterType) || !type.equals(methodParameterTypes[i])) {
-				return false;
-			}
-		}
-
-		return true;
+	@Override
+	public boolean isReactiveRepository() {
+		return metadata.isReactiveRepository();
 	}
 
 	/**
@@ -407,5 +379,43 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks the given method's parameters to match the ones of the given base class method. Matches generic arguments
+	 * against the ones bound in the given repository interface.
+	 * 
+	 * @param method
+	 * @param baseClassMethod
+	 * @return
+	 */
+	private boolean parametersMatch(Method method, Method baseClassMethod) {
+
+		Class<?>[] methodParameterTypes = method.getParameterTypes();
+		Type[] genericTypes = baseClassMethod.getGenericParameterTypes();
+		Class<?>[] types = baseClassMethod.getParameterTypes();
+
+		for (int i = 0; i < genericTypes.length; i++) {
+
+			Type genericType = genericTypes[i];
+			Class<?> type = types[i];
+			MethodParameter parameter = new MethodParameter(method, i);
+			Class<?> parameterType = resolveParameterType(parameter, metadata.getRepositoryInterface());
+
+			if (genericType instanceof TypeVariable<?>) {
+
+				if (!matchesGenericType((TypeVariable<?>) genericType, ResolvableType.forMethodParameter(parameter))) {
+					return false;
+				}
+
+				continue;
+			}
+
+			if (!type.isAssignableFrom(parameterType) || !type.equals(methodParameterTypes[i])) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

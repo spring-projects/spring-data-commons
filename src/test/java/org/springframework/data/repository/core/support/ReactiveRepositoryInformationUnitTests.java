@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import rx.Observable;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
@@ -32,18 +34,20 @@ import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.data.repository.reactive.RxJava1CrudRepository;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 
-import rx.Observable;
-
 /**
  * Unit tests for {@link ReactiveRepositoryInformation}.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ReactiveRepositoryInformationUnitTests {
 
 	static final Class<ReactiveJavaInterfaceWithGenerics> REPOSITORY = ReactiveJavaInterfaceWithGenerics.class;
 
+	/**
+	 * @see DATACMNS-836
+	 */
 	@Test
 	public void discoversMethodWithoutComparingReturnType() throws Exception {
 
@@ -56,6 +60,9 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getName(), is("deleteAll"));
 	}
 
+	/**
+	 * @see DATACMNS-836
+	 */
 	@Test
 	public void discoversMethodWithConvertibleArguments() throws Exception {
 
@@ -64,8 +71,7 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method method = RxJava1InterfaceWithGenerics.class.getMethod("save", Observable.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(RxJava1InterfaceWithGenerics.class);
-		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null,
-				conversionService);
+		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null);
 
 		Method reference = information.getTargetClassMethod(method);
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
@@ -73,16 +79,15 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
 	}
 
+	/**
+	 * @see DATACMNS-836
+	 */
 	@Test
 	public void discoversMethodAssignableArguments() throws Exception {
 
-		DefaultConversionService conversionService = new DefaultConversionService();
-		ReactiveWrapperConverters.registerConvertersIn(conversionService);
-
 		Method method = ReactiveSortingRepository.class.getMethod("save", Publisher.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
-		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null,
-				conversionService);
+		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null);
 
 		Method reference = information.getTargetClassMethod(method);
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
@@ -90,16 +95,15 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
 	}
 
+	/**
+	 * @see DATACMNS-836
+	 */
 	@Test
 	public void discoversMethodExactIterableArguments() throws Exception {
 
-		DefaultConversionService conversionService = new DefaultConversionService();
-		ReactiveWrapperConverters.registerConvertersIn(conversionService);
-
 		Method method = ReactiveJavaInterfaceWithGenerics.class.getMethod("save", Iterable.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
-		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null,
-				conversionService);
+		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null);
 
 		Method reference = information.getTargetClassMethod(method);
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
@@ -107,6 +111,9 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Iterable.class)));
 	}
 
+	/**
+	 * @see DATACMNS-836
+	 */
 	@Test
 	public void discoversMethodExactObjectArguments() throws Exception {
 
@@ -115,8 +122,7 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method method = ReactiveJavaInterfaceWithGenerics.class.getMethod("save", Object.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
-		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null,
-				conversionService);
+		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null);
 
 		Method reference = information.getTargetClassMethod(method);
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());

@@ -17,19 +17,6 @@ package org.springframework.data.repository.util;
 
 import static org.springframework.data.repository.util.ReactiveWrapperConverters.RegistryHolder.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
-import org.reactivestreams.Publisher;
-import org.springframework.core.ReactiveAdapterRegistry;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.support.ConfigurableConversionService;
-import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.data.repository.util.ReactiveWrappers.ReactiveLibrary;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
@@ -39,6 +26,20 @@ import reactor.core.publisher.Mono;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import org.reactivestreams.Publisher;
+import org.springframework.core.ReactiveAdapterRegistry;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.repository.util.ReactiveWrappers.ReactiveLibrary;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Conversion support for reactive wrapper types. This class is a reactive extension to
@@ -89,7 +90,7 @@ public class ReactiveWrapperConverters {
 	 *
 	 * @param conversionService must not be {@literal null}.
 	 */
-	public static void registerConvertersIn(ConfigurableConversionService conversionService) {
+	public static ConversionService registerConvertersIn(ConfigurableConversionService conversionService) {
 
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
@@ -151,6 +152,8 @@ public class ReactiveWrapperConverters {
 				conversionService.addConverter(RxJava2ObservableToMaybeConverter.INSTANCE);
 			}
 		}
+
+		return conversionService;
 	}
 
 	/**
@@ -200,14 +203,11 @@ public class ReactiveWrapperConverters {
 		Assert.notNull(stream, "Stream must not be null!");
 		Assert.notNull(converter, "Converter must not be null!");
 
-		for (ReactiveTypeWrapper<?> reactiveWrapper : REACTIVE_WRAPPERS) {
-
-			if (ClassUtils.isAssignable(reactiveWrapper.getWrapperClass(), stream.getClass())) {
-				return (T) reactiveWrapper.map(stream, converter);
-			}
-		}
-
-		throw new IllegalStateException(String.format("Cannot apply converter to %s", stream));
+		return REACTIVE_WRAPPERS.stream()//
+				.filter(it -> ClassUtils.isAssignable(it.getWrapperClass(), stream.getClass()))//
+				.findFirst()//
+				.map(it -> (T) it.map(stream, converter))//
+				.orElseThrow(() -> new IllegalStateException(String.format("Cannot apply converter to %s", stream)));
 	}
 
 	// -------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,4 +83,12 @@ public interface RepositoryMetadata {
 	 * @since 1.11
 	 */
 	Set<Class<?>> getAlternativeDomainTypes();
+
+	/**
+	 * Returns whether the repository is a reactive one, i.e. if it uses reactive types in one of its methods.
+	 * 
+	 * @return
+	 * @since 2.0
+	 */
+	boolean isReactiveRepository();
 }

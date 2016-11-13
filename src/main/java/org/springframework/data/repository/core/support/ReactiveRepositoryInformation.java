@@ -17,15 +17,21 @@ package org.springframework.data.repository.core.support;
 
 import static org.springframework.core.GenericTypeResolver.*;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.function.BiPredicate;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.util.Assert;
 
 /**
@@ -33,29 +39,22 @@ import org.springframework.util.Assert;
  * converted for invocation of implementation methods.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @since 2.0
  */
 public class ReactiveRepositoryInformation extends DefaultRepositoryInformation {
 
-	private final ConversionService conversionService;
-
 	/**
-	 * Creates a new {@link ReactiveRepositoryInformation} for the given repository interface and repository base class
-	 * using a {@link ConversionService}.
+	 * Creates a new {@link ReactiveRepositoryInformation} for the given {@link RepositoryMetadata}, repository base
+	 * class, custom implementation and {@link ConversionService}.
 	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param repositoryBaseClass must not be {@literal null}.
-	 * @param customImplementationClass
-	 * @param conversionService must not be {@literal null}.
+	 * @param customImplementationClass can be {@literal null}.
 	 */
 	public ReactiveRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass,
-			Class<?> customImplementationClass, ConversionService conversionService) {
-
+			Class<?> customImplementationClass) {
 		super(metadata, repositoryBaseClass, customImplementationClass);
-
-		Assert.notNull(conversionService, "Conversion service must not be null!");
-
-		this.conversionService = conversionService;
 	}
 
 	/**
@@ -63,8 +62,8 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * at the target class. Returns the given method if the given base class does not declare the method given. Takes
 	 * generics into account.
 	 *
-	 * @param method must not be {@literal null}
-	 * @param baseClass
+	 * @param method must not be {@literal null}.
+	 * @param baseClass can be {@literal null}.
 	 * @return
 	 */
 	@Override
@@ -76,13 +75,13 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 
 		if (usesParametersWithReactiveWrappers(method)) {
 
-			Method candidate = getMethodCandidate(method, baseClass, new AssignableWrapperMatch(method));
+			Method candidate = getMethodCandidate(method, baseClass, new AssignableWrapperMatch(method.getParameterTypes()));
 
 			if (candidate != null) {
 				return candidate;
 			}
 
-			candidate = getMethodCandidate(method, baseClass, new WrapperConversionMatch(method, conversionService));
+			candidate = getMethodCandidate(method, baseClass, WrapperConversionMatch.of(method.getParameterTypes()));
 
 			if (candidate != null) {
 				return candidate;
@@ -90,31 +89,50 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 		}
 
 		Method candidate = getMethodCandidate(method, baseClass,
-				new MatchParameterOrComponentType(method, getRepositoryInterface()));
+				MatchParameterOrComponentType.of(method, getRepositoryInterface()));
 
-		if (candidate != null) {
-			return candidate;
-		}
-
-		return method;
+		return candidate != null ? candidate : method;
 	}
 
-	private boolean usesParametersWithReactiveWrappers(Method method) {
+	/**
+	 * Checks whether the type is a wrapper without unwrapping support. Reactive wrappers don't like to be unwrapped.
+	 *
+	 * @param parameterType must not be {@literal null}.
+	 * @return
+	 */
+	static boolean isNonUnwrappingWrapper(Class<?> parameterType) {
 
-		boolean wantsWrappers = false;
+		Assert.notNull(parameterType, "Parameter type must not be null!");
 
-		for (Class<?> parameterType : method.getParameterTypes()) {
-
-			if (isNonUnwrappingWrapper(parameterType)) {
-				wantsWrappers = true;
-				break;
-			}
-		}
-
-		return wantsWrappers;
+		return QueryExecutionConverters.supports(parameterType)
+				&& !QueryExecutionConverters.supportsUnwrapping(parameterType);
 	}
 
-	private Method getMethodCandidate(Method method, Class<?> baseClass, BiPredicate<Class<?>, Integer> predicate) {
+	/**
+	 * Returns whether the given {@link Method} uses a reactive wrapper type as parameter.
+	 * 
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean usesParametersWithReactiveWrappers(Method method) {
+
+		Assert.notNull(method, "Method must not be null!");
+
+		return Arrays.stream(method.getParameterTypes())//
+				.anyMatch(ReactiveRepositoryInformation::isNonUnwrappingWrapper);
+	}
+
+	/**
+	 * Returns a candidate method from the base class for the given one or the method given in the first place if none one
+	 * the base class matches.
+	 * 
+	 * @param method must not be {@literal null}.
+	 * @param baseClass must not be {@literal null}.
+	 * @param predicate must not be {@literal null}.
+	 * @return
+	 */
+	private static Method getMethodCandidate(Method method, Class<?> baseClass,
+			BiPredicate<Class<?>, Integer> predicate) {
 
 		for (Method baseClassMethod : baseClass.getMethods()) {
 
@@ -143,12 +161,13 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * Checks the given method's parameters to match the ones of the given base class method. Matches generic arguments
 	 * against the ones bound in the given repository interface.
 	 *
-	 * @param method
-	 * @param baseClassMethod
-	 * @param predicate
+	 * @param method must not be {@literal null}.
+	 * @param baseClassMethod must not be {@literal null}.
+	 * @param predicate must not be {@literal null}.
 	 * @return
 	 */
-	private boolean parametersMatch(Method method, Method baseClassMethod, BiPredicate<Class<?>, Integer> predicate) {
+	private static boolean parametersMatch(Method method, Method baseClassMethod,
+			BiPredicate<Class<?>, Integer> predicate) {
 
 		Type[] genericTypes = baseClassMethod.getGenericParameterTypes();
 		Class<?>[] types = baseClassMethod.getParameterTypes();
@@ -163,45 +182,33 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	}
 
 	/**
-	 * Checks whether the type is a wrapper without unwrapping support. Reactive wrappers don't like to be unwrapped.
-	 *
-	 * @param parameterType
-	 * @return
-	 */
-	static boolean isNonUnwrappingWrapper(Class<?> parameterType) {
-		return QueryExecutionConverters.supports(parameterType)
-				&& !QueryExecutionConverters.supportsUnwrapping(parameterType);
-	}
-
-	/**
 	 * {@link BiPredicate} to check whether a method parameter is a {@link #isNonUnwrappingWrapper(Class)} and can be
 	 * converted into a different wrapper. Usually {@link rx.Observable} to {@link org.reactivestreams.Publisher}
 	 * conversion.
 	 */
+	@RequiredArgsConstructor(staticName = "of")
 	static class WrapperConversionMatch implements BiPredicate<Class<?>, Integer> {
 
-		final Method declaredMethod;
-		final Class<?>[] declaredParameterTypes;
-		final ConversionService conversionService;
+		private static final ConversionService CONVERSION_SERVICE = ReactiveWrapperConverters
+				.registerConvertersIn(new DefaultConversionService());
+		private final Class<?>[] declaredParameterTypes;
 
-		public WrapperConversionMatch(Method declaredMethod, ConversionService conversionService) {
-
-			this.declaredMethod = declaredMethod;
-			this.declaredParameterTypes = declaredMethod.getParameterTypes();
-			this.conversionService = conversionService;
-		}
-
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.function.BiPredicate#test(java.lang.Object, java.lang.Object)
+		 */
 		@Override
 		public boolean test(Class<?> candidateParameterType, Integer index) {
 
-			if (isNonUnwrappingWrapper(candidateParameterType) && isNonUnwrappingWrapper(declaredParameterTypes[index])) {
-
-				if (conversionService.canConvert(declaredParameterTypes[index], candidateParameterType)) {
-					return true;
-				}
+			if (!isNonUnwrappingWrapper(candidateParameterType)) {
+				return false;
 			}
 
-			return false;
+			if (!isNonUnwrappingWrapper(declaredParameterTypes[index])) {
+				return false;
+			}
+
+			return CONVERSION_SERVICE.canConvert(declaredParameterTypes[index], candidateParameterType);
 		}
 	}
 
@@ -210,28 +217,27 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * a declared parameter. Usually {@link reactor.core.publisher.Flux} vs. {@link org.reactivestreams.Publisher}
 	 * conversion.
 	 */
+	@RequiredArgsConstructor(staticName = "of")
 	static class AssignableWrapperMatch implements BiPredicate<Class<?>, Integer> {
 
-		final Method declaredMethod;
-		final Class<?>[] declaredParameterTypes;
+		private final Class<?>[] declaredParameterTypes;
 
-		public AssignableWrapperMatch(Method declaredMethod) {
-
-			this.declaredMethod = declaredMethod;
-			this.declaredParameterTypes = declaredMethod.getParameterTypes();
-		}
-
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.function.BiPredicate#test(java.lang.Object, java.lang.Object)
+		 */
 		@Override
 		public boolean test(Class<?> candidateParameterType, Integer index) {
 
-			if (isNonUnwrappingWrapper(candidateParameterType) && isNonUnwrappingWrapper(declaredParameterTypes[index])) {
-
-				if (declaredParameterTypes[index].isAssignableFrom(candidateParameterType)) {
-					return true;
-				}
+			if (!isNonUnwrappingWrapper(candidateParameterType)) {
+				return false;
 			}
 
-			return false;
+			if (!isNonUnwrappingWrapper(declaredParameterTypes[index])) {
+				return false;
+			}
+
+			return declaredParameterTypes[index].isAssignableFrom(candidateParameterType);
 		}
 	}
 
@@ -241,31 +247,29 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * 
 	 * @see QueryExecutionConverters
 	 */
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	static class MatchParameterOrComponentType implements BiPredicate<Class<?>, Integer> {
 
-		final Method declaredMethod;
-		final Class<?>[] declaredParameterTypes;
-		final Class<?> repositoryInterface;
+		private final Method declaredMethod;
+		private final Class<?>[] declaredParameterTypes;
+		private final Class<?> repositoryInterface;
 
-		public MatchParameterOrComponentType(Method declaredMethod, Class<?> repositoryInterface) {
-
-			this.declaredMethod = declaredMethod;
-			this.declaredParameterTypes = declaredMethod.getParameterTypes();
-			this.repositoryInterface = repositoryInterface;
+		public static MatchParameterOrComponentType of(Method declaredMethod, Class<?> repositoryInterface) {
+			return new MatchParameterOrComponentType(declaredMethod, declaredMethod.getParameterTypes(), repositoryInterface);
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.function.BiPredicate#test(java.lang.Object, java.lang.Object)
+		 */
 		@Override
 		public boolean test(Class<?> candidateParameterType, Integer index) {
 
 			MethodParameter parameter = new MethodParameter(declaredMethod, index);
 			Class<?> parameterType = resolveParameterType(parameter, repositoryInterface);
 
-			if (!candidateParameterType.isAssignableFrom(parameterType)
-					|| !candidateParameterType.equals(declaredParameterTypes[index])) {
-				return false;
-			}
-
-			return true;
+			return candidateParameterType.isAssignableFrom(parameterType)
+					&& candidateParameterType.equals(declaredParameterTypes[index]);
 		}
 	}
 }
