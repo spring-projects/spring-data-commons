@@ -15,6 +15,10 @@
  */
 package org.springframework.data.repository.util;
 
+import scala.Function0;
+import scala.Option;
+import scala.runtime.AbstractFunction0;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,10 +36,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
-
-import scala.Function0;
-import scala.Option;
-import scala.runtime.AbstractFunction0;
 
 /**
  * Converters to potentially wrap the execution of a repository method into a variety of wrapper types potentially being
@@ -105,7 +105,7 @@ public abstract class QueryExecutionConverters {
 			UNWRAPPERS.add(ScalOptionUnwrapper.INSTANCE);
 		}
 
-		if(ReactiveWrappers.isAvailable()) {
+		if (ReactiveWrappers.isAvailable()) {
 			WRAPPER_TYPES.addAll(ReactiveWrappers.getNoValueTypes());
 			WRAPPER_TYPES.addAll(ReactiveWrappers.getSingleValueTypes());
 			WRAPPER_TYPES.addAll(ReactiveWrappers.getMultiValueTypes());

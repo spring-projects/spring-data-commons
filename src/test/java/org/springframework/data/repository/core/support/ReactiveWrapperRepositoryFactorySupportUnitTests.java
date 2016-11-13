@@ -15,7 +15,11 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
+
+import reactor.core.publisher.Mono;
+import rx.Single;
 
 import java.io.Serializable;
 
@@ -30,9 +34,6 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-
-import reactor.core.publisher.Mono;
-import rx.Single;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport} using reactive wrapper types.
@@ -56,7 +57,6 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		ReactiveWrapperConverters.registerConvertersIn(defaultConversionService);
 
 		factory = new DummyRepositoryFactory(backingRepo);
-		factory.setConversionService(defaultConversionService);
 	}
 
 	/**
@@ -102,6 +102,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 	 * @see DATACMNS-836
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void callsMethodOnBaseImplementationWithTypeConversion() {
 
 		Single<Long> ids = Single.just(1L);

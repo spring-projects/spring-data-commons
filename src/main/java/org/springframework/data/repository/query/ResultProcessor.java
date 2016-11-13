@@ -158,7 +158,7 @@ public class ResultProcessor {
 			return (T) new StreamQueryResultHandler(type, converter).handle(source);
 		}
 
-		if(ReactiveWrapperConverters.supports(source.getClass())){
+		if (ReactiveWrapperConverters.supports(source.getClass())) {
 			return (T) ReactiveWrapperConverters.map(source, converter::convert);
 		}
 

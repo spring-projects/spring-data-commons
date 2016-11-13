@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
@@ -262,6 +263,23 @@ public abstract class ReflectionUtils {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns a {@link Stream} of the return and parameters types of the given {@link Method}.
+	 * 
+	 * @param method must not be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
+	public static Stream<Class<?>> returnTypeAndParameters(Method method) {
+
+		Assert.notNull(method, "Method must not be null!");
+
+		Stream<Class<?>> returnType = Stream.of(method.getReturnType());
+		Stream<Class<?>> parameterTypes = Arrays.stream(method.getParameterTypes());
+
+		return Stream.concat(returnType, parameterTypes);
 	}
 
 	private static final boolean argumentsMatch(Class<?>[] parameterTypes, Object[] arguments) {

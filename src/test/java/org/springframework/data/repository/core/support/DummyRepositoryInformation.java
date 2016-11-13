@@ -93,4 +93,9 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 	public Set<Class<?>> getAlternativeDomainTypes() {
 		return metadata.getAlternativeDomainTypes();
 	}
+
+	@Override
+	public boolean isReactiveRepository() {
+		return metadata.isReactiveRepository();
+	}
 }

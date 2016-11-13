@@ -37,6 +37,7 @@ import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
@@ -51,6 +52,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ClassUtils;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -79,7 +81,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private ClassLoader classLoader = org.springframework.util.ClassUtils.getDefaultClassLoader();
 	private EvaluationContextProvider evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
 	private BeanFactory beanFactory;
-	private ConversionService conversionService;
 
 	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
@@ -103,16 +104,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	public void setNamedQueries(NamedQueries namedQueries) {
 		this.namedQueries = namedQueries == null ? PropertiesBasedNamedQueries.EMPTY : namedQueries;
-	}
-
-	/**
-	 * Configures a {@link ConversionService} instance to convert method parameters when calling implementation methods on
-	 * the base class or a custom implementation.
-	 *
-	 * @param conversionService the conversionService to set.
-	 */
-	public void setConversionService(ConversionService conversionService) {
-		this.conversionService = conversionService;
 	}
 
 	/* 
@@ -232,12 +223,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		result.addAdvice(new QueryExecutorMethodInterceptor(information));
 
-		if (conversionService == null) {
-			result.addAdvice(new ImplementationMethodExecutionInterceptor(information, customImplementation, target));
-		} else {
-			result.addAdvice(new ConvertingImplementationMethodExecutionInterceptor(information, customImplementation, target,
-					conversionService));
-		}
+		result.addAdvice(information.isReactiveRepository()
+				? new ConvertingImplementationMethodExecutionInterceptor(information, customImplementation, target)
+				: new ImplementationMethodExecutionInterceptor(information, customImplementation, target));
 
 		return (T) result.getProxy(classLoader);
 	}
@@ -272,16 +260,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		Class<?> repositoryBaseClass = this.repositoryBaseClass == null ? getRepositoryBaseClass(metadata)
 				: this.repositoryBaseClass;
 
-		if (conversionService == null) {
-			repositoryInformation = new DefaultRepositoryInformation(metadata, repositoryBaseClass,
-					customImplementationClass);
-		} else {
-			// TODO: Not sure this is the best idea but at some point we need to distinguish between
-			// methods that want to get unwrapped data from wrapped parameters and those which are
-			// just fine with wrappers because at some point a converting interceptor kicks in
-			repositoryInformation = new ReactiveRepositoryInformation(metadata, repositoryBaseClass,
-					customImplementationClass, conversionService);
-		}
+		repositoryInformation = metadata.isReactiveRepository()
+				? new ReactiveRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass)
+				: new DefaultRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass);
 
 		repositoryInformationCache.put(cacheKey, repositoryInformation);
 		return repositoryInformation;
@@ -602,18 +583,18 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	public class ConvertingImplementationMethodExecutionInterceptor extends ImplementationMethodExecutionInterceptor {
 
-		private final ConversionService conversionService;
+		private final ConversionService conversionService = ReactiveWrapperConverters
+				.registerConvertersIn(new DefaultConversionService());
 
 		/**
 		 * @param repositoryInformation
 		 * @param customImplementation
 		 * @param target
-		 * @param conversionService
 		 */
 		public ConvertingImplementationMethodExecutionInterceptor(RepositoryInformation repositoryInformation,
-				Object customImplementation, Object target, ConversionService conversionService) {
+				Object customImplementation, Object target) {
+
 			super(repositoryInformation, customImplementation, target);
-			this.conversionService = conversionService;
 		}
 
 		/* (non-Javadoc)

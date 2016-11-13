@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
@@ -124,6 +125,15 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	@Override
 	public Set<Class<?>> getAlternativeDomainTypes() {
 		return Collections.emptySet();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#isReactiveRepository()
+	 */
+	@Override
+	public boolean isReactiveRepository() {
+		return ReactiveWrappers.usesReactiveType(repositoryInterface);
 	}
 
 	/**
