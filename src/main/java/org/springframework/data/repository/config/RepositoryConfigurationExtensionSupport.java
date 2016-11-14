@@ -87,15 +87,25 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		for (BeanDefinition candidate : configSource.getCandidates(loader)) {
 
 			RepositoryConfiguration<T> configuration = getRepositoryConfiguration(candidate, configSource);
+			Class<?> repositoryInterface = loadRepositoryInterface(configuration, loader);
+
+			if (repositoryInterface == null) {
+				result.add(configuration);
+				continue;
+			}
+
+			RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
+
+			if (!useRepositoryConfiguration(metadata)) {
+				continue;
+			}
 
 			if (!strictMatchesOnly || configSource.usesExplicitFilters()) {
 				result.add(configuration);
 				continue;
 			}
 
-			Class<?> repositoryInterface = loadRepositoryInterface(configuration, loader);
-
-			if (repositoryInterface == null || isStrictRepositoryCandidate(repositoryInterface)) {
+			if (isStrictRepositoryCandidate(metadata)) {
 				result.add(configuration);
 			}
 		}
@@ -246,7 +256,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	/**
-	 * Returns whether the given repository interface is a candidate for bean definition creation in the strict repository
+	 * Returns whether the given repository metadata is a candidate for bean definition creation in the strict repository
 	 * detection mode. The default implementation inspects the domain type managed for a set of well-known annotations
 	 * (see {@link #getIdentifyingAnnotations()}). If none of them is found, the candidate is discarded. Implementations
 	 * should make sure, the only return {@literal true} if they're really sure the interface handed to the method is
@@ -256,11 +266,10 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * @return
 	 * @since 1.9
 	 */
-	protected boolean isStrictRepositoryCandidate(Class<?> repositoryInterface) {
-
-		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
+	protected boolean isStrictRepositoryCandidate(RepositoryMetadata metadata) {
 
 		Collection<Class<?>> types = getIdentifyingTypes();
+		Class<?> repositoryInterface = metadata.getRepositoryInterface();
 
 		for (Class<?> type : types) {
 			if (type.isAssignableFrom(repositoryInterface)) {
@@ -287,6 +296,16 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	/**
+	 * Return whether to use the configuration for the repository with the given metadata. Defaults to {@literal true}.
+	 * 
+	 * @param metadata will never be {@literal null}.
+	 * @return
+	 */
+	protected boolean useRepositoryConfiguration(RepositoryMetadata metadata) {
+		return true;
+	}
+
+	/**
 	 * Loads the repository interface contained in the given {@link RepositoryConfiguration} using the given
 	 * {@link ResourceLoader}.
 	 * 
@@ -294,7 +313,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * @param loader must not be {@literal null}.
 	 * @return the repository interface or {@literal null} if it can't be loaded.
 	 */
-	protected Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
+	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
 
 		String repositoryInterface = configuration.getRepositoryInterface();
 		ClassLoader classLoader = loader.getClassLoader();

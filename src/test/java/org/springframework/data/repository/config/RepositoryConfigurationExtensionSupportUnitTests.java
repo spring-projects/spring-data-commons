@@ -30,6 +30,8 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
 /**
@@ -46,7 +48,9 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 	 */
 	@Test
 	public void doesNotConsiderRepositoryForPlainTypeStrictMatch() {
-		assertThat(extension.isStrictRepositoryCandidate(PlainTypeRepository.class), is(false));
+
+		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(PlainTypeRepository.class);
+		assertThat(extension.isStrictRepositoryCandidate(metadata), is(false));
 	}
 
 	/**
@@ -54,7 +58,9 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 	 */
 	@Test
 	public void considersRepositoryWithAnnotatedTypeStrictMatch() {
-		assertThat(extension.isStrictRepositoryCandidate(AnnotatedTypeRepository.class), is(true));
+
+		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(AnnotatedTypeRepository.class);
+		assertThat(extension.isStrictRepositoryCandidate(metadata), is(true));
 	}
 
 	/**
@@ -62,7 +68,9 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 	 */
 	@Test
 	public void considersRepositoryInterfaceExtendingStoreInterfaceStrictMatch() {
-		assertThat(extension.isStrictRepositoryCandidate(ExtendingInterface.class), is(true));
+
+		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ExtendingInterface.class);
+		assertThat(extension.isStrictRepositoryCandidate(metadata), is(true));
 	}
 
 	/**
@@ -99,12 +107,12 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 
 		@Override
 		protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-			return Collections.<Class<? extends Annotation>> singleton(Primary.class);
+			return Collections.<Class<? extends Annotation>>singleton(Primary.class);
 		}
 
 		@Override
 		protected Collection<Class<?>> getIdentifyingTypes() {
-			return Collections.<Class<?>> singleton(StoreInterface.class);
+			return Collections.<Class<?>>singleton(StoreInterface.class);
 		}
 	}
 
