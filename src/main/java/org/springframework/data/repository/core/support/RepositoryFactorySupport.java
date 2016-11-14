@@ -35,9 +35,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
@@ -53,6 +51,7 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -583,9 +582,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	public class ConvertingImplementationMethodExecutionInterceptor extends ImplementationMethodExecutionInterceptor {
 
-		private final ConversionService conversionService = ReactiveWrapperConverters
-				.registerConvertersIn(new DefaultConversionService());
-
 		/**
 		 * @param repositoryInformation
 		 * @param customImplementation
@@ -624,13 +620,12 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 					continue;
 				}
 
-				if (parameterTypes[i].isAssignableFrom(parameters[i].getClass())
-						|| !conversionService.canConvert(parameters[i].getClass(), parameterTypes[i])) {
+				if (!parameterTypes[i].isAssignableFrom(parameters[i].getClass()) && ReactiveWrappers.isAvailable()
+						&& ReactiveWrapperConverters.canConvert(parameters[i].getClass(), parameterTypes[i])) {
 
-					result[i] = parameters[i];
-
+					result[i] = ReactiveWrapperConverters.toWrapper(parameters[i], parameterTypes[i]);
 				} else {
-					result[i] = conversionService.convert(parameters[i], parameterTypes[i]);
+					result[i] = parameters[i];
 				}
 
 			}

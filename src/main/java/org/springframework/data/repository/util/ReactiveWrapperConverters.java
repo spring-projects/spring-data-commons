@@ -90,7 +90,7 @@ public class ReactiveWrapperConverters {
 	 *
 	 * @param conversionService must not be {@literal null}.
 	 */
-	public static ConversionService registerConvertersIn(ConfigurableConversionService conversionService) {
+	private static ConversionService registerConvertersIn(ConfigurableConversionService conversionService) {
 
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
@@ -171,23 +171,23 @@ public class ReactiveWrapperConverters {
 	}
 
 	/**
-	 * Casts or converts the given wrapper type into a different wrapper type.
+	 * Casts or adopts the given wrapper type to a target wrapper type.
 	 * 
-	 * @param stream the stream, must not be {@literal null}.
-	 * @param expectedWrapperType must not be {@literal null}.
+	 * @param reactiveObject the stream, must not be {@literal null}.
+	 * @param targetWrapperType must not be {@literal null}.
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T toWrapper(Object stream, Class<? extends T> expectedWrapperType) {
+	public static <T> T toWrapper(Object reactiveObject, Class<? extends T> targetWrapperType) {
 
-		Assert.notNull(stream, "Stream must not be null!");
-		Assert.notNull(expectedWrapperType, "Converter must not be null!");
+		Assert.notNull(reactiveObject, "Reactive source object must not be null!");
+		Assert.notNull(targetWrapperType, "Reactive target type must not be null!");
 
-		if (expectedWrapperType.isAssignableFrom(stream.getClass())) {
-			return (T) stream;
+		if (targetWrapperType.isAssignableFrom(reactiveObject.getClass())) {
+			return (T) reactiveObject;
 		}
 
-		return GENERIC_CONVERSION_SERVICE.convert(stream, expectedWrapperType);
+		return GENERIC_CONVERSION_SERVICE.convert(reactiveObject, targetWrapperType);
 	}
 
 	/**
@@ -208,6 +208,21 @@ public class ReactiveWrapperConverters {
 				.findFirst()//
 				.map(it -> (T) it.map(reactiveObject, converter))//
 				.orElseThrow(() -> new IllegalStateException(String.format("Cannot apply converter to %s", reactiveObject)));
+	}
+
+	/**
+	 * Return {@literal true} if objects of {@code sourceType} can be converted to the {@code targetType}.
+	 *
+	 * @param sourceType must not be {@literal null}.
+	 * @param targetType must not be {@literal null}.
+	 * @return {@literal true} if a conversion can be performed.
+	 */
+	public static boolean canConvert(Class<?> sourceType, Class<?> targetType) {
+
+		Assert.notNull(sourceType, "Source type must not be null!");
+		Assert.notNull(targetType, "Target type must not be null!");
+
+		return GENERIC_CONVERSION_SERVICE.canConvert(sourceType, targetType);
 	}
 
 	// -------------------------------------------------------------------------
@@ -417,7 +432,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToFluxConverter implements Converter<Publisher<?>, Flux<?>> {
+	private enum PublisherToFluxConverter implements Converter<Publisher<?>, Flux<?>> {
 
 		INSTANCE;
 
@@ -433,7 +448,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToMonoConverter implements Converter<Publisher<?>, Mono<?>> {
+	private enum PublisherToMonoConverter implements Converter<Publisher<?>, Mono<?>> {
 
 		INSTANCE;
 
@@ -453,7 +468,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToRxJava1SingleConverter implements Converter<Publisher<?>, Single<?>> {
+	private enum PublisherToRxJava1SingleConverter implements Converter<Publisher<?>, Single<?>> {
 
 		INSTANCE;
 
@@ -469,7 +484,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToRxJava1CompletableConverter implements Converter<Publisher<?>, Completable> {
+	private enum PublisherToRxJava1CompletableConverter implements Converter<Publisher<?>, Completable> {
 
 		INSTANCE;
 
@@ -485,7 +500,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToRxJava1ObservableConverter implements Converter<Publisher<?>, Observable<?>> {
+	private enum PublisherToRxJava1ObservableConverter implements Converter<Publisher<?>, Observable<?>> {
 
 		INSTANCE;
 
@@ -501,7 +516,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1SingleToPublisherConverter implements Converter<Single<?>, Publisher<?>> {
+	private enum RxJava1SingleToPublisherConverter implements Converter<Single<?>, Publisher<?>> {
 
 		INSTANCE;
 
@@ -517,7 +532,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1SingleToMonoConverter implements Converter<Single<?>, Mono<?>> {
+	private enum RxJava1SingleToMonoConverter implements Converter<Single<?>, Mono<?>> {
 
 		INSTANCE;
 
@@ -533,7 +548,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1SingleToFluxConverter implements Converter<Single<?>, Flux<?>> {
+	private enum RxJava1SingleToFluxConverter implements Converter<Single<?>, Flux<?>> {
 
 		INSTANCE;
 
@@ -549,7 +564,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1CompletableToPublisherConverter implements Converter<Completable, Publisher<?>> {
+	private enum RxJava1CompletableToPublisherConverter implements Converter<Completable, Publisher<?>> {
 
 		INSTANCE;
 
@@ -565,7 +580,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1CompletableToMonoConverter implements Converter<Completable, Mono<?>> {
+	private enum RxJava1CompletableToMonoConverter implements Converter<Completable, Mono<?>> {
 
 		INSTANCE;
 
@@ -581,7 +596,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1ObservableToPublisherConverter implements Converter<Observable<?>, Publisher<?>> {
+	private enum RxJava1ObservableToPublisherConverter implements Converter<Observable<?>, Publisher<?>> {
 
 		INSTANCE;
 
@@ -597,7 +612,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1ObservableToMonoConverter implements Converter<Observable<?>, Mono<?>> {
+	private enum RxJava1ObservableToMonoConverter implements Converter<Observable<?>, Mono<?>> {
 
 		INSTANCE;
 
@@ -613,7 +628,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1ObservableToFluxConverter implements Converter<Observable<?>, Flux<?>> {
+	private enum RxJava1ObservableToFluxConverter implements Converter<Observable<?>, Flux<?>> {
 
 		INSTANCE;
 
@@ -629,7 +644,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1ObservableToSingleConverter implements Converter<Observable<?>, Single<?>> {
+	private enum RxJava1ObservableToSingleConverter implements Converter<Observable<?>, Single<?>> {
 
 		INSTANCE;
 
@@ -645,7 +660,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava1SingleToObservableConverter implements Converter<Single<?>, Observable<?>> {
+	private enum RxJava1SingleToObservableConverter implements Converter<Single<?>, Observable<?>> {
 
 		INSTANCE;
 
@@ -665,7 +680,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToRxJava2SingleConverter implements Converter<Publisher<?>, io.reactivex.Single<?>> {
+	private enum PublisherToRxJava2SingleConverter implements Converter<Publisher<?>, io.reactivex.Single<?>> {
 
 		INSTANCE;
 
@@ -682,7 +697,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToRxJava2CompletableConverter implements Converter<Publisher<?>, io.reactivex.Completable> {
+	private enum PublisherToRxJava2CompletableConverter implements Converter<Publisher<?>, io.reactivex.Completable> {
 
 		INSTANCE;
 
@@ -699,7 +714,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToRxJava2ObservableConverter implements Converter<Publisher<?>, io.reactivex.Observable<?>> {
+	private enum PublisherToRxJava2ObservableConverter implements Converter<Publisher<?>, io.reactivex.Observable<?>> {
 
 		INSTANCE;
 
@@ -716,7 +731,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2SingleToPublisherConverter implements Converter<io.reactivex.Single<?>, Publisher<?>> {
+	private enum RxJava2SingleToPublisherConverter implements Converter<io.reactivex.Single<?>, Publisher<?>> {
 
 		INSTANCE;
 
@@ -732,7 +747,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2SingleToMonoConverter implements Converter<io.reactivex.Single<?>, Mono<?>> {
+	private enum RxJava2SingleToMonoConverter implements Converter<io.reactivex.Single<?>, Mono<?>> {
 
 		INSTANCE;
 
@@ -748,7 +763,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2SingleToFluxConverter implements Converter<io.reactivex.Single<?>, Flux<?>> {
+	private enum RxJava2SingleToFluxConverter implements Converter<io.reactivex.Single<?>, Flux<?>> {
 
 		INSTANCE;
 
@@ -764,7 +779,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2CompletableToPublisherConverter implements Converter<io.reactivex.Completable, Publisher<?>> {
+	private enum RxJava2CompletableToPublisherConverter implements Converter<io.reactivex.Completable, Publisher<?>> {
 
 		INSTANCE;
 
@@ -780,7 +795,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2CompletableToMonoConverter implements Converter<io.reactivex.Completable, Mono<?>> {
+	private enum RxJava2CompletableToMonoConverter implements Converter<io.reactivex.Completable, Mono<?>> {
 
 		INSTANCE;
 
@@ -796,7 +811,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2ObservableToPublisherConverter implements Converter<io.reactivex.Observable<?>, Publisher<?>> {
+	private enum RxJava2ObservableToPublisherConverter implements Converter<io.reactivex.Observable<?>, Publisher<?>> {
 
 		INSTANCE;
 
@@ -812,7 +827,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2ObservableToMonoConverter implements Converter<io.reactivex.Observable<?>, Mono<?>> {
+	private enum RxJava2ObservableToMonoConverter implements Converter<io.reactivex.Observable<?>, Mono<?>> {
 
 		INSTANCE;
 
@@ -828,7 +843,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2ObservableToFluxConverter implements Converter<io.reactivex.Observable<?>, Flux<?>> {
+	private enum RxJava2ObservableToFluxConverter implements Converter<io.reactivex.Observable<?>, Flux<?>> {
 
 		INSTANCE;
 
@@ -844,7 +859,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToRxJava2FlowableConverter implements Converter<Publisher<?>, io.reactivex.Flowable<?>> {
+	private enum PublisherToRxJava2FlowableConverter implements Converter<Publisher<?>, io.reactivex.Flowable<?>> {
 
 		INSTANCE;
 
@@ -860,7 +875,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2FlowableToPublisherConverter implements Converter<io.reactivex.Flowable<?>, Publisher<?>> {
+	private enum RxJava2FlowableToPublisherConverter implements Converter<io.reactivex.Flowable<?>, Publisher<?>> {
 
 		INSTANCE;
 
@@ -876,7 +891,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum PublisherToRxJava2MaybeConverter implements Converter<Publisher<?>, io.reactivex.Maybe<?>> {
+	private enum PublisherToRxJava2MaybeConverter implements Converter<Publisher<?>, io.reactivex.Maybe<?>> {
 
 		INSTANCE;
 
@@ -892,7 +907,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2MaybeToPublisherConverter implements Converter<io.reactivex.Maybe<?>, Publisher<?>> {
+	private enum RxJava2MaybeToPublisherConverter implements Converter<io.reactivex.Maybe<?>, Publisher<?>> {
 
 		INSTANCE;
 
@@ -908,7 +923,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2MaybeToMonoConverter implements Converter<io.reactivex.Maybe<?>, Mono<?>> {
+	private enum RxJava2MaybeToMonoConverter implements Converter<io.reactivex.Maybe<?>, Mono<?>> {
 
 		INSTANCE;
 
@@ -924,7 +939,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2MaybeToFluxConverter implements Converter<io.reactivex.Maybe<?>, Flux<?>> {
+	private enum RxJava2MaybeToFluxConverter implements Converter<io.reactivex.Maybe<?>, Flux<?>> {
 
 		INSTANCE;
 
@@ -940,7 +955,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2ObservableToSingleConverter
+	private enum RxJava2ObservableToSingleConverter
 			implements Converter<io.reactivex.Observable<?>, io.reactivex.Single<?>> {
 
 		INSTANCE;
@@ -957,7 +972,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2ObservableToMaybeConverter
+	private enum RxJava2ObservableToMaybeConverter
 			implements Converter<io.reactivex.Observable<?>, io.reactivex.Maybe<?>> {
 
 		INSTANCE;
@@ -974,7 +989,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	public enum RxJava2SingleToObservableConverter
+	private enum RxJava2SingleToObservableConverter
 			implements Converter<io.reactivex.Single<?>, io.reactivex.Observable<?>> {
 
 		INSTANCE;

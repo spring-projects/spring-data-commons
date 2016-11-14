@@ -30,10 +30,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
-import org.springframework.data.repository.util.ReactiveWrapperConverters;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport} using reactive wrapper types.
@@ -52,10 +50,6 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 
 	@Before
 	public void setUp() {
-
-		DefaultConversionService defaultConversionService = new DefaultConversionService();
-		ReactiveWrapperConverters.registerConvertersIn(defaultConversionService);
-
 		factory = new DummyRepositoryFactory(backingRepo);
 	}
 
