@@ -21,11 +21,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.MethodVisitor;
@@ -34,7 +33,6 @@ import org.springframework.asm.Type;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.util.TypeInformation;
@@ -140,12 +138,10 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return true;
 		}
 
-		PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
-		if (persistenceConstructor == null || !Modifier.isPublic(persistenceConstructor.getConstructor().getModifiers())) {
-			return true;
-		}
-
-		return false;
+		return entity.getPersistenceConstructor()//
+				.map(PreferredConstructor::getConstructor)//
+				.map(Constructor::getModifiers)//
+				.map(modifier -> !Modifier.isPublic(modifier)).orElse(false);
 	}
 
 	/**
@@ -200,7 +196,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			try {
 				return (T) instantiator.newInstance(params);
 			} catch (Exception e) {
-				throw new MappingInstantiationException(entity, Arrays.asList(params), e);
+				throw new MappingInstantiationException(Optional.of(entity), Arrays.asList(params), e);
 			}
 		}
 
@@ -212,19 +208,19 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @return
 		 */
 		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
+				Optional<? extends PreferredConstructor<? extends T, P>> constructor, ParameterValueProvider<P> provider) {
 
-			if (provider == null || constructor == null || !constructor.hasParameters()) {
-				return EMPTY_ARRAY;
-			}
+			return constructor.map(it -> {
 
-			List<Object> params = new ArrayList<Object>();
+				if (provider == null || !it.hasParameters()) {
+					return EMPTY_ARRAY;
+				}
 
-			for (Parameter<?, P> parameter : constructor.getParameters()) {
-				params.add(provider.getParameterValue(parameter));
-			}
+				return it.getParameters().stream()//
+						.map(parameter -> provider.getParameterValue(parameter))//
+						.toArray();
 
-			return params.toArray();
+			}).orElse(EMPTY_ARRAY);
 		}
 	}
 
@@ -366,26 +362,31 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			mv.visitTypeInsn(NEW, entityTypeResourcePath);
 			mv.visitInsn(DUP);
 
-			Constructor<?> ctor = entity.getPersistenceConstructor().getConstructor();
-			Class<?>[] parameterTypes = ctor.getParameterTypes();
-			for (int i = 0; i < parameterTypes.length; i++) {
-				mv.visitVarInsn(ALOAD, 1);
+			entity.getPersistenceConstructor().ifPresent(constructor -> {
 
-				visitArrayIndex(mv, i);
+				Constructor<?> ctor = constructor.getConstructor();
+				Class<?>[] parameterTypes = ctor.getParameterTypes();
 
-				mv.visitInsn(AALOAD);
+				for (int i = 0; i < parameterTypes.length; i++) {
 
-				if (parameterTypes[i].isPrimitive()) {
-					insertUnboxInsns(mv, Type.getType(parameterTypes[i]).toString().charAt(0), "");
-				} else {
-					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(parameterTypes[i]));
+					mv.visitVarInsn(ALOAD, 1);
+
+					visitArrayIndex(mv, i);
+
+					mv.visitInsn(AALOAD);
+
+					if (parameterTypes[i].isPrimitive()) {
+						insertUnboxInsns(mv, Type.getType(parameterTypes[i]).toString().charAt(0), "");
+					} else {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(parameterTypes[i]));
+					}
 				}
-			}
-			mv.visitMethodInsn(INVOKESPECIAL, entityTypeResourcePath, INIT, Type.getConstructorDescriptor(ctor), false);
 
-			mv.visitInsn(ARETURN);
-			mv.visitMaxs(0, 0); // (0, 0) = computed via ClassWriter.COMPUTE_MAXS
-			mv.visitEnd();
+				mv.visitMethodInsn(INVOKESPECIAL, entityTypeResourcePath, INIT, Type.getConstructorDescriptor(ctor), false);
+				mv.visitInsn(ARETURN);
+				mv.visitMaxs(0, 0); // (0, 0) = computed via ClassWriter.COMPUTE_MAXS
+				mv.visitEnd();
+			});
 		}
 
 		/**

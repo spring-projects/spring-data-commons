@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
+import java.util.Optional;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -54,7 +56,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentProperty, java.lang.Object)
 	 */
 	@Override
-	public void setProperty(PersistentProperty<?> property, Object value) {
+	public void setProperty(PersistentProperty<?> property, Optional<? extends Object> value) {
 		accessor.setProperty(property, convertIfNecessary(value, property.getType()));
 	}
 
@@ -63,7 +65,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Override
-	public Object getProperty(PersistentProperty<?> property) {
+	public Optional<? extends Object> getProperty(PersistentProperty<?> property) {
 		return accessor.getProperty(property);
 	}
 
@@ -74,7 +76,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @param targetType must not be {@literal null}.
 	 * @return
 	 */
-	public <T> T getProperty(PersistentProperty<?> property, Class<T> targetType) {
+	public <T> Optional<T> getProperty(PersistentProperty<?> property, Class<T> targetType) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 		Assert.notNull(targetType, "Target type must not be null!");
@@ -100,8 +102,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> T convertIfNecessary(Object source, Class<T> type) {
-		return (T) (source == null ? source : type.isAssignableFrom(source.getClass()) ? source : conversionService
-				.convert(source, type));
+	private <T> Optional<T> convertIfNecessary(Optional<? extends Object> source, Class<T> type) {
+		return source.map(it -> type.isAssignableFrom(it.getClass()) ? (T) it : conversionService.convert(it, type));
 	}
 }

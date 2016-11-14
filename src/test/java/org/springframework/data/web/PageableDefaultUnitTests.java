@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.web.SortDefaultUnitTests.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,14 +57,14 @@ public abstract class PageableDefaultUnitTests {
 
 	@Test
 	public void supportsPageable() {
-		assertThat(getResolver().supportsParameter(getParameterOfMethod("supportedMethod")), is(true));
+		assertThat(getResolver().supportsParameter(getParameterOfMethod("supportedMethod"))).isTrue();
 	}
 
 	@Test
 	public void doesNotSupportNonPageable() {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
-		assertThat(getResolver().supportsParameter(parameter), is(false));
+		assertThat(getResolver().supportsParameter(parameter)).isFalse();
 	}
 
 	@Test
@@ -106,7 +105,7 @@ public abstract class PageableDefaultUnitTests {
 				Pageable.class, Pageable.class);
 
 		HandlerMethodArgumentResolver resolver = getResolver();
-		assertThat(resolver.supportsParameter(parameter), is(true));
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("unique");
@@ -121,7 +120,7 @@ public abstract class PageableDefaultUnitTests {
 				Pageable.class);
 
 		HandlerMethodArgumentResolver resolver = getResolver();
-		assertThat(resolver.supportsParameter(parameter), is(true));
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("Ambiguous");
@@ -147,8 +146,8 @@ public abstract class PageableDefaultUnitTests {
 	protected void assertSupportedAndResult(MethodParameter parameter, Pageable pageable, NativeWebRequest request,
 			HandlerMethodArgumentResolver resolver) throws Exception {
 
-		assertThat(resolver.supportsParameter(parameter), is(true));
-		assertThat(resolver.resolveArgument(parameter, null, request, null), is((Object) pageable));
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
+		assertThat(resolver.resolveArgument(parameter, null, request, null)).isEqualTo(pageable);
 	}
 
 	protected abstract PageableHandlerMethodArgumentResolver getResolver();

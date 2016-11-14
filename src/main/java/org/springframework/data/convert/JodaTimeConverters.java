@@ -61,6 +61,9 @@ public abstract class JodaTimeConverters {
 		converters.add(DateToDateTimeConverter.INSTANCE);
 		converters.add(DateToDateMidnightConverter.INSTANCE);
 
+		converters.add(LocalDateTimeToJodaLocalDateTime.INSTANCE);
+		converters.add(LocalDateTimeToJodaDateTime.INSTANCE);
+
 		return converters;
 	}
 
@@ -133,6 +136,38 @@ public abstract class JodaTimeConverters {
 
 		public DateMidnight convert(Date source) {
 			return source == null ? null : new DateMidnight(source.getTime());
+		}
+	}
+
+	public static enum LocalDateTimeToJodaLocalDateTime implements Converter<java.time.LocalDateTime, LocalDateTime> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		public LocalDateTime convert(java.time.LocalDateTime source) {
+			return source == null ? null
+					: LocalDateTime.fromDateFields(
+							org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter.INSTANCE.convert(source));
+		}
+	}
+
+	public static enum LocalDateTimeToJodaDateTime implements Converter<java.time.LocalDateTime, DateTime> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		public DateTime convert(java.time.LocalDateTime source) {
+			return source == null ? null
+					: new DateTime(
+							org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter.INSTANCE.convert(source));
 		}
 	}
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.init;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 
@@ -37,7 +36,7 @@ public class Jackson2ResourceReaderIntegrationTests {
 		ResourceReader reader = new Jackson2ResourceReader();
 		Object result = reader.readFrom(new ClassPathResource("data.json", getClass()), null);
 
-		assertThat(result, is(instanceOf(Collection.class)));
-		assertThat((Collection<?>) result, hasSize(1));
+		assertThat(result).isInstanceOf(Collection.class);
+		assertThat((Collection<?>) result).hasSize(1);
 	}
 }

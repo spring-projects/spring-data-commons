@@ -16,6 +16,7 @@
 package org.springframework.data.repository;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Interface for generic CRUD operations on a repository for a specific type.
@@ -51,7 +52,7 @@ public interface CrudRepository<T, ID extends Serializable> extends Repository<T
 	 * @return the entity with the given id or {@literal null} if none found
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}
 	 */
-	T findOne(ID id);
+	Optional<T> findOne(ID id);
 
 	/**
 	 * Returns whether an entity with the given id exists.

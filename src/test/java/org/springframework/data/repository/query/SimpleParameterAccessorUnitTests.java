@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,8 +74,8 @@ public class SimpleParameterAccessorUnitTests {
 	public void returnsNullForPageableAndSortIfNoneAvailable() throws Exception {
 
 		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { "test" });
-		assertThat(accessor.getPageable(), is(nullValue()));
-		assertThat(accessor.getSort(), is(nullValue()));
+		assertThat(accessor.getPageable()).isNull();
+		assertThat(accessor.getSort()).isNull();
 	}
 
 	@Test
@@ -84,8 +83,8 @@ public class SimpleParameterAccessorUnitTests {
 
 		Sort sort = new Sort("foo");
 		ParameterAccessor accessor = new ParametersParameterAccessor(sortParameters, new Object[] { "test", sort });
-		assertThat(accessor.getSort(), is(sort));
-		assertThat(accessor.getPageable(), is(nullValue()));
+		assertThat(accessor.getSort()).isEqualTo(sort);
+		assertThat(accessor.getPageable()).isNull();
 	}
 
 	@Test
@@ -93,8 +92,8 @@ public class SimpleParameterAccessorUnitTests {
 
 		Pageable pageable = new PageRequest(0, 10);
 		ParameterAccessor accessor = new ParametersParameterAccessor(pageableParameters, new Object[] { "test", pageable });
-		assertThat(accessor.getPageable(), is(pageable));
-		assertThat(accessor.getSort(), is(nullValue()));
+		assertThat(accessor.getPageable()).isEqualTo(pageable);
+		assertThat(accessor.getSort()).isNull();
 	}
 
 	@Test
@@ -103,8 +102,8 @@ public class SimpleParameterAccessorUnitTests {
 		Sort sort = new Sort("foo");
 		Pageable pageable = new PageRequest(0, 10, sort);
 		ParameterAccessor accessor = new ParametersParameterAccessor(pageableParameters, new Object[] { "test", pageable });
-		assertThat(accessor.getPageable(), is(pageable));
-		assertThat(accessor.getSort(), is(sort));
+		assertThat(accessor.getPageable()).isEqualTo(pageable);
+		assertThat(accessor.getSort()).isEqualTo(sort);
 	}
 
 	interface Sample {

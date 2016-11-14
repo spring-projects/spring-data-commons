@@ -15,6 +15,8 @@
  */
 package org.springframework.data.domain;
 
+import java.util.Optional;
+
 /**
  * Interface for components that are aware of the application's current auditor. This will be some kind of user mostly.
  * 
@@ -28,5 +30,5 @@ public interface AuditorAware<T> {
 	 * 
 	 * @return the current auditor
 	 */
-	T getCurrentAuditor();
+	Optional<T> getCurrentAuditor();
 }

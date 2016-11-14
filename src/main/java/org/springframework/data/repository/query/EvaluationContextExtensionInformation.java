@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.query;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -25,17 +28,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.repository.query.EvaluationContextExtensionInformation.ExtensionTypeInformation.PublicMethodAndFieldFilter;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.Function;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.FieldFilter;
-import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.ReflectionUtils.MethodFilter;
 
 /**
@@ -53,7 +56,7 @@ import org.springframework.util.ReflectionUtils.MethodFilter;
 class EvaluationContextExtensionInformation {
 
 	private final ExtensionTypeInformation extensionTypeInformation;
-	private final RootObjectInformation rootObjectInformation;
+	private final Optional<RootObjectInformation> rootObjectInformation;
 
 	/**
 	 * Creates a new {@link EvaluationContextExtension} for the given extension type.
@@ -65,7 +68,8 @@ class EvaluationContextExtensionInformation {
 		Assert.notNull(type, "Extension type must not be null!");
 		Class<?> rootObjectType = getRootObjectMethod(type).getReturnType();
 
-		this.rootObjectInformation = Object.class.equals(rootObjectType) ? null : new RootObjectInformation(rootObjectType);
+		this.rootObjectInformation = Optional
+				.ofNullable(Object.class.equals(rootObjectType) ? null : new RootObjectInformation(rootObjectType));
 		this.extensionTypeInformation = new ExtensionTypeInformation(type);
 	}
 
@@ -85,9 +89,10 @@ class EvaluationContextExtensionInformation {
 	 * @param target
 	 * @return
 	 */
-	public RootObjectInformation getRootObjectInformation(Object target) {
-		return target == null ? RootObjectInformation.NONE : rootObjectInformation == null ? new RootObjectInformation(
-				target.getClass()) : rootObjectInformation;
+	public RootObjectInformation getRootObjectInformation(Optional<Object> target) {
+
+		return target.map(it -> rootObjectInformation.orElse(new RootObjectInformation(it.getClass())))
+				.orElse(RootObjectInformation.NONE);
 	}
 
 	private static Method getRootObjectMethod(Class<?> type) {
@@ -105,9 +110,21 @@ class EvaluationContextExtensionInformation {
 	 *
 	 * @author Oliver Gierke
 	 */
+	@Getter
 	public static class ExtensionTypeInformation {
 
+		/**
+		 * The statically defined properties of the extension type.
+		 * 
+		 * @return the properties will never be {@literal null}.
+		 */
 		private final Map<String, Object> properties;
+
+		/**
+		 * The statically exposed functions of the extension type.
+		 * 
+		 * @return the functions will never be {@literal null}.
+		 */
 		private final Map<String, Function> functions;
 
 		/**
@@ -120,57 +137,27 @@ class EvaluationContextExtensionInformation {
 			Assert.notNull(type, "Extension type must not be null!");
 
 			this.functions = discoverDeclaredFunctions(type);
-			this.properties = discoverDeclaredProperties(type, PublicMethodAndFieldFilter.STATIC);
-		}
-
-		/**
-		 * Returns the statically defined properties of the extension type.
-		 * 
-		 * @return the properties will never be {@literal null}.
-		 */
-		public Map<String, Object> getProperties() {
-			return properties;
-		}
-
-		/**
-		 * Returns the statically exposed functions of the extension type.
-		 * 
-		 * @return the functions will never be {@literal null}.
-		 */
-		public Map<String, Function> getFunctions() {
-			return functions;
+			this.properties = discoverDeclaredProperties(type);
 		}
 
 		private static Map<String, Function> discoverDeclaredFunctions(Class<?> type) {
 
-			final Map<String, Function> map = new HashMap<String, Function>();
+			Map<String, Function> map = new HashMap<String, Function>();
 
-			ReflectionUtils.doWithMethods(type, new MethodCallback() {
+			ReflectionUtils.doWithMethods(type, //
+					method -> map.put(method.getName(), new Function(method, null)), //
+					PublicMethodAndFieldFilter.STATIC);
 
-				@Override
-				public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-					if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers())) {
-						map.put(method.getName(), new Function(method, null));
-					}
-				}
-			});
-
-			return map.isEmpty() ? Collections.<String, Function> emptyMap() : Collections.unmodifiableMap(map);
+			return map.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(map);
 		}
 
+		@RequiredArgsConstructor
 		static class PublicMethodAndFieldFilter implements MethodFilter, FieldFilter {
 
 			public static final PublicMethodAndFieldFilter STATIC = new PublicMethodAndFieldFilter(true);
 			public static final PublicMethodAndFieldFilter NON_STATIC = new PublicMethodAndFieldFilter(false);
 
 			private final boolean staticOnly;
-
-			/**
-			 * @param staticOnly
-			 */
-			public PublicMethodAndFieldFilter(boolean forStatic) {
-				this.staticOnly = forStatic;
-			}
 
 			/* 
 			 * (non-Javadoc)
@@ -235,30 +222,20 @@ class EvaluationContextExtensionInformation {
 				return;
 			}
 
-			final PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(type);
+			Streamable<PropertyDescriptor> descriptors = Streamable.of(BeanUtils.getPropertyDescriptors(type));
 
-			ReflectionUtils.doWithMethods(type, new MethodCallback() {
+			ReflectionUtils.doWithMethods(type, method -> {
 
-				@Override
-				public void doWith(Method method) {
+				RootObjectInformation.this.methods.add(method);
 
-					RootObjectInformation.this.methods.add(method);
+				descriptors.stream()//
+						.filter(it -> method.equals(it.getReadMethod()))//
+						.forEach(it -> RootObjectInformation.this.accessors.put(it.getName(), method));
 
-					for (PropertyDescriptor descriptor : descriptors) {
-						if (method.equals(descriptor.getReadMethod())) {
-							RootObjectInformation.this.accessors.put(descriptor.getName(), method);
-						}
-					}
-				}
-			}, PublicMethodAndFieldFilter.NON_STATIC);
+			} , PublicMethodAndFieldFilter.NON_STATIC);
 
-			ReflectionUtils.doWithFields(type, new FieldCallback() {
-
-				@Override
-				public void doWith(Field field) {
-					RootObjectInformation.this.fields.add(field);
-				}
-			}, PublicMethodAndFieldFilter.NON_STATIC);
+			ReflectionUtils.doWithFields(type, field -> RootObjectInformation.this.fields.add(field),
+					PublicMethodAndFieldFilter.NON_STATIC);
 		}
 
 		/**
@@ -267,20 +244,13 @@ class EvaluationContextExtensionInformation {
 		 * @param target can be {@literal null}.
 		 * @return the methods
 		 */
-		public Map<String, Function> getFunctions(Object target) {
+		public Map<String, Function> getFunctions(Optional<Object> target) {
 
-			if (target == null) {
-				return Collections.emptyMap();
-			}
-
-			Map<String, Function> functions = new HashMap<String, Function>(methods.size());
-
-			for (Method method : methods) {
-				functions.put(method.getName(), new Function(method, target));
-			}
-
-			return Collections.unmodifiableMap(functions);
-
+			return target.map(it -> methods.stream()//
+					.collect(Collectors.toMap(//
+							Method::getName, //
+							method -> new Function(method, it))))
+					.orElse(Collections.emptyMap());
 		}
 
 		/**
@@ -289,38 +259,29 @@ class EvaluationContextExtensionInformation {
 		 * 
 		 * @return the properties
 		 */
-		public Map<String, Object> getProperties(Object target) {
+		public Map<String, Object> getProperties(Optional<Object> target) {
 
-			if (target == null) {
-				return Collections.emptyMap();
-			}
+			return target.map(it -> {
 
-			Map<String, Object> properties = new HashMap<String, Object>();
+				Map<String, Object> properties = new HashMap<String, Object>();
 
-			for (Entry<String, Method> method : accessors.entrySet()) {
-				properties.put(method.getKey(), new Function(method.getValue(), target));
-			}
+				accessors.entrySet().stream()
+						.forEach(method -> properties.put(method.getKey(), new Function(method.getValue(), it)));
+				fields.stream().forEach(field -> properties.put(field.getName(), ReflectionUtils.getField(field, it)));
 
-			for (Field field : fields) {
-				properties.put(field.getName(), ReflectionUtils.getField(field, target));
-			}
+				return Collections.unmodifiableMap(properties);
 
-			return Collections.unmodifiableMap(properties);
+			}).orElse(Collections.emptyMap());
 		}
 	}
 
-	private static Map<String, Object> discoverDeclaredProperties(Class<?> type, FieldFilter filter) {
+	private static Map<String, Object> discoverDeclaredProperties(Class<?> type) {
 
-		final Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<String, Object>();
 
-		ReflectionUtils.doWithFields(type, new FieldCallback() {
+		ReflectionUtils.doWithFields(type, field -> map.put(field.getName(), field.get(null)),
+				PublicMethodAndFieldFilter.STATIC);
 
-			@Override
-			public void doWith(Field field) throws IllegalAccessException {
-				map.put(field.getName(), field.get(null));
-			}
-		}, filter);
-
-		return map.isEmpty() ? Collections.<String, Object> emptyMap() : Collections.unmodifiableMap(map);
+		return map.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(map);
 	}
 }

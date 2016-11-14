@@ -15,14 +15,21 @@
  */
 package org.springframework.data.repository.core.support;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -52,9 +59,9 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.data.util.Pair;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 /**
  * Factory bean to create instances of a given repository interface. Creates a proxy implementing the configured
@@ -70,20 +77,29 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			RepositoryFactorySupport.class.getClassLoader());
 	private static final Class<?> TRANSACTION_PROXY_TYPE = getTransactionProxyType();
 
-	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
-	private final List<RepositoryProxyPostProcessor> postProcessors = new ArrayList<RepositoryProxyPostProcessor>();
+	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache;
+	private final List<RepositoryProxyPostProcessor> postProcessors;
 
-	private Class<?> repositoryBaseClass;
+	private Optional<Class<?>> repositoryBaseClass;
 	private QueryLookupStrategy.Key queryLookupStrategyKey;
-	private List<QueryCreationListener<?>> queryPostProcessors = new ArrayList<QueryCreationListener<?>>();
-	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
-	private ClassLoader classLoader = org.springframework.util.ClassUtils.getDefaultClassLoader();
-	private EvaluationContextProvider evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
+	private List<QueryCreationListener<?>> queryPostProcessors;
+	private NamedQueries namedQueries;
+	private ClassLoader classLoader;
+	private EvaluationContextProvider evaluationContextProvider;
 	private BeanFactory beanFactory;
 
 	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
 	public RepositoryFactorySupport() {
+
+		this.repositoryInformationCache = new HashMap<>();
+		this.postProcessors = new ArrayList<>();
+
+		this.repositoryBaseClass = Optional.empty();
+		this.namedQueries = PropertiesBasedNamedQueries.EMPTY;
+		this.classLoader = org.springframework.util.ClassUtils.getDefaultClassLoader();
+		this.evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
+		this.queryPostProcessors = new ArrayList<>();
 		this.queryPostProcessors.add(collectingListener);
 	}
 
@@ -142,7 +158,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @since 1.11
 	 */
 	public void setRepositoryBaseClass(Class<?> repositoryBaseClass) {
-		this.repositoryBaseClass = repositoryBaseClass;
+		this.repositoryBaseClass = Optional.ofNullable(repositoryBaseClass);
 	}
 
 	/**
@@ -178,7 +194,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @return
 	 */
 	public <T> T getRepository(Class<T> repositoryInterface) {
-		return getRepository(repositoryInterface, null);
+		return getRepository(repositoryInterface, Optional.empty());
 	}
 
 	/**
@@ -191,11 +207,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked" })
-	public <T> T getRepository(Class<T> repositoryInterface, Object customImplementation) {
+	public <T> T getRepository(Class<T> repositoryInterface, Optional<Object> customImplementation) {
 
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
-		Class<?> customImplementationClass = null == customImplementation ? null : customImplementation.getClass();
-		RepositoryInformation information = getRepositoryInformation(metadata, customImplementationClass);
+		RepositoryInformation information = getRepositoryInformation(metadata, customImplementation.map(Object::getClass));
 
 		validate(information, customImplementation);
 
@@ -213,9 +228,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			result.addInterface(TRANSACTION_PROXY_TYPE);
 		}
 
-		for (RepositoryProxyPostProcessor processor : postProcessors) {
-			processor.postProcess(result, information);
-		}
+		postProcessors.forEach(processor -> processor.postProcess(result, information));
 
 		if (IS_JAVA_8) {
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
@@ -248,24 +261,19 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @return
 	 */
 	protected RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata,
-			Class<?> customImplementationClass) {
+			Optional<Class<?>> customImplementationClass) {
 
 		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, customImplementationClass);
-		RepositoryInformation repositoryInformation = repositoryInformationCache.get(cacheKey);
 
-		if (repositoryInformation != null) {
-			return repositoryInformation;
-		}
+		return repositoryInformationCache.computeIfAbsent(cacheKey, key -> new DefaultRepositoryInformation(metadata,
+				repositoryBaseClass.orElse(getRepositoryBaseClass(metadata)), customImplementationClass));
 
-		Class<?> repositoryBaseClass = this.repositoryBaseClass == null ? getRepositoryBaseClass(metadata)
-				: this.repositoryBaseClass;
-
+		/*
 		repositoryInformation = metadata.isReactiveRepository()
-				? new ReactiveRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass)
-				: new DefaultRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass);
+						? new ReactiveRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass)
+						: new DefaultRepositoryInformation(metadata, repositoryBaseClass, customImplementationClass);
+		*/
 
-		repositoryInformationCache.put(cacheKey, repositoryInformation);
-		return repositoryInformation;
 	}
 
 	protected List<QueryMethod> getQueryMethods() {
@@ -300,17 +308,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	protected abstract Class<?> getRepositoryBaseClass(RepositoryMetadata metadata);
 
 	/**
-	 * Returns the {@link QueryLookupStrategy} for the given {@link Key}.
-	 * 
-	 * @deprecated favor {@link #getQueryLookupStrategy(Key, EvaluationContextProvider)}
-	 * @param key can be {@literal null}
-	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
-	 */
-	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
-		return null;
-	}
-
-	/**
 	 * Returns the {@link QueryLookupStrategy} for the given {@link Key} and {@link EvaluationContextProvider}.
 	 * 
 	 * @param key can be {@literal null}.
@@ -318,8 +315,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
 	 * @since 1.9
 	 */
-	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
-		return null;
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
+			EvaluationContextProvider evaluationContextProvider) {
+		return Optional.empty();
 	}
 
 	/**
@@ -328,14 +326,18 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @param repositoryInformation
 	 * @param customImplementation
 	 */
-	private void validate(RepositoryInformation repositoryInformation, Object customImplementation) {
+	private void validate(RepositoryInformation repositoryInformation, Optional<Object> customImplementation) {
 
-		if (null == customImplementation && repositoryInformation.hasCustomMethod()) {
+		customImplementation.orElseGet(() -> {
+
+			if (!repositoryInformation.hasCustomMethod()) {
+				return null;
+			}
 
 			throw new IllegalArgumentException(
 					String.format("You have custom methods in %s but not provided a custom implementation!",
 							repositoryInformation.getRepositoryInterface()));
-		}
+		});
 
 		validate(repositoryInformation);
 	}
@@ -357,22 +359,14 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			Object... constructorArguments) {
 
 		Class<?> baseClass = information.getRepositoryBaseClass();
-		Constructor<?> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
+		Optional<Constructor<?>> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
 
-		if (constructor == null) {
+		return constructor.map(it -> (R) BeanUtils.instantiateClass(it, constructorArguments)).orElseThrow(() -> {
 
-			List<Class<?>> argumentTypes = new ArrayList<Class<?>>(constructorArguments.length);
-
-			for (Object argument : constructorArguments) {
-				argumentTypes.add(argument.getClass());
-			}
-
-			throw new IllegalStateException(String.format(
+			return new IllegalStateException(String.format(
 					"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
-					baseClass, argumentTypes));
-		}
-
-		return (R) BeanUtils.instantiateClass(constructor, constructorArguments);
+					baseClass, Arrays.stream(constructorArguments).map(Object::getClass).collect(Collectors.toList())));
+		});
 	}
 
 	/**
@@ -399,8 +393,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	public class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
-		private final Map<Method, RepositoryQuery> queries = new ConcurrentHashMap<Method, RepositoryQuery>();
-
+		private final Map<Method, RepositoryQuery> queries;
 		private final QueryExecutionResultHandler resultHandler;
 
 		/**
@@ -411,33 +404,28 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			this.resultHandler = new QueryExecutionResultHandler();
 
-			QueryLookupStrategy lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
+			Optional<QueryLookupStrategy> lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 					RepositoryFactorySupport.this.evaluationContextProvider);
-			lookupStrategy = lookupStrategy == null ? getQueryLookupStrategy(queryLookupStrategyKey) : lookupStrategy;
-			Iterable<Method> queryMethods = repositoryInformation.getQueryMethods();
 
-			if (lookupStrategy == null) {
+			if (!lookupStrategy.isPresent() && repositoryInformation.hasQueryMethods()) {
 
-				if (queryMethods.iterator().hasNext()) {
-					throw new IllegalStateException("You have defined query method in the repository but "
-							+ "you don't have any query lookup strategy defined. The "
-							+ "infrastructure apparently does not support query methods!");
-				}
-
-				return;
+				throw new IllegalStateException("You have defined query method in the repository but "
+						+ "you don't have any query lookup strategy defined. The "
+						+ "infrastructure apparently does not support query methods!");
 			}
 
-			SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-			factory.setBeanClassLoader(classLoader);
-			factory.setBeanFactory(beanFactory);
+			this.queries = lookupStrategy.map(it -> {
 
-			for (Method method : queryMethods) {
+				SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+				factory.setBeanClassLoader(classLoader);
+				factory.setBeanFactory(beanFactory);
 
-				RepositoryQuery query = lookupStrategy.resolveQuery(method, repositoryInformation, factory, namedQueries);
+				return repositoryInformation.getQueryMethods().stream()//
+						.map(method -> Pair.of(method, it.resolveQuery(method, repositoryInformation, factory, namedQueries)))//
+						.peek(pair -> invokeListeners(pair.getSecond()))//
+						.collect(Pair.toMap());
 
-				invokeListeners(query);
-				queries.put(method, query);
-			}
+			}).orElse(Collections.emptyMap());
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -496,27 +484,12 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 *
 	 * @author Mark Paluch
 	 */
+	@RequiredArgsConstructor
 	public class ImplementationMethodExecutionInterceptor implements MethodInterceptor {
 
-		private final Object customImplementation;
 		private final RepositoryInformation repositoryInformation;
+		private final Optional<Object> customImplementation;
 		private final Object target;
-
-		/**
-		 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model of {@link QueryMethod}s to be invoked on
-		 * execution of repository interface methods.
-		 */
-		public ImplementationMethodExecutionInterceptor(RepositoryInformation repositoryInformation,
-				Object customImplementation, Object target) {
-
-			Assert.notNull(repositoryInformation, "RepositoryInformation must not be null!");
-			Assert.notNull(target, "Target must not be null!");
-
-			this.repositoryInformation = repositoryInformation;
-			this.customImplementation = customImplementation;
-			this.target = target;
-
-		}
 
 		/* (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
@@ -530,7 +503,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			if (isCustomMethodInvocation(invocation)) {
 
 				Method actualMethod = repositoryInformation.getTargetClassMethod(method);
-				return executeMethodOn(customImplementation, actualMethod, arguments);
+				return executeMethodOn(customImplementation.get(), actualMethod, arguments);
 			}
 
 			// Lookup actual method as it might be redeclared in the interface
@@ -589,7 +562,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 * @param target
 		 */
 		public ConvertingImplementationMethodExecutionInterceptor(RepositoryInformation repositoryInformation,
-				Object customImplementation, Object target) {
+				Optional<Object> customImplementation, Object target) {
 
 			super(repositoryInformation, customImplementation, target);
 		}
@@ -641,18 +614,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@Getter
 	private static class QueryCollectingQueryCreationListener implements QueryCreationListener<RepositoryQuery> {
 
-		private List<QueryMethod> queryMethods = new ArrayList<QueryMethod>();
-
 		/**
-		 * Returns all {@link QueryMethod}s.
-		 * 
-		 * @return
+		 * All {@link QueryMethod}s.
 		 */
-		public List<QueryMethod> getQueryMethods() {
-			return queryMethods;
-		}
+		private List<QueryMethod> queryMethods = new ArrayList<QueryMethod>();
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.QueryCreationListener#onCreation(org.springframework.data.repository.query.RepositoryQuery)
@@ -667,6 +635,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@EqualsAndHashCode
 	private static class RepositoryInformationCacheKey {
 
 		private final String repositoryInterfaceName;
@@ -679,40 +648,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 * @param repositoryInterfaceName must not be {@literal null}.
 		 * @param customImplementationClassName
 		 */
-		public RepositoryInformationCacheKey(RepositoryMetadata metadata, Class<?> customImplementationType) {
+		public RepositoryInformationCacheKey(RepositoryMetadata metadata, Optional<Class<?>> customImplementationType) {
+
 			this.repositoryInterfaceName = metadata.getRepositoryInterface().getName();
-			this.customImplementationClassName = customImplementationType == null ? null : customImplementationType.getName();
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object obj) {
-
-			if (!(obj instanceof RepositoryInformationCacheKey)) {
-				return false;
-			}
-
-			RepositoryInformationCacheKey that = (RepositoryInformationCacheKey) obj;
-			return this.repositoryInterfaceName.equals(that.repositoryInterfaceName)
-					&& ObjectUtils.nullSafeEquals(this.customImplementationClassName, that.customImplementationClassName);
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode() {
-
-			int result = 31;
-
-			result += 17 * repositoryInterfaceName.hashCode();
-			result += 17 * ObjectUtils.nullSafeHashCode(customImplementationClassName);
-
-			return result;
+			this.customImplementationClassName = customImplementationType.map(Class::getName).orElse(null);
 		}
 	}
 }

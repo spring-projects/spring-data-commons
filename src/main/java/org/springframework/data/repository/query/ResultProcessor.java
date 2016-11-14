@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.springframework.core.CollectionFactory;
@@ -33,7 +32,6 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -135,8 +133,7 @@ public class ResultProcessor {
 
 		Assert.notNull(preparingConverter, "Preparing converter must not be null!");
 
-		final ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter)
-				.and(this.converter);
+		ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
 
 		if (source instanceof Slice && method.isPageQuery() || method.isSliceQuery()) {
 			return (T) ((Slice<?>) source).map(converter);
@@ -154,8 +151,8 @@ public class ResultProcessor {
 			return (T) target;
 		}
 
-		if (ReflectionUtils.isJava8StreamType(source.getClass()) && method.isStreamQuery()) {
-			return (T) new StreamQueryResultHandler(type, converter).handle(source);
+		if (source instanceof Stream && method.isStreamQuery()) {
+			return (T) ((Stream<Object>) source).map(t -> type.isInstance(t) ? t : converter.convert(t));
 		}
 
 		if (ReactiveWrapperConverters.supports(source.getClass())) {
@@ -198,14 +195,10 @@ public class ResultProcessor {
 
 			Assert.notNull(converter, "Converter must not be null!");
 
-			return new ChainingConverter(targetType, new Converter<Object, Object>() {
+			return new ChainingConverter(targetType, source -> {
 
-				@Override
-				public Object convert(Object source) {
-
-					Object intermediate = ChainingConverter.this.convert(source);
-					return targetType.isInstance(intermediate) ? intermediate : converter.convert(intermediate);
-				}
+				Object intermediate = ChainingConverter.this.convert(source);
+				return targetType.isInstance(intermediate) ? intermediate : converter.convert(intermediate);
 			});
 		}
 
@@ -313,13 +306,8 @@ public class ResultProcessor {
 
 			Assert.isInstanceOf(Stream.class, source, "Source must not be null and an instance of Stream!");
 
-			return ((Stream<Object>) source).map(new Function<Object, Object>() {
-
-				@Override
-				public Object apply(Object element) {
-					return returnType.isInstance(element) ? element : converter.convert(element);
-				}
-			});
+			return ((Stream<Object>) source)
+					.map(element -> returnType.isInstance(element) ? element : converter.convert(element));
 		}
 	}
 }

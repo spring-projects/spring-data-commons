@@ -15,9 +15,7 @@
  */
 package org.springframework.data.mapping;
 
-import static org.junit.Assert.*;
-
-import java.util.Collections;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,25 +40,17 @@ public class MappingMetadataTests {
 	@Test
 	public void testPojoWithId() {
 
-		ctx.setInitialEntitySet(Collections.singleton(PersonWithId.class));
-		ctx.initialize();
-
 		PersistentEntity<?, SamplePersistentProperty> person = ctx.getPersistentEntity(PersonWithId.class);
-		assertNotNull(person.getIdProperty());
-		assertEquals(String.class, person.getIdProperty().getType());
+
+		assertThat(person.getIdProperty()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test
 	public void testAssociations() {
 
-		ctx.setInitialEntitySet(Collections.singleton(PersonWithChildren.class));
-		ctx.initialize();
-
 		PersistentEntity<?, SamplePersistentProperty> person = ctx.getPersistentEntity(PersonWithChildren.class);
-		person.doWithAssociations(new AssociationHandler<SamplePersistentProperty>() {
-			public void doWithAssociation(Association<SamplePersistentProperty> association) {
-				assertEquals(Child.class, association.getInverse().getComponentType());
-			}
-		});
+
+		person.doWithAssociations((AssociationHandler<SamplePersistentProperty>) association -> assertThat(
+				association.getInverse().getComponentType()).isEqualTo(Child.class));
 	}
 }

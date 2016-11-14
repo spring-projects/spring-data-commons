@@ -15,8 +15,7 @@
  */
 package org.springframework.data.annotation;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Set;
 
@@ -37,8 +36,7 @@ public class TypeAliasUnitTests {
 		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Persistent.class);
 		Set<Class<?>> types = scanner.findTypes(getClass().getPackage().getName());
 
-		assertThat(types, hasSize(2));
-		assertThat(types, hasItems(SampleType.class, TypeAlias.class));
+		assertThat(types).containsExactlyInAnyOrder(SampleType.class, TypeAlias.class);
 	}
 
 	@TypeAlias(value = "foo")

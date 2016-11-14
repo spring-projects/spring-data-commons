@@ -16,6 +16,7 @@
 package org.springframework.data.querydsl.binding;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -44,8 +45,8 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	private final EntityPathResolver entityPathResolver;
 	private final Map<TypeInformation<?>, EntityPath<?>> entityPaths;
 
-	private AutowireCapableBeanFactory beanFactory;
-	private Repositories repositories;
+	private Optional<AutowireCapableBeanFactory> beanFactory;
+	private Optional<Repositories> repositories;
 
 	/**
 	 * Creates a new {@link QuerydslBindingsFactory} using the given {@link EntityPathResolver}.
@@ -58,6 +59,8 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 
 		this.entityPathResolver = entityPathResolver;
 		this.entityPaths = new ConcurrentReferenceHashMap<TypeInformation<?>, EntityPath<?>>();
+		this.beanFactory = Optional.empty();
+		this.repositories = Optional.empty();
 	}
 
 	/* 
@@ -67,8 +70,8 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
-		this.beanFactory = applicationContext.getAutowireCapableBeanFactory();
-		this.repositories = new Repositories(applicationContext);
+		this.beanFactory = Optional.of(applicationContext.getAutowireCapableBeanFactory());
+		this.repositories = Optional.of(new Repositories(applicationContext));
 	}
 
 	/**
@@ -84,14 +87,15 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	 * Creates the {@link QuerydslBindings} to be used using for the given domain type and a pre-defined
 	 * {@link QuerydslBinderCustomizer}. If no customizer is given, auto-detection will be applied.
 	 * 
-	 * @param customizer the {@link QuerydslBinderCustomizer} to use. If {@literal null} is given customizer detection for
-	 *          the given domain type will be applied.
 	 * @param domainType must not be {@literal null}.
+	 * @param customizer the {@link QuerydslBinderCustomizer} to use. If an empty {@link Optional} is given customizer
+	 *          detection for the given domain type will be applied.
 	 * @return
 	 */
-	public QuerydslBindings createBindingsFor(Class<? extends QuerydslBinderCustomizer<?>> customizer,
-			TypeInformation<?> domainType) {
+	public QuerydslBindings createBindingsFor(TypeInformation<?> domainType,
+			Optional<Class<? extends QuerydslBinderCustomizer<?>>> customizer) {
 
+		Assert.notNull(customizer, "Customizer must not be null!");
 		Assert.notNull(domainType, "Domain type must not be null!");
 
 		EntityPath<?> path = verifyEntityPathPresent(domainType);
@@ -111,23 +115,15 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	 */
 	private EntityPath<?> verifyEntityPathPresent(TypeInformation<?> candidate) {
 
-		EntityPath<?> path = entityPaths.get(candidate);
+		return entityPaths.computeIfAbsent(candidate, key -> {
 
-		if (path != null) {
-			return path;
-		}
-
-		Class<?> type = candidate.getType();
-
-		try {
-			path = entityPathResolver.createPath(type);
-		} catch (IllegalArgumentException o_O) {
-			throw new IllegalStateException(
-					String.format(INVALID_DOMAIN_TYPE, candidate.getType(), QuerydslPredicate.class.getSimpleName()), o_O);
-		}
-
-		entityPaths.put(candidate, path);
-		return path;
+			try {
+				return entityPathResolver.createPath(key.getType());
+			} catch (IllegalArgumentException o_O) {
+				throw new IllegalStateException(
+						String.format(INVALID_DOMAIN_TYPE, key.getType(), QuerydslPredicate.class.getSimpleName()), o_O);
+			}
+		});
 	}
 
 	/**
@@ -140,22 +136,16 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private QuerydslBinderCustomizer<EntityPath<?>> findCustomizerForDomainType(
-			Class<? extends QuerydslBinderCustomizer> customizer, Class<?> domainType) {
+			Optional<? extends Class<? extends QuerydslBinderCustomizer>> customizer, Class<?> domainType) {
 
-		if (customizer != null && !QuerydslBinderCustomizer.class.equals(customizer)) {
-			return createQuerydslBinderCustomizer(customizer);
-		}
+		return customizer//
+				.filter(it -> !QuerydslBinderCustomizer.class.equals(it))//
+				.map(it -> createQuerydslBinderCustomizer(it)).orElseGet(() -> {
 
-		if (repositories != null && repositories.hasRepositoryFor(domainType)) {
-
-			Object repository = repositories.getRepositoryFor(domainType);
-
-			if (repository instanceof QuerydslBinderCustomizer) {
-				return (QuerydslBinderCustomizer<EntityPath<?>>) repository;
-			}
-		}
-
-		return NoOpCustomizer.INSTANCE;
+					return repositories.flatMap(it -> it.getRepositoryFor(domainType))//
+							.map(it -> it instanceof QuerydslBinderCustomizer ? (QuerydslBinderCustomizer<EntityPath<?>>) it : null)//
+							.orElse(NoOpCustomizer.INSTANCE);
+				});
 	}
 
 	/**
@@ -171,15 +161,14 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	private QuerydslBinderCustomizer<EntityPath<?>> createQuerydslBinderCustomizer(
 			Class<? extends QuerydslBinderCustomizer> type) {
 
-		if (beanFactory == null) {
-			return BeanUtils.instantiateClass(type);
-		}
+		return beanFactory.map(it -> {
 
-		try {
-			return beanFactory.getBean(type);
-		} catch (NoSuchBeanDefinitionException e) {
-			return beanFactory.createBean(type);
-		}
+			try {
+				return it.getBean(type);
+			} catch (NoSuchBeanDefinitionException e) {
+				return it.createBean(type);
+			}
+		}).orElseGet(() -> BeanUtils.instantiateClass(type));
 	}
 
 	private static enum NoOpCustomizer implements QuerydslBinderCustomizer<EntityPath<?>> {

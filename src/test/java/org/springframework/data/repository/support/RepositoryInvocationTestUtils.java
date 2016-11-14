@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -25,7 +24,6 @@ import java.util.List;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.data.repository.support.RepositoryInvoker;
 
 /**
  * Utility methods to create {@link RepositoryInvoker} instances that get a verifying proxy attached so that the
@@ -55,7 +53,7 @@ class RepositoryInvocationTestUtils {
 	}
 
 	/**
-	 * {@link MethodInterceptor} to verifiy the invocation was triggered on the given type.
+	 * {@link MethodInterceptor} to verify the invocation was triggered on the given type.
 	 * 
 	 * @author Oliver Gierke
 	 */
@@ -74,13 +72,13 @@ class RepositoryInvocationTestUtils {
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
 			if (!methods.isEmpty()) {
-				assertThat(methods, hasItem(invocation.getMethod()));
+				assertThat(methods).contains(invocation.getMethod());
 			} else {
 
 				Class<?> type = invocation.getMethod().getDeclaringClass();
 
-				assertThat("Expected methods invocation on " + expectedInvocationTarget + " but was invoked on " + type + "!",
-						type, is(equalTo(expectedInvocationTarget)));
+				assertThat(type).as("Expected methods invocation on %s but was invoked on %s!", expectedInvocationTarget, type)
+						.isEqualTo(expectedInvocationTarget);
 			}
 
 			return invocation.proceed();

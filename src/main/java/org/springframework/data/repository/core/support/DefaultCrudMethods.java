@@ -78,7 +78,6 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableSaveMethod(RepositoryMetadata metadata) {
 
 		for (Class<?> type : asList(metadata.getDomainType(), Object.class)) {
@@ -105,7 +104,6 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableDeleteMethod(RepositoryMetadata metadata) {
 
 		for (Class<?> type : asList(metadata.getDomainType(), metadata.getIdType(), Serializable.class, Iterable.class)) {
@@ -131,7 +129,6 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableFindAllMethod(RepositoryMetadata metadata) {
 
 		for (Class<?> type : asList(Pageable.class, Sort.class)) {
@@ -163,7 +160,6 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	@SuppressWarnings("unchecked")
 	private Method selectMostSuitableFindOneMethod(RepositoryMetadata metadata) {
 
 		for (Class<?> type : asList(metadata.getIdType(), Serializable.class)) {

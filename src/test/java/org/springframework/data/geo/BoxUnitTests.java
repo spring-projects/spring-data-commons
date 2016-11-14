@@ -15,8 +15,7 @@
  */
 package org.springframework.data.geo;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.util.SerializationUtils;
@@ -36,28 +35,28 @@ public class BoxUnitTests {
 	@Test // DATACMNS-437
 	public void equalsWorksCorrectly() {
 
-		assertThat(first.equals(second), is(true));
-		assertThat(second.equals(first), is(true));
-		assertThat(first.equals(third), is(false));
+		assertThat(first.equals(second)).isTrue();
+		assertThat(second.equals(first)).isTrue();
+		assertThat(first.equals(third)).isFalse();
 	}
 
 	@Test // DATACMNS-437
 	public void hashCodeWorksCorrectly() {
 
-		assertThat(first.hashCode(), is(second.hashCode()));
-		assertThat(first.hashCode(), is(not(third.hashCode())));
+		assertThat(first.hashCode()).isEqualTo(second.hashCode());
+		assertThat(first.hashCode()).isNotEqualTo(third.hashCode());
 	}
 
 	@Test // DATACMNS-437
 	public void testToString() {
 
-		assertThat(first.toString(), is("Box [Point [x=1.000000, y=1.000000], Point [x=2.000000, y=2.000000]]"));
+		assertThat(first.toString()).isEqualTo("Box [Point [x=1.000000, y=1.000000], Point [x=2.000000, y=2.000000]]");
 	}
 
 	@Test // DATACMNS-482
 	public void testSerialization() {
 
 		Box serialized = (Box) SerializationUtils.deserialize(SerializationUtils.serialize(first));
-		assertThat(serialized, is(first));
+		assertThat(serialized).isEqualTo(first);
 	}
 }

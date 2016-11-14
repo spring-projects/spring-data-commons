@@ -15,8 +15,7 @@
  */
 package org.springframework.data.authentication;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 
@@ -31,17 +30,17 @@ public class UserCredentialsUnitTests {
 	public void treatsEmptyStringAsNull() {
 
 		UserCredentials credentials = new UserCredentials("", "");
-		assertThat(credentials.getUsername(), is(nullValue()));
-		assertThat(credentials.hasUsername(), is(false));
-		assertThat(credentials.getPassword(), is(nullValue()));
-		assertThat(credentials.hasPassword(), is(false));
+		assertThat(credentials.getUsername()).isNull();
+		assertThat(credentials.hasUsername()).isFalse();
+		assertThat(credentials.getPassword()).isNull();
+		assertThat(credentials.hasPassword()).isFalse();
 	}
 
 	@Test // DATACMNS-142
 	public void noCredentialsNullsUsernameAndPassword() {
 
-		assertThat(UserCredentials.NO_CREDENTIALS.getUsername(), is(nullValue()));
-		assertThat(UserCredentials.NO_CREDENTIALS.getPassword(), is(nullValue()));
+		assertThat(UserCredentials.NO_CREDENTIALS.getUsername()).isNull();
+		assertThat(UserCredentials.NO_CREDENTIALS.getPassword()).isNull();
 	}
 
 	@Test // DATACMNS-142
@@ -49,10 +48,10 @@ public class UserCredentialsUnitTests {
 
 		UserCredentials credentials = new UserCredentials("username", null);
 
-		assertThat(credentials.hasUsername(), is(true));
-		assertThat(credentials.getUsername(), is("username"));
-		assertThat(credentials.hasPassword(), is(false));
-		assertThat(credentials.getPassword(), is(nullValue()));
+		assertThat(credentials.hasUsername()).isTrue();
+		assertThat(credentials.getUsername()).isEqualTo("username");
+		assertThat(credentials.hasPassword()).isFalse();
+		assertThat(credentials.getPassword()).isNull();
 	}
 
 	@Test // DATACMNS-142
@@ -60,34 +59,34 @@ public class UserCredentialsUnitTests {
 
 		UserCredentials credentials = new UserCredentials(null, "password");
 
-		assertThat(credentials.hasUsername(), is(false));
-		assertThat(credentials.getUsername(), is(nullValue()));
-		assertThat(credentials.hasPassword(), is(true));
-		assertThat(credentials.getPassword(), is("password"));
+		assertThat(credentials.hasUsername()).isFalse();
+		assertThat(credentials.getUsername()).isNull();
+		assertThat(credentials.hasPassword()).isTrue();
+		assertThat(credentials.getPassword()).isEqualTo("password");
 	}
 
 	@Test // DATACMNS-275
 	public void returnsNullForNotSetObfuscatedPassword() {
-		assertThat(new UserCredentials(null, null).getObfuscatedPassword(), is(nullValue()));
+		assertThat(new UserCredentials(null, null).getObfuscatedPassword()).isNull();
 	}
 
 	@Test // DATACMNS-275
 	public void obfuscatesShortPasswordsEntirely() {
 
-		assertThat(new UserCredentials(null, "sa").getObfuscatedPassword(), is("**"));
-		assertThat(new UserCredentials(null, "s").getObfuscatedPassword(), is("*"));
+		assertThat(new UserCredentials(null, "sa").getObfuscatedPassword()).isEqualTo("**");
+		assertThat(new UserCredentials(null, "s").getObfuscatedPassword()).isEqualTo("*");
 	}
 
 	@Test // DATACMNS-275
 	public void returnsObfuscatedPasswordCorrectly() {
-		assertThat(new UserCredentials(null, "password").getObfuscatedPassword(), is("p******d"));
+		assertThat(new UserCredentials(null, "password").getObfuscatedPassword()).isEqualTo("p******d");
 	}
 
 	@Test // DATACMNS-275
 	public void toStringDoesNotExposePlainPassword() {
 
 		UserCredentials credentials = new UserCredentials(null, "mypassword");
-		assertThat(credentials.toString(), not(containsString(credentials.getPassword())));
-		assertThat(credentials.toString(), containsString(credentials.getObfuscatedPassword()));
+		assertThat(credentials.toString()).doesNotContain(credentials.getPassword());
+		assertThat(credentials.toString()).contains(credentials.getObfuscatedPassword());
 	}
 }

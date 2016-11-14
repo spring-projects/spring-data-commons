@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -138,15 +139,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getQueryLookupStrategyKey()
 	 */
-	public Object getQueryLookupStrategyKey() {
-		return attributes.get(QUERY_LOOKUP_STRATEGY);
+	public Optional<Object> getQueryLookupStrategyKey() {
+		return Optional.ofNullable(attributes.get(QUERY_LOOKUP_STRATEGY));
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getNamedQueryLocation()
 	 */
-	public String getNamedQueryLocation() {
+	public Optional<String> getNamedQueryLocation() {
 		return getNullDefaultedAttribute(NAMED_QUERIES_LOCATION);
 	}
 
@@ -154,7 +155,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryImplementationPostfix()
 	 */
-	public String getRepositoryImplementationPostfix() {
+	public Optional<String> getRepositoryImplementationPostfix() {
 		return getNullDefaultedAttribute(REPOSITORY_IMPLEMENTATION_POSTFIX);
 	}
 
@@ -197,14 +198,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	}
 
 	/**
-	 * Returns the {@link String} attribute with the given name and defaults it to {@literal null} in case it's empty.
+	 * Returns the {@link String} attribute with the given name and defaults it to {@literal Optional#empty()} in case
+	 * it's empty.
 	 * 
 	 * @param attributeName
 	 * @return
 	 */
-	private String getNullDefaultedAttribute(String attributeName) {
+	private Optional<String> getNullDefaultedAttribute(String attributeName) {
 		String attribute = attributes.getString(attributeName);
-		return StringUtils.hasText(attribute) ? attribute : null;
+		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
 
 	/* 
@@ -220,14 +222,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryBaseClassName()
 	 */
 	@Override
-	public String getRepositoryBaseClassName() {
+	public Optional<String> getRepositoryBaseClassName() {
 
 		if (!attributes.containsKey(REPOSITORY_BASE_CLASS)) {
-			return null;
+			return Optional.empty();
 		}
 
 		Class<? extends Object> repositoryBaseClass = attributes.getClass(REPOSITORY_BASE_CLASS);
-		return DefaultRepositoryBaseClass.class.equals(repositoryBaseClass) ? null : repositoryBaseClass.getName();
+		return DefaultRepositoryBaseClass.class.equals(repositoryBaseClass) ? Optional.empty()
+				: Optional.of(repositoryBaseClass.getName());
 	}
 
 	/**
@@ -311,10 +314,10 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String)
 	 */
 	@Override
-	public String getAttribute(String name) {
+	public Optional<String> getAttribute(String name) {
 
 		String attribute = attributes.getString(name);
-		return StringUtils.hasText(attribute) ? attribute : null;
+		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
 
 	/* 

@@ -15,11 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
-import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor;
 import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAttribute;
@@ -38,10 +36,10 @@ public class CustomAnnotationTransactionAttributeSourceUnitTests {
 
 		TransactionAttribute attribute = source.getTransactionAttribute(Bar.class.getMethod("bar", Object.class),
 				FooImpl.class);
-		assertThat(attribute.isReadOnly(), is(false));
+		assertThat(attribute.isReadOnly()).isFalse();
 
 		attribute = source.getTransactionAttribute(Bar.class.getMethod("foo"), FooImpl.class);
-		assertThat(attribute.isReadOnly(), is(false));
+		assertThat(attribute.isReadOnly()).isFalse();
 	}
 
 	/**

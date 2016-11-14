@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 
 import org.springframework.core.MethodParameter;
@@ -53,7 +54,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * @param customImplementationClass can be {@literal null}.
 	 */
 	public ReactiveRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass,
-			Class<?> customImplementationClass) {
+			Optional<Class<?>> customImplementationClass) {
 		super(metadata, repositoryBaseClass, customImplementationClass);
 	}
 
@@ -67,31 +68,31 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * @return
 	 */
 	@Override
-	Method getTargetClassMethod(Method method, Class<?> baseClass) {
+	Method getTargetClassMethod(Method method, Optional<Class<?>> baseClass) {
 
-		if (baseClass == null) {
-			return method;
-		}
+		return baseClass.map(it -> {
 
-		if (usesParametersWithReactiveWrappers(method)) {
+			if (usesParametersWithReactiveWrappers(method)) {
 
-			Method candidate = getMethodCandidate(method, baseClass, new AssignableWrapperMatch(method.getParameterTypes()));
+				Method candidate = getMethodCandidate(method, it, new AssignableWrapperMatch(method.getParameterTypes()));
 
-			if (candidate != null) {
-				return candidate;
+				if (candidate != null) {
+					return candidate;
+				}
+
+				candidate = getMethodCandidate(method, it, WrapperConversionMatch.of(method.getParameterTypes()));
+
+				if (candidate != null) {
+					return candidate;
+				}
 			}
 
-			candidate = getMethodCandidate(method, baseClass, WrapperConversionMatch.of(method.getParameterTypes()));
+			Method candidate = getMethodCandidate(method, it,
+					MatchParameterOrComponentType.of(method, getRepositoryInterface()));
 
-			if (candidate != null) {
-				return candidate;
-			}
-		}
+			return candidate != null ? candidate : method;
 
-		Method candidate = getMethodCandidate(method, baseClass,
-				MatchParameterOrComponentType.of(method, getRepositoryInterface()));
-
-		return candidate != null ? candidate : method;
+		}).orElse(method);
 	}
 
 	/**

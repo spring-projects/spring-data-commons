@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -76,7 +75,7 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	@SuppressWarnings({ "deprecation", "unchecked" })
+	@SuppressWarnings("unchecked")
 	public void forwardsMethodsToDelegate() {
 
 		adapter.hasDeleteMethod();
@@ -96,10 +95,6 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 
 		adapter.invokeFindOne(any(Serializable.class));
 		verify(delegate, times(1)).invokeFindOne(any(Serializable.class));
-
-		adapter.invokeQueryMethod(any(Method.class), any(Map.class), any(Pageable.class), any(Sort.class));
-		verify(delegate, times(1)).invokeQueryMethod(any(Method.class), any(Map.class), any(Pageable.class),
-				any(Sort.class));
 
 		adapter.invokeQueryMethod(any(Method.class), (MultiValueMap<String, String>) any(MultiValueMap.class),
 				any(Pageable.class), any(Sort.class));

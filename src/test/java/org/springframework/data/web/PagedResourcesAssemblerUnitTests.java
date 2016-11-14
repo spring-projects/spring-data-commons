@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -66,9 +65,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
 
-		assertThat(resources.getLink(Link.REL_PREVIOUS), is(nullValue()));
-		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
-		assertThat(resources.getLink(Link.REL_NEXT), is(notNullValue()));
+		assertThat(resources.getLink(Link.REL_PREVIOUS)).isNull();
+		assertThat(resources.getLink(Link.REL_SELF)).isNotNull();
+		assertThat(resources.getLink(Link.REL_NEXT)).isNotNull();
 	}
 
 	@Test
@@ -76,9 +75,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getLink(Link.REL_PREVIOUS), is(notNullValue()));
-		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
-		assertThat(resources.getLink(Link.REL_NEXT), is(notNullValue()));
+		assertThat(resources.getLink(Link.REL_PREVIOUS)).isNotNull();
+		assertThat(resources.getLink(Link.REL_SELF)).isNotNull();
+		assertThat(resources.getLink(Link.REL_NEXT)).isNotNull();
 	}
 
 	@Test
@@ -86,9 +85,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
 
-		assertThat(resources.getLink(Link.REL_PREVIOUS), is(notNullValue()));
-		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
-		assertThat(resources.getLink(Link.REL_NEXT), is(nullValue()));
+		assertThat(resources.getLink(Link.REL_PREVIOUS)).isNotNull();
+		assertThat(resources.getLink(Link.REL_SELF)).isNotNull();
+		assertThat(resources.getLink(Link.REL_NEXT)).isNull();
 	}
 
 	@Test
@@ -99,9 +98,9 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, baseUri);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), startsWith(baseUri.toUriString()));
-		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
-		assertThat(resources.getLink(Link.REL_NEXT).getHref(), startsWith(baseUri.toUriString()));
+		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref()).startsWith(baseUri.toUriString());
+		assertThat(resources.getLink(Link.REL_SELF)).isNotNull();
+		assertThat(resources.getLink(Link.REL_NEXT).getHref()).startsWith(baseUri.toUriString());
 	}
 
 	@Test
@@ -111,9 +110,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1), link);
 
-		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), startsWith(link.getHref()));
-		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
-		assertThat(resources.getLink(Link.REL_NEXT).getHref(), startsWith(link.getHref()));
+		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref()).startsWith(link.getHref());
+		assertThat(resources.getLink(Link.REL_SELF)).isNotNull();
+		assertThat(resources.getLink(Link.REL_NEXT).getHref()).startsWith(link.getHref());
 	}
 
 	@Test // DATACMNS-358
@@ -133,7 +132,7 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
 		Link selfLink = resources.getLink(Link.REL_SELF);
-		assertThat(selfLink.getHref(), endsWith("localhost"));
+		assertThat(selfLink.getHref()).endsWith("localhost");
 	}
 
 	@Test // DATACMNS-418
@@ -143,11 +142,11 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<PersonResource> resources = assembler.toResource(createPage(0), personAssembler);
 
-		assertThat(resources.hasLink(Link.REL_SELF), is(true));
-		assertThat(resources.hasLink(Link.REL_NEXT), is(true));
+		assertThat(resources.hasLink(Link.REL_SELF)).isTrue();
+		assertThat(resources.hasLink(Link.REL_NEXT)).isTrue();
 		Collection<PersonResource> content = resources.getContent();
-		assertThat(content, hasSize(1));
-		assertThat(content.iterator().next().name, is("Dave"));
+		assertThat(content).hasSize(1);
+		assertThat(content.iterator().next().name).isEqualTo("Dave");
 	}
 
 	@Test // DATAMCNS-563
@@ -159,11 +158,11 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(argumentResolver, null);
 		PagedResources<Resource<Person>> resource = assembler.toResource(createPage(1));
 
-		assertThat(resource.hasLink("prev"), is(true));
-		assertThat(resource.hasLink("next"), is(true));
+		assertThat(resource.hasLink("prev")).isTrue();
+		assertThat(resource.hasLink("next")).isTrue();
 
-		assertThat(getQueryParameters(resource.getLink("prev")), hasEntry("page", "1"));
-		assertThat(getQueryParameters(resource.getLink("next")), hasEntry("page", "3"));
+		assertThat(getQueryParameters(resource.getLink("prev"))).containsEntry("page", "1");
+		assertThat(getQueryParameters(resource.getLink("next"))).containsEntry("page", "3");
 	}
 
 	@Test // DATACMNS-515
@@ -171,9 +170,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getLink(Link.REL_SELF).getHref(), endsWith("localhost"));
-		assertThat(resources.getLink(Link.REL_NEXT).getHref(), endsWith("?page=2&size=1"));
-		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), endsWith("?page=0&size=1"));
+		assertThat(resources.getLink(Link.REL_SELF).getHref()).endsWith("localhost");
+		assertThat(resources.getLink(Link.REL_NEXT).getHref()).endsWith("?page=2&size=1");
+		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref()).endsWith("?page=0&size=1");
 	}
 
 	@Test // DATACMNS-699
@@ -182,11 +181,11 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResources<?> result = assembler.toEmptyResource(EMPTY_PAGE, Person.class, null);
 
 		Collection<?> content = result.getContent();
-		assertThat(content, hasSize(1));
+		assertThat(content).hasSize(1);
 
 		Object element = content.iterator().next();
-		assertThat(element, is(instanceOf(EmbeddedWrapper.class)));
-		assertThat(((EmbeddedWrapper) element).getRelTargetType(), is(typeCompatibleWith(Person.class)));
+		assertThat(element).isInstanceOf(EmbeddedWrapper.class);
+		assertThat(((EmbeddedWrapper) element).getRelTargetType()).isEqualTo(Person.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-699
@@ -204,8 +203,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getLink(Link.REL_FIRST).getHref(), endsWith("?page=0&size=1"));
-		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
+		assertThat(resources.getLink(Link.REL_FIRST).getHref()).endsWith("?page=0&size=1");
+		assertThat(resources.getLink(Link.REL_LAST).getHref()).endsWith("?page=2&size=1");
 	}
 
 	@Test // DATACMNS-701
@@ -213,8 +212,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
 
-		assertThat(resources.getLink(Link.REL_FIRST).getHref(), endsWith("?page=0&size=1"));
-		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
+		assertThat(resources.getLink(Link.REL_FIRST).getHref()).endsWith("?page=0&size=1");
+		assertThat(resources.getLink(Link.REL_LAST).getHref()).endsWith("?page=2&size=1");
 	}
 
 	@Test // DATACMNS-701
@@ -222,8 +221,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
 
-		assertThat(resources.getLink(Link.REL_FIRST).getHref(), endsWith("?page=0&size=1"));
-		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
+		assertThat(resources.getLink(Link.REL_FIRST).getHref()).endsWith("?page=0&size=1");
+		assertThat(resources.getLink(Link.REL_LAST).getHref()).endsWith("?page=2&size=1");
 	}
 
 	@Test // DATACMNS-701
@@ -234,8 +233,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(EMPTY_PAGE);
 
-		assertThat(resources.getLink(Link.REL_FIRST).getHref(), endsWith("?page=0&size=20"));
-		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=0&size=20"));
+		assertThat(resources.getLink(Link.REL_FIRST).getHref()).endsWith("?page=0&size=20");
+		assertThat(resources.getLink(Link.REL_LAST).getHref()).endsWith("?page=0&size=20");
 	}
 
 	@Test // DATACMNS-802
@@ -244,7 +243,7 @@ public class PagedResourcesAssemblerUnitTests {
 		ResourceAssembler<Page<Person>, PagedResources<Resource<Person>>> assembler = new CustomPagedResourcesAssembler<Person>(
 				resolver, null);
 
-		assertThat(assembler.toResource(EMPTY_PAGE), is(instanceOf(CustomPagedResources.class)));
+		assertThat(assembler.toResource(EMPTY_PAGE)).isInstanceOf(CustomPagedResources.class);
 	}
 
 	private static Page<Person> createPage(int index) {

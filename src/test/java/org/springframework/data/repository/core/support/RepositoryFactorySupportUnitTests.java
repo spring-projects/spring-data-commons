@@ -15,8 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
@@ -25,11 +25,11 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,6 +60,7 @@ import org.springframework.data.util.Version;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.interceptor.TransactionalProxy;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -120,7 +121,7 @@ public class RepositoryFactorySupportUnitTests {
 	@Test
 	public void invokesCustomMethodIfItRedeclaresACRUDOne() {
 
-		ObjectRepository repository = factory.getRepository(ObjectRepository.class, customImplementation);
+		ObjectRepository repository = factory.getRepository(ObjectRepository.class, Optional.of(customImplementation));
 		repository.findOne(1);
 
 		verify(customImplementation, times(1)).findOne(1);
@@ -144,14 +145,14 @@ public class RepositoryFactorySupportUnitTests {
 		Class<?> repositoryInterface = AnnotatedRepository.class;
 		Class<? extends Repository<?, ?>> foo = (Class<? extends Repository<?, ?>>) repositoryInterface;
 
-		assertThat(factory.getRepository(foo), is(notNullValue()));
+		assertThat(factory.getRepository(foo)).isNotNull();
 	}
 
 	@Test // DATACMNS-341
 	public void usesDefaultClassLoaderIfNullConfigured() {
 
 		factory.setBeanClassLoader(null);
-		assertThat(ReflectionTestUtils.getField(factory, "classLoader"), is((Object) ClassUtils.getDefaultClassLoader()));
+		assertThat(ReflectionTestUtils.getField(factory, "classLoader")).isEqualTo(ClassUtils.getDefaultClassLoader());
 	}
 
 	@Test // DATACMNS-489
@@ -175,13 +176,13 @@ public class RepositoryFactorySupportUnitTests {
 
 		Future<Object> future = repository.findByFirstname("Foo");
 
-		assertThat(future.isDone(), is(false));
+		assertThat(future.isDone()).isFalse();
 
 		while (!future.isDone()) {
 			Thread.sleep(300);
 		}
 
-		assertThat(future.get(), is(reference));
+		assertThat(future.get()).isEqualTo(reference);
 
 		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
 	}
@@ -196,8 +197,8 @@ public class RepositoryFactorySupportUnitTests {
 		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
 		Set<String> result = repository.convertListToStringSet();
 
-		assertThat(result, hasSize(1));
-		assertThat(result.iterator().next(), is("Dave"));
+		assertThat(result).hasSize(1);
+		assertThat(result.iterator().next()).isEqualTo("Dave");
 	}
 
 	@Test // DATACMNS-509
@@ -210,8 +211,8 @@ public class RepositoryFactorySupportUnitTests {
 		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
 		Set<Object> result = repository.convertListToObjectSet();
 
-		assertThat(result, hasSize(1));
-		assertThat(result.iterator().next(), is((Object) "Dave"));
+		assertThat(result).hasSize(1);
+		assertThat(result.iterator().next()).isEqualTo("Dave");
 	}
 
 	@Test // DATACMNS-656
@@ -225,17 +226,7 @@ public class RepositoryFactorySupportUnitTests {
 
 	@Test // DATACMNS-715, SPR-13109
 	public void addsTransactionProxyInterfaceIfAvailable() throws Exception {
-
-		try {
-
-			Class<?> type = ClassUtils.forName("org.springframework.transaction.interceptor.TransactionalProxy", null);
-
-			SimpleRepository repository = factory.getRepository(SimpleRepository.class);
-			assertThat(repository, is(instanceOf(type)));
-
-		} catch (ClassNotFoundException o_O) {
-			Assume.assumeFalse(true);
-		}
+		assertThat(factory.getRepository(SimpleRepository.class)).isInstanceOf(TransactionalProxy.class);
 	}
 
 	@Test // DATACMNS-714
@@ -270,8 +261,6 @@ public class RepositoryFactorySupportUnitTests {
 
 	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoListenableFutureWithEntityCollectionIfConfigured() throws Exception {
-
-		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
 
 		List<User> reference = Arrays.asList(new User());
 
@@ -324,13 +313,13 @@ public class RepositoryFactorySupportUnitTests {
 
 	private void expect(Future<?> future, Object value) throws Exception {
 
-		assertThat(future.isDone(), is(false));
+		assertThat(future.isDone()).isFalse();
 
 		while (!future.isDone()) {
 			Thread.sleep(50);
 		}
 
-		assertThat(future.get(), is(value));
+		assertThat(future.get()).isEqualTo(value);
 
 		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
 	}

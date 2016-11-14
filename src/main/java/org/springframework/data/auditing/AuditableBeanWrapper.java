@@ -15,7 +15,8 @@
  */
 package org.springframework.data.auditing;
 
-import java.util.Calendar;
+import java.time.temporal.TemporalAccessor;
+import java.util.Optional;
 
 /**
  * Interface to abstract the ways setting the auditing information can be implemented.
@@ -30,34 +31,34 @@ public interface AuditableBeanWrapper {
 	 * 
 	 * @param value
 	 */
-	void setCreatedBy(Object value);
+	Optional<? extends Object> setCreatedBy(Optional<? extends Object> value);
 
 	/**
 	 * Set the date the object was created.
 	 * 
 	 * @param value
 	 */
-	void setCreatedDate(Calendar value);
+	Optional<TemporalAccessor> setCreatedDate(Optional<TemporalAccessor> value);
 
 	/**
 	 * Set the last modifier of the object.
 	 * 
 	 * @param value
 	 */
-	void setLastModifiedBy(Object value);
+	Optional<? extends Object> setLastModifiedBy(Optional<? extends Object> value);
 
 	/**
 	 * Returns the date of the last modification date of the backing bean.
 	 * 
-	 * @return the date of the last modification, can be {@literal null}.
+	 * @return the date of the last modification.
 	 * @since 1.10
 	 */
-	Calendar getLastModifiedDate();
+	Optional<TemporalAccessor> getLastModifiedDate();
 
 	/**
 	 * Set the last modification date.
 	 * 
 	 * @param value
 	 */
-	void setLastModifiedDate(Calendar value);
+	Optional<TemporalAccessor> setLastModifiedDate(Optional<TemporalAccessor> value);
 }

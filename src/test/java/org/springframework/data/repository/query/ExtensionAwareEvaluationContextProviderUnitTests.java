@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
+
+import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -60,10 +61,10 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-533
 	public void usesPropertyDefinedByExtension() {
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList(new DummyExtension("_first",
-				"first")));
+		this.provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(new DummyExtension("_first", "first")));
 
-		assertThat(evaluateExpression("key"), is((Object) "first"));
+		assertThat(evaluateExpression("key")).isEqualTo("first");
 	}
 
 	@Test // DATACMNS-533
@@ -75,7 +76,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 
 		this.provider = new ExtensionAwareEvaluationContextProvider(extensions);
 
-		assertThat(evaluateExpression("key"), is((Object) "second"));
+		assertThat(evaluateExpression("key")).isEqualTo("second");
 	}
 
 	@Test // DATACMNS-533
@@ -86,34 +87,34 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		extensions.add(new DummyExtension("_second", "second"));
 
 		this.provider = new ExtensionAwareEvaluationContextProvider(extensions);
-		assertThat(evaluateExpression("_first.key"), is((Object) "first"));
+		assertThat(evaluateExpression("_first.key")).isEqualTo("first");
 	}
 
 	@Test // DATACMNS-533
 	public void exposesParametersAsVariables() {
-		assertThat(evaluateExpression("#firstname"), is((Object) "parameterValue"));
+		assertThat(evaluateExpression("#firstname")).isEqualTo("parameterValue");
 	}
 
 	@Test // DATACMNS-533
 	public void exposesMethodDefinedByExtension() {
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList(new DummyExtension("_first",
-				"first")));
+		this.provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(new DummyExtension("_first", "first")));
 
-		assertThat(evaluateExpression("aliasedMethod()"), is((Object) "methodResult"));
-		assertThat(evaluateExpression("extensionMethod()"), is((Object) "methodResult"));
-		assertThat(evaluateExpression("_first.extensionMethod()"), is((Object) "methodResult"));
-		assertThat(evaluateExpression("_first.aliasedMethod()"), is((Object) "methodResult"));
+		assertThat(evaluateExpression("aliasedMethod()")).isEqualTo("methodResult");
+		assertThat(evaluateExpression("extensionMethod()")).isEqualTo("methodResult");
+		assertThat(evaluateExpression("_first.extensionMethod()")).isEqualTo("methodResult");
+		assertThat(evaluateExpression("_first.aliasedMethod()")).isEqualTo("methodResult");
 	}
 
 	@Test // DATACMNS-533
 	public void exposesPropertiesDefinedByExtension() {
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList(new DummyExtension("_first",
-				"first")));
+		this.provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(new DummyExtension("_first", "first")));
 
-		assertThat(evaluateExpression("DUMMY_KEY"), is((Object) "dummy"));
-		assertThat(evaluateExpression("_first.DUMMY_KEY"), is((Object) "dummy"));
+		assertThat(evaluateExpression("DUMMY_KEY")).isEqualTo("dummy");
+		assertThat(evaluateExpression("_first.DUMMY_KEY")).isEqualTo("dummy");
 	}
 
 	@Test // DATACMNS-533
@@ -122,10 +123,10 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Pageable.class);
 		PageRequest pageable = new PageRequest(2, 3, new Sort(Direction.DESC, "lastname"));
 
-		assertThat(evaluateExpression("#pageable.offset", new Object[] { "test", pageable }), is((Object) 6));
-		assertThat(evaluateExpression("#pageable.pageSize", new Object[] { "test", pageable }), is((Object) 3));
-		assertThat(evaluateExpression("#pageable.sort.toString()", new Object[] { "test", pageable }),
-				is((Object) "lastname: DESC"));
+		assertThat(evaluateExpression("#pageable.offset", new Object[] { "test", pageable })).isEqualTo(6);
+		assertThat(evaluateExpression("#pageable.pageSize", new Object[] { "test", pageable })).isEqualTo(3);
+		assertThat(evaluateExpression("#pageable.sort.toString()", new Object[] { "test", pageable }))
+				.isEqualTo("lastname: DESC");
 	}
 
 	@Test // DATACMNS-533
@@ -134,7 +135,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class);
 		Sort sort = new Sort(Direction.DESC, "lastname");
 
-		assertThat(evaluateExpression("#sort.toString()", new Object[] { "test", sort }), is((Object) "lastname: DESC"));
+		assertThat(evaluateExpression("#sort.toString()", new Object[] { "test", sort })).isEqualTo("lastname: DESC");
 	}
 
 	@Test // DATACMNS-533
@@ -142,7 +143,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class);
 
-		assertThat(evaluateExpression("#sort?.toString()", new Object[] { "test", null }), is(nullValue()));
+		assertThat(evaluateExpression("#sort?.toString()", new Object[] { "test", null })).isNull();
 	}
 
 	@Test // DATACMNS-533
@@ -156,15 +157,15 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 					}
 				}));
 
-		assertThat(evaluateExpression("rootObjectInstanceField1"), is((Object) "rootObjectInstanceF1"));
-		assertThat(evaluateExpression("rootObjectInstanceMethod1()"), is((Object) true));
-		assertThat(evaluateExpression("getStringProperty()"), is((Object) "stringProperty"));
-		assertThat(evaluateExpression("stringProperty"), is((Object) "stringProperty"));
+		assertThat(evaluateExpression("rootObjectInstanceField1")).isEqualTo("rootObjectInstanceF1");
+		assertThat(evaluateExpression("rootObjectInstanceMethod1()")).isEqualTo(true);
+		assertThat(evaluateExpression("getStringProperty()")).isEqualTo("stringProperty");
+		assertThat(evaluateExpression("stringProperty")).isEqualTo("stringProperty");
 
-		assertThat(evaluateExpression("_first.rootObjectInstanceField1"), is((Object) "rootObjectInstanceF1"));
-		assertThat(evaluateExpression("_first.rootObjectInstanceMethod1()"), is((Object) true));
-		assertThat(evaluateExpression("_first.getStringProperty()"), is((Object) "stringProperty"));
-		assertThat(evaluateExpression("_first.stringProperty"), is((Object) "stringProperty"));
+		assertThat(evaluateExpression("_first.rootObjectInstanceField1")).isEqualTo("rootObjectInstanceF1");
+		assertThat(evaluateExpression("_first.rootObjectInstanceMethod1()")).isEqualTo(true);
+		assertThat(evaluateExpression("_first.getStringProperty()")).isEqualTo("stringProperty");
+		assertThat(evaluateExpression("_first.stringProperty")).isEqualTo("stringProperty");
 	}
 
 	@Test // DATACMNS-533
@@ -184,13 +185,13 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 					}
 				}));
 
-		assertThat(evaluateExpression("rootObjectInstanceField1"), is((Object) "rootObjectInstanceF1"));
-		assertThat(evaluateExpression("rootObjectInstanceMethod1()"), is((Object) true));
+		assertThat(evaluateExpression("rootObjectInstanceField1")).isEqualTo("rootObjectInstanceF1");
+		assertThat(evaluateExpression("rootObjectInstanceMethod1()")).isEqualTo(true);
 
-		assertThat(evaluateExpression("rootObjectInstanceField2"), is((Object) 42));
-		assertThat(evaluateExpression("rootObjectInstanceMethod2()"), is((Object) "rootObjectInstanceMethod2"));
+		assertThat(evaluateExpression("rootObjectInstanceField2")).isEqualTo(42);
+		assertThat(evaluateExpression("rootObjectInstanceMethod2()")).isEqualTo("rootObjectInstanceMethod2");
 
-		assertThat(evaluateExpression("[0]"), is((Object) "parameterValue"));
+		assertThat(evaluateExpression("[0]")).isEqualTo("parameterValue");
 	}
 
 	@Test // DATACMNS-533
@@ -210,25 +211,20 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		);
 
 		// inc counter / property access
-		assertThat(evaluateExpression("rootObjectInstanceField1"), is((Object) "rootObjectInstanceF1"));
+		assertThat(evaluateExpression("rootObjectInstanceField1")).isEqualTo("rootObjectInstanceF1");
 
 		// inc counter / function invocation
-		assertThat(evaluateExpression("rootObjectInstanceMethod1()"), is((Object) true));
+		assertThat(evaluateExpression("rootObjectInstanceMethod1()")).isEqualTo(true);
 
-		assertThat(counter.get(), is(2));
+		assertThat(counter.get()).isEqualTo(2);
 	}
 
+	@RequiredArgsConstructor
 	public static class DummyExtension extends EvaluationContextExtensionSupport {
 
 		public static String DUMMY_KEY = "dummy";
 
-		private final String key;
-		private final String value;
-
-		public DummyExtension(String key, String value) {
-			this.key = key;
-			this.value = value;
-		}
+		private final String key, value;
 
 		/*
 		 * (non-Javadoc)
@@ -246,7 +242,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		@Override
 		public Map<String, Object> getProperties() {
 
-			Map<String, Object> properties = new HashMap<String, Object>(super.getProperties());
+			Map<String, Object> properties = new HashMap<>(super.getProperties());
 
 			properties.put("key", value);
 
@@ -260,7 +256,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		@Override
 		public Map<String, Function> getFunctions() {
 
-			Map<String, Function> functions = new HashMap<String, Function>(super.getFunctions());
+			Map<String, Function> functions = new HashMap<>(super.getFunctions());
 
 			try {
 				functions.put("aliasedMethod", new Function(getClass().getMethod("extensionMethod")));

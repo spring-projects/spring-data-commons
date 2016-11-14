@@ -48,6 +48,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 	 * 
 	 * @param annotationTypes the annotation types to scan for.
 	 */
+	@SafeVarargs
 	public AnnotatedTypeScanner(Class<? extends Annotation>... annotationTypes) {
 		this(true, annotationTypes);
 	}
@@ -58,6 +59,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 	 * @param considerInterfaces whether to consider interfaces as well.
 	 * @param annotationTypes the annotations to scan for.
 	 */
+	@SafeVarargs
 	public AnnotatedTypeScanner(boolean considerInterfaces, Class<? extends Annotation>... annotationTypes) {
 
 		this.annotationTypess = Arrays.asList(annotationTypes);

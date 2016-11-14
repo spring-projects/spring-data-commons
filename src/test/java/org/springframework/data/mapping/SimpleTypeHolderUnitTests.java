@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -54,7 +53,7 @@ public class SimpleTypeHolderUnitTests {
 
 		SimpleTypeHolder holder = new SimpleTypeHolder();
 
-		assertThat(holder.isSimpleType(String.class), is(true));
+		assertThat(holder.isSimpleType(String.class)).isTrue();
 	}
 
 	@Test
@@ -62,7 +61,7 @@ public class SimpleTypeHolderUnitTests {
 
 		SimpleTypeHolder holder = new SimpleTypeHolder(new HashSet<Class<?>>(), false);
 
-		assertThat(holder.isSimpleType(UUID.class), is(false));
+		assertThat(holder.isSimpleType(UUID.class)).isFalse();
 	}
 
 	@Test
@@ -70,8 +69,8 @@ public class SimpleTypeHolderUnitTests {
 
 		SimpleTypeHolder holder = new SimpleTypeHolder(Collections.singleton(SimpleTypeHolder.class), true);
 
-		assertThat(holder.isSimpleType(SimpleTypeHolder.class), is(true));
-		assertThat(holder.isSimpleType(SimpleTypeHolderUnitTests.class), is(false));
+		assertThat(holder.isSimpleType(SimpleTypeHolder.class)).isTrue();
+		assertThat(holder.isSimpleType(SimpleTypeHolderUnitTests.class)).isFalse();
 	}
 
 	@Test
@@ -80,30 +79,30 @@ public class SimpleTypeHolderUnitTests {
 		SimpleTypeHolder holder = new SimpleTypeHolder(Collections.singleton(SimpleTypeHolder.class), true);
 		SimpleTypeHolder second = new SimpleTypeHolder(Collections.singleton(SimpleTypeHolderUnitTests.class), holder);
 
-		assertThat(holder.isSimpleType(SimpleTypeHolder.class), is(true));
-		assertThat(holder.isSimpleType(SimpleTypeHolderUnitTests.class), is(false));
-		assertThat(second.isSimpleType(SimpleTypeHolder.class), is(true));
-		assertThat(second.isSimpleType(SimpleTypeHolderUnitTests.class), is(true));
+		assertThat(holder.isSimpleType(SimpleTypeHolder.class)).isTrue();
+		assertThat(holder.isSimpleType(SimpleTypeHolderUnitTests.class)).isFalse();
+		assertThat(second.isSimpleType(SimpleTypeHolder.class)).isTrue();
+		assertThat(second.isSimpleType(SimpleTypeHolderUnitTests.class)).isTrue();
 	}
 
 	@Test
 	public void considersObjectToBeSimpleType() {
 		SimpleTypeHolder holder = new SimpleTypeHolder();
-		assertThat(holder.isSimpleType(Object.class), is(true));
+		assertThat(holder.isSimpleType(Object.class)).isTrue();
 	}
 
 	@Test
 	public void considersSimpleEnumAsSimple() {
 
 		SimpleTypeHolder holder = new SimpleTypeHolder();
-		assertThat(holder.isSimpleType(SimpleEnum.FOO.getClass()), is(true));
+		assertThat(holder.isSimpleType(SimpleEnum.FOO.getClass())).isTrue();
 	}
 
 	@Test
 	public void considersComplexEnumAsSimple() {
 
 		SimpleTypeHolder holder = new SimpleTypeHolder();
-		assertThat(holder.isSimpleType(ComplexEnum.FOO.getClass()), is(true));
+		assertThat(holder.isSimpleType(ComplexEnum.FOO.getClass())).isTrue();
 	}
 
 	@Test // DATACMNS-1006
@@ -111,7 +110,7 @@ public class SimpleTypeHolderUnitTests {
 
 		SimpleTypeHolder holder = new SimpleTypeHolder();
 
-		assertThat(holder.isSimpleType(Type.class), is(true));
+		assertThat(holder.isSimpleType(Type.class)).isTrue();
 	}
 
 	enum SimpleEnum {

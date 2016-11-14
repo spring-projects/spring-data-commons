@@ -72,7 +72,6 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * @return a new {@link DefaultPersistentPropertyPath} with the given property appended to the current one.
 	 * @throws IllegalArgumentException in case the property is not a property of the type of the current leaf property.
 	 */
-	@SuppressWarnings("unchecked")
 	public DefaultPersistentPropertyPath<T> append(T property) {
 
 		Assert.notNull(property, "Property must not be null!");

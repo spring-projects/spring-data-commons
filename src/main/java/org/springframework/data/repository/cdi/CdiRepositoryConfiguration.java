@@ -26,7 +26,7 @@ public interface CdiRepositoryConfiguration {
 	/**
 	 * Returns the configured postfix to be used for looking up custom implementation classes.
 	 *
-	 * @return the postfix to use or {@literal null} in case none is configured.
+	 * @return the postfix to use, must not be {@literal null}.
 	 */
 	String getRepositoryImplementationPostfix();
 }

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.query.parser;
 
+import lombok.EqualsAndHashCode;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +37,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Martin Baumgartner
  */
+@EqualsAndHashCode
 public class Part {
 
 	private static final Pattern IGNORE_CASE = Pattern.compile("Ignor(ing|e)Case");
@@ -69,9 +72,11 @@ public class Part {
 		Assert.notNull(clazz, "Type must not be null!");
 
 		String partToUse = detectAndSetIgnoreCase(source);
+
 		if (alwaysIgnoreCase && ignoreCase != IgnoreCaseType.ALWAYS) {
 			this.ignoreCase = IgnoreCaseType.WHEN_POSSIBLE;
 		}
+
 		this.type = Type.fromProperty(partToUse);
 		this.propertyPath = PropertyPath.from(type.extractProperty(partToUse), clazz);
 	}
@@ -89,8 +94,7 @@ public class Part {
 		return result;
 	}
 
-	public boolean getParameterRequired() {
-
+	boolean isParameterRequired() {
 		return getNumberOfArguments() > 0;
 	}
 
@@ -100,7 +104,6 @@ public class Part {
 	 * @return
 	 */
 	public int getNumberOfArguments() {
-
 		return type.getNumberOfArguments();
 	}
 
@@ -108,7 +111,6 @@ public class Part {
 	 * @return the propertyPath
 	 */
 	public PropertyPath getProperty() {
-
 		return propertyPath;
 	}
 
@@ -116,7 +118,6 @@ public class Part {
 	 * @return the type
 	 */
 	public Part.Type getType() {
-
 		return type;
 	}
 
@@ -126,40 +127,7 @@ public class Part {
 	 * @return
 	 */
 	public IgnoreCaseType shouldIgnoreCase() {
-
 		return ignoreCase;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (obj == this) {
-			return true;
-		}
-
-		if (obj == null || !getClass().equals(obj.getClass())) {
-			return false;
-		}
-
-		Part that = (Part) obj;
-		return this.propertyPath.equals(that.propertyPath) && this.type.equals(that.type);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-
-		int result = 37;
-		result += 17 * propertyPath.hashCode();
-		result += 17 * type.hashCode();
-		return result;
 	}
 
 	/*
@@ -168,8 +136,7 @@ public class Part {
 	 */
 	@Override
 	public String toString() {
-
-		return String.format("%s %s", propertyPath.getSegment(), type);
+		return String.format("%s %s %s", propertyPath.getSegment(), type, ignoreCase);
 	}
 
 	/**

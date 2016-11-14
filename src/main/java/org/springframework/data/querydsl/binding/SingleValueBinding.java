@@ -15,6 +15,8 @@
  */
 package org.springframework.data.querydsl.binding;
 
+import java.util.Optional;
+
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 
@@ -38,5 +40,5 @@ public interface SingleValueBinding<T extends Path<? extends S>, S> {
 	 * @return can be {@literal null}, in which case the binding will not be incorporated in the overall {@link Predicate}
 	 *         .
 	 */
-	Predicate bind(T path, S value);
+	Optional<Predicate> bind(T path, S value);
 }

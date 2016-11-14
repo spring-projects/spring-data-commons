@@ -15,8 +15,7 @@
  */
 package org.springframework.data.geo;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.util.SerializationUtils;
@@ -37,18 +36,18 @@ public class GeoResultUnitTests {
 	@Test // DATACMNS-437
 	public void considersSameInstanceEqual() {
 
-		assertThat(first.equals(first), is(true));
+		assertThat(first.equals(first)).isTrue();
 	}
 
 	@Test // DATACMNS-437
 	public void considersSameValuesAsEqual() {
 
-		assertThat(first.equals(second), is(true));
-		assertThat(second.equals(first), is(true));
-		assertThat(first.equals(third), is(false));
-		assertThat(third.equals(first), is(false));
-		assertThat(first.equals(fourth), is(false));
-		assertThat(fourth.equals(first), is(false));
+		assertThat(first.equals(second)).isTrue();
+		assertThat(second.equals(first)).isTrue();
+		assertThat(first.equals(third)).isFalse();
+		assertThat(third.equals(first)).isFalse();
+		assertThat(first.equals(fourth)).isFalse();
+		assertThat(fourth.equals(first)).isFalse();
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -64,6 +63,6 @@ public class GeoResultUnitTests {
 
 		@SuppressWarnings("unchecked")
 		GeoResult<String> serialized = (GeoResult<String>) SerializationUtils.deserialize(SerializationUtils.serialize(result));
-		assertThat(serialized, is(result));
+		assertThat(serialized).isEqualTo(result);
 	}
 }

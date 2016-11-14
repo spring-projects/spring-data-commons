@@ -15,9 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import rx.Single;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -76,13 +74,13 @@ public class ParametersUnitTests {
 
 		Parameter parameter = parameters.getParameter(0);
 
-		assertThat(parameter.isNamedParameter(), is(true));
-		assertThat(parameter.getPlaceholder(), is(":username"));
+		assertThat(parameter.isNamedParameter()).isTrue();
+		assertThat(parameter.getPlaceholder()).isEqualTo(":username");
 
 		parameter = parameters.getParameter(1);
 
-		assertThat(parameter.isNamedParameter(), is(false));
-		assertThat(parameter.isSpecialParameter(), is(true));
+		assertThat(parameter.isNamedParameter()).isFalse();
+		assertThat(parameter.isSpecialParameter()).isTrue();
 	}
 
 	@Test
@@ -91,33 +89,33 @@ public class ParametersUnitTests {
 		Method method = SampleDao.class.getMethod("validWithSortFirst", Sort.class, String.class);
 
 		Parameters<?, ?> parameters = new DefaultParameters(method);
-		assertThat(parameters.getBindableParameter(0).getIndex(), is(1));
+		assertThat(parameters.getBindableParameter(0).getIndex()).isEqualTo(1);
 
 		method = SampleDao.class.getMethod("validWithSortInBetween", String.class, Sort.class, String.class);
 
 		parameters = new DefaultParameters(method);
 
-		assertThat(parameters.getBindableParameter(0).getIndex(), is(0));
-		assertThat(parameters.getBindableParameter(1).getIndex(), is(2));
+		assertThat(parameters.getBindableParameter(0).getIndex()).isEqualTo(0);
+		assertThat(parameters.getBindableParameter(1).getIndex()).isEqualTo(2);
 	}
 
 	@Test
 	public void detectsEmptyParameterListCorrectly() throws Exception {
 
 		Parameters<?, ?> parameters = getParametersFor("emptyParameters");
-		assertThat(parameters.hasParameterAt(0), is(false));
+		assertThat(parameters.hasParameterAt(0)).isFalse();
 	}
 
 	@Test
 	public void detectsPageableParameter() throws Exception {
 		Parameters<?, ?> parameters = getParametersFor("validWithPageable", String.class, Pageable.class);
-		assertThat(parameters.getPageableIndex(), is(1));
+		assertThat(parameters.getPageableIndex()).isEqualTo(1);
 	}
 
 	@Test
 	public void detectsSortParameter() throws Exception {
 		Parameters<?, ?> parameters = getParametersFor("validWithSort", String.class, Sort.class);
-		assertThat(parameters.getSortIndex(), is(1));
+		assertThat(parameters.getSortIndex()).isEqualTo(1);
 	}
 
 	@Test // DATACMNS-520
@@ -130,8 +128,8 @@ public class ParametersUnitTests {
 
 		Parameter parameter = getParametersFor("valid", String.class).getBindableParameter(0);
 
-		assertThat(parameter.getName(), is(notNullValue()));
-		assertThat(parameter.isExplicitlyNamed(), is(true));
+		assertThat(parameter.getName()).isNotNull();
+		assertThat(parameter.isExplicitlyNamed()).isTrue();
 	}
 
 	@Test // DATACMNS-731
@@ -142,8 +140,8 @@ public class ParametersUnitTests {
 		Object methodParameter = ReflectionTestUtils.getField(parameter, "parameter");
 		ReflectionTestUtils.setField(methodParameter, "parameterName", "name");
 
-		assertThat(parameter.getName(), is(notNullValue()));
-		assertThat(parameter.isExplicitlyNamed(), is(false));
+		assertThat(parameter.getName()).isNotNull();
+		assertThat(parameter.isExplicitlyNamed()).isFalse();
 	}
 
 	@Test // DATACMNS-89
@@ -151,9 +149,9 @@ public class ParametersUnitTests {
 
 		Parameters<?, Parameter> parameters = getParametersFor("dynamicBind", Class.class, Class.class, Class.class);
 
-		assertThat(parameters.getParameter(0).isDynamicProjectionParameter(), is(true));
-		assertThat(parameters.getParameter(1).isDynamicProjectionParameter(), is(false));
-		assertThat(parameters.getParameter(2).isDynamicProjectionParameter(), is(false));
+		assertThat(parameters.getParameter(0).isDynamicProjectionParameter()).isTrue();
+		assertThat(parameters.getParameter(1).isDynamicProjectionParameter()).isFalse();
+		assertThat(parameters.getParameter(2).isDynamicProjectionParameter()).isFalse();
 	}
 
 	@Test // DATACMNS-863
@@ -161,7 +159,7 @@ public class ParametersUnitTests {
 
 		Parameters<?, Parameter> parameters = getParametersFor("methodWithOptional", Optional.class);
 
-		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(String.class)));
+		assertThat(parameters.getParameter(0).getType()).isEqualTo(String.class);
 	}
 
 	@Test // DATACMNS-836

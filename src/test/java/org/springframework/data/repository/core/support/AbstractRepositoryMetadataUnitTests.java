@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -45,14 +44,14 @@ public class AbstractRepositoryMetadataUnitTests {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
 		Method method = UserRepository.class.getMethod("findSingle");
-		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
+		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	@Test // DATACMNS-98
 	public void resolvesTypeParameterReturnType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ConcreteRepository.class);
 		Method method = ConcreteRepository.class.getMethod("intermediateMethod");
-		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
+		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	@Test // DATACMNS-98
@@ -60,28 +59,28 @@ public class AbstractRepositoryMetadataUnitTests {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("findByFirstname", Pageable.class, String.class);
-		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
+		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	@Test // DATACMNS-453
 	public void nonPageableRepository() {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
-		assertThat(metadata.isPagingRepository(), is(false));
+		assertThat(metadata.isPagingRepository()).isFalse();
 	}
 
 	@Test // DATACMNS-453
 	public void pageableRepository() {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(PagedRepository.class);
-		assertThat(metadata.isPagingRepository(), is(true));
+		assertThat(metadata.isPagingRepository()).isTrue();
 	}
 
 	@Test // DATACMNS-98
 	public void determinesReturnTypeFromGenericType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("someMethod");
-		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(GenericType.class)));
+		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(GenericType.class);
 	}
 
 	@Test // DATACMNS-98
@@ -89,7 +88,7 @@ public class AbstractRepositoryMetadataUnitTests {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("anotherMethod");
-		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(Map.class)));
+		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(Map.class);
 	}
 
 	@Test // DATACMNS-471
@@ -98,7 +97,7 @@ public class AbstractRepositoryMetadataUnitTests {
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PagedRepository.class);
 		Method method = PagedRepository.class.getMethod("returnsArray");
 
-		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
+		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	interface UserRepository extends Repository<User, Long> {

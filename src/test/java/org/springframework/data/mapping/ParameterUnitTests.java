@@ -15,10 +15,10 @@
  */
 package org.springframework.data.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,10 +36,8 @@ import org.springframework.data.util.TypeInformation;
 @RunWith(MockitoJUnitRunner.class)
 public class ParameterUnitTests<P extends PersistentProperty<P>> {
 
-	@Mock
-	PersistentEntity<Object, P> entity;
-	@Mock
-	PersistentEntity<String, P> stringEntity;
+	@Mock PersistentEntity<Object, P> entity;
+	@Mock PersistentEntity<String, P> stringEntity;
 
 	TypeInformation<Object> type = ClassTypeInformation.from(Object.class);
 	Annotation[] annotations = new Annotation[0];
@@ -47,50 +45,50 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithIdenticalSetupEqual() {
 
-		Parameter<Object, P> left = new Parameter<Object, P>("name", type, annotations, entity);
-		Parameter<Object, P> right = new Parameter<Object, P>("name", type, annotations, entity);
+		Parameter<Object, P> left = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.of(entity));
+		Parameter<Object, P> right = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.of(entity));
 
-		assertThat(left, is(right));
-		assertThat(left.hashCode(), is(right.hashCode()));
+		assertThat(left).isEqualTo(right);
+		assertThat(left.hashCode()).isEqualTo(right.hashCode());
 	}
 
 	@Test
 	public void twoParametersWithIdenticalSetupAndNullNameEqual() {
 
-		Parameter<Object, P> left = new Parameter<Object, P>(null, type, annotations, entity);
-		Parameter<Object, P> right = new Parameter<Object, P>(null, type, annotations, entity);
+		Parameter<Object, P> left = new Parameter<Object, P>(Optional.empty(), type, annotations, Optional.of(entity));
+		Parameter<Object, P> right = new Parameter<Object, P>(Optional.empty(), type, annotations, Optional.of(entity));
 
-		assertThat(left, is(right));
-		assertThat(left.hashCode(), is(right.hashCode()));
+		assertThat(left).isEqualTo(right);
+		assertThat(left.hashCode()).isEqualTo(right.hashCode());
 	}
 
 	@Test
 	public void twoParametersWithIdenticalAndNullEntitySetupEqual() {
 
-		Parameter<Object, P> left = new Parameter<Object, P>("name", type, annotations, null);
-		Parameter<Object, P> right = new Parameter<Object, P>("name", type, annotations, null);
+		Parameter<Object, P> left = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.empty());
+		Parameter<Object, P> right = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.empty());
 
-		assertThat(left, is(right));
-		assertThat(left.hashCode(), is(right.hashCode()));
+		assertThat(left).isEqualTo(right);
+		assertThat(left.hashCode()).isEqualTo(right.hashCode());
 	}
 
 	@Test
 	public void twoParametersWithDifferentNameAreNotEqual() {
 
-		Parameter<Object, P> left = new Parameter<Object, P>("first", type, annotations, entity);
-		Parameter<Object, P> right = new Parameter<Object, P>("second", type, annotations, entity);
+		Parameter<Object, P> left = new Parameter<Object, P>(Optional.of("first"), type, annotations, Optional.of(entity));
+		Parameter<Object, P> right = new Parameter<Object, P>(Optional.of("second"), type, annotations,
+				Optional.of(entity));
 
-		assertThat(left, is(not(right)));
+		assertThat(left).isNotEqualTo(right);
 	}
 
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void twoParametersWithDifferenTypeAreNotEqual() {
 
-		Parameter left = new Parameter<Object, P>("name", type, annotations, entity);
-		Parameter right = new Parameter<String, P>("name", ClassTypeInformation.from(String.class), annotations,
-				stringEntity);
+		Parameter<Object, P> left = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.of(entity));
+		Parameter<String, P> right = new Parameter<String, P>(Optional.of("name"), ClassTypeInformation.from(String.class),
+				annotations, Optional.of(stringEntity));
 
-		assertThat(left, is(not(right)));
+		assertThat(left).isNotEqualTo(right);
 	}
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.auditing;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Field;
 
@@ -40,50 +39,47 @@ public class AnnotationAuditingMetadataUnitTests {
 	static final Field lastModifiedByField = ReflectionUtils.findField(AnnotatedUser.class, "lastModifiedBy");
 	static final Field lastModifiedDateField = ReflectionUtils.findField(AnnotatedUser.class, "lastModifiedDate");
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void checkAnnotationDiscovery() {
 
 		AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
-		assertThat(metadata, is(notNullValue()));
 
-		assertThat(createdByField, is(metadata.getCreatedByField()));
-		assertThat(createdDateField, is(metadata.getCreatedDateField()));
-		assertThat(lastModifiedByField, is(metadata.getLastModifiedByField()));
-		assertThat(lastModifiedDateField, is(metadata.getLastModifiedDateField()));
+		assertThat(metadata).isNotNull();
+		assertThat(metadata.getCreatedByField()).hasValue(createdByField);
+		assertThat(metadata.getCreatedDateField()).hasValue(createdDateField);
+		assertThat(metadata.getLastModifiedByField()).hasValue(lastModifiedByField);
+		assertThat(metadata.getLastModifiedDateField()).hasValue(lastModifiedDateField);
 	}
 
 	@Test
 	public void checkCaching() {
 
 		AnnotationAuditingMetadata firstCall = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
-		assertThat(firstCall, is(notNullValue()));
+		assertThat(firstCall).isNotNull();
 
 		AnnotationAuditingMetadata secondCall = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
-		assertThat(firstCall, is(secondCall));
+		assertThat(firstCall).isEqualTo(secondCall);
 	}
 
 	@Test
 	public void checkIsAuditable() {
 
 		AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
-		assertThat(metadata, is(notNullValue()));
-		;
-		assertThat(metadata.isAuditable(), is(true));
+		assertThat(metadata).isNotNull();
+		assertThat(metadata.isAuditable()).isTrue();
 
 		metadata = AnnotationAuditingMetadata.getMetadata(NonAuditableUser.class);
-		assertThat(metadata, is(notNullValue()));
-		assertThat(metadata.isAuditable(), is(false));
+		assertThat(metadata).isNotNull();
+		assertThat(metadata.isAuditable()).isFalse();
 	}
 
 	@Test
 	public void rejectsInvalidDateTypeField() {
 
 		class Sample {
-			@CreatedDate
-			String field;
+			@CreatedDate String field;
 		}
 
 		exception.expect(IllegalStateException.class);

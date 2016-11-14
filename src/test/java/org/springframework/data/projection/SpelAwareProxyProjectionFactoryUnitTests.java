@@ -15,8 +15,7 @@
  */
 package org.springframework.data.projection;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
@@ -53,7 +52,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		customer.lastname = "Matthews";
 
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
-		assertThat(excerpt.getFullName(), is("Dave Matthews"));
+		assertThat(excerpt.getFullName()).isEqualTo("Dave Matthews");
 	}
 
 	@Test // DATACMNS-630
@@ -61,8 +60,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 
 		List<String> properties = factory.getInputProperties(CustomerExcerpt.class);
 
-		assertThat(properties, hasSize(1));
-		assertThat(properties, hasItem("firstname"));
+		assertThat(properties).containsExactly("firstname");
 	}
 
 	@Test // DATACMNS-89
@@ -70,7 +68,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 
 		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
 
-		assertThat(information.isClosed(), is(false));
+		assertThat(information.isClosed()).isFalse();
 	}
 
 	@Test // DATACMNS-820
@@ -82,7 +80,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 		excerpt.setFirstname("Carl");
 
-		assertThat(customer.firstname, is("Carl"));
+		assertThat(customer.firstname).isEqualTo("Carl");
 	}
 
 	@Test // DATACMNS-820

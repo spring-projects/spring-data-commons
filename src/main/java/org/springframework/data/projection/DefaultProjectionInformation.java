@@ -47,7 +47,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		Assert.notNull(type, "Projection type must not be null!");
 
 		this.projectionType = type;
-		this.properties = collectDescriptors(type);
+		this.properties = Arrays.asList(BeanUtils.getPropertyDescriptors(type));
 	}
 
 	/* 
@@ -66,7 +66,8 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	public List<PropertyDescriptor> getInputProperties() {
 
 		return properties.stream()//
-				.filter(it -> isInputProperty(it))//
+				.filter(this::isInputProperty)//
+				.distinct()//
 				.collect(Collectors.toList());
 	}
 
@@ -92,29 +93,8 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	}
 
 	/**
-	 * Collects {@link PropertyDescriptor}s for all properties exposed by the given type and all its super interfaces.
-	 * 
-	 * @param type must not be {@literal null}.
-	 * @return
-	 */
-	private static List<PropertyDescriptor> collectDescriptors(Class<?> type) {
-
-		List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
-
-		result.addAll(Arrays.stream(BeanUtils.getPropertyDescriptors(type))//
-				.filter(it -> !hasDefaultGetter(it))//
-				.collect(Collectors.toList()));
-
-		for (Class<?> interfaze : type.getInterfaces()) {
-			result.addAll(collectDescriptors(interfaze));
-		}
-
-		return result;
-	}
-
-	/**
 	 * Returns whether the given {@link PropertyDescriptor} has a getter that is a Java 8 default method.
-	 * 
+	 *
 	 * @param descriptor must not be {@literal null}.
 	 * @return
 	 */

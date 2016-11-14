@@ -15,12 +15,17 @@
  */
 package org.springframework.data.repository.query;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -34,6 +39,7 @@ import org.springframework.data.repository.query.EvaluationContextExtensionInfor
 import org.springframework.data.repository.query.EvaluationContextExtensionInformation.RootObjectInformation;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.Function;
+import org.springframework.data.util.Optionals;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.MethodExecutor;
@@ -61,7 +67,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new HashMap<Class<?>, EvaluationContextExtensionInformation>();
 
 	private List<? extends EvaluationContextExtension> extensions;
-	private ListableBeanFactory beanFactory;
+	private Optional<ListableBeanFactory> beanFactory = Optional.empty();
 
 	/**
 	 * Creates a new {@link ExtensionAwareEvaluationContextProvider}. Extensions are being looked up lazily from the
@@ -88,7 +94,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.beanFactory = applicationContext;
+		this.beanFactory = Optional.of(applicationContext);
 	}
 
 	/* (non-Javadoc)
@@ -100,9 +106,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		StandardEvaluationContext ec = new StandardEvaluationContext();
 
-		if (beanFactory != null) {
-			ec.setBeanResolver(new BeanFactoryResolver(beanFactory));
-		}
+		beanFactory.ifPresent(it -> ec.setBeanResolver(new BeanFactoryResolver(it)));
 
 		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(getExtensions());
 
@@ -129,21 +133,17 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		Map<String, Object> variables = new HashMap<String, Object>();
 
-		for (Parameter param : parameters) {
-			if (param.isSpecialParameter()) {
+		parameters.stream()//
+				.filter(Parameter::isSpecialParameter)//
+				.forEach(it -> variables.put(//
+						StringUtils.uncapitalize(it.getType().getSimpleName()), //
+						arguments[it.getIndex()]));
 
-				String key = StringUtils.uncapitalize(param.getType().getSimpleName());
-				Object value = arguments[param.getIndex()];
-
-				variables.put(key, value);
-			}
-		}
-
-		for (Parameter param : parameters) {
-			if (param.isNamedParameter()) {
-				variables.put(param.getName(), arguments[param.getIndex()]);
-			}
-		}
+		parameters.stream()//
+				.filter(Parameter::isNamedParameter)//
+				.forEach(it -> variables.put(//
+						it.getName().orElseThrow(() -> new IllegalStateException("Should never occur!")), //
+						arguments[it.getIndex()]));
 
 		return variables;
 	}
@@ -160,13 +160,12 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			return this.extensions;
 		}
 
-		if (beanFactory == null) {
-			this.extensions = Collections.emptyList();
-			return this.extensions;
-		}
+		this.extensions = Collections.emptyList();
 
-		this.extensions = new ArrayList<EvaluationContextExtension>(beanFactory.getBeansOfType(
-				EvaluationContextExtension.class, true, false).values());
+		beanFactory.ifPresent(it -> {
+			this.extensions = new ArrayList<EvaluationContextExtension>(
+					it.getBeansOfType(EvaluationContextExtension.class, true, false).values());
+		});
 
 		return extensions;
 	}
@@ -181,15 +180,9 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	private EvaluationContextExtensionInformation getOrCreateInformation(EvaluationContextExtension extension) {
 
 		Class<? extends EvaluationContextExtension> extensionType = extension.getClass();
-		EvaluationContextExtensionInformation information = extensionInformationCache.get(extensionType);
 
-		if (information != null) {
-			return information;
-		}
-
-		information = new EvaluationContextExtensionInformation(extensionType);
-		extensionInformationCache.put(extensionType, information);
-		return information;
+		return extensionInformationCache.computeIfAbsent(extensionType,
+				type -> new EvaluationContextExtensionInformation(extensionType));
 	}
 
 	/**
@@ -198,19 +191,12 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @param extensions
 	 * @return
 	 */
-	private List<EvaluationContextExtensionAdapter> toAdapters(Collection<? extends EvaluationContextExtension> extensions) {
+	private List<EvaluationContextExtensionAdapter> toAdapters(List<? extends EvaluationContextExtension> extensions) {
 
-		List<EvaluationContextExtension> extensionsToSet = new ArrayList<EvaluationContextExtension>(extensions);
-		Collections.sort(extensionsToSet, AnnotationAwareOrderComparator.INSTANCE);
-
-		List<EvaluationContextExtensionAdapter> adapters = new ArrayList<EvaluationContextExtensionAdapter>(
-				extensions.size());
-
-		for (EvaluationContextExtension extension : extensionsToSet) {
-			adapters.add(new EvaluationContextExtensionAdapter(extension, getOrCreateInformation(extension)));
-		}
-
-		return adapters;
+		return extensions.stream()//
+				.sorted(AnnotationAwareOrderComparator.INSTANCE)//
+				.map(it -> new EvaluationContextExtensionAdapter(it, getOrCreateInformation(it)))//
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -233,11 +219,8 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			Assert.notNull(extensions, "Extensions must not be null!");
 
 			this.adapters = toAdapters(extensions);
-			this.adapterMap = new HashMap<String, EvaluationContextExtensionAdapter>(extensions.size());
-
-			for (EvaluationContextExtensionAdapter adapter : adapters) {
-				this.adapterMap.put(adapter.getExtensionId(), adapter);
-			}
+			this.adapterMap = adapters.stream()//
+					.collect(Collectors.toMap(it -> it.getExtensionId(), it -> it));
 
 			Collections.reverse(this.adapters);
 		}
@@ -257,13 +240,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 				return true;
 			}
 
-			for (EvaluationContextExtensionAdapter extension : adapters) {
-				if (extension.getProperties().containsKey(name)) {
-					return true;
-				}
-			}
-
-			return false;
+			return adapters.stream().anyMatch(it -> it.getProperties().containsKey(name));
 		}
 
 		/*
@@ -281,16 +258,10 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 				return new TypedValue(adapterMap.get(name));
 			}
 
-			for (EvaluationContextExtensionAdapter extension : adapters) {
-
-				Map<String, Object> properties = extension.getProperties();
-
-				if (properties.containsKey(name)) {
-					return lookupPropertyFrom(extension, name);
-				}
-			}
-
-			return null;
+			return adapters.stream()//
+					.filter(it -> it.getProperties().containsKey(name))//
+					.map(it -> lookupPropertyFrom(it, name))//
+					.findFirst().orElse(null);
 		}
 
 		/*
@@ -302,19 +273,12 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 				List<TypeDescriptor> argumentTypes) throws AccessException {
 
 			if (target instanceof EvaluationContextExtensionAdapter) {
-				return getMethodExecutor((EvaluationContextExtensionAdapter) target, name, argumentTypes);
+				return getMethodExecutor((EvaluationContextExtensionAdapter) target, name, argumentTypes).orElse(null);
 			}
 
-			for (EvaluationContextExtensionAdapter adapter : adapters) {
-
-				MethodExecutor executor = getMethodExecutor(adapter, name, argumentTypes);
-
-				if (executor != null) {
-					return executor;
-				}
-			}
-
-			return null;
+			return adapters.stream()//
+					.flatMap(it -> Optionals.toStream(getMethodExecutor(it, name, argumentTypes)))//
+					.findFirst().orElse(null);
 		}
 
 		/*
@@ -352,22 +316,12 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * @param argumentTypes
 		 * @return
 		 */
-		private MethodExecutor getMethodExecutor(EvaluationContextExtensionAdapter adapter, String name,
+		private Optional<MethodExecutor> getMethodExecutor(EvaluationContextExtensionAdapter adapter, String name,
 				List<TypeDescriptor> argumentTypes) {
 
-			Map<String, Function> functions = adapter.getFunctions();
-
-			if (!functions.containsKey(name)) {
-				return null;
-			}
-
-			Function function = functions.get(name);
-
-			if (!function.supports(argumentTypes)) {
-				return null;
-			}
-
-			return new FunctionMethodExecutor(function);
+			return adapter.getFunctions().entrySet().stream()//
+					.filter(entry -> entry.getKey().equals(name))//
+					.findFirst().map(Entry::getValue).map(FunctionMethodExecutor::new);
 		}
 
 		/**
@@ -403,18 +357,10 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @author Oliver Gierke
 	 * @since 1.9
 	 */
+	@RequiredArgsConstructor
 	private static class FunctionMethodExecutor implements MethodExecutor {
 
-		private final Function function;
-
-		/**
-		 * Creates a new {@link FunctionMethodExecutor} for the given {@link Function}.
-		 * 
-		 * @param function must not be {@literal null}.
-		 */
-		public FunctionMethodExecutor(Function function) {
-			this.function = function;
-		}
+		private final @NonNull Function function;
 
 		/* 
 		 * (non-Javadoc)
@@ -460,7 +406,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			Assert.notNull(extension, "Extenstion must not be null!");
 			Assert.notNull(information, "Extension information must not be null!");
 
-			Object target = extension.getRootObject();
+			Optional<Object> target = Optional.ofNullable(extension.getRootObject());
 			ExtensionTypeInformation extensionTypeInformation = information.getExtensionTypeInformation();
 			RootObjectInformation rootObjectInformation = information.getRootObjectInformation(target);
 

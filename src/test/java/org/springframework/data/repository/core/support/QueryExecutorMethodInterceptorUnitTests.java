@@ -18,20 +18,15 @@ package org.springframework.data.repository.core.support;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryLookupStrategy;
-import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit test for {@link QueryExecuterMethodInterceptor}.
@@ -49,21 +44,20 @@ public class QueryExecutorMethodInterceptorUnitTests {
 	@Test(expected = IllegalStateException.class)
 	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() throws Exception {
 
-		when(information.getQueryMethods()).thenReturn(Arrays.asList(Object.class.getMethod("toString")));
-		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(null);
+		when(information.hasQueryMethods()).thenReturn(true);
+		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.empty());
 
 		factory.new QueryExecutorMethodInterceptor(information);
 	}
 
 	@Test
-	public void skipsQueryLookupsIfQueryLookupStrategyIsNull() {
+	public void skipsQueryLookupsIfQueryLookupStrategyIsNotPresent() {
 
-		when(information.getQueryMethods()).thenReturn(Collections.<Method>emptySet());
-		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(strategy);
+		when(information.getQueryMethods()).thenReturn(Streamable.empty());
+		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.of(strategy));
 
 		factory.new QueryExecutorMethodInterceptor(information);
 
-		verify(strategy, times(0)).resolveQuery(any(Method.class), any(RepositoryMetadata.class),
-				any(ProjectionFactory.class), any(NamedQueries.class));
+		verify(strategy, times(0)).resolveQuery(any(), any(), any(), any());
 	}
 }

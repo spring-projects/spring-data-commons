@@ -17,7 +17,6 @@ package org.springframework.data.querydsl;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -128,15 +127,6 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 	@Override
 	public <T> T invokeFindOne(Serializable id) {
 		return delegate.invokeFindOne(id);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, java.util.Map, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
-	 */
-	@Override
-	public Object invokeQueryMethod(Method method, Map<String, String[]> parameters, Pageable pageable, Sort sort) {
-		return delegate.invokeQueryMethod(method, parameters, pageable, sort);
 	}
 
 	/* 

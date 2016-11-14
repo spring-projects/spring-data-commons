@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -43,6 +44,7 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
 import org.springframework.data.mapping.model.PersistentPropertyAccessorFactory;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Pair;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -251,25 +253,32 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		while (iterator.hasNext()) {
 
 			String segment = iterator.next();
-			P persistentProperty = current.getPersistentProperty(segment);
+			final DefaultPersistentPropertyPath<P> foo = path;
+			final E bar = current;
 
-			if (persistentProperty == null) {
+			Pair<DefaultPersistentPropertyPath<P>, E> pair = getPair(path, iterator, segment, current).orElseThrow(() -> {
 
 				String source = StringUtils.collectionToDelimitedString(parts, ".");
-				String resolvedPath = path.toDotPath();
+				String resolvedPath = foo.toDotPath();
 
-				throw new InvalidPersistentPropertyPath(source, type, segment, resolvedPath,
-						String.format("No property %s found on %s!", segment, current.getName()));
-			}
+				return new InvalidPersistentPropertyPath(source, type, segment, resolvedPath,
+						String.format("No property %s found on %s!", segment, bar.getName()));
+			});
 
-			path = path.append(persistentProperty);
-
-			if (iterator.hasNext()) {
-				current = getPersistentEntity(persistentProperty.getTypeInformation().getActualType());
-			}
+			path = pair.getFirst();
+			current = pair.getSecond();
 		}
 
 		return path;
+	}
+
+	private Optional<Pair<DefaultPersistentPropertyPath<P>, E>> getPair(DefaultPersistentPropertyPath<P> path,
+			Iterator<String> iterator, String segment, E entity) {
+
+		Optional<P> persistentProperty = entity.getPersistentProperty(segment);
+
+		return persistentProperty.map(it -> Pair.of(path.append(it),
+				iterator.hasNext() ? getPersistentEntity(it.getTypeInformation().getActualType()) : entity));
 	}
 
 	/**
@@ -389,7 +398,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @param simpleTypeHolder
 	 * @return
 	 */
-	protected abstract P createPersistentProperty(Field field, PropertyDescriptor descriptor, E owner,
+	protected abstract P createPersistentProperty(Optional<Field> field, PropertyDescriptor descriptor, E owner,
 			SimpleTypeHolder simpleTypeHolder);
 
 	/*
@@ -462,7 +471,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			String fieldName = field.getName();
 
 			ReflectionUtils.makeAccessible(field);
-			createAndRegisterProperty(field, descriptors.get(fieldName));
+			createAndRegisterProperty(Optional.of(field), descriptors.get(fieldName));
 
 			this.remainingDescriptors.remove(fieldName);
 		}
@@ -477,12 +486,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			for (PropertyDescriptor descriptor : remainingDescriptors.values()) {
 				if (PersistentPropertyFilter.INSTANCE.matches(descriptor)) {
-					createAndRegisterProperty(null, descriptor);
+					createAndRegisterProperty(Optional.empty(), descriptor);
 				}
 			}
 		}
 
-		private void createAndRegisterProperty(Field field, PropertyDescriptor descriptor) {
+		private void createAndRegisterProperty(Optional<Field> field, PropertyDescriptor descriptor) {
 
 			P property = createPersistentProperty(field, descriptor, entity, simpleTypeHolder);
 
@@ -511,7 +520,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	}
 
 	/**
-	 * Filter rejecting static fields as well as artifically introduced ones. See
+	 * Filter rejecting static fields as well as artificially introduced ones. See
 	 * {@link PersistentPropertyFilter#UNMAPPED_PROPERTIES} for details.
 	 *
 	 * @author Oliver Gierke

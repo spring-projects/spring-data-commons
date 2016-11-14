@@ -15,8 +15,7 @@
  */
 package org.springframework.data.domain;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 
@@ -38,11 +37,11 @@ public class RangeUnitTests {
 
 		Range<Long> range = new Range<Long>(10L, 20L);
 
-		assertThat(range.contains(10L), is(true));
-		assertThat(range.contains(20L), is(true));
-		assertThat(range.contains(15L), is(true));
-		assertThat(range.contains(5L), is(false));
-		assertThat(range.contains(25L), is(false));
+		assertThat(range.contains(10L)).isTrue();
+		assertThat(range.contains(20L)).isTrue();
+		assertThat(range.contains(15L)).isTrue();
+		assertThat(range.contains(5L)).isFalse();
+		assertThat(range.contains(25L)).isFalse();
 	}
 
 	@Test // DATACMNS-651
@@ -50,11 +49,11 @@ public class RangeUnitTests {
 
 		Range<Long> range = new Range<Long>(10L, 20L, false, true);
 
-		assertThat(range.contains(10L), is(false));
-		assertThat(range.contains(20L), is(true));
-		assertThat(range.contains(15L), is(true));
-		assertThat(range.contains(5L), is(false));
-		assertThat(range.contains(25L), is(false));
+		assertThat(range.contains(10L)).isFalse();
+		assertThat(range.contains(20L)).isTrue();
+		assertThat(range.contains(15L)).isTrue();
+		assertThat(range.contains(5L)).isFalse();
+		assertThat(range.contains(25L)).isFalse();
 	}
 
 	@Test // DATACMNS-651
@@ -62,11 +61,11 @@ public class RangeUnitTests {
 
 		Range<Long> range = new Range<Long>(10L, 20L, true, false);
 
-		assertThat(range.contains(10L), is(true));
-		assertThat(range.contains(20L), is(false));
-		assertThat(range.contains(15L), is(true));
-		assertThat(range.contains(5L), is(false));
-		assertThat(range.contains(25L), is(false));
+		assertThat(range.contains(10L)).isTrue();
+		assertThat(range.contains(20L)).isFalse();
+		assertThat(range.contains(15L)).isTrue();
+		assertThat(range.contains(5L)).isFalse();
+		assertThat(range.contains(25L)).isFalse();
 	}
 
 	@Test // DATACMNS-651
@@ -74,11 +73,11 @@ public class RangeUnitTests {
 
 		Range<Long> range = new Range<Long>(10L, null);
 
-		assertThat(range.contains(10L), is(true));
-		assertThat(range.contains(20L), is(true));
-		assertThat(range.contains(15L), is(true));
-		assertThat(range.contains(5L), is(false));
-		assertThat(range.contains(25L), is(true));
+		assertThat(range.contains(10L)).isTrue();
+		assertThat(range.contains(20L)).isTrue();
+		assertThat(range.contains(15L)).isTrue();
+		assertThat(range.contains(5L)).isFalse();
+		assertThat(range.contains(25L)).isTrue();
 	}
 
 	@Test // DATACMNS-651
@@ -86,10 +85,10 @@ public class RangeUnitTests {
 
 		Range<Long> range = new Range<Long>(null, 20L);
 
-		assertThat(range.contains(10L), is(true));
-		assertThat(range.contains(20L), is(true));
-		assertThat(range.contains(15L), is(true));
-		assertThat(range.contains(5L), is(true));
-		assertThat(range.contains(25L), is(false));
+		assertThat(range.contains(10L)).isTrue();
+		assertThat(range.contains(20L)).isTrue();
+		assertThat(range.contains(15L)).isTrue();
+		assertThat(range.contains(5L)).isTrue();
+		assertThat(range.contains(25L)).isFalse();
 	}
 }

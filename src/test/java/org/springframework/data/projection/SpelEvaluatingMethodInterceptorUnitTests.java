@@ -15,8 +15,7 @@
  */
 package org.springframework.data.projection;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
@@ -54,7 +53,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		MethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(), null, parser,
 				Projection.class);
 
-		assertThat(interceptor.invoke(invocation), is((Object) "property"));
+		assertThat(interceptor.invoke(invocation)).isEqualTo("property");
 	}
 
 	@Test // DATAREST-221, DATACMNS-630
@@ -68,7 +67,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(), factory,
 				parser, Projection.class);
 
-		assertThat(interceptor.invoke(invocation), is((Object) "value"));
+		assertThat(interceptor.invoke(invocation)).isEqualTo("value");
 	}
 
 	@Test // DATACMNS-630
@@ -106,7 +105,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, map,
 				new DefaultListableBeanFactory(), parser, Projection.class);
 
-		assertThat(interceptor.invoke(invocation), is((Object) "Dave"));
+		assertThat(interceptor.invoke(invocation)).isEqualTo("Dave");
 	}
 
 	interface Projection {

@@ -24,7 +24,7 @@ import org.springframework.data.annotation.AccessType.Type;
  */
 public class TypeInOtherPackage {
 
-	private String privateField;
+	@SuppressWarnings("unused") private String privateField;
 	String packageDefaultField;
 	protected String protectedField;
 	public String publicField;
@@ -38,10 +38,12 @@ public class TypeInOtherPackage {
 
 	@AccessType(Type.PROPERTY) private String publicProperty;
 
+	@SuppressWarnings("unused")
 	private String getPrivateProperty() {
 		return privateProperty;
 	}
 
+	@SuppressWarnings("unused")
 	private void setPrivateProperty(String privateProperty) {
 		this.privateProperty = privateProperty;
 	}

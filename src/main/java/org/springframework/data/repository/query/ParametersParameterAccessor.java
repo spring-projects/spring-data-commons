@@ -15,9 +15,10 @@
  */
 package org.springframework.data.repository.query;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -48,14 +49,9 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		Assert.isTrue(parameters.getNumberOfParameters() == values.length, "Invalid number of parameters given!");
 
 		this.parameters = parameters;
-
-		List<Object> unwrapped = new ArrayList<Object>(values.length);
-
-		for (Object element : values.clone()) {
-			unwrapped.add(QueryExecutionConverters.unwrap(element));
-		}
-
-		this.values = unwrapped;
+		this.values = Arrays.stream(values)//
+				.map(QueryExecutionConverters::unwrap)//
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -131,13 +127,8 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 */
 	public boolean hasBindableNullValue() {
 
-		for (Parameter parameter : parameters.getBindableParameters()) {
-			if (values.get(parameter.getIndex()) == null) {
-				return true;
-			}
-		}
-
-		return false;
+		return parameters.getBindableParameters().stream()//
+				.anyMatch(it -> values.get(it.getIndex()) == null);
 	}
 
 	/*

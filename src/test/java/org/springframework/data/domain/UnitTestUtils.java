@@ -1,6 +1,6 @@
 package org.springframework.data.domain;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * @author Oliver Gierke
@@ -19,9 +19,9 @@ public abstract class UnitTestUtils {
 	 */
 	public static void assertEqualsAndHashcode(Object first, Object second) {
 
-		assertEquals(first, second);
-		assertEquals(second, first);
-		assertEquals(first.hashCode(), second.hashCode());
+		assertThat(first).isEqualTo(second);
+		assertThat(second).isEqualTo(first);
+		assertThat(first.hashCode()).isEqualTo(second.hashCode());
 	}
 
 	/**
@@ -32,8 +32,8 @@ public abstract class UnitTestUtils {
 	 */
 	public static void assertNotEqualsAndHashcode(Object first, Object second) {
 
-		assertFalse(first.equals(second));
-		assertFalse(second.equals(first));
-		assertFalse(first.hashCode() == second.hashCode());
+		assertThat(first).isNotEqualTo(second);
+		assertThat(second).isNotEqualTo(first);
+		assertThat(first.hashCode()).isNotEqualTo(second.hashCode());
 	}
 }

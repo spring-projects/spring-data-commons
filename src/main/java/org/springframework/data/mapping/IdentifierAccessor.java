@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping;
 
+import java.util.Optional;
+
 /**
  * Interface for a component allowing the access of identifier values.
  * 
@@ -27,5 +29,5 @@ public interface IdentifierAccessor {
 	 * 
 	 * @return
 	 */
-	Object getIdentifier();
+	Optional<? extends Object> getIdentifier();
 }

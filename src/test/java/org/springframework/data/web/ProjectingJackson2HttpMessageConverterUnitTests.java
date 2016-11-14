@@ -16,7 +16,7 @@
 package org.springframework.data.web;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -38,17 +38,17 @@ public class ProjectingJackson2HttpMessageConverterUnitTests {
 
 	@Test // DATCMNS-885
 	public void canReadJsonIntoAnnotatedInterface() {
-		assertThat(converter.canRead(SampleInterface.class, ANYTHING_JSON), is(true));
+		assertThat(converter.canRead(SampleInterface.class, ANYTHING_JSON)).isTrue();
 	}
 
 	@Test // DATCMNS-885
 	public void cannotReadUnannotatedInterface() {
-		assertThat(converter.canRead(UnannotatedInterface.class, ANYTHING_JSON), is(false));
+		assertThat(converter.canRead(UnannotatedInterface.class, ANYTHING_JSON)).isFalse();
 	}
 
 	@Test // DATCMNS-885
 	public void cannotReadClass() {
-		assertThat(converter.canRead(SampleClass.class, ANYTHING_JSON), is(false));
+		assertThat(converter.canRead(SampleClass.class, ANYTHING_JSON)).isFalse();
 	}
 
 	@Test // DATACMNS-972

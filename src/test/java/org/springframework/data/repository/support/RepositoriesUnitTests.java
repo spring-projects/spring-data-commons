@@ -17,12 +17,12 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Before;
@@ -83,15 +83,15 @@ public class RepositoriesUnitTests {
 
 		Repositories repositories = new Repositories(context);
 
-		assertThat(repositories.hasRepositoryFor(Person.class), is(true));
-		assertThat(repositories.hasRepositoryFor(Address.class), is(true));
+		assertThat(repositories.hasRepositoryFor(Person.class)).isTrue();
+		assertThat(repositories.hasRepositoryFor(Address.class)).isTrue();
 	}
 
 	@Test
 	public void doesNotFindInformationForNonManagedDomainClass() {
 		Repositories repositories = new Repositories(context);
-		assertThat(repositories.hasRepositoryFor(String.class), is(false));
-		assertThat(repositories.getRepositoryFor(String.class), is(nullValue()));
+		assertThat(repositories.hasRepositoryFor(String.class)).isFalse();
+		assertThat(repositories.getRepositoryFor(String.class)).isNotPresent();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -103,13 +103,13 @@ public class RepositoriesUnitTests {
 	public void exposesPersistentEntityForDomainTypes() {
 
 		Repositories repositories = new Repositories(context);
-		assertThat(repositories.getPersistentEntity(Person.class), is(notNullValue()));
-		assertThat(repositories.getPersistentEntity(Address.class), is(notNullValue()));
+		assertThat(repositories.getPersistentEntity(Person.class)).isNotNull();
+		assertThat(repositories.getPersistentEntity(Address.class)).isNotNull();
 	}
 
 	@Test // DATACMNS-634
 	public void findsRepositoryForSubTypes() {
-		assertThat(new Repositories(context).getPersistentEntity(AdvancedAddress.class), is(notNullValue()));
+		assertThat(new Repositories(context).getPersistentEntity(AdvancedAddress.class)).isNotNull();
 	}
 
 	@Test // DATACMNS-673
@@ -124,8 +124,8 @@ public class RepositoriesUnitTests {
 
 		Repositories repositories = new Repositories(context);
 
-		assertThat(repositories.getRepositoryFor(Sample.class), is(notNullValue()));
-		assertThat(repositories.getRepositoryFor(SampleEntity.class), is(notNullValue()));
+		assertThat(repositories.getRepositoryFor(Sample.class)).isNotNull();
+		assertThat(repositories.getRepositoryFor(SampleEntity.class)).isNotNull();
 
 		context.close();
 	}
@@ -133,10 +133,11 @@ public class RepositoriesUnitTests {
 	@Test // DATACMNS-794
 	public void exposesRepositoryFactoryInformationForRepository() {
 
-		RepositoryInformation information = new Repositories(context).getRepositoryInformation(PersonRepository.class);
+		Optional<RepositoryInformation> information = new Repositories(context)
+				.getRepositoryInformation(PersonRepository.class);
 
-		assertThat(information, is(notNullValue()));
-		assertThat(information.getRepositoryInterface(), is(typeCompatibleWith(PersonRepository.class)));
+		assertThat(information)
+				.hasValueSatisfying(it -> assertThat(it.getRepositoryInterface()).isEqualTo(PersonRepository.class));
 	}
 
 	class Person {}

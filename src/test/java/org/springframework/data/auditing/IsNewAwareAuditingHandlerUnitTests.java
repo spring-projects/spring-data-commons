@@ -15,16 +15,17 @@
  */
 package org.springframework.data.auditing;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -55,10 +56,11 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	public void delegatesToMarkCreatedForNewEntity() {
 
 		AuditedUser user = new AuditedUser();
-		getHandler().markAudited(user);
 
-		assertThat(user.createdDate, is(notNullValue()));
-		assertThat(user.modifiedDate, is(notNullValue()));
+		getHandler().markAudited(Optional.of(user));
+
+		assertThat(user.createdDate).isNotNull();
+		assertThat(user.modifiedDate).isNotNull();
 	}
 
 	@Test
@@ -66,10 +68,11 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 
 		AuditedUser user = new AuditedUser();
 		user.id = 1L;
-		getHandler().markAudited(user);
 
-		assertThat(user.createdDate, is(nullValue()));
-		assertThat(user.modifiedDate, is(notNullValue()));
+		getHandler().markAudited(Optional.of(user));
+
+		assertThat(user.createdDate).isNull();
+		assertThat(user.modifiedDate).isNotNull();
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-365
@@ -83,18 +86,18 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	}
 
 	@Test // DATACMNS-638
-	public void handlingNullIsANoOp() {
+	public void handlingOptionalIsANoOp() {
 
 		IsNewAwareAuditingHandler handler = getHandler();
 
-		handler.markAudited(null);
-		handler.markCreated(null);
-		handler.markModified(null);
+		handler.markAudited(Optional.empty());
+		handler.markCreated(Optional.empty());
+		handler.markModified(Optional.empty());
 	}
 
 	@Test // DATACMNS-957
 	public void skipsEntityWithoutIdentifier() {
-		getHandler().markAudited(new EntityWithoutId());
+		getHandler().markAudited(Optional.of(new EntityWithoutId()));
 	}
 
 	static class Domain {

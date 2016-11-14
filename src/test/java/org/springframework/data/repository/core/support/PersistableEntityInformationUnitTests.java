@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;
@@ -24,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.repository.core.support.PersistableEntityInformation;
 
 /**
  * Unit tests for {@link PersistableEntityMetadata}.
@@ -34,20 +32,20 @@ import org.springframework.data.repository.core.support.PersistableEntityInforma
 @RunWith(MockitoJUnitRunner.class)
 public class PersistableEntityInformationUnitTests {
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	static final PersistableEntityInformation metadata = new PersistableEntityInformation(Persistable.class);
+	@SuppressWarnings({ "rawtypes",
+			"unchecked" }) static final PersistableEntityInformation metadata = new PersistableEntityInformation(
+					Persistable.class);
 
-	@Mock
-	Persistable<Long> persistable;
+	@Mock Persistable<Long> persistable;
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void usesPersistablesGetId() throws Exception {
 
 		when(persistable.getId()).thenReturn(2L, 1L, 3L);
-		assertEquals(2L, metadata.getId(persistable));
-		assertEquals(1L, metadata.getId(persistable));
-		assertEquals(3L, metadata.getId(persistable));
+		assertThat(metadata.getId(persistable)).isEqualTo(2L);
+		assertThat(metadata.getId(persistable)).isEqualTo(1L);
+		assertThat(metadata.getId(persistable)).isEqualTo(3L);
 	}
 
 	@Test
@@ -55,8 +53,8 @@ public class PersistableEntityInformationUnitTests {
 	public void usesPersistablesIsNew() throws Exception {
 
 		when(persistable.isNew()).thenReturn(true, false);
-		assertThat(metadata.isNew(persistable), is(true));
-		assertThat(metadata.isNew(persistable), is(false));
+		assertThat(metadata.isNew(persistable)).isTrue();
+		assertThat(metadata.isNew(persistable)).isFalse();
 	}
 
 	@Test
@@ -65,7 +63,7 @@ public class PersistableEntityInformationUnitTests {
 		PersistableEntityInformation<PersistableEntity, Long> info = new PersistableEntityInformation<PersistableEntity, Long>(
 				PersistableEntity.class);
 
-		assertEquals(PersistableEntity.class, info.getJavaType());
+		assertThat(info.getJavaType()).isEqualTo(PersistableEntity.class);
 	}
 
 	@SuppressWarnings("serial")

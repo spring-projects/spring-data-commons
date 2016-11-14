@@ -17,12 +17,12 @@ package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.Set;
 
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.util.Streamable;
 
 public final class DummyRepositoryInformation implements RepositoryInformation {
 
@@ -68,8 +68,8 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 		return false;
 	}
 
-	public Set<Method> getQueryMethods() {
-		return Collections.emptySet();
+	public Streamable<Method> getQueryMethods() {
+		return Streamable.empty();
 	}
 
 	public Method getTargetClassMethod(Method method) {

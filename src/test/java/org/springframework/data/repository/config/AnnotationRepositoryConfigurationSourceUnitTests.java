@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -59,18 +58,18 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-47
 	public void findsBasePackagesForClasses() {
 
-		Iterable<String> basePackages = source.getBasePackages();
-		assertThat(basePackages, hasItem(AnnotationRepositoryConfigurationSourceUnitTests.class.getPackage().getName()));
+		assertThat(source.getBasePackages())//
+				.contains(AnnotationRepositoryConfigurationSourceUnitTests.class.getPackage().getName());
 	}
 
 	@Test // DATACMNS-47
 	public void evaluatesExcludeFiltersCorrectly() {
 
 		Collection<BeanDefinition> candidates = source.getCandidates(new DefaultResourceLoader());
-		assertThat(candidates, hasSize(1));
+		assertThat(candidates).hasSize(1);
 
 		BeanDefinition candidate = candidates.iterator().next();
-		assertThat(candidate.getBeanClassName(), is(MyRepository.class.getName()));
+		assertThat(candidate.getBeanClassName()).isEqualTo(MyRepository.class.getName());
 	}
 
 	@Test // DATACMNS-47
@@ -79,49 +78,48 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
 		Iterable<String> packages = source.getBasePackages();
 
-		assertThat(packages, hasItem(DefaultConfiguration.class.getPackage().getName()));
-		assertThat(source.shouldConsiderNestedRepositories(), is(false));
+		assertThat(packages).contains(DefaultConfiguration.class.getPackage().getName());
+		assertThat(source.shouldConsiderNestedRepositories()).isFalse();
 	}
 
 	@Test // DATACMNS-47
 	public void returnsConfiguredBasePackage() {
 
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithBasePackage.class);
-		Iterable<String> packages = source.getBasePackages();
 
-		assertThat(packages, hasItem("foo"));
+		assertThat(source.getBasePackages()).contains("foo");
 	}
 
 	@Test // DATACMNS-90
 	public void returnsConsiderNestedRepositories() {
 
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithNestedRepositories.class);
-		assertThat(source.shouldConsiderNestedRepositories(), is(true));
+		assertThat(source.shouldConsiderNestedRepositories()).isTrue();
 	}
 
 	@Test // DATACMNS-456
 	public void findsStringAttributeByName() {
 
 		RepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithBasePackage.class);
-		assertThat(source.getAttribute("namedQueriesLocation"), is("bar"));
+		assertThat(source.getAttribute("namedQueriesLocation")).isEqualTo("bar");
 	}
 
 	@Test // DATACMNS-502
 	public void returnsEmptyStringForBasePackage() throws Exception {
 
-		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(getClass().getClassLoader().loadClass(
-				"TypeInDefaultPackage"), true);
+		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(
+				getClass().getClassLoader().loadClass("TypeInDefaultPackage"), true);
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				EnableRepositories.class, resourceLoader, environment);
 
-		assertThat(configurationSource.getBasePackages(), hasItem(""));
+		assertThat(configurationSource.getBasePackages()).contains("");
 	}
 
 	@Test // DATACMNS-526
 	public void detectsExplicitFilterConfiguration() {
 
-		assertThat(getConfigSource(ConfigurationWithExplicitFilter.class).usesExplicitFilters(), is(true));
-		assertThat(getConfigSource(DefaultConfiguration.class).usesExplicitFilters(), is(false));
+		assertThat(getConfigSource(ConfigurationWithExplicitFilter.class).usesExplicitFilters()).isTrue();
+		assertThat(getConfigSource(DefaultConfiguration.class).usesExplicitFilters()).isFalse();
 	}
 
 	@Test // DATACMNS-542
@@ -131,7 +129,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				SampleAnnotation.class, resourceLoader, environment);
 
-		assertThat(configurationSource.getRepositoryBaseClassName(), is(nullValue()));
+		assertThat(configurationSource.getRepositoryBaseClassName()).isNull();
 	}
 
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {

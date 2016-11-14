@@ -15,11 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.*;
-import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
-import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.startsWith;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +53,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 	@Test // DATACMNS-810
 	public void defaultStringMatcherShouldReturnDefault() {
-		assertThat(exampleSpecificationAccessor.getDefaultStringMatcher(), is(StringMatcher.DEFAULT));
+		assertThat(exampleSpecificationAccessor.getDefaultStringMatcher()).isEqualTo(StringMatcher.DEFAULT);
 	}
 
 	@Test // DATACMNS-810
@@ -66,7 +63,7 @@ public class ExampleSpecificationAccessorUnitTests {
 				withIncludeNullValues();
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.getNullHandler(), is(NullHandler.INCLUDE));
+		assertThat(exampleSpecificationAccessor.getNullHandler()).isEqualTo(NullHandler.INCLUDE);
 	}
 
 	@Test // DATACMNS-810
@@ -75,14 +72,14 @@ public class ExampleSpecificationAccessorUnitTests {
 		specification = ExampleMatcher.matching().withIgnorePaths("firstname");
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.isIgnoredPath("firstname"), is(true));
-		assertThat(exampleSpecificationAccessor.isIgnoredPath("lastname"), is(false));
+		assertThat(exampleSpecificationAccessor.isIgnoredPath("firstname")).isTrue();
+		assertThat(exampleSpecificationAccessor.isIgnoredPath("lastname")).isFalse();
 	}
 
 	@Test // DATACMNS-810
 	public void exampleShouldUseDefaultStringMatcherForPathThatDoesNotHavePropertySpecifier() {
-		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname"),
-				is(specification.getDefaultStringMatcher()));
+		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname"))
+				.isEqualTo(specification.getDefaultStringMatcher());
 	}
 
 	@Test // DATACMNS-810
@@ -93,7 +90,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname"), is(StringMatcher.CONTAINING));
+		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname")).isEqualTo(StringMatcher.CONTAINING);
 	}
 
 	@Test // DATACMNS-810
@@ -105,7 +102,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname"), is(true));
+		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname")).isTrue();
 	}
 
 	@Test // DATACMNS-810
@@ -117,7 +114,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname"), equalTo(false));
+		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname")).isFalse();
 	}
 
 	@Test // DATACMNS-810
@@ -128,7 +125,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname"), equalTo(StringMatcher.STARTING));
+		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname")).isEqualTo(StringMatcher.STARTING);
 	}
 
 	@Test // DATACMNS-810
@@ -139,7 +136,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname"), equalTo(StringMatcher.CONTAINING));
+		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname")).isEqualTo(StringMatcher.CONTAINING);
 	}
 
 	@Test // DATACMNS-810
@@ -150,7 +147,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname"), equalTo(StringMatcher.REGEX));
+		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname")).isEqualTo(StringMatcher.REGEX);
 	}
 
 	@Test // DATACMNS-810
@@ -167,10 +164,10 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.getPropertySpecifiers(), hasSize(3));
-		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname"), equalTo(StringMatcher.CONTAINING));
-		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("lastname"), equalTo(StringMatcher.ENDING));
-		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("unknownProperty"), equalTo(StringMatcher.ENDING));
+		assertThat(exampleSpecificationAccessor.getPropertySpecifiers()).hasSize(3);
+		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname")).isEqualTo(StringMatcher.CONTAINING);
+		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("lastname")).isEqualTo(StringMatcher.ENDING);
+		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("unknownProperty")).isEqualTo(StringMatcher.ENDING);
 	}
 
 	@Test // DATACMNS-810
@@ -187,16 +184,16 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname"), equalTo(StringMatcher.STARTING));
-		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname"), is(true));
-		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("unknownProperty"), is(false));
+		assertThat(exampleSpecificationAccessor.getStringMatcherForPath("firstname")).isEqualTo(StringMatcher.STARTING);
+		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname")).isTrue();
+		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("unknownProperty")).isFalse();
 	}
 
 	@Test // DATACMNS-810
 	public void ignoreCaseShouldReturnFalseByDefault() {
 
-		assertThat(specification.isIgnoreCaseEnabled(), is(false));
-		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname"), is(false));
+		assertThat(specification.isIgnoreCaseEnabled()).isFalse();
+		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname")).isFalse();
 	}
 
 	@Test // DATACMNS-810
@@ -207,8 +204,8 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.isIgnoreCaseEnabled(), is(true));
-		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname"), is(true));
+		assertThat(exampleSpecificationAccessor.isIgnoreCaseEnabled()).isTrue();
+		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname")).isTrue();
 	}
 
 	@Test // DATACMNS-810
@@ -219,14 +216,14 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(specification.isIgnoreCaseEnabled(), is(false));
-		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname"), is(true));
+		assertThat(specification.isIgnoreCaseEnabled()).isFalse();
+		assertThat(exampleSpecificationAccessor.isIgnoreCaseForPath("firstname")).isTrue();
 	}
 
 	@Test // DATACMNS-810
 	public void getValueTransformerForPathReturnsNoOpValueTransformerByDefault() {
-		assertThat(exampleSpecificationAccessor.getValueTransformerForPath("firstname"),
-				instanceOf(NoOpPropertyValueTransformer.class));
+		assertThat(exampleSpecificationAccessor.getValueTransformerForPath("firstname"))
+				.isInstanceOf(NoOpPropertyValueTransformer.class);
 	}
 
 	@Test // DATACMNS-810
@@ -244,12 +241,12 @@ public class ExampleSpecificationAccessorUnitTests {
 				withTransformer("firstname", transformer);
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.getValueTransformerForPath("firstname"), equalTo(transformer));
+		assertThat(exampleSpecificationAccessor.getValueTransformerForPath("firstname")).isEqualTo(transformer);
 	}
 
 	@Test // DATACMNS-810
 	public void hasPropertySpecifiersReturnsFalseIfNoneDefined() {
-		assertThat(exampleSpecificationAccessor.hasPropertySpecifiers(), is(false));
+		assertThat(exampleSpecificationAccessor.hasPropertySpecifiers()).isFalse();
 	}
 
 	@Test // DATACMNS-810
@@ -261,7 +258,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
-		assertThat(exampleSpecificationAccessor.hasPropertySpecifiers(), is(true));
+		assertThat(exampleSpecificationAccessor.hasPropertySpecifiers()).isTrue();
 	}
 
 	@Test // DATACMNS-953

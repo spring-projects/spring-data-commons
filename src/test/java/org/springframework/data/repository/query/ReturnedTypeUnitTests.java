@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -43,10 +42,10 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("findAll");
 
-		assertThat(type.getTypeToRead(), is(typeCompatibleWith(Sample.class)));
-		assertThat(type.getInputProperties(), is(empty()));
-		assertThat(type.isProjecting(), is(false));
-		assertThat(type.needsCustomConstruction(), is(false));
+		assertThat(type.getTypeToRead()).isEqualTo(Sample.class);
+		assertThat(type.getInputProperties()).isEmpty();
+		assertThat(type.isProjecting()).isFalse();
+		assertThat(type.needsCustomConstruction()).isFalse();
 	}
 
 	@Test // DATACMNS-89
@@ -54,11 +53,11 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("findAllDtos");
 
-		assertThat(type.getTypeToRead(), is(typeCompatibleWith(SampleDto.class)));
-		assertThat(type.getInputProperties(), contains("firstname"));
-		assertThat(type.isInstance(new SampleDto("firstname")), is(true));
-		assertThat(type.isProjecting(), is(true));
-		assertThat(type.needsCustomConstruction(), is(true));
+		assertThat(type.getTypeToRead()).isEqualTo(SampleDto.class);
+		assertThat(type.getInputProperties()).contains("firstname");
+		assertThat(type.isInstance(new SampleDto("firstname"))).isTrue();
+		assertThat(type.isProjecting()).isTrue();
+		assertThat(type.needsCustomConstruction()).isTrue();
 	}
 
 	@Test // DATACMNS-89
@@ -66,8 +65,8 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("findAllProjection");
 
-		assertThat(type.getTypeToRead(), is(nullValue()));
-		assertThat(type.getInputProperties(), contains("lastname"));
+		assertThat(type.getTypeToRead()).isNull();
+		assertThat(type.getInputProperties()).contains("lastname");
 	}
 
 	@Test // DATACMNS-89
@@ -75,8 +74,8 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("voidMethod");
 
-		assertThat(type.getDomainType(), is(typeCompatibleWith(Sample.class)));
-		assertThat(type.getReturnedType(), is(typeCompatibleWith(void.class)));
+		assertThat(type.getDomainType()).isEqualTo(Sample.class);
+		assertThat(type.getReturnedType()).isEqualTo(void.class);
 	}
 
 	@Test // DATACMNS-89
@@ -84,9 +83,9 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("findOneProjection");
 
-		assertThat(type.getReturnedType(), is(typeCompatibleWith(SampleProjection.class)));
-		assertThat(type.isProjecting(), is(true));
-		assertThat(type.needsCustomConstruction(), is(true));
+		assertThat(type.getReturnedType()).isEqualTo(SampleProjection.class);
+		assertThat(type.isProjecting()).isTrue();
+		assertThat(type.needsCustomConstruction()).isTrue();
 	}
 
 	@Test // DATACMNS-89
@@ -94,10 +93,10 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("findOneOpenProjection");
 
-		assertThat(type.getReturnedType(), is(typeCompatibleWith(OpenProjection.class)));
-		assertThat(type.isProjecting(), is(true));
-		assertThat(type.needsCustomConstruction(), is(false));
-		assertThat(type.getTypeToRead(), is(typeCompatibleWith(Sample.class)));
+		assertThat(type.getReturnedType()).isEqualTo(OpenProjection.class);
+		assertThat(type.isProjecting()).isTrue();
+		assertThat(type.needsCustomConstruction()).isFalse();
+		assertThat(type.getTypeToRead()).isEqualTo(Sample.class);
 	}
 
 	@Test // DATACMNS-89
@@ -105,9 +104,9 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("countQuery");
 
-		assertThat(type.isProjecting(), is(false));
-		assertThat(type.needsCustomConstruction(), is(false));
-		assertThat(type.getTypeToRead(), is(typeCompatibleWith(BigInteger.class)));
+		assertThat(type.isProjecting()).isFalse();
+		assertThat(type.needsCustomConstruction()).isFalse();
+		assertThat(type.getTypeToRead()).isEqualTo(BigInteger.class);
 	}
 
 	@Test // DATACMNS-840
@@ -115,8 +114,8 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("dtoWithMultipleConstructors");
 
-		assertThat(type.getInputProperties(), is(empty()));
-		assertThat(type.needsCustomConstruction(), is(false));
+		assertThat(type.getInputProperties()).isEmpty();
+		assertThat(type.needsCustomConstruction()).isFalse();
 	}
 
 	@Test // DATACMNS-840
@@ -124,8 +123,8 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("findEnum");
 
-		assertThat(type.needsCustomConstruction(), is(false));
-		assertThat(type.isProjecting(), is(false));
+		assertThat(type.needsCustomConstruction()).isFalse();
+		assertThat(type.isProjecting()).isFalse();
 	}
 
 	@Test // DATACMNS-850
@@ -133,8 +132,8 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("timeQuery");
 
-		assertThat(type.needsCustomConstruction(), is(false));
-		assertThat(type.isProjecting(), is(false));
+		assertThat(type.needsCustomConstruction()).isFalse();
+		assertThat(type.isProjecting()).isFalse();
 	}
 
 	@Test // DATACMNS-862
@@ -142,8 +141,8 @@ public class ReturnedTypeUnitTests {
 
 		ReturnedType type = getReturnedType("findOneInterface");
 
-		assertThat(type.needsCustomConstruction(), is(false));
-		assertThat(type.isProjecting(), is(false));
+		assertThat(type.needsCustomConstruction()).isFalse();
+		assertThat(type.isProjecting()).isFalse();
 	}
 
 	@Test // DATACMNS-963

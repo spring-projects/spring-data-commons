@@ -15,8 +15,7 @@
  */
 package org.springframework.data.geo.format;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.geo.format.PointFormatter.*;
 
 import java.text.ParseException;
@@ -86,12 +85,12 @@ public class PointFormatterUnitTests {
 
 		@Test // DATAREST-279, DATACMNS-626
 		public void convertsPointFromString() {
-			assertThat(INSTANCE.convert(source), is(REFERENCE));
+			assertThat(INSTANCE.convert(source)).isEqualTo(REFERENCE);
 		}
 
 		@Test // DATAREST-279, DATACMNS-626
 		public void parsesPoint() throws ParseException {
-			assertThat(INSTANCE.parse(source, Locale.US), is(REFERENCE));
+			assertThat(INSTANCE.parse(source, Locale.US)).isEqualTo(REFERENCE);
 		}
 	}
 }

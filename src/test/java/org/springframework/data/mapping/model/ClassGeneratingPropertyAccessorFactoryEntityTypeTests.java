@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 
@@ -43,7 +42,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
 		Algorithm quickSort = new QuickSort();
 
-		assertThat(getEntityInformation(Algorithm.class).getId(quickSort), is((Object) quickSort.getName()));
+		assertThat(getEntityInformation(Algorithm.class).getId(quickSort)).isEqualTo(quickSort.getName());
 	}
 
 	@Test // DATACMNS-853
@@ -51,7 +50,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
 		Person jonDoe = new Person("JonDoe");
 
-		assertThat(getEntityInformation(Person.class).getId(jonDoe), is((Object) jonDoe.name));
+		assertThat(getEntityInformation(Person.class).getId(jonDoe)).isEqualTo(jonDoe.name);
 	}
 
 	private EntityInformation<Object, ?> getEntityInformation(Class<?> type) {

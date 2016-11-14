@@ -15,9 +15,9 @@
  */
 package org.springframework.data.projection;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyDescriptor;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +36,7 @@ public class DefaultProjectionInformationUnitTests {
 
 		ProjectionInformation information = new DefaultProjectionInformation(CustomerProjection.class);
 
-		assertThat(toNames(information.getInputProperties()), contains("firstname", "lastname"));
+		assertThat(toNames(information.getInputProperties())).contains("firstname", "lastname");
 	}
 
 	@Test // DATACMNS-89
@@ -44,7 +44,7 @@ public class DefaultProjectionInformationUnitTests {
 
 		ProjectionInformation information = new DefaultProjectionInformation(ExtendedProjection.class);
 
-		assertThat(toNames(information.getInputProperties()), hasItems("age", "firstname", "lastname"));
+		assertThat(toNames(information.getInputProperties())).containsExactly("age", "firstname", "lastname");
 	}
 
 	@Test // DATACMNS-967
@@ -52,14 +52,14 @@ public class DefaultProjectionInformationUnitTests {
 
 		ProjectionInformation information = new DefaultProjectionInformation(WithDefaultMethod.class);
 
-		assertThat(information.isClosed(), is(true));
-		assertThat(toNames(information.getInputProperties()), hasItems("firstname"));
+		assertThat(information.isClosed()).isTrue();
+		assertThat(toNames(information.getInputProperties())).contains("firstname");
 	}
 
 	private static List<String> toNames(List<PropertyDescriptor> descriptors) {
 
 		return descriptors.stream()//
-				.map(it -> it.getName())//
+				.map(FeatureDescriptor::getName)//
 				.collect(Collectors.toList());
 	}
 

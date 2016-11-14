@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping;
 
+import lombok.EqualsAndHashCode;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -24,9 +26,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,7 +36,8 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
-public class PropertyPath implements Iterable<PropertyPath> {
+@EqualsAndHashCode
+public class PropertyPath implements Streamable<PropertyPath> {
 
 	private static final String DELIMITERS = "_\\.";
 	private static final String ALL_UPPERCASE = "[A-Z0-9._$]+";
@@ -168,43 +171,6 @@ public class PropertyPath implements Iterable<PropertyPath> {
 	 */
 	public boolean isCollection() {
 		return isCollection;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-
-		if (obj == null || !getClass().equals(obj.getClass())) {
-			return false;
-		}
-
-		PropertyPath that = (PropertyPath) obj;
-
-		return this.name.equals(that.name) && this.type.equals(that.type)
-				&& ObjectUtils.nullSafeEquals(this.next, that.next);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-
-		int result = 17;
-
-		result += 31 * name.hashCode();
-		result += 31 * type.hashCode();
-		result += 31 * (next == null ? 0 : next.hashCode());
-
-		return result;
 	}
 
 	/* 

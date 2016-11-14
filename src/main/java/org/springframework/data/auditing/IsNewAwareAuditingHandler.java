@@ -16,6 +16,7 @@
 package org.springframework.data.auditing;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -24,11 +25,12 @@ import org.springframework.data.mapping.context.MappingContextIsNewStrategyFacto
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
+import org.springframework.util.Assert;
 
 /**
  * {@link AuditingHandler} extension that uses an {@link IsNewStrategyFactory} to expose a generic
- * {@link #markAudited(Object)} method that will route calls to {@link #markCreated(Object)} or
- * {@link #markModified(Object)} based on the {@link IsNewStrategy} determined from the factory.
+ * {@link #markAudited(Optional)} method that will route calls to {@link #markCreated(Optional)} or
+ * {@link #markModified(Optional)} based on the {@link IsNewStrategy} determined from the factory.
  * 
  * @author Oliver Gierke
  * @since 1.5
@@ -45,7 +47,6 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 * @deprecated use {@link IsNewAwareAuditingHandler(PersistentEntities)} instead.
 	 */
 	@Deprecated
-	@SuppressWarnings("unchecked")
 	public IsNewAwareAuditingHandler(
 			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
 		this(new PersistentEntities(Arrays.asList(mappingContext)));
@@ -54,7 +55,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	/**
 	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
 	 * 
-	 * @param mappingContext must not be {@literal null}.
+	 * @param entities must not be {@literal null}.
 	 * @since 1.10
 	 */
 	public IsNewAwareAuditingHandler(PersistentEntities entities) {
@@ -66,23 +67,28 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 
 	/**
 	 * Marks the given object created or modified based on the {@link IsNewStrategy} returned by the
-	 * {@link IsNewStrategyFactory} configured. Will rout the calls to {@link #markCreated(Object)} and
-	 * {@link #markModified(Object)} accordingly.
+	 * {@link IsNewStrategyFactory} configured. Will rout the calls to {@link #markCreated(Optional)} and
+	 * {@link #markModified(Optional)} accordingly.
 	 * 
 	 * @param object
 	 */
-	public void markAudited(Object object) {
+	public void markAudited(Optional<Object> object) {
+
+		Assert.notNull(object, "Source object must not be null!");
 
 		if (!isAuditable(object)) {
 			return;
 		}
 
-		IsNewStrategy strategy = isNewStrategyFactory.getIsNewStrategy(object.getClass());
+		object.ifPresent(it -> {
 
-		if (strategy.isNew(object)) {
-			markCreated(object);
-		} else {
-			markModified(object);
-		}
+			IsNewStrategy strategy = isNewStrategyFactory.getIsNewStrategy(it.getClass());
+
+			if (strategy.isNew(object)) {
+				markCreated(object);
+			} else {
+				markModified(object);
+			}
+		});
 	}
 }

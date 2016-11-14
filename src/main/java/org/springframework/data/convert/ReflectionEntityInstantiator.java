@@ -16,16 +16,16 @@
 package org.springframework.data.convert;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 
@@ -43,39 +43,45 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		PreferredConstructor<? extends T, P> constructor = entity.getPersistenceConstructor();
+		return entity.getPersistenceConstructor().map(constructor -> {
 
-		if (constructor == null) {
+			List<Object> params = Optional.ofNullable(provider)//
+					.map(it -> constructor.getParameters().stream()//
+							.map(parameter -> it.getParameterValue(parameter).orElse(null))//
+							.collect(Collectors.toList()))//
+					.orElse(Collections.emptyList());
 
 			try {
-				Class<?> clazz = entity.getType();
+				return (T) BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());
+			} catch (BeanInstantiationException e) {
+				throw new MappingInstantiationException(Optional.of(entity), params, e);
+			}
+
+		}).orElseGet(() -> {
+
+			try {
+
+				Class<? extends T> clazz = entity.getType();
+
 				if (clazz.isArray()) {
+
 					Class<?> ctype = clazz;
 					int dims = 0;
+
 					while (ctype.isArray()) {
 						ctype = ctype.getComponentType();
 						dims++;
 					}
+
 					return (T) Array.newInstance(clazz, dims);
+
 				} else {
-					return BeanUtils.instantiateClass(entity.getType());
+					return BeanUtils.instantiateClass(clazz);
 				}
+
 			} catch (BeanInstantiationException e) {
-				throw new MappingInstantiationException(entity, Collections.emptyList(), e);
+				throw new MappingInstantiationException(Optional.of(entity), Collections.emptyList(), e);
 			}
-		}
-
-		List<Object> params = new ArrayList<Object>();
-		if (null != provider && constructor.hasParameters()) {
-			for (Parameter<?, P> parameter : constructor.getParameters()) {
-				params.add(provider.getParameterValue(parameter));
-			}
-		}
-
-		try {
-			return BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());
-		} catch (BeanInstantiationException e) {
-			throw new MappingInstantiationException(entity, params, e);
-		}
+		});
 	}
 }

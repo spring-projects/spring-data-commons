@@ -15,6 +15,8 @@
  */
 package org.springframework.data.auditing;
 
+import java.util.Optional;
+
 /**
  * A factory to lookup {@link AuditableBeanWrapper}s.
  * 
@@ -24,11 +26,10 @@ package org.springframework.data.auditing;
 public interface AuditableBeanWrapperFactory {
 
 	/**
-	 * Returns the {@link AuditableBeanWrapper} for the given source obejct if it's eligible for auditing.
+	 * Returns the {@link AuditableBeanWrapper} for the given source object if it's eligible for auditing.
 	 * 
-	 * @param source can be {@literal null}.
-	 * @return the {@link AuditableBeanWrapper} for the given source obejct if it's eligible for auditing or
-	 *         {@literal null} otherwise.
+	 * @param source.
+	 * @return the {@link AuditableBeanWrapper} for the given source object if it's eligible for auditing.
 	 */
-	AuditableBeanWrapper getBeanWrapperFor(Object source);
+	Optional<AuditableBeanWrapper> getBeanWrapperFor(Optional<? extends Object> source);
 }

@@ -15,9 +15,10 @@
  */
 package org.springframework.data.web.querydsl;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver.*;
+
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,7 +34,6 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.data.querydsl.binding.SingleValueBinding;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.Resource;
@@ -46,7 +46,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QuerydslPredicateArgumentResolver}.
@@ -67,19 +66,19 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	public void setUp() {
 
 		resolver = new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
-				null);
+				Optional.empty());
 		request = new MockHttpServletRequest();
 	}
 
 	@Test // DATACMNS-669
 	public void supportsParameterReturnsTrueWhenMethodParameterIsPredicateAndAnnotatedCorrectly() {
-		assertThat(resolver.supportsParameter(getMethodParameterFor("simpleFind", Predicate.class)), is(true));
+		assertThat(resolver.supportsParameter(getMethodParameterFor("simpleFind", Predicate.class))).isTrue();
 	}
 
 	@Test // DATACMNS-669
 	public void supportsParameterReturnsTrueWhenMethodParameterIsPredicateButNotAnnotatedAsSuch() {
-		assertThat(resolver.supportsParameter(getMethodParameterFor("predicateWithoutAnnotation", Predicate.class)),
-				is(true));
+		assertThat(resolver.supportsParameter(getMethodParameterFor("predicateWithoutAnnotation", Predicate.class)))
+				.isTrue();
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
@@ -89,8 +88,8 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 	@Test // DATACMNS-669
 	public void supportsParameterReturnsFalseWhenMethodParameterIsNoPredicate() {
-		assertThat(resolver.supportsParameter(getMethodParameterFor("nonPredicateWithoutAnnotation", String.class)),
-				is(false));
+		assertThat(resolver.supportsParameter(getMethodParameterFor("nonPredicateWithoutAnnotation", String.class)))
+				.isFalse();
 	}
 
 	@Test // DATACMNS-669
@@ -101,7 +100,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Predicate predicate = (BooleanExpression) resolver.resolveArgument(
 				getMethodParameterFor("simpleFind", Predicate.class), null, new ServletWebRequest(request), null);
 
-		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand")));
+		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("rand"));
 	}
 
 	@Test // DATACMNS-669
@@ -113,7 +112,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
-		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("al'thor"))));
+		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("al'thor")));
 	}
 
 	@Test // DATACMNS-669
@@ -126,7 +125,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		BooleanExpression eq = QUser.user.address.city.eq("two rivers");
 
-		assertThat(predicate, is((Predicate) eq));
+		assertThat(predicate).isEqualTo((Predicate) eq);
 	}
 
 	@Test // DATACMNS-669
@@ -137,7 +136,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("pagedFind", Predicate.class, Pageable.class),
 				null, new ServletWebRequest(request), null);
 
-		assertThat(predicate, is((Predicate) QUser.user.address.city.eq("tar valon")));
+		assertThat(predicate).isEqualTo((Predicate) QUser.user.address.city.eq("tar valon"));
 	}
 
 	@Test // DATACMNS-669
@@ -149,8 +148,8 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
-		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("egwene".toUpperCase())
-				.and(QUser.user.lastname.toLowerCase().eq("al'vere"))));
+		assertThat(predicate).isEqualTo(
+				QUser.user.firstname.eq("egwene".toUpperCase()).and(QUser.user.lastname.toLowerCase().eq("al'vere")));
 	}
 
 	@Test // DATACMNS-669
@@ -161,7 +160,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Predicate predicate = (BooleanExpression) resolver.resolveArgument(
 				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
 
-		assertThat(predicate, is((Predicate) QUser.user.inceptionYear.eq(978L)));
+		assertThat(predicate).isEqualTo((Predicate) QUser.user.inceptionYear.eq(978L));
 	}
 
 	@Test // DATACMNS-669
@@ -172,7 +171,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Predicate predicate = (BooleanExpression) resolver.resolveArgument(
 				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
 
-		assertThat(predicate, is((Predicate) QUser.user.inceptionYear.in(978L, 998L)));
+		assertThat(predicate).isEqualTo((Predicate) QUser.user.inceptionYear.in(978L, 998L));
 	}
 
 	@Test // DATACMNS-669
@@ -184,7 +183,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Object predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
-		assertThat(predicate.toString(), is(QUser.user.inceptionYear.eq(973L).toString()));
+		assertThat(predicate.toString()).isEqualTo(QUser.user.inceptionYear.eq(973L).toString());
 	}
 
 	@Test // DATACMNS-669
@@ -194,7 +193,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		TypeInformation<?> type = ReflectionTestUtils.invokeMethod(resolver, "extractTypeInfo",
 				getMethodParameterFor("predicateWithoutAnnotation", Predicate.class));
 
-		assertThat(type, is((TypeInformation) ClassTypeInformation.from(User.class)));
+		assertThat(type).isEqualTo((TypeInformation) ClassTypeInformation.from(User.class));
 	}
 
 	@Test // DATACMNS-669
@@ -204,9 +203,9 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		TypeInformation USER_TYPE = ClassTypeInformation.from(User.class);
 		TypeInformation MODELA_AND_VIEW_TYPE = ClassTypeInformation.from(ModelAndView.class);
 
-		assertThat(extractTypeInfo(getMethodParameterFor("forEntity")), is(USER_TYPE));
-		assertThat(extractTypeInfo(getMethodParameterFor("forResourceOfUser")), is(USER_TYPE));
-		assertThat(extractTypeInfo(getMethodParameterFor("forModelAndView")), is(MODELA_AND_VIEW_TYPE));
+		assertThat(extractTypeInfo(getMethodParameterFor("forEntity"))).isEqualTo(USER_TYPE);
+		assertThat(extractTypeInfo(getMethodParameterFor("forResourceOfUser"))).isEqualTo(USER_TYPE);
+		assertThat(extractTypeInfo(getMethodParameterFor("forModelAndView"))).isEqualTo(MODELA_AND_VIEW_TYPE);
 	}
 
 	private static MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {
@@ -222,21 +221,8 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		public void customize(QuerydslBindings bindings, QUser user) {
 
-			bindings.bind(user.firstname).first(new SingleValueBinding<StringPath, String>() {
-
-				@Override
-				public Predicate bind(StringPath path, String value) {
-					return path.eq(value.toUpperCase());
-				}
-			});
-
-			bindings.bind(user.lastname).first(new SingleValueBinding<StringPath, String>() {
-
-				@Override
-				public Predicate bind(StringPath path, String value) {
-					return path.toLowerCase().eq(value);
-				}
-			});
+			bindings.bind(user.firstname).firstOptional((path, value) -> value.map(it -> path.eq(it.toUpperCase())));
+			bindings.bind(user.lastname).first((path, value) -> Optional.of(path.toLowerCase().eq(value)));
 
 			bindings.excluding(user.address);
 		}
@@ -267,14 +253,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		@Override
 		public void customize(QuerydslBindings bindings, QUser user) {
-
-			bindings.bind(QUser.user.firstname).first(new SingleValueBinding<StringPath, String>() {
-
-				@Override
-				public Predicate bind(StringPath path, String value) {
-					return path.contains(value);
-				}
-			});
+			bindings.bind(QUser.user.firstname).first((path, value) -> Optional.of(path.contains(value)));
 		}
 	}
 }

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
@@ -50,7 +51,7 @@ import com.querydsl.core.types.Predicate;
 public class QuerydslPredicateBuilder {
 
 	private final ConversionService conversionService;
-	private final MultiValueBinding<?, ?> defaultBinding;
+	private final MultiValueBinding<Path<? extends Object>, Object> defaultBinding;
 	private final Map<PathInformation, Path<?>> paths;
 	private final EntityPathResolver resolver;
 
@@ -67,7 +68,7 @@ public class QuerydslPredicateBuilder {
 
 		this.defaultBinding = new QuerydslDefaultBinding();
 		this.conversionService = conversionService;
-		this.paths = new HashMap<PathInformation, Path<?>>();
+		this.paths = new HashMap<>();
 		this.resolver = resolver;
 	}
 
@@ -110,11 +111,9 @@ public class QuerydslPredicateBuilder {
 			}
 
 			Collection<Object> value = convertToPropertyPathSpecificType(entry.getValue(), propertyPath);
-			Predicate predicate = invokeBinding(propertyPath, bindings, value);
+			Optional<Predicate> predicate = invokeBinding(propertyPath, bindings, value);
 
-			if (predicate != null) {
-				builder.and(predicate);
-			}
+			predicate.ifPresent(it -> builder.and(it));
 		}
 
 		return builder.getValue();
@@ -128,15 +127,12 @@ public class QuerydslPredicateBuilder {
 	 * @param values must not be {@literal null}.
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Predicate invokeBinding(PathInformation dotPath, QuerydslBindings bindings, Collection<Object> values) {
+	private Optional<Predicate> invokeBinding(PathInformation dotPath, QuerydslBindings bindings,
+			Collection<Object> values) {
 
 		Path<?> path = getPath(dotPath, bindings);
 
-		MultiValueBinding binding = bindings.getBindingForPath(dotPath);
-		binding = binding == null ? defaultBinding : binding;
-
-		return binding.bind(path, values);
+		return bindings.getBindingForPath(dotPath).orElse(defaultBinding).bind(path, values);
 	}
 
 	/**
@@ -150,22 +146,9 @@ public class QuerydslPredicateBuilder {
 	 */
 	private Path<?> getPath(PathInformation path, QuerydslBindings bindings) {
 
-		Path<?> resolvedPath = bindings.getExistingPath(path);
+		Optional<Path<?>> resolvedPath = bindings.getExistingPath(path);
 
-		if (resolvedPath != null) {
-			return resolvedPath;
-		}
-
-		resolvedPath = paths.get(resolvedPath);
-
-		if (resolvedPath != null) {
-			return resolvedPath;
-		}
-
-		resolvedPath = path.reifyPath(resolver);
-		paths.put(path, resolvedPath);
-
-		return resolvedPath;
+		return resolvedPath.orElseGet(() -> paths.computeIfAbsent(path, it -> path.reifyPath(resolver)));
 	}
 
 	/**

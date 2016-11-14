@@ -15,13 +15,13 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.springframework.data.repository.Repository;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -47,17 +47,16 @@ public class RepositoryFactoryBeanSupportUnitTests {
 		factoryBean.afterPropertiesSet();
 
 		Object factory = ReflectionTestUtils.getField(factoryBean, "factory");
-		assertThat(ReflectionTestUtils.getField(factory, "classLoader"), is((Object) classLoader));
+		assertThat(ReflectionTestUtils.getField(factory, "classLoader")).isEqualTo(classLoader);
 	}
 
 	@Test // DATACMNS-432
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void initializationFailsWithMissingRepositoryInterface() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("Repository interface");
-
-		new DummyRepositoryFactoryBean(null);
+		assertThatExceptionOfType(IllegalArgumentException.class)//
+				.isThrownBy(() -> new DummyRepositoryFactoryBean().afterPropertiesSet())//
+				.withMessageContaining("Repository interface");
 	}
 
 	interface SampleRepository extends Repository<Object, Long> {}

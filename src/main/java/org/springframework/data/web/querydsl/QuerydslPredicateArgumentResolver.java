@@ -17,6 +17,7 @@ package org.springframework.data.web.querydsl;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
@@ -56,11 +57,11 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	 * @param factory
 	 * @param conversionService defaults to {@link DefaultConversionService} if {@literal null}.
 	 */
-	public QuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory, ConversionService conversionService) {
+	public QuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory,
+			Optional<ConversionService> conversionService) {
 
 		this.bindingsFactory = factory;
-		this.predicateBuilder = new QuerydslPredicateBuilder(
-				conversionService == null ? new DefaultConversionService() : conversionService,
+		this.predicateBuilder = new QuerydslPredicateBuilder(conversionService.orElse(new DefaultConversionService()),
 				factory.getEntityPathResolver());
 	}
 
@@ -88,7 +89,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Predicate resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
@@ -98,12 +99,15 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 			parameters.put(entry.getKey(), Arrays.asList(entry.getValue()));
 		}
 
-		QuerydslPredicate annotation = parameter.getParameterAnnotation(QuerydslPredicate.class);
+		Optional<QuerydslPredicate> annotation = Optional
+				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
 		TypeInformation<?> domainType = extractTypeInfo(parameter).getActualType();
 
-		Class<? extends QuerydslBinderCustomizer<?>> customizer = (Class<? extends QuerydslBinderCustomizer<?>>) (annotation == null
-				? null : annotation.bindings());
-		QuerydslBindings bindings = bindingsFactory.createBindingsFor(customizer, domainType);
+		Optional<? extends Class<? extends QuerydslBinderCustomizer>> map = annotation
+				.<Class<? extends QuerydslBinderCustomizer>> map(it -> it.bindings());
+
+		QuerydslBindings bindings = bindingsFactory.createBindingsFor(domainType,
+				(Optional<Class<? extends QuerydslBinderCustomizer<?>>>) map);
 
 		return predicateBuilder.getPredicate(domainType, parameters, bindings);
 	}
@@ -117,13 +121,12 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	 */
 	static TypeInformation<?> extractTypeInfo(MethodParameter parameter) {
 
-		QuerydslPredicate annotation = parameter.getParameterAnnotation(QuerydslPredicate.class);
+		Optional<QuerydslPredicate> annotation = Optional
+				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
 
-		if (annotation != null && !Object.class.equals(annotation.root())) {
-			return ClassTypeInformation.from(annotation.root());
-		}
-
-		return detectDomainType(ClassTypeInformation.fromReturnTypeOf(parameter.getMethod()));
+		return annotation.filter(it -> !Object.class.equals(it.root()))//
+				.<TypeInformation<?>> map(it -> ClassTypeInformation.from(it.root()))//
+				.orElseGet(() -> detectDomainType(ClassTypeInformation.fromReturnTypeOf(parameter.getMethod())));
 	}
 
 	private static TypeInformation<?> detectDomainType(TypeInformation<?> source) {

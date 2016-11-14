@@ -15,8 +15,7 @@
  */
 package org.springframework.data.convert;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.threeten.bp.DateTimeUtils.*;
 
 import java.text.SimpleDateFormat;
@@ -59,53 +58,54 @@ public class ThreeTenBackPortConvertersUnitTests {
 
 	@Test // DATACMNS-606
 	public void convertsDateToLocalDateTime() {
-		assertThat(CONVERSION_SERVICE.convert(NOW, LocalDateTime.class).toString(),
-				is(format(NOW, "yyyy-MM-dd'T'HH:mm:ss.SSS")));
+		assertThat(CONVERSION_SERVICE.convert(NOW, LocalDateTime.class).toString())
+				.isEqualTo(format(NOW, "yyyy-MM-dd'T'HH:mm:ss.SSS"));
 	}
 
 	@Test // DATACMNS-606
 	public void convertsLocalDateTimeToDate() {
 
 		LocalDateTime now = LocalDateTime.now();
-		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "yyyy-MM-dd'T'HH:mm:ss.SSS"), is(now.toString()));
+		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "yyyy-MM-dd'T'HH:mm:ss.SSS"))
+				.isEqualTo(now.toString());
 	}
 
 	@Test // DATACMNS-606
 	public void convertsDateToLocalDate() {
-		assertThat(CONVERSION_SERVICE.convert(NOW, LocalDate.class).toString(), is(format(NOW, "yyyy-MM-dd")));
+		assertThat(CONVERSION_SERVICE.convert(NOW, LocalDate.class).toString()).isEqualTo(format(NOW, "yyyy-MM-dd"));
 	}
 
 	@Test // DATACMNS-606
 	public void convertsLocalDateToDate() {
 
 		LocalDate now = LocalDate.now();
-		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "yyyy-MM-dd"), is(now.toString()));
+		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "yyyy-MM-dd")).isEqualTo(now.toString());
 	}
 
 	@Test // DATACMNS-606
 	public void convertsDateToLocalTime() {
-		assertThat(CONVERSION_SERVICE.convert(NOW, LocalTime.class).toString(), is(format(NOW, "HH:mm:ss.SSS")));
+		assertThat(CONVERSION_SERVICE.convert(NOW, LocalTime.class).toString()).isEqualTo(format(NOW, "HH:mm:ss.SSS"));
 	}
 
 	@Test // DATACMNS-606
 	public void convertsLocalTimeToDate() {
 
 		LocalTime now = LocalTime.now();
-		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "HH:mm:ss.SSS"), is(now.toString()));
+		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "HH:mm:ss.SSS")).isEqualTo(now.toString());
 	}
 
 	@Test // DATACMNS-623
 	public void convertsDateToInstant() {
 
 		Date now = new Date();
-		assertThat(CONVERSION_SERVICE.convert(now, Instant.class), is(toInstant(now)));
+		assertThat(CONVERSION_SERVICE.convert(now, Instant.class)).isEqualTo(toInstant(now));
 	}
 
 	@Test // DATACMNS-623
 	public void convertsInstantToDate() {
 
 		Date now = new Date();
-		assertThat(CONVERSION_SERVICE.convert(toInstant(now), Date.class), is(now));
+		assertThat(CONVERSION_SERVICE.convert(toInstant(now), Date.class)).isEqualTo(now);
 	}
 
 	@Test
@@ -116,8 +116,8 @@ public class ThreeTenBackPortConvertersUnitTests {
 		ids.put("+06:00", ZoneId.of("+06:00"));
 
 		for (Entry<String, ZoneId> entry : ids.entrySet()) {
-			assertThat(CONVERSION_SERVICE.convert(entry.getValue(), String.class), is(entry.getKey()));
-			assertThat(CONVERSION_SERVICE.convert(entry.getKey(), ZoneId.class), is(entry.getValue()));
+			assertThat(CONVERSION_SERVICE.convert(entry.getValue(), String.class)).isEqualTo(entry.getKey());
+			assertThat(CONVERSION_SERVICE.convert(entry.getKey(), ZoneId.class)).isEqualTo(entry.getValue());
 		}
 	}
 

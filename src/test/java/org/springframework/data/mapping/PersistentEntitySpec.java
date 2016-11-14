@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Some test methods that define expected behaviour for {@link PersistentEntity} interface. Implementation test classes
@@ -27,6 +26,6 @@ import static org.junit.Assert.*;
 public abstract class PersistentEntitySpec {
 
 	public static void assertInvariants(PersistentEntity<?, ?> entity) {
-		assertThat(entity.getName(), is(notNullValue()));
+		assertThat(entity.getName()).isNotNull();
 	}
 }

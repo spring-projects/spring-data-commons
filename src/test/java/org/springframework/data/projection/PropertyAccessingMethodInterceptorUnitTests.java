@@ -15,8 +15,7 @@
  */
 package org.springframework.data.projection;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -48,7 +47,7 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("getFirstname"));
 		MethodInterceptor interceptor = new PropertyAccessingMethodInterceptor(source);
 
-		assertThat(interceptor.invoke(invocation), is((Object) "Dave"));
+		assertThat(interceptor.invoke(invocation)).isEqualTo("Dave");
 	}
 
 	@Test(expected = NotReadablePropertyException.class) // DATAREST-221
@@ -85,7 +84,7 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 
 		new PropertyAccessingMethodInterceptor(source).invoke(invocation);
 
-		assertThat(source.firstname, is((Object) "Carl"));
+		assertThat(source.firstname).isEqualTo("Carl");
 	}
 
 	@Test(expected = IllegalStateException.class) // DATACMNS-820

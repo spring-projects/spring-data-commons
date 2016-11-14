@@ -17,8 +17,12 @@ package org.springframework.data.web.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -35,6 +39,15 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  */
 @Configuration
 public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfiguration {
+
+	/**
+	 * @param context must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
+	 */
+	public HateoasAwareSpringDataWebConfiguration(ApplicationContext context,
+			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
+		super(context, conversionService);
+	}
 
 	/*
 	 * (non-Javadoc)

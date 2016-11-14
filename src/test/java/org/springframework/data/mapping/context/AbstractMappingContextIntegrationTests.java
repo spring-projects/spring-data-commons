@@ -15,13 +15,13 @@
  */
 package org.springframework.data.mapping.context;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
@@ -47,7 +47,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.initialize();
 
-		assertThat(context.getManagedTypes(), hasItem(ClassTypeInformation.from(Person.class)));
+		assertThat(context.getManagedTypes()).contains(ClassTypeInformation.from(Person.class));
 	}
 
 	@Test // DATACMNS-457
@@ -57,7 +57,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.initialize();
 
-		assertThat(context.hasPersistentEntityFor(Person.class), is(true));
+		assertThat(context.hasPersistentEntityFor(Person.class)).isTrue();
 	}
 
 	@Test // DATACMNS-243
@@ -66,7 +66,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		SampleMappingContext context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(InterfaceOnly.class);
 
-		assertThat(entity.getIdProperty(), is(notNullValue()));
+		assertThat(entity.getIdProperty()).isNotNull();
 	}
 
 	@Test // DATACMNS-65
@@ -116,13 +116,13 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 
 		@Override
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		protected T createPersistentProperty(final Field field, final PropertyDescriptor descriptor,
-				final BasicPersistentEntity<Object, T> owner, final SimpleTypeHolder simpleTypeHolder) {
+		protected T createPersistentProperty(Optional<Field> field, PropertyDescriptor descriptor,
+				final BasicPersistentEntity<Object, T> owner, SimpleTypeHolder simpleTypeHolder) {
 
 			PersistentProperty prop = mock(PersistentProperty.class);
 
 			when(prop.getTypeInformation()).thenReturn(owner.getTypeInformation());
-			when(prop.getName()).thenReturn(field == null ? descriptor.getName() : field.getName());
+			when(prop.getName()).thenReturn(field.map(Field::getName).orElse(descriptor.getName()));
 			when(prop.getPersistentEntityType()).thenReturn(Collections.EMPTY_SET);
 
 			try {

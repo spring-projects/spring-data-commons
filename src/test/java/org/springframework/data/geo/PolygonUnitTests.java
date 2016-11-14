@@ -15,8 +15,7 @@
  */
 package org.springframework.data.geo;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.util.SerializationUtils;
@@ -43,7 +42,7 @@ public class PolygonUnitTests {
 
 		Polygon polygon = new Polygon(third, second, first);
 
-		assertThat(polygon, is(notNullValue()));
+		assertThat(polygon).isNotNull();
 	}
 
 	@Test // DATACMNS-437
@@ -52,15 +51,15 @@ public class PolygonUnitTests {
 		Polygon left = new Polygon(third, second, first);
 		Polygon right = new Polygon(third, second, first);
 
-		assertThat(left, is(right));
-		assertThat(right, is(left));
+		assertThat(left).isEqualTo(right);
+		assertThat(right).isEqualTo(left);
 	}
 
 	@Test // DATACMNS-437
 	public void testToString() {
 
-		assertThat(new Polygon(third, second, first).toString(),
-				is("Polygon: [Point [x=3.000000, y=3.000000],Point [x=2.000000, y=2.000000],Point [x=1.000000, y=1.000000]]"));
+		assertThat(new Polygon(third, second, first).toString()).isEqualTo(
+				"Polygon: [Point [x=3.000000, y=3.000000],Point [x=2.000000, y=2.000000],Point [x=1.000000, y=1.000000]]");
 	}
 
 	@Test // DATACMNS-482
@@ -69,6 +68,6 @@ public class PolygonUnitTests {
 		Polygon polygon = new Polygon(third, second, first);
 
 		Polygon serialized = (Polygon) SerializationUtils.deserialize(SerializationUtils.serialize(polygon));
-		assertThat(serialized, is(polygon));
+		assertThat(serialized).isEqualTo(polygon);
 	}
 }

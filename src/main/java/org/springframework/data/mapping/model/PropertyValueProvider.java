@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
+import java.util.Optional;
+
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
@@ -30,5 +32,5 @@ public interface PropertyValueProvider<P extends PersistentProperty<P>> {
 	 * @param property will never be {@literal null}.
 	 * @return
 	 */
-	<T> T getPropertyValue(P property);
+	<T> Optional<T> getPropertyValue(P property);
 }

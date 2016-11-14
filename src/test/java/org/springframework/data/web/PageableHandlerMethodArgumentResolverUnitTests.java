@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.web.PageableHandlerMethodArgumentResolver.*;
 
 import org.junit.Before;
@@ -102,7 +101,8 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	@Test // DATACMNS-377
 	public void rejectsInvalidCustomDefaultForPageSize() throws Exception {
 
-		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("invalidDefaultPageSize", Pageable.class), 0);
+		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("invalidDefaultPageSize", Pageable.class),
+				0);
 
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("invalidDefaultPageSize");
@@ -156,8 +156,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("page", "20");
 
-		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null),
-				is(nullValue()));
+		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null)).isNull();
 	}
 
 	@Test // DATACMNS-477
@@ -169,8 +168,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("size", "10");
 
-		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null),
-				is(nullValue()));
+		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null)).isNull();
 	}
 
 	@Test // DATACMNS-563
@@ -182,8 +180,9 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("page", "1");
 
-		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null)
-				.getPageNumber(), is(0));
+		assertThat(
+				resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null).getPageNumber())
+						.isEqualTo(0);
 	}
 
 	@Test // DATACMNS-640
@@ -198,9 +197,9 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 
 		Pageable result = resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null);
 
-		assertThat(result.getPageNumber(), is(0));
-		assertThat(result.getPageSize(), is(10));
-		assertThat(result.getSort(), is(nullValue()));
+		assertThat(result.getPageNumber()).isEqualTo(0);
+		assertThat(result.getPageSize()).isEqualTo(10);
+		assertThat(result.getSort()).isNull();
 	}
 
 	@Test // DATACMNS-692
@@ -214,7 +213,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 
 		Pageable result = resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null);
 
-		assertThat(result.getPageNumber(), is(0));
+		assertThat(result.getPageNumber()).isEqualTo(0);
 	}
 
 	@Test // DATACMNS-761
@@ -228,7 +227,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 
 		Pageable result = resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null);
 
-		assertThat(result.getPageSize(), is(10));
+		assertThat(result.getPageSize()).isEqualTo(10);
 	}
 
 	@Test // DATACMNS-929
@@ -263,17 +262,17 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 
 		void simpleDefault(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER) Pageable pageable);
 
-		void simpleDefaultWithSort(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER,
-				sort = { "firstname", "lastname" }) Pageable pageable);
+		void simpleDefaultWithSort(
+				@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER, sort = { "firstname", "lastname" }) Pageable pageable);
 
-		void simpleDefaultWithSortAndDirection(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER, sort = { "firstname",
-				"lastname" }, direction = Direction.DESC) Pageable pageable);
+		void simpleDefaultWithSortAndDirection(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER,
+				sort = { "firstname", "lastname" }, direction = Direction.DESC) Pageable pageable);
 
-		void simpleDefaultWithExternalSort(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER)//
-				@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC) Pageable pageable);
+		void simpleDefaultWithExternalSort(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER) //
+		@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC) Pageable pageable);
 
-		void simpleDefaultWithContaineredExternalSort(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER)//
-				@SortDefaults(@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC)) Pageable pageable);
+		void simpleDefaultWithContaineredExternalSort(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER) //
+		@SortDefaults(@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC)) Pageable pageable);
 
 		void invalidQualifiers(@Qualifier("foo") Pageable first, @Qualifier("foo") Pageable second);
 

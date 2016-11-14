@@ -15,8 +15,7 @@
  */
 package org.springframework.data.geo.format;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.geo.format.DistanceFormatter.*;
 
 import java.text.ParseException;
@@ -62,7 +61,7 @@ public class DistanceFormatterUnitTests {
 
 		@Test // DATAREST-279, DATACMNS-626
 		public void printsDistance() {
-			assertThat(INSTANCE.print(REFERENCE, Locale.US), is("10.8km"));
+			assertThat(INSTANCE.print(REFERENCE, Locale.US)).isEqualTo("10.8km");
 		}
 	}
 
@@ -80,12 +79,12 @@ public class DistanceFormatterUnitTests {
 
 		@Test // DATAREST-279, DATACMNS-626
 		public void parsesDistanceFromString() {
-			assertThat(INSTANCE.convert(source), is(REFERENCE));
+			assertThat(INSTANCE.convert(source)).isEqualTo(REFERENCE);
 		}
 
 		@Test
 		public void parsesDistances() throws ParseException {
-			assertThat(INSTANCE.parse(source, Locale.US), is(REFERENCE));
+			assertThat(INSTANCE.parse(source, Locale.US)).isEqualTo(REFERENCE);
 		}
 	}
 }

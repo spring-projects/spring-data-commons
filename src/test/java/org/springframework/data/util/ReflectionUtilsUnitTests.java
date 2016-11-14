@@ -15,8 +15,7 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -45,14 +44,14 @@ public class ReflectionUtilsUnitTests {
 	public void findsFieldByFilter() {
 
 		Field field = ReflectionUtils.findField(Sample.class, (FieldFilter) new FieldNameFieldFilter("field"));
-		assertThat(field, is(reference));
+		assertThat(field).isEqualTo(reference);
 	}
 
 	@Test
 	public void returnsNullIfNoFieldFound() {
 
 		Field field = ReflectionUtils.findField(Sample.class, (FieldFilter) new FieldNameFieldFilter("foo"));
-		assertThat(field, is(nullValue()));
+		assertThat(field).isNull();
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -64,7 +63,7 @@ public class ReflectionUtilsUnitTests {
 	public void findsUniqueField() {
 
 		Field field = ReflectionUtils.findField(Sample.class, new FieldNameFieldFilter("field"), false);
-		assertThat(field, is(reference));
+		assertThat(field).isEqualTo(reference);
 	}
 
 	@Test
@@ -75,7 +74,7 @@ public class ReflectionUtilsUnitTests {
 		}
 
 		Field field = ReflectionUtils.findField(Subclass.class, new FieldNameFieldFilter("field"));
-		assertThat(field, is(reference));
+		assertThat(field).isEqualTo(reference);
 	}
 
 	@Test
@@ -84,27 +83,27 @@ public class ReflectionUtilsUnitTests {
 		Sample sample = new Sample();
 		Field field = ReflectionUtils.findField(Sample.class, new FieldNameFieldFilter("first"));
 		ReflectionUtils.setField(field, sample, "foo");
-		assertThat(sample.first, is("foo"));
+		assertThat(sample.first).isEqualTo("foo");
 	}
 
 	@Test // DATACMNS-542
 	public void detectsConstructorForCompleteMatch() throws Exception {
-		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test"), is(constructor));
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test")).hasValue(constructor);
 	}
 
 	@Test // DATACMNS-542
 	public void detectsConstructorForMatchWithNulls() throws Exception {
-		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, null), is(constructor));
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, null)).hasValue(constructor);
 	}
 
 	@Test // DATACMNS-542
 	public void rejectsConstructorIfNumberOfArgumentsDontMatch() throws Exception {
-		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test", "test"), is(nullValue()));
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test", "test")).isNotPresent();
 	}
 
 	@Test // DATACMNS-542
 	public void rejectsConstructorForNullForPrimitiveArgument() throws Exception {
-		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, null, "test"), is(nullValue()));
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, null, "test")).isNotPresent();
 	}
 
 	static class Sample {

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping.context;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,8 +23,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.mapping.context.MappingContextEvent;
 
 /**
  * Unit tests for {@link MappingContextEvent}.
@@ -45,21 +42,21 @@ public class MappingContextEventUnitTests<E extends PersistentEntity<?, P>, P ex
 	public void returnsPersistentEntityHandedToTheEvent() {
 
 		MappingContextEvent<E, P> event = new MappingContextEvent<E, P>(mappingContext, entity);
-		assertThat(event.getPersistentEntity(), is(entity));
+		assertThat(event.getPersistentEntity()).isEqualTo(entity);
 	}
 
 	@Test
 	public void usesMappingContextAsEventSource() {
 
 		MappingContextEvent<E, P> event = new MappingContextEvent<E, P>(mappingContext, entity);
-		assertThat(event.getSource(), is((Object) mappingContext));
+		assertThat(event.getSource()).isEqualTo(mappingContext);
 	}
 
 	@Test
 	public void detectsEmittingMappingContextCorrectly() {
 
 		MappingContextEvent<E, P> event = new MappingContextEvent<E, P>(mappingContext, entity);
-		assertThat(event.wasEmittedBy(mappingContext), is(true));
-		assertThat(event.wasEmittedBy(otherMappingContext), is(false));
+		assertThat(event.wasEmittedBy(mappingContext)).isTrue();
+		assertThat(event.wasEmittedBy(otherMappingContext)).isFalse();
 	}
 }

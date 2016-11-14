@@ -19,8 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionException;
@@ -33,7 +31,6 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -168,25 +165,6 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		} else {
 			invoke(method, this.<Object> invokeFindOne(id));
 		}
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, java.util.Map, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
-	 */
-	@Override
-	public Object invokeQueryMethod(Method method, Map<String, String[]> parameters, Pageable pageable, Sort sort) {
-
-		Assert.notNull(method, "Method must not be null!");
-		Assert.notNull(parameters, "Parameters must not be null!");
-
-		MultiValueMap<String, String> forward = new LinkedMultiValueMap<String, String>(parameters.size());
-
-		for (Entry<String, String[]> entry : parameters.entrySet()) {
-			forward.put(entry.getKey(), Arrays.asList(entry.getValue()));
-		}
-
-		return invokeQueryMethod(method, forward, pageable, sort);
 	}
 
 	/*

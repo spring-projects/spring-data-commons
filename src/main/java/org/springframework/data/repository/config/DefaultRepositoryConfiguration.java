@@ -15,10 +15,14 @@
  */
 package org.springframework.data.repository.config;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+import java.util.Optional;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
-import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -27,37 +31,23 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
+@RequiredArgsConstructor
 public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSource>
 		implements RepositoryConfiguration<T> {
 
 	public static final String DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX = "Impl";
 	private static final Key DEFAULT_QUERY_LOOKUP_STRATEGY = Key.CREATE_IF_NOT_FOUND;
 
-	private final T configurationSource;
-	private final BeanDefinition definition;
-
-	/**
-	 * Creates a new {@link DefaultRepositoryConfiguration} from the given {@link RepositoryConfigurationSource} and
-	 * source {@link BeanDefinition}.
-	 * 
-	 * @param configurationSource must not be {@literal null}.
-	 * @param definition must not be {@literal null}.
-	 */
-	public DefaultRepositoryConfiguration(T configurationSource, BeanDefinition definition) {
-
-		Assert.notNull(configurationSource, "ConfigurationSource must not be null!");
-		Assert.notNull(definition, "BeanDefinition must not be null!");
-
-		this.configurationSource = configurationSource;
-		this.definition = definition;
-	}
+	private final @NonNull T configurationSource;
+	private final @NonNull BeanDefinition definition;
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getBeanId()
 	 */
 	public String getBeanId() {
-		return StringUtils.uncapitalize(ClassUtils.getShortName(getRepositoryFactoryBeanName()));
+		return StringUtils.uncapitalize(ClassUtils.getShortName(getRepositoryBaseClassName().orElseThrow(
+				() -> new IllegalStateException("Can't create bean identifier without a repository base class defined!"))));
 	}
 
 	/*
@@ -65,9 +55,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getQueryLookupStrategyKey()
 	 */
 	public Object getQueryLookupStrategyKey() {
-
-		Object configuredStrategy = configurationSource.getQueryLookupStrategyKey();
-		return configuredStrategy != null ? configuredStrategy : DEFAULT_QUERY_LOOKUP_STRATEGY;
+		return configurationSource.getQueryLookupStrategyKey().orElse(DEFAULT_QUERY_LOOKUP_STRATEGY);
 	}
 
 	/*
@@ -97,7 +85,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getNamedQueryLocation()
 	 */
-	public String getNamedQueriesLocation() {
+	public Optional<String> getNamedQueriesLocation() {
 		return configurationSource.getNamedQueryLocation();
 	}
 
@@ -106,7 +94,8 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationClassName()
 	 */
 	public String getImplementationClassName() {
-		return ClassUtils.getShortName(getRepositoryInterface()) + getImplementationPostfix();
+		return ClassUtils.getShortName(getRepositoryInterface()).concat(
+				configurationSource.getRepositoryImplementationPostfix().orElse(DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX));
 	}
 
 	/* 
@@ -119,18 +108,9 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationPostfix()
-	 */
-	public String getImplementationPostfix() {
-
-		String configuredPostfix = configurationSource.getRepositoryImplementationPostfix();
-		return StringUtils.hasText(configuredPostfix) ? configuredPostfix : DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX;
-	}
-
-	/* 
-	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getSource()
 	 */
+	@Override
 	public Object getSource() {
 		return configurationSource.getSource();
 	}
@@ -139,16 +119,9 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getConfigurationSource()
 	 */
+	@Override
 	public T getConfigurationSource() {
 		return configurationSource;
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryFactoryBeanName()
-	 */
-	public String getRepositoryFactoryBeanName() {
-		return configurationSource.getRepositoryFactoryBeanName();
 	}
 
 	/* 
@@ -156,7 +129,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryBaseClassName()
 	 */
 	@Override
-	public String getRepositoryBaseClassName() {
+	public Optional<String> getRepositoryBaseClassName() {
 		return configurationSource.getRepositoryBaseClassName();
 	}
 

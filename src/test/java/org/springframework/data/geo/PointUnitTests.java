@@ -15,8 +15,7 @@
  */
 package org.springframework.data.geo;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.util.SerializationUtils;
@@ -37,14 +36,14 @@ public class PointUnitTests {
 	@Test // DATACMNS-437
 	public void equalsIsImplementedCorrectly() {
 
-		assertThat(new Point(1.5, 1.5), is(equalTo(new Point(1.5, 1.5))));
-		assertThat(new Point(1.5, 1.5), is(not(equalTo(new Point(2.0, 2.0)))));
-		assertThat(new Point(2.0, 2.0), is(not(equalTo(new Point(1.5, 1.5)))));
+		assertThat(new Point(1.5, 1.5)).isEqualTo(new Point(1.5, 1.5));
+		assertThat(new Point(1.5, 1.5)).isNotEqualTo(new Point(2.0, 2.0));
+		assertThat(new Point(2.0, 2.0)).isNotEqualTo(new Point(1.5, 1.5));
 	}
 
 	@Test // DATACMNS-437
 	public void invokingToStringWorksCorrectly() {
-		assertThat(new Point(1.5, 1.5).toString(), is("Point [x=1.500000, y=1.500000]"));
+		assertThat(new Point(1.5, 1.5).toString()).isEqualTo("Point [x=1.500000, y=1.500000]");
 	}
 
 	@Test // DATACMNS-482
@@ -53,6 +52,6 @@ public class PointUnitTests {
 		Point point = new Point(1.5, 1.5);
 
 		Point serialized = (Point) SerializationUtils.deserialize(SerializationUtils.serialize(point));
-		assertThat(serialized, is(point));
+		assertThat(serialized).isEqualTo(point);
 	}
 }
