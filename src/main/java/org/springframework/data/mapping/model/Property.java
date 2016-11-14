@@ -71,12 +71,16 @@ public class Property {
 
 	public Optional<Method> getGetter() {
 		return descriptor.map(it -> it.getReadMethod())//
-				.filter(it -> getRawType().isAssignableFrom(it.getReturnType()));
+				.filter(it -> getType().isAssignableFrom(it.getReturnType()));
 	}
 
 	public Optional<Method> getSetter() {
 		return descriptor.map(it -> it.getWriteMethod())//
-				.filter(it -> it.getParameterTypes()[0].isAssignableFrom(getRawType()));
+				.filter(it -> it.getParameterTypes()[0].isAssignableFrom(getType()));
+	}
+
+	public boolean hasAccessor() {
+		return getGetter().isPresent() || getSetter().isPresent();
 	}
 
 	/**
@@ -87,7 +91,7 @@ public class Property {
 				.orElseThrow(() -> new IllegalStateException()));
 	}
 
-	public Class<?> getRawType() {
+	public Class<?> getType() {
 		return rawType.get();
 	}
 
