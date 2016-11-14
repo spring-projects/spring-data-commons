@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.util;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,7 +35,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.reactivestreams.Publisher;
-import org.springframework.core.ReactiveAdapter.Descriptor;
+import org.springframework.core.ReactiveAdapter;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -89,25 +92,25 @@ public class ReactiveWrappers {
 
 		if (RXJAVA1_PRESENT) {
 
-			reactiveWrappers.put(Single.class, new Descriptor(false, true, false));
-			reactiveWrappers.put(Completable.class, new Descriptor(false, true, true));
-			reactiveWrappers.put(Observable.class, new Descriptor(true, true, false));
+			reactiveWrappers.put(Single.class, Descriptor.forSingleValue().forValue());
+			reactiveWrappers.put(Completable.class, Descriptor.forSingleValue().forNoValue());
+			reactiveWrappers.put(Observable.class, Descriptor.forMultiValue().forValue());
 		}
 
 		if (RXJAVA2_PRESENT) {
 
-			reactiveWrappers.put(io.reactivex.Single.class, new Descriptor(false, true, false));
-			reactiveWrappers.put(io.reactivex.Maybe.class, new Descriptor(false, true, false));
-			reactiveWrappers.put(io.reactivex.Completable.class, new Descriptor(false, true, true));
-			reactiveWrappers.put(io.reactivex.Flowable.class, new Descriptor(true, true, false));
-			reactiveWrappers.put(io.reactivex.Observable.class, new Descriptor(true, true, false));
+			reactiveWrappers.put(io.reactivex.Single.class, Descriptor.forSingleValue().forValue());
+			reactiveWrappers.put(io.reactivex.Maybe.class, Descriptor.forSingleValue().forValue());
+			reactiveWrappers.put(io.reactivex.Completable.class, Descriptor.forSingleValue().forNoValue());
+			reactiveWrappers.put(io.reactivex.Flowable.class, Descriptor.forMultiValue().forValue());
+			reactiveWrappers.put(io.reactivex.Observable.class, Descriptor.forMultiValue().forValue());
 		}
 
 		if (PROJECT_REACTOR_PRESENT) {
 
-			reactiveWrappers.put(Mono.class, new Descriptor(false, true, false));
-			reactiveWrappers.put(Flux.class, new Descriptor(true, true, true));
-			reactiveWrappers.put(Publisher.class, new Descriptor(true, true, true));
+			reactiveWrappers.put(Mono.class, Descriptor.forSingleValue().forValue());
+			reactiveWrappers.put(Flux.class, Descriptor.forMultiValue().forNoValue());
+			reactiveWrappers.put(Publisher.class, Descriptor.forMultiValue().forNoValue());
 		}
 
 		REACTIVE_WRAPPERS = Collections.unmodifiableMap(reactiveWrappers);
@@ -276,5 +279,52 @@ public class ReactiveWrappers {
 		return REACTIVE_WRAPPERS.entrySet().stream()//
 				.filter(it -> ClassUtils.isAssignable(it.getKey(), type))//
 				.findFirst().map(it -> it.getValue());
+	}
+
+	/**
+	 * Basically a copy of Spring's {@link ReactiveAdapter.Descriptor} but without introducing the strong dependency to
+	 * Reactor so that we can safely use the class in non-reactive environments.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.0
+	 */
+	@Value
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	private static class Descriptor {
+
+		/**
+		 * Return {@code true} if the adaptee implies 0..N values can be produced and is therefore a good fit to adapt to
+		 * {@link Flux}. A {@code false} return value implies the adaptee will produce 1 value at most and is therefore a
+		 * good fit for {@link Mono}.
+		 */
+		private final boolean multiValue;
+
+		/**
+		 * Return {@code true} if the adaptee implies no values will be produced, i.e. providing only completion or error
+		 * signal.
+		 */
+		private final boolean noValue;
+
+		public static DescriptorBuilder forSingleValue() {
+			return new DescriptorBuilder(false);
+		}
+
+		public static DescriptorBuilder forMultiValue() {
+			return new DescriptorBuilder(true);
+		}
+
+		@RequiredArgsConstructor
+		static class DescriptorBuilder {
+
+			private final boolean multi;
+
+			public Descriptor forValue() {
+				return new Descriptor(multi, false);
+			}
+
+			public Descriptor forNoValue() {
+				return new Descriptor(multi, true);
+			}
+		}
 	}
 }

@@ -49,6 +49,7 @@ import org.springframework.util.ClassUtils;
  * wrapper types might be supported/on the class path but conversion may require additional dependencies.
  * 
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @since 2.0
  * @see ReactiveWrappers
  * @see ReactiveAdapterRegistry
@@ -167,7 +168,8 @@ public class ReactiveWrapperConverters {
 	 * @return {@literal true} if the {@code type} is a supported reactive wrapper type.
 	 */
 	public static boolean supports(Class<?> type) {
-		return RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(type) != null;
+		return RegistryHolder.REACTIVE_ADAPTER_REGISTRY != null
+				&& RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(type) != null;
 	}
 
 	/**
@@ -1007,6 +1009,16 @@ public class ReactiveWrapperConverters {
 	 * @author 2.0
 	 */
 	static class RegistryHolder {
-		static final ReactiveAdapterRegistry REACTIVE_ADAPTER_REGISTRY = new ReactiveAdapterRegistry();
+
+		static final ReactiveAdapterRegistry REACTIVE_ADAPTER_REGISTRY;
+
+		static {
+
+			if (ReactiveWrappers.isAvailable(ReactiveLibrary.PROJECT_REACTOR)) {
+				REACTIVE_ADAPTER_REGISTRY = new ReactiveAdapterRegistry();
+			} else {
+				REACTIVE_ADAPTER_REGISTRY = null;
+			}
+		}
 	}
 }
