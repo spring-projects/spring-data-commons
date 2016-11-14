@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -37,7 +38,7 @@ public interface CrudMethods {
 	 * @return the method to save entities or {@literal null} if noen exposed.
 	 * @see #hasSaveMethod()
 	 */
-	Method getSaveMethod();
+	Optional<Method> getSaveMethod();
 
 	/**
 	 * Returns whether the repository exposes a save method at all.
@@ -53,7 +54,7 @@ public interface CrudMethods {
 	 * @return the find all method of the repository or {@literal null} if not available.
 	 * @see #hasFindAllMethod()
 	 */
-	Method getFindAllMethod();
+	Optional<Method> getFindAllMethod();
 
 	/**
 	 * Returns whether the repository exposes a find all method at all.
@@ -69,7 +70,7 @@ public interface CrudMethods {
 	 * @return the find one method of the repository or {@literal null} if not available.
 	 * @see #hasFindOneMethod()
 	 */
-	Method getFindOneMethod();
+	Optional<Method> getFindOneMethod();
 
 	/**
 	 * Returns whether the repository exposes a find one method.
@@ -84,7 +85,7 @@ public interface CrudMethods {
 	 * @return the delete method of the repository or {@literal null} if not available.
 	 * @see #hasDelete()
 	 */
-	Method getDeleteMethod();
+	Optional<Method> getDeleteMethod();
 
 	/**
 	 * Returns whether the repository esposes a delete method.

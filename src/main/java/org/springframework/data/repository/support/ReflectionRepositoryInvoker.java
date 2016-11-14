@@ -113,10 +113,12 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeSave(java.lang.Object)
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T> T invokeSave(T object) {
 
-		Assert.state(hasSaveMethod(), "Repository doesn't have a save-method declared!");
-		return invoke(methods.getSaveMethod(), object);
+		return methods.getSaveMethod()//
+				.map(it -> (T) invoke(it, object))//
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a save-method declared!"));
 	}
 
 	/* 
@@ -133,10 +135,12 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T> T invokeFindOne(Serializable id) {
 
-		Assert.state(hasFindOneMethod(), "Repository doesn't have a find-one-method declared!");
-		return invoke(methods.getFindOneMethod(), convertId(id));
+		return methods.getFindOneMethod()//
+				.map(it -> (T) invoke(it, convertId(id)))//
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-one-method declared!"));
 	}
 
 	/* 
@@ -156,9 +160,9 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	public void invokeDelete(Serializable id) {
 
 		Assert.notNull(id, "Identifier must not be null!");
-		Assert.state(hasDeleteMethod(), "Repository doesn't have a delete-method declared!");
 
-		Method method = methods.getDeleteMethod();
+		Method method = methods.getDeleteMethod()
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a delete-method declared!"));
 		Class<?> parameterType = method.getParameterTypes()[0];
 		List<Class<? extends Serializable>> idTypes = Arrays.asList(idType, Serializable.class);
 
@@ -260,9 +264,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	protected Iterable<Object> invokePagedFindAllReflectively(Pageable pageable) {
 
-		Assert.state(hasFindAllMethod(), "Repository doesn't have a find-all-method declared!");
-
-		Method method = methods.getFindAllMethod();
+		Method method = methods.getFindAllMethod()
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
 		Class<?>[] types = method.getParameterTypes();
 
 		if (types.length == 0) {
@@ -278,9 +281,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	protected Iterable<Object> invokeSortedFindAllReflectively(Sort sort) {
 
-		Assert.state(hasFindAllMethod(), "Repository doesn't have a find-all-method declared!");
-
-		Method method = methods.getFindAllMethod();
+		Method method = methods.getFindAllMethod()
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
 		Class<?>[] types = method.getParameterTypes();
 
 		if (types.length == 0) {

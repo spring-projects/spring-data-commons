@@ -17,6 +17,7 @@ package org.springframework.data.repository.support;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Pageable;
@@ -114,7 +115,7 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 		}
 	}
 
-	private boolean isRedeclaredMethod(Method method) {
-		return !method.getDeclaringClass().equals(CrudRepository.class);
+	protected boolean isRedeclaredMethod(Optional<Method> method) {
+		return method.map(it -> !it.getDeclaringClass().equals(CrudRepository.class)).orElse(false);
 	}
 }

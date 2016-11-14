@@ -21,6 +21,7 @@ import static org.springframework.util.ReflectionUtils.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -48,10 +49,10 @@ public class DefaultCrudMethods implements CrudMethods {
 	private static final String FIND_ALL = "findAll";
 	private static final String DELETE = "delete";
 
-	private final Method findAllMethod;
-	private final Method findOneMethod;
-	private final Method saveMethod;
-	private final Method deleteMethod;
+	private final Optional<Method> findAllMethod;
+	private final Optional<Method> findOneMethod;
+	private final Optional<Method> saveMethod;
+	private final Optional<Method> deleteMethod;
 
 	/**
 	 * Creates a new {@link DefaultCrudMethods} using the given {@link RepositoryMetadata}.
@@ -78,7 +79,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private Method selectMostSuitableSaveMethod(RepositoryMetadata metadata) {
+	private Optional<Method> selectMostSuitableSaveMethod(RepositoryMetadata metadata) {
 
 		for (Class<?> type : asList(metadata.getDomainType(), Object.class)) {
 
@@ -89,7 +90,7 @@ public class DefaultCrudMethods implements CrudMethods {
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	/**
@@ -104,7 +105,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private Method selectMostSuitableDeleteMethod(RepositoryMetadata metadata) {
+	private Optional<Method> selectMostSuitableDeleteMethod(RepositoryMetadata metadata) {
 
 		for (Class<?> type : asList(metadata.getDomainType(), metadata.getIdType(), Serializable.class, Iterable.class)) {
 
@@ -115,7 +116,7 @@ public class DefaultCrudMethods implements CrudMethods {
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	/**
@@ -129,7 +130,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private Method selectMostSuitableFindAllMethod(RepositoryMetadata metadata) {
+	private Optional<Method> selectMostSuitableFindAllMethod(RepositoryMetadata metadata) {
 
 		for (Class<?> type : asList(Pageable.class, Sort.class)) {
 
@@ -147,7 +148,7 @@ public class DefaultCrudMethods implements CrudMethods {
 			return getMostSpecificMethod(findMethod(CrudRepository.class, FIND_ALL), metadata.getRepositoryInterface());
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	/**
@@ -160,7 +161,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private Method selectMostSuitableFindOneMethod(RepositoryMetadata metadata) {
+	private Optional<Method> selectMostSuitableFindOneMethod(RepositoryMetadata metadata) {
 
 		for (Class<?> type : asList(metadata.getIdType(), Serializable.class)) {
 
@@ -171,7 +172,7 @@ public class DefaultCrudMethods implements CrudMethods {
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	/**
@@ -183,16 +184,12 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @see ClassUtils#getMostSpecificMethod(Method, Class)
 	 * @return
 	 */
-	private static Method getMostSpecificMethod(Method method, Class<?> type) {
+	private static Optional<Method> getMostSpecificMethod(Method method, Class<?> type) {
 
-		Method result = ClassUtils.getMostSpecificMethod(method, type);
-
-		if (result == null) {
-			return null;
-		}
-
-		ReflectionUtils.makeAccessible(result);
-		return result;
+		return Optional.ofNullable(ClassUtils.getMostSpecificMethod(method, type)).map(it -> {
+			ReflectionUtils.makeAccessible(it);
+			return it;
+		});
 	}
 
 	/* 
@@ -200,7 +197,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getSaveMethod()
 	 */
 	@Override
-	public Method getSaveMethod() {
+	public Optional<Method> getSaveMethod() {
 		return saveMethod;
 	}
 
@@ -210,7 +207,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	@Override
 	public boolean hasSaveMethod() {
-		return saveMethod != null;
+		return saveMethod.isPresent();
 	}
 
 	/* 
@@ -218,7 +215,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getFindAllMethod()
 	 */
 	@Override
-	public Method getFindAllMethod() {
+	public Optional<Method> getFindAllMethod() {
 		return findAllMethod;
 	}
 
@@ -228,7 +225,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	@Override
 	public boolean hasFindAllMethod() {
-		return findAllMethod != null;
+		return findAllMethod.isPresent();
 	}
 
 	/* 
@@ -236,7 +233,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getFindOneMethod()
 	 */
 	@Override
-	public Method getFindOneMethod() {
+	public Optional<Method> getFindOneMethod() {
 		return findOneMethod;
 	}
 
@@ -246,7 +243,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	@Override
 	public boolean hasFindOneMethod() {
-		return findOneMethod != null;
+		return findOneMethod.isPresent();
 	}
 
 	/* 
@@ -255,7 +252,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	@Override
 	public boolean hasDelete() {
-		return this.deleteMethod != null;
+		return this.deleteMethod.isPresent();
 	}
 
 	/* 
@@ -263,7 +260,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getDeleteMethod()
 	 */
 	@Override
-	public Method getDeleteMethod() {
+	public Optional<Method> getDeleteMethod() {
 		return this.deleteMethod;
 	}
 }
