@@ -15,8 +15,7 @@
  */
 package org.springframework.data.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
@@ -53,7 +52,7 @@ public class CachingIsNewStrategyFactoryUnitTests {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(Object.class);
 
-		assertThat(strategy, is(REFERENCE));
+		assertThat(strategy).isEqualTo(REFERENCE);
 		verify(delegate, times(1)).getIsNewStrategy(Object.class);
 	}
 
@@ -64,17 +63,17 @@ public class CachingIsNewStrategyFactoryUnitTests {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(Object.class);
 
-		assertThat(strategy, is(REFERENCE));
+		assertThat(strategy).isEqualTo(REFERENCE);
 		verify(delegate, times(1)).getIsNewStrategy(Object.class);
 		verify(delegate, times(0)).getIsNewStrategy(String.class);
 
 		strategy = factory.getIsNewStrategy(Object.class);
-		assertThat(strategy, is(REFERENCE));
+		assertThat(strategy).isEqualTo(REFERENCE);
 		verify(delegate, times(1)).getIsNewStrategy(Object.class);
 		verify(delegate, times(0)).getIsNewStrategy(String.class);
 
 		strategy = factory.getIsNewStrategy(String.class);
-		assertThat(strategy, is(REFERENCE));
+		assertThat(strategy).isEqualTo(REFERENCE);
 		verify(delegate, times(1)).getIsNewStrategy(Object.class);
 		verify(delegate, times(1)).getIsNewStrategy(String.class);
 	}

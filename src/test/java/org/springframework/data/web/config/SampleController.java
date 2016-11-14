@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 import java.util.Date;
@@ -36,19 +35,19 @@ public class SampleController {
 	@RequestMapping("/proxy")
 	public String someMethod(SampleDto sampleDto) {
 
-		assertThat(sampleDto, is(notNullValue()));
-		assertThat(sampleDto.getName(), is("Foo"));
-		assertThat(sampleDto.getDate(), is(notNullValue()));
+		assertThat(sampleDto).isNotNull();
+		assertThat(sampleDto.getName()).isEqualTo("Foo");
+		assertThat(sampleDto.getDate()).isNotNull();
 
 		Collection<Address> shippingAddresses = sampleDto.getShippingAddresses();
 
-		assertThat(shippingAddresses, is(hasSize(1)));
-		assertThat(shippingAddresses.iterator().next().getZipCode(), is("ZIP"));
-		assertThat(shippingAddresses.iterator().next().getCity(), is("City"));
+		assertThat(shippingAddresses).hasSize(1);
+		assertThat(shippingAddresses.iterator().next().getZipCode()).isEqualTo("ZIP");
+		assertThat(shippingAddresses.iterator().next().getCity()).isEqualTo("City");
 
-		assertThat(sampleDto.getBillingAddress(), is(notNullValue()));
-		assertThat(sampleDto.getBillingAddress().getZipCode(), is("ZIP"));
-		assertThat(sampleDto.getBillingAddress().getCity(), is("City"));
+		assertThat(sampleDto.getBillingAddress()).isNotNull();
+		assertThat(sampleDto.getBillingAddress().getZipCode()).isEqualTo("ZIP");
+		assertThat(sampleDto.getBillingAddress().getCity()).isEqualTo("City");
 
 		return "view";
 	}

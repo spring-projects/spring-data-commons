@@ -15,8 +15,9 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
+
+import lombok.Value;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,14 +42,13 @@ public class AnnotationDetectionFieldCallbackUnitTests {
 	 * @see DATACMNS-616
 	 */
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void looksUpValueFromPrivateField() {
 
 		AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(Autowired.class);
 		ReflectionUtils.doWithFields(Sample.class, callback);
 
-		assertThat(callback.getType(), is(equalTo((Class) String.class)));
-		assertThat(callback.getValue(new Sample("foo")), is((Object) "foo"));
+		assertThat(callback.getType()).isEqualTo(String.class);
+		assertThat(callback.<String> getValue(new Sample("foo"))).isEqualTo("foo");
 	}
 
 	/**
@@ -60,17 +60,13 @@ public class AnnotationDetectionFieldCallbackUnitTests {
 		AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(Autowired.class);
 		ReflectionUtils.doWithFields(Empty.class, callback);
 
-		assertThat(callback.getType(), is(nullValue()));
-		assertThat(callback.getValue(new Empty()), is(nullValue()));
+		assertThat(callback.getType()).isNull();
+		assertThat(callback.<Object> getValue(new Empty())).isNull();
 	}
 
+	@Value
 	static class Sample {
-
-		@Autowired private final String value;
-
-		public Sample(String value) {
-			this.value = value;
-		}
+		@Autowired String value;
 	}
 
 	static class Empty {}

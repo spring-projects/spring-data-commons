@@ -15,10 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import java.util.Arrays;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +58,7 @@ public class FactoryBeanTypePredictingPostProcessorIntegrationTests {
 
 		String[] strings = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory, RepositoryFactoryInformation.class,
 				false, false);
-		assertThat(Arrays.asList(strings), hasItem("&repository"));
+		assertThat(strings).containsExactly("&repository");
 	}
 
 	@Test
@@ -71,7 +68,7 @@ public class FactoryBeanTypePredictingPostProcessorIntegrationTests {
 
 		String[] strings = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory, RepositoryFactoryInformation.class,
 				false, false);
-		assertThat(Arrays.asList(strings), hasItem("&repository"));
+		assertThat(strings).containsExactly("&repository");
 	}
 
 	interface UserRepository extends Repository<User, Long> {}

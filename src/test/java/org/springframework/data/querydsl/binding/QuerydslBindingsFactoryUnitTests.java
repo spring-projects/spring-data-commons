@@ -15,16 +15,14 @@
  */
 package org.springframework.data.querydsl.binding;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.QUser;
@@ -37,8 +35,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.querydsl.core.types.Path;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QuerydslBindingsFactory}.
@@ -49,8 +45,6 @@ import com.querydsl.core.types.dsl.StringPath;
 public class QuerydslBindingsFactoryUnitTests {
 
 	static final TypeInformation<?> USER_TYPE = ClassTypeInformation.from(User.class);
-
-	public @Rule ExpectedException exception = ExpectedException.none();
 
 	QuerydslBindingsFactory factory;
 
@@ -69,17 +63,19 @@ public class QuerydslBindingsFactoryUnitTests {
 		Repositories repositories = mock(Repositories.class);
 
 		when(repositories.hasRepositoryFor(User.class)).thenReturn(true);
-		when(repositories.getRepositoryFor(User.class)).thenReturn(new SampleRepo());
+		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(new SampleRepo()));
 
 		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
-		ReflectionTestUtils.setField(factory, "repositories", repositories);
+		ReflectionTestUtils.setField(factory, "repositories", Optional.of(repositories));
 
-		QuerydslBindings bindings = factory.createBindingsFor(null, USER_TYPE);
-		MultiValueBinding<Path<Object>, Object> binding = bindings
+		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, Optional.empty());
+		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
 				.getBindingForPath(PropertyPath.from("firstname", User.class));
 
-		assertThat(binding.bind((Path) QUser.user.firstname, Collections.singleton("rand")),
-				is((Predicate) QUser.user.firstname.contains("rand")));
+		assertThat(binding).hasValueSatisfying(it -> {
+			assertThat(it.bind((Path) QUser.user.firstname, Collections.singleton("rand")))
+					.hasValue(QUser.user.firstname.contains("rand"));
+		});
 	}
 
 	/**
@@ -93,14 +89,16 @@ public class QuerydslBindingsFactoryUnitTests {
 		when(beanFactory.getBean(SpecificBinding.class)).thenReturn(new SpecificBinding());
 
 		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
-		ReflectionTestUtils.setField(factory, "beanFactory", beanFactory);
+		ReflectionTestUtils.setField(factory, "beanFactory", Optional.of(beanFactory));
 
-		QuerydslBindings bindings = factory.createBindingsFor(SpecificBinding.class, USER_TYPE);
-		MultiValueBinding<Path<Object>, Object> binding = bindings
+		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, Optional.of(SpecificBinding.class));
+		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
 				.getBindingForPath(PropertyPath.from("firstname", User.class));
 
-		assertThat(binding.bind((Path) QUser.user.firstname, Collections.singleton("rand")),
-				is((Predicate) QUser.user.firstname.eq("RAND")));
+		assertThat(binding).hasValueSatisfying(it -> {
+			assertThat(it.bind((Path) QUser.user.firstname, Collections.singleton("rand")))
+					.hasValue(QUser.user.firstname.eq("RAND"));
+		});
 	}
 
 	/**
@@ -109,32 +107,19 @@ public class QuerydslBindingsFactoryUnitTests {
 	@Test
 	public void rejectsPredicateResolutionIfDomainTypeCantBeAutoDetected() {
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage(QuerydslPredicate.class.getSimpleName());
-		exception.expectMessage("root");
+		assertThatExceptionOfType(IllegalStateException.class)//
+				.isThrownBy(() -> factory.createBindingsFor(ClassTypeInformation.from(ModelAndView.class), Optional.empty()))//
+				.withMessageContaining(QuerydslPredicate.class.getSimpleName())//
+				.withMessageContaining("root");
 
-		factory.createBindingsFor(null, ClassTypeInformation.from(ModelAndView.class));
 	}
 
 	static class SpecificBinding implements QuerydslBinderCustomizer<QUser> {
 
 		public void customize(QuerydslBindings bindings, QUser user) {
 
-			bindings.bind(user.firstname).first(new SingleValueBinding<StringPath, String>() {
-
-				@Override
-				public Predicate bind(StringPath path, String value) {
-					return path.eq(value.toUpperCase());
-				}
-			});
-
-			bindings.bind(user.lastname).first(new SingleValueBinding<StringPath, String>() {
-
-				@Override
-				public Predicate bind(StringPath path, String value) {
-					return path.toLowerCase().eq(value);
-				}
-			});
+			bindings.bind(user.firstname).firstOptional((path, value) -> value.map(it -> path.eq(it.toUpperCase())));
+			bindings.bind(user.lastname).firstOptional((path, value) -> value.map(it -> path.toLowerCase().eq(it)));
 
 			bindings.excluding(user.address);
 		}
@@ -144,14 +129,7 @@ public class QuerydslBindingsFactoryUnitTests {
 
 		@Override
 		public void customize(QuerydslBindings bindings, QUser user) {
-
-			bindings.bind(QUser.user.firstname).first(new SingleValueBinding<StringPath, String>() {
-
-				@Override
-				public Predicate bind(StringPath path, String value) {
-					return path.contains(value);
-				}
-			});
+			bindings.bind(QUser.user.firstname).firstOptional((path, value) -> value.map(it -> path.contains(it)));
 		}
 	}
 }

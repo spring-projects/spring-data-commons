@@ -15,7 +15,9 @@
  */
 package org.springframework.data.auditing;
 
-import org.joda.time.DateTime;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import org.springframework.data.domain.Auditable;
 
 /**
@@ -24,15 +26,15 @@ import org.springframework.data.domain.Auditable;
  * @author Oliver Gierke
  * @since 1.5
  */
-class AuditedUser implements Auditable<AuditedUser, Long> {
+class AuditedUser implements Auditable<AuditedUser, Long, LocalDateTime> {
 
 	private static final long serialVersionUID = -840865084027597951L;
 
 	Long id;
 	AuditedUser createdBy;
 	AuditedUser modifiedBy;
-	DateTime createdDate;
-	DateTime modifiedDate;
+	LocalDateTime createdDate;
+	LocalDateTime modifiedDate;
 
 	public Long getId() {
 		return id;
@@ -42,35 +44,35 @@ class AuditedUser implements Auditable<AuditedUser, Long> {
 		return id == null;
 	}
 
-	public AuditedUser getCreatedBy() {
-		return createdBy;
+	public Optional<AuditedUser> getCreatedBy() {
+		return Optional.ofNullable(createdBy);
 	}
 
-	public void setCreatedBy(AuditedUser createdBy) {
-		this.createdBy = createdBy;
+	public void setCreatedBy(Optional<? extends AuditedUser> createdBy) {
+		this.createdBy = createdBy.orElse(null);
 	}
 
-	public DateTime getCreatedDate() {
-		return createdDate;
+	public Optional<LocalDateTime> getCreatedDate() {
+		return Optional.ofNullable(createdDate);
 	}
 
-	public void setCreatedDate(DateTime creationDate) {
-		this.createdDate = creationDate;
+	public void setCreatedDate(Optional<? extends LocalDateTime> creationDate) {
+		this.createdDate = creationDate.orElse(null);
 	}
 
-	public AuditedUser getLastModifiedBy() {
-		return modifiedBy;
+	public Optional<AuditedUser> getLastModifiedBy() {
+		return Optional.ofNullable(modifiedBy);
 	}
 
-	public void setLastModifiedBy(AuditedUser lastModifiedBy) {
-		this.modifiedBy = lastModifiedBy;
+	public void setLastModifiedBy(Optional<? extends AuditedUser> lastModifiedBy) {
+		this.modifiedBy = lastModifiedBy.orElse(null);
 	}
 
-	public DateTime getLastModifiedDate() {
-		return modifiedDate;
+	public Optional<LocalDateTime> getLastModifiedDate() {
+		return Optional.ofNullable(modifiedDate);
 	}
 
-	public void setLastModifiedDate(DateTime lastModifiedDate) {
-		this.modifiedDate = lastModifiedDate;
+	public void setLastModifiedDate(Optional<? extends LocalDateTime> lastModifiedDate) {
+		this.modifiedDate = lastModifiedDate.orElse(null);
 	}
 }

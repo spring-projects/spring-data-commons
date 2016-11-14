@@ -15,8 +15,7 @@
  */
 package org.springframework.data.querydsl.binding;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.util.ReflectionTestUtils.*;
 
 import java.text.ParseException;
@@ -39,7 +38,6 @@ import org.springframework.util.MultiValueMap;
 import com.querydsl.collections.CollQueryFactory;
 import com.querydsl.core.types.Constant;
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QuerydslPredicateBuilder}.
@@ -83,8 +81,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	 */
 	@Test
 	public void getPredicateShouldReturnEmptyPredicateWhenPropertiesAreEmpty() {
-
-		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS), is(nullValue()));
+		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS)).isNull();
 	}
 
 	/**
@@ -97,12 +94,11 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("Oliver")));
+		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("Oliver"));
 
 		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
 
-		assertThat(result, hasSize(1));
-		assertThat(result, hasItem(Users.OLIVER));
+		assertThat(result).containsExactly(Users.OLIVER);
 	}
 
 	/**
@@ -115,12 +111,11 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate, is((Predicate) QUser.user.address.city.eq("Linz")));
+		assertThat(predicate).isEqualTo(QUser.user.address.city.eq("Linz"));
 
 		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
 
-		assertThat(result, hasSize(1));
-		assertThat(result, hasItem(Users.CHRISTOPH));
+		assertThat(result).containsExactly(Users.CHRISTOPH);
 	}
 
 	/**
@@ -134,7 +129,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand")));
+		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand"));
 	}
 
 	/**
@@ -146,13 +141,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		values.add("lastname", null);
 
 		QuerydslBindings bindings = new QuerydslBindings();
-		bindings.bind(QUser.user.lastname).first(new SingleValueBinding<StringPath, String>() {
-
-			@Override
-			public Predicate bind(StringPath path, String value) {
-				return value == null ? null : path.contains(value);
-			}
-		});
+		bindings.bind(QUser.user.lastname).firstOptional((path, value) -> value.map(it -> path.contains(it)));
 
 		builder.getPredicate(USER_TYPE, values, bindings);
 	}
@@ -170,8 +159,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
 
-		assertThat(constant.getConstant(), instanceOf(Double[].class));
-		assertThat((Double[]) (constant.getConstant()), arrayContaining(40.740337D, -73.995146D));
+		assertThat(constant.getConstant()).isEqualTo(new Double[] { 40.740337D, -73.995146D });
 	}
 
 	/**
@@ -187,8 +175,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
 
-		assertThat(constant.getConstant(), instanceOf(String.class));
-		assertThat((String) (constant.getConstant()), equalTo("rivers,two"));
+		assertThat(constant.getConstant()).isEqualTo("rivers,two");
 	}
 
 	/**
@@ -204,7 +191,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate, is((Predicate) QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate())));
+		assertThat(predicate).isEqualTo(QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate()));
 	}
 
 	/**
@@ -217,6 +204,6 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate, is((Predicate) QUser.user.addresses.any().street.eq("VALUE")));
+		assertThat(predicate).isEqualTo((Predicate) QUser.user.addresses.any().street.eq("VALUE"));
 	}
 }

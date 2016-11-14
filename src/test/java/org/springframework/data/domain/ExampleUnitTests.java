@@ -15,13 +15,12 @@
  */
 package org.springframework.data.domain;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.ExampleMatcher.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.domain.ExampleMatcher.*;
+import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 
 /**
  * Test for {@link Example}.
@@ -56,8 +55,8 @@ public class ExampleUnitTests {
 	 * @see DATACMNS-810
 	 */
 	@Test
-	public void returnsSampleObjectsClassAsProbeType() {
-		assertThat(example.getProbeType(), is(equalTo(Person.class)));
+	public void retunsSampleObjectsClassAsProbeType() {
+		assertThat(example.getProbeType()).isEqualTo(Person.class);
 	}
 
 	/**
@@ -72,10 +71,10 @@ public class ExampleUnitTests {
 		Example<Person> different = Example.of(person,
 				matching().withMatcher("firstname", GenericPropertyMatchers.contains()));
 
-		assertThat(example.hashCode(), is(sameAsExample.hashCode()));
-		assertThat(example.hashCode(), is(not(different.hashCode())));
-		assertThat(example, is(equalTo(sameAsExample)));
-		assertThat(example, is(not(equalTo(different))));
+		assertThat(example.hashCode()).isEqualTo(sameAsExample.hashCode());
+		assertThat(example.hashCode()).isNotEqualTo(different.hashCode());
+		assertThat(example).isEqualTo(sameAsExample);
+		assertThat(example).isNotEqualTo(different);
 	}
 
 	static class Person {

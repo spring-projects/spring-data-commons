@@ -15,8 +15,12 @@
  */
 package org.springframework.data.repository.support;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -28,10 +32,11 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.10
  */
+@RequiredArgsConstructor
 class AnnotationAttribute {
 
-	private final Class<? extends Annotation> annotationType;
-	private final String attributeName;
+	private final @NonNull Class<? extends Annotation> annotationType;
+	private final @NonNull Optional<String> attributeName;
 
 	/**
 	 * Creates a new {@link AnnotationAttribute} to the {@code value} attribute of the given {@link Annotation} type.
@@ -39,21 +44,7 @@ class AnnotationAttribute {
 	 * @param annotationType must not be {@literal null}.
 	 */
 	public AnnotationAttribute(Class<? extends Annotation> annotationType) {
-		this(annotationType, null);
-	}
-
-	/**
-	 * Creates a new {@link AnnotationAttribute} for the given {@link Annotation} type and annotation attribute name.
-	 * 
-	 * @param annotationType must not be {@literal null}.
-	 * @param attributeName can be {@literal null}, defaults to {@code value}.
-	 */
-	public AnnotationAttribute(Class<? extends Annotation> annotationType, String attributeName) {
-
-		Assert.notNull(annotationType);
-
-		this.annotationType = annotationType;
-		this.attributeName = attributeName;
+		this(annotationType, Optional.empty());
 	}
 
 	/**
@@ -71,11 +62,12 @@ class AnnotationAttribute {
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */
-	public Object getValueFrom(MethodParameter parameter) {
+	public Optional<Object> getValueFrom(MethodParameter parameter) {
 
 		Assert.notNull(parameter, "MethodParameter must not be null!");
 		Annotation annotation = parameter.getParameterAnnotation(annotationType);
-		return annotation == null ? null : getValueFrom(annotation);
+
+		return Optional.ofNullable(annotation).map(it -> getValueFrom(it));
 	}
 
 	/**
@@ -84,11 +76,12 @@ class AnnotationAttribute {
 	 * @param annotatedElement must not be {@literal null}.
 	 * @return
 	 */
-	public Object getValueFrom(AnnotatedElement annotatedElement) {
+	public Optional<Object> getValueFrom(AnnotatedElement annotatedElement) {
 
 		Assert.notNull(annotatedElement, "Annotated element must not be null!");
 		Annotation annotation = annotatedElement.getAnnotation(annotationType);
-		return annotation == null ? null : getValueFrom(annotation);
+
+		return Optional.ofNullable(annotation).map(it -> getValueFrom(annotation));
 	}
 
 	/**
@@ -100,7 +93,7 @@ class AnnotationAttribute {
 	public Object getValueFrom(Annotation annotation) {
 
 		Assert.notNull(annotation, "Annotation must not be null!");
-		return (String) (attributeName == null ? AnnotationUtils.getValue(annotation) : AnnotationUtils.getValue(
-				annotation, attributeName));
+		return (String) attributeName.map(it -> AnnotationUtils.getValue(annotation, it))
+				.orElseGet(() -> AnnotationUtils.getValue(annotation));
 	}
 }

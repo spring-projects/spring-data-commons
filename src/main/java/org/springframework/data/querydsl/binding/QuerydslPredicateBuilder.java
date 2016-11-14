@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.PropertyValues;
@@ -53,7 +54,7 @@ import com.querydsl.core.types.dsl.CollectionPathBase;
 public class QuerydslPredicateBuilder {
 
 	private final ConversionService conversionService;
-	private final MultiValueBinding<?, ?> defaultBinding;
+	private final MultiValueBinding<Path<? extends Object>, Object> defaultBinding;
 	private final Map<PropertyPath, Path<?>> paths;
 	private final EntityPathResolver resolver;
 
@@ -113,11 +114,9 @@ public class QuerydslPredicateBuilder {
 			}
 
 			Collection<Object> value = convertToPropertyPathSpecificType(entry.getValue(), propertyPath);
-			Predicate predicate = invokeBinding(propertyPath, bindings, value);
+			Optional<Predicate> predicate = invokeBinding(propertyPath, bindings, value);
 
-			if (predicate != null) {
-				builder.and(predicate);
-			}
+			predicate.ifPresent(it -> builder.and(it));
 		}
 
 		return builder.getValue();
@@ -131,15 +130,12 @@ public class QuerydslPredicateBuilder {
 	 * @param values must not be {@literal null}.
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Predicate invokeBinding(PropertyPath dotPath, QuerydslBindings bindings, Collection<Object> values) {
+	private Optional<Predicate> invokeBinding(PropertyPath dotPath, QuerydslBindings bindings,
+			Collection<Object> values) {
 
 		Path<?> path = getPath(dotPath, bindings);
 
-		MultiValueBinding binding = bindings.getBindingForPath(dotPath);
-		binding = binding == null ? defaultBinding : binding;
-
-		return binding.bind(path, values);
+		return bindings.getBindingForPath(dotPath).orElse(defaultBinding).bind(path, values);
 	}
 
 	/**
@@ -153,44 +149,31 @@ public class QuerydslPredicateBuilder {
 	 */
 	private Path<?> getPath(PropertyPath path, QuerydslBindings bindings) {
 
-		Path<?> resolvedPath = bindings.getExistingPath(path);
+		Optional<Path<?>> resolvedPath = bindings.getExistingPath(path);
 
-		if (resolvedPath != null) {
-			return resolvedPath;
-		}
-
-		resolvedPath = paths.get(resolvedPath);
-
-		if (resolvedPath != null) {
-			return resolvedPath;
-		}
-
-		resolvedPath = reifyPath(path, null);
-		paths.put(path, resolvedPath);
-
-		return resolvedPath;
+		return resolvedPath.orElseGet(() -> paths.computeIfAbsent(path, it -> reifyPath(path, Optional.empty())));
 	}
 
 	/**
 	 * Tries to reify a Querydsl {@link Path} from the given {@link PropertyPath} and base.
 	 * 
 	 * @param path must not be {@literal null}.
-	 * @param base can be {@literal null}.
+	 * @param base can be empty.
 	 * @return
 	 */
-	private Path<?> reifyPath(PropertyPath path, Path<?> base) {
+	private Path<?> reifyPath(PropertyPath path, Optional<Path<?>> base) {
 
 		if (base instanceof CollectionPathBase) {
 			return reifyPath(path, (Path<?>) ((CollectionPathBase<?, ?, ?>) base).any());
 		}
 
-		Path<?> entityPath = base != null ? base : resolver.createPath(path.getOwningType().getType());
+		Path<?> entityPath = base.orElseGet(() -> resolver.createPath(path.getOwningType().getType()));
 
 		Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
 		Object value = ReflectionUtils.getField(field, entityPath);
 
 		if (path.hasNext()) {
-			return reifyPath(path.next(), (Path<?>) value);
+			return reifyPath(path.next(), Optional.of((Path<?>) value));
 		}
 
 		return (Path<?>) value;

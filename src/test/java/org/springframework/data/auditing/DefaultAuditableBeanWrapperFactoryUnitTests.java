@@ -15,10 +15,10 @@
  */
 package org.springframework.data.auditing;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
-import java.util.Calendar;
+import java.time.Instant;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper;
@@ -35,29 +35,29 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 	DefaultAuditableBeanWrapperFactory factory = new DefaultAuditableBeanWrapperFactory();
 
 	@Test
-	public void returnsNullForNullSource() {
-		assertThat(factory.getBeanWrapperFor(null), is(nullValue()));
+	public void returnsEmptyForEmptySource() {
+		assertThat(factory.getBeanWrapperFor(Optional.empty())).isNotPresent();
 	}
 
 	@Test
 	public void returnsAuditableInterfaceBeanWrapperForAuditable() {
 
-		AuditableBeanWrapper wrapper = factory.getBeanWrapperFor(new AuditedUser());
-		assertThat(wrapper, is(instanceOf(AuditableInterfaceBeanWrapper.class)));
+		assertThat(factory.getBeanWrapperFor(Optional.of(new AuditedUser()))).hasValueSatisfying(it -> {
+			assertThat(it).isInstanceOf(AuditableInterfaceBeanWrapper.class);
+		});
 	}
 
 	@Test
 	public void returnsReflectionAuditingBeanWrapperForNonAuditableButAnnotated() {
 
-		AuditableBeanWrapper wrapper = factory.getBeanWrapperFor(new AnnotatedUser());
-		assertThat(wrapper, is(instanceOf(ReflectionAuditingBeanWrapper.class)));
+		assertThat(factory.getBeanWrapperFor(Optional.of(new AnnotatedUser()))).hasValueSatisfying(it -> {
+			assertThat(it).isInstanceOf(ReflectionAuditingBeanWrapper.class);
+		});
 	}
 
 	@Test
-	public void returnsNullForNonAuditableType() {
-
-		AuditableBeanWrapper wrapper = factory.getBeanWrapperFor(new Object());
-		assertThat(wrapper, is(nullValue()));
+	public void returnsEmptyForNonAuditableType() {
+		assertThat(factory.getBeanWrapperFor(Optional.of(new Object()))).isNotPresent();
 	}
 
 	/**
@@ -67,13 +67,18 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 	public void setsJsr310AndThreeTenBpTypes() {
 
 		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
-		Calendar calendar = Calendar.getInstance();
+		Instant instant = Instant.now();
 
-		AuditableBeanWrapper wrapper = factory.getBeanWrapperFor(user);
-		wrapper.setCreatedDate(calendar);
-		wrapper.setLastModifiedDate(calendar);
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(user));
 
-		assertThat(user.createdDate, is(notNullValue()));
-		assertThat(user.lastModifiedDate, is(notNullValue()));
+		assertThat(wrapper).hasValueSatisfying(it -> {
+
+			it.setCreatedDate(Optional.of(instant));
+			it.setLastModifiedDate(Optional.of(instant));
+
+			assertThat(user.createdDate).isNotNull();
+			assertThat(user.lastModifiedDate).isNotNull();
+		});
+
 	}
 }

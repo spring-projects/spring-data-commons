@@ -15,8 +15,7 @@
  */
 package org.springframework.data.projection;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
@@ -61,7 +60,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 		MapAccessingMethodInterceptor interceptor = new MapAccessingMethodInterceptor(map);
 		Object result = interceptor.invoke(invocation);
 
-		assertThat(result, is((Object) map.toString()));
+		assertThat(result).isEqualTo(map.toString());
 	}
 
 	/**
@@ -77,8 +76,8 @@ public class MapAccessingMethodInterceptorUnitTests {
 
 		Object result = new MapAccessingMethodInterceptor(map).invoke(invocation);
 
-		assertThat(result, is(nullValue()));
-		assertThat(map.get("name"), is((Object) "Foo"));
+		assertThat(result).isNull();
+		assertThat(map.get("name")).isEqualTo("Foo");
 	}
 
 	/**
@@ -94,7 +93,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 
 		Object result = new MapAccessingMethodInterceptor(map).invoke(invocation);
 
-		assertThat(result, is((Object) "Foo"));
+		assertThat(result).isEqualTo("Foo");
 	}
 
 	/**
@@ -107,7 +106,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("getName"));
 
-		assertThat(new MapAccessingMethodInterceptor(map).invoke(invocation), is(nullValue()));
+		assertThat(new MapAccessingMethodInterceptor(map).invoke(invocation)).isNull();
 	}
 
 	/**

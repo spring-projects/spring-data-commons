@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.mapping.PropertyPath.*;
 
 import java.util.Iterator;
@@ -40,78 +39,78 @@ public class PropertyPathUnitTests {
 	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void parsesSimplePropertyCorrectly() throws Exception {
 
 		PropertyPath reference = PropertyPath.from("userName", Foo.class);
-		assertThat(reference.hasNext(), is(false));
-		assertThat(reference.toDotPath(), is("userName"));
-		assertThat(reference.getOwningType(), is((TypeInformation) ClassTypeInformation.from(Foo.class)));
+
+		assertThat(reference.hasNext()).isFalse();
+		assertThat(reference.toDotPath()).isEqualTo("userName");
+		assertThat(reference.getOwningType()).isEqualTo(ClassTypeInformation.from(Foo.class));
 	}
 
 	@Test
 	public void parsesPathPropertyCorrectly() throws Exception {
 
 		PropertyPath reference = PropertyPath.from("userName", Bar.class);
-		assertThat(reference.hasNext(), is(true));
-		assertThat(reference.next(), is(new PropertyPath("name", FooBar.class)));
-		assertThat(reference.toDotPath(), is("user.name"));
+		assertThat(reference.hasNext()).isTrue();
+		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
+		assertThat(reference.toDotPath()).isEqualTo("user.name");
 	}
 
 	@Test
 	public void prefersLongerMatches() throws Exception {
 
 		PropertyPath reference = PropertyPath.from("userName", Sample.class);
-		assertThat(reference.hasNext(), is(false));
-		assertThat(reference.toDotPath(), is("userName"));
+		assertThat(reference.hasNext()).isFalse();
+		assertThat(reference.toDotPath()).isEqualTo("userName");
 	}
 
 	@Test
 	public void testname() throws Exception {
 
 		PropertyPath reference = PropertyPath.from("userName", Sample2.class);
-		assertThat(reference.getSegment(), is("user"));
-		assertThat(reference.hasNext(), is(true));
-		assertThat(reference.next(), is(new PropertyPath("name", FooBar.class)));
+		assertThat(reference.getSegment()).isEqualTo("user");
+		assertThat(reference.hasNext()).isTrue();
+		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
 	}
 
 	@Test
 	public void prefersExplicitPaths() throws Exception {
 
 		PropertyPath reference = PropertyPath.from("user_name", Sample.class);
-		assertThat(reference.getSegment(), is("user"));
-		assertThat(reference.hasNext(), is(true));
-		assertThat(reference.next(), is(new PropertyPath("name", FooBar.class)));
+		assertThat(reference.getSegment()).isEqualTo("user");
+		assertThat(reference.hasNext()).isTrue();
+		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
 	}
 
 	@Test
 	public void handlesGenericsCorrectly() throws Exception {
 
 		PropertyPath reference = PropertyPath.from("usersName", Bar.class);
-		assertThat(reference.getSegment(), is("users"));
-		assertThat(reference.isCollection(), is(true));
-		assertThat(reference.hasNext(), is(true));
-		assertThat(reference.next(), is(new PropertyPath("name", FooBar.class)));
+		assertThat(reference.getSegment()).isEqualTo("users");
+		assertThat(reference.isCollection()).isTrue();
+		assertThat(reference.hasNext()).isTrue();
+		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
 	}
 
 	@Test
 	public void handlesMapCorrectly() throws Exception {
 
 		PropertyPath reference = PropertyPath.from("userMapName", Bar.class);
-		assertThat(reference.getSegment(), is("userMap"));
-		assertThat(reference.isCollection(), is(false));
-		assertThat(reference.hasNext(), is(true));
-		assertThat(reference.next(), is(new PropertyPath("name", FooBar.class)));
+		assertThat(reference.getSegment()).isEqualTo("userMap");
+		assertThat(reference.isCollection()).isFalse();
+		assertThat(reference.hasNext()).isTrue();
+		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
 	}
 
 	@Test
 	public void handlesArrayCorrectly() throws Exception {
 
 		PropertyPath reference = PropertyPath.from("userArrayName", Bar.class);
-		assertThat(reference.getSegment(), is("userArray"));
-		assertThat(reference.isCollection(), is(true));
-		assertThat(reference.hasNext(), is(true));
-		assertThat(reference.next(), is(new PropertyPath("name", FooBar.class)));
+		assertThat(reference.getSegment()).isEqualTo("userArray");
+		assertThat(reference.isCollection()).isTrue();
+		assertThat(reference.hasNext()).isTrue();
+		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
 	}
 
 	@Test
@@ -121,21 +120,18 @@ public class PropertyPathUnitTests {
 			PropertyPath.from("usersMame", Bar.class);
 			fail("Expected PropertyReferenceException!");
 		} catch (PropertyReferenceException e) {
-			assertThat(e.getPropertyName(), is("mame"));
-			assertThat(e.getBaseProperty(), is(PropertyPath.from("users", Bar.class)));
+			assertThat(e.getPropertyName()).isEqualTo("mame");
+			assertThat(e.getBaseProperty()).isEqualTo(PropertyPath.from("users", Bar.class));
 		}
 	}
 
 	@Test
 	public void handlesInvalidMapValueTypeProperly() {
 
-		try {
-			PropertyPath.from("userMapMame", Bar.class);
-			fail();
-		} catch (PropertyReferenceException e) {
-			assertThat(e.getPropertyName(), is("mame"));
-			assertThat(e.getBaseProperty(), is(PropertyPath.from("userMap", Bar.class)));
-		}
+		assertThatExceptionOfType(PropertyReferenceException.class)//
+				.isThrownBy(() -> PropertyPath.from("userMapMame", Bar.class))//
+				.matches(e -> e.getPropertyName().equals("mame"))//
+				.matches(e -> e.getBaseProperty().equals(PropertyPath.from("userMap", Bar.class)));
 	}
 
 	@Test
@@ -143,8 +139,8 @@ public class PropertyPathUnitTests {
 
 		PropertyPath from = PropertyPath.from("barUserName", Sample.class);
 
-		assertThat(from, is(notNullValue()));
-		assertThat(from.getLeafProperty(), is(PropertyPath.from("name", FooBar.class)));
+		assertThat(from).isNotNull();
+		assertThat(from.getLeafProperty()).isEqualTo(PropertyPath.from("name", FooBar.class));
 	}
 
 	/**
@@ -154,11 +150,11 @@ public class PropertyPathUnitTests {
 	public void handlesEmptyUnderscoresCorrectly() {
 
 		PropertyPath propertyPath = PropertyPath.from("_foo", Sample2.class);
-		assertThat(propertyPath.getSegment(), is("_foo"));
-		assertThat(propertyPath.getType(), is(typeCompatibleWith(Foo.class)));
+		assertThat(propertyPath.getSegment()).isEqualTo("_foo");
+		assertThat(propertyPath.getType()).isEqualTo(Foo.class);
 
 		propertyPath = PropertyPath.from("_foo__email", Sample2.class);
-		assertThat(propertyPath.toDotPath(), is("_foo._email"));
+		assertThat(propertyPath.toDotPath()).isEqualTo("_foo._email");
 	}
 
 	@Test
@@ -166,9 +162,9 @@ public class PropertyPathUnitTests {
 
 		PropertyPath propertyPath = PropertyPath.from("bar.userMap.name", Sample.class);
 
-		assertThat(propertyPath, is(notNullValue()));
-		assertThat(propertyPath.getSegment(), is("bar"));
-		assertThat(propertyPath.getLeafProperty(), is(PropertyPath.from("name", FooBar.class)));
+		assertThat(propertyPath).isNotNull();
+		assertThat(propertyPath.getSegment()).isEqualTo("bar");
+		assertThat(propertyPath.getLeafProperty()).isEqualTo(PropertyPath.from("name", FooBar.class));
 	}
 
 	@Test
@@ -177,9 +173,9 @@ public class PropertyPathUnitTests {
 		PropertyPath propertyPath = PropertyPath.from("userName", Foo.class);
 
 		Iterator<PropertyPath> iterator = propertyPath.iterator();
-		assertThat(iterator.hasNext(), is(true));
-		assertThat(iterator.next(), is(propertyPath));
-		assertThat(iterator.hasNext(), is(false));
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo(propertyPath);
+		assertThat(iterator.hasNext()).isFalse();
 	}
 
 	@Test
@@ -188,11 +184,11 @@ public class PropertyPathUnitTests {
 		PropertyPath propertyPath = PropertyPath.from("user.name", Bar.class);
 
 		Iterator<PropertyPath> iterator = propertyPath.iterator();
-		assertThat(iterator.hasNext(), is(true));
-		assertThat(iterator.next(), is(propertyPath));
-		assertThat(iterator.hasNext(), is(true));
-		assertThat(iterator.next(), is(propertyPath.next()));
-		assertThat(iterator.hasNext(), is(false));
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo(propertyPath);
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo(propertyPath.next());
+		assertThat(iterator.hasNext()).isFalse();
 	}
 
 	/**
@@ -200,12 +196,10 @@ public class PropertyPathUnitTests {
 	 */
 	@Test
 	public void rejectsInvalidPropertyWithLeadingUnderscore() {
-		try {
-			PropertyPath.from("_id", Foo.class);
-			fail();
-		} catch (PropertyReferenceException e) {
-			assertThat(e.getMessage(), containsString("property _id"));
-		}
+
+		assertThatExceptionOfType(PropertyReferenceException.class)//
+				.isThrownBy(() -> PropertyPath.from("_id", Foo.class))//
+				.withMessageContaining("property _id");
 	}
 
 	/**
@@ -213,12 +207,10 @@ public class PropertyPathUnitTests {
 	 */
 	@Test
 	public void rejectsNestedInvalidPropertyWithLeadingUnderscore() {
-		try {
-			PropertyPath.from("_foo_id", Sample2.class);
-			fail();
-		} catch (PropertyReferenceException e) {
-			assertThat(e.getMessage(), containsString("property id"));
-		}
+
+		assertThatExceptionOfType(PropertyReferenceException.class)//
+				.isThrownBy(() -> PropertyPath.from("_foo_id", Sample2.class))//
+				.withMessageContaining("property id");
 	}
 
 	/**
@@ -226,12 +218,10 @@ public class PropertyPathUnitTests {
 	 */
 	@Test
 	public void rejectsNestedInvalidPropertyExplictlySplitWithLeadingUnderscore() {
-		try {
-			PropertyPath.from("_foo__id", Sample2.class);
-			fail();
-		} catch (PropertyReferenceException e) {
-			assertThat(e.getMessage(), containsString("property _id"));
-		}
+
+		assertThatExceptionOfType(PropertyReferenceException.class)//
+				.isThrownBy(() -> PropertyPath.from("_foo__id", Sample2.class))//
+				.withMessageContaining("property _id");
 	}
 
 	/**
@@ -245,12 +235,9 @@ public class PropertyPathUnitTests {
 	@Test
 	public void rejectsInvalidProperty() {
 
-		try {
-			PropertyPath.from("bar", Foo.class);
-			fail();
-		} catch (PropertyReferenceException e) {
-			assertThat(e.getBaseProperty(), is(nullValue()));
-		}
+		assertThatExceptionOfType(PropertyReferenceException.class)//
+				.isThrownBy(() -> PropertyPath.from("_foo_id", Sample2.class))//
+				.matches(e -> e.getBaseProperty().getSegment().equals("_foo"));
 	}
 
 	@Test
@@ -261,12 +248,12 @@ public class PropertyPathUnitTests {
 
 		PropertyPath shortPath = PropertyPath.from("user", Bar.class);
 
-		assertThat(left, is(right));
-		assertThat(right, is(left));
-		assertThat(left, is(not(shortPath)));
-		assertThat(shortPath, is(not(left)));
+		assertThat(left).isEqualTo(right);
+		assertThat(right).isEqualTo(left);
+		assertThat(left).isNotEqualTo(shortPath);
+		assertThat(shortPath).isNotEqualTo(left);
 
-		assertThat(left, is(not(new Object())));
+		assertThat(left).isNotEqualTo(new Object());
 	}
 
 	@Test
@@ -277,8 +264,8 @@ public class PropertyPathUnitTests {
 
 		PropertyPath shortPath = PropertyPath.from("user", Bar.class);
 
-		assertThat(left.hashCode(), is(right.hashCode()));
-		assertThat(left.hashCode(), is(not(shortPath.hashCode())));
+		assertThat(left.hashCode()).isEqualTo(right.hashCode());
+		assertThat(left.hashCode()).isNotEqualTo(shortPath.hashCode());
 	}
 
 	/**
@@ -289,8 +276,8 @@ public class PropertyPathUnitTests {
 
 		PropertyPath path = PropertyPath.from("UUID", Foo.class);
 
-		assertThat(path, is(notNullValue()));
-		assertThat(path.getSegment(), is("UUID"));
+		assertThat(path).isNotNull();
+		assertThat(path.getSegment()).isEqualTo("UUID");
 	}
 
 	/**
@@ -301,10 +288,10 @@ public class PropertyPathUnitTests {
 
 		PropertyPath path = PropertyPath.from("_fooUUID", Sample2.class);
 
-		assertThat(path, is(notNullValue()));
-		assertThat(path.getSegment(), is("_foo"));
-		assertThat(path.hasNext(), is(true));
-		assertThat(path.next().getSegment(), is("UUID"));
+		assertThat(path).isNotNull();
+		assertThat(path.getSegment()).isEqualTo("_foo");
+		assertThat(path.hasNext()).isTrue();
+		assertThat(path.next().getSegment()).isEqualTo("UUID");
 	}
 
 	/**

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.convert;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
 
 import java.util.Collections;
@@ -59,7 +58,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
 
-		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Entity.class)), is((Object) "foo"));
+		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Entity.class))).isEqualTo("foo");
 	}
 
 	@Test
@@ -70,7 +69,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
 
-		assertThat(mapper.createAliasFor(from(Entity.class)), is((Object) "foo"));
+		assertThat(mapper.createAliasFor(from(Entity.class))).isEqualTo("foo");
 	}
 
 	@Test
@@ -80,7 +79,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
-		assertThat(mapper.createAliasFor(from(String.class)), is(nullValue()));
+		assertThat(mapper.createAliasFor(from(String.class))).isNull();
 	}
 
 	@Test
@@ -91,19 +90,18 @@ public class MappingContextTypeInformationMapperUnitTests {
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
-		assertThat(mapper.resolveTypeFrom("foo"), is(nullValue()));
+		assertThat(mapper.resolveTypeFrom("foo")).isNull();
 
 		PersistentEntity<?, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Entity.class);
 
-		assertThat(entity, is(notNullValue()));
-		assertThat(mapper.resolveTypeFrom("foo"), is((TypeInformation) from(Entity.class)));
+		assertThat(entity).isNotNull();
+		assertThat(mapper.resolveTypeFrom("foo")).isEqualTo((TypeInformation) from(Entity.class));
 	}
 
 	/**
 	 * @see DATACMNS-485
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void createsTypeMapperForGenericTypesWithDifferentBindings() {
 
 		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(TypeAlias.class);

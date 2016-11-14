@@ -15,14 +15,12 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import lombok.Value;
 
 import java.util.Arrays;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.junit.Before;
@@ -66,25 +64,21 @@ public class StreamQueryResultHandlerUnitTests {
 
 		Object result = this.handler.handle(people);
 
-		assertThat(result, is(instanceOf(Stream.class)));
+		assertThat(result).isInstanceOf(Stream.class);
 
 		Stream<Object> stream = (Stream<Object>) result;
 
-		assertThat(stream.allMatch(new Predicate<Object>() {
+		assertThat(stream).allMatch(it -> {
 
-			@Override
-			public boolean test(Object t) {
+			assertThat(it).isInstanceOf(String.class);
 
-				assertThat(t, is(instanceOf(String.class)));
+			String string = (String) it;
 
-				String string = (String) t;
+			assertThat(string).contains("Dave");
+			assertThat(string).contains("Matthews");
 
-				assertThat(string, containsString("Dave"));
-				assertThat(string, containsString("Matthews"));
-
-				return true;
-			}
-		}), is(true));
+			return true;
+		});
 
 		stream.close();
 	}

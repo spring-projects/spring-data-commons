@@ -15,8 +15,7 @@
  */
 package org.springframework.data.domain;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.NullHandling.*;
 
 import org.junit.Test;
@@ -40,8 +39,8 @@ public class SortUnitTests {
 	@Test
 	public void appliesDefaultForOrder() throws Exception {
 
-		assertEquals(Sort.DEFAULT_DIRECTION, new Sort("foo").iterator().next().getDirection());
-		assertEquals(Sort.DEFAULT_DIRECTION, new Sort((Direction) null, "foo").iterator().next().getDirection());
+		assertThat(new Sort("foo").iterator().next().getDirection()).isEqualTo(Sort.DEFAULT_DIRECTION);
+		assertThat(new Sort((Direction) null, "foo").iterator().next().getDirection()).isEqualTo(Sort.DEFAULT_DIRECTION);
 	}
 
 	/**
@@ -92,14 +91,14 @@ public class SortUnitTests {
 	public void allowsCombiningSorts() {
 
 		Sort sort = new Sort("foo").and(new Sort("bar"));
-		assertThat(sort, hasItems(new Sort.Order("foo"), new Sort.Order("bar")));
+		assertThat(sort).containsExactly(new Sort.Order("foo"), new Sort.Order("bar"));
 	}
 
 	@Test
 	public void handlesAdditionalNullSort() {
 
 		Sort sort = new Sort("foo").and(null);
-		assertThat(sort, hasItem(new Sort.Order("foo")));
+		assertThat(sort).containsExactly(new Sort.Order("foo"));
 	}
 
 	/**
@@ -108,7 +107,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void configuresIgnoreCaseForOrder() {
-		assertThat(new Order(Direction.ASC, "foo").ignoreCase().isIgnoreCase(), is(true));
+		assertThat(new Order(Direction.ASC, "foo").ignoreCase().isIgnoreCase()).isTrue();
 	}
 
 	/**
@@ -117,7 +116,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void orderDoesNotIgnoreCaseByDefault() {
-		assertThat(new Order(Direction.ASC, "foo").isIgnoreCase(), is(false));
+		assertThat(new Order(Direction.ASC, "foo").isIgnoreCase()).isFalse();
 	}
 
 	/**
@@ -129,8 +128,8 @@ public class SortUnitTests {
 		Order foo = new Order("foo");
 		Order fooIgnoreCase = new Order("foo").ignoreCase();
 
-		assertThat(foo, is(not(fooIgnoreCase)));
-		assertThat(foo.hashCode(), is(not(fooIgnoreCase.hashCode())));
+		assertThat(foo).isNotEqualTo(fooIgnoreCase);
+		assertThat(foo.hashCode()).isNotEqualTo(fooIgnoreCase.hashCode());
 	}
 
 	/**
@@ -138,7 +137,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void orderWithNullHandlingHintNullsFirst() {
-		assertThat(new Order("foo").nullsFirst().getNullHandling(), is(NULLS_FIRST));
+		assertThat(new Order("foo").nullsFirst().getNullHandling()).isEqualTo(NULLS_FIRST);
 	}
 
 	/**
@@ -146,7 +145,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void orderWithNullHandlingHintNullsLast() {
-		assertThat(new Order("foo").nullsLast().getNullHandling(), is(NULLS_LAST));
+		assertThat(new Order("foo").nullsLast().getNullHandling()).isEqualTo(NULLS_LAST);
 	}
 
 	/**
@@ -154,7 +153,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void orderWithNullHandlingHintNullsNative() {
-		assertThat(new Order("foo").nullsNative().getNullHandling(), is(NATIVE));
+		assertThat(new Order("foo").nullsNative().getNullHandling()).isEqualTo(NATIVE);
 	}
 
 	/**
@@ -162,7 +161,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void orderWithDefaultNullHandlingHint() {
-		assertThat(new Order("foo").getNullHandling(), is(NATIVE));
+		assertThat(new Order("foo").getNullHandling()).isEqualTo(NATIVE);
 	}
 
 	/**

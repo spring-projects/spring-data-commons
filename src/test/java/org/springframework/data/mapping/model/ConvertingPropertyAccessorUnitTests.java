@@ -15,9 +15,10 @@
  */
 package org.springframework.data.mapping.model;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.core.convert.ConversionService;
@@ -58,7 +59,7 @@ public class ConvertingPropertyAccessorUnitTests {
 	public void returnsBeanFromDelegate() {
 
 		Object entity = new Entity();
-		assertThat(getAccessor(entity, CONVERSION_SERVICE).getBean(), is(entity));
+		assertThat(getAccessor(entity, CONVERSION_SERVICE).getBean()).isEqualTo(entity);
 	}
 
 	/**
@@ -70,9 +71,9 @@ public class ConvertingPropertyAccessorUnitTests {
 		Entity entity = new Entity();
 		entity.id = 1L;
 
-		ConvertingPropertyAccessor accessor = getAccessor(entity, CONVERSION_SERVICE);
-
-		assertThat(accessor.getProperty(getIdProperty(), String.class), is("1"));
+		assertThat(getIdProperty()).hasValueSatisfying(it -> {
+			assertThat(getAccessor(entity, CONVERSION_SERVICE).getProperty(it, String.class)).hasValue("1");
+		});
 	}
 
 	/**
@@ -82,10 +83,11 @@ public class ConvertingPropertyAccessorUnitTests {
 	public void doesNotInvokeConversionForNullValues() {
 
 		ConversionService conversionService = mock(ConversionService.class);
-		ConvertingPropertyAccessor accessor = getAccessor(new Entity(), conversionService);
 
-		assertThat(accessor.getProperty(getIdProperty(), Number.class), is(nullValue()));
-		verify(conversionService, times(0)).convert(1L, Number.class);
+		assertThat(getIdProperty()).hasValueSatisfying(it -> {
+			assertThat(getAccessor(new Entity(), conversionService).getProperty(it, Number.class)).isNotPresent();
+			verify(conversionService, times(0)).convert(1L, Number.class);
+		});
 	}
 
 	/**
@@ -98,10 +100,11 @@ public class ConvertingPropertyAccessorUnitTests {
 		entity.id = 1L;
 
 		ConversionService conversionService = mock(ConversionService.class);
-		ConvertingPropertyAccessor accessor = getAccessor(entity, conversionService);
 
-		assertThat(accessor.getProperty(getIdProperty(), Number.class), is((Number) 1L));
-		verify(conversionService, times(0)).convert(1L, Number.class);
+		assertThat(getIdProperty()).hasValueSatisfying(it -> {
+			assertThat(getAccessor(entity, conversionService).getProperty(it, Number.class)).hasValue(1L);
+			verify(conversionService, times(0)).convert(1L, Number.class);
+		});
 	}
 
 	/**
@@ -111,11 +114,11 @@ public class ConvertingPropertyAccessorUnitTests {
 	public void convertsValueOnSetIfTypesDontMatch() {
 
 		Entity entity = new Entity();
-		ConvertingPropertyAccessor accessor = getAccessor(entity, CONVERSION_SERVICE);
 
-		accessor.setProperty(getIdProperty(), "1");
-
-		assertThat(entity.id, is(1L));
+		assertThat(getIdProperty()).hasValueSatisfying(property -> {
+			getAccessor(entity, CONVERSION_SERVICE).setProperty(property, Optional.of("1"));
+			assertThat(entity.id).isEqualTo(1L);
+		});
 	}
 
 	/**
@@ -124,10 +127,10 @@ public class ConvertingPropertyAccessorUnitTests {
 	@Test
 	public void doesNotInvokeConversionIfTypeAlreadyMatchesOnSet() {
 
-		ConvertingPropertyAccessor accessor = getAccessor(new Entity(), mock(ConversionService.class));
-
-		accessor.setProperty(getIdProperty(), 1L);
-		verify(mock(ConversionService.class), times(0)).convert(1L, Long.class);
+		assertThat(getIdProperty()).hasValueSatisfying(it -> {
+			getAccessor(new Entity(), mock(ConversionService.class)).setProperty(it, Optional.of(1L));
+			verify(mock(ConversionService.class), times(0)).convert(1L, Long.class);
+		});
 	}
 
 	private static ConvertingPropertyAccessor getAccessor(Object entity, ConversionService conversionService) {
@@ -136,7 +139,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		return new ConvertingPropertyAccessor(wrapper, conversionService);
 	}
 
-	private static SamplePersistentProperty getIdProperty() {
+	private static Optional<SamplePersistentProperty> getIdProperty() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Entity.class);

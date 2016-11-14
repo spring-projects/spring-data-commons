@@ -15,15 +15,13 @@
  */
 package org.springframework.data.querydsl;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.querydsl.QQSortUnitTests_WrapperToWrapWrapperForUserWrapper.*;
 import static org.springframework.data.querydsl.QQSortUnitTests_WrapperToWrapWrapperForUserWrapper_WrapperForUserWrapper.*;
 import static org.springframework.data.querydsl.QQSortUnitTests_WrapperToWrapWrapperForUserWrapper_WrapperForUserWrapper_UserWrapper.*;
 
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -62,67 +60,63 @@ public class QSortUnitTests {
 	/**
 	 * @see DATACMNS-402
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
 	public void sortBySingleProperty() {
 
 		QUser user = QUser.user;
 		QSort qsort = new QSort(user.firstname.asc());
 
-		assertThat(qsort.getOrderSpecifiers().size(), is(1));
-		assertThat((OrderSpecifier<String>) qsort.getOrderSpecifiers().get(0), is(user.firstname.asc()));
-		assertThat(qsort.getOrderFor("firstname"), is(new Sort.Order(Sort.Direction.ASC, "firstname")));
+		assertThat(qsort.getOrderSpecifiers()).hasSize(1);
+		assertThat(qsort.getOrderSpecifiers().get(0)).isEqualTo(user.firstname.asc());
+		assertThat(qsort.getOrderFor("firstname")).isEqualTo(new Sort.Order(Sort.Direction.ASC, "firstname"));
 	}
 
 	/**
 	 * @see DATACMNS-402
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
 	public void sortByMultiplyProperties() {
 
 		QUser user = QUser.user;
 		QSort qsort = new QSort(user.firstname.asc(), user.lastname.desc());
 
-		assertThat(qsort.getOrderSpecifiers().size(), is(2));
-		assertThat((OrderSpecifier<String>) qsort.getOrderSpecifiers().get(0), is(user.firstname.asc()));
-		assertThat((OrderSpecifier<String>) qsort.getOrderSpecifiers().get(1), is(user.lastname.desc()));
-		assertThat(qsort.getOrderFor("firstname"), is(new Sort.Order(Sort.Direction.ASC, "firstname")));
-		assertThat(qsort.getOrderFor("lastname"), is(new Sort.Order(Sort.Direction.DESC, "lastname")));
+		assertThat(qsort.getOrderSpecifiers()).hasSize(2);
+		assertThat(qsort.getOrderSpecifiers().get(0)).isEqualTo(user.firstname.asc());
+		assertThat(qsort.getOrderSpecifiers().get(1)).isEqualTo(user.lastname.desc());
+		assertThat(qsort.getOrderFor("firstname")).isEqualTo(new Sort.Order(Sort.Direction.ASC, "firstname"));
+		assertThat(qsort.getOrderFor("lastname")).isEqualTo(new Sort.Order(Sort.Direction.DESC, "lastname"));
 	}
 
 	/**
 	 * @see DATACMNS-402
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
 	public void sortByMultiplyPropertiesWithAnd() {
 
 		QUser user = QUser.user;
 		QSort qsort = new QSort(user.firstname.asc()).and(new QSort(user.lastname.desc()));
 
-		assertThat(qsort.getOrderSpecifiers().size(), is(2));
-		assertThat((OrderSpecifier<String>) qsort.getOrderSpecifiers().get(0), is(user.firstname.asc()));
-		assertThat((OrderSpecifier<String>) qsort.getOrderSpecifiers().get(1), is(user.lastname.desc()));
-		assertThat(qsort.getOrderFor("firstname"), is(new Sort.Order(Sort.Direction.ASC, "firstname")));
-		assertThat(qsort.getOrderFor("lastname"), is(new Sort.Order(Sort.Direction.DESC, "lastname")));
+		assertThat(qsort.getOrderSpecifiers()).hasSize(2);
+		assertThat(qsort.getOrderSpecifiers().get(0)).isEqualTo(user.firstname.asc());
+		assertThat(qsort.getOrderSpecifiers().get(1)).isEqualTo(user.lastname.desc());
+		assertThat(qsort.getOrderFor("firstname")).isEqualTo(new Sort.Order(Sort.Direction.ASC, "firstname"));
+		assertThat(qsort.getOrderFor("lastname")).isEqualTo(new Sort.Order(Sort.Direction.DESC, "lastname"));
 	}
 
 	/**
 	 * @see DATACMNS-402
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
 	public void sortByMultiplyPropertiesWithAndAndVarArgs() {
 
 		QUser user = QUser.user;
 		QSort qsort = new QSort(user.firstname.asc()).and(user.lastname.desc());
 
-		assertThat(qsort.getOrderSpecifiers().size(), is(2));
-		assertThat((OrderSpecifier<String>) qsort.getOrderSpecifiers().get(0), is(user.firstname.asc()));
-		assertThat((OrderSpecifier<String>) qsort.getOrderSpecifiers().get(1), is(user.lastname.desc()));
-		assertThat(qsort.getOrderFor("firstname"), is(new Sort.Order(Sort.Direction.ASC, "firstname")));
-		assertThat(qsort.getOrderFor("lastname"), is(new Sort.Order(Sort.Direction.DESC, "lastname")));
+		assertThat(qsort.getOrderSpecifiers()).hasSize(2);
+		assertThat(qsort.getOrderSpecifiers().get(0)).isEqualTo(user.firstname.asc());
+		assertThat(qsort.getOrderSpecifiers().get(1)).isEqualTo(user.lastname.desc());
+		assertThat(qsort.getOrderFor("firstname")).isEqualTo(new Sort.Order(Sort.Direction.ASC, "firstname"));
+		assertThat(qsort.getOrderFor("lastname")).isEqualTo(new Sort.Order(Sort.Direction.DESC, "lastname"));
 	}
 
 	/**
@@ -136,8 +130,8 @@ public class QSortUnitTests {
 
 		Sort sort = qsort;
 
-		assertThat(sort.getOrderFor("firstname"), is(new Sort.Order(Sort.Direction.ASC, "firstname")));
-		assertThat(sort.getOrderFor("lastname"), is(new Sort.Order(Sort.Direction.DESC, "lastname")));
+		assertThat(sort.getOrderFor("firstname")).isEqualTo(new Sort.Order(Sort.Direction.ASC, "firstname"));
+		assertThat(sort.getOrderFor("lastname")).isEqualTo(new Sort.Order(Sort.Direction.DESC, "lastname"));
 	}
 
 	/**
@@ -150,8 +144,8 @@ public class QSortUnitTests {
 		QSort sort = new QSort(user.firstname.asc());
 
 		Sort result = sort.and(new Sort(Direction.ASC, "lastname"));
-		assertThat(result, is(Matchers.<Order> iterableWithSize(2)));
-		assertThat(result, hasItems(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, "firstname")));
+		assertThat(result).hasSize(2);
+		assertThat(result).contains(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, "firstname"));
 	}
 
 	/**
@@ -164,9 +158,9 @@ public class QSortUnitTests {
 		QSort sort = new QSort(user.dateOfBirth.yearMonth().asc());
 
 		Sort result = sort.and(new Sort(Direction.ASC, "lastname"));
-		assertThat(result, is(Matchers.<Order> iterableWithSize(2)));
-		assertThat(result, hasItems(new Order(Direction.ASC, "lastname"),
-				new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString())));
+		assertThat(result).hasSize(2);
+		assertThat(result).contains(new Order(Direction.ASC, "lastname"),
+				new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString()));
 	}
 
 	/**
@@ -177,7 +171,7 @@ public class QSortUnitTests {
 
 		QSort sort = new QSort(userWrapper.user.firstname.asc());
 
-		assertThat(sort, hasItems(new Order(Direction.ASC, "user.firstname")));
+		assertThat(sort).contains(new Order(Direction.ASC, "user.firstname"));
 	}
 
 	/**
@@ -188,7 +182,7 @@ public class QSortUnitTests {
 
 		QSort sort = new QSort(wrapperForUserWrapper.wrapper.user.firstname.asc());
 
-		assertThat(sort, hasItems(new Order(Direction.ASC, "wrapper.user.firstname")));
+		assertThat(sort).contains(new Order(Direction.ASC, "wrapper.user.firstname"));
 	}
 
 	/**
@@ -199,7 +193,7 @@ public class QSortUnitTests {
 
 		QSort sort = new QSort(wrapperToWrapWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname.asc());
 
-		assertThat(sort, hasItems(new Order(Direction.ASC, "wrapperForUserWrapper.wrapper.user.firstname")));
+		assertThat(sort).contains(new Order(Direction.ASC, "wrapperForUserWrapper.wrapper.user.firstname"));
 	}
 
 	/**
@@ -212,7 +206,7 @@ public class QSortUnitTests {
 
 		QSort sort = new QSort(new OrderSpecifier<String>(com.querydsl.core.types.Order.ASC, path));
 
-		assertThat(sort, hasItems(new Order(Direction.ASC, "firstname")));
+		assertThat(sort).contains(new Order(Direction.ASC, "firstname"));
 	}
 
 	@com.querydsl.core.annotations.QueryEntity

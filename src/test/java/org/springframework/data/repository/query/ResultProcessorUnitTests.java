@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import reactor.core.publisher.Flux;
@@ -35,7 +34,6 @@ import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -62,10 +60,10 @@ public class ResultProcessorUnitTests {
 		ResultProcessor information = new ResultProcessor(getQueryMethod("findAll"), new SpelAwareProxyProjectionFactory());
 
 		Sample sample = new Sample("Dave", "Matthews");
-		List<Sample> result = new ArrayList<Sample>(Arrays.asList(sample));
+		List<Sample> result = new ArrayList<>(Arrays.asList(sample));
 		List<Sample> converted = information.processResult(result);
 
-		assertThat(converted, contains(sample));
+		assertThat(converted).contains(sample);
 	}
 
 	/**
@@ -78,14 +76,13 @@ public class ResultProcessorUnitTests {
 
 		SampleProjection result = information.processResult(Arrays.asList("Matthews"));
 
-		assertThat(result.getLastname(), is("Matthews"));
+		assertThat(result.getLastname()).isEqualTo("Matthews");
 	}
 
 	/**
 	 * @see DATACMNS-89
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void createsListOfProjectionsFormNestedLists() throws Exception {
 
 		ResultProcessor information = getProcessor("findAllProjection");
@@ -95,15 +92,13 @@ public class ResultProcessorUnitTests {
 
 		List<SampleProjection> result = information.processResult(source);
 
-		assertThat(result, hasSize(1));
-		assertThat(result.get(0).getLastname(), is("Matthews"));
+		assertThat(result).extracting(SampleProjection::getLastname).containsExactly("Matthews");
 	}
 
 	/**
 	 * @see DATACMNS-89
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void createsListOfProjectionsFromMaps() throws Exception {
 
 		ResultProcessor information = getProcessor("findAllProjection");
@@ -113,8 +108,8 @@ public class ResultProcessorUnitTests {
 
 		List<SampleProjection> result = information.processResult(source);
 
-		assertThat(result, hasSize(1));
-		assertThat(result.get(0).getLastname(), is("Matthews"));
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getLastname()).isEqualTo("Matthews");
 	}
 
 	/**
@@ -128,8 +123,8 @@ public class ResultProcessorUnitTests {
 		List<Sample> source = new ArrayList<Sample>(Arrays.asList(new Sample("Dave", "Matthews")));
 		List<SampleProjection> result = information.processResult(source);
 
-		assertThat(result, hasSize(1));
-		assertThat(result.get(0).getLastname(), is("Matthews"));
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getLastname()).isEqualTo("Matthews");
 	}
 
 	/**
@@ -143,8 +138,8 @@ public class ResultProcessorUnitTests {
 		Page<Sample> source = new PageImpl<Sample>(Arrays.asList(new Sample("Dave", "Matthews")));
 		Page<SampleProjection> result = information.processResult(source);
 
-		assertThat(result.getContent(), hasSize(1));
-		assertThat(result.getContent().get(0).getLastname(), is("Matthews"));
+		assertThat(result.getContent()).hasSize(1);
+		assertThat(result.getContent().get(0).getLastname()).isEqualTo("Matthews");
 	}
 
 	/**
@@ -157,8 +152,8 @@ public class ResultProcessorUnitTests {
 
 		OpenProjection result = information.processResult(new Sample("Dave", "Matthews"));
 
-		assertThat(result.getLastname(), is("Matthews"));
-		assertThat(result.getFullName(), is("Dave Matthews"));
+		assertThat(result.getLastname()).isEqualTo("Matthews");
+		assertThat(result.getFullName()).isEqualTo("Dave Matthews");
 	}
 
 	/**
@@ -170,13 +165,13 @@ public class ResultProcessorUnitTests {
 		ParameterAccessor accessor = mock(ParameterAccessor.class);
 
 		ResultProcessor factory = getProcessor("findOneDynamic", Class.class);
-		assertThat(factory.withDynamicProjection(null), is(factory));
-		assertThat(factory.withDynamicProjection(accessor), is(factory));
+		assertThat(factory.withDynamicProjection(null)).isEqualTo(factory);
+		assertThat(factory.withDynamicProjection(accessor)).isEqualTo(factory);
 
 		doReturn(SampleProjection.class).when(accessor).getDynamicProjection();
 
 		ResultProcessor processor = factory.withDynamicProjection(accessor);
-		assertThat(processor.getReturnedType().getReturnedType(), is(typeCompatibleWith(SampleProjection.class)));
+		assertThat(processor.getReturnedType().getReturnedType()).isEqualTo(SampleProjection.class);
 	}
 
 	/**
@@ -185,17 +180,10 @@ public class ResultProcessorUnitTests {
 	@Test
 	public void refrainsFromProjectingIfThePreparingConverterReturnsACompatibleInstance() throws Exception {
 
-		ResultProcessor processor = getProcessor("findAllDtos");
+		Object result = getProcessor("findAllDtos").processResult(new Sample("Dave", "Matthews"),
+				source -> new SampleDto());
 
-		Object result = processor.processResult(new Sample("Dave", "Matthews"), new Converter<Object, Object>() {
-
-			@Override
-			public Object convert(Object source) {
-				return new SampleDto();
-			}
-		});
-
-		assertThat(result, is(instanceOf(SampleDto.class)));
+		assertThat(result).isInstanceOf(SampleDto.class);
 	}
 
 	/**
@@ -203,7 +191,8 @@ public class ResultProcessorUnitTests {
 	 */
 	@Test
 	public void returnsNullResultAsIs() throws Exception {
-		assertThat(getProcessor("findOneDto").processResult(null), is(nullValue()));
+		Object result = getProcessor("findOneDto").processResult(null);
+		assertThat(result).isNull();
 	}
 
 	/**
@@ -216,11 +205,11 @@ public class ResultProcessorUnitTests {
 
 		Object result = getProcessor("findSliceProjection", Pageable.class).processResult(slice);
 
-		assertThat(result, is(instanceOf(Slice.class)));
+		assertThat(result).isInstanceOf(Slice.class);
 
 		List<?> content = ((Slice<?>) result).getContent();
-		assertThat(content, is(not(empty())));
-		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
+
+		assertThat(content).hasSize(1).hasOnlyElementsOfType(SampleProjection.class);
 	}
 
 	/**
@@ -234,11 +223,10 @@ public class ResultProcessorUnitTests {
 
 		Object result = getProcessor("findStreamProjection").processResult(samples);
 
-		assertThat(result, is(instanceOf(Stream.class)));
+		assertThat(result).isInstanceOf(Stream.class);
 		List<Object> content = ((Stream<Object>) result).collect(Collectors.toList());
 
-		assertThat(content, is(not(empty())));
-		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
+		assertThat(content).hasSize(1).hasOnlyElementsOfType(SampleProjection.class);
 	}
 
 	/**
@@ -249,7 +237,7 @@ public class ResultProcessorUnitTests {
 
 		Object result = getProcessor("findOneWrappingDto").processResult(new Sample("Dave", "Matthews"));
 
-		assertThat(result, is(instanceOf(WrappingDto.class)));
+		assertThat(result).isInstanceOf(WrappingDto.class);
 	}
 
 	/**

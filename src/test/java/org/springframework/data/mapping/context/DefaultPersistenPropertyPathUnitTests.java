@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping.context;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -46,15 +45,14 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 	PersistentPropertyPath<T> twoLegs;
 
 	@Before
-	@SuppressWarnings("unchecked")
 	public void setUp() {
-		oneLeg = new DefaultPersistentPropertyPath<T>(Arrays.asList(first));
-		twoLegs = new DefaultPersistentPropertyPath<T>(Arrays.asList(first, second));
+		oneLeg = new DefaultPersistentPropertyPath<>(Arrays.asList(first));
+		twoLegs = new DefaultPersistentPropertyPath<>(Arrays.asList(first, second));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullProperties() {
-		new DefaultPersistentPropertyPath<T>(null);
+		new DefaultPersistentPropertyPath<>(null);
 	}
 
 	@Test
@@ -63,61 +61,60 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 		when(first.getName()).thenReturn("foo");
 		when(second.getName()).thenReturn("bar");
 
-		assertThat(twoLegs.toDotPath(), is("foo.bar"));
+		assertThat(twoLegs.toDotPath()).isEqualTo("foo.bar");
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void usesConverterToCreatePropertyPath() {
 
-		when(converter.convert((T) any())).thenReturn("foo");
+		when(converter.convert(any())).thenReturn("foo");
 
-		assertThat(twoLegs.toDotPath(converter), is("foo.foo"));
+		assertThat(twoLegs.toDotPath(converter)).isEqualTo("foo.foo");
 	}
 
 	@Test
 	public void returnsCorrectLeafProperty() {
 
-		assertThat(twoLegs.getLeafProperty(), is(second));
-		assertThat(oneLeg.getLeafProperty(), is(first));
+		assertThat(twoLegs.getLeafProperty()).isEqualTo(second);
+		assertThat(oneLeg.getLeafProperty()).isEqualTo(first);
 	}
 
 	@Test
 	public void returnsCorrectBaseProperty() {
 
-		assertThat(twoLegs.getBaseProperty(), is(first));
-		assertThat(oneLeg.getBaseProperty(), is(first));
+		assertThat(twoLegs.getBaseProperty()).isEqualTo(first);
+		assertThat(oneLeg.getBaseProperty()).isEqualTo(first);
 	}
 
 	@Test
 	public void detectsBasePathCorrectly() {
 
-		assertThat(oneLeg.isBasePathOf(twoLegs), is(true));
-		assertThat(twoLegs.isBasePathOf(oneLeg), is(false));
+		assertThat(oneLeg.isBasePathOf(twoLegs)).isTrue();
+		assertThat(twoLegs.isBasePathOf(oneLeg)).isFalse();
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void calculatesExtensionCorrectly() {
 
 		PersistentPropertyPath<T> extension = twoLegs.getExtensionForBaseOf(oneLeg);
-		assertThat(extension, is((PersistentPropertyPath<T>) new DefaultPersistentPropertyPath<T>(Arrays.asList(second))));
+
+		assertThat(extension).isEqualTo(new DefaultPersistentPropertyPath<>(Arrays.asList(second)));
 	}
 
 	@Test
 	public void returnsTheCorrectParentPath() {
-		assertThat(twoLegs.getParentPath(), is(oneLeg));
+		assertThat(twoLegs.getParentPath()).isEqualTo(oneLeg);
 	}
 
 	@Test
 	public void returnsItselfAsParentPathIfSizeOne() {
-		assertThat(oneLeg.getParentPath(), is(oneLeg));
+		assertThat(oneLeg.getParentPath()).isEqualTo(oneLeg);
 	}
 
 	@Test
 	public void pathReturnsCorrectSize() {
-		assertThat(oneLeg.getLength(), is(1));
-		assertThat(twoLegs.getLength(), is(2));
+		assertThat(oneLeg.getLength()).isEqualTo(1);
+		assertThat(twoLegs.getLength()).isEqualTo(2);
 	}
 
 	/**
@@ -125,16 +122,7 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 	 */
 	@Test
 	public void skipsMappedPropertyNameIfConverterReturnsNull() {
-
-		String result = twoLegs.toDotPath(new Converter<T, String>() {
-
-			@Override
-			public String convert(T source) {
-				return null;
-			}
-		});
-
-		assertThat(result, is(nullValue()));
+		assertThat(twoLegs.toDotPath(source -> null)).isNull();
 	}
 
 	/**
@@ -142,16 +130,6 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 	 */
 	@Test
 	public void skipsMappedPropertyNameIfConverterReturnsEmptyStrings() {
-
-		String result = twoLegs.toDotPath(new Converter<T, String>() {
-
-			@Override
-			public String convert(T source) {
-				return "";
-			}
-		});
-
-		assertThat(result, is(nullValue()));
+		assertThat(twoLegs.toDotPath(source -> "")).isNull();
 	}
-
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.domain.jaxb;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -85,7 +84,7 @@ public class SpringDataJaxbUnitTests {
 		wrapper.pageableWithoutSort = new PageRequest(10, 20);
 		marshaller.marshal(wrapper, writer);
 
-		assertThat(new Diff(reference, writer.toString()).similar(), is(true));
+		assertThat(new Diff(reference, writer.toString()).similar()).isTrue();
 	}
 
 	@Test
@@ -93,9 +92,9 @@ public class SpringDataJaxbUnitTests {
 
 		Object result = unmarshaller.unmarshal(resource.getFile());
 
-		assertThat(result, is(instanceOf(Wrapper.class)));
-		assertThat(((Wrapper) result).pageable, is(pageable));
-		assertThat(((Wrapper) result).sort, is(sort));
+		assertThat(result).isInstanceOf(Wrapper.class);
+		assertThat(((Wrapper) result).pageable).isEqualTo(pageable);
+		assertThat(((Wrapper) result).sort).isEqualTo(sort);
 	}
 
 	@Test

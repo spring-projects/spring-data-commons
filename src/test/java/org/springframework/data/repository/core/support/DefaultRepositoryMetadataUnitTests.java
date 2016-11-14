@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -42,7 +41,6 @@ public class DefaultRepositoryMetadataUnitTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNullRepositoryInterface() {
-
 		new DefaultRepositoryMetadata(null);
 	}
 
@@ -68,31 +66,31 @@ public class DefaultRepositoryMetadataUnitTests {
 	public void looksUpDomainClassCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
-		assertEquals(User.class, metadata.getDomainType());
+		assertThat(metadata.getDomainType()).isEqualTo(User.class);
 
 		metadata = new DefaultRepositoryMetadata(SomeDao.class);
-		assertEquals(User.class, metadata.getDomainType());
+		assertThat(metadata.getDomainType()).isEqualTo(User.class);
 	}
 
 	@Test
 	public void findsDomainClassOnExtensionOfDaoInterface() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtensionOfUserCustomExtendedDao.class);
-		assertEquals(User.class, metadata.getDomainType());
+		assertThat(metadata.getDomainType()).isEqualTo(User.class);
 	}
 
 	@Test
 	public void detectsParameterizedEntitiesCorrectly() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericEntityRepository.class);
-		assertEquals(GenericEntity.class, metadata.getDomainType());
+		assertThat(metadata.getDomainType()).isEqualTo(GenericEntity.class);
 	}
 
 	@Test
 	public void looksUpIdClassCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
-		assertEquals(Integer.class, metadata.getIdType());
+		assertThat(metadata.getIdType()).isEqualTo(Integer.class);
 	}
 
 	/**
@@ -102,7 +100,7 @@ public class DefaultRepositoryMetadataUnitTests {
 	public void detectsIdTypeOnIntermediateRepository() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
-		assertEquals(Long.class, metadata.getIdType());
+		assertThat(metadata.getIdType()).isEqualTo(Long.class);
 	}
 
 	/**
@@ -114,7 +112,7 @@ public class DefaultRepositoryMetadataUnitTests {
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(OptionalRepository.class);
 
 		Method method = OptionalRepository.class.getMethod("findByEmailAddress", String.class);
-		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
+		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	/**
@@ -126,7 +124,7 @@ public class DefaultRepositoryMetadataUnitTests {
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(OptionalRepository.class);
 
 		Method method = OptionalRepository.class.getMethod("findByLastname", String.class);
-		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
+		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	/**
@@ -137,8 +135,8 @@ public class DefaultRepositoryMetadataUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(IdTypeFixingRepository.class);
 
-		assertThat(metadata.getDomainType(), is(typeCompatibleWith(Object.class)));
-		assertThat(metadata.getIdType(), is(typeCompatibleWith(Long.class)));
+		assertThat(metadata.getDomainType()).isEqualTo(Object.class);
+		assertThat(metadata.getIdType()).isEqualTo(Long.class);
 	}
 
 	@SuppressWarnings("unused")
@@ -185,9 +183,8 @@ public class DefaultRepositoryMetadataUnitTests {
 
 	static abstract class DummyGenericRepositorySupport<T, ID extends Serializable> implements CrudRepository<T, ID> {
 
-		public T findOne(ID id) {
-
-			return null;
+		public java.util.Optional<T> findOne(ID id) {
+			return java.util.Optional.empty();
 		}
 	}
 

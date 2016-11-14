@@ -15,11 +15,12 @@
  */
 package org.springframework.data.history;
 
-import org.joda.time.DateTime;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * Metadata about a revision.
- * 
+ *
  * @author Philipp Huegelmeyer
  * @author Oliver Gierke
  */
@@ -27,21 +28,21 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 
 	/**
 	 * Returns the revision number of the revision.
-	 * 
+	 *
 	 * @return
 	 */
-	N getRevisionNumber();
+	Optional<N> getRevisionNumber();
 
 	/**
 	 * Returns the date of the revision.
-	 * 
+	 *
 	 * @return
 	 */
-	DateTime getRevisionDate();
+	Optional<LocalDateTime> getRevisionDate();
 
 	/**
 	 * Returns the underlying revision metadata which might provider more detailed implementation specific information.
-	 * 
+	 *
 	 * @return
 	 */
 	<T> T getDelegate();

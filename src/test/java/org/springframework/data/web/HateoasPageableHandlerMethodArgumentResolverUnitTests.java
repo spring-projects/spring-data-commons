@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
@@ -34,8 +33,8 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @author Oliver Gierke
  */
-public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
-		PageableHandlerMethodArgumentResolverUnitTests {
+public class HateoasPageableHandlerMethodArgumentResolverUnitTests
+		extends PageableHandlerMethodArgumentResolverUnitTests {
 
 	@Test
 	public void buildsUpRequestParameters() {
@@ -61,12 +60,12 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		MultiValueMap<String, String> params = builder.build().getQueryParams();
 
 		List<String> page = params.get("page");
-		assertThat(page.size(), is(1));
-		assertThat(page.get(0), is("1"));
+		assertThat(page).hasSize(1);
+		assertThat(page.get(0)).isEqualTo("1");
 
 		List<String> size = params.get("size");
-		assertThat(size.size(), is(1));
-		assertThat(size.get(0), is("20"));
+		assertThat(size).hasSize(1);
+		assertThat(size.get(0)).isEqualTo("20");
 	}
 
 	/**
@@ -103,7 +102,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		resolver.setPageParameterName("foo");
 		String variables = resolver.getPaginationTemplateVariables(null, uriComponents).toString();
 
-		assertThat(variables, is("{?foo,size,sort}"));
+		assertThat(variables).isEqualTo("{?foo,size,sort}");
 	}
 
 	/**
@@ -121,8 +120,8 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 
 		MultiValueMap<String, String> params = builder.build().getQueryParams();
 
-		assertThat(params.containsKey(resolver.getPageParameterName()), is(true));
-		assertThat(params.getFirst(resolver.getPageParameterName()), is("1"));
+		assertThat(params.containsKey(resolver.getPageParameterName())).isTrue();
+		assertThat(params.getFirst(resolver.getPageParameterName())).isEqualTo("1");
 	}
 
 	@Override
@@ -140,7 +139,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 
 		getResolver().enhance(builder, parameter, pageable);
 
-		assertThat(builder.build().toUriString(), endsWith(expected));
+		assertThat(builder.build().toUriString()).endsWith(expected);
 	}
 
 	private void assertTemplateEnrichment(String baseUri, String expected) {
@@ -148,6 +147,6 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		UriComponents uriComponents = UriComponentsBuilder.fromUriString(baseUri).build();
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
-		assertThat(resolver.getPaginationTemplateVariables(null, uriComponents).toString(), is(expected));
+		assertThat(resolver.getPaginationTemplateVariables(null, uriComponents).toString()).isEqualTo(expected);
 	}
 }

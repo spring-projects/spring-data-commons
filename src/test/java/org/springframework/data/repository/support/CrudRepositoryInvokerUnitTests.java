@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -168,7 +169,7 @@ public class CrudRepositoryInvokerUnitTests {
 		<S extends Order> S save(S entity);
 
 		@Override
-		Order findOne(Long id);
+		Optional<Order> findOne(Long id);
 
 		@Override
 		void delete(Long id);

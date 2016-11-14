@@ -16,7 +16,7 @@
 package org.springframework.data.web;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
@@ -54,8 +54,8 @@ public class XmlBeamHttpMessageConverterUnitTests {
 
 		Customer customer = (Customer) converter.read(Customer.class, message);
 
-		assertThat(customer.getFirstname(), is("Dave"));
-		assertThat(customer.getLastname(), is("Matthews"));
+		assertThat(customer.getFirstname()).isEqualTo("Dave");
+		assertThat(customer.getLastname()).isEqualTo("Matthews");
 	}
 
 	/**
@@ -68,8 +68,8 @@ public class XmlBeamHttpMessageConverterUnitTests {
 
 		Customer customer = (Customer) converter.read(Customer.class, message);
 
-		assertThat(customer.getFirstname(), is("Dave"));
-		assertThat(customer.getLastname(), is("Matthews"));
+		assertThat(customer.getFirstname()).isEqualTo("Dave");
+		assertThat(customer.getLastname()).isEqualTo("Matthews");
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class XmlBeamHttpMessageConverterUnitTests {
 	 */
 	@Test
 	public void supportsAnnotatedInterface() {
-		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML), is(true));
+		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML)).isTrue();
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class XmlBeamHttpMessageConverterUnitTests {
 	 */
 	@Test
 	public void supportsXmlBasedMediaType() {
-		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_ATOM_XML), is(true));
+		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_ATOM_XML)).isTrue();
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class XmlBeamHttpMessageConverterUnitTests {
 	 */
 	@Test
 	public void doesNotSupportUnannotatedInterface() {
-		assertThat(converter.canRead(UnannotatedInterface.class, MediaType.APPLICATION_XML), is(false));
+		assertThat(converter.canRead(UnannotatedInterface.class, MediaType.APPLICATION_XML)).isFalse();
 	}
 
 	/**
@@ -102,8 +102,8 @@ public class XmlBeamHttpMessageConverterUnitTests {
 	@Test
 	public void supportsInterfaceAfterLookupForDifferrentMediaType() {
 
-		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_JSON), is(false));
-		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML), is(true));
+		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_JSON)).isFalse();
+		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML)).isTrue();
 	}
 
 	private void preparePayload(String payload) throws IOException {

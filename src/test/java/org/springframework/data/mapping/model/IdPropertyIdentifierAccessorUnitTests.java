@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
@@ -60,7 +59,7 @@ public class IdPropertyIdentifierAccessorUnitTests {
 		IdentifierAccessor accessor = new IdPropertyIdentifierAccessor(
 				mappingContext.getPersistentEntity(SampleWithId.class), sample);
 
-		assertThat(accessor.getIdentifier(), is((Object) sample.id));
+		assertThat(accessor.getIdentifier()).isEqualTo(sample.id);
 	}
 
 	static class Sample {}

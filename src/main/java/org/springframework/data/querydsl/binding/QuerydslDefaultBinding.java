@@ -16,6 +16,7 @@
 package org.springframework.data.querydsl.binding;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.springframework.util.Assert;
 
@@ -46,13 +47,13 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate bind(Path<?> path, Collection<? extends Object> value) {
+	public Optional<Predicate> bind(Path<?> path, Collection<? extends Object> value) {
 
 		Assert.notNull(path, "Path must not be null!");
 		Assert.notNull(value, "Value must not be null!");
 
 		if (value.isEmpty()) {
-			return null;
+			return Optional.empty();
 		}
 
 		if (path instanceof CollectionPathBase) {
@@ -63,16 +64,16 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 				builder.and(((CollectionPathBase) path).contains(element));
 			}
 
-			return builder.getValue();
+			return Optional.of(builder.getValue());
 		}
 
 		if (path instanceof SimpleExpression) {
 
 			if (value.size() > 1) {
-				return ((SimpleExpression) path).in(value);
+				return Optional.of(((SimpleExpression) path).in(value));
 			}
 
-			return ((SimpleExpression) path).eq(value.iterator().next());
+			return Optional.of(((SimpleExpression) path).eq(value.iterator().next()));
 		}
 
 		throw new IllegalArgumentException(

@@ -16,8 +16,8 @@
 package org.springframework.data.repository.config;
 
 import java.util.Collection;
+import java.util.Optional;
 
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -50,29 +50,19 @@ public interface RepositoryConfigurationSource {
 	 * 
 	 * @return
 	 */
-	Object getQueryLookupStrategyKey();
+	Optional<Object> getQueryLookupStrategyKey();
 
 	/**
 	 * Returns the configured postfix to be used for looking up custom implementation classes.
 	 * 
 	 * @return the postfix to use or {@literal null} in case none is configured.
 	 */
-	String getRepositoryImplementationPostfix();
+	Optional<String> getRepositoryImplementationPostfix();
 
 	/**
 	 * @return
 	 */
-	String getNamedQueryLocation();
-
-	/**
-	 * Returns the name of the class of the {@link FactoryBean} to actually create repository instances.
-	 * 
-	 * @return
-	 * @deprecated as of 1.11 in favor of using a dedicated repository base class name, see
-	 *             {@link #getRepositoryBaseClassName()}.
-	 */
-	@Deprecated
-	String getRepositoryFactoryBeanName();
+	Optional<String> getNamedQueryLocation();
 
 	/**
 	 * Returns the name of the repository base class to be used or {@literal null} if the store specific defaults shall be
@@ -81,7 +71,7 @@ public interface RepositoryConfigurationSource {
 	 * @return
 	 * @since 1.11
 	 */
-	String getRepositoryBaseClassName();
+	Optional<String> getRepositoryBaseClassName();
 
 	/**
 	 * Returns the source {@link BeanDefinition}s of the repository interfaces to create repository instances for.
@@ -99,7 +89,7 @@ public interface RepositoryConfigurationSource {
 	 * @return the attribute with the given name or {@literal null} if not configured or empty.
 	 * @since 1.8
 	 */
-	String getAttribute(String name);
+	Optional<String> getAttribute(String name);
 
 	/**
 	 * Returns whether the configuration uses explicit filtering to scan for repository types.

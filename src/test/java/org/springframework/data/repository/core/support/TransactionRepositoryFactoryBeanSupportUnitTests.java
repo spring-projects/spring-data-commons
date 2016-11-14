@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.*;
 
@@ -59,13 +58,12 @@ public class TransactionRepositoryFactoryBeanSupportUnitTests {
 				found = true;
 
 				TransactionInterceptor interceptor = (TransactionInterceptor) advisor.getAdvice();
-				assertThat(getField(interceptor.getTransactionAttributeSource(), "enableDefaultTransactions"),
-						is((Object) false));
+				assertThat(getField(interceptor.getTransactionAttributeSource(), "enableDefaultTransactions")).isEqualTo(false);
 				break;
 			}
 		}
 
-		assertThat(found, is(true));
+		assertThat(found).isTrue();
 	}
 
 	/**
@@ -77,8 +75,8 @@ public class TransactionRepositoryFactoryBeanSupportUnitTests {
 		SampleTransactionalRepositoryFactoryBean factoryBean = new SampleTransactionalRepositoryFactoryBean();
 		factoryBean.setBeanFactory(new DefaultListableBeanFactory());
 
-		assertThat(ReflectionTestUtils.getField(factoryBean, RepositoryFactoryBeanSupport.class, "beanFactory"),
-				is(notNullValue()));
+		assertThat(ReflectionTestUtils.getField(factoryBean, RepositoryFactoryBeanSupport.class, "beanFactory"))
+				.isNotNull();
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.mapping;
 
-import static org.springframework.util.ObjectUtils.*;
+import lombok.EqualsAndHashCode;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -23,11 +23,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.util.Lazy;
+import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -56,6 +59,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 * @param constructor must not be {@literal null}.
 	 * @param parameters must not be {@literal null}.
 	 */
+	@SafeVarargs
 	public PreferredConstructor(Constructor<T> constructor, Parameter<Object, P>... parameters) {
 
 		Assert.notNull(constructor);
@@ -80,8 +84,8 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 * 
 	 * @return
 	 */
-	public Iterable<Parameter<Object, P>> getParameters() {
-		return parameters;
+	public Streamable<Parameter<Object, P>> getParameters() {
+		return Streamable.of(parameters);
 	}
 
 	/**
@@ -181,15 +185,16 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 * @param <T> the type of the parameter
 	 * @author Oliver Gierke
 	 */
+	@EqualsAndHashCode(exclude = { "enclosingClassCache", "hasSpelExpression" })
 	public static class Parameter<T, P extends PersistentProperty<P>> {
 
-		private final String name;
+		private final Optional<String> name;
 		private final TypeInformation<T> type;
-		private final String key;
-		private final PersistentEntity<T, P> entity;
+		private final Optional<String> key;
+		private final Optional<PersistentEntity<T, P>> entity;
 
-		private Boolean enclosingClassCache;
-		private Boolean hasSpelExpression;
+		private final Lazy<Boolean> enclosingClassCache;
+		private final Lazy<Boolean> hasSpelExpression;
 
 		/**
 		 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
@@ -199,9 +204,10 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 * @param name the name of the parameter, can be {@literal null}
 		 * @param type must not be {@literal null}
 		 * @param annotations must not be {@literal null} but can be empty
-		 * @param entity can be {@literal null}.
+		 * @param entity must not be {@literal null}.
 		 */
-		public Parameter(String name, TypeInformation<T> type, Annotation[] annotations, PersistentEntity<T, P> entity) {
+		public Parameter(Optional<String> name, TypeInformation<T> type, Annotation[] annotations,
+				Optional<PersistentEntity<T, P>> entity) {
 
 			Assert.notNull(type);
 			Assert.notNull(annotations);
@@ -210,23 +216,27 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 			this.type = type;
 			this.key = getValue(annotations);
 			this.entity = entity;
+
+			this.enclosingClassCache = Lazy.of(() -> {
+				Class<T> owningType = entity.orElseThrow(() -> new IllegalStateException()).getType();
+				return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
+			});
+
+			this.hasSpelExpression = Lazy.of(() -> getSpelExpression().map(StringUtils::hasText).orElse(false));
 		}
 
-		private String getValue(Annotation[] annotations) {
-			for (Annotation anno : annotations) {
-				if (anno.annotationType() == Value.class) {
-					return ((Value) anno).value();
-				}
-			}
-			return null;
+		private static Optional<String> getValue(Annotation[] annotations) {
+			return Arrays.stream(annotations).//
+					filter(it -> it.annotationType() == Value.class).//
+					findFirst().map(it -> ((Value) it).value());
 		}
 
 		/**
-		 * Returns the name of the parameter or {@literal null} if none was given.
+		 * Returns the name of the parameter.
 		 * 
 		 * @return
 		 */
-		public String getName() {
+		public Optional<String> getName() {
 			return name;
 		}
 
@@ -253,7 +263,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 * 
 		 * @return
 		 */
-		public String getSpelExpression() {
+		public Optional<String> getSpelExpression() {
 			return key;
 		}
 
@@ -263,12 +273,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 * @return
 		 */
 		public boolean hasSpelExpression() {
-
-			if (this.hasSpelExpression == null) {
-				this.hasSpelExpression = StringUtils.hasText(getSpelExpression());
-			}
-
-			return this.hasSpelExpression;
+			return hasSpelExpression.get();
 		}
 
 		/**
@@ -279,60 +284,17 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 */
 		boolean maps(PersistentProperty<?> property) {
 
-			P referencedProperty = entity == null ? null : entity.getPersistentProperty(name);
-			return property == null ? false : property.equals(referencedProperty);
-		}
-
-		private boolean isEnclosingClassParameter() {
-
-			if (enclosingClassCache == null) {
-				Class<T> owningType = entity.getType();
-				this.enclosingClassCache = owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
-			}
-
-			return enclosingClassCache;
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object obj) {
-
-			if (this == obj) {
-				return true;
-			}
-
-			if (!(obj instanceof Parameter)) {
+			if (!name.isPresent()) {
 				return false;
 			}
 
-			Parameter<?, ?> that = (Parameter<?, ?>) obj;
-
-			boolean nameEquals = this.name == null ? that.name == null : this.name.equals(that.name);
-			boolean keyEquals = this.key == null ? that.key == null : this.key.equals(that.key);
-			boolean entityEquals = this.entity == null ? that.entity == null : this.entity.equals(that.entity);
-
-			// Explicitly delay equals check on type as it might be expensive
-			return nameEquals && keyEquals && entityEquals && this.type.equals(that.type);
+			return entity//
+					.flatMap(it -> it.getPersistentProperty(name.get()))//
+					.map(it -> property.equals(it)).orElse(false);
 		}
 
-		/* 
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode() {
-
-			int result = 17;
-
-			result += 31 * nullSafeHashCode(this.name);
-			result += 31 * nullSafeHashCode(this.key);
-			result += 31 * nullSafeHashCode(this.entity);
-			result += 31 * this.type.hashCode();
-
-			return result;
+		private boolean isEnclosingClassParameter() {
+			return enclosingClassCache.get();
 		}
 	}
 }

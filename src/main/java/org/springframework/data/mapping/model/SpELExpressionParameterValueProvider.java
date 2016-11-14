@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
+import java.util.Optional;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
@@ -26,7 +28,8 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class SpELExpressionParameterValueProvider<P extends PersistentProperty<P>> implements ParameterValueProvider<P> {
+public class SpELExpressionParameterValueProvider<P extends PersistentProperty<P>>
+		implements ParameterValueProvider<P> {
 
 	private final SpELExpressionEvaluator evaluator;
 	private final ParameterValueProvider<P> delegate;
@@ -57,14 +60,15 @@ public class SpELExpressionParameterValueProvider<P extends PersistentProperty<P
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.PreferredConstructor.Parameter)
 	 */
-	public <T> T getParameterValue(Parameter<T, P> parameter) {
+	public <T> Optional<T> getParameterValue(Parameter<T, P> parameter) {
 
 		if (!parameter.hasSpelExpression()) {
-			return delegate == null ? null : delegate.getParameterValue(parameter);
+			return delegate.getParameterValue(parameter);
 		}
 
-		Object object = evaluator.evaluate(parameter.getSpelExpression());
-		return object == null ? null : potentiallyConvertSpelValue(object, parameter);
+		Optional<Object> object = Optional.ofNullable(evaluator.evaluate(parameter.getSpelExpression().orElse(null)));
+
+		return object.map(it -> potentiallyConvertSpelValue(object, parameter));
 	}
 
 	/**

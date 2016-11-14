@@ -15,6 +15,8 @@
  */
 package org.springframework.data.support;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Persistable;
 
 /**
@@ -26,17 +28,21 @@ public enum PersistableIsNewStrategy implements IsNewStrategy {
 
 	INSTANCE;
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.IsNewStrategy#isNew(java.lang.Object)
+	 * @see org.springframework.data.support.IsNewStrategy#isNew(java.util.Optional)
 	 */
-	public boolean isNew(Object entity) {
+	public boolean isNew(Optional<? extends Object> entity) {
 
-		if (!(entity instanceof Persistable)) {
-			throw new IllegalArgumentException(String.format("Given object of type %s does not implement %s!",
-					entity.getClass(), Persistable.class));
-		}
+		return entity.map(it -> {
 
-		return ((Persistable<?>) entity).isNew();
+			if (!(it instanceof Persistable)) {
+				throw new IllegalArgumentException(
+						String.format("Given object of type %s does not implement %s!", it.getClass(), Persistable.class));
+			}
+
+			return ((Persistable<?>) it).isNew();
+
+		}).orElse(false);
 	}
 }

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
+import java.util.Optional;
+
 import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -31,7 +33,7 @@ import org.springframework.util.Assert;
 public class IdPropertyIdentifierAccessor implements IdentifierAccessor {
 
 	private final PersistentPropertyAccessor accessor;
-	private final PersistentProperty<?> idProperty;
+	private final Optional<? extends PersistentProperty<?>> idProperty;
 
 	/**
 	 * Creates a new {@link IdPropertyIdentifierAccessor} for the given {@link PersistentEntity} and
@@ -54,7 +56,7 @@ public class IdPropertyIdentifierAccessor implements IdentifierAccessor {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.keyvalue.core.IdentifierAccessor#getIdentifier()
 	 */
-	public Object getIdentifier() {
-		return accessor.getProperty(idProperty);
+	public Optional<? extends Object> getIdentifier() {
+		return idProperty.map(it -> accessor.getProperty(it));
 	}
 }

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
+import java.util.Optional;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -29,12 +31,12 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class PersistentEntityParameterValueProvider<P extends PersistentProperty<P>> implements
-		ParameterValueProvider<P> {
+public class PersistentEntityParameterValueProvider<P extends PersistentProperty<P>>
+		implements ParameterValueProvider<P> {
 
 	private final PersistentEntity<?, P> entity;
 	private final PropertyValueProvider<P> provider;
-	private final Object parent;
+	private final Optional<Object> parent;
 
 	/**
 	 * Creates a new {@link PersistentEntityParameterValueProvider} for the given {@link PersistentEntity} and
@@ -45,10 +47,11 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	 * @param parent the parent object being created currently, can be {@literal null}.
 	 */
 	public PersistentEntityParameterValueProvider(PersistentEntity<?, P> entity, PropertyValueProvider<P> provider,
-			Object parent) {
+			Optional<Object> parent) {
 
 		Assert.notNull(entity);
 		Assert.notNull(provider);
+		Assert.notNull(parent);
 
 		this.entity = entity;
 		this.provider = provider;
@@ -60,21 +63,18 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	 * @see org.springframework.data.mapping.model.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.PreferredConstructor.Parameter)
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getParameterValue(Parameter<T, P> parameter) {
+	public <T> Optional<T> getParameterValue(Parameter<T, P> parameter) {
 
-		PreferredConstructor<?, P> constructor = entity.getPersistenceConstructor();
+		PreferredConstructor<?, P> constructor = entity.getPersistenceConstructor().get();
 
 		if (constructor.isEnclosingClassParameter(parameter)) {
-			return (T) parent;
+			return (Optional<T>) parent;
 		}
 
-		P property = entity.getPersistentProperty(parameter.getName());
-
-		if (property == null) {
-			throw new MappingException(String.format("No property %s found on entity %s to bind constructor parameter to!",
-					parameter.getName(), entity.getType()));
-		}
-
-		return provider.getPropertyValue(property);
+		return provider.getPropertyValue(parameter.getName()//
+				.flatMap(it -> entity.getPersistentProperty(it))//
+				.orElseThrow(() -> new MappingException(
+						String.format("No property %s found on entity %s to bind constructor parameter to!", parameter.getName(),
+								entity.getType()))));
 	}
 }

@@ -16,6 +16,7 @@
 package org.springframework.data.auditing;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -24,6 +25,7 @@ import org.springframework.data.mapping.context.MappingContextIsNewStrategyFacto
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
+import org.springframework.util.Assert;
 
 /**
  * {@link AuditingHandler} extension that uses an {@link IsNewStrategyFactory} to expose a generic
@@ -45,7 +47,6 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 * @deprecated use {@link IsNewAwareAuditingHandler(PersistentEntities)} instead.
 	 */
 	@Deprecated
-	@SuppressWarnings("unchecked")
 	public IsNewAwareAuditingHandler(
 			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
 		this(new PersistentEntities(Arrays.asList(mappingContext)));
@@ -71,18 +72,19 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 * 
 	 * @param object
 	 */
-	public void markAudited(Object object) {
+	public void markAudited(Optional<Object> object) {
 
-		if (object == null) {
-			return;
-		}
+		Assert.notNull(object, "Source object must not be null!");
 
-		IsNewStrategy strategy = isNewStrategyFactory.getIsNewStrategy(object.getClass());
+		object.ifPresent(it -> {
 
-		if (strategy.isNew(object)) {
-			markCreated(object);
-		} else {
-			markModified(object);
-		}
+			IsNewStrategy strategy = isNewStrategyFactory.getIsNewStrategy(it.getClass());
+
+			if (strategy.isNew(object)) {
+				markCreated(object);
+			} else {
+				markModified(object);
+			}
+		});
 	}
 }

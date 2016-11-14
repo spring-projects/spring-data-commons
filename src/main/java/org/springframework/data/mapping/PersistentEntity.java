@@ -16,6 +16,7 @@
 package org.springframework.data.mapping;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.util.TypeInformation;
@@ -40,11 +41,11 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	/**
 	 * Returns the {@link PreferredConstructor} to be used to instantiate objects of this {@link PersistentEntity}.
 	 * 
-	 * @return {@literal null} in case no suitable constructor for automatic construction can be found. This usually
-	 *         indicates that the instantiation of the object of that persistent entity is done through either a customer
-	 *         {@link EntityInstantiator} or handled by custom conversion mechanisms entirely.
+	 * @return An empty {@link Optional} in case no suitable constructor for automatic construction can be found. This
+	 *         usually indicates that the instantiation of the object of that persistent entity is done through either a
+	 *         customer {@link EntityInstantiator} or handled by custom conversion mechanisms entirely.
 	 */
-	PreferredConstructor<T, P> getPersistenceConstructor();
+	Optional<PreferredConstructor<T, P>> getPersistenceConstructor();
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referred to by a constructor argument of the
@@ -78,7 +79,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * 
 	 * @return the id property of the {@link PersistentEntity}.
 	 */
-	P getIdProperty();
+	Optional<P> getIdProperty();
 
 	/**
 	 * Returns the version property of the {@link PersistentEntity}. Can be {@literal null} in case no version property is
@@ -86,7 +87,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * 
 	 * @return the version property of the {@link PersistentEntity}.
 	 */
-	P getVersionProperty();
+	Optional<P> getVersionProperty();
 
 	/**
 	 * Obtains a {@link PersistentProperty} instance by name.
@@ -94,7 +95,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @param name The name of the property
 	 * @return the {@link PersistentProperty} or {@literal null} if it doesn't exist.
 	 */
-	P getPersistentProperty(String name);
+	Optional<P> getPersistentProperty(String name);
 
 	/**
 	 * Returns the property equipped with an annotation of the given type.
@@ -103,7 +104,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @return
 	 * @since 1.8
 	 */
-	P getPersistentProperty(Class<? extends Annotation> annotationType);
+	Optional<P> getPersistentProperty(Class<? extends Annotation> annotationType);
 
 	/**
 	 * Returns whether the {@link PersistentEntity} has an id property. If this call returns {@literal true},
@@ -134,7 +135,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * 
 	 * @return
 	 */
-	Object getTypeAlias();
+	Optional<? extends Object> getTypeAlias();
 
 	/**
 	 * Returns the {@link TypeInformation} backing this {@link PersistentEntity}.
@@ -169,7 +170,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * @return
 	 * @since 1.8
 	 */
-	<A extends Annotation> A findAnnotation(Class<A> annotationType);
+	<A extends Annotation> Optional<A> findAnnotation(Class<A> annotationType);
 
 	/**
 	 * Returns a {@link PersistentPropertyAccessor} to access property values of the given bean.

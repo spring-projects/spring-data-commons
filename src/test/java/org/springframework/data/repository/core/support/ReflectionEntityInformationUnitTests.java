@@ -17,8 +17,7 @@ import java.io.Serializable;
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 
@@ -37,7 +36,7 @@ public class ReflectionEntityInformationUnitTests {
 	public void discoversAnnotationOnField() {
 
 		EntityInformation<Sample, Serializable> information = getEntityInformation(Sample.class);
-		assertThat(information.getIdType(), is(typeCompatibleWith(String.class)));
+		assertThat(information.getIdType()).isEqualTo(String.class);
 	}
 
 	/**
@@ -58,10 +57,10 @@ public class ReflectionEntityInformationUnitTests {
 
 		EntityInformation<PrimitiveId, Serializable> information = new ReflectionEntityInformation<PrimitiveId, Serializable>(
 				PrimitiveId.class);
-		assertThat(information.isNew(primitiveId), is(true));
+		assertThat(information.isNew(primitiveId)).isTrue();
 
 		primitiveId.id = 5L;
-		assertThat(information.isNew(primitiveId), is(false));
+		assertThat(information.isNew(primitiveId)).isFalse();
 	}
 
 	private static <T> EntityInformation<T, Serializable> getEntityInformation(Class<T> type) {

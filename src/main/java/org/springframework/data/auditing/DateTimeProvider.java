@@ -15,7 +15,8 @@
  */
 package org.springframework.data.auditing;
 
-import java.util.Calendar;
+import java.time.temporal.TemporalAccessor;
+import java.util.Optional;
 
 /**
  * SPI to calculate the current time to be used when auditing.
@@ -30,5 +31,5 @@ public interface DateTimeProvider {
 	 * 
 	 * @return
 	 */
-	Calendar getNow();
+	Optional<TemporalAccessor> getNow();
 }

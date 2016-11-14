@@ -15,12 +15,12 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.data.domain.Pageable;
@@ -150,10 +150,10 @@ public class DefaultCrudMethodsUnitTests {
 
 		CrudMethods methods = getMethodsFor(RepositoryWithAllCrudMethodOverloaded.class);
 
-		assertThat(methods.getSaveMethod().isAccessible(), is(true));
-		assertThat(methods.getDeleteMethod().isAccessible(), is(true));
-		assertThat(methods.getFindAllMethod().isAccessible(), is(true));
-		assertThat(methods.getFindOneMethod().isAccessible(), is(true));
+		assertThat(methods.getSaveMethod().isAccessible()).isTrue();
+		assertThat(methods.getDeleteMethod().isAccessible()).isTrue();
+		assertThat(methods.getFindAllMethod().isAccessible()).isTrue();
+		assertThat(methods.getFindOneMethod().isAccessible()).isTrue();
 	}
 
 	private static CrudMethods getMethodsFor(Class<?> repositoryInterface) {
@@ -169,40 +169,40 @@ public class DefaultCrudMethodsUnitTests {
 
 		CrudMethods methods = getMethodsFor(type);
 
-		assertThat(methods.hasFindAllMethod(), is(method != null));
-		assertThat(methods.getFindAllMethod(), is(method));
+		assertThat(methods.hasFindAllMethod()).isEqualTo(method != null);
+		assertThat(methods.getFindAllMethod()).isEqualTo(method);
 	}
 
 	private static void assertFindOneMethodOn(Class<?> type, Method method) {
 
 		CrudMethods methods = getMethodsFor(type);
 
-		assertThat(methods.hasFindOneMethod(), is(method != null));
-		assertThat(methods.getFindOneMethod(), is(method));
+		assertThat(methods.hasFindOneMethod()).isEqualTo(method != null);
+		assertThat(methods.getFindOneMethod()).isEqualTo(method);
 	}
 
 	private static void assertDeleteMethodOn(Class<?> type, Method method) {
 
 		CrudMethods methods = getMethodsFor(type);
 
-		assertThat(methods.hasDelete(), is(method != null));
-		assertThat(methods.getDeleteMethod(), is(method));
+		assertThat(methods.hasDelete()).isEqualTo(method != null);
+		assertThat(methods.getDeleteMethod()).isEqualTo(method);
 	}
 
 	private static void assertSaveMethodOn(Class<?> type, Method method) {
 
 		CrudMethods methods = getMethodsFor(type);
 
-		assertThat(methods.hasSaveMethod(), is(method != null));
-		assertThat(methods.getSaveMethod(), is(method));
+		assertThat(methods.hasSaveMethod()).isEqualTo(method != null);
+		assertThat(methods.getSaveMethod()).isEqualTo(method);
 	}
 
 	private static void assertSaveMethodPresent(Class<?> type, boolean present) {
 
 		CrudMethods methods = getMethodsFor(type);
 
-		assertThat(methods.hasSaveMethod(), is(present));
-		assertThat(methods.getSaveMethod(), is(present ? notNullValue() : nullValue()));
+		assertThat(methods.hasSaveMethod()).isEqualTo(present);
+		assertThat(methods.getSaveMethod()).matches(method -> present ? method != null : method == null);
 	}
 
 	interface Domain {}
@@ -262,7 +262,7 @@ public class DefaultCrudMethodsUnitTests {
 
 		void delete(Long id);
 
-		Domain findOne(Long id);
+		Optional<Domain> findOne(Long id);
 	}
 
 	/**

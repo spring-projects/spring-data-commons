@@ -29,6 +29,7 @@ import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
@@ -46,8 +47,7 @@ public class QueryMethod {
 	private final Class<?> unwrappedReturnType;
 	private final Parameters<?, ?> parameters;
 	private final ResultProcessor resultProcessor;
-
-	private Class<?> domainClass;
+	private final Lazy<Class<?>> domainClass;
 
 	/**
 	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct query to use for following
@@ -63,12 +63,13 @@ public class QueryMethod {
 		Assert.notNull(metadata, "Repository metadata must not be null!");
 		Assert.notNull(factory, "ProjectionFactory must not be null!");
 
-		for (Class<?> type : Parameters.TYPES) {
-			if (getNumberOfOccurences(method, type) > 1) {
-				throw new IllegalStateException(String.format("Method must only one argument of type %s! Offending method: %s",
-						type.getSimpleName(), method.toString()));
-			}
-		}
+		Parameters.TYPES.stream()//
+				.filter(type -> getNumberOfOccurences(method, type) > 1)//
+				.findFirst().ifPresent(type -> {
+					throw new IllegalStateException(
+							String.format("Method must only one argument of type %s! Offending method: %s", type.getSimpleName(),
+									method.toString()));
+				});
 
 		this.method = method;
 		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(method);
@@ -94,6 +95,15 @@ public class QueryMethod {
 					String.format("Paging query needs to have a Pageable parameter! Offending method %s", method.toString()));
 		}
 
+		this.domainClass = Lazy.of(() -> {
+
+			Class<?> repositoryDomainClass = metadata.getDomainType();
+			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
+
+			return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)
+					? methodDomainClass : repositoryDomainClass;
+		});
+
 		this.resultProcessor = new ResultProcessor(this, factory);
 	}
 
@@ -113,20 +123,12 @@ public class QueryMethod {
 	 * @return
 	 */
 	public String getName() {
-
 		return method.getName();
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public EntityMetadata<?> getEntityInformation() {
-
-		return new EntityMetadata() {
-
-			public Class<?> getJavaType() {
-
-				return getDomainClass();
-			}
-		};
+		return () -> (Class) getDomainClass();
 	}
 
 	/**
@@ -144,17 +146,7 @@ public class QueryMethod {
 	 * @return will never be {@literal null}.
 	 */
 	protected Class<?> getDomainClass() {
-
-		if (domainClass == null) {
-
-			Class<?> repositoryDomainClass = metadata.getDomainType();
-			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
-
-			this.domainClass = repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)
-					? methodDomainClass : repositoryDomainClass;
-		}
-
-		return domainClass;
+		return domainClass.get();
 	}
 
 	/**
@@ -207,7 +199,7 @@ public class QueryMethod {
 	}
 
 	/**
-	 * Returns whether the query for theis method actually returns entities.
+	 * Returns whether the query for this method actually returns entities.
 	 * 
 	 * @return
 	 */
@@ -235,7 +227,7 @@ public class QueryMethod {
 	}
 
 	/**
-	 * Returns the {@link ResultProcessor} to be usedwith the query method.
+	 * Returns the {@link ResultProcessor} to be used with the query method.
 	 * 
 	 * @return the resultFactory
 	 */

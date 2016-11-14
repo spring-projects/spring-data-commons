@@ -16,9 +16,9 @@
 package org.springframework.data.projection;
 
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
@@ -45,7 +45,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		Assert.notNull(type, "Projection type must not be null!");
 
 		this.projectionType = type;
-		this.properties = collectDescriptors(type);
+		this.properties = Arrays.asList(BeanUtils.getPropertyDescriptors(type));
 	}
 
 	/* 
@@ -63,15 +63,10 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 */
 	public List<PropertyDescriptor> getInputProperties() {
 
-		List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
-
-		for (PropertyDescriptor descriptor : properties) {
-			if (isInputProperty(descriptor)) {
-				result.add(descriptor);
-			}
-		}
-
-		return result;
+		return properties.stream()//
+				.filter(this::isInputProperty)//
+				.distinct()//
+				.collect(Collectors.toList());
 	}
 
 	/* 
@@ -93,23 +88,5 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 */
 	protected boolean isInputProperty(PropertyDescriptor descriptor) {
 		return true;
-	}
-
-	/**
-	 * Collects {@link PropertyDescriptor}s for all properties exposed by the given type and all its super interfaces.
-	 * 
-	 * @param type must not be {@literal null}.
-	 * @return
-	 */
-	private static List<PropertyDescriptor> collectDescriptors(Class<?> type) {
-
-		List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
-		result.addAll(Arrays.asList(BeanUtils.getPropertyDescriptors(type)));
-
-		for (Class<?> interfaze : type.getInterfaces()) {
-			result.addAll(collectDescriptors(interfaze));
-		}
-
-		return result;
 	}
 }

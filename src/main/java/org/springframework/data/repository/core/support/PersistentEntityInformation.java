@@ -48,7 +48,7 @@ public class PersistentEntityInformation<T, ID extends Serializable> extends Abs
 	 */
 	@Override
 	public ID getId(T entity) {
-		return (ID) persistentEntity.getIdentifierAccessor(entity).getIdentifier();
+		return (ID) persistentEntity.getIdentifierAccessor(entity).getIdentifier().orElse(null);
 	}
 
 	/* 
@@ -57,6 +57,6 @@ public class PersistentEntityInformation<T, ID extends Serializable> extends Abs
 	 */
 	@Override
 	public Class<ID> getIdType() {
-		return (Class<ID>) persistentEntity.getIdProperty().getType();
+		return (Class<ID>) persistentEntity.getIdProperty().map(it -> it.getType()).orElse(null);
 	}
 }

@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -50,7 +51,7 @@ public class Repositories implements Iterable<Class<?>> {
 	private static final RepositoryFactoryInformation<Object, Serializable> EMPTY_REPOSITORY_FACTORY_INFO = EmptyRepositoryFactoryInformation.INSTANCE;
 	private static final String DOMAIN_TYPE_MUST_NOT_BE_NULL = "Domain type must not be null!";
 
-	private final BeanFactory beanFactory;
+	private final Optional<BeanFactory> beanFactory;
 	private final Map<Class<?>, String> repositoryBeanNames;
 	private final Map<Class<?>, RepositoryFactoryInformation<Object, Serializable>> repositoryFactoryInfos;
 
@@ -59,9 +60,9 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	private Repositories() {
 
-		this.beanFactory = null;
-		this.repositoryBeanNames = Collections.<Class<?>, String> emptyMap();
-		this.repositoryFactoryInfos = Collections.<Class<?>, RepositoryFactoryInformation<Object, Serializable>> emptyMap();
+		this.beanFactory = Optional.empty();
+		this.repositoryBeanNames = Collections.emptyMap();
+		this.repositoryFactoryInfos = Collections.emptyMap();
 	}
 
 	/**
@@ -74,7 +75,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(factory);
 
-		this.beanFactory = factory;
+		this.beanFactory = Optional.of(factory);
 		this.repositoryFactoryInfos = new HashMap<Class<?>, RepositoryFactoryInformation<Object, Serializable>>();
 		this.repositoryBeanNames = new HashMap<Class<?>, String>();
 
@@ -92,7 +93,7 @@ public class Repositories implements Iterable<Class<?>> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private synchronized void cacheRepositoryFactory(String name) {
 
-		RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.getBean(name,
+		RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.get().getBean(name,
 				RepositoryFactoryInformation.class);
 		Class<?> domainType = ClassUtils
 				.getUserClass(repositoryFactoryInformation.getRepositoryInformation().getDomainType());
@@ -130,12 +131,12 @@ public class Repositories implements Iterable<Class<?>> {
 	 * @param domainClass must not be {@literal null}.
 	 * @return
 	 */
-	public Object getRepositoryFor(Class<?> domainClass) {
+	public Optional<Object> getRepositoryFor(Class<?> domainClass) {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		String repositoryBeanName = repositoryBeanNames.get(domainClass);
-		return repositoryBeanName == null || beanFactory == null ? null : beanFactory.getBean(repositoryBeanName);
+		Optional<String> repositoryBeanName = Optional.ofNullable(repositoryBeanNames.get(domainClass));
+		return beanFactory.flatMap(it -> repositoryBeanName.map(name -> it.getBean(name)));
 	}
 
 	/**
@@ -201,18 +202,12 @@ public class Repositories implements Iterable<Class<?>> {
 	 *         repository instance registered for the given interface.
 	 * @since 1.12
 	 */
-	public RepositoryInformation getRepositoryInformation(Class<?> repositoryInterface) {
+	public Optional<RepositoryInformation> getRepositoryInformation(Class<?> repositoryInterface) {
 
-		for (RepositoryFactoryInformation<Object, Serializable> factoryInformation : repositoryFactoryInfos.values()) {
-
-			RepositoryInformation information = factoryInformation.getRepositoryInformation();
-
-			if (information.getRepositoryInterface().equals(repositoryInterface)) {
-				return information;
-			}
-		}
-
-		return null;
+		return repositoryFactoryInfos.values().stream()//
+				.map(RepositoryFactoryInformation::getRepositoryInformation)//
+				.filter(information -> information.getRepositoryInterface().equals(repositoryInterface))//
+				.findFirst();
 	}
 
 	/**

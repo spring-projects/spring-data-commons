@@ -21,6 +21,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
 /**
  * A tuple of things.
  * 
@@ -65,5 +69,9 @@ public final class Pair<S, T> {
 	 */
 	public T getSecond() {
 		return second;
+	}
+
+	public static <S, T> Collector<Pair<S, T>, ?, Map<S, T>> toMap() {
+		return Collectors.toMap(Pair::getFirst, Pair::getSecond);
 	}
 }

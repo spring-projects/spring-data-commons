@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import lombok.experimental.Delegate;
 
@@ -26,12 +25,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
-import org.hamcrest.Matcher;
-import org.hamcrest.collection.IsEmptyIterable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -66,11 +65,11 @@ public class DefaultRepositoryInformationUnitTests {
 
 		Method method = FooRepository.class.getMethod("findOne", Integer.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
-		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY, null);
+		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY, Optional.empty());
 
 		Method reference = information.getTargetClassMethod(method);
-		assertEquals(REPOSITORY, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("findOne"));
+		assertThat(reference.getDeclaringClass()).isEqualTo(REPOSITORY);
+		assertThat(reference.getName()).isEqualTo("findOne");
 	}
 
 	@Test
@@ -79,9 +78,10 @@ public class DefaultRepositoryInformationUnitTests {
 		Method method = FooRepository.class.getMethod("findOne", Long.class);
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
-		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				Optional.empty());
 
-		assertThat(information.getTargetClassMethod(method), is(method));
+		assertThat(information.getTargetClassMethod(method)).isEqualTo(method);
 	}
 
 	@Test
@@ -89,21 +89,22 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				customImplementation.getClass());
+				Optional.of(customImplementation.getClass()));
 
 		Method source = FooRepositoryCustom.class.getMethod("save", User.class);
 		Method expected = customImplementation.getClass().getMethod("save", User.class);
 
-		assertThat(information.getTargetClassMethod(source), is(expected));
+		assertThat(information.getTargetClassMethod(source)).isEqualTo(expected);
 	}
 
 	@Test
 	public void considersIntermediateMethodsAsFinderMethods() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				Optional.empty());
 
-		assertThat(information.hasCustomMethod(), is(false));
+		assertThat(information.hasCustomMethod()).isFalse();
 	}
 
 	@Test
@@ -111,16 +112,15 @@ public class DefaultRepositoryInformationUnitTests {
 
 		DefaultRepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
 		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata,
-				PagingAndSortingRepository.class, null);
+				PagingAndSortingRepository.class, Optional.empty());
 
 		Method method = CustomRepository.class.getMethod("findAll", Pageable.class);
-		assertThat(information.isBaseClassMethod(method), is(true));
+		assertThat(information.isBaseClassMethod(method)).isTrue();
 
 		method = getMethodFrom(CustomRepository.class, "exists");
-		assertThat(information.isBaseClassMethod(method), is(true));
 
-		Matcher<Iterable<Method>> empty = iterableWithSize(0);
-		assertThat(information.getQueryMethods(), is(empty));
+		assertThat(information.isBaseClassMethod(method)).isTrue();
+		assertThat(information.getQueryMethods()).isEmpty();
 	}
 
 	/**
@@ -131,8 +131,9 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, PagingAndSortingRepository.class,
-				null);
-		assertThat(information.getQueryMethods(), is(IsEmptyIterable.<Method> emptyIterable()));
+				Optional.empty());
+
+		assertThat(information.getQueryMethods()).isEmpty();
 	}
 
 	/**
@@ -142,30 +143,31 @@ public class DefaultRepositoryInformationUnitTests {
 	public void doesNotConsiderRedeclaredSaveMethodAQueryMethod() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				Optional.empty());
 
 		Method saveMethod = BaseRepository.class.getMethod("save", Object.class);
 		Method deleteMethod = BaseRepository.class.getMethod("delete", Object.class);
 
 		Iterable<Method> queryMethods = information.getQueryMethods();
 
-		assertThat(queryMethods, not(hasItem(saveMethod)));
-		assertThat(queryMethods, not(hasItem(deleteMethod)));
+		assertThat(queryMethods).doesNotContain(saveMethod, deleteMethod);
 	}
 
 	@Test
 	public void onlyReturnsMostConcreteQueryMethod() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				Optional.empty());
 
 		Method intermediateMethod = BaseRepository.class.getMethod("genericMethodToOverride", String.class);
 		Method concreteMethod = ConcreteRepository.class.getMethod("genericMethodToOverride", String.class);
 
 		Iterable<Method> queryMethods = information.getQueryMethods();
 
-		assertThat(queryMethods, hasItem(concreteMethod));
-		assertThat(queryMethods, not(hasItem(intermediateMethod)));
+		assertThat(queryMethods).contains(concreteMethod);
+		assertThat(queryMethods).doesNotContain(intermediateMethod);
 	}
 
 	/**
@@ -175,12 +177,13 @@ public class DefaultRepositoryInformationUnitTests {
 	public void detectsQueryMethodCorrectly() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				Optional.empty());
 
 		Method queryMethod = getMethodFrom(ConcreteRepository.class, "findBySomethingDifferent");
 
-		assertThat(information.getQueryMethods(), hasItem(queryMethod));
-		assertThat(information.isQueryMethod(queryMethod), is(true));
+		assertThat(information.getQueryMethods()).contains(queryMethod);
+		assertThat(information.isQueryMethod(queryMethod)).isTrue();
 	}
 
 	/**
@@ -190,11 +193,12 @@ public class DefaultRepositoryInformationUnitTests {
 	public void ignoresCrudMethodsAnnotatedWithQuery() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				Optional.empty());
 
 		Method method = BaseRepository.class.getMethod("findOne", Serializable.class);
 
-		assertThat(information.getQueryMethods(), hasItem(method));
+		assertThat(information.getQueryMethods()).contains(method);
 	}
 
 	/**
@@ -204,12 +208,13 @@ public class DefaultRepositoryInformationUnitTests {
 	public void findsTargetSaveForIterableIfEntityImplementsIterable() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(BossRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				Optional.empty());
 
 		Method method = BossRepository.class.getMethod("save", Iterable.class);
 		Method reference = CrudRepository.class.getMethod("save", Iterable.class);
 
-		assertThat(information.getTargetClassMethod(method), is(reference));
+		assertThat(information.getTargetClassMethod(method)).isEqualTo(reference);
 	}
 
 	/**
@@ -219,11 +224,10 @@ public class DefaultRepositoryInformationUnitTests {
 	public void getQueryShouldNotReturnAnyBridgeMethods() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomDefaultRepositoryMethodsRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class, null);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				Optional.empty());
 
-		for (Method method : information.getQueryMethods()) {
-			assertFalse(method.isBridge());
-		}
+		assertThat(information.getQueryMethods()).allMatch(method -> !method.isBridge());
 	}
 
 	/**
@@ -234,12 +238,12 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				customImplementation.getClass());
+				Optional.of(customImplementation.getClass()));
 
 		Method source = FooRepositoryCustom.class.getMethod("exists", Object.class);
 		Method expected = customImplementation.getClass().getMethod("exists", Object.class);
 
-		assertThat(information.getTargetClassMethod(source), is(expected));
+		assertThat(information.getTargetClassMethod(source)).isEqualTo(expected);
 	}
 
 	/**
@@ -296,23 +300,21 @@ public class DefaultRepositoryInformationUnitTests {
 	public void usesCorrectSaveOverload() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(DummyRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, DummyRepositoryImpl.class, null);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, DummyRepositoryImpl.class,
+				Optional.empty());
 
 		Method method = DummyRepository.class.getMethod("save", Iterable.class);
 
-		assertThat(information.getTargetClassMethod(method),
-				is(DummyRepositoryImpl.class.getMethod("save", Iterable.class)));
+		assertThat(information.getTargetClassMethod(method))
+				.isEqualTo(DummyRepositoryImpl.class.getMethod("save", Iterable.class));
 	}
 
 	private static Method getMethodFrom(Class<?> type, String name) {
 
-		for (Method method : type.getMethods()) {
-			if (method.getName().equals(name)) {
-				return method;
-			}
-		}
-
-		return null;
+		return Arrays.stream(type.getMethods())//
+				.filter(method -> method.getName().equals(name))//
+				.findFirst()//
+				.orElseThrow(() -> new IllegalStateException("No method found wwith name ".concat(name).concat("!")));
 	}
 
 	@Target(ElementType.METHOD)
@@ -324,7 +326,7 @@ public class DefaultRepositoryInformationUnitTests {
 	interface FooRepository extends CrudRepository<User, Integer>, FooRepositoryCustom {
 
 		// Redeclared method
-		User findOne(Integer primaryKey);
+		Optional<User> findOne(Integer primaryKey);
 
 		// Not a redeclared method
 		User findOne(Long primaryKey);
@@ -372,7 +374,7 @@ public class DefaultRepositoryInformationUnitTests {
 		void delete(S entity);
 
 		@MyQuery
-		S findOne(ID id);
+		Optional<S> findOne(ID id);
 	}
 
 	interface ConcreteRepository extends BaseRepository<User, Integer> {

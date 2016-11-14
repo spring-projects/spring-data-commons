@@ -15,15 +15,15 @@
  */
 package org.springframework.data.history;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -37,24 +37,21 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class RevisionUnitTests {
 
-	@Mock
-	RevisionMetadata<Integer> firstMetadata, secondMetadata;
+	@Mock RevisionMetadata<Integer> firstMetadata, secondMetadata;
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void comparesCorrectly() {
 
-		when(firstMetadata.getRevisionNumber()).thenReturn(1);
-		when(secondMetadata.getRevisionNumber()).thenReturn(2);
+		when(firstMetadata.getRevisionNumber()).thenReturn(Optional.of(1));
+		when(secondMetadata.getRevisionNumber()).thenReturn(Optional.of(2));
 
-		Revision<Integer, Object> first = new Revision<Integer, Object>(firstMetadata, new Object());
-		Revision<Integer, Object> second = new Revision<Integer, Object>(secondMetadata, new Object());
+		Revision<Integer, Object> first = Revision.of(firstMetadata, new Object());
+		Revision<Integer, Object> second = Revision.of(secondMetadata, new Object());
 
-		List<Revision<Integer, Object>> revisions = Arrays.asList(second, first);
-		Collections.sort(revisions);
+		List<Revision<Integer, Object>> revisions = Stream.of(second, first).sorted().collect(Collectors.toList());
 
-		assertThat(revisions.get(0), is(first));
-		assertThat(revisions.get(1), is(second));
+		assertThat(revisions.get(0)).isEqualTo(first);
+		assertThat(revisions.get(1)).isEqualTo(second);
 	}
 
 	/**
@@ -63,11 +60,10 @@ public class RevisionUnitTests {
 	@Test
 	public void returnsRevisionNumber() {
 
-		when(firstMetadata.getRevisionNumber()).thenReturn(4711);
+		Optional<Integer> reference = Optional.of(4711);
+		when(firstMetadata.getRevisionNumber()).thenReturn(reference);
 
-		Revision<Integer, Object> revision = new Revision<Integer, Object>(firstMetadata, new Object());
-
-		assertThat(revision.getRevisionNumber(), is(4711));
+		assertThat(Revision.of(firstMetadata, new Object()).getRevisionNumber()).isEqualTo(reference);
 	}
 
 	/**
@@ -76,12 +72,10 @@ public class RevisionUnitTests {
 	@Test
 	public void returnsRevisionDate() {
 
-		DateTime reference = new DateTime();
+		Optional<LocalDateTime> reference = Optional.of(LocalDateTime.now());
 		when(firstMetadata.getRevisionDate()).thenReturn(reference);
 
-		Revision<Integer, Object> revision = new Revision<Integer, Object>(firstMetadata, new Object());
-
-		assertThat(revision.getRevisionDate(), is(reference));
+		assertThat(Revision.of(firstMetadata, new Object()).getRevisionDate()).isEqualTo(reference);
 	}
 
 	/**
@@ -89,8 +83,6 @@ public class RevisionUnitTests {
 	 */
 	@Test
 	public void returnsRevisionMetadata() {
-
-		Revision<Integer, Object> revision = new Revision<Integer, Object>(firstMetadata, new Object());
-		assertThat(revision.getMetadata(), is(firstMetadata));
+		assertThat(Revision.of(firstMetadata, new Object()).getMetadata()).isEqualTo(firstMetadata);
 	}
 }

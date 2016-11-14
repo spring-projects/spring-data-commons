@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping.context;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.mapping.context.AbstractMappingContext.PersistentPropertyFilter.PropertyMatch;
@@ -38,36 +37,36 @@ public class PropertyMatchUnitTests {
 	public void matchesFieldByConcreteNameAndType() throws Exception {
 
 		PropertyMatch match = new PropertyMatch("name", "java.lang.String");
-		assertThat(match.matches("this$0", Object.class), is(false));
-		assertThat(match.matches("this$1", Object.class), is(false));
-		assertThat(match.matches("name", String.class), is(true));
+		assertThat(match.matches("this$0", Object.class)).isFalse();
+		assertThat(match.matches("this$1", Object.class)).isFalse();
+		assertThat(match.matches("name", String.class)).isTrue();
 	}
 
 	@Test
 	public void matchesFieldByNamePattern() throws Exception {
 
 		PropertyMatch match = new PropertyMatch("this\\$.*", "java.lang.Object");
-		assertThat(match.matches("this$0", Object.class), is(true));
-		assertThat(match.matches("this$1", Object.class), is(true));
-		assertThat(match.matches("name", String.class), is(false));
+		assertThat(match.matches("this$0", Object.class)).isTrue();
+		assertThat(match.matches("this$1", Object.class)).isTrue();
+		assertThat(match.matches("name", String.class)).isFalse();
 	}
 
 	@Test
 	public void matchesFieldByNameOnly() throws Exception {
 
 		PropertyMatch match = new PropertyMatch("this\\$.*", null);
-		assertThat(match.matches("this$0", Object.class), is(true));
-		assertThat(match.matches("this$1", Object.class), is(true));
-		assertThat(match.matches("name", String.class), is(false));
+		assertThat(match.matches("this$0", Object.class)).isTrue();
+		assertThat(match.matches("this$1", Object.class)).isTrue();
+		assertThat(match.matches("name", String.class)).isFalse();
 	}
 
 	@Test
 	public void matchesFieldByTypeNameOnly() throws Exception {
 
 		PropertyMatch match = new PropertyMatch(null, "java.lang.Object");
-		assertThat(match.matches("this$0", Object.class), is(true));
-		assertThat(match.matches("this$1", Object.class), is(true));
-		assertThat(match.matches("name", String.class), is(false));
+		assertThat(match.matches("this$0", Object.class)).isTrue();
+		assertThat(match.matches("this$1", Object.class)).isTrue();
+		assertThat(match.matches("name", String.class)).isFalse();
 	}
 
 	static class Sample {

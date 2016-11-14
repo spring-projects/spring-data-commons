@@ -2,13 +2,14 @@ package org.springframework.data.mapping.context;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
-public class SampleMappingContext extends
-		AbstractMappingContext<BasicPersistentEntity<Object, SamplePersistentProperty>, SamplePersistentProperty> {
+public class SampleMappingContext
+		extends AbstractMappingContext<BasicPersistentEntity<Object, SamplePersistentProperty>, SamplePersistentProperty> {
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -18,8 +19,8 @@ public class SampleMappingContext extends
 	}
 
 	@Override
-	protected SamplePersistentProperty createPersistentProperty(final Field field, final PropertyDescriptor descriptor,
-			final BasicPersistentEntity<Object, SamplePersistentProperty> owner, final SimpleTypeHolder simpleTypeHolder) {
+	protected SamplePersistentProperty createPersistentProperty(Optional<Field> field, PropertyDescriptor descriptor,
+			BasicPersistentEntity<Object, SamplePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
 
 		return new SamplePersistentProperty(field, descriptor, owner, simpleTypeHolder);
 	}

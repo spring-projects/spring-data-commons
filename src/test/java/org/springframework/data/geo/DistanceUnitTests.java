@@ -15,10 +15,10 @@
  */
 package org.springframework.data.geo;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.geo.Metrics.*;
 
+import org.assertj.core.data.Offset;
 import org.junit.Test;
 import org.springframework.data.domain.Range;
 import org.springframework.util.SerializationUtils;
@@ -31,7 +31,7 @@ import org.springframework.util.SerializationUtils;
  */
 public class DistanceUnitTests {
 
-	private static final double EPS = 0.000000001;
+	private static final Offset<Double> EPS = Offset.offset(0.000000001);
 	private static final double TEN_MILES_NORMALIZED = 0.002523219294755161;
 	private static final double TEN_KM_NORMALIZED = 0.001567855942887398;
 
@@ -41,8 +41,8 @@ public class DistanceUnitTests {
 	@Test
 	public void defaultsMetricToNeutralOne() {
 
-		assertThat(new Distance(2.5).getMetric(), is((Metric) Metrics.NEUTRAL));
-		assertThat(new Distance(2.5, null).getMetric(), is((Metric) Metrics.NEUTRAL));
+		assertThat(new Distance(2.5).getMetric()).isEqualTo((Metric) Metrics.NEUTRAL);
+		assertThat(new Distance(2.5, null).getMetric()).isEqualTo((Metric) Metrics.NEUTRAL);
 	}
 
 	/**
@@ -54,7 +54,7 @@ public class DistanceUnitTests {
 		Distance left = new Distance(2.5, KILOMETERS);
 		Distance right = new Distance(2.5, KILOMETERS);
 
-		assertThat(left.add(right), is(new Distance(5.0, KILOMETERS)));
+		assertThat(left.add(right)).isEqualTo(new Distance(5.0, KILOMETERS));
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class DistanceUnitTests {
 		Distance left = new Distance(2.5, KILOMETERS);
 		Distance right = new Distance(2.5, KILOMETERS);
 
-		assertThat(left.add(right, MILES), is(new Distance(3.106856281073925, MILES)));
+		assertThat(left.add(right, MILES)).isEqualTo(new Distance(3.106856281073925, MILES));
 	}
 
 	/**
@@ -75,9 +75,9 @@ public class DistanceUnitTests {
 	@Test
 	public void distanceWithSameMetricShoudEqualAfterConversion() {
 
-		assertThat(new Distance(1).in(NEUTRAL), is(new Distance(1)));
-		assertThat(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS), is(new Distance(10, KILOMETERS)));
-		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES), is(new Distance(10, MILES)));
+		assertThat(new Distance(1).in(NEUTRAL)).isEqualTo(new Distance(1));
+		assertThat(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS)).isEqualTo(new Distance(10, KILOMETERS));
+		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES)).isEqualTo(new Distance(10, MILES));
 	}
 
 	/**
@@ -86,8 +86,8 @@ public class DistanceUnitTests {
 	@Test
 	public void distanceWithDifferentMetricShoudEqualAfterConversion() {
 
-		assertThat(new Distance(10, MILES), is(new Distance(TEN_MILES_NORMALIZED).in(MILES)));
-		assertThat(new Distance(10, KILOMETERS), is(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS)));
+		assertThat(new Distance(10, MILES)).isEqualTo(new Distance(TEN_MILES_NORMALIZED).in(MILES));
+		assertThat(new Distance(10, KILOMETERS)).isEqualTo(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS));
 	}
 
 	/**
@@ -96,23 +96,23 @@ public class DistanceUnitTests {
 	@Test
 	public void conversionShouldProduceCorrectNormalizedValue() {
 
-		assertThat(new Distance(TEN_KM_NORMALIZED, NEUTRAL).in(KILOMETERS).getNormalizedValue(),
-				closeTo(new Distance(10, KILOMETERS).getNormalizedValue(), EPS));
+		assertThat(new Distance(TEN_KM_NORMALIZED, NEUTRAL).in(KILOMETERS).getNormalizedValue())
+				.isCloseTo(new Distance(10, KILOMETERS).getNormalizedValue(), EPS);
 
-		assertThat(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS).getNormalizedValue(),
-				closeTo(new Distance(10, KILOMETERS).getNormalizedValue(), EPS));
+		assertThat(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS).getNormalizedValue())
+				.isCloseTo(new Distance(10, KILOMETERS).getNormalizedValue(), EPS);
 
-		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES).getNormalizedValue(),
-				closeTo(new Distance(10, MILES).getNormalizedValue(), EPS));
+		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES).getNormalizedValue())
+				.isCloseTo(new Distance(10, MILES).getNormalizedValue(), EPS);
 
-		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES).getNormalizedValue(),
-				closeTo(new Distance(16.09344, KILOMETERS).getNormalizedValue(), EPS));
+		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES).getNormalizedValue())
+				.isCloseTo(new Distance(16.09344, KILOMETERS).getNormalizedValue(), EPS);
 
-		assertThat(new Distance(TEN_MILES_NORMALIZED).in(KILOMETERS).getNormalizedValue(),
-				closeTo(new Distance(10, MILES).getNormalizedValue(), EPS));
+		assertThat(new Distance(TEN_MILES_NORMALIZED).in(KILOMETERS).getNormalizedValue())
+				.isCloseTo(new Distance(10, MILES).getNormalizedValue(), EPS);
 
-		assertThat(new Distance(10, KILOMETERS).in(MILES).getNormalizedValue(),
-				closeTo(new Distance(6.21371192, MILES).getNormalizedValue(), EPS));
+		assertThat(new Distance(10, KILOMETERS).in(MILES).getNormalizedValue())
+				.isCloseTo(new Distance(6.21371192, MILES).getNormalizedValue(), EPS);
 	}
 
 	/**
@@ -121,9 +121,10 @@ public class DistanceUnitTests {
 	@Test
 	public void toStringAfterConversion() {
 
-		assertThat(new Distance(10, KILOMETERS).in(MILES).toString(), is(new Distance(6.21371256214785, MILES).toString()));
-		assertThat(new Distance(6.21371256214785, MILES).in(KILOMETERS).toString(),
-				is(new Distance(10, KILOMETERS).toString()));
+		assertThat(new Distance(10, KILOMETERS).in(MILES).toString())
+				.isEqualTo(new Distance(6.21371256214785, MILES).toString());
+		assertThat(new Distance(6.21371256214785, MILES).in(KILOMETERS).toString())
+				.isEqualTo(new Distance(10, KILOMETERS).toString());
 	}
 
 	/**
@@ -135,7 +136,7 @@ public class DistanceUnitTests {
 		Distance dist = new Distance(10, KILOMETERS);
 
 		Distance serialized = (Distance) SerializationUtils.deserialize(SerializationUtils.serialize(dist));
-		assertThat(serialized, is(dist));
+		assertThat(serialized).isEqualTo(dist);
 	}
 
 	/**
@@ -143,7 +144,7 @@ public class DistanceUnitTests {
 	 */
 	@Test
 	public void returnsMetricsAbbreviationAsUnit() {
-		assertThat(new Distance(10, KILOMETERS).getUnit(), is("km"));
+		assertThat(new Distance(10, KILOMETERS).getUnit()).isEqualTo("km");
 	}
 
 	/**
@@ -157,9 +158,9 @@ public class DistanceUnitTests {
 
 		Range<Distance> range = Distance.between(twoKilometers, tenKilometers);
 
-		assertThat(range, is(notNullValue()));
-		assertThat(range.getLowerBound(), is(twoKilometers));
-		assertThat(range.getUpperBound(), is(tenKilometers));
+		assertThat(range).isNotNull();
+		assertThat(range.getLowerBound()).isEqualTo(twoKilometers);
+		assertThat(range.getUpperBound()).isEqualTo(tenKilometers);
 	}
 
 	/**
@@ -173,9 +174,9 @@ public class DistanceUnitTests {
 
 		Range<Distance> range = Distance.between(2, KILOMETERS, 10, KILOMETERS);
 
-		assertThat(range, is(notNullValue()));
-		assertThat(range.getLowerBound(), is(twoKilometers));
-		assertThat(range.getUpperBound(), is(tenKilometers));
+		assertThat(range).isNotNull();
+		assertThat(range.getLowerBound()).isEqualTo(twoKilometers);
+		assertThat(range.getUpperBound()).isEqualTo(tenKilometers);
 	}
 
 	/**
@@ -188,11 +189,11 @@ public class DistanceUnitTests {
 		Distance tenKilometers = new Distance(10, KILOMETERS);
 		Distance tenKilometersInMiles = new Distance(6.21371256214785, MILES);
 
-		assertThat(tenKilometers.compareTo(tenKilometers), is(0));
-		assertThat(tenKilometers.compareTo(tenKilometersInMiles), is(0));
-		assertThat(tenKilometersInMiles.compareTo(tenKilometers), is(0));
+		assertThat(tenKilometers.compareTo(tenKilometers)).isEqualTo(0);
+		assertThat(tenKilometers.compareTo(tenKilometersInMiles)).isEqualTo(0);
+		assertThat(tenKilometersInMiles.compareTo(tenKilometers)).isEqualTo(0);
 
-		assertThat(twoKilometers.compareTo(tenKilometers), is(lessThan(0)));
-		assertThat(tenKilometers.compareTo(twoKilometers), is(greaterThan(0)));
+		assertThat(twoKilometers.compareTo(tenKilometers)).isLessThan(0);
+		assertThat(tenKilometers.compareTo(twoKilometers)).isGreaterThan(0);
 	}
 }

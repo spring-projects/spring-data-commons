@@ -15,8 +15,7 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
 
 import java.lang.reflect.Constructor;
@@ -57,18 +56,18 @@ public class TypeDiscovererUnitTests {
 		TypeDiscoverer<Object> objectTypeInfo = new TypeDiscoverer<Object>(Object.class, EMPTY_MAP);
 		TypeDiscoverer<String> stringTypeInfo = new TypeDiscoverer<String>(String.class, EMPTY_MAP);
 
-		assertFalse(objectTypeInfo.equals(stringTypeInfo));
+		assertThat(objectTypeInfo.equals(stringTypeInfo)).isFalse();
 	}
 
 	@Test
 	public void isNotEqualIfTypeVariableMapsDiffer() {
 
-		assertFalse(firstMap.equals(secondMap));
+		assertThat(firstMap.equals(secondMap)).isFalse();
 
 		TypeDiscoverer<Object> first = new TypeDiscoverer<Object>(Object.class, firstMap);
 		TypeDiscoverer<Object> second = new TypeDiscoverer<Object>(Object.class, secondMap);
 
-		assertFalse(first.equals(second));
+		assertThat(first.equals(second)).isFalse();
 	}
 
 	@Test
@@ -78,7 +77,7 @@ public class TypeDiscovererUnitTests {
 		TypeInformation<?> first = information.getProperty("parent").getMapValueType();
 		TypeInformation<?> second = first.getProperty("map").getMapValueType();
 
-		assertEquals(first, second);
+		assertThat(second).isEqualTo(first);
 	}
 
 	@Test
@@ -87,7 +86,7 @@ public class TypeDiscovererUnitTests {
 		TypeInformation<SelfReferencingMap> information = from(SelfReferencingMap.class);
 		TypeInformation<?> mapValueType = information.getProperty("map").getMapValueType();
 
-		assertEquals(mapValueType, information);
+		assertThat(information).isEqualTo(mapValueType);
 	}
 
 	@Test
@@ -95,16 +94,17 @@ public class TypeDiscovererUnitTests {
 
 		TypeInformation<?> discoverer = new TypeDiscoverer<Object>(CustomMap.class, EMPTY_MAP);
 
-		assertEquals(Locale.class, discoverer.getMapValueType().getType());
-		assertEquals(String.class, discoverer.getComponentType().getType());
+		assertThat(discoverer.getMapValueType().getType()).isEqualTo(Locale.class);
+		assertThat(discoverer.getComponentType().getType()).isEqualTo(String.class);
 	}
 
 	@Test
 	public void returnsComponentTypeForCollectionExtension() {
 
-		TypeDiscoverer<CustomCollection> discoverer = new TypeDiscoverer<CustomCollection>(CustomCollection.class, firstMap);
+		TypeDiscoverer<CustomCollection> discoverer = new TypeDiscoverer<CustomCollection>(CustomCollection.class,
+				firstMap);
 
-		assertEquals(String.class, discoverer.getComponentType().getType());
+		assertThat(discoverer.getComponentType().getType()).isEqualTo(String.class);
 	}
 
 	@Test
@@ -112,14 +112,13 @@ public class TypeDiscovererUnitTests {
 
 		TypeDiscoverer<String[]> discoverer = new TypeDiscoverer<String[]>(String[].class, EMPTY_MAP);
 
-		assertEquals(String.class, discoverer.getComponentType().getType());
+		assertThat(discoverer.getComponentType().getType()).isEqualTo(String.class);
 	}
 
 	/**
 	 * @see DATACMNS-57
 	 */
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void discoveresConstructorParameterTypesCorrectly() throws NoSuchMethodException, SecurityException {
 
 		TypeDiscoverer<GenericConstructors> discoverer = new TypeDiscoverer<GenericConstructors>(GenericConstructors.class,
@@ -127,9 +126,9 @@ public class TypeDiscovererUnitTests {
 		Constructor<GenericConstructors> constructor = GenericConstructors.class.getConstructor(List.class, Locale.class);
 		List<TypeInformation<?>> types = discoverer.getParameterTypes(constructor);
 
-		assertThat(types.size(), is(2));
-		assertThat(types.get(0).getType(), equalTo((Class) List.class));
-		assertThat(types.get(0).getComponentType().getType(), is(equalTo((Class) String.class)));
+		assertThat(types).hasSize(2);
+		assertThat(types.get(0).getType()).isEqualTo(List.class);
+		assertThat(types.get(0).getComponentType().getType()).isEqualTo(String.class);
 	}
 
 	@Test
@@ -138,8 +137,8 @@ public class TypeDiscovererUnitTests {
 
 		TypeDiscoverer<Map> discoverer = new TypeDiscoverer<Map>(Map.class, EMPTY_MAP);
 
-		assertThat(discoverer.getComponentType(), is(nullValue()));
-		assertThat(discoverer.getMapValueType(), is(nullValue()));
+		assertThat(discoverer.getComponentType()).isNull();
+		assertThat(discoverer.getMapValueType()).isNull();
 	}
 
 	/**
@@ -154,13 +153,13 @@ public class TypeDiscovererUnitTests {
 
 		TypeInformation<?> addresses = discoverer.getProperty("addresses");
 
-		assertThat(addresses.isCollectionLike(), is(false));
-		assertThat(addresses.getComponentType(), is(reference));
+		assertThat(addresses.isCollectionLike()).isFalse();
+		assertThat(addresses.getComponentType()).isEqualTo(reference);
 
 		TypeInformation<?> adressIterable = discoverer.getProperty("addressIterable");
 
-		assertThat(adressIterable.isCollectionLike(), is(true));
-		assertThat(adressIterable.getComponentType(), is(reference));
+		assertThat(adressIterable.isCollectionLike()).isTrue();
+		assertThat(adressIterable.getComponentType()).isEqualTo(reference);
 	}
 
 	class Person {

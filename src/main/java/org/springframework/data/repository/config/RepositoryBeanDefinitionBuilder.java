@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.config;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -27,7 +29,6 @@ import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Builder to create {@link BeanDefinitionBuilder} instance to eventually create Spring Data repository instances.
@@ -43,7 +44,7 @@ class RepositoryBeanDefinitionBuilder {
 	private final ResourceLoader resourceLoader;
 
 	private final MetadataReaderFactory metadataReaderFactory;
-	private CustomRepositoryImplementationDetector implementationDetector;
+	private final CustomRepositoryImplementationDetector implementationDetector;
 
 	/**
 	 * Creates a new {@link RepositoryBeanDefinitionBuilder} from the given {@link BeanDefinitionRegistry},
@@ -81,11 +82,7 @@ class RepositoryBeanDefinitionBuilder {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
-		String factoryBeanName = configuration.getRepositoryFactoryBeanName();
-		factoryBeanName = StringUtils.hasText(factoryBeanName) ? factoryBeanName : extension
-				.getRepositoryFactoryClassName();
-
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(factoryBeanName);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(extension.getRepositoryFactoryClassName());
 
 		builder.getRawBeanDefinition().setSource(configuration.getSource());
 		builder.addPropertyValue("repositoryInterface", configuration.getRepositoryInterface());
@@ -95,19 +92,16 @@ class RepositoryBeanDefinitionBuilder {
 
 		NamedQueriesBeanDefinitionBuilder definitionBuilder = new NamedQueriesBeanDefinitionBuilder(
 				extension.getDefaultNamedQueryLocation());
-
-		if (StringUtils.hasText(configuration.getNamedQueriesLocation())) {
-			definitionBuilder.setLocations(configuration.getNamedQueriesLocation());
-		}
+		configuration.getNamedQueriesLocation().ifPresent(it -> definitionBuilder.setLocations(it));
 
 		builder.addPropertyValue("namedQueries", definitionBuilder.build(configuration.getSource()));
 
-		String customImplementationBeanName = registerCustomImplementation(configuration);
+		Optional<String> customImplementationBeanName = registerCustomImplementation(configuration);
 
-		if (customImplementationBeanName != null) {
-			builder.addPropertyReference("customImplementation", customImplementationBeanName);
-			builder.addDependsOn(customImplementationBeanName);
-		}
+		customImplementationBeanName.ifPresent(it -> {
+			builder.addPropertyReference("customImplementation", it);
+			builder.addDependsOn(it);
+		});
 
 		RootBeanDefinition evaluationContextProviderDefinition = new RootBeanDefinition(
 				ExtensionAwareEvaluationContextProvider.class);
@@ -118,31 +112,30 @@ class RepositoryBeanDefinitionBuilder {
 		return builder;
 	}
 
-	private String registerCustomImplementation(RepositoryConfiguration<?> configuration) {
+	private Optional<String> registerCustomImplementation(RepositoryConfiguration<?> configuration) {
 
 		String beanName = configuration.getImplementationBeanName();
 
 		// Already a bean configured?
 		if (registry.containsBeanDefinition(beanName)) {
+			return Optional.of(beanName);
+		}
+
+		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector
+				.detectCustomImplementation(configuration.getImplementationClassName(), configuration.getBasePackages());
+
+		return beanDefinition.map(it -> {
+
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Registering custom repository implementation: " + configuration.getImplementationBeanName() + " "
+						+ it.getBeanClassName());
+			}
+
+			it.setSource(configuration.getSource());
+
+			registry.registerBeanDefinition(beanName, it);
+
 			return beanName;
-		}
-
-		AbstractBeanDefinition beanDefinition = implementationDetector.detectCustomImplementation(
-				configuration.getImplementationClassName(), configuration.getBasePackages());
-
-		if (null == beanDefinition) {
-			return null;
-		}
-
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Registering custom repository implementation: " + configuration.getImplementationBeanName() + " "
-					+ beanDefinition.getBeanClassName());
-		}
-
-		beanDefinition.setSource(configuration.getSource());
-
-		registry.registerBeanDefinition(beanName, beanDefinition);
-
-		return beanName;
+		});
 	}
 }

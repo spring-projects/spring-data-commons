@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
@@ -30,13 +29,6 @@ import org.springframework.data.repository.sample.Product;
 import org.springframework.data.repository.sample.ProductRepository;
 import org.springframework.data.repository.sample.SampleConfiguration;
 import org.springframework.data.repository.sample.User;
-import org.springframework.data.repository.support.CrudRepositoryInvoker;
-import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
-import org.springframework.data.repository.support.PagingAndSortingRepositoryInvoker;
-import org.springframework.data.repository.support.ReflectionRepositoryInvoker;
-import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.repository.support.RepositoryInvoker;
-import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -71,7 +63,9 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 		Product product = new Product();
 		when(productRepository.findOne(4711L)).thenReturn(product);
 
-		assertThat(factory.getInvokerFor(Product.class).invokeFindOne(4711L), is((Object) product));
+		Object invokeFindOne = factory.getInvokerFor(Product.class).invokeFindOne(4711L);
+
+		assertThat(invokeFindOne).isEqualTo(product);
 	}
 
 	/**
@@ -95,7 +89,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 
 		RepositoryInvoker invoker = factory.getInvokerFor(Product.class);
 
-		assertThat(factory.getInvokerFor(Product.class), is(invoker));
+		assertThat(factory.getInvokerFor(Product.class)).isEqualTo(invoker);
 	}
 
 	/**
@@ -106,8 +100,9 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 
 		RepositoryInvoker invoker = factory.getInvokerFor(Product.class);
 
-		assertThat(invoker, is(instanceOf(ReflectionRepositoryInvoker.class)));
-		assertThat(invoker, is(not(instanceOf(CrudRepositoryInvoker.class))));
+		assertThat(invoker)//
+				.isInstanceOf(ReflectionRepositoryInvoker.class)//
+				.isNotInstanceOf(CrudRepositoryInvoker.class);
 	}
 
 	/**
@@ -118,7 +113,8 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 
 		RepositoryInvoker invoker = factory.getInvokerFor(User.class);
 
-		assertThat(invoker, is(instanceOf(CrudRepositoryInvoker.class)));
-		assertThat(invoker, is(not(instanceOf(PagingAndSortingRepositoryInvoker.class))));
+		assertThat(invoker)//
+				.isInstanceOf(CrudRepositoryInvoker.class)//
+				.isNotInstanceOf(PagingAndSortingRepositoryInvoker.class);
 	}
 }

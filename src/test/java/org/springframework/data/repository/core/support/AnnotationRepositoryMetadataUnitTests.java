@@ -15,13 +15,11 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.core.support.AnnotationRepositoryMetadata;
-import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 
 /**
  * Unit tests for {@link DefaultRepositoryMetadata}.
@@ -34,8 +32,9 @@ public class AnnotationRepositoryMetadataUnitTests {
 	public void handlesRepositoryProxyAnnotationCorrectly() {
 
 		RepositoryMetadata metadata = new AnnotationRepositoryMetadata(AnnotatedRepository.class);
-		assertEquals(User.class, metadata.getDomainType());
-		assertEquals(Integer.class, metadata.getIdType());
+
+		assertThat(metadata.getDomainType()).isEqualTo(User.class);
+		assertThat(metadata.getIdType()).isEqualTo(Integer.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class)

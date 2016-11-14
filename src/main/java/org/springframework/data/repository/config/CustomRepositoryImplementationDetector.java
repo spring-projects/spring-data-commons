@@ -16,11 +16,14 @@
 
 package org.springframework.data.repository.config;
 
-import java.util.ArrayList;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.HashSet;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -30,7 +33,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Detects the custom implementation for a {@link org.springframework.data.repository.Repository}
@@ -38,34 +40,14 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
+@RequiredArgsConstructor
 public class CustomRepositoryImplementationDetector {
 
 	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
 
-	private final MetadataReaderFactory metadataReaderFactory;
-	private final Environment environment;
-	private final ResourceLoader resourceLoader;
-
-	/**
-	 * Creates a new {@link CustomRepositoryImplementationDetector} from the given
-	 * {@link org.springframework.core.type.classreading.MetadataReaderFactory},
-	 * {@link org.springframework.core.env.Environment} and {@link org.springframework.core.io.ResourceLoader}.
-	 *
-	 * @param metadataReaderFactory must not be {@literal null}.
-	 * @param environment must not be {@literal null}.
-	 * @param resourceLoader must not be {@literal null}.
-	 */
-	public CustomRepositoryImplementationDetector(MetadataReaderFactory metadataReaderFactory, Environment environment,
-			ResourceLoader resourceLoader) {
-
-		Assert.notNull(metadataReaderFactory, "MetadataReaderFactory must not be null!");
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
-		Assert.notNull(environment, "Environment must not be null!");
-
-		this.metadataReaderFactory = metadataReaderFactory;
-		this.environment = environment;
-		this.resourceLoader = resourceLoader;
-	}
+	private final @NonNull MetadataReaderFactory metadataReaderFactory;
+	private final @NonNull Environment environment;
+	private final @NonNull ResourceLoader resourceLoader;
 
 	/**
 	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
@@ -74,7 +56,7 @@ public class CustomRepositoryImplementationDetector {
 	 * @param basePackages must not be {@literal null}.
 	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found
 	 */
-	public AbstractBeanDefinition detectCustomImplementation(String className, Iterable<String> basePackages) {
+	public Optional<AbstractBeanDefinition> detectCustomImplementation(String className, Iterable<String> basePackages) {
 
 		Assert.notNull(className, "ClassName must not be null!");
 		Assert.notNull(basePackages, "BasePackages must not be null!");
@@ -97,20 +79,17 @@ public class CustomRepositoryImplementationDetector {
 		}
 
 		if (definitions.isEmpty()) {
-			return null;
+			return Optional.empty();
 		}
 
 		if (definitions.size() == 1) {
-			return (AbstractBeanDefinition) definitions.iterator().next();
+			return Optional.of((AbstractBeanDefinition) definitions.iterator().next());
 		}
 
-		List<String> implementationClassNames = new ArrayList<String>();
-		for (BeanDefinition bean : definitions) {
-			implementationClassNames.add(bean.getBeanClassName());
-		}
-
-		throw new IllegalStateException(String.format(
-				"Ambiguous custom implementations detected! Found %s but expected a single implementation!",
-				StringUtils.collectionToCommaDelimitedString(implementationClassNames)));
+		throw new IllegalStateException(
+				String.format("Ambiguous custom implementations detected! Found %s but expected a single implementation!", //
+						definitions.stream()//
+								.map(it -> it.getBeanClassName())//
+								.collect(Collectors.joining(", "))));
 	}
 }

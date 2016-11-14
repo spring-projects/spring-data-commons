@@ -16,7 +16,7 @@
 package org.springframework.data.web;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -68,7 +68,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	 */
 	@Test
 	public void accessSimpleProperty() {
-		assertThat(customer.getFirstname(), is("Dave"));
+		assertThat(customer.getFirstname()).isEqualTo("Dave");
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	 */
 	@Test
 	public void accessPropertyWithExplicitAnnotation() {
-		assertThat(customer.getBar(), is("Dave"));
+		assertThat(customer.getBar()).isEqualTo("Dave");
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	 */
 	@Test
 	public void accessPropertyWithComplexReturnType() {
-		assertThat(customer.getAddress(), is(new Address("01097", "Dresden")));
+		assertThat(customer.getAddress()).isEqualTo(new Address("01097", "Dresden"));
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	 */
 	@Test
 	public void accessComplexPropertyWithProjection() {
-		assertThat(customer.getAddressProjection().getCity(), is("Dresden"));
+		assertThat(customer.getAddressProjection().getCity()).isEqualTo("Dresden");
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	 */
 	@Test
 	public void accessPropertyWithNestedJsonPath() {
-		assertThat(customer.getNestedZipCode(), is("01097"));
+		assertThat(customer.getNestedZipCode()).isEqualTo("01097");
 	}
 
 	/**
@@ -108,7 +108,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	 */
 	@Test
 	public void accessCollectionProperty() {
-		assertThat(customer.getAddresses().get(0), is(new Address("01097", "Dresden")));
+		assertThat(customer.getAddresses().get(0)).isEqualTo(new Address("01097", "Dresden"));
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	 */
 	@Test
 	public void accessPropertyOnNestedProjection() {
-		assertThat(customer.getAddressProjections().get(0).getZipCode(), is("01097"));
+		assertThat(customer.getAddressProjections().get(0).getZipCode()).isEqualTo("01097");
 	}
 
 	/**
@@ -124,7 +124,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	 */
 	@Test
 	public void accessPropertyThatUsesJsonPathProjectionInTurn() {
-		assertThat(customer.getAnotherAddressProjection().getZipCodeButNotCity(), is("01097"));
+		assertThat(customer.getAnotherAddressProjection().getZipCodeButNotCity()).isEqualTo("01097");
 	}
 
 	/**
@@ -135,8 +135,8 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 
 		List<AnotherAddressProjection> projections = customer.getAnotherAddressProjections();
 
-		assertThat(projections, hasSize(1));
-		assertThat(projections.get(0).getZipCodeButNotCity(), is("01097"));
+		assertThat(projections).hasSize(1);
+		assertThat(projections.get(0).getZipCodeButNotCity()).isEqualTo("01097");
 	}
 
 	/**
@@ -147,8 +147,8 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 
 		Set<AnotherAddressProjection> projections = customer.getAnotherAddressProjectionAsCollection();
 
-		assertThat(projections, hasSize(1));
-		assertThat(projections.iterator().next().getZipCodeButNotCity(), is("01097"));
+		assertThat(projections).hasSize(1);
+		assertThat(projections.iterator().next().getZipCodeButNotCity()).isEqualTo("01097");
 	}
 
 	/**
@@ -159,8 +159,8 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 
 		Name name = customer.getName();
 
-		assertThat(name, is(notNullValue()));
-		assertThat(name.getFirstname(), is("Dave"));
+		assertThat(name).isNotNull();
+		assertThat(name.getFirstname()).isEqualTo("Dave");
 	}
 
 	/**
@@ -169,8 +169,8 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	@Test
 	public void accessNestedFields() {
 
-		assertThat(customer.getNestedCity(), is("Dresden"));
-		assertThat(customer.getNestedCities(), hasSize(2));
+		assertThat(customer.getNestedCity()).isEqualTo("Dresden");
+		assertThat(customer.getNestedCities()).hasSize(2);
 	}
 
 	interface Customer {

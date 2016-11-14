@@ -16,15 +16,13 @@
 
 package org.springframework.data.mapping.model;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,11 +101,13 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	@Test
 	public void shouldSetAndGetProperty() throws Exception {
 
-		PersistentProperty<?> property = getProperty(bean, propertyName);
-		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
+		assertThat(getProperty(bean, propertyName)).hasValueSatisfying(property -> {
 
-		persistentPropertyAccessor.setProperty(property, "value");
-		assertThat(persistentPropertyAccessor.getProperty(property), is(equalTo((Object) "value")));
+			PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
+
+			persistentPropertyAccessor.setProperty(property, Optional.of("value"));
+			assertThat(persistentPropertyAccessor.getProperty(property)).isEqualTo("value");
+		});
 	}
 
 	/**
@@ -115,15 +115,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	 * @throws Exception
 	 */
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void accessorShouldDeclareConstructor() throws Exception {
 
 		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
 
 		Constructor<?>[] declaredConstructors = persistentPropertyAccessor.getClass().getDeclaredConstructors();
-		assertThat(declaredConstructors.length, is(1));
-		assertThat(declaredConstructors[0].getParameterTypes().length, is(1));
-		assertThat(declaredConstructors[0].getParameterTypes()[0], is(equalTo((Class) expectedConstructorType)));
+		assertThat(declaredConstructors.length).isEqualTo(1);
+		assertThat(declaredConstructors[0].getParameterTypes().length).isEqualTo(1);
+		assertThat(declaredConstructors[0].getParameterTypes()[0]).isEqualTo(expectedConstructorType);
 	}
 
 	/**
@@ -137,13 +136,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	/**
 	 * @see DATACMNS-809
 	 */
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void getPropertyShouldFailOnUnhandledProperty() {
 
-		PersistentProperty<?> property = getProperty(new Dummy(), "dummy");
-		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
+		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> {
 
-		persistentPropertyAccessor.getProperty(property);
+			assertThatExceptionOfType(UnsupportedOperationException.class)//
+					.isThrownBy(() -> getPersistentPropertyAccessor(bean).getProperty(property));
+		});
 	}
 
 	/**
@@ -152,10 +152,10 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	@Test(expected = UnsupportedOperationException.class)
 	public void setPropertyShouldFailOnUnhandledProperty() {
 
-		PersistentProperty<?> property = getProperty(new Dummy(), "dummy");
-		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
+		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> {
+			getPersistentPropertyAccessor(bean).setProperty(property, Optional.empty());
+		});
 
-		persistentPropertyAccessor.setProperty(property, null);
 	}
 
 	/**
@@ -167,15 +167,15 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
 				.getPersistentEntity(bean.getClass());
 
-		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"),
-				is(instanceOf(ClassGeneratingPropertyAccessorFactory.class)));
+		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"))
+				.isInstanceOf(ClassGeneratingPropertyAccessorFactory.class);
 	}
 
 	private PersistentPropertyAccessor getPersistentPropertyAccessor(Object bean) {
 		return factory.getPropertyAccessor(mappingContext.getPersistentEntity(bean.getClass()), bean);
 	}
 
-	private PersistentProperty<?> getProperty(Object bean, String name) {
+	private Optional<? extends PersistentProperty<?>> getProperty(Object bean, String name) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
 				.getPersistentEntity(bean.getClass());

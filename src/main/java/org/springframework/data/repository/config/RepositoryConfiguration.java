@@ -15,7 +15,8 @@
  */
 package org.springframework.data.repository.config;
 
-import org.springframework.beans.factory.FactoryBean;
+import java.util.Optional;
+
 import org.springframework.data.repository.query.QueryLookupStrategy;
 
 /**
@@ -52,7 +53,7 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 * 
 	 * @return
 	 */
-	String getNamedQueriesLocation();
+	Optional<String> getNamedQueriesLocation();
 
 	/**
 	 * Returns the class name of the custom implementation.
@@ -69,22 +70,13 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	String getImplementationBeanName();
 
 	/**
-	 * Returns the name of the {@link FactoryBean} class to be used to create repository instances.
-	 * 
-	 * @return
-	 * @deprecated as of 1.11 in favor of a dedicated repository class name, see {@link #getRepositoryBaseClassName()}.
-	 */
-	@Deprecated
-	String getRepositoryFactoryBeanName();
-
-	/**
 	 * Returns the name of the repository base class to be used or {@literal null} if the store specific defaults shall be
 	 * applied.
 	 * 
 	 * @return
 	 * @since 1.11
 	 */
-	String getRepositoryBaseClassName();
+	Optional<String> getRepositoryBaseClassName();
 
 	/**
 	 * Returns the source of the {@link RepositoryConfiguration}.

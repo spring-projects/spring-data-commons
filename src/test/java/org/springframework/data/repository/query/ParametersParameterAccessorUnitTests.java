@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -46,24 +45,24 @@ public class ParametersParameterAccessorUnitTests {
 		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { "Foo", 2 });
 
 		Iterator<Object> iterator = accessor.iterator();
-		assertThat(iterator.hasNext(), is(true));
-		assertThat(iterator.next(), is((Object) "Foo"));
-		assertThat(iterator.hasNext(), is(true));
-		assertThat(iterator.next(), is((Object) 2));
-		assertThat(iterator.hasNext(), is(false));
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("Foo");
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo(2);
+		assertThat(iterator.hasNext()).isFalse();
 	}
 
 	@Test
 	public void detectsNullValue() throws Exception {
 
 		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { null, 5 });
-		assertThat(accessor.hasBindableNullValue(), is(true));
+		assertThat(accessor.hasBindableNullValue()).isTrue();
 
 		Method method = Sample.class.getMethod("method", Pageable.class, String.class);
 		DefaultParameters parameters = new DefaultParameters(method);
 
 		accessor = new ParametersParameterAccessor(parameters, new Object[] { null, "Foo" });
-		assertThat(accessor.hasBindableNullValue(), is(false));
+		assertThat(accessor.hasBindableNullValue()).isFalse();
 	}
 
 	/**
@@ -78,7 +77,7 @@ public class ParametersParameterAccessorUnitTests {
 		ParametersParameterAccessor accessor = new ParametersParameterAccessor(parameters,
 				new Object[] { new PageRequest(0, 10), "Foo" });
 
-		assertThat(accessor, is(iterableWithSize(1)));
+		assertThat(accessor).hasSize(1);
 	}
 
 	interface Sample {

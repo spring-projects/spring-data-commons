@@ -15,8 +15,7 @@
  */
 package org.springframework.data.querydsl;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 
@@ -33,15 +32,13 @@ public class SimpleEntityPathResolverUnitTests {
 
 	@Test
 	public void createsRepositoryFromDomainClassCorrectly() throws Exception {
-
-		assertThat((QUser) resolver.createPath(User.class), isA(QUser.class));
+		assertThat(resolver.createPath(User.class)).isInstanceOf(QUser.class);
 	}
 
 	@Test
 	public void resolvesEntityPathForInnerClassCorrectly() throws Exception {
 
-		assertThat((QSimpleEntityPathResolverUnitTests_NamedUser) resolver.createPath(NamedUser.class),
-				isA(QSimpleEntityPathResolverUnitTests_NamedUser.class));
+		assertThat(resolver.createPath(NamedUser.class)).isInstanceOf(QSimpleEntityPathResolverUnitTests_NamedUser.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class)

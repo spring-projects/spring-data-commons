@@ -15,8 +15,9 @@
  */
 package org.springframework.data.auditing;
 
+import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.Optional;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public class AuditingHandler implements InitializingBean {
 	private final DefaultAuditableBeanWrapperFactory factory;
 
 	private DateTimeProvider dateTimeProvider = CurrentDateTimeProvider.INSTANCE;
-	private AuditorAware<?> auditorAware;
+	private Optional<AuditorAware<?>> auditorAware;
 	private boolean dateTimeForNow = true;
 	private boolean modifyOnCreation = true;
 
@@ -56,7 +57,6 @@ public class AuditingHandler implements InitializingBean {
 	 * @deprecated use {@link AuditingHandler(PersistentEntities)} instead.
 	 */
 	@Deprecated
-	@SuppressWarnings("unchecked")
 	public AuditingHandler(
 			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
 		this(new PersistentEntities(Arrays.asList(mappingContext)));
@@ -72,7 +72,9 @@ public class AuditingHandler implements InitializingBean {
 	public AuditingHandler(PersistentEntities entities) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
+
 		this.factory = new MappingAuditableBeanWrapperFactory(entities);
+		this.auditorAware = Optional.empty();
 	}
 
 	/**
@@ -80,10 +82,11 @@ public class AuditingHandler implements InitializingBean {
 	 * 
 	 * @param auditorAware must not be {@literal null}.
 	 */
-	public void setAuditorAware(final AuditorAware<?> auditorAware) {
+	public void setAuditorAware(AuditorAware<?> auditorAware) {
 
 		Assert.notNull(auditorAware);
-		this.auditorAware = auditorAware;
+
+		this.auditorAware = Optional.of(auditorAware);
 	}
 
 	/**
@@ -121,7 +124,7 @@ public class AuditingHandler implements InitializingBean {
 	 * 
 	 * @param source
 	 */
-	public void markCreated(Object source) {
+	public void markCreated(Optional<? extends Object> source) {
 		touch(source, true);
 	}
 
@@ -130,25 +133,25 @@ public class AuditingHandler implements InitializingBean {
 	 * 
 	 * @param source
 	 */
-	public void markModified(Object source) {
+	public void markModified(Optional<? extends Object> source) {
 		touch(source, false);
 	}
 
-	private void touch(Object target, boolean isNew) {
+	private void touch(Optional<? extends Object> target, boolean isNew) {
 
-		AuditableBeanWrapper wrapper = factory.getBeanWrapperFor(target);
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(target);
 
-		if (wrapper == null) {
-			return;
-		}
+		wrapper.ifPresent(it -> {
 
-		Object auditor = touchAuditor(wrapper, isNew);
-		Calendar now = dateTimeForNow ? touchDate(wrapper, isNew) : null;
+			Optional<Object> auditor = touchAuditor(it, isNew);
+			Optional<TemporalAccessor> now = dateTimeForNow ? touchDate(it, isNew) : Optional.empty();
 
-		Object defaultedNow = now == null ? "not set" : now;
-		Object defaultedAuditor = auditor == null ? "unknown" : auditor;
+			Object defaultedNow = now.map(Object::toString).orElse("not set");
+			Object defaultedAuditor = auditor.map(Object::toString).orElse("unknown");
 
-		LOGGER.debug("Touched {} - Last modification at {} by {}", new Object[] { target, defaultedNow, defaultedAuditor });
+			LOGGER.debug("Touched {} - Last modification at {} by {}",
+					new Object[] { target, defaultedNow, defaultedAuditor });
+		});
 	}
 
 	/**
@@ -157,23 +160,22 @@ public class AuditingHandler implements InitializingBean {
 	 * @param auditable
 	 * @return
 	 */
-	private Object touchAuditor(AuditableBeanWrapper wrapper, boolean isNew) {
+	private Optional<Object> touchAuditor(AuditableBeanWrapper wrapper, boolean isNew) {
 
-		if (null == auditorAware) {
-			return null;
-		}
+		return auditorAware.map(it -> {
 
-		Object auditor = auditorAware.getCurrentAuditor();
+			Optional<?> auditor = it.getCurrentAuditor();
 
-		if (isNew) {
-			wrapper.setCreatedBy(auditor);
-			if (!modifyOnCreation) {
-				return auditor;
+			if (isNew) {
+				wrapper.setCreatedBy(auditor);
+				if (!modifyOnCreation) {
+					return auditor;
+				}
 			}
-		}
 
-		wrapper.setLastModifiedBy(auditor);
-		return auditor;
+			return wrapper.setLastModifiedBy(auditor);
+		});
+
 	}
 
 	/**
@@ -182,9 +184,9 @@ public class AuditingHandler implements InitializingBean {
 	 * @param wrapper
 	 * @return
 	 */
-	private Calendar touchDate(AuditableBeanWrapper wrapper, boolean isNew) {
+	private Optional<TemporalAccessor> touchDate(AuditableBeanWrapper wrapper, boolean isNew) {
 
-		Calendar now = dateTimeProvider.getNow();
+		Optional<TemporalAccessor> now = dateTimeProvider.getNow();
 
 		if (isNew) {
 			wrapper.setCreatedDate(now);
@@ -193,8 +195,7 @@ public class AuditingHandler implements InitializingBean {
 			}
 		}
 
-		wrapper.setLastModifiedDate(now);
-		return now;
+		return wrapper.setLastModifiedDate(now);
 	}
 
 	/*

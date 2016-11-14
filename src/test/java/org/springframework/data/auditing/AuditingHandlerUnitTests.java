@@ -15,15 +15,15 @@
  */
 package org.springframework.data.auditing;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 
 /**
@@ -38,20 +38,20 @@ public class AuditingHandlerUnitTests {
 	AuditingHandler handler;
 	AuditorAware<AuditedUser> auditorAware;
 
-	AuditedUser user;
+	Optional<AuditedUser> user;
 
 	@Before
 	public void setUp() {
 
 		handler = getHandler();
-		user = new AuditedUser();
+		user = Optional.of(new AuditedUser());
 
 		auditorAware = mock(AuditorAware.class);
 		when(auditorAware.getCurrentAuditor()).thenReturn(user);
 	}
 
 	protected AuditingHandler getHandler() {
-		return new AuditingHandler(new PersistentEntities(Collections.<MappingContext<?, ?>> emptySet()));
+		return new AuditingHandler(new PersistentEntities(Collections.emptySet()));
 	}
 
 	/**
@@ -62,11 +62,14 @@ public class AuditingHandlerUnitTests {
 
 		handler.markCreated(user);
 
-		assertNotNull(user.getCreatedDate());
-		assertNotNull(user.getLastModifiedDate());
+		assertThat(user).hasValueSatisfying(it -> {
 
-		assertNull(user.getCreatedBy());
-		assertNull(user.getLastModifiedBy());
+			assertThat(it.getCreatedDate()).isPresent();
+			assertThat(it.getLastModifiedDate()).isPresent();
+
+			assertThat(it.getCreatedBy()).isNotPresent();
+			assertThat(it.getLastModifiedBy()).isNotPresent();
+		});
 	}
 
 	/**
@@ -79,11 +82,14 @@ public class AuditingHandlerUnitTests {
 
 		handler.markCreated(user);
 
-		assertNotNull(user.getCreatedDate());
-		assertNotNull(user.getLastModifiedDate());
+		assertThat(user).hasValueSatisfying(it -> {
 
-		assertNotNull(user.getCreatedBy());
-		assertNotNull(user.getLastModifiedBy());
+			assertThat(it.getCreatedDate()).isPresent();
+			assertThat(it.getLastModifiedDate()).isPresent();
+
+			assertThat(it.getCreatedBy()).isPresent();
+			assertThat(it.getLastModifiedBy()).isPresent();
+		});
 
 		verify(auditorAware).getCurrentAuditor();
 	}
@@ -98,11 +104,14 @@ public class AuditingHandlerUnitTests {
 		handler.setModifyOnCreation(false);
 		handler.markCreated(user);
 
-		assertNotNull(user.getCreatedDate());
-		assertNotNull(user.getCreatedBy());
+		assertThat(user).hasValueSatisfying(it -> {
 
-		assertNull(user.getLastModifiedBy());
-		assertNull(user.getLastModifiedDate());
+			assertThat(it.getCreatedDate()).isPresent();
+			assertThat(it.getCreatedBy()).isPresent();
+
+			assertThat(it.getLastModifiedBy()).isNotPresent();
+			assertThat(it.getLastModifiedDate()).isNotPresent();
+		});
 
 		verify(auditorAware).getCurrentAuditor();
 	}
@@ -113,17 +122,22 @@ public class AuditingHandlerUnitTests {
 	@Test
 	public void onlySetsModificationDataOnNotNewEntities() {
 
-		user = new AuditedUser();
-		user.id = 1L;
+		AuditedUser audited = new AuditedUser();
+		audited.id = 1L;
+
+		user = Optional.of(audited);
 
 		handler.setAuditorAware(auditorAware);
 		handler.markModified(user);
 
-		assertNull(user.getCreatedBy());
-		assertNull(user.getCreatedDate());
+		assertThat(user).hasValueSatisfying(it -> {
 
-		assertNotNull(user.getLastModifiedBy());
-		assertNotNull(user.getLastModifiedDate());
+			assertThat(it.getCreatedBy()).isNotPresent();
+			assertThat(it.getCreatedDate()).isNotPresent();
+
+			assertThat(it.getLastModifiedBy()).isPresent();
+			assertThat(it.getLastModifiedDate()).isPresent();
+		});
 
 		verify(auditorAware).getCurrentAuditor();
 	}
@@ -135,11 +149,14 @@ public class AuditingHandlerUnitTests {
 		handler.setAuditorAware(auditorAware);
 		handler.markCreated(user);
 
-		assertNotNull(user.getCreatedBy());
-		assertNull(user.getCreatedDate());
+		assertThat(user).hasValueSatisfying(it -> {
 
-		assertNotNull(user.getLastModifiedBy());
-		assertNull(user.getLastModifiedDate());
+			assertThat(it.getCreatedBy()).isPresent();
+			assertThat(it.getCreatedDate()).isNotPresent();
+
+			assertThat(it.getLastModifiedBy()).isPresent();
+			assertThat(it.getLastModifiedDate()).isNotPresent();
+		});
 	}
 
 	/**
@@ -149,6 +166,7 @@ public class AuditingHandlerUnitTests {
 	public void usesDateTimeProviderIfConfigured() {
 
 		DateTimeProvider provider = mock(DateTimeProvider.class);
+		doReturn(Optional.empty()).when(provider).getNow();
 
 		handler.setDateTimeProvider(provider);
 		handler.markCreated(user);

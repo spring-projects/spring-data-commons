@@ -15,20 +15,23 @@
  */
 package org.springframework.data.convert;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.convert.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.data.mapping.PersistentEntity;
@@ -40,7 +43,6 @@ import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
 
 /**
  * Unit tests for {@link ClassGeneratingEntityInstantiator}.
@@ -58,46 +60,51 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 	@Mock PreferredConstructor<?, P> constructor;
 	@Mock Parameter<?, P> parameter;
 
+	@Before
+	public void setUp() {
+		doReturn(Optional.empty()).when(entity).getPersistenceConstructor();
+	}
+
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiatesSimpleObjectCorrectly() {
 
-		when(entity.getType()).thenReturn((Class) Object.class);
+		doReturn(Object.class).when(entity).getType();
+
 		this.instance.createInstance(entity, provider);
 	}
 
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiatesArrayCorrectly() {
 
-		when(entity.getType()).thenReturn((Class) String[][].class);
+		doReturn(String[][].class).when(entity).getType();
+
 		this.instance.createInstance(entity, provider);
 	}
 
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiatesTypeWithPreferredConstructorUsingParameterValueProvider() {
 
-		PreferredConstructor constructor = new PreferredConstructorDiscoverer<Foo, P>(Foo.class).getConstructor();
+		Optional<? extends PreferredConstructor<Foo, P>> constructor = new PreferredConstructorDiscoverer<Foo, P>(Foo.class)
+				.getConstructor();
 
-		when(entity.getType()).thenReturn((Class) Foo.class);
-		when(entity.getPersistenceConstructor()).thenReturn(constructor);
+		doReturn(Foo.class).when(entity).getType();
+		doReturn(constructor).when(entity).getPersistenceConstructor();
 
-		Object instance = this.instance.createInstance(entity, provider);
+		assertThat(instance.createInstance(entity, provider)).isInstanceOf(Foo.class);
 
-		assertTrue(instance instanceof Foo);
-		verify(provider, times(1)).getParameterValue((Parameter) constructor.getParameters().iterator().next());
+		assertThat(constructor).hasValueSatisfying(it -> {
+			verify(provider, times(1)).getParameterValue(it.getParameters().iterator().next());
+		});
 	}
 
 	/**
 	 * @see DATACMNS-300, DATACMNS-578
 	 */
 	@Test(expected = MappingInstantiationException.class)
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void throwsExceptionOnBeanInstantiationException() {
 
-		when(entity.getPersistenceConstructor()).thenReturn(null);
-		when(entity.getType()).thenReturn((Class) PersistentEntity.class);
+		doReturn(Optional.empty()).when(entity).getPersistenceConstructor();
+		doReturn(PersistentEntity.class).when(entity).getType();
 
 		this.instance.createInstance(entity, provider);
 	}
@@ -109,24 +116,24 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 	public void createsInnerClassInstanceCorrectly() {
 
 		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
-		PreferredConstructor<Inner, P> constructor = entity.getPersistenceConstructor();
-		Parameter<Object, P> parameter = constructor.getParameters().iterator().next();
+		assertThat(entity.getPersistenceConstructor()).hasValueSatisfying(constructor -> {
 
-		final Object outer = new Outer();
+			Parameter<Object, P> parameter = constructor.getParameters().iterator().next();
 
-		when(provider.getParameterValue(parameter)).thenReturn(outer);
-		final Inner instance = this.instance.createInstance(entity, provider);
+			Object outer = new Outer();
 
-		assertThat(instance, is(notNullValue()));
+			doReturn(Optional.of(outer)).when(provider).getParameterValue(parameter);
+			Inner instance = this.instance.createInstance(entity, provider);
 
-		// Hack to check syntheic field as compiles create different field names (e.g. this$0, this$1)
-		ReflectionUtils.doWithFields(Inner.class, new FieldCallback() {
-			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+			assertThat(instance).isNotNull();
+
+			// Hack to check synthetic field as compiles create different field names (e.g. this$0, this$1)
+			ReflectionUtils.doWithFields(Inner.class, field -> {
 				if (field.isSynthetic() && field.getName().startsWith("this$")) {
 					ReflectionUtils.makeAccessible(field);
-					assertThat(ReflectionUtils.getField(field, instance), is(outer));
+					assertThat(ReflectionUtils.getField(field, instance)).isEqualTo(outer);
 				}
-			}
+			});
 		});
 	}
 
@@ -137,12 +144,12 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void capturesContextOnInstantiationException() throws Exception {
 
-		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<Sample, P>(from(Sample.class));
+		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<>(from(Sample.class));
 
-		when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("FOO");
+		doReturn(Optional.of("FOO")).when(provider).getParameterValue(any(Parameter.class));
 
 		Constructor constructor = Sample.class.getConstructor(Long.class, String.class);
-		List<Object> parameters = Arrays.asList((Object) "FOO", (Object) "FOO");
+		List<Object> parameters = Arrays.asList("FOO", "FOO");
 
 		try {
 
@@ -151,14 +158,14 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 
 		} catch (MappingInstantiationException o_O) {
 
-			assertThat(o_O.getConstructor(), is(constructor));
-			assertThat(o_O.getConstructorArguments(), is(parameters));
-			assertEquals(Sample.class, o_O.getEntityType());
+			assertThat(o_O.getConstructor()).hasValue(constructor);
+			assertThat(o_O.getConstructorArguments()).isEqualTo(parameters);
+			assertThat(o_O.getEntityType()).hasValue(Sample.class);
 
-			assertThat(o_O.getMessage(), containsString(Sample.class.getName()));
-			assertThat(o_O.getMessage(), containsString(Long.class.getName()));
-			assertThat(o_O.getMessage(), containsString(String.class.getName()));
-			assertThat(o_O.getMessage(), containsString("FOO"));
+			assertThat(o_O.getMessage()).contains(Sample.class.getName());
+			assertThat(o_O.getMessage()).contains(Long.class.getName());
+			assertThat(o_O.getMessage()).contains(String.class.getName());
+			assertThat(o_O.getMessage()).contains("FOO");
 		}
 	}
 
@@ -166,138 +173,140 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 	 * @see DATACMNS-578
 	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtorDefault() {
 
-		PreferredConstructor constructor = new PreferredConstructorDiscoverer<ObjCtorDefault, P>(ObjCtorDefault.class)
-				.getConstructor();
+		doReturn(ObjCtorDefault.class).when(entity).getType();
+		doReturn(new PreferredConstructorDiscoverer<>(ObjCtorDefault.class).getConstructor())//
+				.when(entity).getPersistenceConstructor();
 
-		when(entity.getType()).thenReturn((Class) ObjCtorDefault.class);
-		when(entity.getPersistenceConstructor()).thenReturn(constructor);
-
-		for (int i = 0; i < 2; i++) {
-			Object instance = this.instance.createInstance(entity, provider);
-			assertTrue(instance instanceof ObjCtorDefault);
-		}
+		IntStream.range(0, 2).forEach(i -> {
+			assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ObjCtorDefault.class);
+		});
 	}
 
 	/**
 	 * @see DATACMNS-578
 	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtorNoArgs() {
 
-		PreferredConstructor constructor = new PreferredConstructorDiscoverer<ObjCtorNoArgs, P>(ObjCtorNoArgs.class)
-				.getConstructor();
+		doReturn(ObjCtorNoArgs.class).when(entity).getType();
+		doReturn(new PreferredConstructorDiscoverer<>(ObjCtorNoArgs.class).getConstructor())//
+				.when(entity).getPersistenceConstructor();
 
-		when(entity.getType()).thenReturn((Class) ObjCtorNoArgs.class);
-		when(entity.getPersistenceConstructor()).thenReturn(constructor);
+		IntStream.range(0, 2).forEach(i -> {
 
-		for (int i = 0; i < 2; i++) {
 			Object instance = this.instance.createInstance(entity, provider);
-			assertTrue(instance instanceof ObjCtorNoArgs);
-			assertTrue(((ObjCtorNoArgs) instance).ctorInvoked);
-		}
+
+			assertThat(instance).isInstanceOf(ObjCtorNoArgs.class);
+			assertThat(((ObjCtorNoArgs) instance).ctorInvoked).isTrue();
+		});
 	}
 
 	/**
 	 * @see DATACMNS-578
 	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
 	public void instantiateObjCtor1ParamString() {
 
-		PreferredConstructor constructor = new PreferredConstructorDiscoverer<ObjCtor1ParamString, P>(
-				ObjCtor1ParamString.class).getConstructor();
+		doReturn(ObjCtor1ParamString.class).when(entity).getType();
+		doReturn(new PreferredConstructorDiscoverer<>(ObjCtor1ParamString.class).getConstructor())//
+				.when(entity).getPersistenceConstructor();
+		doReturn(Optional.of("FOO")).when(provider).getParameterValue(any());
 
-		when(entity.getType()).thenReturn((Class) ObjCtor1ParamString.class);
-		when(entity.getPersistenceConstructor()).thenReturn(constructor);
+		IntStream.range(0, 2).forEach(i -> {
 
-		when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("FOO");
-
-		for (int i = 0; i < 2; i++) {
 			Object instance = this.instance.createInstance(entity, provider);
-			assertTrue(instance instanceof ObjCtor1ParamString);
-			assertTrue(((ObjCtor1ParamString) instance).ctorInvoked);
-			assertThat(((ObjCtor1ParamString) instance).param1, is("FOO"));
-		}
+
+			assertThat(instance).isInstanceOf(ObjCtor1ParamString.class);
+			assertThat(((ObjCtor1ParamString) instance).ctorInvoked).isTrue();
+			assertThat(((ObjCtor1ParamString) instance).param1).isEqualTo("FOO");
+		});
 	}
 
 	/**
 	 * @see DATACMNS-578
 	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
 	public void instantiateObjCtor2ParamStringString() {
 
-		PreferredConstructor constructor = new PreferredConstructorDiscoverer<ObjCtor2ParamStringString, P>(
-				ObjCtor2ParamStringString.class).getConstructor();
+		doReturn(ObjCtor2ParamStringString.class).when(entity).getType();
+		doReturn(new PreferredConstructorDiscoverer<>(ObjCtor2ParamStringString.class).getConstructor())//
+				.when(entity).getPersistenceConstructor();
 
-		when(entity.getType()).thenReturn((Class) ObjCtor2ParamStringString.class);
-		when(entity.getPersistenceConstructor()).thenReturn(constructor);
+		IntStream.range(0, 2).forEach(i -> {
 
-		for (int i = 0; i < 2; i++) {
-			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("FOO").thenReturn("BAR");
+			when(provider.getParameterValue(any())).thenReturn(Optional.of("FOO"), Optional.of("BAR"));
 
 			Object instance = this.instance.createInstance(entity, provider);
-			assertTrue(instance instanceof ObjCtor2ParamStringString);
-			assertTrue(((ObjCtor2ParamStringString) instance).ctorInvoked);
-			assertThat(((ObjCtor2ParamStringString) instance).param1, is("FOO"));
-			assertThat(((ObjCtor2ParamStringString) instance).param2, is("BAR"));
-		}
+
+			assertThat(instance).isInstanceOf(ObjCtor2ParamStringString.class);
+			assertThat(((ObjCtor2ParamStringString) instance).ctorInvoked).isTrue();
+			assertThat(((ObjCtor2ParamStringString) instance).param1).isEqualTo("FOO");
+			assertThat(((ObjCtor2ParamStringString) instance).param2).isEqualTo("BAR");
+		});
 	}
 
 	/**
 	 * @see DATACMNS-578
 	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
 	public void instantiateObjectCtor1ParamInt() {
 
-		PreferredConstructor constructor = new PreferredConstructorDiscoverer<ObjectCtor1ParamInt, P>(
-				ObjectCtor1ParamInt.class).getConstructor();
+		doReturn(ObjectCtor1ParamInt.class).when(entity).getType();
+		doReturn(new PreferredConstructorDiscoverer<>(ObjectCtor1ParamInt.class).getConstructor())//
+				.when(entity).getPersistenceConstructor();
 
-		when(entity.getType()).thenReturn((Class) ObjectCtor1ParamInt.class);
-		when(entity.getPersistenceConstructor()).thenReturn(constructor);
+		IntStream.range(0, 2).forEach(i -> {
 
-		for (int i = 0; i < 2; i++) {
-
-			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn(42);
+			doReturn(Optional.of(42)).when(provider).getParameterValue(any());
 
 			Object instance = this.instance.createInstance(entity, provider);
-			assertTrue(instance instanceof ObjectCtor1ParamInt);
-			assertTrue("matches", ((ObjectCtor1ParamInt) instance).param1 == 42);
-		}
+
+			assertThat(instance).isInstanceOf(ObjectCtor1ParamInt.class);
+			assertThat(((ObjectCtor1ParamInt) instance).param1).isEqualTo(42);
+		});
 	}
 
 	/**
 	 * @see DATACMNS-578
 	 */
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
 	public void instantiateObjectCtor7ParamsString5IntsString() {
 
-		PreferredConstructor constructor = new PreferredConstructorDiscoverer<ObjectCtor7ParamsString5IntsString, P>(
-				ObjectCtor7ParamsString5IntsString.class).getConstructor();
+		doReturn(ObjectCtor7ParamsString5IntsString.class).when(entity).getType();
+		doReturn(new PreferredConstructorDiscoverer<>(ObjectCtor7ParamsString5IntsString.class).getConstructor())//
+				.when(entity).getPersistenceConstructor();
 
-		when(entity.getType()).thenReturn((Class) ObjectCtor7ParamsString5IntsString.class);
-		when(entity.getPersistenceConstructor()).thenReturn(constructor);
+		IntStream.range(0, 2).forEach(i -> {
 
-		for (int i = 0; i < 2; i++) {
-			when(provider.getParameterValue(Mockito.any(Parameter.class))).thenReturn("A").thenReturn(1).thenReturn(2)
-					.thenReturn(3).thenReturn(4).thenReturn(5).thenReturn("B");
+			when(provider.getParameterValue(any(Parameter.class))).thenReturn(Optional.of("A"), Optional.of(1),
+					Optional.of(2), Optional.of(3), Optional.of(4), Optional.of(5), Optional.of("B"));
 
 			Object instance = this.instance.createInstance(entity, provider);
-			assertTrue(instance instanceof ObjectCtor7ParamsString5IntsString);
-			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param1, is("A"));
-			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param2, is(1));
-			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param3, is(2));
-			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param4, is(3));
-			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param5, is(4));
-			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param6, is(5));
-			assertThat(((ObjectCtor7ParamsString5IntsString) instance).param7, is("B"));
-		}
+
+			assertThat(instance).isInstanceOf(ObjectCtor7ParamsString5IntsString.class);
+
+			ObjectCtor7ParamsString5IntsString toTest = (ObjectCtor7ParamsString5IntsString) instance;
+
+			assertThat(toTest.param1).isEqualTo("A");
+			assertThat(toTest.param2).isEqualTo(1);
+			assertThat(toTest.param3).isEqualTo(2);
+			assertThat(toTest.param4).isEqualTo(3);
+			assertThat(toTest.param5).isEqualTo(4);
+			assertThat(toTest.param6).isEqualTo(5);
+			assertThat(toTest.param7).isEqualTo("B");
+		});
+	}
+
+	@Test
+	public void testname() {
+
+		List<String> result = Stream.of("1", null).map(it -> (String) null).collect(Collectors.toList());
 	}
 
 	static class Foo {
@@ -398,8 +407,8 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		public int param6;
 		public String param7;
 
-		public ObjectCtor7ParamsString5IntsString(String param1, int param2, int param3, int param4, int param5,
-				int param6, String param7) {
+		public ObjectCtor7ParamsString5IntsString(String param1, int param2, int param3, int param4, int param5, int param6,
+				String param7) {
 			this.param1 = param1;
 			this.param2 = param2;
 			this.param3 = param3;

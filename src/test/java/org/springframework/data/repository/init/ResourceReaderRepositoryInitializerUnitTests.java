@@ -62,6 +62,7 @@ public class ResourceReaderRepositoryInitializerUnitTests {
 
 	@Test
 	public void storesSingleObjectCorrectly() throws Exception {
+
 		Product reference = new Product();
 		setUpReferenceAndInititalize(reference);
 
@@ -94,7 +95,7 @@ public class ResourceReaderRepositoryInitializerUnitTests {
 	private RepositoryPopulator setUpReferenceAndInititalize(Object reference, ApplicationEventPublisher publish)
 			throws Exception {
 
-		when(reader.readFrom(any(Resource.class), any(ClassLoader.class))).thenReturn(reference);
+		when(reader.readFrom(any(), any())).thenReturn(reference);
 
 		ResourceReaderRepositoryPopulator populator = new ResourceReaderRepositoryPopulator(reader);
 		populator.setResources(resource);

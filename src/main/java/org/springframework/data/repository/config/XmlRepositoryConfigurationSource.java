@@ -17,6 +17,7 @@ package org.springframework.data.repository.config;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.env.Environment;
@@ -95,15 +96,15 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getQueryLookupStrategyKey()
 	 */
-	public Object getQueryLookupStrategyKey() {
-		return QueryLookupStrategy.Key.create(getNullDefaultedAttribute(element, QUERY_LOOKUP_STRATEGY));
+	public Optional<Object> getQueryLookupStrategyKey() {
+		return getNullDefaultedAttribute(element, QUERY_LOOKUP_STRATEGY).map(it -> QueryLookupStrategy.Key.create(it));
 	}
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getNamedQueryLocation()
 	 */
-	public String getNamedQueryLocation() {
+	public Optional<String> getNamedQueryLocation() {
 		return getNullDefaultedAttribute(element, NAMED_QUERIES_LOCATION);
 	}
 
@@ -137,7 +138,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryImplementationPostfix()
 	 */
-	public String getRepositoryImplementationPostfix() {
+	public Optional<String> getRepositoryImplementationPostfix() {
 		return getNullDefaultedAttribute(element, REPOSITORY_IMPL_POSTFIX);
 	}
 
@@ -145,7 +146,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryFactoryBeanName()
 	 */
-	public String getRepositoryFactoryBeanName() {
+	public Optional<String> getRepositoryFactoryBeanName() {
 		return getNullDefaultedAttribute(element, REPOSITORY_FACTORY_BEAN_CLASS_NAME);
 	}
 
@@ -154,13 +155,14 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryBaseClassName()
 	 */
 	@Override
-	public String getRepositoryBaseClassName() {
+	public Optional<String> getRepositoryBaseClassName() {
 		return getNullDefaultedAttribute(element, REPOSITORY_BASE_CLASS_NAME);
 	}
 
-	private String getNullDefaultedAttribute(Element element, String attributeName) {
+	private Optional<String> getNullDefaultedAttribute(Element element, String attributeName) {
+
 		String attribute = element.getAttribute(attributeName);
-		return StringUtils.hasText(attribute) ? attribute : null;
+		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
 
 	/* 
@@ -170,8 +172,8 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public boolean shouldConsiderNestedRepositories() {
 
-		String attribute = getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES);
-		return attribute != null && Boolean.parseBoolean(attribute);
+		return getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES).map(it -> Boolean.parseBoolean(it))
+				.orElse(false);
 	}
 
 	/* 
@@ -179,12 +181,12 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String)
 	 */
 	@Override
-	public String getAttribute(String name) {
+	public Optional<String> getAttribute(String name) {
 
 		String xmlAttributeName = ParsingUtils.reconcatenateCamelCase(name, "-");
 		String attribute = element.getAttribute(xmlAttributeName);
 
-		return StringUtils.hasText(attribute) ? attribute : null;
+		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
 
 	/* 

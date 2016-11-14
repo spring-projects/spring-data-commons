@@ -15,10 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import lombok.Data;
 
@@ -26,6 +23,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,21 +52,20 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 
 	private final Object bean;
 	private final String propertyName;
-	private final Object value;
+	private final Optional<Object> value;
 
 	public ClassGeneratingPropertyAccessorFactoryDatatypeTests(Object bean, String propertyName, Object value,
 			String displayName) {
 
 		this.bean = bean;
 		this.propertyName = propertyName;
-		this.value = value;
+		this.value = Optional.of(value);
 	}
 
 	@Parameters(name = "{3}")
-	@SuppressWarnings("unchecked")
 	public static List<Object[]> parameters() throws Exception {
 
-		List<Object[]> parameters = new ArrayList<Object[]>();
+		List<Object[]> parameters = new ArrayList<>();
 		List<Class<?>> types = Arrays.asList(FieldAccess.class, PropertyAccess.class, PrivateFinalFieldAccess.class, PrivateFinalPropertyAccess.class);
 
 		parameters.addAll(parameters(types, "primitiveInteger", Integer.valueOf(1)));
@@ -130,11 +127,13 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	@Test
 	public void shouldSetAndGetProperty() throws Exception {
 
-		PersistentProperty<?> property = getProperty(bean, propertyName);
-		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
+		assertThat(getProperty(bean, propertyName)).hasValueSatisfying(property -> {
 
-		persistentPropertyAccessor.setProperty(property, value);
-		assertThat(persistentPropertyAccessor.getProperty(property), is(equalTo((Object) value)));
+			PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
+
+			persistentPropertyAccessor.setProperty(property, value);
+			assertThat(persistentPropertyAccessor.getProperty(property)).isEqualTo(value);
+		});
 	}
 
 	/**
@@ -146,15 +145,15 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
 				.getPersistentEntity(bean.getClass());
 
-		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"),
-				is(instanceOf(ClassGeneratingPropertyAccessorFactory.class)));
+		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"))
+				.isInstanceOf(ClassGeneratingPropertyAccessorFactory.class);
 	}
 
 	private PersistentPropertyAccessor getPersistentPropertyAccessor(Object bean) {
 		return factory.getPropertyAccessor(mappingContext.getPersistentEntity(bean.getClass()), bean);
 	}
 
-	private PersistentProperty<?> getProperty(Object bean, String name) {
+	private Optional<? extends PersistentProperty<?>> getProperty(Object bean, String name) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
 				.getPersistentEntity(bean.getClass());

@@ -16,8 +16,9 @@
 package org.springframework.data.history;
 
 import java.lang.annotation.Annotation;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
-import org.joda.time.DateTime;
 import org.springframework.data.util.AnnotationDetectionFieldCallback;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -25,19 +26,19 @@ import org.springframework.util.ReflectionUtils;
 /**
  * A {@link RevisionMetadata} implementation that inspects the given object for fields with the configured annotations
  * and returns the field's values on calls to {@link #getRevisionDate()} and {@link #getRevisionNumber()}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implements RevisionMetadata<N> {
 
 	private final Object entity;
 	private final N revisionNumber;
-	private final DateTime revisionDate;
+	private final LocalDateTime revisionDate;
 
 	/**
-	 * Creates a new {@link AnnotationRevisionMetadata} inspecing the given entity for the given annotations. If no
+	 * Creates a new {@link AnnotationRevisionMetadata} inspecting the given entity for the given annotations. If no
 	 * annotations will be provided these values will not be looked up from the entity and return {@literal null}.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @param revisionNumberAnnotation
 	 * @param revisionTimeStampAnnotation
@@ -60,7 +61,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 			AnnotationDetectionFieldCallback revisionCallback = new AnnotationDetectionFieldCallback(
 					revisionTimeStampAnnotation);
 			ReflectionUtils.doWithFields(entity.getClass(), revisionCallback);
-			this.revisionDate = new DateTime(revisionCallback.<Object> getValue(entity));
+			this.revisionDate = revisionCallback.getValue(entity);
 		} else {
 			this.revisionDate = null;
 		}
@@ -70,16 +71,16 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.history.RevisionMetadata#getRevisionNumber()
 	 */
-	public N getRevisionNumber() {
-		return revisionNumber;
+	public Optional<N> getRevisionNumber() {
+		return Optional.ofNullable(revisionNumber);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.history.RevisionMetadata#getRevisionDate()
+	 * @see org.springframework.data.history.RevisionMetadata#getRevisionDate()
 	 */
-	public DateTime getRevisionDate() {
-		return revisionDate;
+	public Optional<LocalDateTime> getRevisionDate() {
+		return Optional.ofNullable(revisionDate);
 	}
 
 	/*

@@ -38,7 +38,7 @@ public @interface QuerydslPredicate {
 	 * 
 	 * @return
 	 */
-	Class<?>root() default Object.class;
+	Class<?> root() default Object.class;
 
 	/**
 	 * To customize the way individual properties' values should be bound to the predicate a
@@ -49,5 +49,5 @@ public @interface QuerydslPredicate {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	Class<? extends QuerydslBinderCustomizer>bindings() default QuerydslBinderCustomizer.class;
+	Class<? extends QuerydslBinderCustomizer> bindings() default QuerydslBinderCustomizer.class;
 }

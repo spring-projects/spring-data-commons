@@ -15,8 +15,7 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 
@@ -35,8 +34,8 @@ public class PairUnitTests {
 
 		Pair<Integer, Integer> pair = Pair.of(1, 2);
 
-		assertThat(pair.getFirst(), is(1));
-		assertThat(pair.getSecond(), is(2));
+		assertThat(pair.getFirst()).isEqualTo(1);
+		assertThat(pair.getSecond()).isEqualTo(2);
 	}
 
 	/**
@@ -64,9 +63,9 @@ public class PairUnitTests {
 		Pair<Integer, Integer> first = Pair.of(1, 2);
 		Pair<Integer, Integer> second = Pair.of(1, 2);
 
-		assertThat(first, is(first));
-		assertThat(first, is(second));
-		assertThat(second, is(first));
+		assertThat(first).isEqualTo(first);
+		assertThat(first).isEqualTo(second);
+		assertThat(second).isEqualTo(first);
 	}
 
 	/**
@@ -79,7 +78,7 @@ public class PairUnitTests {
 		Pair<Integer, Integer> second = Pair.of(1, 2);
 		Pair<Integer, Integer> third = Pair.of(2, 2);
 
-		assertThat(first.hashCode(), is(second.hashCode()));
-		assertThat(first.hashCode(), is(not(third.hashCode())));
+		assertThat(first.hashCode()).isEqualTo(second.hashCode());
+		assertThat(first.hashCode()).isNotEqualTo(third.hashCode());
 	}
 }

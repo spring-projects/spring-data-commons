@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,11 +40,11 @@ public class DefaultRepositoryConfigurationUnitTests {
 		RepositoryConfiguration<RepositoryConfigurationSource> configuration = new DefaultRepositoryConfiguration<RepositoryConfigurationSource>(
 				source, new RootBeanDefinition("com.acme.MyRepository"));
 
-		assertThat(configuration.getConfigurationSource(), is(source));
-		assertThat(configuration.getImplementationBeanName(), is("myRepositoryImpl"));
-		assertThat(configuration.getImplementationClassName(), is("MyRepositoryImpl"));
-		assertThat(configuration.getRepositoryInterface(), is("com.acme.MyRepository"));
-		assertThat(configuration.getQueryLookupStrategyKey(), is((Object) Key.CREATE_IF_NOT_FOUND));
-		assertThat(configuration.isLazyInit(), is(false));
+		assertThat(configuration.getConfigurationSource()).isEqualTo(source);
+		assertThat(configuration.getImplementationBeanName()).isEqualTo("myRepositoryImpl");
+		assertThat(configuration.getImplementationClassName()).isEqualTo("MyRepositoryImpl");
+		assertThat(configuration.getRepositoryInterface()).isEqualTo("com.acme.MyRepository");
+		assertThat(configuration.getQueryLookupStrategyKey()).isEqualTo(Key.CREATE_IF_NOT_FOUND);
+		assertThat(configuration.isLazyInit()).isFalse();
 	}
 }

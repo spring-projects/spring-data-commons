@@ -15,14 +15,13 @@
  */
 package org.springframework.data.repository.cdi;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -50,8 +49,7 @@ public class CdiRepositoryBeanUnitTests {
 	static final Set<Annotation> SINGLE_ANNOTATION = Collections
 			.singleton((Annotation) new CdiRepositoryExtensionSupport.DefaultAnnotationLiteral());
 
-	@Mock
-	BeanManager beanManager;
+	@Mock BeanManager beanManager;
 
 	@Test(expected = IllegalArgumentException.class)
 	public void voidRejectsNullQualifiers() {
@@ -74,44 +72,40 @@ public class CdiRepositoryBeanUnitTests {
 		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
 				SampleRepository.class, beanManager);
 
-		assertThat(bean.getBeanClass(), is(typeCompatibleWith(SampleRepository.class)));
-		assertThat(bean.getName(), is(SampleRepository.class.getName()));
-		assertThat(bean.isNullable(), is(false));
+		assertThat(bean.getBeanClass()).isEqualTo(SampleRepository.class);
+		assertThat(bean.getName()).isEqualTo(SampleRepository.class.getName());
+		assertThat(bean.isNullable()).isFalse();
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void returnsAllImplementedTypes() {
 
 		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
 				SampleRepository.class, beanManager);
 
 		Set<Type> types = bean.getTypes();
-		assertThat(types.size(), is(2));
-		assertThat(types.containsAll(Arrays.asList(SampleRepository.class, Repository.class)), is(true));
+		assertThat(types).containsExactlyInAnyOrder(SampleRepository.class, Repository.class);
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void detectsStereotypes() {
 
 		DummyCdiRepositoryBean<StereotypedSampleRepository> bean = new DummyCdiRepositoryBean<StereotypedSampleRepository>(
 				NO_ANNOTATIONS, StereotypedSampleRepository.class, beanManager);
 
-		Set<Class<? extends Annotation>> stereotypes = bean.getStereotypes();
-		assertThat(stereotypes.size(), is(1));
-		assertThat(stereotypes, hasItem(StereotypeAnnotation.class));
+		assertThat(bean.getStereotypes()).containsExactly(StereotypeAnnotation.class);
 	}
 
 	/**
 	 * @see DATACMNS-299
 	 */
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void scopeDefaultsToApplicationScoped() {
 
 		Bean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS, SampleRepository.class,
 				beanManager);
-		assertThat(bean.getScope(), equalTo((Class) ApplicationScoped.class));
+		assertThat(bean.getScope()).isEqualTo(ApplicationScoped.class);
 	}
 
 	/**
@@ -122,7 +116,7 @@ public class CdiRepositoryBeanUnitTests {
 
 		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(SINGLE_ANNOTATION,
 				SampleRepository.class, beanManager);
-		assertThat(bean.getId(), is(PASSIVATION_ID));
+		assertThat(bean.getId()).isEqualTo(PASSIVATION_ID);
 	}
 
 	static class DummyCdiRepositoryBean<T> extends CdiRepositoryBean<T> {
@@ -132,7 +126,8 @@ public class CdiRepositoryBeanUnitTests {
 		}
 
 		@Override
-		protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
+		protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
+				Optional<Object> customImplementation) {
 			return null;
 		}
 	}

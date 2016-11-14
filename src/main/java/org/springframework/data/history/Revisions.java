@@ -15,10 +15,11 @@
  */
 package org.springframework.data.history;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.util.Assert;
 
@@ -30,6 +31,8 @@ import org.springframework.util.Assert;
  */
 public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<Revision<N, T>> {
 
+	private final Comparator<Revision<N, T>> NATURAL_ORDER = Comparator.naturalOrder();
+
 	private final List<Revision<N, T>> revisions;
 	private final boolean latestLast;
 
@@ -39,7 +42,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<
 	 * 
 	 * @param revisions must not be {@literal null}.
 	 */
-	public Revisions(List<? extends Revision<N, T>> revisions) {
+	private Revisions(List<? extends Revision<N, T>> revisions) {
 		this(revisions, true);
 	}
 
@@ -52,14 +55,16 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<
 	private Revisions(List<? extends Revision<N, T>> revisions, boolean latestLast) {
 
 		Assert.notNull(revisions);
-		this.revisions = new ArrayList<Revision<N, T>>(revisions);
+
+		this.revisions = revisions.stream()//
+				.sorted(latestLast ? NATURAL_ORDER : NATURAL_ORDER.reversed())//
+				.collect(Collectors.toList());
+
 		this.latestLast = latestLast;
+	}
 
-		Collections.sort(this.revisions);
-
-		if (!latestLast) {
-			Collections.reverse(this.revisions);
-		}
+	public static <N extends Number & Comparable<N>, T> Revisions<N, T> of(List<? extends Revision<N, T>> revisions) {
+		return new Revisions<N, T>(revisions);
 	}
 
 	/**
@@ -78,9 +83,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<
 	 * @return
 	 */
 	public Revisions<N, T> reverse() {
-		List<Revision<N, T>> result = new ArrayList<Revision<N, T>>(revisions);
-		Collections.reverse(result);
-		return new Revisions<N, T>(result, !latestLast);
+		return new Revisions<N, T>(revisions, !latestLast);
 	}
 
 	/* 

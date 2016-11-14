@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.query.parser;
 
+import lombok.EqualsAndHashCode;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +37,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Martin Baumgartner
  */
+@EqualsAndHashCode
 public class Part {
 
 	private static final Pattern IGNORE_CASE = Pattern.compile("Ignor(ing|e)Case");
@@ -69,9 +72,11 @@ public class Part {
 		Assert.notNull(clazz, "Type must not be null!");
 
 		String partToUse = detectAndSetIgnoreCase(source);
+
 		if (alwaysIgnoreCase && ignoreCase != IgnoreCaseType.ALWAYS) {
 			this.ignoreCase = IgnoreCaseType.WHEN_POSSIBLE;
 		}
+
 		this.type = Type.fromProperty(partToUse);
 		this.propertyPath = PropertyPath.from(type.extractProperty(partToUse), clazz);
 	}
@@ -89,8 +94,7 @@ public class Part {
 		return result;
 	}
 
-	public boolean getParameterRequired() {
-
+	boolean isParameterRequired() {
 		return getNumberOfArguments() > 0;
 	}
 
@@ -100,7 +104,6 @@ public class Part {
 	 * @return
 	 */
 	public int getNumberOfArguments() {
-
 		return type.getNumberOfArguments();
 	}
 
@@ -108,7 +111,6 @@ public class Part {
 	 * @return the propertyPath
 	 */
 	public PropertyPath getProperty() {
-
 		return propertyPath;
 	}
 
@@ -116,7 +118,6 @@ public class Part {
 	 * @return the type
 	 */
 	public Part.Type getType() {
-
 		return type;
 	}
 
@@ -126,40 +127,7 @@ public class Part {
 	 * @return
 	 */
 	public IgnoreCaseType shouldIgnoreCase() {
-
 		return ignoreCase;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (obj == this) {
-			return true;
-		}
-
-		if (obj == null || !getClass().equals(obj.getClass())) {
-			return false;
-		}
-
-		Part that = (Part) obj;
-		return this.propertyPath.equals(that.propertyPath) && this.type.equals(that.type);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-
-		int result = 37;
-		result += 17 * propertyPath.hashCode();
-		result += 17 * type.hashCode();
-		return result;
 	}
 
 	/*
@@ -168,8 +136,7 @@ public class Part {
 	 */
 	@Override
 	public String toString() {
-
-		return String.format("%s %s", propertyPath.getSegment(), type);
+		return String.format("%s %s %s", propertyPath.getSegment(), type, ignoreCase);
 	}
 
 	/**
@@ -182,13 +149,15 @@ public class Part {
 
 		BETWEEN(2, "IsBetween", "Between"), IS_NOT_NULL(0, "IsNotNull", "NotNull"), IS_NULL(0, "IsNull", "Null"), LESS_THAN(
 				"IsLessThan", "LessThan"), LESS_THAN_EQUAL("IsLessThanEqual", "LessThanEqual"), GREATER_THAN("IsGreaterThan",
-				"GreaterThan"), GREATER_THAN_EQUAL("IsGreaterThanEqual", "GreaterThanEqual"), BEFORE("IsBefore", "Before"), AFTER(
-				"IsAfter", "After"), NOT_LIKE("IsNotLike", "NotLike"), LIKE("IsLike", "Like"), STARTING_WITH("IsStartingWith",
-				"StartingWith", "StartsWith"), ENDING_WITH("IsEndingWith", "EndingWith", "EndsWith"), NOT_CONTAINING(
-				"IsNotContaining", "NotContaining", "NotContains"), CONTAINING("IsContaining", "Containing", "Contains"), NOT_IN(
-				"IsNotIn", "NotIn"), IN("IsIn", "In"), NEAR("IsNear", "Near"), WITHIN("IsWithin", "Within"), REGEX(
-				"MatchesRegex", "Matches", "Regex"), EXISTS(0, "Exists"), TRUE(0, "IsTrue", "True"), FALSE(0, "IsFalse",
-				"False"), NEGATING_SIMPLE_PROPERTY("IsNot", "Not"), SIMPLE_PROPERTY("Is", "Equals");
+						"GreaterThan"), GREATER_THAN_EQUAL("IsGreaterThanEqual", "GreaterThanEqual"), BEFORE("IsBefore",
+								"Before"), AFTER("IsAfter", "After"), NOT_LIKE("IsNotLike", "NotLike"), LIKE("IsLike",
+										"Like"), STARTING_WITH("IsStartingWith", "StartingWith", "StartsWith"), ENDING_WITH("IsEndingWith",
+												"EndingWith", "EndsWith"), NOT_CONTAINING("IsNotContaining", "NotContaining",
+														"NotContains"), CONTAINING("IsContaining", "Containing", "Contains"), NOT_IN("IsNotIn",
+																"NotIn"), IN("IsIn", "In"), NEAR("IsNear", "Near"), WITHIN("IsWithin", "Within"), REGEX(
+																		"MatchesRegex", "Matches", "Regex"), EXISTS(0, "Exists"), TRUE(0, "IsTrue",
+																				"True"), FALSE(0, "IsFalse", "False"), NEGATING_SIMPLE_PROPERTY("IsNot",
+																						"Not"), SIMPLE_PROPERTY("Is", "Equals");
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)

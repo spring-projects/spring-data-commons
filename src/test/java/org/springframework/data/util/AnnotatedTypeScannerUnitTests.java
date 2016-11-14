@@ -15,10 +15,7 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import java.util.Set;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.annotation.Persistent;
@@ -34,13 +31,11 @@ public class AnnotatedTypeScannerUnitTests {
 	 * @see DATACMNS-452
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void findsAnnotatedTypes() {
 
 		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Persistent.class);
-		Set<Class<?>> types = scanner.findTypes(AnnotatedTypeScanner.class.getPackage().getName());
 
-		assertThat(types, hasItem(Type.class));
+		assertThat(scanner.findTypes(AnnotatedTypeScanner.class.getPackage().getName())).contains(Type.class);
 	}
 
 	@Persistent

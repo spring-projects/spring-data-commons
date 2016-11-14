@@ -15,12 +15,16 @@
  */
 package org.springframework.data.util;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
@@ -105,18 +109,10 @@ public abstract class ReflectionUtils {
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	public static class AnnotationFieldFilter implements DescribedFieldFilter {
 
-		private final Class<? extends Annotation> annotationType;
-
-		/**
-		 * Creates a new {@link AnnotationFieldFilter} for the given annotation type.
-		 */
-		public AnnotationFieldFilter(Class<? extends Annotation> annotationType) {
-
-			Assert.notNull(annotationType, "Annotation type must not be null!");
-			this.annotationType = annotationType;
-		}
+		private final @NonNull Class<? extends Annotation> annotationType;
 
 		/* 
 		 * (non-Javadoc)
@@ -242,27 +238,20 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
-	 * Finds a constructoron the given type that matches the given constructor arguments.
+	 * Finds a constructor on the given type that matches the given constructor arguments.
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @param constructorArguments must not be {@literal null}.
-	 * @return a {@link Constructor} that is compatible with the given arguments or {@literal null} if none found.
+	 * @return a {@link Constructor} that is compatible with the given arguments.
 	 */
-	public static Constructor<?> findConstructor(Class<?> type, Object... constructorArguments) {
+	public static Optional<Constructor<?>> findConstructor(Class<?> type, Object... constructorArguments) {
 
 		Assert.notNull(type, "Target type must not be null!");
 		Assert.notNull(constructorArguments, "Constructor arguments must not be null!");
 
-		for (Constructor<?> candidate : type.getDeclaredConstructors()) {
-
-			Class<?>[] parameterTypes = candidate.getParameterTypes();
-
-			if (argumentsMatch(parameterTypes, constructorArguments)) {
-				return candidate;
-			}
-		}
-
-		return null;
+		return Arrays.stream(type.getDeclaredConstructors())//
+				.filter(constructor -> argumentsMatch(constructor.getParameterTypes(), constructorArguments))//
+				.findFirst();
 	}
 
 	/**

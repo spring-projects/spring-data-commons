@@ -20,6 +20,7 @@ import static java.lang.String.*;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
@@ -38,7 +39,7 @@ import org.springframework.util.Assert;
  */
 public class Parameter {
 
-	@SuppressWarnings("unchecked") static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
+	static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
 	private static final String NAMED_PARAMETER_TEMPLATE = ":%s";
 	private static final String POSITION_PARAMETER_TEMPLATE = "?%s";
@@ -97,7 +98,7 @@ public class Parameter {
 	public String getPlaceholder() {
 
 		if (isNamedParameter()) {
-			return format(NAMED_PARAMETER_TEMPLATE, getName());
+			return format(NAMED_PARAMETER_TEMPLATE, getName().get());
 		} else {
 			return format(POSITION_PARAMETER_TEMPLATE, getIndex());
 		}
@@ -118,18 +119,18 @@ public class Parameter {
 	 * @return
 	 */
 	public boolean isNamedParameter() {
-		return !isSpecialParameter() && getName() != null;
+		return !isSpecialParameter() && getName().isPresent();
 	}
 
 	/**
-	 * Returns the name of the parameter (through {@link Param} annotation) or null if none can be found.
+	 * Returns the name of the parameter (through {@link Param} annotation).
 	 * 
 	 * @return
 	 */
-	public String getName() {
+	public Optional<String> getName() {
 
 		Param annotation = parameter.getParameterAnnotation(Param.class);
-		return annotation == null ? parameter.getParameterName() : annotation.value();
+		return Optional.ofNullable(annotation == null ? parameter.getParameterName() : annotation.value());
 	}
 
 	/**

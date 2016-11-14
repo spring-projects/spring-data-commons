@@ -16,8 +16,7 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
@@ -49,10 +48,8 @@ public class ParsingUtilsUnitTests {
 				+ "Suffix";
 
 		List<String> result = ParsingUtils.splitCamelCaseToLower(sample);
-		assertThat(
-				result,
-				contains("prefix", "이름", "anders", "øre", "år", "property1", "생일", "foo_bar", "foo_bar", "bar$foo", "bar$foo",
-						"suffix"));
+		assertThat(result).contains("prefix", "이름", "anders", "øre", "år", "property1", "생일", "foo_bar", "foo_bar",
+				"bar$foo", "bar$foo", "suffix");
 	}
 
 	/**
@@ -60,6 +57,6 @@ public class ParsingUtilsUnitTests {
 	 */
 	@Test
 	public void reconcatenatesCamelCaseString() {
-		assertThat(ParsingUtils.reconcatenateCamelCase("myCamelCase", "-"), is("my-camel-case"));
+		assertThat(ParsingUtils.reconcatenateCamelCase("myCamelCase", "-")).isEqualTo("my-camel-case");
 	}
 }

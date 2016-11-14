@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping;
 
+import java.util.Optional;
+
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 
 /**
@@ -38,7 +40,7 @@ public interface PersistentPropertyAccessor {
 	 * @throws org.springframework.data.mapping.model.MappingException in case an exception occurred when setting the
 	 *           property value.
 	 */
-	void setProperty(PersistentProperty<?> property, Object value);
+	void setProperty(PersistentProperty<?> property, Optional<? extends Object> value);
 
 	/**
 	 * Returns the value of the given {@link PersistentProperty} of the underlying bean instance.
@@ -47,7 +49,7 @@ public interface PersistentPropertyAccessor {
 	 * @param property must not be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
-	Object getProperty(PersistentProperty<?> property);
+	Optional<? extends Object> getProperty(PersistentProperty<?> property);
 
 	/**
 	 * Returns the underlying bean.

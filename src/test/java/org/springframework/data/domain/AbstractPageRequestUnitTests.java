@@ -15,8 +15,7 @@
  */
 package org.springframework.data.domain;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
 import org.junit.Test;
@@ -43,15 +42,15 @@ public abstract class AbstractPageRequestUnitTests {
 
 		Pageable request = newPageRequest(1, 10);
 
-		assertThat(request.hasPrevious(), is(true));
-		assertThat(request.next(), is((Pageable) newPageRequest(2, 10)));
+		assertThat(request.hasPrevious()).isTrue();
+		assertThat(request.next()).isEqualTo((Pageable) newPageRequest(2, 10));
 
 		Pageable first = request.previousOrFirst();
 
-		assertThat(first.hasPrevious(), is(false));
-		assertThat(first, is((Pageable) newPageRequest(0, 10)));
-		assertThat(first, is(request.first()));
-		assertThat(first.previousOrFirst(), is(first));
+		assertThat(first.hasPrevious()).isFalse();
+		assertThat(first).isEqualTo((Pageable) newPageRequest(0, 10));
+		assertThat(first).isEqualTo(request.first());
+		assertThat(first.previousOrFirst()).isEqualTo(first);
 	}
 
 	@Test

@@ -15,21 +15,24 @@
  */
 package org.springframework.data.auditing;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.lang.reflect.Field;
+import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
-import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * A factory class to {@link AuditableBeanWrapper} instances.
@@ -46,23 +49,22 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public AuditableBeanWrapper getBeanWrapperFor(Object source) {
+	public Optional<AuditableBeanWrapper> getBeanWrapperFor(Optional<? extends Object> source) {
 
-		if (source == null) {
+		return source.map(it -> {
+
+			if (it instanceof Auditable) {
+				return new AuditableInterfaceBeanWrapper((Auditable<Object, ?, TemporalAccessor>) it);
+			}
+
+			AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(it.getClass());
+
+			if (metadata.isAuditable()) {
+				return new ReflectionAuditingBeanWrapper(it);
+			}
+
 			return null;
-		}
-
-		if (source instanceof Auditable) {
-			return new AuditableInterfaceBeanWrapper((Auditable<Object, ?>) source);
-		}
-
-		AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(source.getClass());
-
-		if (metadata.isAuditable()) {
-			return new ReflectionAuditingBeanWrapper(source);
-		}
-
-		return null;
+		});
 	}
 
 	/**
@@ -70,36 +72,53 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	static class AuditableInterfaceBeanWrapper extends DateConvertingAuditableBeanWrapper {
 
-		private final Auditable<Object, ?> auditable;
+		private final @NonNull Auditable<Object, ?, TemporalAccessor> auditable;
+		private final Class<? extends TemporalAccessor> type;
 
-		public AuditableInterfaceBeanWrapper(Auditable<Object, ?> auditable) {
+		@SuppressWarnings("unchecked")
+		public AuditableInterfaceBeanWrapper(Auditable<Object, ?, TemporalAccessor> auditable) {
+
 			this.auditable = auditable;
+			this.type = (Class<? extends TemporalAccessor>) ResolvableType.forClass(Auditable.class, auditable.getClass())
+					.getGeneric(2).getRawClass();
 		}
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.lang.Object)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
 		 */
-		public void setCreatedBy(Object value) {
+		@Override
+		public Optional<? extends Object> setCreatedBy(Optional<? extends Object> value) {
+
 			auditable.setCreatedBy(value);
-		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(org.joda.time.DateTime)
-		 */
-		public void setCreatedDate(Calendar value) {
-			auditable.setCreatedDate(new DateTime(value));
+			return value;
 		}
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedBy(java.lang.Object)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Optional)
 		 */
-		public void setLastModifiedBy(Object value) {
+		@Override
+		public Optional<TemporalAccessor> setCreatedDate(Optional<TemporalAccessor> value) {
+
+			auditable.setCreatedDate(getAsTemporalAccessor(value, type));
+
+			return value;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper#setLastModifiedBy(java.util.Optional)
+		 */
+		@Override
+		public Optional<? extends Object> setLastModifiedBy(Optional<? extends Object> value) {
 			auditable.setLastModifiedBy(value);
+
+			return value;
 		}
 
 		/* 
@@ -107,16 +126,20 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getLastModifiedDate()
 		 */
 		@Override
-		public Calendar getLastModifiedDate() {
-			return getAsCalendar(auditable.getLastModifiedDate());
+		public Optional<TemporalAccessor> getLastModifiedDate() {
+			return getAsTemporalAccessor(auditable.getLastModifiedDate(), TemporalAccessor.class);
 		}
 
-		/*
+		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(org.joda.time.DateTime)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Optional)
 		 */
-		public void setLastModifiedDate(Calendar value) {
-			auditable.setLastModifiedDate(new DateTime(value));
+		@Override
+		public Optional<TemporalAccessor> setLastModifiedDate(Optional<TemporalAccessor> value) {
+
+			auditable.setLastModifiedDate(getAsTemporalAccessor(value, type));
+
+			return value;
 		}
 	}
 
@@ -129,9 +152,6 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 */
 	abstract static class DateConvertingAuditableBeanWrapper implements AuditableBeanWrapper {
 
-		private static final boolean IS_JODA_TIME_PRESENT = ClassUtils.isPresent("org.joda.time.DateTime",
-				ReflectionAuditingBeanWrapper.class.getClassLoader());
-
 		private final ConversionService conversionService;
 
 		/**
@@ -141,18 +161,9 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 			DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
 
-			if (IS_JODA_TIME_PRESENT) {
-				conversionService.addConverter(CalendarToDateTimeConverter.INSTANCE);
-				conversionService.addConverter(CalendarToLocalDateTimeConverter.INSTANCE);
-			}
-
-			for (Converter<?, ?> converter : Jsr310Converters.getConvertersToRegister()) {
-				conversionService.addConverter(converter);
-			}
-
-			for (Converter<?, ?> converter : ThreeTenBackPortConverters.getConvertersToRegister()) {
-				conversionService.addConverter(converter);
-			}
+			JodaTimeConverters.getConvertersToRegister().forEach(it -> conversionService.addConverter(it));
+			Jsr310Converters.getConvertersToRegister().forEach(it -> conversionService.addConverter(it));
+			ThreeTenBackPortConverters.getConvertersToRegister().forEach(it -> conversionService.addConverter(it));
 
 			this.conversionService = conversionService;
 		}
@@ -165,28 +176,27 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param source must not be {@literal null}.
 		 * @return
 		 */
-		protected Object getDateValueToSet(Calendar value, Class<?> targetType, Object source) {
+		protected Optional<Object> getDateValueToSet(Optional<TemporalAccessor> value, Class<?> targetType, Object source) {
 
-			if (value == null) {
-				return null;
-			}
+			return value.map(it -> {
 
-			if (Calendar.class.equals(targetType)) {
-				return value;
-			}
+				if (TemporalAccessor.class.equals(targetType)) {
+					return it;
+				}
 
-			if (conversionService.canConvert(Calendar.class, targetType)) {
-				return conversionService.convert(value, targetType);
-			}
+				if (conversionService.canConvert(it.getClass(), targetType)) {
+					return conversionService.convert(it, targetType);
+				}
 
-			if (conversionService.canConvert(Date.class, targetType)) {
+				if (conversionService.canConvert(Date.class, targetType)) {
 
-				Date date = conversionService.convert(value, Date.class);
-				return conversionService.convert(date, targetType);
-			}
+					Date date = conversionService.convert(it, Date.class);
+					return conversionService.convert(date, targetType);
+				}
 
-			throw new IllegalArgumentException(String.format("Invalid date type for member %s! Supported types are %s.",
-					source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
+				throw new IllegalArgumentException(String.format("Invalid date type for member %s! Supported types are %s.",
+						source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
+			});
 		}
 
 		/**
@@ -195,22 +205,17 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param source can be {@literal null}.
 		 * @return
 		 */
-		protected Calendar getAsCalendar(Object source) {
+		@SuppressWarnings("unchecked")
+		protected <T> Optional<T> getAsTemporalAccessor(Optional<?> source, Class<T> target) {
 
-			if (source == null || source instanceof Calendar) {
-				return (Calendar) source;
-			}
-
-			// Apply conversion to date if necessary and possible
-			source = !(source instanceof Date) && conversionService.canConvert(source.getClass(), Date.class) ? conversionService
-					.convert(source, Date.class) : source;
-
-			return conversionService.convert(source, Calendar.class);
+			return source.map(it -> {
+				return target.isInstance(it) ? (T) it : conversionService.convert(it, target);
+			});
 		}
 	}
 
 	/**
-	 * An {@link AuditableBeanWrapper} implementation that sets values on the target object using refelction.
+	 * An {@link AuditableBeanWrapper} implementation that sets values on the target object using reflection.
 	 * 
 	 * @author Oliver Gierke
 	 */
@@ -234,26 +239,29 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.lang.Object)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
 		 */
-		public void setCreatedBy(Object value) {
-			setField(metadata.getCreatedByField(), value);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Calendar)
-		 */
-		public void setCreatedDate(Calendar value) {
-			setDateField(metadata.getCreatedDateField(), value);
+		@Override
+		public Optional<? extends Object> setCreatedBy(Optional<? extends Object> value) {
+			return setField(metadata.getCreatedByField(), value);
 		}
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedBy(java.lang.Object)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Optional)
 		 */
-		public void setLastModifiedBy(Object value) {
-			setField(metadata.getLastModifiedByField(), value);
+		@Override
+		public Optional<TemporalAccessor> setCreatedDate(Optional<TemporalAccessor> value) {
+			return setDateField(metadata.getCreatedDateField(), value);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedBy(java.util.Optional)
+		 */
+		@Override
+		public Optional<? extends Object> setLastModifiedBy(Optional<? extends Object> value) {
+			return setField(metadata.getLastModifiedByField(), value);
 		}
 
 		/* 
@@ -261,18 +269,39 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getLastModifiedDate()
 		 */
 		@Override
-		public Calendar getLastModifiedDate() {
+		public Optional<TemporalAccessor> getLastModifiedDate() {
 
-			return getAsCalendar(org.springframework.util.ReflectionUtils.getField(metadata.getLastModifiedDateField(),
-					target));
+			return getAsTemporalAccessor(metadata.getLastModifiedDateField().map(field -> {
+
+				Object value = org.springframework.util.ReflectionUtils.getField(field, target);
+				return Optional.class.isInstance(value) ? ((Optional<?>) value).orElse(null) : value;
+
+			}), TemporalAccessor.class);
 		}
 
-		/*
+		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Calendar)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Optional)
 		 */
-		public void setLastModifiedDate(Calendar value) {
-			setDateField(metadata.getLastModifiedDateField(), value);
+		@Override
+		public Optional<TemporalAccessor> setLastModifiedDate(Optional<TemporalAccessor> value) {
+			return setDateField(metadata.getLastModifiedDateField(), value);
+		}
+
+		/**
+		 * Sets the given field to the given value if present.
+		 * 
+		 * @param field
+		 * @param value
+		 */
+		private Optional<? extends Object> setField(Optional<Field> field, Optional<? extends Object> value) {
+
+			field.ifPresent(it -> {
+				ReflectionUtils.setField(it, target,
+						Optional.class.isAssignableFrom(it.getType()) ? value : value.orElse(null));
+			});
+
+			return value;
 		}
 
 		/**
@@ -281,46 +310,15 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param field
 		 * @param value
 		 */
-		private void setField(Field field, Object value) {
+		private Optional<TemporalAccessor> setDateField(Optional<Field> field, Optional<TemporalAccessor> value) {
 
-			if (field != null) {
-				ReflectionUtils.setField(field, target, value);
-			}
-		}
+			field.ifPresent(it -> {
+				Optional<Object> toSet = getDateValueToSet(value, it.getType(), it);
+				ReflectionUtils.setField(it, target,
+						Optional.class.isAssignableFrom(it.getType()) ? toSet : toSet.orElse(null));
+			});
 
-		/**
-		 * Sets the given field to the given value if the field is not {@literal null}.
-		 * 
-		 * @param field
-		 * @param value
-		 */
-		private void setDateField(Field field, Calendar value) {
-
-			if (field == null) {
-				return;
-			}
-
-			ReflectionUtils.setField(field, target, getDateValueToSet(value, field.getType(), field));
-		}
-	}
-
-	private static enum CalendarToDateTimeConverter implements Converter<Calendar, DateTime> {
-
-		INSTANCE;
-
-		@Override
-		public DateTime convert(Calendar source) {
-			return new DateTime(source);
-		}
-	}
-
-	private static enum CalendarToLocalDateTimeConverter implements Converter<Calendar, LocalDateTime> {
-
-		INSTANCE;
-
-		@Override
-		public LocalDateTime convert(Calendar source) {
-			return new LocalDateTime(source);
+			return value;
 		}
 	}
 }

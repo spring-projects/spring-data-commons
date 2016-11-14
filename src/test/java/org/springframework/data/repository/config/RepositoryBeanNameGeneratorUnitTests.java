@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import javax.inject.Named;
 
@@ -51,12 +50,12 @@ public class RepositoryBeanNameGeneratorUnitTests {
 
 	@Test
 	public void usesPlainClassNameIfNoAnnotationPresent() {
-		assertThat(generator.generateBeanName(getBeanDefinitionFor(MyRepository.class), registry), is("myRepository"));
+		assertThat(generator.generateBeanName(getBeanDefinitionFor(MyRepository.class), registry)).isEqualTo("myRepository");
 	}
 
 	@Test
 	public void usesAnnotationValueIfAnnotationPresent() {
-		assertThat(generator.generateBeanName(getBeanDefinitionFor(AnnotatedInterface.class), registry), is("specialName"));
+		assertThat(generator.generateBeanName(getBeanDefinitionFor(AnnotatedInterface.class), registry)).isEqualTo("specialName");
 	}
 
 	private BeanDefinition getBeanDefinitionFor(Class<?> repositoryInterface) {

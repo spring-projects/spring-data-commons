@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -66,9 +65,9 @@ public class DomainClassConverterIntegrationTests {
 		beanFactory.registerBeanDefinition("postProcessor", new RootBeanDefinition(PredictingProcessor.class));
 		beanFactory.registerBeanDefinition("repoFactory", new RootBeanDefinition(RepositoryFactoryBeanSupport.class));
 
-		when(information.getRepositoryInterface()).thenReturn((Class) PersonRepository.class);
-		when(information.getDomainType()).thenReturn((Class) Person.class);
-		when(information.getIdType()).thenReturn((Class) Serializable.class);
+		doReturn(PersonRepository.class).when(information).getRepositoryInterface();
+		doReturn(Person.class).when(information).getDomainType();
+		doReturn(Serializable.class).when(information).getIdType();
 
 		EntityInformation<Person, Serializable> entityInformation = new DummyEntityInformation<Person>(Person.class);
 
@@ -79,12 +78,12 @@ public class DomainClassConverterIntegrationTests {
 
 		GenericApplicationContext context = new GenericApplicationContext(beanFactory);
 		context.refresh();
-		assertThat(context.getBeansOfType(RepositoryFactoryInformation.class).values().size(), is(1));
+		assertThat(context.getBeansOfType(RepositoryFactoryInformation.class).values()).hasSize(1);
 
 		DomainClassConverter converter = new DomainClassConverter(new DefaultConversionService());
 		converter.setApplicationContext(context);
 
-		assertThat(converter.matches(TypeDescriptor.valueOf(String.class), TypeDescriptor.valueOf(Person.class)), is(true));
+		assertThat(converter.matches(TypeDescriptor.valueOf(String.class), TypeDescriptor.valueOf(Person.class))).isTrue();
 	}
 
 	static class Person {

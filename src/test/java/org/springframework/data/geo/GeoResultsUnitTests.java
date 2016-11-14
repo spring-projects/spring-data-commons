@@ -15,8 +15,7 @@
  */
 package org.springframework.data.geo;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
@@ -35,14 +34,13 @@ public class GeoResultsUnitTests {
 	 * @see DATACMNS-437
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void calculatesAverageForGivenGeoResults() {
 
-		GeoResult<Object> first = new GeoResult<Object>(new Object(), new Distance(2));
-		GeoResult<Object> second = new GeoResult<Object>(new Object(), new Distance(5));
-		GeoResults<Object> geoResults = new GeoResults<Object>(Arrays.asList(first, second));
+		GeoResult<Object> first = new GeoResult<>(new Object(), new Distance(2));
+		GeoResult<Object> second = new GeoResult<>(new Object(), new Distance(5));
+		GeoResults<Object> geoResults = new GeoResults<>(Arrays.asList(first, second));
 
-		assertThat(geoResults.getAverageDistance(), is(new Distance(3.5)));
+		assertThat(geoResults.getAverageDistance()).isEqualTo(new Distance(3.5));
 	}
 
 	/**
@@ -51,13 +49,12 @@ public class GeoResultsUnitTests {
 	@Test
 	public void testSerialization() {
 
-		GeoResult<String> result = new GeoResult<String>("test", new Distance(2));
-		@SuppressWarnings("unchecked")
-		GeoResults<String> geoResults = new GeoResults<String>(Arrays.asList(result));
+		GeoResult<String> result = new GeoResult<>("test", new Distance(2));
+		GeoResults<String> geoResults = new GeoResults<>(Arrays.asList(result));
 
 		@SuppressWarnings("unchecked")
-		GeoResults<String> serialized = (GeoResults<String>) SerializationUtils.deserialize(SerializationUtils
-				.serialize(geoResults));
-		assertThat(serialized, is(geoResults));
+		GeoResults<String> serialized = (GeoResults<String>) SerializationUtils
+				.deserialize(SerializationUtils.serialize(geoResults));
+		assertThat(serialized).isEqualTo(geoResults);
 	}
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.convert;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
@@ -48,38 +47,36 @@ public class EntityInstantiatorsUnitTests {
 	public void usesReflectionEntityInstantiatorAsDefaultFallback() {
 
 		EntityInstantiators instantiators = new EntityInstantiators();
-		assertThat(instantiators.getInstantiatorFor(entity),
-				instanceOf(ClassGeneratingEntityInstantiator.class));
+		assertThat(instantiators.getInstantiatorFor(entity)).isInstanceOf(ClassGeneratingEntityInstantiator.class);
 	}
 
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void returnsCustomInstantiatorForTypeIfRegistered() {
 
-		when(entity.getType()).thenReturn((Class) String.class);
+		doReturn(String.class).when(entity).getType();
 
-		Map<Class<?>, EntityInstantiator> customInstantiators = Collections.<Class<?>, EntityInstantiator> singletonMap(
-				String.class, customInstantiator);
+		Map<Class<?>, EntityInstantiator> customInstantiators = Collections
+				.<Class<?>, EntityInstantiator> singletonMap(String.class, customInstantiator);
 
 		EntityInstantiators instantiators = new EntityInstantiators(customInstantiators);
-		assertThat(instantiators.getInstantiatorFor(entity), is(customInstantiator));
+		assertThat(instantiators.getInstantiatorFor(entity)).isEqualTo(customInstantiator);
 	}
 
 	@Test
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void usesCustomFallbackInstantiatorsIfConfigured() {
 
-		when(entity.getType()).thenReturn((Class) Object.class);
+		doReturn(Object.class).when(entity).getType();
 
-		Map<Class<?>, EntityInstantiator> customInstantiators = Collections.<Class<?>, EntityInstantiator> singletonMap(
-				String.class, ReflectionEntityInstantiator.INSTANCE);
+		Map<Class<?>, EntityInstantiator> customInstantiators = Collections
+				.<Class<?>, EntityInstantiator> singletonMap(String.class, ReflectionEntityInstantiator.INSTANCE);
 
 		EntityInstantiators instantiators = new EntityInstantiators(customInstantiator, customInstantiators);
 		instantiators.getInstantiatorFor(entity);
 
-		assertThat(instantiators.getInstantiatorFor(entity), is(customInstantiator));
+		assertThat(instantiators.getInstantiatorFor(entity)).isEqualTo(customInstantiator);
 
-		when(entity.getType()).thenReturn((Class) String.class);
-		assertThat(instantiators.getInstantiatorFor(entity), is((EntityInstantiator) ReflectionEntityInstantiator.INSTANCE));
+		doReturn(String.class).when(entity).getType();
+		assertThat(instantiators.getInstantiatorFor(entity))
+				.isEqualTo((EntityInstantiator) ReflectionEntityInstantiator.INSTANCE);
 	}
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -65,7 +64,7 @@ public class FactoryBeanTypePredictingPostProcessorUnitTests {
 	public void returnsDaoInterfaceClassForFactoryBean() throws Exception {
 
 		processor.setBeanFactory(beanFactory);
-		assertEquals(UserDao.class, processor.predictBeanType(FACTORY_CLASS, BEAN_NAME));
+		assertThat(processor.predictBeanType(FACTORY_CLASS, BEAN_NAME)).isEqualTo(UserDao.class);
 	}
 
 	@Test
@@ -116,12 +115,11 @@ public class FactoryBeanTypePredictingPostProcessorUnitTests {
 				"proxyInterfaces");
 		processor.setBeanFactory(beanFactory);
 
-		assertThat(processor.predictBeanType(JndiObjectFactoryBean.class, BEAN_NAME),
-				is(typeCompatibleWith(Serializable.class)));
+		assertThat(processor.predictBeanType(JndiObjectFactoryBean.class, BEAN_NAME)).isEqualTo(Serializable.class);
 	}
 
 	private void assertNotTypeDetected(Class<?> beanClass) {
-		assertThat(processor.predictBeanType(beanClass, BEAN_NAME), is(nullValue()));
+		assertThat(processor.predictBeanType(beanClass, BEAN_NAME)).isNull();
 	}
 
 	private class User {}

@@ -17,6 +17,8 @@ package org.springframework.data.repository.core;
 
 import java.lang.reflect.Method;
 
+import org.springframework.data.util.Streamable;
+
 /**
  * Aditional repository specific information
  * 
@@ -69,7 +71,7 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	 * 
 	 * @return
 	 */
-	Iterable<Method> getQueryMethods();
+	Streamable<Method> getQueryMethods();
 
 	/**
 	 * Returns the target class method that is backing the given method. This can be necessary if a repository interface
@@ -81,4 +83,8 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	 * @return
 	 */
 	Method getTargetClassMethod(Method method);
+
+	default boolean hasQueryMethods() {
+		return getQueryMethods().iterator().hasNext();
+	}
 }

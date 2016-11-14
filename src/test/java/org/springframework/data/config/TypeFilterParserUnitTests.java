@@ -15,16 +15,13 @@
  */
 package org.springframework.data.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +33,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.data.config.TypeFilterParser;
 import org.springframework.data.config.TypeFilterParser.Type;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -50,19 +46,13 @@ import org.xml.sax.SAXException;
 @RunWith(MockitoJUnitRunner.class)
 public class TypeFilterParserUnitTests {
 
-	static final Matcher<Iterable<? super AssignableTypeFilter>> IS_ASSIGNABLE_TYPE_FILTER = hasItem(Matchers
-			.isA(AssignableTypeFilter.class));
-
 	TypeFilterParser parser;
 	Element documentElement;
 
-	@Mock
-	ReaderContext context;
-	@Mock
-	ClassLoader classLoader;
+	@Mock ReaderContext context;
+	@Mock ClassLoader classLoader;
 
-	@Mock
-	ClassPathScanningCandidateComponentProvider scanner;
+	@Mock ClassPathScanningCandidateComponentProvider scanner;
 
 	@Before
 	public void setUp() throws SAXException, IOException, ParserConfigurationException {
@@ -83,7 +73,7 @@ public class TypeFilterParserUnitTests {
 		Element element = DomUtils.getChildElementByTagName(documentElement, "firstSample");
 
 		Iterable<TypeFilter> filters = parser.parseTypeFilters(element, Type.INCLUDE);
-		assertThat(filters, IS_ASSIGNABLE_TYPE_FILTER);
+		assertThat(filters).hasAtLeastOneElementOfType(AssignableTypeFilter.class);
 	}
 
 	@Test
@@ -92,6 +82,6 @@ public class TypeFilterParserUnitTests {
 		Element element = DomUtils.getChildElementByTagName(documentElement, "secondSample");
 
 		Iterable<TypeFilter> filters = parser.parseTypeFilters(element, Type.EXCLUDE);
-		assertThat(filters, IS_ASSIGNABLE_TYPE_FILTER);
+		assertThat(filters).hasAtLeastOneElementOfType(AssignableTypeFilter.class);
 	}
 }

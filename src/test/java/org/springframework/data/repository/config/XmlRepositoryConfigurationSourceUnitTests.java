@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -49,6 +48,6 @@ public class XmlRepositoryConfigurationSourceUnitTests {
 
 		when(element.getAttribute("some-xml-attribute")).thenReturn("value");
 
-		assertThat(source.getAttribute("someXmlAttribute"), is("value"));
+		assertThat(source.getAttribute("someXmlAttribute")).isEqualTo("value");
 	}
 }

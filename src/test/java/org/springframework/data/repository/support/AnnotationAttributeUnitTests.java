@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
+
+import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.stereotype.Component;
@@ -41,7 +42,7 @@ public class AnnotationAttributeUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullAnnotationTypeForAnnotationAndAttributeName() {
-		new AnnotationAttribute(null, "name");
+		new AnnotationAttribute(null, Optional.of("name"));
 	}
 
 	/**
@@ -51,11 +52,9 @@ public class AnnotationAttributeUnitTests {
 	public void looksUpAttributeFromAnnotatedElement() {
 
 		AnnotationAttribute attribute = new AnnotationAttribute(Component.class);
-		assertThat(attribute.getValueFrom(Sample.class), is((Object) "foo"));
+		assertThat(attribute.getValueFrom(Sample.class)).hasValue("foo");
 	}
 
 	@Component("foo")
-	static class Sample {
-
-	}
+	static class Sample {}
 }

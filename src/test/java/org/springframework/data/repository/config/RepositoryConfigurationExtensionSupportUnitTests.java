@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -90,7 +89,7 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 		extension.registerBeansForRoot(beanFactory, configurationSource);
 		extension.registerBeansForRoot(beanFactory, configurationSource);
 
-		assertThat(beanFactory.getBeanDefinitionCount(), is(1));
+		assertThat(beanFactory.getBeanDefinitionCount()).isEqualTo(1);
 	}
 
 	static class SampleRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {

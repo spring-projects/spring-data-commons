@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.context;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -45,7 +46,6 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	 * @deprecated use {@link MappingContextIsNewStrategyFactory(PersistentEntities)} instead.
 	 */
 	@Deprecated
-	@SuppressWarnings("unchecked")
 	public MappingContextIsNewStrategyFactory(MappingContext<? extends PersistentEntity<?, ?>, ?> context) {
 		this(new PersistentEntities(Arrays.asList(context)));
 	}
@@ -76,9 +76,9 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		}
 
 		if (entity.hasVersionProperty()) {
-			return new PropertyIsNullOrZeroNumberIsNewStrategy(entity.getVersionProperty());
+			return new PropertyIsNullOrZeroNumberIsNewStrategy(entity.getVersionProperty().get());
 		} else if (entity.hasIdProperty()) {
-			return new PropertyIsNullIsNewStrategy(entity.getIdProperty());
+			return new PropertyIsNullIsNewStrategy(entity.getIdProperty().get());
 		} else {
 			throw new MappingException(String.format("Cannot determine IsNewStrategy for type %s!", type));
 		}
@@ -104,16 +104,21 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 			this.property = property;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.model.IsNewStrategy#isNew(java.lang.Object)
+		 * @see org.springframework.data.support.IsNewStrategy#isNew(java.util.Optional)
 		 */
-		public boolean isNew(Object entity) {
+		@Override
+		public boolean isNew(Optional<? extends Object> entity) {
 
-			PersistentPropertyAccessor accessor = property.getOwner().getPropertyAccessor(entity);
-			Object propertyValue = accessor.getProperty(property);
+			return entity.map(it -> {
 
-			return decideIsNew(propertyValue);
+				PersistentPropertyAccessor accessor = property.getOwner().getPropertyAccessor(it);
+				Object propertyValue = accessor.getProperty(property);
+
+				return decideIsNew(propertyValue);
+
+			}).orElse(false);
 		}
 
 		protected abstract boolean decideIsNew(Object property);

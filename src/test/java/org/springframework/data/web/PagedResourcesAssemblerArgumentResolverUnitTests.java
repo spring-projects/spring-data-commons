@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 
@@ -61,8 +60,8 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		Method method = Controller.class.getMethod("noContext", PagedResourcesAssembler.class);
 		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, null, null);
 
-		assertThat(result, is(instanceOf(PagedResourcesAssembler.class)));
-		assertThat(result, is(not(instanceOf(MethodParameterAwarePagedResourcesAssembler.class))));
+		assertThat(result).isInstanceOf(PagedResourcesAssembler.class);
+		assertThat(result).isNotInstanceOf(MethodParameterAwarePagedResourcesAssembler.class);
 	}
 
 	/**
@@ -139,7 +138,7 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		Method method = Controller.class.getMethod("methodWithPathVariable", PagedResourcesAssembler.class);
 		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, null, null);
 
-		assertThat(result, is(notNullValue()));
+		assertThat(result).isNotNull();
 	}
 
 	/**
@@ -160,10 +159,10 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 
 		Object result = resolver.resolveArgument(methodParameter, null, null, null);
 
-		assertThat(result, is(instanceOf(PagedResourcesAssembler.class)));
+		assertThat(result).isInstanceOf(PagedResourcesAssembler.class);
 		UriComponents uriComponents = (UriComponents) ReflectionTestUtils.getField(result, "baseUri");
 
-		assertThat(uriComponents.getPath(), is("/foo/mapping"));
+		assertThat(uriComponents.getPath()).isEqualTo("/foo/mapping");
 	}
 
 	private void assertSelectsParameter(Method method, int expectedIndex) throws Exception {
@@ -176,10 +175,10 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 
 	private static void assertMethodParameterAwarePagedResourcesAssemblerFor(Object result, MethodParameter parameter) {
 
-		assertThat(result, is(instanceOf(MethodParameterAwarePagedResourcesAssembler.class)));
+		assertThat(result).isInstanceOf(MethodParameterAwarePagedResourcesAssembler.class);
 		MethodParameterAwarePagedResourcesAssembler<?> assembler = (MethodParameterAwarePagedResourcesAssembler<?>) result;
 
-		assertThat(assembler.getMethodParameter(), is(parameter));
+		assertThat(assembler.getMethodParameter()).isEqualTo(parameter);
 	}
 
 	private void assertRejectsAmbiguity(String methodName) throws Exception {

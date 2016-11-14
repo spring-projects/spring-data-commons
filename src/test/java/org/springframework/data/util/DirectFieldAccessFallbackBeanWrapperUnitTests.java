@@ -15,8 +15,7 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.beans.BeanWrapper;
@@ -41,7 +40,7 @@ public class DirectFieldAccessFallbackBeanWrapperUnitTests {
 
 		BeanWrapper wrapper = new DirectFieldAccessFallbackBeanWrapper(sample);
 
-		assertThat(wrapper.getPropertyValue("firstname"), is((Object) "Dave"));
+		assertThat(wrapper.getPropertyValue("firstname")).isEqualTo("Dave");
 	}
 
 	/**
@@ -55,7 +54,7 @@ public class DirectFieldAccessFallbackBeanWrapperUnitTests {
 		BeanWrapper wrapper = new DirectFieldAccessFallbackBeanWrapper(sample);
 		wrapper.setPropertyValue("firstname", "Dave");
 
-		assertThat(sample.firstname, is("Dave"));
+		assertThat(sample.firstname).isEqualTo("Dave");
 	}
 
 	/**

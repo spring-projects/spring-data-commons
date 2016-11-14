@@ -20,6 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.NormalScope;
@@ -51,7 +52,7 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		for (Entry<Class<?>, Set<Annotation>> type : getRepositoryTypes()) {
 
 			DummyCdiRepositoryBean bean = new DummyCdiRepositoryBean(type.getValue(), type.getKey(), beanManager,
-					getCustomImplementationDetector());
+					Optional.of(getCustomImplementationDetector()));
 			registerBean(bean);
 			afterBeanDiscovery.addBean(bean);
 		}
@@ -64,7 +65,7 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		}
 
 		DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
-				CustomRepositoryImplementationDetector detector) {
+				Optional<CustomRepositoryImplementationDetector> detector) {
 			super(qualifiers, repositoryType, beanManager, detector);
 		}
 
@@ -73,7 +74,8 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		}
 
 		@Override
-		protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
+		protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
+				Optional<Object> customImplementation) {
 			return Mockito.mock(repositoryType);
 		}
 	}

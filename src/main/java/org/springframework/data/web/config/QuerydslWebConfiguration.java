@@ -16,6 +16,7 @@
 package org.springframework.data.web.config;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,7 @@ public class QuerydslWebConfiguration extends WebMvcConfigurerAdapter {
 	@Lazy
 	@Bean
 	public QuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
-		return new QuerydslPredicateArgumentResolver(querydslBindingsFactory(), conversionService.getObject());
+		return new QuerydslPredicateArgumentResolver(querydslBindingsFactory(), Optional.of(conversionService.getObject()));
 	}
 
 	@Lazy

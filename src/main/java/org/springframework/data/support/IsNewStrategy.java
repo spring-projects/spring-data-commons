@@ -15,6 +15,8 @@
  */
 package org.springframework.data.support;
 
+import java.util.Optional;
+
 /**
  * Strategy interface to determine whether a given entity is to be considered new.
  * 
@@ -29,5 +31,5 @@ public interface IsNewStrategy {
 	 * @param entity can be {@literal null}.
 	 * @return
 	 */
-	boolean isNew(Object entity);
+	boolean isNew(Optional<? extends Object> entity);
 }

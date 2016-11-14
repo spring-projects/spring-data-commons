@@ -17,6 +17,7 @@ package org.springframework.data.mapping.context;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
@@ -25,7 +26,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 public class SamplePersistentProperty extends AnnotationBasedPersistentProperty<SamplePersistentProperty> {
 
-	public SamplePersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
+	public SamplePersistentProperty(Optional<Field> field, PropertyDescriptor propertyDescriptor,
 			BasicPersistentEntity<?, SamplePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
 	}

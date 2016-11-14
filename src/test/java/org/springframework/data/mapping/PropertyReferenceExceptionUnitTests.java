@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -77,8 +76,7 @@ public class PropertyReferenceExceptionUnitTests {
 
 		Collection<String> matches = exception.getPropertyMatches();
 
-		assertThat(matches, hasSize(1));
-		assertThat(matches, hasItem("name"));
+		assertThat(matches).containsExactly("name");
 	}
 
 	static class Sample {

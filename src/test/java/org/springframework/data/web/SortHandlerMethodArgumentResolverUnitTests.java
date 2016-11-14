@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,7 +62,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		resolver.setFallbackSort(fallbackSort);
 
 		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
-		assertThat(sort, is(fallbackSort));
+		assertThat(sort).isEqualTo(fallbackSort);
 	}
 
 	/**
@@ -76,7 +75,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 
 		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
-		assertThat(sort, is(nullValue()));
+		assertThat(sort).isNull();
 	}
 
 	@Test
@@ -117,7 +116,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
-		assertThat(result, is(nullValue()));
+		assertThat(result).isNull();
 	}
 
 	/**
@@ -134,7 +133,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
-		assertThat(result, is(new Sort(Direction.ASC, "firstname", "lastname")));
+		assertThat(result).isEqualTo(new Sort(Direction.ASC, "firstname", "lastname"));
 	}
 
 	/**
@@ -146,7 +145,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("sort", "");
 
-		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
+		assertThat(resolveSort(request, PARAMETER)).isNull();
 	}
 
 	/**
@@ -158,7 +157,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("sort", ",DESC");
 
-		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
+		assertThat(resolveSort(request, PARAMETER)).isNull();
 	}
 
 	/**
@@ -170,7 +169,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("sort", "property1,,DESC");
 
-		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property1")));
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(new Sort(DESC, "property1"));
 	}
 
 	/**
@@ -183,7 +182,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		request.addParameter("sort", "property,DESC");
 		request.addParameter("sort", "");
 
-		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property")));
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(new Sort(DESC, "property"));
 	}
 
 	/**
@@ -195,7 +194,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("sort", ",");
 
-		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
+		assertThat(resolveSort(request, PARAMETER)).isNull();
 	}
 
 	/**
@@ -207,8 +206,8 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("sort", "");
 
-		assertThat(resolveSort(request, getParameterOfMethod("simpleDefault")), is(new Sort("firstname", "lastname")));
-		assertThat(resolveSort(request, getParameterOfMethod("containeredDefault")), is(new Sort("foo", "bar")));
+		assertThat(resolveSort(request, getParameterOfMethod("simpleDefault"))).isEqualTo(new Sort("firstname", "lastname"));
+		assertThat(resolveSort(request, getParameterOfMethod("containeredDefault"))).isEqualTo(new Sort("foo", "bar"));
 	}
 
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
@@ -220,10 +219,10 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	private static void assertSupportedAndResolvedTo(NativeWebRequest request, MethodParameter parameter, Sort sort) {
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		assertThat(resolver.supportsParameter(parameter), is(true));
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
 		try {
-			assertThat(resolver.resolveArgument(parameter, null, request, null), is(sort));
+			assertThat(resolver.resolveArgument(parameter, null, request, null)).isEqualTo(sort);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

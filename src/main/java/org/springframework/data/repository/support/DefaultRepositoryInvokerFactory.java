@@ -73,17 +73,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 	 */
 	@Override
 	public RepositoryInvoker getInvokerFor(Class<?> domainType) {
-
-		RepositoryInvoker invoker = invokers.get(domainType);
-
-		if (invoker != null) {
-			return invoker;
-		}
-
-		invoker = prepareInvokers(domainType);
-		invokers.put(domainType, invoker);
-
-		return invoker;
+		return invokers.computeIfAbsent(domainType, type -> prepareInvokers(type));
 	}
 
 	/**

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping.context;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import groovy.lang.MetaClass;
@@ -26,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -40,6 +38,7 @@ import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.StringUtils;
 
 /**
  * Unit test for {@link AbstractMappingContext}.
@@ -62,7 +61,7 @@ public class AbstractMappingContextUnitTests {
 	public void doesNotTryToLookupPersistentEntityForLeafProperty() {
 		PersistentPropertyPath<SamplePersistentProperty> path = context
 				.getPersistentPropertyPath(PropertyPath.from("name", Person.class));
-		assertThat(path, is(notNullValue()));
+		assertThat(path).isNotNull();
 	}
 
 	/**
@@ -118,7 +117,7 @@ public class AbstractMappingContextUnitTests {
 	public void returnsNullPersistentEntityForSimpleTypes() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		assertThat(context.getPersistentEntity(String.class), is(nullValue()));
+		assertThat(context.getPersistentEntity(String.class)).isNull();
 	}
 
 	/**
@@ -147,7 +146,7 @@ public class AbstractMappingContextUnitTests {
 		mappingContext.initialize();
 
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Sample.class);
-		assertThat(entity.getPersistentProperty("metaClass"), is(nullValue()));
+		assertThat(entity.getPersistentProperty("metaClass")).isNotPresent();
 	}
 
 	/**
@@ -158,23 +157,29 @@ public class AbstractMappingContextUnitTests {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Extension.class);
-		assertThat(entity.getPersistentProperty("foo").isIdProperty(), is(true));
+
+		assertThat(entity.getPersistentProperty("foo")).hasValueSatisfying(it -> {
+			assertThat(it.isIdProperty()).isTrue();
+		});
 	}
 
 	/**
 	 * @see DATACMNS-345
 	 */
 	@Test
-	@SuppressWarnings("rawtypes")
 	public void returnsEntityForComponentType() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getPersistentEntity(Sample.class);
-		SamplePersistentProperty property = entity.getPersistentProperty("persons");
-		PersistentEntity<Object, SamplePersistentProperty> propertyEntity = mappingContext.getPersistentEntity(property);
 
-		assertThat(propertyEntity, is(notNullValue()));
-		assertThat(propertyEntity.getType(), is(equalTo((Class) Person.class)));
+		assertThat(entity.getPersistentProperty("persons")).hasValueSatisfying(it -> {
+
+			PersistentEntity<Object, SamplePersistentProperty> propertyEntity = mappingContext.getPersistentEntity(it);
+
+			assertThat(propertyEntity).isNotNull();
+			assertThat(propertyEntity.getType()).isEqualTo(Person.class);
+		});
+
 	}
 
 	/**
@@ -186,9 +191,9 @@ public class AbstractMappingContextUnitTests {
 		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath("persons.name",
 				Sample.class);
 
-		assertThat(path.getLength(), is(2));
-		assertThat(path.getBaseProperty().getName(), is("persons"));
-		assertThat(path.getLeafProperty().getName(), is("name"));
+		assertThat(path.getLength()).isEqualTo(2);
+		assertThat(path.getBaseProperty().getName()).isEqualTo("persons");
+		assertThat(path.getLeafProperty().getName()).isEqualTo("name");
 	}
 
 	/**
@@ -224,7 +229,7 @@ public class AbstractMappingContextUnitTests {
 	public void shouldReturnNullForSimpleTypesIfInStrictIsEnabled() {
 
 		context.setStrict(true);
-		assertThat(context.getPersistentEntity(Integer.class), is(nullValue()));
+		assertThat(context.getPersistentEntity(Integer.class)).isNull();
 	}
 
 	/**
@@ -252,8 +257,7 @@ public class AbstractMappingContextUnitTests {
 	 */
 	@Test
 	public void persistentPropertyPathTraversesGenericTypesCorrectly() {
-		assertThat(context.getPersistentPropertyPath("field.wrapped.field", Outer.class),
-				is(Matchers.<SamplePersistentProperty> iterableWithSize(3)));
+		assertThat(context.getPersistentPropertyPath("field.wrapped.field", Outer.class)).hasSize(3);
 	}
 
 	/**
@@ -262,20 +266,12 @@ public class AbstractMappingContextUnitTests {
 	@Test
 	public void exposesContextForFailingPropertyPathLookup() {
 
-		try {
-
-			context.getPersistentPropertyPath("persons.firstname", Sample.class);
-			fail("Expected InvalidPersistentPropertyPath!");
-
-		} catch (InvalidPersistentPropertyPath o_O) {
-
-			assertThat(o_O.getMessage(), not(isEmptyOrNullString()));
-			assertThat(o_O.getResolvedPath(), is("persons"));
-			assertThat(o_O.getUnresolvableSegment(), is("firstname"));
-
-			// Make sure, the resolvable part can be obtained
-			assertThat(context.getPersistentPropertyPath(o_O), is(notNullValue()));
-		}
+		assertThatExceptionOfType(InvalidPersistentPropertyPath.class)//
+				.isThrownBy(() -> context.getPersistentPropertyPath("persons.firstname", Sample.class))//
+				.matches(e -> StringUtils.hasText(e.getMessage()))//
+				.matches(e -> e.getResolvedPath().equals("persons"))//
+				.matches(e -> e.getUnresolvableSegment().equals("firstname"))//
+				.matches(e -> context.getPersistentPropertyPath(e) != null);
 	}
 
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {

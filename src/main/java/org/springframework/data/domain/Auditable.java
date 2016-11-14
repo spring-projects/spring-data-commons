@@ -16,8 +16,8 @@
 package org.springframework.data.domain;
 
 import java.io.Serializable;
-
-import org.joda.time.DateTime;
+import java.time.temporal.TemporalAccessor;
+import java.util.Optional;
 
 /**
  * Interface for auditable entities. Allows storing and retrieving creation and modification information. The changing
@@ -27,61 +27,61 @@ import org.joda.time.DateTime;
  * @param <ID> the type of the audited type's identifier
  * @author Oliver Gierke
  */
-public interface Auditable<U, ID extends Serializable> extends Persistable<ID> {
+public interface Auditable<U, ID extends Serializable, T extends TemporalAccessor> extends Persistable<ID> {
 
 	/**
 	 * Returns the user who created this entity.
 	 * 
 	 * @return the createdBy
 	 */
-	U getCreatedBy();
+	Optional<U> getCreatedBy();
 
 	/**
 	 * Sets the user who created this entity.
 	 * 
 	 * @param createdBy the creating entity to set
 	 */
-	void setCreatedBy(final U createdBy);
+	void setCreatedBy(Optional<? extends U> createdBy);
 
 	/**
 	 * Returns the creation date of the entity.
 	 * 
 	 * @return the createdDate
 	 */
-	DateTime getCreatedDate();
+	Optional<T> getCreatedDate();
 
 	/**
 	 * Sets the creation date of the entity.
 	 * 
 	 * @param creationDate the creation date to set
 	 */
-	void setCreatedDate(final DateTime creationDate);
+	void setCreatedDate(Optional<? extends T> creationDate);
 
 	/**
 	 * Returns the user who modified the entity lastly.
 	 * 
 	 * @return the lastModifiedBy
 	 */
-	U getLastModifiedBy();
+	Optional<U> getLastModifiedBy();
 
 	/**
 	 * Sets the user who modified the entity lastly.
 	 * 
 	 * @param lastModifiedBy the last modifying entity to set
 	 */
-	void setLastModifiedBy(final U lastModifiedBy);
+	void setLastModifiedBy(Optional<? extends U> lastModifiedBy);
 
 	/**
 	 * Returns the date of the last modification.
 	 * 
 	 * @return the lastModifiedDate
 	 */
-	DateTime getLastModifiedDate();
+	Optional<T> getLastModifiedDate();
 
 	/**
 	 * Sets the date of the last modification.
 	 * 
 	 * @param lastModifiedDate the date of the last modification to set
 	 */
-	void setLastModifiedDate(final DateTime lastModifiedDate);
+	void setLastModifiedDate(Optional<? extends T> lastModifiedDate);
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,8 +43,8 @@ public class DataCmns511Tests {
 		TypeInformation<?> thirdRoleType = secondCreatedBy.getProperty("roles").getActualType();
 		TypeInformation thirdCreatedBy = thirdRoleType.getProperty("createdBy");
 
-		assertThat(secondCreatedBy, is(thirdCreatedBy));
-		assertThat(secondCreatedBy.hashCode(), is(thirdCreatedBy.hashCode()));
+		assertThat(secondCreatedBy).isEqualTo(thirdCreatedBy);
+		assertThat(secondCreatedBy.hashCode()).isEqualTo(thirdCreatedBy.hashCode());
 	}
 
 	static class AbstractRole<USER extends AbstractUser<USER, ROLE>, ROLE extends AbstractRole<USER, ROLE>> extends

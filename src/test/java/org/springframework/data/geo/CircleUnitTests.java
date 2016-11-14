@@ -15,8 +15,7 @@
  */
 package org.springframework.data.geo;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.util.SerializationUtils;
@@ -54,13 +53,13 @@ public class CircleUnitTests {
 		Circle left = new Circle(1, 1, 1);
 		Circle right = new Circle(1, 1, 1);
 
-		assertThat(left, is(right));
-		assertThat(right, is(left));
+		assertThat(left).isEqualTo(right);
+		assertThat(right).isEqualTo(left);
 
 		right = new Circle(new Point(1, 1), new Distance(1));
 
-		assertThat(left, is(right));
-		assertThat(right, is(left));
+		assertThat(left).isEqualTo(right);
+		assertThat(right).isEqualTo(left);
 	}
 
 	/**
@@ -69,7 +68,7 @@ public class CircleUnitTests {
 	@Test
 	public void testToString() {
 
-		assertThat(new Circle(1, 1, 1).toString(), is("Circle: [center=Point [x=1.000000, y=1.000000], radius=1.0]"));
+		assertThat(new Circle(1, 1, 1).toString()).isEqualTo("Circle: [center=Point [x=1.000000, y=1.000000], radius=1.0]");
 	}
 
 	/**
@@ -81,6 +80,6 @@ public class CircleUnitTests {
 		Circle circle = new Circle(1, 1, 1);
 
 		Circle serialized = (Circle) SerializationUtils.deserialize(SerializationUtils.serialize(circle));
-		assertThat(serialized, is(circle));
+		assertThat(serialized).isEqualTo(circle);
 	}
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 
@@ -201,7 +200,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
-		assertThat(invoker.hasDeleteMethod(), is(false));
+		assertThat(invoker.hasDeleteMethod()).isFalse();
 		invoker.invokeDelete(1L);
 	}
 
@@ -213,7 +212,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
-		assertThat(invoker.hasFindOneMethod(), is(false));
+		assertThat(invoker.hasFindOneMethod()).isFalse();
 		invoker.invokeFindOne(1L);
 	}
 
@@ -225,7 +224,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
-		assertThat(invoker.hasFindAllMethod(), is(false));
+		assertThat(invoker.hasFindAllMethod()).isFalse();
 		invoker.invokeFindAll((Pageable) null);
 	}
 
@@ -237,7 +236,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
-		assertThat(invoker.hasSaveMethod(), is(false));
+		assertThat(invoker.hasSaveMethod()).isFalse();
 		invoker.invokeSave(new Object());
 	}
 
@@ -276,9 +275,9 @@ public class ReflectionRepositoryInvokerUnitTests {
 			invoker.invokeQueryMethod(method, parameters, null, null);
 		} catch (QueryMethodParameterConversionException o_O) {
 
-			assertThat(o_O.getParameter(), is(new MethodParameters(method).getParameters().get(0)));
-			assertThat(o_O.getSource(), is((Object) "value"));
-			assertThat(o_O.getCause(), is(instanceOf(ConversionFailedException.class)));
+			assertThat(o_O.getParameter()).isEqualTo(new MethodParameters(method).getParameters().get(0));
+			assertThat(o_O.getSource()).isEqualTo("value");
+			assertThat(o_O.getCause()).isInstanceOf(ConversionFailedException.class);
 		}
 	}
 

@@ -15,12 +15,11 @@
  */
 package org.springframework.data.projection;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -39,7 +38,7 @@ public class DefaultProjectionInformationUnitTests {
 
 		ProjectionInformation information = new DefaultProjectionInformation(CustomerProjection.class);
 
-		assertThat(toNames(information.getInputProperties()), contains("firstname", "lastname"));
+		assertThat(toNames(information.getInputProperties())).contains("firstname", "lastname");
 	}
 
 	/**
@@ -50,18 +49,11 @@ public class DefaultProjectionInformationUnitTests {
 
 		ProjectionInformation information = new DefaultProjectionInformation(ExtendedProjection.class);
 
-		assertThat(toNames(information.getInputProperties()), hasItems("age", "firstname", "lastname"));
+		assertThat(toNames(information.getInputProperties())).containsExactly("age", "firstname", "lastname");
 	}
 
 	private static List<String> toNames(List<PropertyDescriptor> descriptors) {
-
-		List<String> names = new ArrayList<String>(descriptors.size());
-
-		for (PropertyDescriptor descriptor : descriptors) {
-			names.add(descriptor.getName());
-		}
-
-		return names;
+		return descriptors.stream().map(PropertyDescriptor::getName).collect(Collectors.toList());
 	}
 
 	interface CustomerProjection {

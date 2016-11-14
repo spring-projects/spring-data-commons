@@ -15,8 +15,9 @@
  */
 package org.springframework.data.auditing;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAccessor;
+import java.util.Optional;
 
 import org.joda.time.DateTime;
 
@@ -35,7 +36,7 @@ public enum CurrentDateTimeProvider implements DateTimeProvider {
 	 * @see org.springframework.data.auditing.DateTimeProvider#getNow()
 	 */
 	@Override
-	public Calendar getNow() {
-		return new GregorianCalendar();
+	public Optional<TemporalAccessor> getNow() {
+		return Optional.of(ZonedDateTime.now());
 	}
 }

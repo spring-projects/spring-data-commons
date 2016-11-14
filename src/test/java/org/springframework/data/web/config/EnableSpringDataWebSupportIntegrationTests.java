@@ -15,17 +15,14 @@
  */
 package org.springframework.data.web.config;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -81,7 +78,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
-		assertThat(names, hasItems("pageableResolver", "sortResolver"));
+		assertThat(names).contains("pageableResolver", "sortResolver");
 
 		assertResolversRegistered(context, SortHandlerMethodArgumentResolver.class,
 				PageableHandlerMethodArgumentResolver.class);
@@ -93,7 +90,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
-		assertThat(names, hasItems("pagedResourcesAssembler", "pagedResourcesAssemblerArgumentResolver"));
+		assertThat(names).contains("pagedResourcesAssembler", "pagedResourcesAssemblerArgumentResolver");
 		assertResolversRegistered(context, PagedResourcesAssemblerArgumentResolver.class);
 	}
 
@@ -105,8 +102,8 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
-		assertThat(names, hasItems("pageableResolver", "sortResolver"));
-		assertThat(names, not(hasItems("pagedResourcesAssembler", "pagedResourcesAssemblerArgumentResolver")));
+		assertThat(names).contains("pageableResolver", "sortResolver");
+		assertThat(names).doesNotContain("pagedResourcesAssembler", "pagedResourcesAssemblerArgumentResolver");
 	}
 
 	/**
@@ -118,7 +115,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
-		assertThat(names, hasItem("jacksonGeoModule"));
+		assertThat(names).contains("jacksonGeoModule");
 	}
 
 	/**
@@ -132,7 +129,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
-		assertThat(names, not(hasItem("jacksonGeoModule")));
+		assertThat(names).doesNotContain("jacksonGeoModule");
 	}
 
 	/**
@@ -145,10 +142,10 @@ public class EnableSpringDataWebSupportIntegrationTests {
 
 		ConversionService conversionService = context.getBean(ConversionService.class);
 
-		assertThat(conversionService.canConvert(String.class, Distance.class), is(true));
-		assertThat(conversionService.canConvert(Distance.class, String.class), is(true));
-		assertThat(conversionService.canConvert(String.class, Point.class), is(true));
-		assertThat(conversionService.canConvert(Point.class, String.class), is(true));
+		assertThat(conversionService.canConvert(String.class, Distance.class)).isTrue();
+		assertThat(conversionService.canConvert(Distance.class, String.class)).isTrue();
+		assertThat(conversionService.canConvert(String.class, Point.class)).isTrue();
+		assertThat(conversionService.canConvert(Point.class, String.class)).isTrue();
 	}
 
 	/**
@@ -181,23 +178,16 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
-		assertThat(names, hasItem("sampleBean"));
+		assertThat(names).contains("sampleBean");
 	}
 
-	@SuppressWarnings("unchecked")
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
 
 		RequestMappingHandlerAdapter adapter = context.getBean(RequestMappingHandlerAdapter.class);
-		assertThat(adapter, is(notNullValue()));
+		assertThat(adapter).isNotNull();
 		List<HandlerMethodArgumentResolver> resolvers = adapter.getCustomArgumentResolvers();
 
-		List<Matcher<Object>> resolverMatchers = new ArrayList<Matcher<Object>>(resolverTypes.length);
-
-		for (Class<?> resolverType : resolverTypes) {
-			resolverMatchers.add(instanceOf(resolverType));
-		}
-
-		assertThat(resolvers, hasItems(resolverMatchers.toArray(new Matcher[resolverMatchers.size()])));
+		Arrays.asList(resolverTypes).forEach(type -> assertThat(resolvers).hasAtLeastOneElementOfType(type));
 	}
 
 	private static void hide(String module) throws Exception {

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.convert;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.util.ClassTypeInformation;
@@ -38,28 +37,28 @@ public class SimpleTypeInformationMapperUnitTests {
 
 		TypeInformation expected = ClassTypeInformation.from(String.class);
 
-		assertThat(type, is(expected));
+		assertThat(type).isEqualTo(expected);
 	}
 
 	@Test
 	public void returnsNullForNonStringKey() {
 
 		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
-		assertThat(mapper.resolveTypeFrom(new Object()), is(nullValue()));
+		assertThat(mapper.resolveTypeFrom(new Object())).isNull();
 	}
 
 	@Test
 	public void returnsNullForEmptyTypeKey() {
 
 		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
-		assertThat(mapper.resolveTypeFrom(""), is(nullValue()));
+		assertThat(mapper.resolveTypeFrom("")).isNull();
 	}
 
 	@Test
 	public void returnsNullForUnloadableClass() {
 
 		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
-		assertThat(mapper.resolveTypeFrom("Foo"), is(nullValue()));
+		assertThat(mapper.resolveTypeFrom("Foo")).isNull();
 	}
 
 	@Test
@@ -68,7 +67,7 @@ public class SimpleTypeInformationMapperUnitTests {
 		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
 		Object alias = mapper.createAliasFor(ClassTypeInformation.from(String.class));
 
-		assertTrue(alias instanceof String);
-		assertThat(alias, is((Object) String.class.getName()));
+		assertThat(alias).isInstanceOf(String.class);
+		assertThat(alias).isEqualTo(String.class.getName());
 	}
 }

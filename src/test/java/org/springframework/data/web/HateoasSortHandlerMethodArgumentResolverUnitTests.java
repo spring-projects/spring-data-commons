@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
 import java.net.URI;
@@ -61,7 +60,7 @@ public class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandl
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/").build();
 
 		HateoasSortHandlerMethodArgumentResolver resolver = new HateoasSortHandlerMethodArgumentResolver();
-		assertThat(resolver.getSortTemplateVariables(null, uriComponents).toString(), is("{?sort}"));
+		assertThat(resolver.getSortTemplateVariables(null, uriComponents).toString()).isEqualTo("{?sort}");
 	}
 
 	private void assertUriStringFor(Sort sort, String expected) throws Exception {
@@ -75,6 +74,6 @@ public class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandl
 
 		new HateoasSortHandlerMethodArgumentResolver().enhance(builder, parameter, sort);
 
-		assertThat(builder.build().toUriString(), endsWith(expected));
+		assertThat(builder.build().toUriString()).endsWith(expected);
 	}
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +24,6 @@ import java.util.Set;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.type.filter.AssignableTypeFilter;
@@ -48,8 +46,9 @@ public class RepositoryComponentProviderUnitTests {
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.<TypeFilter> emptyList());
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.sample");
 
-		assertThat(components.size(), is(3));
-		assertThat(components, hasItem(BeanDefinitionOfTypeMatcher.beanDefinitionOfType(SampleAnnotatedRepository.class)));
+		assertThat(components).hasSize(3);
+		assertThat(components).extracting(BeanDefinition::getBeanClassName)
+				.contains(SampleAnnotatedRepository.class.getName());
 	}
 
 	@Test
@@ -60,8 +59,8 @@ public class RepositoryComponentProviderUnitTests {
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(filters);
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository");
 
-		assertThat(components.size(), is(1));
-		assertThat(components, hasItem(BeanDefinitionOfTypeMatcher.beanDefinitionOfType(MyOtherRepository.class)));
+		assertThat(components).hasSize(1);
+		assertThat(components).extracting(BeanDefinition::getBeanClassName).contains(MyOtherRepository.class.getName());
 	}
 
 	/**
@@ -76,9 +75,8 @@ public class RepositoryComponentProviderUnitTests {
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.config");
 		String nestedRepositoryClassName = "org.springframework.data.repository.config.RepositoryComponentProviderUnitTests$MyNestedRepository";
 
-		assertThat(components.size(), is(greaterThanOrEqualTo(1)));
-		assertThat(components,
-				Matchers.<BeanDefinition> hasItem(hasProperty("beanClassName", is(nestedRepositoryClassName))));
+		assertThat(components.size()).isGreaterThanOrEqualTo(1);
+		assertThat(components).extracting(BeanDefinition::getBeanClassName).contains(nestedRepositoryClassName);
 	}
 
 	static class BeanDefinitionOfTypeMatcher extends BaseMatcher<BeanDefinition> {

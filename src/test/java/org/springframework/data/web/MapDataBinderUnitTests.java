@@ -16,8 +16,7 @@
 package org.springframework.data.web;
 
 import static java.util.Collections.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -56,7 +55,7 @@ public class MapDataBinderUnitTests {
 		Map<String, Object> nested = new HashMap<String, Object>();
 		nested.put("date", reference);
 
-		assertThat(bind(values), hasEntry("foo", (Object) nested));
+		assertThat(bind(values)).containsEntry("foo", nested);
 	}
 
 	/**
@@ -74,7 +73,7 @@ public class MapDataBinderUnitTests {
 		List<String> list = new ArrayList<String>();
 		list.add("String");
 
-		assertThat(result, is((Map) singletonMap("foo", singletonMap("bar", singletonMap("fooBar", list)))));
+		assertThat(result).isEqualTo((Map) singletonMap("foo", singletonMap("bar", singletonMap("fooBar", list))));
 	}
 
 	/**
@@ -94,7 +93,7 @@ public class MapDataBinderUnitTests {
 		dave.put("firstname", "Dave");
 		dave.put("lastname", "Matthews");
 
-		assertThat(result, is((Map) singletonMap("foo", dave)));
+		assertThat(result).isEqualTo((Map) singletonMap("foo", dave));
 	}
 
 	/**
@@ -106,7 +105,7 @@ public class MapDataBinderUnitTests {
 		MutablePropertyValues values = new MutablePropertyValues();
 		values.add("somethingWeird", "Value");
 
-		assertThat(bind(values), is(Collections.<String, Object> emptyMap()));
+		assertThat(bind(values)).isEqualTo(Collections.<String, Object> emptyMap());
 	}
 
 	private static Map<String, Object> bind(PropertyValues values) {

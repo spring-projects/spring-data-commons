@@ -15,8 +15,8 @@
  */
 package org.springframework.data.repository.config;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 
 import java.util.List;
 
@@ -50,12 +50,12 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 		reader.loadBeanDefinitions(getPopulatorResource());
 
 		BeanDefinition definition = beanFactory.getBeanDefinition("jackson2-populator");
-		assertThat(definition, is(notNullValue()));
+		assertThat(definition).isNotNull();
 
 		Object bean = beanFactory.getBean("jackson2-populator");
-		assertThat(bean, is(instanceOf(ResourceReaderRepositoryPopulator.class)));
+		assertThat(bean).isInstanceOf(ResourceReaderRepositoryPopulator.class);
 		Object resourceReader = ReflectionTestUtils.getField(bean, "reader");
-		assertThat(resourceReader, is(instanceOf(Jackson2ResourceReader.class)));
+		assertThat(resourceReader).isInstanceOf(Jackson2ResourceReader.class);
 
 		Object resources = ReflectionTestUtils.getField(bean, "resources");
 		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.json");
@@ -72,14 +72,14 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 		reader.loadBeanDefinitions(getPopulatorResource());
 
 		BeanDefinition definition = beanFactory.getBeanDefinition("xml-populator");
-		assertThat(definition, is(notNullValue()));
+		assertThat(definition).isNotNull();
 
 		Object bean = beanFactory.getBean("xml-populator");
-		assertThat(bean, is(instanceOf(ResourceReaderRepositoryPopulator.class)));
+		assertThat(bean).isInstanceOf(ResourceReaderRepositoryPopulator.class);
 		Object resourceReader = ReflectionTestUtils.getField(bean, "reader");
-		assertThat(resourceReader, is(instanceOf(UnmarshallingResourceReader.class)));
+		assertThat(resourceReader).isInstanceOf(UnmarshallingResourceReader.class);
 		Object unmarshaller = ReflectionTestUtils.getField(resourceReader, "unmarshaller");
-		assertThat(unmarshaller, is(instanceOf(Jaxb2Marshaller.class)));
+		assertThat(unmarshaller).isInstanceOf(Jaxb2Marshaller.class);
 
 		Object resources = ReflectionTestUtils.getField(bean, "resources");
 		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.xml");
@@ -87,13 +87,13 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 
 	private static void assertIsListOfClasspathResourcesWithPath(Object source, String path) {
 
-		assertThat(source, is(instanceOf(List.class)));
+		assertThat(source).isInstanceOf(List.class);
 		List<?> list = (List<?>) source;
-		assertThat(list, is(not(empty())));
+		assertThat(list).isNotEqualTo(empty());
 		Object element = list.get(0);
-		assertThat(element, is(instanceOf(ClassPathResource.class)));
+		assertThat(element).isInstanceOf(ClassPathResource.class);
 		ClassPathResource resource = (ClassPathResource) element;
-		assertThat(resource.getPath(), is(path));
+		assertThat(resource.getPath()).isEqualTo(path);
 	}
 
 	private static ClassPathResource getPopulatorResource() {

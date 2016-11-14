@@ -15,9 +15,8 @@
  */
 package org.springframework.data.util;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.util.StreamUtils.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +43,6 @@ public class StreamUtilsTests {
 		Stream<String> stream = createStreamFromIterator(input.iterator());
 		List<String> output = stream.collect(Collectors.<String> toList());
 
-		assertThat(input, is(equalTo(output)));
+		assertThat(input).isEqualTo(output);
 	}
 }

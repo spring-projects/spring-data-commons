@@ -15,8 +15,7 @@
  */
 package org.springframework.data.projection;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -24,13 +23,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -60,7 +56,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		when(invocation.getMethod()).thenReturn(Helper.class.getMethod("getHelper"));
 		when(interceptor.invoke(invocation)).thenReturn("Foo");
 
-		assertThat(methodInterceptor.invoke(invocation), is(instanceOf(Helper.class)));
+		assertThat(methodInterceptor.invoke(invocation)).isInstanceOf(Helper.class);
 	}
 
 	/**
@@ -74,7 +70,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		when(invocation.getMethod()).thenReturn(Helper.class.getMethod("getString"));
 		when(interceptor.invoke(invocation)).thenReturn("Foo");
 
-		assertThat(methodInterceptor.invoke(invocation), is((Object) "Foo"));
+		assertThat(methodInterceptor.invoke(invocation)).isEqualTo("Foo");
 	}
 
 	/**
@@ -87,7 +83,7 @@ public class ProjectingMethodInterceptorUnitTests {
 
 		when(interceptor.invoke(invocation)).thenReturn(null);
 
-		assertThat(methodInterceptor.invoke(invocation), is(nullValue()));
+		assertThat(methodInterceptor.invoke(invocation)).isNull();
 	}
 
 	/**
@@ -101,7 +97,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		when(invocation.getMethod()).thenReturn(Helper.class.getMethod("getPrimitive"));
 		when(interceptor.invoke(invocation)).thenReturn(1L);
 
-		assertThat(methodInterceptor.invoke(invocation), is((Object) 1L));
+		assertThat(methodInterceptor.invoke(invocation)).isEqualTo(1L);
 		verify(factory, times(0)).createProjection((Class<?>) anyObject(), anyObject());
 	}
 
@@ -113,14 +109,14 @@ public class ProjectingMethodInterceptorUnitTests {
 	public void appliesProjectionToNonEmptySets() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
-		Object result = methodInterceptor.invoke(mockInvocationOf("getHelperCollection",
-				Collections.singleton(mock(Helper.class))));
+		Object result = methodInterceptor
+				.invoke(mockInvocationOf("getHelperCollection", Collections.singleton(mock(Helper.class))));
 
-		assertThat(result, is(instanceOf(Set.class)));
+		assertThat(result).isInstanceOf(Set.class);
 
 		Set<Object> projections = (Set<Object>) result;
-		assertThat(projections, hasSize(1));
-		assertThat(projections, hasItem(instanceOf(HelperProjection.class)));
+		assertThat(projections).hasSize(1);
+		assertThat(projections).hasOnlyElementsOfType(HelperProjection.class);
 	}
 
 	/**
@@ -131,15 +127,15 @@ public class ProjectingMethodInterceptorUnitTests {
 	public void appliesProjectionToNonEmptyLists() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
-		Object result = methodInterceptor.invoke(mockInvocationOf("getHelperList",
-				Collections.singletonList(mock(Helper.class))));
+		Object result = methodInterceptor
+				.invoke(mockInvocationOf("getHelperList", Collections.singletonList(mock(Helper.class))));
 
-		assertThat(result, is(instanceOf(List.class)));
+		assertThat(result).isInstanceOf(List.class);
 
 		List<Object> projections = (List<Object>) result;
 
-		assertThat(projections, hasSize(1));
-		assertThat(projections, hasItem(instanceOf(HelperProjection.class)));
+		assertThat(projections).hasSize(1);
+		assertThat(projections).hasOnlyElementsOfType(HelperProjection.class);
 	}
 
 	/**
@@ -152,12 +148,12 @@ public class ProjectingMethodInterceptorUnitTests {
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
 		Object result = methodInterceptor.invoke(mockInvocationOf("getHelperArray", new Helper[] { mock(Helper.class) }));
 
-		assertThat(result, is(instanceOf(Collection.class)));
+		assertThat(result).isInstanceOf(Collection.class);
 
 		Collection<Object> projections = (Collection<Object>) result;
 
-		assertThat(projections, hasSize(1));
-		assertThat(projections, hasItem(instanceOf(HelperProjection.class)));
+		assertThat(projections).hasSize(1);
+		assertThat(projections).hasOnlyElementsOfType(HelperProjection.class);
 	}
 
 	/**
@@ -169,18 +165,18 @@ public class ProjectingMethodInterceptorUnitTests {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
 
-		Object result = methodInterceptor.invoke(mockInvocationOf("getHelperMap",
-				Collections.singletonMap("foo", mock(Helper.class))));
+		Object result = methodInterceptor
+				.invoke(mockInvocationOf("getHelperMap", Collections.singletonMap("foo", mock(Helper.class))));
 
-		assertThat(result, is(instanceOf(Map.class)));
+		assertThat(result).isInstanceOf(Map.class);
 
 		Map<String, Object> projections = (Map<String, Object>) result;
-		assertThat(projections.entrySet(), is(Matchers.<Entry<String, Object>> iterableWithSize(1)));
-		assertThat(projections, hasEntry(is("foo"), instanceOf(HelperProjection.class)));
+
+		assertThat(projections).hasSize(1);
+		assertThat(projections).matches(map -> map.get("foo") instanceof HelperProjection);
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void returnsSingleElementCollectionForTargetThatReturnsNonCollection() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
@@ -188,9 +184,12 @@ public class ProjectingMethodInterceptorUnitTests {
 		Helper reference = mock(Helper.class);
 		Object result = methodInterceptor.invoke(mockInvocationOf("getHelperCollection", reference));
 
-		assertThat(result, is((Matcher<Object>) instanceOf(Collection.class)));
-		assertThat((Collection<?>) result, hasSize(1));
-		assertThat((Collection<Object>) result, hasItem(instanceOf(HelperProjection.class)));
+		assertThat(result).isInstanceOf(Collection.class);
+
+		Collection<?> collection = (Collection<?>) result;
+
+		assertThat(collection).hasSize(1);
+		assertThat(collection).hasOnlyElementsOfType(HelperProjection.class);
 	}
 
 	/**

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;
@@ -51,6 +50,6 @@ public class CamelCaseAbbreviatingFieldNamingStrategyUnitTests {
 	private void assertFieldNameForPropertyName(String propertyName, String fieldName) {
 
 		when(property.getName()).thenReturn(propertyName);
-		assertThat(strategy.getFieldName(property), is(fieldName));
+		assertThat(strategy.getFieldName(property)).isEqualTo(fieldName);
 	}
 }

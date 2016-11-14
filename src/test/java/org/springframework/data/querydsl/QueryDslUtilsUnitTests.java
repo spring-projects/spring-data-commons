@@ -15,8 +15,7 @@
  */
 package org.springframework.data.querydsl;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 
@@ -32,6 +31,6 @@ public class QueryDslUtilsUnitTests {
 	 */
 	@Test
 	public void rendersDotPathForPathTraversalContainingAnyExpression() {
-		assertThat(QueryDslUtils.toDotPath(QUser.user.addresses.any().street), is("addresses.street"));
+		assertThat(QueryDslUtils.toDotPath(QUser.user.addresses.any().street)).isEqualTo("addresses.street");
 	}
 }

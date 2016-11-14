@@ -26,11 +26,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
+import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -206,7 +207,6 @@ public abstract class ReturnedType {
 	 */
 	private static final class ReturnedClass extends ReturnedType {
 
-		@SuppressWarnings("unchecked") //
 		private static final Set<Class<?>> VOID_TYPES = new HashSet<Class<?>>(Arrays.asList(Void.class, void.class));
 
 		private final Class<?> type;
@@ -282,19 +282,14 @@ public abstract class ReturnedType {
 			}
 
 			PreferredConstructorDiscoverer<?, ?> discoverer = new PreferredConstructorDiscoverer(type);
-			PreferredConstructor<?, ?> constructor = discoverer.getConstructor();
 
-			if (constructor == null) {
-				return Collections.emptyList();
-			}
+			return discoverer.getConstructor().map(it -> {
 
-			List<String> properties = new ArrayList<String>();
+				return it.getParameters().stream()//
+						.flatMap(parameter -> Optionals.toStream(parameter.getName()))//
+						.collect(Collectors.toList());
 
-			for (PreferredConstructor.Parameter<Object, ?> parameter : constructor.getParameters()) {
-				properties.add(parameter.getName());
-			}
-
-			return properties;
+			}).orElse(Collections.emptyList());
 		}
 
 		private boolean isDto() {

@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.util.TypeInformation;
@@ -74,19 +75,19 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * 
 	 * @return the getter method to access the property value if available, otherwise {@literal null}.
 	 */
-	Method getGetter();
+	Optional<Method> getGetter();
 
 	/**
 	 * Returns the setter method to set a property value. Might return {@literal null} in case there is no setter
 	 * available.
 	 * 
-	 * @returnthe setter method to set a property value if available, otherwise {@literal null}.
+	 * @return the setter method to set a property value if available, otherwise {@literal null}.
 	 */
-	Method getSetter();
+	Optional<Method> getSetter();
 
-	Field getField();
+	Optional<Field> getField();
 
-	String getSpelExpression();
+	Optional<String> getSpelExpression();
 
 	Association<P> getAssociation();
 
@@ -201,7 +202,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return the annotation of the given type if present or {@literal null} otherwise.
 	 * @see AnnotationUtils#findAnnotation(Method, Class)
 	 */
-	<A extends Annotation> A findAnnotation(Class<A> annotationType);
+	<A extends Annotation> Optional<A> findAnnotation(Class<A> annotationType);
 
 	/**
 	 * Looks up the annotation of the given type on the property and the owning type if no annotation can be found on it.
@@ -210,7 +211,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @param annotationType must not be {@literal null}.
 	 * @return
 	 */
-	<A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType);
+	<A extends Annotation> Optional<A> findPropertyOrOwnerAnnotation(Class<A> annotationType);
 
 	/**
 	 * Returns whether the {@link PersistentProperty} has an annotation of the given type.

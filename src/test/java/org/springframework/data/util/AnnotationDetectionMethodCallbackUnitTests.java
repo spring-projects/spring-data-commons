@@ -15,8 +15,7 @@
  */
 package org.springframework.data.util;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,10 +41,10 @@ public class AnnotationDetectionMethodCallbackUnitTests {
 		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
 		ReflectionUtils.doWithMethods(Sample.class, callback);
 
-		assertThat(callback.hasFoundAnnotation(), is(true));
-		assertThat(callback.getMethod(), is(Sample.class.getMethod("getValue")));
-		assertThat(callback.getAnnotation(), is(notNullValue()));
-		assertThat(callback.getAnnotation().value(), is("#{null}"));
+		assertThat(callback.hasFoundAnnotation()).isTrue();
+		assertThat(callback.getMethod()).isEqualTo(Sample.class.getMethod("getValue"));
+		assertThat(callback.getAnnotation()).isNotNull();
+		assertThat(callback.getAnnotation().value()).isEqualTo("#{null}");
 	}
 
 	/**

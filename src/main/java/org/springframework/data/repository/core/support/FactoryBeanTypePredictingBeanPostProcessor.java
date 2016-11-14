@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -51,7 +52,7 @@ public class FactoryBeanTypePredictingBeanPostProcessor extends InstantiationAwa
 	private final Map<String, Class<?>> cache = new ConcurrentHashMap<String, Class<?>>();
 	private final Class<?> factoryBeanType;
 	private final List<String> properties;
-	private ConfigurableListableBeanFactory context;
+	private Optional<ConfigurableListableBeanFactory> context = Optional.empty();
 
 	/**
 	 * Creates a new {@link FactoryBeanTypePredictingBeanPostProcessor} predicting the type created by the
@@ -82,7 +83,7 @@ public class FactoryBeanTypePredictingBeanPostProcessor extends InstantiationAwa
 	public void setBeanFactory(BeanFactory beanFactory) {
 
 		if (beanFactory instanceof ConfigurableListableBeanFactory) {
-			this.context = (ConfigurableListableBeanFactory) beanFactory;
+			this.context = Optional.of((ConfigurableListableBeanFactory) beanFactory);
 		}
 	}
 
@@ -91,39 +92,28 @@ public class FactoryBeanTypePredictingBeanPostProcessor extends InstantiationAwa
 	 * @see org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter#predictBeanType(java.lang.Class, java.lang.String)
 	 */
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Class<?> predictBeanType(Class<?> beanClass, String beanName) {
 
-		if (null == context || !factoryBeanType.isAssignableFrom(beanClass)) {
-			return null;
-		}
+		return context.map(it -> {
 
-		Class<?> resolvedBeanClass = cache.get(beanName);
-
-		if (resolvedBeanClass != null) {
-			return resolvedBeanClass == Void.class ? null : resolvedBeanClass;
-		}
-
-		BeanDefinition definition = context.getBeanDefinition(beanName);
-
-		try {
-
-			for (String property : properties) {
-
-				PropertyValue value = definition.getPropertyValues().getPropertyValue(property);
-				resolvedBeanClass = getClassForPropertyValue(value, beanName);
-
-				if (Void.class.equals(resolvedBeanClass)) {
-					continue;
-				}
-
-				return resolvedBeanClass;
+			if (!factoryBeanType.isAssignableFrom(beanClass)) {
+				return null;
 			}
 
-			return null;
+			BeanDefinition definition = it.getBeanDefinition(beanName);
+			Class<?> resort = Void.class;
 
-		} finally {
-			cache.put(beanName, resolvedBeanClass);
-		}
+			Class<?> resolvedBeanClass = cache.computeIfAbsent(beanName,
+					name -> properties.stream()//
+							.map(property -> definition.getPropertyValues().getPropertyValue(property))//
+							.map(value -> getClassForPropertyValue(value, beanName, it))//
+							.filter(type -> !Void.class.equals(type))//
+							.findFirst().orElse((Class) resort));
+
+			return Void.class.equals(resolvedBeanClass) ? null : resolvedBeanClass;
+
+		}).orElse(null);
 	}
 
 	/**
@@ -134,7 +124,8 @@ public class FactoryBeanTypePredictingBeanPostProcessor extends InstantiationAwa
 	 * @param beanName must not be {@literal null}.
 	 * @return
 	 */
-	private Class<?> getClassForPropertyValue(PropertyValue propertyValue, String beanName) {
+	private Class<?> getClassForPropertyValue(PropertyValue propertyValue, String beanName,
+			ConfigurableListableBeanFactory beanFactory) {
 
 		if (propertyValue == null) {
 			return Void.class;
@@ -164,7 +155,7 @@ public class FactoryBeanTypePredictingBeanPostProcessor extends InstantiationAwa
 		}
 
 		try {
-			return ClassUtils.resolveClassName(className, context.getBeanClassLoader());
+			return ClassUtils.resolveClassName(className, beanFactory.getBeanClassLoader());
 		} catch (IllegalArgumentException ex) {
 			LOGGER.warn(
 					String.format("Couldn't load class %s referenced as repository interface in bean %s!", className, beanName));

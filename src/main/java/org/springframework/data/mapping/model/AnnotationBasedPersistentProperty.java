@@ -17,11 +17,14 @@ package org.springframework.data.mapping.model;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +39,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 
 /**
@@ -44,13 +48,13 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>> extends
-		AbstractPersistentProperty<P> {
+public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>>
+		extends AbstractPersistentProperty<P> {
 
 	private static final String SPRING_DATA_PACKAGE = "org.springframework.data";
 
-	private final Value value;
-	private final Map<Class<? extends Annotation>, Annotation> annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
+	private final Optional<Value> value;
+	private final Map<Class<? extends Annotation>, Optional<? extends Annotation>> annotationCache = new HashMap<>();
 
 	private Boolean isTransient;
 	private boolean usePropertyAccess;
@@ -62,15 +66,15 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param propertyDescriptor can be {@literal null}.
 	 * @param owner must not be {@literal null}.
 	 */
-	public AnnotationBasedPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
+	public AnnotationBasedPersistentProperty(Optional<Field> field, PropertyDescriptor propertyDescriptor,
 			PersistentEntity<?, P> owner, SimpleTypeHolder simpleTypeHolder) {
 
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
 
 		populateAnnotationCache(field);
 
-		AccessType accessType = findPropertyOrOwnerAnnotation(AccessType.class);
-		this.usePropertyAccess = accessType == null ? false : Type.PROPERTY.equals(accessType.value());
+		this.usePropertyAccess = findPropertyOrOwnerAnnotation(AccessType.class).map(it -> Type.PROPERTY.equals(it.value()))
+				.orElse(false);
 		this.value = findAnnotation(Value.class);
 	}
 
@@ -81,40 +85,36 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param field
 	 * @throws MappingException in case we find an ambiguous mapping on the accessor methods
 	 */
-	private final void populateAnnotationCache(Field field) {
+	private final void populateAnnotationCache(Optional<Field> field) {
 
-		for (Method method : Arrays.asList(getGetter(), getSetter())) {
+		Optionals.toStream(getGetter(), getSetter()).forEach(it -> {
 
-			if (method == null) {
-				continue;
-			}
-
-			for (Annotation annotation : method.getAnnotations()) {
+			for (Annotation annotation : it.getAnnotations()) {
 
 				Class<? extends Annotation> annotationType = annotation.annotationType();
 
-				validateAnnotation(annotation, "Ambiguous mapping! Annotation %s configured "
-						+ "multiple times on accessor methods of property %s in class %s!", annotationType.getSimpleName(),
-						getName(), getOwner().getType().getSimpleName());
+				validateAnnotation(annotation,
+						"Ambiguous mapping! Annotation %s configured "
+								+ "multiple times on accessor methods of property %s in class %s!",
+						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
 
-				annotationCache.put(annotationType, annotation);
+				annotationCache.put(annotationType, Optional.of(annotation));
 			}
-		}
+		});
 
-		if (field == null) {
-			return;
-		}
+		field.ifPresent(it -> {
 
-		for (Annotation annotation : field.getAnnotations()) {
+			for (Annotation annotation : it.getAnnotations()) {
 
-			Class<? extends Annotation> annotationType = annotation.annotationType();
+				Class<? extends Annotation> annotationType = annotation.annotationType();
 
-			validateAnnotation(annotation, "Ambiguous mapping! Annotation %s configured "
-					+ "on field %s and one of its accessor methods in class %s!", annotationType.getSimpleName(),
-					field.getName(), getOwner().getType().getSimpleName());
+				validateAnnotation(annotation,
+						"Ambiguous mapping! Annotation %s configured " + "on field %s and one of its accessor methods in class %s!",
+						annotationType.getSimpleName(), it.getName(), getOwner().getType().getSimpleName());
 
-			annotationCache.put(annotationType, annotation);
-		}
+				annotationCache.put(annotationType, Optional.of(annotation));
+			}
+		});
 	}
 
 	/**
@@ -133,7 +133,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			return;
 		}
 
-		if (annotationCache.containsKey(annotationType) && !annotationCache.get(annotationType).equals(candidate)) {
+		if (annotationCache.containsKey(annotationType)
+				&& !annotationCache.get(annotationType).equals(Optional.of(candidate))) {
 			throw new MappingException(String.format(message, arguments));
 		}
 	}
@@ -145,8 +146,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getSpelExpression()
 	 */
 	@Override
-	public String getSpelExpression() {
-		return value == null ? null : value.value();
+	public Optional<String> getSpelExpression() {
+		return value.map(Value::value);
 	}
 
 	/**
@@ -209,29 +210,18 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
+	public <A extends Annotation> Optional<A> findAnnotation(Class<A> annotationType) {
 
 		Assert.notNull(annotationType, "Annotation type must not be null!");
 
 		if (annotationCache != null && annotationCache.containsKey(annotationType)) {
-			return (A) annotationCache.get(annotationType);
+			return (Optional<A>) annotationCache.get(annotationType);
 		}
 
-		for (Method method : Arrays.asList(getGetter(), getSetter())) {
-
-			if (method == null) {
-				continue;
-			}
-
-			A annotation = AnnotatedElementUtils.findMergedAnnotation(method, annotationType);
-
-			if (annotation != null) {
-				return cacheAndReturn(annotationType, annotation);
-			}
-		}
-
-		return cacheAndReturn(annotationType,
-				field == null ? null : AnnotatedElementUtils.findMergedAnnotation(field, annotationType));
+		return cacheAndReturn(annotationType, getAccessors()//
+				.map(it -> it.map(inner -> AnnotatedElementUtils.findMergedAnnotation(inner, annotationType)))//
+				.flatMap(it -> Optionals.toStream(it))//
+				.findFirst());
 	}
 
 	/* 
@@ -239,10 +229,10 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @see org.springframework.data.mapping.PersistentProperty#findPropertyOrOwnerAnnotation(java.lang.Class)
 	 */
 	@Override
-	public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
+	public <A extends Annotation> Optional<A> findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 
-		A annotation = findAnnotation(annotationType);
-		return annotation == null ? owner.findAnnotation(annotationType) : annotation;
+		Optional<A> annotation = findAnnotation(annotationType);
+		return annotation.isPresent() ? annotation : owner.findAnnotation(annotationType);
 	}
 
 	/**
@@ -251,7 +241,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param annotation
 	 * @return
 	 */
-	private <A extends Annotation> A cacheAndReturn(Class<? extends A> type, A annotation) {
+	private <A extends Annotation> Optional<A> cacheAndReturn(Class<? extends A> type, Optional<A> annotation) {
 
 		if (annotationCache != null) {
 			annotationCache.put(type, annotation);
@@ -267,7 +257,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @return
 	 */
 	public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
-		return findAnnotation(annotationType) != null;
+		return findAnnotation(annotationType).isPresent();
 	}
 
 	/* 
@@ -290,14 +280,15 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			populateAnnotationCache(field);
 		}
 
-		StringBuilder builder = new StringBuilder();
-
-		for (Annotation annotation : annotationCache.values()) {
-			if (annotation != null) {
-				builder.append(annotation.toString()).append(" ");
-			}
-		}
+		StringBuilder builder = new StringBuilder().append(annotationCache.values().stream()//
+				.flatMap(it -> Optionals.toStream(it))//
+				.map(Object::toString)//
+				.collect(Collectors.joining(" ")));
 
 		return builder.toString() + super.toString();
+	}
+
+	private Stream<Optional<? extends AnnotatedElement>> getAccessors() {
+		return Arrays.<Optional<? extends AnnotatedElement>> asList(getGetter(), getSetter(), getField()).stream();
 	}
 }

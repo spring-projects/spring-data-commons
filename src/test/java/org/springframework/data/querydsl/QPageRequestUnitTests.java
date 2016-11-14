@@ -15,8 +15,7 @@
  */
 package org.springframework.data.querydsl;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.domain.AbstractPageRequest;
@@ -41,7 +40,7 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 		QUser user = QUser.user;
 		QPageRequest pageRequest = new QPageRequest(0, 10, user.firstname.asc());
 
-		assertThat(pageRequest.getSort(), is(new QSort(user.firstname.asc())));
+		assertThat(pageRequest.getSort()).isEqualTo(new QSort(user.firstname.asc()));
 	}
 
 	@Test
@@ -50,6 +49,6 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 		QUser user = QUser.user;
 		QPageRequest pageRequest = new QPageRequest(0, 10, new QSort(user.firstname.asc()));
 
-		assertThat(pageRequest.getSort(), is(new QSort(user.firstname.asc())));
+		assertThat(pageRequest.getSort()).isEqualTo(new QSort(user.firstname.asc()));
 	}
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
 import org.junit.Rule;
@@ -65,12 +64,12 @@ public abstract class SortDefaultUnitTests {
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 		Sort sort = resolver.parseParameterIntoSort(source, ",");
 
-		assertThat(sort, is(expected));
+		assertThat(sort).isEqualTo(expected);
 	}
 
 	@Test
 	public void supportsSortParameter() {
-		assertThat(getResolver().supportsParameter(getParameterOfMethod("supportedMethod")), is(true));
+		assertThat(getResolver().supportsParameter(getParameterOfMethod("supportedMethod"))).isTrue();
 	}
 
 	@Test
@@ -92,7 +91,7 @@ public abstract class SortDefaultUnitTests {
 	public void rejectsNonSortParameter() {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
-		assertThat(getResolver().supportsParameter(parameter), is(false));
+		assertThat(getResolver().supportsParameter(parameter)).isFalse();
 	}
 
 	@Test
@@ -101,7 +100,7 @@ public abstract class SortDefaultUnitTests {
 		MethodParameter parameter = getParameterOfMethod("invalid");
 
 		HandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		assertThat(resolver.supportsParameter(parameter), is(true));
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage(SortDefault.class.getSimpleName());
@@ -129,8 +128,8 @@ public abstract class SortDefaultUnitTests {
 	private void assertSupportedAndResolvedTo(MethodParameter parameter, Sort sort) throws Exception {
 
 		HandlerMethodArgumentResolver resolver = getResolver();
-		assertThat(resolver.supportsParameter(parameter), is(true));
-		assertThat(resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null), is((Object) sort));
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
+		assertThat(resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null)).isEqualTo(sort);
 	}
 
 	protected MethodParameter getParameterOfMethod(String name) {

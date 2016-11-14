@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 
@@ -48,8 +47,8 @@ public class AbstractEntityInformationUnitTests {
 	public void considersEntityNewIfGetIdReturnsNull() throws Exception {
 
 		EntityInformation<Object, Serializable> metadata = new DummyEntityInformation<Object>(Object.class);
-		assertThat(metadata.isNew(null), is(true));
-		assertThat(metadata.isNew(new Object()), is(false));
+		assertThat(metadata.isNew(null)).isTrue();
+		assertThat(metadata.isNew(new Object())).isFalse();
 	}
 
 	/**
@@ -61,10 +60,10 @@ public class AbstractEntityInformationUnitTests {
 		FooEn<PrimitiveIdEntity, Serializable> fooEn = new FooEn<PrimitiveIdEntity, Serializable>(PrimitiveIdEntity.class);
 
 		PrimitiveIdEntity entity = new PrimitiveIdEntity();
-		assertThat(fooEn.isNew(entity), is(true));
+		assertThat(fooEn.isNew(entity)).isTrue();
 
 		entity.id = 5L;
-		assertThat(fooEn.isNew(entity), is(false));
+		assertThat(fooEn.isNew(entity)).isFalse();
 	}
 
 	/**
@@ -77,10 +76,10 @@ public class AbstractEntityInformationUnitTests {
 				PrimitiveWrapperIdEntity.class);
 
 		PrimitiveWrapperIdEntity entity = new PrimitiveWrapperIdEntity();
-		assertThat(fooEn.isNew(entity), is(true));
+		assertThat(fooEn.isNew(entity)).isTrue();
 
 		entity.id = 5L;
-		assertThat(fooEn.isNew(entity), is(false));
+		assertThat(fooEn.isNew(entity)).isFalse();
 	}
 
 	/**

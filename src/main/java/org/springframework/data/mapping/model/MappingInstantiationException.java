@@ -17,10 +17,12 @@ package org.springframework.data.mapping.model;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.util.StringUtils;
 
 /**
  * Exception being thrown in case an entity could not be instantiated in the process of a to-object-mapping.
@@ -45,32 +47,33 @@ public class MappingInstantiationException extends RuntimeException {
 	 * @param arguments
 	 * @param cause
 	 */
-	public MappingInstantiationException(PersistentEntity<?, ?> entity, List<Object> arguments, Exception cause) {
+	public MappingInstantiationException(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments,
+			Exception cause) {
 		this(entity, arguments, null, cause);
 	}
 
-	private MappingInstantiationException(PersistentEntity<?, ?> entity, List<Object> arguments, String message,
+	private MappingInstantiationException(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments, String message,
 			Exception cause) {
 
-		super(buildExceptionMessage(entity, arguments, message), cause);
+		super(buildExceptionMessage(entity, arguments.stream(), message), cause);
 
-		this.entityType = entity == null ? null : entity.getType();
-		this.constructor = entity == null || entity.getPersistenceConstructor() == null ? null : entity
-				.getPersistenceConstructor().getConstructor();
+		this.entityType = entity.map(it -> it.getType()).orElse(null);
+		this.constructor = entity.flatMap(it -> it.getPersistenceConstructor()).map(c -> c.getConstructor()).orElse(null);
 		this.constructorArguments = arguments;
 	}
 
-	private static final String buildExceptionMessage(PersistentEntity<?, ?> entity, List<Object> arguments,
+	private static final String buildExceptionMessage(Optional<PersistentEntity<?, ?>> entity, Stream<Object> arguments,
 			String defaultMessage) {
 
-		if (entity == null) {
-			return defaultMessage;
-		}
+		return entity.map(it -> {
 
-		PreferredConstructor<?, ?> constructor = entity.getPersistenceConstructor();
+			Optional<? extends PreferredConstructor<?, ?>> constructor = it.getPersistenceConstructor();
 
-		return String.format(TEXT_TEMPLATE, entity.getType().getName(), constructor == null ? "NO_CONSTRUCTOR"
-				: constructor.getConstructor().toString(), StringUtils.collectionToCommaDelimitedString(arguments));
+			return String.format(TEXT_TEMPLATE, it.getType().getName(),
+					constructor.map(c -> c.getConstructor().toString()).orElse("NO_CONSTRUCTOR"),
+					String.join(",", arguments.map(Object::toString).collect(Collectors.toList())));
+
+		}).orElse(defaultMessage);
 	}
 
 	/**
@@ -78,8 +81,8 @@ public class MappingInstantiationException extends RuntimeException {
 	 * 
 	 * @return the entityType
 	 */
-	public Class<?> getEntityType() {
-		return entityType;
+	public Optional<Class<?>> getEntityType() {
+		return Optional.ofNullable(entityType);
 	}
 
 	/**
@@ -87,8 +90,8 @@ public class MappingInstantiationException extends RuntimeException {
 	 * 
 	 * @return the constructor
 	 */
-	public Constructor<?> getConstructor() {
-		return constructor;
+	public Optional<Constructor<?>> getConstructor() {
+		return Optional.ofNullable(constructor);
 	}
 
 	/**

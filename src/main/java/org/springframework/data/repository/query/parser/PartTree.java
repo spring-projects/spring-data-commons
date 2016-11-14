@@ -15,15 +15,20 @@
  */
 package org.springframework.data.repository.query.parser;
 
-import java.util.ArrayList;
+import lombok.Getter;
+
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -38,7 +43,7 @@ import org.springframework.util.StringUtils;
  * @author Christoph Strobl
  * @author Mark Paluch
  */
-public class PartTree implements Iterable<OrPart> {
+public class PartTree implements Streamable<OrPart> {
 
 	/*
 	 * We look for a pattern of: keyword followed by
@@ -81,11 +86,12 @@ public class PartTree implements Iterable<OrPart> {
 		Assert.notNull(domainClass, "Domain class must not be null");
 
 		Matcher matcher = PREFIX_TEMPLATE.matcher(source);
+
 		if (!matcher.find()) {
-			this.subject = new Subject(null);
+			this.subject = new Subject(Optional.empty());
 			this.predicate = new Predicate(source, domainClass);
 		} else {
-			this.subject = new Subject(matcher.group(0));
+			this.subject = new Subject(Optional.of(matcher.group(0)));
 			this.predicate = new Predicate(source.substring(matcher.group().length()), domainClass);
 		}
 	}
@@ -104,9 +110,7 @@ public class PartTree implements Iterable<OrPart> {
 	 * @return the sort
 	 */
 	public Sort getSort() {
-
-		OrderBySource orderBySource = predicate.getOrderBySource();
-		return orderBySource == null ? null : orderBySource.toSort();
+		return predicate.getOrderBySource().flatMap(OrderBySource::toSort).orElse(null);
 	}
 
 	/**
@@ -123,7 +127,7 @@ public class PartTree implements Iterable<OrPart> {
 	 * 
 	 * @return
 	 */
-	public Boolean isCountProjection() {
+	public boolean isCountProjection() {
 		return subject.isCountProjection();
 	}
 
@@ -143,7 +147,7 @@ public class PartTree implements Iterable<OrPart> {
 	 * @return
 	 * @since 1.8
 	 */
-	public Boolean isDelete() {
+	public boolean isDelete() {
 		return subject.isDelete();
 	}
 
@@ -164,7 +168,7 @@ public class PartTree implements Iterable<OrPart> {
 	 * @since 1.9
 	 */
 	public Integer getMaxResults() {
-		return subject.getMaxResults();
+		return subject.getMaxResults().orElse(null);
 	}
 
 	/**
@@ -172,15 +176,8 @@ public class PartTree implements Iterable<OrPart> {
 	 * 
 	 * @return the iterable {@link Part}s
 	 */
-	public Iterable<Part> getParts() {
-
-		List<Part> result = new ArrayList<Part>();
-		for (OrPart orPart : this) {
-			for (Part part : orPart) {
-				result.add(part);
-			}
-		}
-		return result;
+	public Streamable<Part> getParts() {
+		return Streamable.of(this.stream().flatMap(OrPart::stream).collect(Collectors.toList()));
 	}
 
 	/**
@@ -189,25 +186,19 @@ public class PartTree implements Iterable<OrPart> {
 	 * @param type
 	 * @return
 	 */
-	public Iterable<Part> getParts(Type type) {
+	public Streamable<Part> getParts(Type type) {
 
-		List<Part> result = new ArrayList<Part>();
-
-		for (Part part : getParts()) {
-			if (part.getType().equals(type)) {
-				result.add(part);
-			}
-		}
-
-		return result;
+		return Streamable.of(getParts().stream()//
+				.filter(part -> part.getType().equals(type))//
+				.collect(Collectors.toList()));
 	}
 
 	@Override
 	public String toString() {
 
-		OrderBySource orderBySource = predicate.getOrderBySource();
+		Optional<OrderBySource> orderBySource = predicate.getOrderBySource();
 		return String.format("%s%s", StringUtils.collectionToDelimitedString(predicate.nodes, " or "),
-				orderBySource == null ? "" : " " + orderBySource);
+				orderBySource.map(it -> " ".concat(it.toString())).orElse(""));
 	}
 
 	/**
@@ -228,9 +219,9 @@ public class PartTree implements Iterable<OrPart> {
 	 * A part of the parsed source that results from splitting up the resource around {@literal Or} keywords. Consists of
 	 * {@link Part}s that have to be concatenated by {@literal And}.
 	 */
-	public static class OrPart implements Iterable<Part> {
+	public static class OrPart implements Streamable<Part> {
 
-		private final List<Part> children = new ArrayList<Part>();
+		private final List<Part> children;
 
 		/**
 		 * Creates a new {@link OrPart}.
@@ -242,21 +233,19 @@ public class PartTree implements Iterable<OrPart> {
 		OrPart(String source, Class<?> domainClass, boolean alwaysIgnoreCase) {
 
 			String[] split = split(source, "And");
-			for (String part : split) {
-				if (StringUtils.hasText(part)) {
-					children.add(new Part(part, domainClass, alwaysIgnoreCase));
-				}
-			}
+
+			this.children = Arrays.stream(split)//
+					.filter(part -> StringUtils.hasText(part))//
+					.map(part -> new Part(part, domainClass, alwaysIgnoreCase))//
+					.collect(Collectors.toList());
 		}
 
 		public Iterator<Part> iterator() {
-
 			return children.iterator();
 		}
 
 		@Override
 		public String toString() {
-
 			return StringUtils.collectionToDelimitedString(children, " and ");
 		}
 	}
@@ -277,18 +266,18 @@ public class PartTree implements Iterable<OrPart> {
 		private static final Pattern EXISTS_BY_TEMPLATE = Pattern.compile("^(" + EXISTS_PATTERN + ")(\\p{Lu}.*?)??By");
 		private static final Pattern DELETE_BY_TEMPLATE = Pattern.compile("^(" + DELETE_PATTERN + ")(\\p{Lu}.*?)??By");
 		private static final String LIMITING_QUERY_PATTERN = "(First|Top)(\\d*)?";
-		private static final Pattern LIMITED_QUERY_TEMPLATE = Pattern.compile("^(" + QUERY_PATTERN + ")(" + DISTINCT + ")?"
-				+ LIMITING_QUERY_PATTERN + "(\\p{Lu}.*?)??By");
+		private static final Pattern LIMITED_QUERY_TEMPLATE = Pattern
+				.compile("^(" + QUERY_PATTERN + ")(" + DISTINCT + ")?" + LIMITING_QUERY_PATTERN + "(\\p{Lu}.*?)??By");
 
 		private final boolean distinct;
 		private final boolean count;
 		private final boolean exists;
 		private final boolean delete;
-		private final Integer maxResults;
+		private final Optional<Integer> maxResults;
 
-		public Subject(String subject) {
+		public Subject(Optional<String> subject) {
 
-			this.distinct = subject == null ? false : subject.contains(DISTINCT);
+			this.distinct = subject.map(it -> it.contains(DISTINCT)).orElse(false);
 			this.count = matches(subject, COUNT_BY_TEMPLATE);
 			this.exists = matches(subject, EXISTS_BY_TEMPLATE);
 			this.delete = matches(subject, DELETE_BY_TEMPLATE);
@@ -300,19 +289,19 @@ public class PartTree implements Iterable<OrPart> {
 		 * @return
 		 * @since 1.9
 		 */
-		private Integer returnMaxResultsIfFirstKSubjectOrNull(String subject) {
+		private Optional<Integer> returnMaxResultsIfFirstKSubjectOrNull(Optional<String> subject) {
 
-			if (subject == null) {
-				return null;
-			}
+			return subject.map(it -> {
 
-			Matcher grp = LIMITED_QUERY_TEMPLATE.matcher(subject);
+				Matcher grp = LIMITED_QUERY_TEMPLATE.matcher(it);
 
-			if (!grp.find()) {
-				return null;
-			}
+				if (!grp.find()) {
+					return null;
+				}
 
-			return StringUtils.hasText(grp.group(4)) ? Integer.valueOf(grp.group(4)) : 1;
+				return StringUtils.hasText(grp.group(4)) ? Integer.valueOf(grp.group(4)) : 1;
+			});
+
 		}
 
 		/**
@@ -321,7 +310,7 @@ public class PartTree implements Iterable<OrPart> {
 		 * @return
 		 * @since 1.8
 		 */
-		public Boolean isDelete() {
+		public boolean isDelete() {
 			return delete;
 		}
 
@@ -343,12 +332,12 @@ public class PartTree implements Iterable<OrPart> {
 			return distinct;
 		}
 
-		public Integer getMaxResults() {
+		public Optional<Integer> getMaxResults() {
 			return maxResults;
 		}
 
-		private final boolean matches(String subject, Pattern pattern) {
-			return subject == null ? false : pattern.matcher(subject).find();
+		private final boolean matches(Optional<String> subject, Pattern pattern) {
+			return subject.map(it -> pattern.matcher(it).find()).orElse(false);
 		}
 	}
 
@@ -358,13 +347,13 @@ public class PartTree implements Iterable<OrPart> {
 	 * @author Oliver Gierke
 	 * @author Phil Webb
 	 */
-	private static class Predicate {
+	private static class Predicate implements Iterable<OrPart> {
 
 		private static final Pattern ALL_IGNORE_CASE = Pattern.compile("AllIgnor(ing|e)Case");
 		private static final String ORDER_BY = "OrderBy";
 
-		private final List<OrPart> nodes = new ArrayList<OrPart>();
-		private final OrderBySource orderBySource;
+		private final List<OrPart> nodes;
+		private final @Getter Optional<OrderBySource> orderBySource;
 		private boolean alwaysIgnoreCase;
 
 		public Predicate(String predicate, Class<?> domainClass) {
@@ -375,8 +364,11 @@ public class PartTree implements Iterable<OrPart> {
 				throw new IllegalArgumentException("OrderBy must not be used more than once in a method name!");
 			}
 
-			buildTree(parts[0], domainClass);
-			this.orderBySource = parts.length == 2 ? new OrderBySource(parts[1], domainClass) : null;
+			this.nodes = Arrays.stream(split(parts[0], "Or"))//
+					.map(part -> new OrPart(part, domainClass, alwaysIgnoreCase))//
+					.collect(Collectors.toList());
+
+			this.orderBySource = Optional.ofNullable(parts.length == 2 ? new OrderBySource(parts[1], domainClass) : null);
 		}
 
 		private String detectAndSetAllIgnoreCase(String predicate) {
@@ -391,20 +383,13 @@ public class PartTree implements Iterable<OrPart> {
 			return predicate;
 		}
 
-		private void buildTree(String source, Class<?> domainClass) {
-
-			String[] split = split(source, "Or");
-			for (String part : split) {
-				nodes.add(new OrPart(part, domainClass, alwaysIgnoreCase));
-			}
-		}
-
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Iterable#iterator()
+		 */
+		@Override
 		public Iterator<OrPart> iterator() {
 			return nodes.iterator();
-		}
-
-		public OrderBySource getOrderBySource() {
-			return orderBySource;
 		}
 	}
 }

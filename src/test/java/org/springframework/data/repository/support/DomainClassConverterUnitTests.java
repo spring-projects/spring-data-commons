@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -99,19 +98,19 @@ public class DomainClassConverterUnitTests {
 	 * @see DATACMNS-233
 	 */
 	public void returnsNullForNullSource() {
-		assertThat(converter.convert(null, STRING_TYPE, USER_TYPE), is(nullValue()));
+		assertThat(converter.convert(null, STRING_TYPE, USER_TYPE)).isNull();
 	}
 
 	/**
 	 * @see DATACMNS-233
 	 */
 	public void returnsNullForEmptyStringSource() {
-		assertThat(converter.convert("", STRING_TYPE, USER_TYPE), is(nullValue()));
+		assertThat(converter.convert("", STRING_TYPE, USER_TYPE)).isNull();
 	}
 
 	private void assertMatches(boolean matchExpected) {
 
-		assertThat(converter.matches(STRING_TYPE, USER_TYPE), is(matchExpected));
+		assertThat(converter.matches(STRING_TYPE, USER_TYPE)).isEqualTo(matchExpected);
 	}
 
 	@Test
@@ -144,7 +143,7 @@ public class DomainClassConverterUnitTests {
 		when(service.canConvert(String.class, Long.class)).thenReturn(true);
 
 		converter.setApplicationContext(context);
-		assertThat(converter.matches(STRING_TYPE, USER_TYPE), is(true));
+		assertThat(converter.matches(STRING_TYPE, USER_TYPE)).isTrue();
 	}
 
 	/**
@@ -155,8 +154,8 @@ public class DomainClassConverterUnitTests {
 
 		converter.setApplicationContext(initContextWithRepo());
 
-		assertThat(converter.matches(SUB_USER_TYPE, USER_TYPE), is(false));
-		assertThat((User) converter.convert(USER, USER_TYPE, USER_TYPE), is(USER));
+		assertThat(converter.matches(SUB_USER_TYPE, USER_TYPE)).isFalse();
+		assertThat((User) converter.convert(USER, USER_TYPE, USER_TYPE)).isEqualTo(USER);
 	}
 
 	/**
@@ -167,7 +166,7 @@ public class DomainClassConverterUnitTests {
 
 		converter.setApplicationContext(initContextWithRepo());
 
-		assertThat(converter.matches(LONG_TYPE, USER_TYPE), is(true));
+		assertThat(converter.matches(LONG_TYPE, USER_TYPE)).isTrue();
 	}
 
 	/**
@@ -178,7 +177,7 @@ public class DomainClassConverterUnitTests {
 
 		converter.setApplicationContext(initContextWithRepo());
 
-		assertThat(converter.matches(USER_TYPE, LONG_TYPE), is(true));
+		assertThat(converter.matches(USER_TYPE, LONG_TYPE)).isTrue();
 	}
 
 	/**
@@ -190,7 +189,7 @@ public class DomainClassConverterUnitTests {
 		converter.setApplicationContext(initContextWithRepo());
 
 		when(service.canConvert(Long.class, String.class)).thenReturn(true);
-		assertThat(converter.matches(USER_TYPE, STRING_TYPE), is(true));
+		assertThat(converter.matches(USER_TYPE, STRING_TYPE)).isTrue();
 	}
 
 	/**
@@ -208,7 +207,7 @@ public class DomainClassConverterUnitTests {
 		Method method = Wrapper.class.getMethod("foo", User.class);
 		TypeDescriptor target = TypeDescriptor.nested(new MethodParameter(method, 0), 0);
 
-		assertThat(toIdConverter.matches(SUB_USER_TYPE, target), is(false));
+		assertThat(toIdConverter.matches(SUB_USER_TYPE, target)).isFalse();
 	}
 
 	private ApplicationContext initContextWithRepo() {

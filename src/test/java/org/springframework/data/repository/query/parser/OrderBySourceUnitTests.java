@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.query.parser;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
 import org.junit.Test;
@@ -32,21 +31,19 @@ public class OrderBySourceUnitTests {
 
 	@Test
 	public void handlesSingleDirectionAndPropertyCorrectly() throws Exception {
-
-		assertThat(new OrderBySource("UsernameDesc").toSort(), is(new Sort(DESC, "username")));
+		assertThat(new OrderBySource("UsernameDesc").toSort()).hasValue(new Sort(DESC, "username"));
 	}
 
 	@Test
 	public void handlesCamelCasePropertyCorrecty() throws Exception {
-
-		assertThat(new OrderBySource("LastnameUsernameDesc").toSort(), is(new Sort(DESC, "lastnameUsername")));
+		assertThat(new OrderBySource("LastnameUsernameDesc").toSort()).hasValue(new Sort(DESC, "lastnameUsername"));
 	}
 
 	@Test
 	public void handlesMultipleDirectionsCorrectly() throws Exception {
 
 		OrderBySource orderBySource = new OrderBySource("LastnameAscUsernameDesc");
-		assertThat(orderBySource.toSort(), is(new Sort(new Order(ASC, "lastname"), new Order(DESC, "username"))));
+		assertThat(orderBySource.toSort()).hasValue(new Sort(new Order(ASC, "lastname"), new Order(DESC, "username")));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -59,7 +56,7 @@ public class OrderBySourceUnitTests {
 	public void usesNestedPropertyCorrectly() throws Exception {
 
 		OrderBySource source = new OrderBySource("BarNameDesc", Foo.class);
-		assertThat(source.toSort(), is(new Sort(new Order(DESC, "bar.name"))));
+		assertThat(source.toSort()).hasValue(new Sort(new Order(DESC, "bar.name")));
 	}
 
 	/**
@@ -69,7 +66,7 @@ public class OrderBySourceUnitTests {
 	public void defaultsSortOrderToAscendingSort() {
 
 		OrderBySource source = new OrderBySource("lastname");
-		assertThat(source.toSort(), is(new Sort("lastname")));
+		assertThat(source.toSort()).hasValue(new Sort("lastname"));
 	}
 
 	@SuppressWarnings("unused")

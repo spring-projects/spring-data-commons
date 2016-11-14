@@ -15,8 +15,7 @@
  */
 package org.springframework.data.convert;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -64,7 +63,7 @@ public class DefaultTypeMapperUnitTests {
 	public void cachesResolvedTypeInformation() {
 
 		TypeInformation<?> information = typeMapper.readType(source);
-		assertThat(information, is((TypeInformation) STRING_TYPE_INFO));
+		assertThat(information).isEqualTo((TypeInformation) STRING_TYPE_INFO);
 		verify(mapper, times(1)).resolveTypeFrom(STRING);
 
 		typeMapper.readType(source);
@@ -80,7 +79,7 @@ public class DefaultTypeMapperUnitTests {
 		Object alias = "alias";
 		when(mapper.createAliasFor(STRING_TYPE_INFO)).thenReturn(alias);
 
-		assertThat(this.typeMapper.getAliasFor(STRING_TYPE_INFO), is(alias));
+		assertThat(this.typeMapper.getAliasFor(STRING_TYPE_INFO)).isEqualTo(alias);
 	}
 
 	/**
@@ -98,8 +97,8 @@ public class DefaultTypeMapperUnitTests {
 
 		TypeInformation<?> result = typeMapper.readType(source, propertyType);
 
-		assertThat(result.getType(), is((Object) Bar.class));
-		assertThat(result.getProperty("field").getType(), is((Object) Character.class));
+		assertThat(result.getType()).isEqualTo(Bar.class);
+		assertThat(result.getProperty("field").getType()).isEqualTo(Character.class);
 	}
 
 	static class TypeWithAbstractGenericType<T> {

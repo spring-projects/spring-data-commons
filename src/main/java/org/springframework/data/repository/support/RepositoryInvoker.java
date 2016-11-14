@@ -17,7 +17,6 @@ package org.springframework.data.repository.support;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -87,20 +86,6 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	 *          delete-method.
 	 */
 	void invokeDelete(Serializable id);
-
-	/**
-	 * Invokes the query method backed by the given {@link Method} using the given parameters, {@link Pageable} and
-	 * {@link Sort}.
-	 * 
-	 * @param method must not be {@literal null}.
-	 * @param parameters must not be {@literal null}.
-	 * @param pageable can be {@literal null}.
-	 * @param sort can be {@literal null}.
-	 * @return the result of the invoked query method.
-	 * @deprecated use {@link #invokeQueryMethod(Method, MultiValueMap, Pageable, Sort)} instead.
-	 */
-	@Deprecated
-	Object invokeQueryMethod(Method method, Map<String, String[]> parameters, Pageable pageable, Sort sort);
 
 	/**
 	 * Invokes the query method backed by the given {@link Method} using the given parameters, {@link Pageable} and
