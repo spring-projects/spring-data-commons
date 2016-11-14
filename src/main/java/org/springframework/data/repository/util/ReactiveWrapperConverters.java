@@ -193,21 +193,21 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Maps elements of a reactive element stream to other elements.
 	 * 
-	 * @param stream must not be {@literal null}.
+	 * @param reactiveObject must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T map(Object stream, Function<Object, Object> converter) {
+	public static <T> T map(Object reactiveObject, Function<Object, Object> converter) {
 
-		Assert.notNull(stream, "Stream must not be null!");
+		Assert.notNull(reactiveObject, "Reactive source object must not be null!");
 		Assert.notNull(converter, "Converter must not be null!");
 
 		return REACTIVE_WRAPPERS.stream()//
-				.filter(it -> ClassUtils.isAssignable(it.getWrapperClass(), stream.getClass()))//
+				.filter(it -> ClassUtils.isAssignable(it.getWrapperClass(), reactiveObject.getClass()))//
 				.findFirst()//
-				.map(it -> (T) it.map(stream, converter))//
-				.orElseThrow(() -> new IllegalStateException(String.format("Cannot apply converter to %s", stream)));
+				.map(it -> (T) it.map(reactiveObject, converter))//
+				.orElseThrow(() -> new IllegalStateException(String.format("Cannot apply converter to %s", reactiveObject)));
 	}
 
 	// -------------------------------------------------------------------------
