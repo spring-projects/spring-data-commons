@@ -44,7 +44,6 @@ class QueryExecutionResultHandler {
 
 		GenericConversionService conversionService = new DefaultConversionService();
 		QueryExecutionConverters.registerConvertersIn(conversionService);
-		ReactiveWrapperConverters.registerConvertersIn(conversionService);
 
 		this.conversionService = conversionService;
 	}
@@ -87,6 +86,11 @@ class QueryExecutionResultHandler {
 		}
 
 		if (result != null) {
+
+			if (ReactiveWrapperConverters.supports(expectedReturnType)) {
+				return ReactiveWrapperConverters.toWrapper(result, expectedReturnType);
+			}
+
 			return conversionService.canConvert(result.getClass(), expectedReturnType)
 					? conversionService.convert(result, expectedReturnType) : result;
 		}

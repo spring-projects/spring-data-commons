@@ -27,12 +27,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.reactivestreams.Publisher;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.data.repository.reactive.RxJava1CrudRepository;
-import org.springframework.data.repository.util.ReactiveWrapperConverters;
 
 /**
  * Unit tests for {@link ReactiveRepositoryInformation}.
@@ -65,9 +63,6 @@ public class ReactiveRepositoryInformationUnitTests {
 	 */
 	@Test
 	public void discoversMethodWithConvertibleArguments() throws Exception {
-
-		DefaultConversionService conversionService = new DefaultConversionService();
-		ReactiveWrapperConverters.registerConvertersIn(conversionService);
 
 		Method method = RxJava1InterfaceWithGenerics.class.getMethod("save", Observable.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(RxJava1InterfaceWithGenerics.class);
@@ -116,9 +111,6 @@ public class ReactiveRepositoryInformationUnitTests {
 	 */
 	@Test
 	public void discoversMethodExactObjectArguments() throws Exception {
-
-		DefaultConversionService conversionService = new DefaultConversionService();
-		ReactiveWrapperConverters.registerConvertersIn(conversionService);
 
 		Method method = ReactiveJavaInterfaceWithGenerics.class.getMethod("save", Object.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);

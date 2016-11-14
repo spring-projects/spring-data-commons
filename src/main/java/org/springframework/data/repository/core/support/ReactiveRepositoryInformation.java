@@ -27,11 +27,11 @@ import java.util.function.BiPredicate;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.util.Assert;
 
 /**
@@ -189,8 +189,6 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	@RequiredArgsConstructor(staticName = "of")
 	static class WrapperConversionMatch implements BiPredicate<Class<?>, Integer> {
 
-		private static final ConversionService CONVERSION_SERVICE = ReactiveWrapperConverters
-				.registerConvertersIn(new DefaultConversionService());
 		private final Class<?>[] declaredParameterTypes;
 
 		/*
@@ -208,7 +206,8 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 				return false;
 			}
 
-			return CONVERSION_SERVICE.canConvert(declaredParameterTypes[index], candidateParameterType);
+			return ReactiveWrappers.isAvailable()
+					&& ReactiveWrapperConverters.canConvert(declaredParameterTypes[index], candidateParameterType);
 		}
 	}
 
