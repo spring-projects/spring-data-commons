@@ -65,7 +65,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		Assert.notNull(owner);
 
 		this.name = property.getName();
-		this.rawType = property.getRawType();
+		this.rawType = property.getType();
 
 		this.information = PropertyPath.from(property.getName(), owner.getTypeInformation()).getTypeInformation();
 		this.property = property;

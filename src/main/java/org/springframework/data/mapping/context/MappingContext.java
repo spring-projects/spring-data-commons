@@ -56,7 +56,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	/**
 	 * Returns whether the {@link MappingContext} currently contains a {@link PersistentEntity} for the type.
 	 * 
-	 * @param type can be {@literal null}.
+	 * @param type must not be {@literal null}.
 	 * @return
 	 * @since 1.8
 	 */

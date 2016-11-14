@@ -15,6 +15,9 @@
  */
 package org.springframework.data.mapping.context;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -48,6 +51,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Pair;
+import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -120,13 +124,15 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Configures the {@link SimpleTypeHolder} to be used by the {@link MappingContext}. Allows customization of what
-	 * types will be regarded as simple types and thus not recursively analysed. Setting this to {@literal null} will
-	 * reset the context to use the default {@link SimpleTypeHolder}.
+	 * types will be regarded as simple types and thus not recursively analysed.
 	 *
-	 * @param simpleTypes
+	 * @param simpleTypes must not be {@literal null}.
 	 */
 	public void setSimpleTypeHolder(SimpleTypeHolder simpleTypes) {
-		this.simpleTypeHolder = simpleTypes == null ? new SimpleTypeHolder() : simpleTypes;
+
+		Assert.notNull(simpleTypes, "SimpleTypeHolder must not be null!");
+
+		this.simpleTypeHolder = simpleTypes;
 	}
 
 	/*
@@ -173,7 +179,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	@Override
 	public boolean hasPersistentEntityFor(Class<?> type) {
-		return type == null ? false : persistentEntities.containsKey(ClassTypeInformation.from(type));
+
+		Assert.notNull(type, "Type must not be null!");
+
+		return persistentEntities.containsKey(ClassTypeInformation.from(type));
 	}
 
 	/*
@@ -468,10 +477,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * context.
 	 */
 	public void initialize() {
-
-		for (Class<?> initialEntity : initialEntitySet) {
-			addPersistentEntity(initialEntity);
-		}
+		initialEntitySet.forEach(it -> addPersistentEntity(it));
 	}
 
 	/**
@@ -492,28 +498,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 *
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	private final class PersistentPropertyCreator implements FieldCallback {
 
-		private final E entity;
-		private final Map<String, PropertyDescriptor> descriptors;
-		private final Map<String, PropertyDescriptor> remainingDescriptors;
-
-		/**
-		 * Creates a new {@link PersistentPropertyCreator} for the given {@link PersistentEntity} and
-		 * {@link PropertyDescriptor}s.
-		 *
-		 * @param entity must not be {@literal null}.
-		 * @param descriptors must not be {@literal null}.
-		 */
-		private PersistentPropertyCreator(E entity, Map<String, PropertyDescriptor> descriptors) {
-
-			Assert.notNull(entity, "PersistentEntity must not be null!");
-			Assert.notNull(descriptors, "PropertyDescriptors must not be null!");
-
-			this.entity = entity;
-			this.descriptors = descriptors;
-			this.remainingDescriptors = new HashMap<String, PropertyDescriptor>(descriptors);
-		}
+		private final @NonNull E entity;
+		private final @NonNull Map<String, PropertyDescriptor> descriptors;
+		private final Map<String, PropertyDescriptor> remainingDescriptors = new HashMap<>();
 
 		/*
 		 * (non-Javadoc)
@@ -537,11 +527,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 */
 		public void addPropertiesForRemainingDescriptors() {
 
-			for (PropertyDescriptor descriptor : remainingDescriptors.values()) {
-				if (PersistentPropertyFilter.INSTANCE.matches(descriptor)) {
-					createAndRegisterProperty(Property.of(descriptor));
-				}
-			}
+			remainingDescriptors.values().stream()//
+					.map(Property::of)//
+					.filter(PersistentPropertyFilter.INSTANCE::matches)//
+					.forEach(this::createAndRegisterProperty);
 		}
 
 		private void createAndRegisterProperty(Property input) {
@@ -563,9 +552,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
-			for (TypeInformation<?> candidate : property.getPersistentEntityType()) {
-				addPersistentEntity(candidate);
-			}
+			property.getPersistentEntityType().forEach(it -> addPersistentEntity(it));
 		}
 	}
 
@@ -579,7 +566,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		INSTANCE;
 
-		private static final Iterable<PropertyMatch> UNMAPPED_PROPERTIES;
+		private static final Streamable<PropertyMatch> UNMAPPED_PROPERTIES;
 
 		static {
 
@@ -588,7 +575,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			matches.add(new PropertyMatch("this\\$.*", null));
 			matches.add(new PropertyMatch("metaClass", "groovy.lang.MetaClass"));
 
-			UNMAPPED_PROPERTIES = Collections.unmodifiableCollection(matches);
+			UNMAPPED_PROPERTIES = Streamable.of(matches);
 		}
 
 		/*
@@ -601,13 +588,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return false;
 			}
 
-			for (PropertyMatch candidate : UNMAPPED_PROPERTIES) {
-				if (candidate.matches(field.getName(), field.getType())) {
-					return false;
-				}
-			}
-
-			return true;
+			return !UNMAPPED_PROPERTIES.stream()//
+					.anyMatch(it -> it.matches(field.getName(), field.getType()));
 		}
 
 		/**
@@ -616,21 +598,16 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 * @param descriptor must not be {@literal null}.
 		 * @return
 		 */
-		public boolean matches(PropertyDescriptor descriptor) {
+		public boolean matches(Property property) {
 
-			Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
+			Assert.notNull(property, "Property must not be null!");
 
-			if (descriptor.getReadMethod() == null && descriptor.getWriteMethod() == null) {
+			if (!property.hasAccessor()) {
 				return false;
 			}
 
-			for (PropertyMatch candidate : UNMAPPED_PROPERTIES) {
-				if (candidate.matches(descriptor.getName(), descriptor.getPropertyType())) {
-					return false;
-				}
-			}
-
-			return true;
+			return !UNMAPPED_PROPERTIES.stream()//
+					.anyMatch(it -> it.matches(property.getName(), property.getType()));
 		}
 
 		/**
