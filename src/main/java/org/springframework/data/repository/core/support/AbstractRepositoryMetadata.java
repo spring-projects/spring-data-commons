@@ -27,6 +27,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -41,7 +42,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 	private final TypeInformation<?> typeInformation;
 	private final Class<?> repositoryInterface;
-	private CrudMethods crudMethods;
+	private final Lazy<CrudMethods> crudMethods;
 
 	/**
 	 * Creates a new {@link AbstractRepositoryMetadata}.
@@ -55,6 +56,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 		this.repositoryInterface = repositoryInterface;
 		this.typeInformation = ClassTypeInformation.from(repositoryInterface);
+		this.crudMethods = Lazy.of(() -> new DefaultCrudMethods(this));
 	}
 
 	/**
@@ -94,12 +96,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 */
 	@Override
 	public CrudMethods getCrudMethods() {
-
-		if (this.crudMethods == null) {
-			this.crudMethods = new DefaultCrudMethods(this);
-		}
-
-		return this.crudMethods;
+		return this.crudMethods.get();
 	}
 
 	/* 
@@ -109,13 +106,9 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	@Override
 	public boolean isPagingRepository() {
 
-		Method findAllMethod = getCrudMethods().getFindAllMethod();
-
-		if (findAllMethod == null) {
-			return false;
-		}
-
-		return Arrays.asList(findAllMethod.getParameterTypes()).contains(Pageable.class);
+		return getCrudMethods().getFindAllMethod()//
+				.map(it -> Arrays.asList(it.getParameterTypes()).contains(Pageable.class))//
+				.orElse(false);
 	}
 
 	/* 
