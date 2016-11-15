@@ -22,6 +22,7 @@ import rx.Observable;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,7 +52,7 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method method = RxJava1InterfaceWithGenerics.class.getMethod("deleteAll");
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(RxJava1InterfaceWithGenerics.class);
-		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY, null);
+		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY, Optional.empty());
 
 		Method reference = information.getTargetClassMethod(method);
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
@@ -66,7 +67,8 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method method = RxJava1InterfaceWithGenerics.class.getMethod("save", Observable.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(RxJava1InterfaceWithGenerics.class);
-		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null);
+		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY,
+				Optional.empty());
 
 		Method reference = information.getTargetClassMethod(method);
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
@@ -82,7 +84,8 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method method = ReactiveSortingRepository.class.getMethod("save", Publisher.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
-		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null);
+		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY,
+				Optional.empty());
 
 		Method reference = information.getTargetClassMethod(method);
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
@@ -98,7 +101,8 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method method = ReactiveJavaInterfaceWithGenerics.class.getMethod("save", Iterable.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
-		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null);
+		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY,
+				Optional.empty());
 
 		Method reference = information.getTargetClassMethod(method);
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
@@ -114,7 +118,8 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method method = ReactiveJavaInterfaceWithGenerics.class.getMethod("save", Object.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ReactiveJavaInterfaceWithGenerics.class);
-		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY, null);
+		DefaultRepositoryInformation information = new ReactiveRepositoryInformation(metadata, REPOSITORY,
+				Optional.empty());
 
 		Method reference = information.getTargetClassMethod(method);
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
