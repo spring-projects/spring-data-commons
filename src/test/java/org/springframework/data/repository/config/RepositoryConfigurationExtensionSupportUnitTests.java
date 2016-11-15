@@ -41,21 +41,21 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 	public void doesNotConsiderRepositoryForPlainTypeStrictMatch() {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(PlainTypeRepository.class);
-		assertThat(extension.isStrictRepositoryCandidate(metadata), is(false));
+		assertThat(extension.isStrictRepositoryCandidate(metadata)).isFalse();
 	}
 
 	@Test // DATACMNS-526
 	public void considersRepositoryWithAnnotatedTypeStrictMatch() {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(AnnotatedTypeRepository.class);
-		assertThat(extension.isStrictRepositoryCandidate(metadata), is(true));
+		assertThat(extension.isStrictRepositoryCandidate(metadata)).isTrue();
 	}
 
 	@Test // DATACMNS-526
 	public void considersRepositoryInterfaceExtendingStoreInterfaceStrictMatch() {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ExtendingInterface.class);
-		assertThat(extension.isStrictRepositoryCandidate(metadata), is(true));
+		assertThat(extension.isStrictRepositoryCandidate(metadata)).isTrue();
 	}
 
 	static class SampleRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {

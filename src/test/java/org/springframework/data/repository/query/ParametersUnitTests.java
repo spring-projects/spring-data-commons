@@ -17,6 +17,8 @@ package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 
+import rx.Single;
+
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -167,7 +169,7 @@ public class ParametersUnitTests {
 
 		Parameters<?, Parameter> parameters = getParametersFor("methodWithPublisher", Publisher.class);
 
-		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(Publisher.class)));
+		assertThat(parameters.getParameter(0).getType()).isAssignableFrom(Publisher.class);
 	}
 
 	@Test // DATACMNS-836
@@ -175,7 +177,7 @@ public class ParametersUnitTests {
 
 		Parameters<?, Parameter> parameters = getParametersFor("methodWithSingle", Single.class);
 
-		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(Single.class)));
+		assertThat(parameters.getParameter(0).getType()).isAssignableFrom(Single.class);
 	}
 
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
