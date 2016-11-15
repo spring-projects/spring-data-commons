@@ -88,7 +88,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Sort sort) {
-		return invokeSortedFindAllReflectively(sort);
+		return invokeFindAllReflectively(sort);
 	}
 
 	/*
@@ -97,7 +97,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Pageable pageable) {
-		return invokePagedFindAllReflectively(pageable);
+		return invokeFindAllReflectively(pageable);
 	}
 
 	/* 
@@ -113,12 +113,12 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeSave(java.lang.Object)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public <T> T invokeSave(T object) {
 
-		return methods.getSaveMethod()//
-				.map(it -> (T) invoke(it, object))//
+		Method method = methods.getSaveMethod()//
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a save-method declared!"));
+
+		return invoke(method, object);
 	}
 
 	/* 
@@ -138,9 +138,10 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	@SuppressWarnings("unchecked")
 	public <T> T invokeFindOne(Serializable id) {
 
-		return methods.getFindOneMethod()//
-				.map(it -> (T) invoke(it, convertId(id)))//
+		Method method = methods.getFindOneMethod()//
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-one-method declared!"));
+
+		return invoke(method, convertId(id));
 	}
 
 	/* 
@@ -262,7 +263,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return conversionService.convert(id, idType);
 	}
 
-	protected Iterable<Object> invokePagedFindAllReflectively(Pageable pageable) {
+	protected Iterable<Object> invokeFindAllReflectively(Pageable pageable) {
 
 		Method method = methods.getFindAllMethod()
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
@@ -279,7 +280,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return invokeFindAll(pageable.getSort());
 	}
 
-	protected Iterable<Object> invokeSortedFindAllReflectively(Sort sort) {
+	protected Iterable<Object> invokeFindAllReflectively(Sort sort) {
 
 		Method method = methods.getFindAllMethod()
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
