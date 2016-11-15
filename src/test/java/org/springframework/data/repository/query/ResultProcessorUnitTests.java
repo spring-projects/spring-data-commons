@@ -266,11 +266,11 @@ public class ResultProcessorUnitTests {
 
 		Object result = getProcessor("findMonoSample").processResult(samples);
 
-		assertThat(result, is(instanceOf(Mono.class)));
+		assertThat(result).isInstanceOf(Mono.class);
 
 		Object content = ((Mono<Object>) result).block();
 
-		assertThat(content, is(instanceOf(Sample.class)));
+		assertThat(content).isInstanceOf(Sample.class);
 	}
 
 	/**
@@ -284,11 +284,11 @@ public class ResultProcessorUnitTests {
 
 		Object result = getProcessor("findSingleSample").processResult(samples);
 
-		assertThat(result, is(instanceOf(Single.class)));
+		assertThat(result).isInstanceOf(Single.class);
 
 		Object content = ((Single<Object>) result).toBlocking().value();
 
-		assertThat(content, is(instanceOf(Sample.class)));
+		assertThat(content).isInstanceOf(Sample.class);
 	}
 
 	/**
@@ -303,11 +303,11 @@ public class ResultProcessorUnitTests {
 
 		Object result = processor.processResult(Mono.just(new Sample("Dave", "Matthews")), source -> new SampleDto());
 
-		assertThat(result, is(instanceOf(Mono.class)));
+		assertThat(result).isInstanceOf(Mono.class);
 
 		Object content = ((Mono<Object>) result).block();
 
-		assertThat(content, is(instanceOf(SampleDto.class)));
+		assertThat(content).isInstanceOf(SampleDto.class);
 	}
 
 	/**
@@ -321,12 +321,12 @@ public class ResultProcessorUnitTests {
 
 		Object result = getProcessor("findFluxProjection").processResult(samples);
 
-		assertThat(result, is(instanceOf(Flux.class)));
+		assertThat(result).isInstanceOf(Flux.class);
 
 		List<Object> content = ((Flux<Object>) result).collectList().block();
 
-		assertThat(content, is(not(empty())));
-		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
+		assertThat(content).isNotEmpty();
+		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
 	}
 
 	/**
@@ -340,12 +340,12 @@ public class ResultProcessorUnitTests {
 
 		Object result = getProcessor("findObservableProjection").processResult(samples);
 
-		assertThat(result, is(instanceOf(Observable.class)));
+		assertThat(result).isInstanceOf(Observable.class);
 
 		List<Object> content = ((Observable<Object>) result).toList().toBlocking().single();
 
-		assertThat(content, is(not(empty())));
-		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
+		assertThat(content).isNotEmpty();
+		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
 	}
 
 	private static ResultProcessor getProcessor(String methodName, Class<?>... parameters) throws Exception {

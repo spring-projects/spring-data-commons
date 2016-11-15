@@ -129,10 +129,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Single<Entity> entity = Single.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("publisher"));
-		assertThat(result, is(instanceOf(Publisher.class)));
+		assertThat(result).isInstanceOf(Publisher.class);
 
 		Mono<Entity> mono = Mono.from((Publisher<Entity>) result);
-		assertThat(mono.block(), is(entity.toBlocking().value()));
+		assertThat(mono.block()).isEqualTo(entity.toBlocking().value());
 	}
 
 	/**
@@ -145,10 +145,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Single<Entity> entity = Single.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
-		assertThat(result, is(instanceOf(Mono.class)));
+		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono<Entity> mono = (Mono<Entity>) result;
-		assertThat(mono.block(), is(entity.toBlocking().value()));
+		assertThat(mono.block()).isEqualTo(entity.toBlocking().value());
 	}
 
 	/**
@@ -161,10 +161,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Single<Entity> entity = Single.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("flux"));
-		assertThat(result, is(instanceOf(Flux.class)));
+		assertThat(result).isInstanceOf(Flux.class);
 
 		Flux<Entity> flux = (Flux<Entity>) result;
-		assertThat(flux.next().block(), is(entity.toBlocking().value()));
+		assertThat(flux.next().block()).isEqualTo(entity.toBlocking().value());
 	}
 
 	/**
@@ -177,10 +177,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Observable<Entity> entity = Observable.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("publisher"));
-		assertThat(result, is(instanceOf(Publisher.class)));
+		assertThat(result).isInstanceOf(Publisher.class);
 
 		Mono<Entity> mono = Mono.from((Publisher<Entity>) result);
-		assertThat(mono.block(), is(entity.toBlocking().first()));
+		assertThat(mono.block()).isEqualTo(entity.toBlocking().first());
 	}
 
 	/**
@@ -193,10 +193,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Observable<Entity> entity = Observable.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
-		assertThat(result, is(instanceOf(Mono.class)));
+		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono<Entity> mono = (Mono<Entity>) result;
-		assertThat(mono.block(), is(entity.toBlocking().first()));
+		assertThat(mono.block()).isEqualTo(entity.toBlocking().first());
 	}
 
 	/**
@@ -209,10 +209,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Observable<Entity> entity = Observable.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("flux"));
-		assertThat(result, is(instanceOf(Flux.class)));
+		assertThat(result).isInstanceOf(Flux.class);
 
 		Flux<Entity> flux = (Flux<Entity>) result;
-		assertThat(flux.next().block(), is(entity.toBlocking().first()));
+		assertThat(flux.next().block()).isEqualTo(entity.toBlocking().first());
 	}
 
 	/**
@@ -225,10 +225,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Observable<Entity> entity = Observable.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("single"));
-		assertThat(result, is(instanceOf(Single.class)));
+		assertThat(result).isInstanceOf(Single.class);
 
 		Single<Entity> single = (Single<Entity>) result;
-		assertThat(single.toBlocking().value(), is(entity.toBlocking().first()));
+		assertThat(single.toBlocking().value()).isEqualTo(entity.toBlocking().first());
 	}
 
 	/**
@@ -241,10 +241,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Single<Entity> entity = Single.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("observable"));
-		assertThat(result, is(instanceOf(Observable.class)));
+		assertThat(result).isInstanceOf(Observable.class);
 
 		Observable<Entity> observable = (Observable<Entity>) result;
-		assertThat(observable.toBlocking().first(), is(entity.toBlocking().value()));
+		assertThat(observable.toBlocking().first()).isEqualTo(entity.toBlocking().value());
 	}
 
 	/**
@@ -257,10 +257,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Mono<Entity> entity = Mono.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("single"));
-		assertThat(result, is(instanceOf(Single.class)));
+		assertThat(result).isInstanceOf(Single.class);
 
 		Single<Entity> single = (Single<Entity>) result;
-		assertThat(single.toBlocking().value(), is(entity.block()));
+		assertThat(single.toBlocking().value()).isEqualTo(entity.block());
 	}
 
 	/**
@@ -273,10 +273,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Mono<Entity> entity = Mono.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("completable"));
-		assertThat(result, is(instanceOf(Completable.class)));
+		assertThat(result).isInstanceOf(Completable.class);
 
 		Completable completable = (Completable) result;
-		assertThat(completable.get(), is(nullValue()));
+		assertThat(completable.get()).isNull();
 	}
 
 	/**
@@ -289,10 +289,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Mono<Entity> entity = Mono.error(new InvalidDataAccessApiUsageException("err"));
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("completable"));
-		assertThat(result, is(instanceOf(Completable.class)));
+		assertThat(result).isInstanceOf(Completable.class);
 
 		Completable completable = (Completable) result;
-		assertThat(completable.get(), is(instanceOf(InvalidDataAccessApiUsageException.class)));
+		assertThat(completable.get()).isInstanceOf(InvalidDataAccessApiUsageException.class);
 	}
 
 	/**
@@ -305,10 +305,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Completable entity = Completable.complete();
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
-		assertThat(result, is(instanceOf(Mono.class)));
+		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono mono = (Mono) result;
-		assertThat(mono.block(), is(nullValue()));
+		assertThat(mono.block()).isNull();
 	}
 
 	/**
@@ -321,7 +321,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		Completable entity = Completable.error(new InvalidDataAccessApiUsageException("err"));
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
-		assertThat(result, is(instanceOf(Mono.class)));
+		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono mono = (Mono) result;
 		mono.block();
@@ -338,10 +338,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Mono<Entity> entity = Mono.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("observable"));
-		assertThat(result, is(instanceOf(Observable.class)));
+		assertThat(result).isInstanceOf(Observable.class);
 
 		Observable<Entity> observable = (Observable<Entity>) result;
-		assertThat(observable.toBlocking().first(), is(entity.block()));
+		assertThat(observable.toBlocking().first()).isEqualTo(entity.block());
 	}
 
 	/**
@@ -354,10 +354,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Flux<Entity> entity = Flux.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("single"));
-		assertThat(result, is(instanceOf(Single.class)));
+		assertThat(result).isInstanceOf(Single.class);
 
 		Single<Entity> single = (Single<Entity>) result;
-		assertThat(single.toBlocking().value(), is(entity.next().block()));
+		assertThat(single.toBlocking().value()).isEqualTo(entity.next().block());
 	}
 
 	/**
@@ -370,10 +370,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Flux<Entity> entity = Flux.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("observable"));
-		assertThat(result, is(instanceOf(Observable.class)));
+		assertThat(result).isInstanceOf(Observable.class);
 
 		Observable<Entity> observable = (Observable<Entity>) result;
-		assertThat(observable.toBlocking().first(), is(entity.next().block()));
+		assertThat(observable.toBlocking().first()).isEqualTo(entity.next().block());
 	}
 
 	/**
@@ -386,10 +386,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Flux<Entity> entity = Flux.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
-		assertThat(result, is(instanceOf(Mono.class)));
+		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono<Entity> mono = (Mono<Entity>) result;
-		assertThat(mono.block(), is(entity.next().block()));
+		assertThat(mono.block()).isEqualTo(entity.next().block());
 	}
 
 	/**
@@ -402,10 +402,10 @@ public class QueryExecutionResultHandlerUnitTests {
 		Mono<Entity> entity = Mono.just(new Entity());
 
 		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("flux"));
-		assertThat(result, is(instanceOf(Flux.class)));
+		assertThat(result).isInstanceOf(Flux.class);
 
 		Flux<Entity> flux = (Flux<Entity>) result;
-		assertThat(flux.next().block(), is(entity.block()));
+		assertThat(flux.next().block()).isEqualTo(entity.block());
 	}
 
 	private static TypeDescriptor getTypeDescriptorFor(String methodName) throws Exception {
