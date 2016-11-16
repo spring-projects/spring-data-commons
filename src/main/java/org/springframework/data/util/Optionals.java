@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.springframework.util.Assert;
@@ -94,6 +95,36 @@ public class Optionals {
 				.map(it -> function.apply(it))//
 				.filter(it -> !it.equals(defaultValue))//
 				.findFirst().orElse(defaultValue);
+	}
+
+	/**
+	 * Invokes the given {@link Supplier}s for {@link Optional} results one by one and returns the first non-empty one.
+	 * 
+	 * @param suppliers must not be {@literal null}.
+	 * @return
+	 */
+	@SafeVarargs
+	public static <T> Optional<T> firstNonEmpty(Supplier<Optional<T>>... suppliers) {
+
+		Assert.notNull(suppliers, "Suppliers must not be null!");
+
+		return firstNonEmpty(Streamable.of(suppliers));
+	}
+
+	/**
+	 * Invokes the given {@link Supplier}s for {@link Optional} results one by one and returns the first non-empty one.
+	 * 
+	 * @param suppliers must not be {@literal null}.
+	 * @return
+	 */
+	public static <T> Optional<T> firstNonEmpty(Iterable<Supplier<Optional<T>>> suppliers) {
+
+		Assert.notNull(suppliers, "Suppliers must not be null!");
+
+		return Streamable.of(suppliers).stream()//
+				.map(it -> it.get())//
+				.filter(it -> it.isPresent())//
+				.findFirst().orElse(Optional.empty());
 	}
 
 	/**

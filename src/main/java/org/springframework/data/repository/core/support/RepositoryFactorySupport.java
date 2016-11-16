@@ -549,12 +549,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 * @return
 		 */
 		private boolean isCustomMethodInvocation(MethodInvocation invocation) {
-
-			if (null == customImplementation) {
-				return false;
-			}
-
-			return repositoryInformation.isCustomMethod(invocation.getMethod());
+			return customImplementation.map(it -> repositoryInformation.isCustomMethod(invocation.getMethod())).orElse(false);
 		}
 	}
 
