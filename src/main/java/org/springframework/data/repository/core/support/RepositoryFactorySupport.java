@@ -61,6 +61,7 @@ import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.Pair;
 import org.springframework.data.util.ReflectionUtils;
+import org.springframework.transaction.interceptor.TransactionalProxy;
 import org.springframework.util.Assert;
 
 /**
@@ -72,8 +73,6 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
-
-	private static final Class<?> TRANSACTION_PROXY_TYPE = getTransactionProxyType();
 
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache;
 	private final List<RepositoryProxyPostProcessor> postProcessors;
@@ -230,14 +229,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		// Create proxy
 		ProxyFactory result = new ProxyFactory();
 		result.setTarget(target);
-		result.setInterfaces(new Class[] { repositoryInterface, Repository.class });
+		result.setInterfaces(new Class[] { repositoryInterface, Repository.class, TransactionalProxy.class });
 
 		result.addAdvice(SurroundingTransactionDetectorMethodInterceptor.INSTANCE);
 		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
-
-		if (TRANSACTION_PROXY_TYPE != null) {
-			result.addInterface(TRANSACTION_PROXY_TYPE);
-		}
 
 		postProcessors.forEach(processor -> processor.postProcess(result, information));
 
@@ -374,21 +369,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 					"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
 					baseClass, Arrays.stream(constructorArguments).map(Object::getClass).collect(Collectors.toList())));
 		});
-	}
-
-	/**
-	 * Returns the TransactionProxy type or {@literal null} if not on the classpath.
-	 * 
-	 * @return
-	 */
-	private static Class<?> getTransactionProxyType() {
-
-		try {
-			return org.springframework.util.ClassUtils
-					.forName("org.springframework.transaction.interceptor.TransactionalProxy", null);
-		} catch (ClassNotFoundException o_O) {
-			return null;
-		}
 	}
 
 	/**
