@@ -135,7 +135,6 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public <T> T invokeFindOne(Serializable id) {
 
 		Method method = methods.getFindOneMethod()//
