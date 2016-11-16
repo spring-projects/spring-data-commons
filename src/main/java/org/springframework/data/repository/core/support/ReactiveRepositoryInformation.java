@@ -17,14 +17,14 @@ package org.springframework.data.repository.core.support;
 
 import static org.springframework.core.GenericTypeResolver.*;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
@@ -32,7 +32,8 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.data.util.Optionals;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 /**
@@ -64,33 +65,25 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * generics into account.
 	 *
 	 * @param method must not be {@literal null}.
-	 * @param baseClass can be {@literal null}.
+	 * @param baseClass must not be {@literal null}.
 	 * @return
 	 */
 	@Override
 	Method getTargetClassMethod(Method method, Optional<Class<?>> baseClass) {
 
-		return baseClass.map(it -> {
+		return baseClass.flatMap(it -> {
+
+			List<Supplier<Optional<Method>>> suppliers = new ArrayList<>();
 
 			if (usesParametersWithReactiveWrappers(method)) {
-
-				Method candidate = getMethodCandidate(method, it, new AssignableWrapperMatch(method.getParameterTypes()));
-
-				if (candidate != null) {
-					return candidate;
-				}
-
-				candidate = getMethodCandidate(method, it, WrapperConversionMatch.of(method.getParameterTypes()));
-
-				if (candidate != null) {
-					return candidate;
-				}
+				suppliers.add(() -> getMethodCandidate(method, it, assignableWrapperMatch(method.getParameterTypes()))); //
+				suppliers.add(() -> getMethodCandidate(method, it, wrapperConversionMatch(method.getParameterTypes())));
 			}
 
-			Method candidate = getMethodCandidate(method, it,
-					MatchParameterOrComponentType.of(method, getRepositoryInterface()));
+			suppliers
+					.add(() -> getMethodCandidate(method, it, matchParameterOrComponentType(method, getRepositoryInterface())));
 
-			return candidate != null ? candidate : method;
+			return Optionals.firstNonEmpty(Streamable.of(suppliers));
 
 		}).orElse(method);
 	}
@@ -132,30 +125,14 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * @param predicate must not be {@literal null}.
 	 * @return
 	 */
-	private static Method getMethodCandidate(Method method, Class<?> baseClass,
+	private static Optional<Method> getMethodCandidate(Method method, Class<?> baseClass,
 			BiPredicate<Class<?>, Integer> predicate) {
 
-		for (Method baseClassMethod : baseClass.getMethods()) {
-
-			// Wrong name
-			if (!method.getName().equals(baseClassMethod.getName())) {
-				continue;
-			}
-
-			// Wrong number of arguments
-			if (!(method.getParameterTypes().length == baseClassMethod.getParameterTypes().length)) {
-				continue;
-			}
-
-			// Check whether all parameters match
-			if (!parametersMatch(method, baseClassMethod, predicate)) {
-				continue;
-			}
-
-			return baseClassMethod;
-		}
-
-		return null;
+		return Arrays.stream(baseClass.getMethods())//
+				.filter(it -> method.getName().equals(it.getName()))//
+				.filter(it -> method.getParameterTypes().length == it.getParameterTypes().length)//
+				.filter(it -> parametersMatch(it, predicate))//
+				.findFirst();
 	}
 
 	/**
@@ -167,109 +144,60 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * @param predicate must not be {@literal null}.
 	 * @return
 	 */
-	private static boolean parametersMatch(Method method, Method baseClassMethod,
-			BiPredicate<Class<?>, Integer> predicate) {
+	private static boolean parametersMatch(Method baseClassMethod, BiPredicate<Class<?>, Integer> predicate) {
 
-		Type[] genericTypes = baseClassMethod.getGenericParameterTypes();
 		Class<?>[] types = baseClassMethod.getParameterTypes();
 
-		for (int i = 0; i < genericTypes.length; i++) {
-			if (!predicate.test(types[i], i)) {
-				return false;
-			}
-		}
-
-		return true;
+		return IntStream.range(0, types.length).allMatch(it -> predicate.test(types[it], it));
 	}
 
 	/**
 	 * {@link BiPredicate} to check whether a method parameter is a {@link #isNonUnwrappingWrapper(Class)} and can be
 	 * converted into a different wrapper. Usually {@link rx.Observable} to {@link org.reactivestreams.Publisher}
 	 * conversion.
+	 * 
+	 * @param declaredParameterTypes
+	 * @return
 	 */
-	@RequiredArgsConstructor(staticName = "of")
-	static class WrapperConversionMatch implements BiPredicate<Class<?>, Integer> {
+	private static BiPredicate<Class<?>, Integer> wrapperConversionMatch(Class<?>[] declaredParameterTypes) {
 
-		private final Class<?>[] declaredParameterTypes;
-
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.function.BiPredicate#test(java.lang.Object, java.lang.Object)
-		 */
-		@Override
-		public boolean test(Class<?> candidateParameterType, Integer index) {
-
-			if (!isNonUnwrappingWrapper(candidateParameterType)) {
-				return false;
-			}
-
-			if (!isNonUnwrappingWrapper(declaredParameterTypes[index])) {
-				return false;
-			}
-
-			return ReactiveWrappers.isAvailable()
-					&& ReactiveWrapperConverters.canConvert(declaredParameterTypes[index], candidateParameterType);
-		}
+		return (type, index) -> isNonUnwrappingWrapper(type) //
+				&& isNonUnwrappingWrapper(declaredParameterTypes[index]) //
+				&& ReactiveWrapperConverters.canConvert(declaredParameterTypes[index], type);
 	}
 
 	/**
 	 * {@link BiPredicate} to check parameter assignability between a {@link #isNonUnwrappingWrapper(Class)} parameter and
 	 * a declared parameter. Usually {@link reactor.core.publisher.Flux} vs. {@link org.reactivestreams.Publisher}
 	 * conversion.
+	 * 
+	 * @param declaredParameterTypes
+	 * @return
 	 */
-	@RequiredArgsConstructor(staticName = "of")
-	static class AssignableWrapperMatch implements BiPredicate<Class<?>, Integer> {
+	private static BiPredicate<Class<?>, Integer> assignableWrapperMatch(Class<?>[] declaredParameterTypes) {
 
-		private final Class<?>[] declaredParameterTypes;
-
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.function.BiPredicate#test(java.lang.Object, java.lang.Object)
-		 */
-		@Override
-		public boolean test(Class<?> candidateParameterType, Integer index) {
-
-			if (!isNonUnwrappingWrapper(candidateParameterType)) {
-				return false;
-			}
-
-			if (!isNonUnwrappingWrapper(declaredParameterTypes[index])) {
-				return false;
-			}
-
-			return declaredParameterTypes[index].isAssignableFrom(candidateParameterType);
-		}
+		return (type, index) -> isNonUnwrappingWrapper(type) //
+				&& isNonUnwrappingWrapper(declaredParameterTypes[index]) //
+				&& declaredParameterTypes[index].isAssignableFrom(type);
 	}
 
 	/**
 	 * {@link BiPredicate} to check parameter assignability between a parameters in which the declared parameter may be
 	 * wrapped but supports unwrapping. Usually types like {@link java.util.Optional} or {@link java.util.stream.Stream}.
 	 * 
+	 * @param method
+	 * @param repositoryInterface
+	 * @return
 	 * @see QueryExecutionConverters
 	 */
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	static class MatchParameterOrComponentType implements BiPredicate<Class<?>, Integer> {
+	private static BiPredicate<Class<?>, Integer> matchParameterOrComponentType(Method method,
+			Class<?> repositoryInterface) {
 
-		private final Method declaredMethod;
-		private final Class<?>[] declaredParameterTypes;
-		private final Class<?> repositoryInterface;
+		return (type, index) -> {
 
-		public static MatchParameterOrComponentType of(Method declaredMethod, Class<?> repositoryInterface) {
-			return new MatchParameterOrComponentType(declaredMethod, declaredMethod.getParameterTypes(), repositoryInterface);
-		}
+			Class<?> parameterType = resolveParameterType(new MethodParameter(method, index), repositoryInterface);
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.function.BiPredicate#test(java.lang.Object, java.lang.Object)
-		 */
-		@Override
-		public boolean test(Class<?> candidateParameterType, Integer index) {
-
-			MethodParameter parameter = new MethodParameter(declaredMethod, index);
-			Class<?> parameterType = resolveParameterType(parameter, repositoryInterface);
-
-			return candidateParameterType.isAssignableFrom(parameterType)
-					&& candidateParameterType.equals(declaredParameterTypes[index]);
-		}
+			return type.isAssignableFrom(parameterType) && type.equals(method.getParameterTypes()[index]);
+		};
 	}
 }
