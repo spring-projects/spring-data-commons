@@ -22,10 +22,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import lombok.Value;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -76,12 +78,12 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 			List<Supplier<Optional<Method>>> suppliers = new ArrayList<>();
 
 			if (usesParametersWithReactiveWrappers(method)) {
-				suppliers.add(() -> getMethodCandidate(method, it, assignableWrapperMatch(method.getParameterTypes()))); //
-				suppliers.add(() -> getMethodCandidate(method, it, wrapperConversionMatch(method.getParameterTypes())));
+				suppliers.add(() -> getMethodCandidate(method, it, assignableWrapperMatch())); //
+				suppliers.add(() -> getMethodCandidate(method, it, wrapperConversionMatch()));
 			}
 
 			suppliers
-					.add(() -> getMethodCandidate(method, it, matchParameterOrComponentType(method, getRepositoryInterface())));
+					.add(() -> getMethodCandidate(method, it, matchParameterOrComponentType(getRepositoryInterface())));
 
 			return Optionals.firstNonEmpty(Streamable.of(suppliers));
 
@@ -126,12 +128,12 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * @return
 	 */
 	private static Optional<Method> getMethodCandidate(Method method, Class<?> baseClass,
-			BiPredicate<Class<?>, Integer> predicate) {
+			Predicate<ParameterOverrideCriteria> predicate) {
 
 		return Arrays.stream(baseClass.getMethods())//
 				.filter(it -> method.getName().equals(it.getName()))//
 				.filter(it -> method.getParameterTypes().length == it.getParameterTypes().length)//
-				.filter(it -> parametersMatch(it, predicate))//
+				.filter(it -> parametersMatch(it, method, predicate))//
 				.findFirst();
 	}
 
@@ -139,65 +141,102 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * Checks the given method's parameters to match the ones of the given base class method. Matches generic arguments
 	 * against the ones bound in the given repository interface.
 	 *
-	 * @param method must not be {@literal null}.
 	 * @param baseClassMethod must not be {@literal null}.
+	 * @param declaredMethod must not be {@literal null}.
 	 * @param predicate must not be {@literal null}.
 	 * @return
 	 */
-	private static boolean parametersMatch(Method baseClassMethod, BiPredicate<Class<?>, Integer> predicate) {
+	private static boolean parametersMatch(Method baseClassMethod, Method declaredMethod,
+			Predicate<ParameterOverrideCriteria> predicate) {
 
-		Class<?>[] types = baseClassMethod.getParameterTypes();
-
-		return IntStream.range(0, types.length).allMatch(it -> predicate.test(types[it], it));
+		return methodParameters(baseClassMethod, declaredMethod).allMatch(predicate);
 	}
 
 	/**
-	 * {@link BiPredicate} to check whether a method parameter is a {@link #isNonUnwrappingWrapper(Class)} and can be
+	 * {@link Predicate} to check whether a method parameter is a {@link #isNonUnwrappingWrapper(Class)} and can be
 	 * converted into a different wrapper. Usually {@link rx.Observable} to {@link org.reactivestreams.Publisher}
 	 * conversion.
 	 * 
-	 * @param declaredParameterTypes
 	 * @return
 	 */
-	private static BiPredicate<Class<?>, Integer> wrapperConversionMatch(Class<?>[] declaredParameterTypes) {
+	private static Predicate<ParameterOverrideCriteria> wrapperConversionMatch() {
 
-		return (type, index) -> isNonUnwrappingWrapper(type) //
-				&& isNonUnwrappingWrapper(declaredParameterTypes[index]) //
-				&& ReactiveWrapperConverters.canConvert(declaredParameterTypes[index], type);
+		return (parameterCriteria) -> isNonUnwrappingWrapper(parameterCriteria.getBaseType()) //
+			&& isNonUnwrappingWrapper(parameterCriteria.getDeclaredType()) //
+				&& ReactiveWrapperConverters.canConvert(parameterCriteria.getDeclaredType(), parameterCriteria.getBaseType());
 	}
 
 	/**
-	 * {@link BiPredicate} to check parameter assignability between a {@link #isNonUnwrappingWrapper(Class)} parameter and
+	 * {@link Predicate} to check parameter assignability between a {@link #isNonUnwrappingWrapper(Class)} parameter and
 	 * a declared parameter. Usually {@link reactor.core.publisher.Flux} vs. {@link org.reactivestreams.Publisher}
 	 * conversion.
 	 * 
-	 * @param declaredParameterTypes
 	 * @return
 	 */
-	private static BiPredicate<Class<?>, Integer> assignableWrapperMatch(Class<?>[] declaredParameterTypes) {
+	private static Predicate<ParameterOverrideCriteria> assignableWrapperMatch() {
 
-		return (type, index) -> isNonUnwrappingWrapper(type) //
-				&& isNonUnwrappingWrapper(declaredParameterTypes[index]) //
-				&& declaredParameterTypes[index].isAssignableFrom(type);
+		return (parameterCriteria) -> isNonUnwrappingWrapper(parameterCriteria.getBaseType()) //
+			&& isNonUnwrappingWrapper(parameterCriteria.getDeclaredType()) //
+			&& parameterCriteria.getBaseType().isAssignableFrom(parameterCriteria.getDeclaredType());
 	}
 
 	/**
-	 * {@link BiPredicate} to check parameter assignability between a parameters in which the declared parameter may be
+	 * {@link Predicate} to check parameter assignability between a parameters in which the declared parameter may be
 	 * wrapped but supports unwrapping. Usually types like {@link java.util.Optional} or {@link java.util.stream.Stream}.
 	 * 
-	 * @param method
 	 * @param repositoryInterface
 	 * @return
 	 * @see QueryExecutionConverters
 	 */
-	private static BiPredicate<Class<?>, Integer> matchParameterOrComponentType(Method method,
-			Class<?> repositoryInterface) {
+	private static Predicate<ParameterOverrideCriteria> matchParameterOrComponentType(Class<?> repositoryInterface) {
 
-		return (type, index) -> {
+		return (parameterCriteria) -> {
 
-			Class<?> parameterType = resolveParameterType(new MethodParameter(method, index), repositoryInterface);
+			Class<?> parameterType = resolveParameterType(parameterCriteria.getDeclared(), repositoryInterface);
 
-			return type.isAssignableFrom(parameterType) && type.equals(method.getParameterTypes()[index]);
+			return parameterCriteria.getBaseType().isAssignableFrom(parameterType)
+					&& parameterCriteria.isAssignableFromDeclared();
 		};
+	}
+	
+	private static Stream<ParameterOverrideCriteria> methodParameters(Method first, Method second){
+		
+		Assert.isTrue(first.getParameterCount() == second.getParameterCount(), "Method parameter count must be equal!");
+		
+		return IntStream.range(0, first.getParameterCount()) //
+				.mapToObj(index -> ParameterOverrideCriteria.of(new MethodParameter(first, index),
+				new MethodParameter(second, index)));
+		
+	}
+
+	/**
+	 * Criterion to represent {@link MethodParameter}s from a base method and its declared (overriden) method.
+	 * <p>
+	 * Method parameters indexes are correlated so {@link ParameterOverrideCriteria} applies only to methods with same
+	 * parameter count.
+	 */
+	@Value(staticConstructor = "of")
+	private static class ParameterOverrideCriteria {
+
+		private final MethodParameter base;
+		private final MethodParameter declared;
+
+		/**
+		 * @return base method parameter type.
+		 */
+		public Class<?> getBaseType() {
+			return base.getParameterType();
+		}
+
+		/**
+		 * @return declared method parameter type.
+		 */
+		public Class<?> getDeclaredType() {
+			return declared.getParameterType();
+		}
+
+		public boolean isAssignableFromDeclared() {
+			return getBaseType().isAssignableFrom(getDeclaredType());
+		}
 	}
 }
