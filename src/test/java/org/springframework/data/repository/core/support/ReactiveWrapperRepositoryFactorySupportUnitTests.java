@@ -38,7 +38,7 @@ import org.springframework.data.repository.reactive.ReactiveSortingRepository;
  * 
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 
 	public @Rule ExpectedException exception = ExpectedException.none();
@@ -69,18 +69,9 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		Serializable id = 1L;
 		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
 		repository.exists(id);
+		repository.exists((Long) id);
 
-		verify(backingRepo, times(1)).exists(id);
-	}
-
-	@Test // DATACMNS-836
-	public void doesNotCallMethodOnBaseEvenIfDeclaredTypeCouldBeConverted() {
-
-		Long id = 1L;
-		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
-		repository.exists(id);
-
-		verifyZeroInteractions(backingRepo);
+		verify(backingRepo, times(2)).exists(id);
 	}
 
 	@Test // DATACMNS-836

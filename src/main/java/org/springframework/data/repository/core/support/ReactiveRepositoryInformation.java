@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import static org.springframework.core.GenericTypeResolver.*;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.stream.Stream;
 
 import lombok.Value;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -82,12 +85,40 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 				suppliers.add(() -> getMethodCandidate(method, it, wrapperConversionMatch()));
 			}
 
-			suppliers
-					.add(() -> getMethodCandidate(method, it, matchParameterOrComponentType(getRepositoryInterface())));
+			suppliers.add(() -> getMethodCandidate(method, it, matchParameterOrComponentType(getRepositoryInterface())));
 
 			return Optionals.firstNonEmpty(Streamable.of(suppliers));
 
 		}).orElse(method);
+	}
+
+	/**
+	 * {@link Predicate} to check parameter assignability between a parameters in which the declared parameter may be
+	 * wrapped but supports unwrapping. Usually types like {@link java.util.Optional} or {@link java.util.stream.Stream}.
+	 *
+	 * @param repositoryInterface
+	 * @return
+	 * @see QueryExecutionConverters
+	 * @see #matchesGenericType
+	 */
+	private Predicate<ParameterOverrideCriteria> matchParameterOrComponentType(Class<?> repositoryInterface) {
+
+		return (parameterCriteria) -> {
+
+			Class<?> parameterType = resolveParameterType(parameterCriteria.getDeclared(), repositoryInterface);
+			Type genericType = parameterCriteria.getGenericBaseType();
+
+			if (genericType instanceof TypeVariable<?>) {
+
+				if (!matchesGenericType((TypeVariable<?>) genericType,
+						ResolvableType.forMethodParameter(parameterCriteria.getDeclared()))) {
+					return false;
+				}
+			}
+
+			return parameterCriteria.getBaseType().isAssignableFrom(parameterType)
+					&& parameterCriteria.isAssignableFromDeclared();
+		};
 	}
 
 	/**
@@ -96,7 +127,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * @param parameterType must not be {@literal null}.
 	 * @return
 	 */
-	static boolean isNonUnwrappingWrapper(Class<?> parameterType) {
+	private static boolean isNonUnwrappingWrapper(Class<?> parameterType) {
 
 		Assert.notNull(parameterType, "Parameter type must not be null!");
 
@@ -106,7 +137,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 
 	/**
 	 * Returns whether the given {@link Method} uses a reactive wrapper type as parameter.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @return
 	 */
@@ -121,7 +152,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	/**
 	 * Returns a candidate method from the base class for the given one or the method given in the first place if none one
 	 * the base class matches.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param baseClass must not be {@literal null}.
 	 * @param predicate must not be {@literal null}.
@@ -156,57 +187,38 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	 * {@link Predicate} to check whether a method parameter is a {@link #isNonUnwrappingWrapper(Class)} and can be
 	 * converted into a different wrapper. Usually {@link rx.Observable} to {@link org.reactivestreams.Publisher}
 	 * conversion.
-	 * 
+	 *
 	 * @return
 	 */
 	private static Predicate<ParameterOverrideCriteria> wrapperConversionMatch() {
 
 		return (parameterCriteria) -> isNonUnwrappingWrapper(parameterCriteria.getBaseType()) //
-			&& isNonUnwrappingWrapper(parameterCriteria.getDeclaredType()) //
+				&& isNonUnwrappingWrapper(parameterCriteria.getDeclaredType()) //
 				&& ReactiveWrapperConverters.canConvert(parameterCriteria.getDeclaredType(), parameterCriteria.getBaseType());
 	}
 
 	/**
-	 * {@link Predicate} to check parameter assignability between a {@link #isNonUnwrappingWrapper(Class)} parameter and
-	 * a declared parameter. Usually {@link reactor.core.publisher.Flux} vs. {@link org.reactivestreams.Publisher}
+	 * {@link Predicate} to check parameter assignability between a {@link #isNonUnwrappingWrapper(Class)} parameter and a
+	 * declared parameter. Usually {@link reactor.core.publisher.Flux} vs. {@link org.reactivestreams.Publisher}
 	 * conversion.
-	 * 
+	 *
 	 * @return
 	 */
 	private static Predicate<ParameterOverrideCriteria> assignableWrapperMatch() {
 
 		return (parameterCriteria) -> isNonUnwrappingWrapper(parameterCriteria.getBaseType()) //
-			&& isNonUnwrappingWrapper(parameterCriteria.getDeclaredType()) //
-			&& parameterCriteria.getBaseType().isAssignableFrom(parameterCriteria.getDeclaredType());
+				&& isNonUnwrappingWrapper(parameterCriteria.getDeclaredType()) //
+				&& parameterCriteria.getBaseType().isAssignableFrom(parameterCriteria.getDeclaredType());
 	}
 
-	/**
-	 * {@link Predicate} to check parameter assignability between a parameters in which the declared parameter may be
-	 * wrapped but supports unwrapping. Usually types like {@link java.util.Optional} or {@link java.util.stream.Stream}.
-	 * 
-	 * @param repositoryInterface
-	 * @return
-	 * @see QueryExecutionConverters
-	 */
-	private static Predicate<ParameterOverrideCriteria> matchParameterOrComponentType(Class<?> repositoryInterface) {
+	private static Stream<ParameterOverrideCriteria> methodParameters(Method first, Method second) {
 
-		return (parameterCriteria) -> {
-
-			Class<?> parameterType = resolveParameterType(parameterCriteria.getDeclared(), repositoryInterface);
-
-			return parameterCriteria.getBaseType().isAssignableFrom(parameterType)
-					&& parameterCriteria.isAssignableFromDeclared();
-		};
-	}
-	
-	private static Stream<ParameterOverrideCriteria> methodParameters(Method first, Method second){
-		
 		Assert.isTrue(first.getParameterCount() == second.getParameterCount(), "Method parameter count must be equal!");
-		
+
 		return IntStream.range(0, first.getParameterCount()) //
 				.mapToObj(index -> ParameterOverrideCriteria.of(new MethodParameter(first, index),
-				new MethodParameter(second, index)));
-		
+						new MethodParameter(second, index)));
+
 	}
 
 	/**
@@ -226,6 +238,13 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 		 */
 		public Class<?> getBaseType() {
 			return base.getParameterType();
+		}
+
+		/**
+		 * @return generic base method parameter type.
+		 */
+		public Type getGenericBaseType() {
+			return base.getGenericParameterType();
 		}
 
 		/**
