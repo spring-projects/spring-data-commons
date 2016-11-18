@@ -19,25 +19,25 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
-import scala.Option;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+import com.google.common.base.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.repository.util.NullableWrapperToTestOptionalConverter.TestOptional;
 import org.springframework.data.util.Version;
 import org.springframework.util.concurrent.ListenableFuture;
-
-import com.google.common.base.Optional;
+import scala.Option;
 
 /**
  * Unit tests for {@link QueryExecutionConverters}.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Darek Kaczynski
  */
 public class QueryExecutionConvertersUnitTests {
 
@@ -64,6 +64,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(Future.class), is(true));
 		assertThat(QueryExecutionConverters.supports(ListenableFuture.class), is(true));
 		assertThat(QueryExecutionConverters.supports(Option.class), is(true));
+		assertThat(QueryExecutionConverters.supports(TestOptional.class), is(true));
 	}
 
 	/**
@@ -85,7 +86,7 @@ public class QueryExecutionConvertersUnitTests {
 	public void turnsNullIntoGuavaOptional() {
 
 		Optional<Object> optional = conversionService.convert(new NullableWrapper(null), Optional.class);
-		assertThat(optional, is(Optional.<Object> absent()));
+		assertThat(optional, is(Optional.<Object>absent()));
 	}
 
 	/**
@@ -97,7 +98,7 @@ public class QueryExecutionConvertersUnitTests {
 
 		java.util.Optional<Object> optional = conversionService.convert(new NullableWrapper(null),
 				java.util.Optional.class);
-		assertThat(optional, is(java.util.Optional.<Object> empty()));
+		assertThat(optional, is(java.util.Optional.<Object>empty()));
 	}
 
 	/**
@@ -154,7 +155,7 @@ public class QueryExecutionConvertersUnitTests {
 	public void turnsNullIntoScalaOptionEmpty() {
 
 		assertThat((Option<Object>) conversionService.convert(new NullableWrapper(null), Option.class),
-				is(Option.<Object> empty()));
+				is(Option.<Object>empty()));
 	}
 
 	/**
@@ -171,5 +172,16 @@ public class QueryExecutionConvertersUnitTests {
 	@Test
 	public void unwrapsEmptyScalaOption() {
 		assertThat(QueryExecutionConverters.unwrap(Option.empty()), is((Object) null));
+	}
+
+	@Test
+	public void turnsNullIntoTestOptional() {
+		TestOptional optional = conversionService.convert(new NullableWrapper(null), TestOptional.class);
+		assertThat(optional, is(TestOptional.nullValue()));
+	}
+
+	@Test
+	public void unwrapsEmptyTestOptional() {
+		assertThat(QueryExecutionConverters.unwrap(TestOptional.nullValue()), is((Object) null));
 	}
 }
