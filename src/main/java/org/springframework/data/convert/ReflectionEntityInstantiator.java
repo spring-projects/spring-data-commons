@@ -16,6 +16,7 @@
 package org.springframework.data.convert;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -47,12 +48,18 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 
 			List<Object> params = Optional.ofNullable(provider)//
 					.map(it -> constructor.getParameters().stream()//
-							.map(parameter -> it.getParameterValue(parameter).orElse(null))//
+							.map(parameter -> it.getParameterValue(parameter).orElse(Optional.empty()))//
 							.collect(Collectors.toList()))//
 					.orElseGet(() -> Collections.emptyList());
 
+			List<Object> foo = new ArrayList<>(params.size());
+
+			for (Object element : params) {
+				foo.add((element instanceof Optional) ? null : element);
+			}
+
 			try {
-				return (T) BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());
+				return (T) BeanUtils.instantiateClass(constructor.getConstructor(), foo.toArray());
 			} catch (BeanInstantiationException e) {
 				throw new MappingInstantiationException(Optional.of(entity), params, e);
 			}
