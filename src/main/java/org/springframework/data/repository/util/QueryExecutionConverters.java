@@ -59,10 +59,6 @@ import com.google.common.base.Optional;
  */
 public abstract class QueryExecutionConverters {
 
-	private static final boolean SPRING_4_2_PRESENT = ClassUtils.isPresent(
-			"org.springframework.core.annotation.AnnotationConfigurationException",
-			QueryExecutionConverters.class.getClassLoader());
-
 	private static final boolean GUAVA_PRESENT = ClassUtils.isPresent("com.google.common.base.Optional",
 			QueryExecutionConverters.class.getClassLoader());
 	private static final boolean JDK_8_PRESENT = ClassUtils.isPresent("java.util.Optional",
@@ -90,7 +86,7 @@ public abstract class QueryExecutionConverters {
 			UNWRAPPERS.add(Jdk8OptionalUnwrapper.INSTANCE);
 		}
 
-		if (JDK_8_PRESENT && SPRING_4_2_PRESENT) {
+		if (JDK_8_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToCompletableFutureConverter.getWrapperType());
 		}
 
@@ -480,7 +476,7 @@ public abstract class QueryExecutionConverters {
 	 *
 	 * @author Oliver Gierke
 	 * @author Mark Paluch
-	 * @author 1.13
+	 * @since 1.12
 	 */
 	private static enum ScalOptionUnwrapper implements Converter<Object, Object> {
 
