@@ -126,19 +126,9 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 		Assert.notNull(basicType, "Basic type must not be null!");
 
 		Optional<TypeInformation<? extends T>> calculated = getDefaultedTypeToBeUsed(source)//
-				.map(it -> foo(it, basicType));
+				.map(it -> specializeOrDefault(it, basicType));
 
 		return calculated.orElse(basicType);
-	}
-
-	// @SuppressWarnings("unchecked")
-	private static <T> TypeInformation<? extends T> foo(Class<?> sourceType, TypeInformation<T> type) {
-
-		return specializeOrDefault(sourceType, type);
-
-		// return type//
-		// .<TypeInformation<? extends T>>map(it -> specializeOrDefault(sourceType, it))
-		// .orElseGet(() -> (TypeInformation<? extends T>) ClassTypeInformation.from(sourceType));
 	}
 
 	private static <T> TypeInformation<? extends T> specializeOrDefault(Class<?> it, TypeInformation<T> type) {
@@ -157,7 +147,10 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 * @return
 	 */
 	private Optional<Class<?>> getDefaultedTypeToBeUsed(S source) {
-		return readType(source).map(it -> readType(source)).orElseGet(() -> getFallbackTypeFor(source))
+
+		return readType(source)//
+				.map(it -> readType(source))//
+				.orElseGet(() -> getFallbackTypeFor(source))//
 				.map(it -> it.getType());
 	}
 
