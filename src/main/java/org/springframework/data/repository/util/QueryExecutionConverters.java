@@ -19,11 +19,13 @@ import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -33,6 +35,7 @@ import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -43,10 +46,11 @@ import com.google.common.base.Optional;
  * <ul>
  * <li>{@code java.util.Optional}</li>
  * <li>{@code com.google.common.base.Optional}</li>
- * <li>{@code scala.Option}</li>
+ * <li>{@code scala.Option} - as of 1.12</li>
  * <li>{@code java.util.concurrent.Future}</li>
  * <li>{@code java.util.concurrent.CompletableFuture}</li>
  * <li>{@code org.springframework.util.concurrent.ListenableFuture<}</li>
+ * <li>{@code javaslang.control.Option} - as of 1.13</li>
  * <li>Reactive wrappers supported by {@link ReactiveWrappers}</li>
  * </ul>
  * 
@@ -69,6 +73,8 @@ public abstract class QueryExecutionConverters {
 	private static final boolean JDK_8_PRESENT = ClassUtils.isPresent("java.util.Optional",
 			QueryExecutionConverters.class.getClassLoader());
 	private static final boolean SCALA_PRESENT = ClassUtils.isPresent("scala.Option",
+			QueryExecutionConverters.class.getClassLoader());
+	private static final boolean JAVASLANG_PRESENT = ClassUtils.isPresent("javaslang.control.Option",
 			QueryExecutionConverters.class.getClassLoader());
 
 	private static final Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
@@ -103,6 +109,11 @@ public abstract class QueryExecutionConverters {
 			WRAPPER_TYPES.add(NullableWrapperToScalaOptionConverter.getWrapperType());
 			UNWRAPPER_TYPES.add(NullableWrapperToScalaOptionConverter.getWrapperType());
 			UNWRAPPERS.add(ScalOptionUnwrapper.INSTANCE);
+		}
+
+		if (JAVASLANG_PRESENT) {
+			WRAPPER_TYPES.add(NullableWrapperToJavaSlangOptionConverter.getWrapperType());
+			UNWRAPPERS.add(JavaSlangOptionUnwrapper.INSTANCE);
 		}
 
 		if (ReactiveWrappers.isAvailable()) {
@@ -172,6 +183,10 @@ public abstract class QueryExecutionConverters {
 
 		if (SCALA_PRESENT) {
 			conversionService.addConverter(new NullableWrapperToScalaOptionConverter(conversionService));
+		}
+
+		if (JAVASLANG_PRESENT) {
+			conversionService.addConverter(new NullableWrapperToJavaSlangOptionConverter(conversionService));
 		}
 
 		if (ASYNC_RESULT_PRESENT) {
@@ -415,6 +430,51 @@ public abstract class QueryExecutionConverters {
 	}
 
 	/**
+	 * Converter to convert from {@link NullableWrapper} into JavaSlang's {@link javaslang.control.Option}.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.13
+	 */
+	private static class NullableWrapperToJavaSlangOptionConverter extends AbstractWrapperTypeConverter {
+
+		private static final Method OF_METHOD;
+		private static final Method NONE_METHOD;
+
+		static {
+			OF_METHOD = ReflectionUtils.findMethod(getWrapperType(), "of", Object.class);
+			NONE_METHOD = ReflectionUtils.findMethod(getWrapperType(), "none");
+		}
+
+		/**
+		 * Creates a new {@link NullableWrapperToJavaSlangOptionConverter} using the given {@link ConversionService}.
+		 * 
+		 * @param conversionService must not be {@literal null}.
+		 */
+		public NullableWrapperToJavaSlangOptionConverter(ConversionService conversionService) {
+			super(conversionService, createEmptyOption(), getWrapperType());
+		}
+
+		public static Class<?> getWrapperType() {
+			return javaslang.control.Option.class;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
+		 */
+		@Override
+		@SuppressWarnings("unchecked")
+		protected Object wrap(Object source) {
+			return (javaslang.control.Option<Object>) ReflectionUtils.invokeMethod(OF_METHOD, null, source);
+		}
+
+		@SuppressWarnings("unchecked")
+		private static javaslang.control.Option<Object> createEmptyOption() {
+			return (javaslang.control.Option<Object>) ReflectionUtils.invokeMethod(NONE_METHOD, null);
+		}
+	}
+
+	/**
 	 * A {@link Converter} to unwrap Guava {@link Optional} instances.
 	 *
 	 * @author Oliver Gierke
@@ -484,6 +544,39 @@ public abstract class QueryExecutionConverters {
 		@Override
 		public Object convert(Object source) {
 			return source instanceof Option ? ((Option<?>) source).getOrElse(alternative) : source;
+		}
+	}
+
+	/**
+	 * Converter to unwrap JavaSlang {@link javaslang.control.Option} instances.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.13
+	 */
+	private static enum JavaSlangOptionUnwrapper implements Converter<Object, Object> {
+
+		INSTANCE;
+
+		private static final Supplier<Object> NULL_SUPPLIER = new Supplier<Object>() {
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.function.Supplier#get()
+			 */
+			public Object get() {
+				return null;
+			}
+		};
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		@SuppressWarnings("unchecked")
+		public Object convert(Object source) {
+			return source instanceof javaslang.control.Option
+					? ((javaslang.control.Option<Object>) source).getOrElse(NULL_SUPPLIER) : source;
 		}
 	}
 }

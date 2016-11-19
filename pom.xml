@@ -16,6 +16,7 @@
 	</parent>
 
 	<properties>
+		<javaslang>2.0.4</javaslang>
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.8</xmlbeam>
 		<spring>5.0.0.BUILD-SNAPSHOT</spring>
@@ -172,6 +173,13 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>${guava}</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>io.javaslang</groupId>
+			<artifactId>javaslang</artifactId>
+			<version>${javaslang}</version>
 			<optional>true</optional>
 		</dependency>
 

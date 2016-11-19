@@ -26,6 +26,7 @@ import rx.Observable;
 import rx.Single;
 import scala.Option;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -35,6 +36,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.util.Version;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -70,6 +72,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(Future.class), is(true));
 		assertThat(QueryExecutionConverters.supports(ListenableFuture.class), is(true));
 		assertThat(QueryExecutionConverters.supports(Option.class), is(true));
+		assertThat(QueryExecutionConverters.supports(javaslang.control.Option.class), is(true));
 	}
 
 	/**
@@ -142,7 +145,7 @@ public class QueryExecutionConvertersUnitTests {
 	public void turnsNullIntoGuavaOptional() {
 
 		Optional<Object> optional = conversionService.convert(new NullableWrapper(null), Optional.class);
-		assertThat(optional, is(Optional.<Object> absent()));
+		assertThat(optional, is(Optional.<Object>absent()));
 	}
 
 	/**
@@ -154,7 +157,7 @@ public class QueryExecutionConvertersUnitTests {
 
 		java.util.Optional<Object> optional = conversionService.convert(new NullableWrapper(null),
 				java.util.Optional.class);
-		assertThat(optional, is(java.util.Optional.<Object> empty()));
+		assertThat(optional, is(java.util.Optional.<Object>empty()));
 	}
 
 	/**
@@ -211,7 +214,7 @@ public class QueryExecutionConvertersUnitTests {
 	public void turnsNullIntoScalaOptionEmpty() {
 
 		assertThat((Option<Object>) conversionService.convert(new NullableWrapper(null), Option.class),
-				is(Option.<Object> empty()));
+				is(Option.<Object>empty()));
 	}
 
 	/**
@@ -228,5 +231,57 @@ public class QueryExecutionConvertersUnitTests {
 	@Test
 	public void unwrapsEmptyScalaOption() {
 		assertThat(QueryExecutionConverters.unwrap(Option.empty()), is((Object) null));
+	}
+
+	/**
+	 * @see DATACMNS-937
+	 */
+	@Test
+	public void turnsNullIntoJavaSlangOption() {
+		assertThat(conversionService.convert(new NullableWrapper(null), javaslang.control.Option.class),
+				is((Object) optionNone()));
+	}
+
+	/**
+	 * @see DATACMNS-937
+	 */
+	@Test
+	public void wrapsValueIntoJavaSlangOption() {
+
+		javaslang.control.Option<?> result = conversionService.convert(new NullableWrapper("string"),
+				javaslang.control.Option.class);
+
+		assertThat(result.isEmpty(), is(false));
+		assertThat(result.get(), is((Object) "string"));
+	}
+
+	/**
+	 * @see DATACMNS-937
+	 */
+	@Test
+	public void unwrapsEmptyJavaSlangOption() {
+		assertThat(QueryExecutionConverters.unwrap(optionNone()), is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-937
+	 */
+	@Test
+	public void unwrapsJavaSlangOption() {
+		assertThat(QueryExecutionConverters.unwrap(option("string")), is((Object) "string"));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static javaslang.control.Option<Object> optionNone() {
+
+		Method method = ReflectionUtils.findMethod(javaslang.control.Option.class, "none");
+		return (javaslang.control.Option<Object>) ReflectionUtils.invokeMethod(method, null);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> javaslang.control.Option<T> option(T source) {
+
+		Method method = ReflectionUtils.findMethod(javaslang.control.Option.class, "of", Object.class);
+		return (javaslang.control.Option<T>) ReflectionUtils.invokeMethod(method, null, source);
 	}
 }
