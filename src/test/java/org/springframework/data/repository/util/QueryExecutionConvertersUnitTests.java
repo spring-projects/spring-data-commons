@@ -228,7 +228,7 @@ public class QueryExecutionConvertersUnitTests {
 	 * @see DATACMNS-937
 	 */
 	@Test
-	public void turnsNullIntoJavaSlangOption() {
+	public void turnsNullIntoJavaslangOption() {
 		assertThat(conversionService.convert(new NullableWrapper(null), javaslang.control.Option.class),
 				is((Object) optionNone()));
 	}
@@ -237,7 +237,7 @@ public class QueryExecutionConvertersUnitTests {
 	 * @see DATACMNS-937
 	 */
 	@Test
-	public void wrapsValueIntoJavaSlangOption() {
+	public void wrapsValueIntoJavaslangOption() {
 
 		javaslang.control.Option<?> result = conversionService.convert(new NullableWrapper("string"),
 				javaslang.control.Option.class);
@@ -250,7 +250,7 @@ public class QueryExecutionConvertersUnitTests {
 	 * @see DATACMNS-937
 	 */
 	@Test
-	public void unwrapsEmptyJavaSlangOption() {
+	public void unwrapsEmptyJavaslangOption() {
 		assertThat(QueryExecutionConverters.unwrap(optionNone()), is(nullValue()));
 	}
 
@@ -258,7 +258,7 @@ public class QueryExecutionConvertersUnitTests {
 	 * @see DATACMNS-937
 	 */
 	@Test
-	public void unwrapsJavaSlangOption() {
+	public void unwrapsJavaslangOption() {
 		assertThat(QueryExecutionConverters.unwrap(option("string")), is((Object) "string"));
 	}
 
