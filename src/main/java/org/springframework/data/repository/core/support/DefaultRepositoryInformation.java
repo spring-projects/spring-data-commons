@@ -22,6 +22,7 @@ import static org.springframework.util.ReflectionUtils.*;
 import java.io.Serializable;
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collections;
@@ -184,6 +185,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 */
 	private boolean isQueryMethodCandidate(Method method) {
 		return !method.isBridge() && !ReflectionUtils.isDefaultMethod(method) //
+				&& !Modifier.isStatic(method.getModifiers()) //
 				&& (isQueryAnnotationPresentOn(method) || !isCustomMethod(method) && !isBaseClassMethod(method));
 	}
 
