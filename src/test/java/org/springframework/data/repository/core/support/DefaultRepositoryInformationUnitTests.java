@@ -50,6 +50,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryInformationUnitTests {
@@ -254,6 +255,36 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-939
+	 */
+	@Test
+	public void ignoresStaticMethod() throws SecurityException, NoSuchMethodException {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				customImplementation.getClass());
+
+		Method method = FooRepository.class.getMethod("staticMethod");
+
+		assertThat(information.getQueryMethods(), not(hasItem(method)));
+	}
+
+	/**
+	 * @see DATACMNS-939
+	 */
+	@Test
+	public void ignoresDefaultMethod() throws SecurityException, NoSuchMethodException {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+				customImplementation.getClass());
+
+		Method method = FooRepository.class.getMethod("defaultMethod");
+
+		assertThat(information.getQueryMethods(), not(hasItem(method)));
+	}
+
 	private static Method getMethodFrom(Class<?> type, String name) {
 
 		for (Method method : type.getMethods()) {
@@ -278,6 +309,10 @@ public class DefaultRepositoryInformationUnitTests {
 
 		// Not a redeclared method
 		User findOne(Long primaryKey);
+
+		static void staticMethod() {}
+
+		default void defaultMethod() {}
 	}
 
 	interface FooSuperInterfaceWithGenerics<T> {
