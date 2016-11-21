@@ -96,8 +96,8 @@ public abstract class QueryExecutionConverters {
 		}
 
 		if (JAVASLANG_PRESENT) {
-			WRAPPER_TYPES.add(NullableWrapperToJavaSlangOptionConverter.getWrapperType());
-			UNWRAPPERS.add(JavaSlangOptionUnwrapper.INSTANCE);
+			WRAPPER_TYPES.add(NullableWrapperToJavaslangOptionConverter.getWrapperType());
+			UNWRAPPERS.add(JavaslangOptionUnwrapper.INSTANCE);
 		}
 	}
 
@@ -145,7 +145,7 @@ public abstract class QueryExecutionConverters {
 		}
 
 		if (JAVASLANG_PRESENT) {
-			conversionService.addConverter(new NullableWrapperToJavaSlangOptionConverter(conversionService));
+			conversionService.addConverter(new NullableWrapperToJavaslangOptionConverter(conversionService));
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
@@ -392,7 +392,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.13
 	 */
-	private static class NullableWrapperToJavaSlangOptionConverter extends AbstractWrapperTypeConverter {
+	private static class NullableWrapperToJavaslangOptionConverter extends AbstractWrapperTypeConverter {
 
 		private static final Method OF_METHOD;
 		private static final Method NONE_METHOD;
@@ -403,11 +403,11 @@ public abstract class QueryExecutionConverters {
 		}
 
 		/**
-		 * Creates a new {@link NullableWrapperToJavaSlangOptionConverter} using the given {@link ConversionService}.
+		 * Creates a new {@link NullableWrapperToJavaslangOptionConverter} using the given {@link ConversionService}.
 		 * 
 		 * @param conversionService must not be {@literal null}.
 		 */
-		public NullableWrapperToJavaSlangOptionConverter(ConversionService conversionService) {
+		public NullableWrapperToJavaslangOptionConverter(ConversionService conversionService) {
 			super(conversionService, createEmptyOption(), getWrapperType());
 		}
 
@@ -505,12 +505,12 @@ public abstract class QueryExecutionConverters {
 	}
 
 	/**
-	 * Converter to unwrap JavaSlang {@link javaslang.control.Option} instances.
+	 * Converter to unwrap Javaslang {@link javaslang.control.Option} instances.
 	 *
 	 * @author Oliver Gierke
 	 * @since 1.13
 	 */
-	private static enum JavaSlangOptionUnwrapper implements Converter<Object, Object> {
+	private static enum JavaslangOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
