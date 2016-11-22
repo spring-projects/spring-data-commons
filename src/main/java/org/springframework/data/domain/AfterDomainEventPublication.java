@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
  * 
  * @author Oliver Gierke
  * @see DomainEvents
+ * @since 1.13
  * @soundtrack Benny Greb - September (Moving Parts Live)
  */
 @Retention(RetentionPolicy.RUNTIME)

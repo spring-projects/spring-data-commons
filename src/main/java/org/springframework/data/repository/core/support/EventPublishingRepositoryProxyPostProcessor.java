@@ -40,8 +40,8 @@ import org.springframework.util.ReflectionUtils;
  * {@link RepositoryProxyPostProcessor} to register a {@link MethodInterceptor} to intercept the
  * {@link CrudRepository#save(Object)} method and publish events potentially exposed via a method annotated with
  * {@link DomainEvents}. If no such method can be detected on the aggregate root, no interceptor is added. Additionally,
- * the aggregate root can expose a method annotated with {@link AfterDomainEventPublication}. If present, the method will be
- * invoked after all events have been published.
+ * the aggregate root can expose a method annotated with {@link AfterDomainEventPublication}. If present, the method
+ * will be invoked after all events have been published.
  * 
  * @author Oliver Gierke
  * @since 1.13
