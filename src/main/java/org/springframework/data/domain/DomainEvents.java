@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
  * @author Oliver Gierke
  * @see ApplicationEventPublisher
  * @see AfterDomainEventPublication
+ * @since 1.13
  * @soundtrack Benny Greb - Soulfood (Moving Parts Live)
  */
 @Retention(RetentionPolicy.RUNTIME)
