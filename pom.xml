@@ -19,7 +19,6 @@
 		<javaslang>2.0.4</javaslang>
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.8</xmlbeam>
-		<spring>5.0.0.BUILD-SNAPSHOT</spring>
 	</properties>
 
 	<dependencies>
