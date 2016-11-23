@@ -19,11 +19,7 @@ import static java.time.Instant.*;
 import static java.time.LocalDateTime.*;
 import static java.time.ZoneId.*;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -66,6 +62,10 @@ public abstract class Jsr310Converters {
 		converters.add(InstantToDateConverter.INSTANCE);
 		converters.add(ZoneIdToStringConverter.INSTANCE);
 		converters.add(StringToZoneIdConverter.INSTANCE);
+		converters.add(DurationToStringConverter.INSTANCE);
+		converters.add(StringToDurationConverter.INSTANCE);
+		converters.add(PeriodToStringConverter.INSTANCE);
+		converters.add(StringToPeriodConverter.INSTANCE);
 
 		return converters;
 	}
@@ -179,6 +179,60 @@ public abstract class Jsr310Converters {
 		@Override
 		public ZoneId convert(String source) {
 			return ZoneId.of(source);
+		}
+	}
+
+	/**
+	 * enable jsr-310 {@link java.time.Duration} write
+	 */
+	@WritingConverter
+	public static enum DurationToStringConverter implements Converter<Duration, String> {
+		INSTANCE;
+
+		@Override
+		public String convert(Duration duration) {
+			return duration.toString();
+		}
+	}
+
+	/**
+	 * enable jsr-310 {@link java.time.Duration} read
+	 */
+	@ReadingConverter
+	public static enum StringToDurationConverter implements Converter<String, Duration> {
+
+		INSTANCE;
+
+		@Override
+		public Duration convert(String s) {
+			return Duration.parse(s);
+		}
+	}
+
+	/**
+	 * enable jsr-310 {@link java.time.Period} write
+	 */
+	@WritingConverter
+	public static enum PeriodToStringConverter implements Converter<Period, String> {
+		INSTANCE;
+
+		@Override
+		public String convert(Period period) {
+			return period.toString();
+		}
+	}
+
+	/**
+	 * enable jsr-310 {@link java.time.Period} read
+	 */
+	@ReadingConverter
+	public static enum StringToPeriodConverter implements Converter<String, Period> {
+
+		INSTANCE;
+
+		@Override
+		public Period convert(String s) {
+			return Period.parse(s);
 		}
 	}
 }
