@@ -19,11 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -143,6 +139,38 @@ public class Jsr310ConvertersUnitTests {
 		}
 	}
 
+	@Test
+	public void convertsDurationToStringAndBack() {
+
+		Map<String, Duration> ids = new HashMap<String, Duration>();
+		ids.put("PT240H", Duration.ofDays(10));
+		ids.put("PT2H", Duration.ofHours(2));
+		ids.put("PT3M", Duration.ofMinutes(3));
+		ids.put("PT4S", Duration.ofSeconds(4));
+		ids.put("PT0.005S", Duration.ofMillis(5));
+		ids.put("PT0.000000006S", Duration.ofNanos(6));
+
+
+		for (Entry<String, Duration> entry : ids.entrySet()) {
+			assertThat(CONVERSION_SERVICE.convert(entry.getValue(), String.class), is(entry.getKey()));
+			assertThat(CONVERSION_SERVICE.convert(entry.getKey(), Duration.class), is(entry.getValue()));
+		}
+	}
+
+	@Test
+	public void convertsPeriodToStringAndBack() {
+
+		Map<String, Period> ids = new HashMap<String, Period>();
+		ids.put("P2D", Period.ofDays(2));
+		ids.put("P21D", Period.ofWeeks(3));
+		ids.put("P4M", Period.ofMonths(4));
+		ids.put("P5Y", Period.ofYears(5));
+
+		for (Entry<String, Period> entry : ids.entrySet()) {
+			assertThat(CONVERSION_SERVICE.convert(entry.getValue(), String.class), is(entry.getKey()));
+			assertThat(CONVERSION_SERVICE.convert(entry.getKey(), Period.class), is(entry.getValue()));
+		}
+	}
 	private static String format(Date date, String format) {
 		return new SimpleDateFormat(format).format(date);
 	}
