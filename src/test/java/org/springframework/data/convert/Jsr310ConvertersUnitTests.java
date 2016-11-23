@@ -33,7 +33,7 @@ import org.springframework.core.convert.support.GenericConversionService;
 /**
  * Unit tests for {@link Jsr310Converters}.
  * 
- * @author Oliver Gierke
+ * @author Oliver Gierke & Barak Schoster
  */
 public class Jsr310ConvertersUnitTests {
 
