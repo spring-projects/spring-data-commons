@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.0.M1 (2016-11-23)
+----------------------------------------
+* DATACMNS-939 - Static interface methods should not be considered query methods.
+* DATACMNS-937 - Support JavaSlang and other custom wrappers as return types of query methods.
+* DATACMNS-935 - Avoid hard dependency on Project Reactor in reactive support.
+* DATACMNS-933 - Release 2.0 M1 (Kay).
+* DATACMNS-919 - Remove DomainClassPropertyEditorRegistrar.
+* DATACMNS-836 - Add components to support reactive repositories.
+* DATACMNS-168 - Allow customizing the bean name for repository beans.
+
+
 Changes in version 1.12.5.RELEASE (2016-11-03)
 ----------------------------------------------
 * DATACMNS-929 - PageableHandlerMethodArgumentResolver.isFallbackPageable() throws NullPointerException if default is configured to be null.
