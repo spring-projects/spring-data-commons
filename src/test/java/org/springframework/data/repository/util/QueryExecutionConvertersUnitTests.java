@@ -65,7 +65,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(Future.class)).isTrue();
 		assertThat(QueryExecutionConverters.supports(ListenableFuture.class)).isTrue();
 		assertThat(QueryExecutionConverters.supports(Option.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(javaslang.control.Option.class), is(true));
+		assertThat(QueryExecutionConverters.supports(javaslang.control.Option.class)).isTrue();
 	}
 
 	/**
@@ -195,7 +195,7 @@ public class QueryExecutionConvertersUnitTests {
 	 */
 	@Test
 	public void turnsNullIntoScalaOptionEmpty() {
-		assertThat(conversionService.convert(new NullableWrapper(null), Option.class)).isEqualTo(Option.<Object>empty());
+		assertThat(conversionService.convert(new NullableWrapper(null), Option.class)).isEqualTo(Option.<Object> empty());
 	}
 
 	/**
@@ -218,9 +218,10 @@ public class QueryExecutionConvertersUnitTests {
 	 * @see DATACMNS-937
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void turnsNullIntoJavaslangOption() {
-		assertThat(conversionService.convert(new NullableWrapper(null), javaslang.control.Option.class),
-				is((Object) optionNone()));
+		assertThat(conversionService.convert(new NullableWrapper(null), javaslang.control.Option.class))
+				.isEqualTo(javaslang.control.Option.none());
 	}
 
 	/**
@@ -232,8 +233,8 @@ public class QueryExecutionConvertersUnitTests {
 		javaslang.control.Option<?> result = conversionService.convert(new NullableWrapper("string"),
 				javaslang.control.Option.class);
 
-		assertThat(result.isEmpty(), is(false));
-		assertThat(result.get(), is((Object) "string"));
+		assertThat(result.isEmpty()).isFalse();
+		assertThat(result.get()).isEqualTo("string");
 	}
 
 	/**
@@ -241,7 +242,7 @@ public class QueryExecutionConvertersUnitTests {
 	 */
 	@Test
 	public void unwrapsEmptyJavaslangOption() {
-		assertThat(QueryExecutionConverters.unwrap(optionNone()), is(nullValue()));
+		assertThat(QueryExecutionConverters.unwrap(optionNone())).isNull();
 	}
 
 	/**
@@ -249,7 +250,7 @@ public class QueryExecutionConvertersUnitTests {
 	 */
 	@Test
 	public void unwrapsJavaslangOption() {
-		assertThat(QueryExecutionConverters.unwrap(option("string")), is((Object) "string"));
+		assertThat(QueryExecutionConverters.unwrap(option("string"))).isEqualTo("string");
 	}
 
 	@SuppressWarnings("unchecked")

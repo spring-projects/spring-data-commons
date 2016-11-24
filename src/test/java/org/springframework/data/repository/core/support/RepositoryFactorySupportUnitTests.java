@@ -314,7 +314,7 @@ public class RepositoryFactorySupportUnitTests {
 
 		ObjectRepository repository = factory.getRepository(ObjectRepository.class, customImplementation);
 
-		assertThat(repository.staticMethodDelegate(), is(equalTo("OK")));
+		assertThat(repository.staticMethodDelegate()).isEqualTo("OK");
 
 		verifyZeroInteractions(customImplementation);
 		verifyZeroInteractions(backingRepo);
