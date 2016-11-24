@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import lombok.experimental.Delegate;
+
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -254,6 +256,22 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-943
+	 * @throws Exception
+	 */
+	@Test
+	public void usesCorrectSaveOverload() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(DummyRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, DummyRepositoryImpl.class, null);
+
+		Method method = DummyRepository.class.getMethod("save", Iterable.class);
+
+		assertThat(information.getTargetClassMethod(method),
+				is(DummyRepositoryImpl.class.getMethod("save", Iterable.class)));
+	}
+
 	private static Method getMethodFrom(Class<?> type, String name) {
 
 		for (Method method : type.getMethods()) {
@@ -303,7 +321,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		@Override
 		public Iterator<User> iterator() {
-			return Collections.<User>emptySet().iterator();
+			return Collections.<User> emptySet().iterator();
 		}
 	}
 
@@ -366,4 +384,15 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	static class Sample {}
+
+	interface DummyRepository extends CrudRepository<User, Integer> {
+
+		@Override
+		<S extends User> List<S> save(Iterable<S> entites);
+	}
+
+	static class DummyRepositoryImpl<T, ID extends Serializable> implements CrudRepository<T, ID> {
+
+		private @Delegate CrudRepository<T, ID> delegate;
+	}
 }
