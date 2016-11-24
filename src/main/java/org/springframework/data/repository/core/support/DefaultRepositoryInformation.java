@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
@@ -41,6 +42,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.util.Optionals;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
@@ -238,15 +240,17 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 * @return
 	 */
 	Method getTargetClassMethod(Method method, Optional<Class<?>> baseClass) {
-		return baseClass.map(it -> {
-			return Optional.ofNullable(findMethod(it, method.getName(), method.getParameterTypes())).orElseGet(() -> {
-				return Arrays.stream(it.getMethods())//
-						.filter(baseClassMethod -> method.getName().equals(baseClassMethod.getName()))// Right name
-						.filter(baseClassMethod -> method.getParameterTypes().length == baseClassMethod.getParameterTypes().length)
-						.filter(baseClassMethod -> parametersMatch(method, baseClassMethod))// All parameters match
-						.findFirst().orElse(method);
-			});
-		}).orElse(method);
+
+		Supplier<Optional<Method>> directMatch = () -> baseClass
+				.map(it -> findMethod(it, method.getName(), method.getParameterTypes()));
+
+		Supplier<Optional<Method>> detailedComparison = () -> baseClass.flatMap(it -> Arrays.stream(it.getMethods())//
+				.filter(baseClassMethod -> method.getName().equals(baseClassMethod.getName()))// Right name
+				.filter(baseClassMethod -> method.getParameterTypes().length == baseClassMethod.getParameterTypes().length)
+				.filter(baseClassMethod -> parametersMatch(method, baseClassMethod))// All parameters match
+				.findFirst());
+
+		return Optionals.firstNonEmpty(directMatch, detailedComparison).orElse(method);
 	}
 
 	/*

@@ -25,8 +25,6 @@ import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +44,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -479,21 +476,13 @@ public abstract class QueryExecutionConverters {
 	 */
 	private static class NullableWrapperToJavaslangOptionConverter extends AbstractWrapperTypeConverter {
 
-		private static final Method OF_METHOD;
-		private static final Method NONE_METHOD;
-
-		static {
-			OF_METHOD = ReflectionUtils.findMethod(javaslang.control.Option.class, "of", Object.class);
-			NONE_METHOD = ReflectionUtils.findMethod(javaslang.control.Option.class, "none");
-		}
-
 		/**
 		 * Creates a new {@link NullableWrapperToJavaslangOptionConverter} using the given {@link ConversionService}.
 		 * 
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToJavaslangOptionConverter(ConversionService conversionService) {
-			super(conversionService, createEmptyOption(), javaslang.control.Option.class);
+			super(conversionService, javaslang.control.Option.none(), getWrapperType());
 		}
 
 		public static WrapperType getWrapperType() {
@@ -505,14 +494,8 @@ public abstract class QueryExecutionConverters {
 		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
 		 */
 		@Override
-		@SuppressWarnings("unchecked")
 		protected Object wrap(Object source) {
-			return (javaslang.control.Option<Object>) ReflectionUtils.invokeMethod(OF_METHOD, null, source);
-		}
-
-		@SuppressWarnings("unchecked")
-		private static javaslang.control.Option<Object> createEmptyOption() {
-			return (javaslang.control.Option<Object>) ReflectionUtils.invokeMethod(NONE_METHOD, null);
+			return javaslang.control.Option.of(source);
 		}
 	}
 

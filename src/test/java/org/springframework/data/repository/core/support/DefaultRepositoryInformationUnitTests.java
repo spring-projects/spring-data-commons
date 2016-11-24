@@ -242,11 +242,11 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				customImplementation.getClass());
+				Optional.of(customImplementation.getClass()));
 
 		Method method = FooRepository.class.getMethod("staticMethod");
 
-		assertThat(information.getQueryMethods(), not(hasItem(method)));
+		assertThat(information.getQueryMethods()).doesNotContain(method);
 	}
 
 	@Test // DATACMNS-939
@@ -254,11 +254,11 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				customImplementation.getClass());
+				Optional.of(customImplementation.getClass()));
 
 		Method method = FooRepository.class.getMethod("defaultMethod");
 
-		assertThat(information.getQueryMethods(), not(hasItem(method)));
+		assertThat(information.getQueryMethods()).doesNotContain(method);
 	}
 
 	@Test // DATACMNS-943

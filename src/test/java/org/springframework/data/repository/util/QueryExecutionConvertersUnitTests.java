@@ -186,7 +186,7 @@ public class QueryExecutionConvertersUnitTests {
 	@SuppressWarnings("unchecked")
 	public void turnsNullIntoJavaslangOption() {
 		assertThat(conversionService.convert(new NullableWrapper(null), javaslang.control.Option.class))
-				.isEqualTo(optionNone());
+				.isEqualTo(javaslang.control.Option.none());
 	}
 
 	@Test // DATACMNS-937
