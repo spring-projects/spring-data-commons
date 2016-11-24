@@ -243,6 +243,12 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 			return method;
 		}
 
+		Method result = findMethod(baseClass, method.getName(), method.getParameterTypes());
+
+		if (result != null) {
+			return result;
+		}
+
 		for (Method baseClassMethod : baseClass.getMethods()) {
 
 			// Wrong name
