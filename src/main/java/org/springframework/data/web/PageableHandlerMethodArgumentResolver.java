@@ -28,7 +28,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
@@ -72,7 +71,7 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 	/**
 	 * Constructs an instance of this resolver with the specified {@link SortHandlerMethodArgumentResolver}.
 	 * 
-	 * @param sortResolver The sort resolver to use
+	 * @param sortResolver the sort resolver to use
 	 */
 	public PageableHandlerMethodArgumentResolver(SortHandlerMethodArgumentResolver sortResolver) {
 		this((SortArgumentResolver) sortResolver);
@@ -81,7 +80,7 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 	/**
 	 * Constructs an instance of this resolver with the specified {@link SortArgumentResolver}.
 	 *
-	 * @param sortResolver The sort resolver to use
+	 * @param sortResolver the sort resolver to use
 	 * @since 1.13
 	 */
 	public PageableHandlerMethodArgumentResolver(SortArgumentResolver sortResolver) {
