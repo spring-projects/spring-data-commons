@@ -25,7 +25,6 @@ import lombok.Getter;
 import lombok.Value;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
@@ -129,14 +128,14 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test
 	public void interceptsSaveMethod() throws Throwable {
 
-		Method saveMethod = SampleRepository.class.getMethod("save", Object.class);
-		doReturn(saveMethod).when(invocation).getMethod();
+		doReturn(SampleRepository.class.getMethod("save", Object.class)).when(invocation).getMethod();
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Arrays.asList(event));
 		doReturn(new Object[] { sample }).when(invocation).getArguments();
 
-		new EventPublishingMethodInterceptor(saveMethod, EventPublishingMethod.of(MultipleEvents.class), publisher)
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
 				.invoke(invocation);
 
 		verify(publisher).publishEvent(event);
@@ -148,10 +147,10 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test
 	public void doesNotInterceptNonSaveMethod() throws Throwable {
 
-		Method saveMethod = SampleRepository.class.getMethod("save", Object.class);
 		doReturn(SampleRepository.class.getMethod("findOne", Serializable.class)).when(invocation).getMethod();
 
-		new EventPublishingMethodInterceptor(saveMethod, EventPublishingMethod.of(MultipleEvents.class), publisher)
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
 				.invoke(invocation);
 
 		verify(publisher, never()).publishEvent(any());
@@ -187,6 +186,25 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		processor.postProcess(factory, information);
 
 		verify(factory, never()).addAdvice(any(Advice.class));
+	}
+
+	/**
+	 * @see DATACMNS-928
+	 */
+	@Test
+	public void publishesEventsForCallToSaveWithIterable() throws Throwable {
+
+		SomeEvent event = new SomeEvent();
+		MultipleEvents sample = MultipleEvents.of(Arrays.asList(event));
+		doReturn(new Object[] { Arrays.asList(sample) }).when(invocation).getArguments();
+
+		doReturn(SampleRepository.class.getMethod("save", Iterable.class)).when(invocation).getMethod();
+
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
+				.invoke(invocation);
+
+		verify(publisher).publishEvent(any(SomeEvent.class));
 	}
 
 	@Value(staticConstructor = "of")
