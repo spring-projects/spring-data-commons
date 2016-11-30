@@ -65,14 +65,18 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			return;
 		}
 
-		factory.addAdvice(new EventPublishingMethodInterceptor(repositoryInformation.getCrudMethods().getSaveMethod(),
-				method, publisher));
+		factory.addAdvice(new EventPublishingMethodInterceptor(method, publisher));
 	}
 
-	@RequiredArgsConstructor
+	/**
+	 * {@link MethodInterceptor} to publish events exposed an aggregate on calls to a save method on the repository.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.13
+	 */
+	@RequiredArgsConstructor(staticName = "of")
 	static class EventPublishingMethodInterceptor implements MethodInterceptor {
 
-		private final Method saveMethod;
 		private final EventPublishingMethod eventMethod;
 		private final ApplicationEventPublisher publisher;
 
@@ -83,7 +87,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		@Override
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
-			if (!invocation.getMethod().equals(saveMethod)) {
+			if (!invocation.getMethod().getName().equals("save")) {
 				return invocation.proceed();
 			}
 
@@ -95,6 +99,12 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		}
 	}
 
+	/**
+	 * Abstraction of a method on the aggregate root that exposes the events to publish.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.13
+	 */
 	@RequiredArgsConstructor
 	static class EventPublishingMethod {
 
@@ -151,8 +161,10 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return;
 			}
 
-			for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, object))) {
-				publisher.publishEvent(event);
+			for (Object aggregateRoot : asCollection(object)) {
+				for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
+					publisher.publishEvent(event);
+				}
 			}
 
 			if (clearingMethod != null) {
