@@ -218,7 +218,7 @@ NOTE: Note, that the intermediate repository interface is annotated with `@NoRep
 Using a unique Spring Data module in your application makes things simple hence, all repository interfaces in the defined scope are bound to the Spring Data module. Sometimes applications require using more than one Spring Data module. In such case, it's required for a repository definition to distinguish between persistence technologies. Spring Data enters strict repository configuration mode because it detects multiple repository factories on the class path. Strict configuration requires details on the repository or the domain class to decide about Spring Data module binding for a repository definition:
 
 1. If the repository definition <<repositories.multiple-modules.types,extends the module-specific repository>>, then it's a valid candidate for the particular Spring Data module.
-2. If the domain class is <<repositories.multiple-modules.annotations,annotated with the module-specific type annotation>>, then it's a valid candidate for the particular Spring Data module. Spring Data modules accept either 3rd party annotations (such as JPA's `@Entity`) or provide own annotations such as `@Document` for Spring Data MongoDB/Spring Data Elasticsearch. 
+2. If the domain class is <<repositories.multiple-modules.annotations,annotated with the module-specific type annotation>>, then it's a valid candidate for the particular Spring Data module. Spring Data modules accept either 3rd party annotations (such as JPA's `@Entity`) or provide own annotations such as `@Document` for Spring Data MongoDB/Spring Data Elasticsearch.
 
 [[repositories.multiple-modules.types]]
 .Repository definitions using Module-specific Interfaces
@@ -306,7 +306,7 @@ public class Person {
 This example shows a domain class using both JPA and Spring Data MongoDB annotations. It defines two repositories, `JpaPersonRepository` and `MongoDBPersonRepository`. One is intended for JPA and the other for MongoDB usage. Spring Data is no longer able to tell the repositories apart which leads to undefined behavior.
 ====
 
-<<repositories.multiple-modules.types,Repository type details>> and <<repositories.multiple-modules.annotations,identifying domain class annotations>> are used for strict repository configuration identify repository candidates for a particular Spring Data module. Using multiple persistence technology-specific annotations on the same domain type is possible to reuse domain types across multiple persistence technologies, but then Spring Data is no longer able to determine a unique module to bind the repository. 
+<<repositories.multiple-modules.types,Repository type details>> and <<repositories.multiple-modules.annotations,identifying domain class annotations>> are used for strict repository configuration identify repository candidates for a particular Spring Data module. Using multiple persistence technology-specific annotations on the same domain type is possible to reuse domain types across multiple persistence technologies, but then Spring Data is no longer able to determine a unique module to bind the repository.
 
 The last way to distinguish repositories is scoping repository base packages. Base packages define the starting points for scanning for repository interface definitions which  implies to have repository definitions located in the appropriate packages. By default, annotation-driven configuration uses the package of the configuration class. The <<repositories.create-instances.spring,base package in XML-based configuration>> is mandatory.
 
@@ -735,6 +735,36 @@ A corresponding attribute is available in the XML namespace.
      base-class="….MyRepositoryImpl" />
 ----
 ====
+
+[[core.domain-events]]
+== Publishing events from aggregate roots
+
+Entities managed by repositories are aggregate roots.
+In a Domain-Driven Design application, these aggregate roots usually publish domain events.
+Spring Data provides an annotation `@DomainEvents` you can use on a method of your aggregate root to make that publication as easy as possible.
+
+.Exposing domain events from an aggregate root
+====
+[source, java]
+----
+class AnAggreagteRoot {
+
+    @DomainEvents <1>
+    Collection<Object> domainEvents() {
+        // … return events you want to get published here
+    }
+
+    @AfterDomainEventsPublication <2>
+    void callbackMethod() {
+       // … potentially clean up domain events list
+    }
+}
+----
+<1> The method using `@DomainEvents` can either return a single event instance or a collection of events. It must not take any arguments.
+<2> After all events have been published, a method annotated with `@AfterDomainEventsPublication`. It e.g. can be used to potentially clean the list of events to be published.
+====
+
+The methods will be called every time one of a Spring Data repository's `save(…)` methods is called.
 
 [[core.extensions]]
 == Spring Data extensions
