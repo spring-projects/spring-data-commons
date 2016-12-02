@@ -60,7 +60,7 @@ class MethodParameters {
 		Assert.notNull(method);
 		this.parameters = new ArrayList<>();
 
-		for (int i = 0; i < method.getParameterTypes().length; i++) {
+		for (int i = 0; i < method.getParameterCount(); i++) {
 
 			MethodParameter parameter = new AnnotationNamingMethodParameter(method, i, namingAnnotation);
 			parameter.initParameterNameDiscovery(discoverer);

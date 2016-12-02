@@ -246,7 +246,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 
 		Supplier<Optional<Method>> detailedComparison = () -> baseClass.flatMap(it -> Arrays.stream(it.getMethods())//
 				.filter(baseClassMethod -> method.getName().equals(baseClassMethod.getName()))// Right name
-				.filter(baseClassMethod -> method.getParameterTypes().length == baseClassMethod.getParameterTypes().length)
+				.filter(baseClassMethod -> method.getParameterCount() == baseClassMethod.getParameterCount())
 				.filter(baseClassMethod -> parametersMatch(method, baseClassMethod))// All parameters match
 				.findFirst());
 

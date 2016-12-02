@@ -163,7 +163,7 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 
 		return Arrays.stream(baseClass.getMethods())//
 				.filter(it -> method.getName().equals(it.getName()))//
-				.filter(it -> method.getParameterTypes().length == it.getParameterTypes().length)//
+				.filter(it -> method.getParameterCount() == it.getParameterCount())//
 				.filter(it -> parametersMatch(it, method, predicate))//
 				.findFirst();
 	}
