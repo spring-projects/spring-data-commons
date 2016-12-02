@@ -101,11 +101,11 @@ public class Function {
 	 */
 	public boolean supports(List<TypeDescriptor> argumentTypes) {
 
-		Class<?>[] parameterTypes = method.getParameterTypes();
-
-		if (parameterTypes.length != argumentTypes.size()) {
+		if (method.getParameterCount() != argumentTypes.size()) {
 			return false;
 		}
+
+		Class<?>[] parameterTypes = method.getParameterTypes();
 
 		for (int i = 0; i < parameterTypes.length; i++) {
 			if (!TypeUtils.isAssignable(parameterTypes[i], argumentTypes.get(i).getType())) {
