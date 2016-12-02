@@ -116,7 +116,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		Constructor<?>[] declaredConstructors = persistentPropertyAccessor.getClass().getDeclaredConstructors();
 		assertThat(declaredConstructors.length).isEqualTo(1);
-		assertThat(declaredConstructors[0].getParameterTypes().length).isEqualTo(1);
+		assertThat(declaredConstructors[0].getParameterCount()).isEqualTo(1);
 		assertThat(declaredConstructors[0].getParameterTypes()[0]).isEqualTo(expectedConstructorType);
 	}
 
