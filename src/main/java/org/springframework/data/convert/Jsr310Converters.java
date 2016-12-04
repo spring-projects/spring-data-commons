@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,13 @@ import static java.time.Instant.*;
 import static java.time.LocalDateTime.*;
 import static java.time.ZoneId.*;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +40,7 @@ import org.springframework.util.ClassUtils;
  * Helper class to register JSR-310 specific {@link Converter} implementations in case the we're running on Java 8.
  * 
  * @author Oliver Gierke
+ * @author Barak Schoster
  */
 public abstract class Jsr310Converters {
 
@@ -182,11 +189,9 @@ public abstract class Jsr310Converters {
 		}
 	}
 
-	/**
-	 * enable jsr-310 {@link java.time.Duration} write
-	 */
 	@WritingConverter
 	public static enum DurationToStringConverter implements Converter<Duration, String> {
+
 		INSTANCE;
 
 		@Override
@@ -195,9 +200,6 @@ public abstract class Jsr310Converters {
 		}
 	}
 
-	/**
-	 * enable jsr-310 {@link java.time.Duration} read
-	 */
 	@ReadingConverter
 	public static enum StringToDurationConverter implements Converter<String, Duration> {
 
@@ -209,11 +211,9 @@ public abstract class Jsr310Converters {
 		}
 	}
 
-	/**
-	 * enable jsr-310 {@link java.time.Period} write
-	 */
 	@WritingConverter
 	public static enum PeriodToStringConverter implements Converter<Period, String> {
+
 		INSTANCE;
 
 		@Override
@@ -222,9 +222,6 @@ public abstract class Jsr310Converters {
 		}
 	}
 
-	/**
-	 * enable jsr-310 {@link java.time.Period} read
-	 */
 	@ReadingConverter
 	public static enum StringToPeriodConverter implements Converter<String, Period> {
 
