@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,43 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.text.SimpleDateFormat;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Period;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.convert.Jsr310ConvertersUnitTests.CommonTests;
+import org.springframework.data.convert.Jsr310ConvertersUnitTests.DurationConversionTests;
+import org.springframework.data.convert.Jsr310ConvertersUnitTests.PeriodConversionTests;
 
 /**
  * Unit tests for {@link Jsr310Converters}.
  * 
- * @author Oliver Gierke & Barak Schoster
+ * @author Oliver Gierke
+ * @author Barak Schoster
  */
+@RunWith(Suite.class)
+@SuiteClasses({ CommonTests.class, DurationConversionTests.class, PeriodConversionTests.class })
 public class Jsr310ConvertersUnitTests {
 
 	static final Date NOW = new Date();
@@ -51,127 +72,150 @@ public class Jsr310ConvertersUnitTests {
 		CONVERSION_SERVICE = conversionService;
 	}
 
-	/**
-	 * @see DATACMNS-606
-	 */
-	@Test
-	public void convertsDateToLocalDateTime() {
-		assertThat(CONVERSION_SERVICE.convert(NOW, LocalDateTime.class).toString(),
-				is(format(NOW, "yyyy-MM-dd'T'HH:mm:ss.SSS")));
-	}
+	public static class CommonTests {
 
-	/**
-	 * @see DATACMNS-606
-	 */
-	@Test
-	public void convertsLocalDateTimeToDate() {
+		/**
+		 * @see DATACMNS-606
+		 */
+		@Test
+		public void convertsDateToLocalDateTime() {
+			assertThat(CONVERSION_SERVICE.convert(NOW, LocalDateTime.class).toString(),
+					is(format(NOW, "yyyy-MM-dd'T'HH:mm:ss.SSS")));
+		}
 
-		LocalDateTime now = LocalDateTime.now();
-		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "yyyy-MM-dd'T'HH:mm:ss.SSS"), is(now.toString()));
-	}
+		/**
+		 * @see DATACMNS-606
+		 */
+		@Test
+		public void convertsLocalDateTimeToDate() {
 
-	/**
-	 * @see DATACMNS-606
-	 */
-	@Test
-	public void convertsDateToLocalDate() {
-		assertThat(CONVERSION_SERVICE.convert(NOW, LocalDate.class).toString(), is(format(NOW, "yyyy-MM-dd")));
-	}
+			LocalDateTime now = LocalDateTime.now();
+			assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "yyyy-MM-dd'T'HH:mm:ss.SSS"), is(now.toString()));
+		}
 
-	/**
-	 * @see DATACMNS-606
-	 */
-	@Test
-	public void convertsLocalDateToDate() {
+		/**
+		 * @see DATACMNS-606
+		 */
+		@Test
+		public void convertsDateToLocalDate() {
+			assertThat(CONVERSION_SERVICE.convert(NOW, LocalDate.class).toString(), is(format(NOW, "yyyy-MM-dd")));
+		}
 
-		LocalDate now = LocalDate.now();
-		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "yyyy-MM-dd"), is(now.toString()));
-	}
+		/**
+		 * @see DATACMNS-606
+		 */
+		@Test
+		public void convertsLocalDateToDate() {
 
-	/**
-	 * @see DATACMNS-606
-	 */
-	@Test
-	public void convertsDateToLocalTime() {
-		assertThat(CONVERSION_SERVICE.convert(NOW, LocalTime.class).toString(), is(format(NOW, "HH:mm:ss.SSS")));
-	}
+			LocalDate now = LocalDate.now();
+			assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "yyyy-MM-dd"), is(now.toString()));
+		}
 
-	/**
-	 * @see DATACMNS-606
-	 */
-	@Test
-	public void convertsLocalTimeToDate() {
+		/**
+		 * @see DATACMNS-606
+		 */
+		@Test
+		public void convertsDateToLocalTime() {
+			assertThat(CONVERSION_SERVICE.convert(NOW, LocalTime.class).toString(), is(format(NOW, "HH:mm:ss.SSS")));
+		}
 
-		LocalTime now = LocalTime.now();
-		assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "HH:mm:ss.SSS"), is(now.toString()));
-	}
+		/**
+		 * @see DATACMNS-606
+		 */
+		@Test
+		public void convertsLocalTimeToDate() {
 
-	/**
-	 * @see DATACMNS-623
-	 */
-	@Test
-	public void convertsDateToInstant() {
+			LocalTime now = LocalTime.now();
+			assertThat(format(CONVERSION_SERVICE.convert(now, Date.class), "HH:mm:ss.SSS"), is(now.toString()));
+		}
 
-		Date now = new Date();
-		assertThat(CONVERSION_SERVICE.convert(now, Instant.class), is(now.toInstant()));
-	}
+		/**
+		 * @see DATACMNS-623
+		 */
+		@Test
+		public void convertsDateToInstant() {
 
-	/**
-	 * @see DATACMNS-623
-	 */
-	@Test
-	public void convertsInstantToDate() {
+			Date now = new Date();
+			assertThat(CONVERSION_SERVICE.convert(now, Instant.class), is(now.toInstant()));
+		}
 
-		Date now = new Date();
-		assertThat(CONVERSION_SERVICE.convert(now.toInstant(), Date.class), is(now));
-	}
+		/**
+		 * @see DATACMNS-623
+		 */
+		@Test
+		public void convertsInstantToDate() {
 
-	@Test
-	public void convertsZoneIdToStringAndBack() {
+			Date now = new Date();
+			assertThat(CONVERSION_SERVICE.convert(now.toInstant(), Date.class), is(now));
+		}
 
-		Map<String, ZoneId> ids = new HashMap<String, ZoneId>();
-		ids.put("Europe/Berlin", ZoneId.of("Europe/Berlin"));
-		ids.put("+06:00", ZoneId.of("+06:00"));
+		@Test
+		public void convertsZoneIdToStringAndBack() {
 
-		for (Entry<String, ZoneId> entry : ids.entrySet()) {
-			assertThat(CONVERSION_SERVICE.convert(entry.getValue(), String.class), is(entry.getKey()));
-			assertThat(CONVERSION_SERVICE.convert(entry.getKey(), ZoneId.class), is(entry.getValue()));
+			Map<String, ZoneId> ids = new HashMap<String, ZoneId>();
+			ids.put("Europe/Berlin", ZoneId.of("Europe/Berlin"));
+			ids.put("+06:00", ZoneId.of("+06:00"));
+
+			for (Entry<String, ZoneId> entry : ids.entrySet()) {
+				assertThat(CONVERSION_SERVICE.convert(entry.getValue(), String.class), is(entry.getKey()));
+				assertThat(CONVERSION_SERVICE.convert(entry.getKey(), ZoneId.class), is(entry.getValue()));
+			}
+		}
+
+		private static String format(Date date, String format) {
+			return new SimpleDateFormat(format).format(date);
 		}
 	}
 
-	@Test
-	public void convertsDurationToStringAndBack() {
+	@RunWith(Parameterized.class)
+	public static class DurationConversionTests extends ConversionTest<Duration> {
 
-		Map<String, Duration> ids = new HashMap<String, Duration>();
-		ids.put("PT240H", Duration.ofDays(10));
-		ids.put("PT2H", Duration.ofHours(2));
-		ids.put("PT3M", Duration.ofMinutes(3));
-		ids.put("PT4S", Duration.ofSeconds(4));
-		ids.put("PT0.005S", Duration.ofMillis(5));
-		ids.put("PT0.000000006S", Duration.ofNanos(6));
+		/**
+		 * @see DATACMNS-951
+		 */
+		@Parameters
+		public static Collection<Object[]> data() {
 
-
-		for (Entry<String, Duration> entry : ids.entrySet()) {
-			assertThat(CONVERSION_SERVICE.convert(entry.getValue(), String.class), is(entry.getKey()));
-			assertThat(CONVERSION_SERVICE.convert(entry.getKey(), Duration.class), is(entry.getValue()));
+			return Arrays.asList(new Object[][] { //
+					{ "PT240H", Duration.ofDays(10) }, //
+					{ "PT2H", Duration.ofHours(2) }, //
+					{ "PT3M", Duration.ofMinutes(3) }, //
+					{ "PT4S", Duration.ofSeconds(4) }, //
+					{ "PT0.005S", Duration.ofMillis(5) }, //
+					{ "PT0.000000006S", Duration.ofNanos(6) } //
+			});
 		}
 	}
 
-	@Test
-	public void convertsPeriodToStringAndBack() {
+	public static class PeriodConversionTests extends ConversionTest<Period> {
 
-		Map<String, Period> ids = new HashMap<String, Period>();
-		ids.put("P2D", Period.ofDays(2));
-		ids.put("P21D", Period.ofWeeks(3));
-		ids.put("P4M", Period.ofMonths(4));
-		ids.put("P5Y", Period.ofYears(5));
+		/**
+		 * @see DATACMNS-951
+		 */
+		@Parameters
+		public static Collection<Object[]> data() {
 
-		for (Entry<String, Period> entry : ids.entrySet()) {
-			assertThat(CONVERSION_SERVICE.convert(entry.getValue(), String.class), is(entry.getKey()));
-			assertThat(CONVERSION_SERVICE.convert(entry.getKey(), Period.class), is(entry.getValue()));
+			return Arrays.asList(new Object[][] { //
+					{ "P2D", Period.ofDays(2) }, //
+					{ "P21D", Period.ofWeeks(3) }, //
+					{ "P4M", Period.ofMonths(4) }, //
+					{ "P5Y", Period.ofYears(5) }, //
+			});
 		}
 	}
-	private static String format(Date date, String format) {
-		return new SimpleDateFormat(format).format(date);
+
+	@RunWith(Parameterized.class)
+	public static class ConversionTest<T> {
+
+		public @Parameter(0) String string;
+		public @Parameter(1) T target;
+
+		@Test
+		public void convertsPeriodToStringAndBack() {
+
+			ResolvableType type = ResolvableType.forClass(ConversionTest.class, this.getClass());
+			assertThat(CONVERSION_SERVICE.convert(target, String.class), is(string));
+			assertThat(CONVERSION_SERVICE.convert(string, type.getGeneric(0).getRawClass()), is((Object) target));
+		}
 	}
 }
