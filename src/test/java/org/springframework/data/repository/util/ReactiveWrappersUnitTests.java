@@ -40,11 +40,11 @@ public class ReactiveWrappersUnitTests {
 	public void isSingleLikeShouldReportCorrectNoTypes() {
 
 		assertThat(ReactiveWrappers.isNoValueType(Mono.class)).isFalse();
-		assertThat(ReactiveWrappers.isNoValueType(Flux.class)).isTrue();
+		assertThat(ReactiveWrappers.isNoValueType(Flux.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Single.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Completable.class)).isTrue();
 		assertThat(ReactiveWrappers.isNoValueType(Observable.class)).isFalse();
-		assertThat(ReactiveWrappers.isNoValueType(Publisher.class)).isTrue();
+		assertThat(ReactiveWrappers.isNoValueType(Publisher.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Single.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Maybe.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Flowable.class)).isFalse();

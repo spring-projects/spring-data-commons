@@ -169,7 +169,7 @@ public class ReactiveWrapperConverters {
 	 */
 	public static boolean supports(Class<?> type) {
 		return RegistryHolder.REACTIVE_ADAPTER_REGISTRY != null
-				&& RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(type) != null;
+				&& RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(type) != null;
 	}
 
 	/**
@@ -476,7 +476,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Single<?> convert(Publisher<?> source) {
-			return (Single<?>) REACTIVE_ADAPTER_REGISTRY.getAdapterTo(Single.class).fromPublisher(Mono.from(source));
+			return (Single<?>) REACTIVE_ADAPTER_REGISTRY.getAdapter(Single.class).fromPublisher(Mono.from(source));
 		}
 	}
 
@@ -492,7 +492,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Completable convert(Publisher<?> source) {
-			return (Completable) REACTIVE_ADAPTER_REGISTRY.getAdapterTo(Completable.class).fromPublisher(source);
+			return (Completable) REACTIVE_ADAPTER_REGISTRY.getAdapter(Completable.class).fromPublisher(source);
 		}
 	}
 
@@ -508,7 +508,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Observable<?> convert(Publisher<?> source) {
-			return (Observable<?>) REACTIVE_ADAPTER_REGISTRY.getAdapterTo(Observable.class).fromPublisher(Flux.from(source));
+			return (Observable<?>) REACTIVE_ADAPTER_REGISTRY.getAdapter(Observable.class).fromPublisher(Flux.from(source));
 		}
 	}
 
@@ -524,7 +524,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Publisher<?> convert(Single<?> source) {
-			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Single.class).toPublisher(source));
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapter(Single.class).toPublisher(source));
 		}
 	}
 
@@ -540,7 +540,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Mono<?> convert(Single<?> source) {
-			return Mono.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Single.class).toMono(source));
+			return Mono.defer(() -> Mono.from(REACTIVE_ADAPTER_REGISTRY.getAdapter(Single.class).toPublisher(source)));
 		}
 	}
 
@@ -556,7 +556,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Flux<?> convert(Single<?> source) {
-			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Single.class).toFlux(source));
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapter(Single.class).toPublisher(source));
 		}
 	}
 
@@ -572,7 +572,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Publisher<?> convert(Completable source) {
-			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Completable.class).toFlux(source));
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapter(Completable.class).toPublisher(source));
 		}
 	}
 
@@ -604,7 +604,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Publisher<?> convert(Observable<?> source) {
-			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Observable.class).toFlux(source));
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapter(Observable.class).toPublisher(source));
 		}
 	}
 
@@ -620,7 +620,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Mono<?> convert(Observable<?> source) {
-			return Mono.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Observable.class).toMono(source));
+			return Mono.defer(() -> Mono.from(REACTIVE_ADAPTER_REGISTRY.getAdapter(Observable.class).toPublisher(source)));
 		}
 	}
 
@@ -636,7 +636,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Flux<?> convert(Observable<?> source) {
-			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(Observable.class).toFlux(source));
+			return Flux.defer(() -> REACTIVE_ADAPTER_REGISTRY.getAdapter(Observable.class).toPublisher(source));
 		}
 	}
 
@@ -688,7 +688,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public io.reactivex.Single<?> convert(Publisher<?> source) {
-			return (io.reactivex.Single<?>) REACTIVE_ADAPTER_REGISTRY.getAdapterTo(io.reactivex.Single.class)
+			return (io.reactivex.Single<?>) REACTIVE_ADAPTER_REGISTRY.getAdapter(io.reactivex.Single.class)
 					.fromPublisher(source);
 		}
 	}
@@ -705,7 +705,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public io.reactivex.Completable convert(Publisher<?> source) {
-			return (io.reactivex.Completable) REACTIVE_ADAPTER_REGISTRY.getAdapterTo(io.reactivex.Completable.class)
+			return (io.reactivex.Completable) REACTIVE_ADAPTER_REGISTRY.getAdapter(io.reactivex.Completable.class)
 					.fromPublisher(source);
 		}
 	}
@@ -722,7 +722,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public io.reactivex.Observable<?> convert(Publisher<?> source) {
-			return (io.reactivex.Observable<?>) REACTIVE_ADAPTER_REGISTRY.getAdapterTo(io.reactivex.Single.class)
+			return (io.reactivex.Observable<?>) REACTIVE_ADAPTER_REGISTRY.getAdapter(io.reactivex.Single.class)
 					.fromPublisher(source);
 		}
 	}
@@ -739,7 +739,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Publisher<?> convert(io.reactivex.Single<?> source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(io.reactivex.Single.class).toMono(source);
+			return REACTIVE_ADAPTER_REGISTRY.getAdapter(io.reactivex.Single.class).toPublisher(source);
 		}
 	}
 
@@ -755,7 +755,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Mono<?> convert(io.reactivex.Single<?> source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(io.reactivex.Single.class).toMono(source);
+			return Mono.from(REACTIVE_ADAPTER_REGISTRY.getAdapter(io.reactivex.Single.class).toPublisher(source));
 		}
 	}
 
@@ -771,7 +771,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Flux<?> convert(io.reactivex.Single<?> source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(io.reactivex.Single.class).toFlux(source);
+			return Flux.from(REACTIVE_ADAPTER_REGISTRY.getAdapter(io.reactivex.Single.class).toPublisher(source));
 		}
 	}
 
@@ -787,7 +787,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public Publisher<?> convert(io.reactivex.Completable source) {
-			return REACTIVE_ADAPTER_REGISTRY.getAdapterFrom(io.reactivex.Completable.class).toFlux(source);
+			return REACTIVE_ADAPTER_REGISTRY.getAdapter(io.reactivex.Completable.class).toPublisher(source);
 		}
 	}
 
@@ -899,7 +899,7 @@ public class ReactiveWrapperConverters {
 
 		@Override
 		public io.reactivex.Maybe<?> convert(Publisher<?> source) {
-			return (io.reactivex.Maybe<?>) REACTIVE_ADAPTER_REGISTRY.getAdapterTo(Maybe.class).fromPublisher(source);
+			return (io.reactivex.Maybe<?>) REACTIVE_ADAPTER_REGISTRY.getAdapter(Maybe.class).fromPublisher(source);
 		}
 	}
 

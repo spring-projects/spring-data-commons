@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.util;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,17 +22,16 @@ import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.reactivestreams.Publisher;
-import org.springframework.core.ReactiveAdapter;
+
+import org.springframework.core.ReactiveTypeDescriptor;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -75,7 +71,7 @@ public class ReactiveWrappers {
 	private static final boolean RXJAVA2_PRESENT = ClassUtils.isPresent("io.reactivex.Flowable",
 			ReactiveWrappers.class.getClassLoader());
 
-	private static final Map<Class<?>, Descriptor> REACTIVE_WRAPPERS;
+	private static final Collection<ReactiveTypeDescriptor> REACTIVE_WRAPPERS;
 
 	/**
 	 * Enumeration of supported reactive libraries.
@@ -88,32 +84,36 @@ public class ReactiveWrappers {
 
 	static {
 
-		Map<Class<?>, Descriptor> reactiveWrappers = new LinkedHashMap<>(5);
+		Collection<ReactiveTypeDescriptor> reactiveWrappers = new ArrayList<>(5);
 
 		if (RXJAVA1_PRESENT) {
 
-			reactiveWrappers.put(Single.class, Descriptor.forSingleValue().forValue());
-			reactiveWrappers.put(Completable.class, Descriptor.forSingleValue().forNoValue());
-			reactiveWrappers.put(Observable.class, Descriptor.forMultiValue().forValue());
+			reactiveWrappers.add(ReactiveTypeDescriptor.singleRequiredValue(Single.class));
+			reactiveWrappers.add(ReactiveTypeDescriptor.noValue(Completable.class, Completable::complete));
+			reactiveWrappers.add(ReactiveTypeDescriptor.multiValue(Observable.class, Observable::empty));
 		}
 
 		if (RXJAVA2_PRESENT) {
 
-			reactiveWrappers.put(io.reactivex.Single.class, Descriptor.forSingleValue().forValue());
-			reactiveWrappers.put(io.reactivex.Maybe.class, Descriptor.forSingleValue().forValue());
-			reactiveWrappers.put(io.reactivex.Completable.class, Descriptor.forSingleValue().forNoValue());
-			reactiveWrappers.put(io.reactivex.Flowable.class, Descriptor.forMultiValue().forValue());
-			reactiveWrappers.put(io.reactivex.Observable.class, Descriptor.forMultiValue().forValue());
+			reactiveWrappers.add(ReactiveTypeDescriptor.singleRequiredValue(io.reactivex.Single.class));
+			reactiveWrappers
+					.add(ReactiveTypeDescriptor.singleOptionalValue(io.reactivex.Maybe.class, io.reactivex.Maybe::empty));
+			reactiveWrappers
+					.add(ReactiveTypeDescriptor.noValue(io.reactivex.Completable.class, io.reactivex.Completable::complete));
+			reactiveWrappers
+					.add(ReactiveTypeDescriptor.multiValue(io.reactivex.Flowable.class, io.reactivex.Flowable::empty));
+			reactiveWrappers
+					.add(ReactiveTypeDescriptor.multiValue(io.reactivex.Observable.class, io.reactivex.Observable::empty));
 		}
 
 		if (PROJECT_REACTOR_PRESENT) {
 
-			reactiveWrappers.put(Mono.class, Descriptor.forSingleValue().forValue());
-			reactiveWrappers.put(Flux.class, Descriptor.forMultiValue().forNoValue());
-			reactiveWrappers.put(Publisher.class, Descriptor.forMultiValue().forNoValue());
+			reactiveWrappers.add(ReactiveTypeDescriptor.singleOptionalValue(Mono.class, Mono::empty));
+			reactiveWrappers.add(ReactiveTypeDescriptor.multiValue(Flux.class, Flux::empty));
+			reactiveWrappers.add(ReactiveTypeDescriptor.multiValue(Publisher.class, Flux::empty));
 		}
 
-		REACTIVE_WRAPPERS = Collections.unmodifiableMap(reactiveWrappers);
+		REACTIVE_WRAPPERS = Collections.unmodifiableCollection(reactiveWrappers);
 	}
 
 	/**
@@ -183,7 +183,7 @@ public class ReactiveWrappers {
 
 		Assert.notNull(type, "Candidate type must not be null!");
 
-		return findDescriptor(type).map(Descriptor::isNoValue).orElse(false);
+		return findDescriptor(type).map(ReactiveTypeDescriptor::isNoValue).orElse(false);
 	}
 
 	/**
@@ -213,7 +213,8 @@ public class ReactiveWrappers {
 
 		// Prevent single-types with a multi-hierarchy supertype to be reported as multi type
 		// See Mono implements Publisher
-		return isSingleValueType(type) ? false : findDescriptor(type).map(Descriptor::isMultiValue).orElse(false);
+		return isSingleValueType(type) ? false
+				: findDescriptor(type).map(ReactiveTypeDescriptor::isMultiValue).orElse(false);
 	}
 
 	/**
@@ -223,9 +224,10 @@ public class ReactiveWrappers {
 	 */
 	public static Collection<Class<?>> getNoValueTypes() {
 
-		return REACTIVE_WRAPPERS.entrySet().stream()//
-				.filter(entry -> entry.getValue().isNoValue())//
-				.map(Entry::getKey).collect(Collectors.toList());
+		return REACTIVE_WRAPPERS.stream()//
+				.filter(ReactiveTypeDescriptor::isNoValue)//
+				.map(ReactiveTypeDescriptor::getReactiveType)//
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -235,9 +237,9 @@ public class ReactiveWrappers {
 	 */
 	public static Collection<Class<?>> getSingleValueTypes() {
 
-		return REACTIVE_WRAPPERS.entrySet().stream()//
-				.filter(entry -> !entry.getValue().isMultiValue())//
-				.map(Entry::getKey).collect(Collectors.toList());
+		return REACTIVE_WRAPPERS.stream()//
+				.filter(entry -> !entry.isMultiValue())//
+				.map(ReactiveTypeDescriptor::getReactiveType).collect(Collectors.toList());
 	}
 
 	/**
@@ -247,9 +249,9 @@ public class ReactiveWrappers {
 	 */
 	public static Collection<Class<?>> getMultiValueTypes() {
 
-		return REACTIVE_WRAPPERS.entrySet().stream()//
-				.filter(entry -> entry.getValue().isMultiValue())//
-				.map(Entry::getKey)//
+		return REACTIVE_WRAPPERS.stream()//
+				.filter(ReactiveTypeDescriptor::isMultiValue)//
+				.map(ReactiveTypeDescriptor::getReactiveType)//
 				.collect(Collectors.toList());
 	}
 
@@ -267,64 +269,17 @@ public class ReactiveWrappers {
 	}
 
 	/**
-	 * Looks up a {@link Descriptor} for the given wrapper type.
+	 * Looks up a {@link ReactiveTypeDescriptor} for the given wrapper type.
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	private static Optional<Descriptor> findDescriptor(Class<?> type) {
+	private static Optional<ReactiveTypeDescriptor> findDescriptor(Class<?> type) {
 
 		Assert.notNull(type, "Wrapper type must not be null!");
 
-		return REACTIVE_WRAPPERS.entrySet().stream()//
-				.filter(it -> ClassUtils.isAssignable(it.getKey(), type))//
-				.findFirst().map(it -> it.getValue());
-	}
-
-	/**
-	 * Basically a copy of Spring's {@link ReactiveAdapter.Descriptor} but without introducing the strong dependency to
-	 * Reactor so that we can safely use the class in non-reactive environments.
-	 *
-	 * @author Oliver Gierke
-	 * @since 2.0
-	 */
-	@Value
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	private static class Descriptor {
-
-		/**
-		 * Return {@code true} if the adaptee implies 0..N values can be produced and is therefore a good fit to adapt to
-		 * {@link Flux}. A {@code false} return value implies the adaptee will produce 1 value at most and is therefore a
-		 * good fit for {@link Mono}.
-		 */
-		private final boolean multiValue;
-
-		/**
-		 * Return {@code true} if the adaptee implies no values will be produced, i.e. providing only completion or error
-		 * signal.
-		 */
-		private final boolean noValue;
-
-		public static DescriptorBuilder forSingleValue() {
-			return new DescriptorBuilder(false);
-		}
-
-		public static DescriptorBuilder forMultiValue() {
-			return new DescriptorBuilder(true);
-		}
-
-		@RequiredArgsConstructor
-		static class DescriptorBuilder {
-
-			private final boolean multi;
-
-			public Descriptor forValue() {
-				return new Descriptor(multi, false);
-			}
-
-			public Descriptor forNoValue() {
-				return new Descriptor(multi, true);
-			}
-		}
+		return REACTIVE_WRAPPERS.stream()//
+				.filter(it -> ClassUtils.isAssignable(it.getReactiveType(), type))//
+				.findFirst();
 	}
 }
