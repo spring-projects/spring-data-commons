@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,11 +38,13 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentEntitySpec;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.Person;
+import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
@@ -250,6 +253,24 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		exception.expectMessage(Object.class.getName());
 
 		entity.getPropertyAccessor(new Object());
+	}
+
+	/**
+	 * @see DATACMNS-934
+	 */
+	@Test
+	public void doesNotThrowAnExceptionForNullAssociation() {
+
+		BasicPersistentEntity<Entity, T> entity = createEntity(Entity.class);
+		entity.addAssociation(null);
+
+		entity.doWithAssociations(new SimpleAssociationHandler() {
+
+			@Override
+			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
+				Assert.fail("Expected the method to never be called!");
+			}
+		});
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
