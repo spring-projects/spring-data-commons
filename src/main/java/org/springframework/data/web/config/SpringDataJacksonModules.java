@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,13 @@
  */
 package org.springframework.data.web.config;
 
-import org.springframework.context.annotation.Bean;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+ * Marker interface to describe configuration classes that ship Jackson modules that are supposed to be added to the
+ * Jackson {@link ObjectMapper} configured for {@link EnableSpringDataWebSupport}.
+ *
  * @author Oliver Gierke
+ * @since 1.13
  */
-public class SampleMixin implements SpringDataJacksonModules {
-
-	@Bean
-	String sampleBean() {
-		return "sampleBean";
-	}
-}
+public interface SpringDataJacksonModules {}

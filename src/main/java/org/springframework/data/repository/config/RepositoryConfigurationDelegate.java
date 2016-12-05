@@ -25,12 +25,11 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
 
@@ -48,7 +47,6 @@ public class RepositoryConfigurationDelegate {
 
 	private static final String REPOSITORY_REGISTRATION = "Spring Data {} - Registering repository: {} - Interface: {} - Factory: {}";
 	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode!";
-	private static final String MODULE_DETECTION_PACKAGE = "org.springframework.data.**.repository.support";
 
 	static final String FACTORY_BEAN_OBJECT_TYPE = "factoryBeanObjectType";
 
@@ -160,17 +158,13 @@ public class RepositoryConfigurationDelegate {
 	 */
 	private boolean multipleStoresDetected() {
 
-		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
-		scanner.setEnvironment(environment);
-		scanner.setResourceLoader(resourceLoader);
-		scanner.addIncludeFilter(new AssignableTypeFilter(RepositoryFactorySupport.class));
+		boolean multipleModulesFound = SpringFactoriesLoader
+				.loadFactoryNames(RepositoryFactorySupport.class, resourceLoader.getClassLoader()).size() > 1;
 
-		if (scanner.findCandidateComponents(MODULE_DETECTION_PACKAGE).size() > 1) {
-
+		if (multipleModulesFound) {
 			LOGGER.info(MULTIPLE_MODULES);
-			return true;
 		}
 
-		return false;
+		return multipleModulesFound;
 	}
 }
