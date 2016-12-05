@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Association;
@@ -53,7 +55,9 @@ import org.springframework.util.StringUtils;
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(BasicPersistentEntity.class);
 	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)!";
+	private static final String NULL_ASSOCIATION = "%s.addAssociation(…) was called with a null association! Usually indicates a problem in a Spring Data MappingContext implementation. Be sure to file a bug at https://jira.spring.io!";
 
 	private final PreferredConstructor<T, P> constructor;
 	private final TypeInformation<T> information;
@@ -227,10 +231,16 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return property;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.MutablePersistentEntity#addAssociation(org.springframework.data.mapping.model.Association)
 	 */
 	public void addAssociation(Association<P> association) {
+
+		if (association == null) {
+			LOGGER.warn(String.format(NULL_ASSOCIATION, this.getClass().getName()));
+			return;
+		}
 
 		if (!associations.contains(association)) {
 			associations.add(association);
