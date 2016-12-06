@@ -38,7 +38,6 @@ import org.springframework.data.domain.ExampleMatcher.StringMatcher;
  * @author Mark Paluch
  * @soundtrack Ron Spielman Trio - Fretboard Highway (Electric Tales)
  */
-@SuppressWarnings("unused")
 public class ExampleSpecificationAccessorUnitTests {
 
 	Person person;
@@ -320,6 +319,19 @@ public class ExampleSpecificationAccessorUnitTests {
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
 		assertThat(exampleSpecificationAccessor.hasPropertySpecifiers(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-953
+	 */
+	@Test
+	public void exactMatcherUsesExactMatching() {
+
+		ExampleMatcher matcher = ExampleMatcher.matching()//
+				.withMatcher("firstname", exact());
+
+		assertThat(new ExampleMatcherAccessor(matcher).getPropertySpecifier("firstname").getStringMatcher(),
+				is(StringMatcher.EXACT));
 	}
 
 	static class Person {
