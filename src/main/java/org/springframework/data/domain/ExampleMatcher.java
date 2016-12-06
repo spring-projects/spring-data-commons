@@ -608,7 +608,7 @@ public class ExampleMatcher {
 		 * @return
 		 */
 		public static GenericPropertyMatcher exact() {
-			return new GenericPropertyMatcher().startsWith();
+			return new GenericPropertyMatcher().exact();
 		}
 
 		/**

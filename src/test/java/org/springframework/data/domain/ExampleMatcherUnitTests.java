@@ -247,6 +247,27 @@ public class ExampleMatcherUnitTests {
 		assertThat(matcher, is(not(equalTo(different))));
 	}
 
+	/**
+	 * @see DATACMNS-953
+	 */
+	@Test
+	public void setRightStringMatcherInGenericPropertyMatchers() throws Exception {
+
+		GenericPropertyMatcher exactMatcher = GenericPropertyMatchers.exact();
+		GenericPropertyMatcher containsMatcher = GenericPropertyMatchers.contains();
+		GenericPropertyMatcher startsWithMatcher = GenericPropertyMatchers.startsWith();
+		GenericPropertyMatcher endsWithMatcher = GenericPropertyMatchers.endsWith();
+		GenericPropertyMatcher regexMatcher = GenericPropertyMatchers.regex();
+		GenericPropertyMatcher defaultMatcher = GenericPropertyMatchers.storeDefaultMatching();
+
+		assertThat(exactMatcher.stringMatcher, is(equalTo(StringMatcher.EXACT)));
+		assertThat(containsMatcher.stringMatcher, is(equalTo(StringMatcher.CONTAINING)));
+		assertThat(startsWithMatcher.stringMatcher, is(equalTo(StringMatcher.STARTING)));
+		assertThat(endsWithMatcher.stringMatcher, is(equalTo(StringMatcher.ENDING)));
+		assertThat(regexMatcher.stringMatcher, is(equalTo(StringMatcher.REGEX)));
+		assertThat(defaultMatcher.stringMatcher, is(equalTo(StringMatcher.DEFAULT)));
+	}
+
 	static class Person {
 
 		String firstname;
