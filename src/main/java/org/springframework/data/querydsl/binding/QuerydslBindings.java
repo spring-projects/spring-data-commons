@@ -17,6 +17,10 @@ package org.springframework.data.querydsl.binding;
 
 import static org.springframework.data.querydsl.QueryDslUtils.*;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -197,7 +201,7 @@ public class QuerydslBindings {
 	 * @return can be {@literal null}.
 	 */
 	@SuppressWarnings("unchecked")
-	public <S extends Path<? extends T>, T> MultiValueBinding<S, T> getBindingForPath(PropertyPath path) {
+	public <S extends Path<? extends T>, T> MultiValueBinding<S, T> getBindingForPath(PathInformation path) {
 
 		Assert.notNull(path, "PropertyPath must not be null!");
 
@@ -212,7 +216,7 @@ public class QuerydslBindings {
 			}
 		}
 
-		pathAndBinding = (PathAndBinding<S, T>) typeSpecs.get(path.getLeafProperty().getType());
+		pathAndBinding = (PathAndBinding<S, T>) typeSpecs.get(path.getLeafType());
 
 		return pathAndBinding == null ? null : pathAndBinding.getBinding();
 	}
@@ -223,7 +227,7 @@ public class QuerydslBindings {
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
-	Path<?> getExistingPath(PropertyPath path) {
+	Path<?> getExistingPath(PathInformation path) {
 
 		Assert.notNull(path, "PropertyPath must not be null!");
 
@@ -232,24 +236,27 @@ public class QuerydslBindings {
 	}
 
 	/**
-	 * @param path
-	 * @param type
+	 * Returns the {@link PathInformation} for the given path and {@link TypeInformation}.
+	 * 
+	 * @param path must not be {@literal null}.
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	PropertyPath getPropertyPath(String path, TypeInformation<?> type) {
+	PathInformation getPropertyPath(String path, TypeInformation<?> type) {
 
 		Assert.notNull(path, "Path must not be null!");
+		Assert.notNull(type, "Type information must not be null!");
 
 		if (!isPathVisible(path)) {
 			return null;
 		}
 
 		if (pathSpecs.containsKey(path)) {
-			return PropertyPath.from(toDotPath(pathSpecs.get(path).getPath()), type);
+			return QuerydslPathInformation.of(pathSpecs.get(path).getPath());
 		}
 
 		try {
-			PropertyPath propertyPath = PropertyPath.from(path, type);
+			PathInformation propertyPath = PropertyPathInformation.of(path, type);
 			return isPathVisible(propertyPath) ? propertyPath : null;
 		} catch (PropertyReferenceException o_O) {
 			return null;
@@ -262,7 +269,7 @@ public class QuerydslBindings {
 	 * @param path
 	 * @return
 	 */
-	private boolean isPathVisible(PropertyPath path) {
+	private boolean isPathVisible(PathInformation path) {
 
 		List<String> segments = Arrays.asList(path.toDotPath().split("\\."));
 
@@ -436,21 +443,10 @@ public class QuerydslBindings {
 	 *
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	public final class TypeBinder<T> {
 
-		private final Class<T> type;
-
-		/**
-		 * Creates a new {@link TypeBinder} for the given type.
-		 * 
-		 * @param type must not be {@literal null}.
-		 */
-		private TypeBinder(Class<T> type) {
-
-			Assert.notNull(type, "Type must not be null!");
-
-			this.type = type;
-		}
+		private final @NonNull Class<T> type;
 
 		/**
 		 * Configures the given {@link SingleValueBinding} to be used for the current type.
@@ -479,32 +475,14 @@ public class QuerydslBindings {
 	 * A pair of a {@link Path} and the registered {@link MultiValueBinding}.
 	 * 
 	 * @author Christoph Strobl
+	 * @author Oliver Gierke
 	 * @since 1.11
 	 */
+	@Value
 	private static class PathAndBinding<S extends Path<? extends T>, T> {
 
-		private final Path<?> path;
-		private final MultiValueBinding<S, T> binding;
-
-		/**
-		 * Creates a new {@link PathAndBinding} for the given {@link Path} and {@link MultiValueBinding}.
-		 * 
-		 * @param path must not be {@literal null}.
-		 * @param binding must not be {@literal null}.
-		 */
-		public PathAndBinding(S path, MultiValueBinding<S, T> binding) {
-
-			this.path = path;
-			this.binding = binding;
-		}
-
-		public Path<?> getPath() {
-			return path;
-		}
-
-		public MultiValueBinding<S, T> getBinding() {
-			return binding;
-		}
+		Path<?> path;
+		MultiValueBinding<S, T> binding;
 	}
 
 	/**
@@ -513,26 +491,18 @@ public class QuerydslBindings {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	static class MultiValueBindingAdapter<T extends Path<? extends S>, S> implements MultiValueBinding<T, S> {
+	@RequiredArgsConstructor
+	static class MultiValueBindingAdapter<P extends Path<? extends T>, T> implements MultiValueBinding<P, T> {
 
-		private final SingleValueBinding<T, S> delegate;
-
-		/**
-		 * Creates a new {@link MultiValueBindingAdapter} for the given {@link SingleValueBinding}.
-		 * 
-		 * @param delegate must not be {@literal null}.
-		 */
-		public MultiValueBindingAdapter(SingleValueBinding<T, S> delegate) {
-			this.delegate = delegate;
-		}
+		private final @NonNull SingleValueBinding<P, T> delegate;
 
 		/* 
 		 * (non-Javadoc)
 		 * @see org.springframework.data.web.querydsl.MultiValueBinding#bind(com.mysema.query.types.Path, java.util.Collection)
 		 */
 		@Override
-		public Predicate bind(T path, Collection<? extends S> value) {
-			Iterator<? extends S> iterator = value.iterator();
+		public Predicate bind(P path, Collection<? extends T> value) {
+			Iterator<? extends T> iterator = value.iterator();
 			return delegate.bind(path, iterator.hasNext() ? iterator.next() : null);
 		}
 	}

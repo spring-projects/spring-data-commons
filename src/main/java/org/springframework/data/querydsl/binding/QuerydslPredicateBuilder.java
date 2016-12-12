@@ -16,7 +16,6 @@
 package org.springframework.data.querydsl.binding;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.Property;
@@ -41,7 +39,6 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.CollectionPathBase;
 
 /**
  * Builder assembling {@link Predicate} out of {@link PropertyValues}.
@@ -54,7 +51,7 @@ public class QuerydslPredicateBuilder {
 
 	private final ConversionService conversionService;
 	private final MultiValueBinding<?, ?> defaultBinding;
-	private final Map<PropertyPath, Path<?>> paths;
+	private final Map<PathInformation, Path<?>> paths;
 	private final EntityPathResolver resolver;
 
 	/**
@@ -70,7 +67,7 @@ public class QuerydslPredicateBuilder {
 
 		this.defaultBinding = new QuerydslDefaultBinding();
 		this.conversionService = conversionService;
-		this.paths = new HashMap<PropertyPath, Path<?>>();
+		this.paths = new HashMap<PathInformation, Path<?>>();
 		this.resolver = resolver;
 	}
 
@@ -106,7 +103,7 @@ public class QuerydslPredicateBuilder {
 				continue;
 			}
 
-			PropertyPath propertyPath = bindings.getPropertyPath(path, type);
+			PathInformation propertyPath = bindings.getPropertyPath(path, type);
 
 			if (propertyPath == null) {
 				continue;
@@ -132,7 +129,7 @@ public class QuerydslPredicateBuilder {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Predicate invokeBinding(PropertyPath dotPath, QuerydslBindings bindings, Collection<Object> values) {
+	private Predicate invokeBinding(PathInformation dotPath, QuerydslBindings bindings, Collection<Object> values) {
 
 		Path<?> path = getPath(dotPath, bindings);
 
@@ -151,7 +148,7 @@ public class QuerydslPredicateBuilder {
 	 * @param bindings must not be {@literal null}.
 	 * @return
 	 */
-	private Path<?> getPath(PropertyPath path, QuerydslBindings bindings) {
+	private Path<?> getPath(PathInformation path, QuerydslBindings bindings) {
 
 		Path<?> resolvedPath = bindings.getExistingPath(path);
 
@@ -165,35 +162,10 @@ public class QuerydslPredicateBuilder {
 			return resolvedPath;
 		}
 
-		resolvedPath = reifyPath(path, null);
+		resolvedPath = path.reifyPath(resolver);
 		paths.put(path, resolvedPath);
 
 		return resolvedPath;
-	}
-
-	/**
-	 * Tries to reify a Querydsl {@link Path} from the given {@link PropertyPath} and base.
-	 * 
-	 * @param path must not be {@literal null}.
-	 * @param base can be {@literal null}.
-	 * @return
-	 */
-	private Path<?> reifyPath(PropertyPath path, Path<?> base) {
-
-		if (base instanceof CollectionPathBase) {
-			return reifyPath(path, (Path<?>) ((CollectionPathBase<?, ?, ?>) base).any());
-		}
-
-		Path<?> entityPath = base != null ? base : resolver.createPath(path.getOwningType().getType());
-
-		Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
-		Object value = ReflectionUtils.getField(field, entityPath);
-
-		if (path.hasNext()) {
-			return reifyPath(path.next(), (Path<?>) value);
-		}
-
-		return (Path<?>) value;
 	}
 
 	/**
@@ -205,10 +177,9 @@ public class QuerydslPredicateBuilder {
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
-	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PropertyPath path) {
+	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PathInformation path) {
 
-		PropertyPath leafProperty = path.getLeafProperty();
-		Class<?> targetType = leafProperty.getOwningType().getProperty(leafProperty.getSegment()).getType();
+		Class<?> targetType = path.getLeafType();
 
 		if (source.isEmpty() || isSingleElementCollectionWithoutText(source)) {
 			return Collections.emptyList();
@@ -226,26 +197,25 @@ public class QuerydslPredicateBuilder {
 	}
 
 	/**
-	 * Returns the target {@link TypeDescriptor} for the given {@link PropertyPath} by either inspecting the field or
+	 * Returns the target {@link TypeDescriptor} for the given {@link PathInformation} by either inspecting the field or
 	 * property (the latter preferred) to pick up annotations potentially defined for formatting purposes.
 	 * 
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
-	private static TypeDescriptor getTargetTypeDescriptor(PropertyPath path) {
+	private static TypeDescriptor getTargetTypeDescriptor(PathInformation path) {
 
-		PropertyPath leafProperty = path.getLeafProperty();
-		Class<?> owningType = leafProperty.getOwningType().getType();
+		PropertyDescriptor descriptor = path.getLeafPropertyDescriptor();
 
-		PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(owningType, leafProperty.getSegment());
+		Class<?> owningType = path.getLeafParentType();
+		String leafProperty = path.getLeafProperty();
 
 		if (descriptor == null) {
-			return TypeDescriptor.nested(ReflectionUtils.findField(owningType, leafProperty.getSegment()), 0);
+			return TypeDescriptor.nested(ReflectionUtils.findField(owningType, leafProperty), 0);
 		}
 
-		return TypeDescriptor.nested(
-				new Property(owningType, descriptor.getReadMethod(), descriptor.getWriteMethod(), leafProperty.getSegment()),
-				0);
+		return TypeDescriptor
+				.nested(new Property(owningType, descriptor.getReadMethod(), descriptor.getWriteMethod(), leafProperty), 0);
 	}
 
 	/**

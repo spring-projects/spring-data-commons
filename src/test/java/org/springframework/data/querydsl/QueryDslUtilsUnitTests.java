@@ -17,6 +17,7 @@ package org.springframework.data.querydsl;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.querydsl.QueryDslUtils.*;
 
 import org.junit.Test;
 
@@ -32,6 +33,17 @@ public class QueryDslUtilsUnitTests {
 	 */
 	@Test
 	public void rendersDotPathForPathTraversalContainingAnyExpression() {
-		assertThat(QueryDslUtils.toDotPath(QUser.user.addresses.any().street), is("addresses.street"));
+		assertThat(toDotPath(QUser.user.addresses.any().street), is("addresses.street"));
+	}
+
+	/**
+	 * @see DATACMNS-941
+	 */
+	@Test
+	public void skipsIntermediateDelegates() {
+
+		assertThat(toDotPath(QUser.user.as(QSpecialUser.class).as(QSpecialUser.class).specialProperty),
+				is("specialProperty"));
+		assertThat(toDotPath(QUser.user.as(QSpecialUser.class).specialProperty), is("specialProperty"));
 	}
 }

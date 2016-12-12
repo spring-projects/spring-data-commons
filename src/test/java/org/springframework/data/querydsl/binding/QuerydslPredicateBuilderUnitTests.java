@@ -27,7 +27,9 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
+import org.springframework.data.querydsl.QUserWrapper;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.querydsl.Users;
@@ -218,5 +220,41 @@ public class QuerydslPredicateBuilderUnitTests {
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate, is((Predicate) QUser.user.addresses.any().street.eq("VALUE")));
+	}
+
+	/**
+	 * @see DATACMNS-941
+	 */
+	@Test
+	public void buildsPredicateForBindingUsingDowncast() {
+
+		values.add("specialProperty", "VALUE");
+
+		QuerydslBindings bindings = new QuerydslBindings();
+		bindings.bind(QUser.user.as(QSpecialUser.class).specialProperty)//
+				.first(QuerydslBindingsUnitTests.ContainsBinding.INSTANCE);
+
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, bindings);
+
+		assertThat(predicate, is((Predicate) QUser.user.as(QSpecialUser.class).specialProperty.contains("VALUE")));
+	}
+
+	/**
+	 * @see DATACMNS-941
+	 */
+	@Test
+	public void buildsPredicateForBindingUsingNestedDowncast() {
+
+		values.add("user.specialProperty", "VALUE");
+
+		QUserWrapper $ = QUserWrapper.userWrapper;
+
+		QuerydslBindings bindings = new QuerydslBindings();
+		bindings.bind($.user.as(QSpecialUser.class).specialProperty)//
+				.first(QuerydslBindingsUnitTests.ContainsBinding.INSTANCE);
+
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, bindings);
+
+		assertThat(predicate, is((Predicate) $.user.as(QSpecialUser.class).specialProperty.contains("VALUE")));
 	}
 }
