@@ -21,6 +21,7 @@ import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.PathType;
 
 /**
  * Utility class for Querydsl.
@@ -62,6 +63,10 @@ public class QueryDslUtils {
 
 		if (parent == null) {
 			return tail;
+		}
+
+		if (metadata.getPathType().equals(PathType.DELEGATE)) {
+			return toDotPath(parent, tail);
 		}
 
 		Object element = metadata.getElement();

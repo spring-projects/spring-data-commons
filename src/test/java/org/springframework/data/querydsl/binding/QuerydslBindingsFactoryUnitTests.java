@@ -26,7 +26,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
@@ -76,7 +75,7 @@ public class QuerydslBindingsFactoryUnitTests {
 
 		QuerydslBindings bindings = factory.createBindingsFor(null, USER_TYPE);
 		MultiValueBinding<Path<Object>, Object> binding = bindings
-				.getBindingForPath(PropertyPath.from("firstname", User.class));
+				.getBindingForPath(PropertyPathInformation.of("firstname", User.class));
 
 		assertThat(binding.bind((Path) QUser.user.firstname, Collections.singleton("rand")),
 				is((Predicate) QUser.user.firstname.contains("rand")));
@@ -97,7 +96,7 @@ public class QuerydslBindingsFactoryUnitTests {
 
 		QuerydslBindings bindings = factory.createBindingsFor(SpecificBinding.class, USER_TYPE);
 		MultiValueBinding<Path<Object>, Object> binding = bindings
-				.getBindingForPath(PropertyPath.from("firstname", User.class));
+				.getBindingForPath(PropertyPathInformation.of("firstname", User.class));
 
 		assertThat(binding.bind((Path) QUser.user.firstname, Collections.singleton("rand")),
 				is((Predicate) QUser.user.firstname.eq("RAND")));

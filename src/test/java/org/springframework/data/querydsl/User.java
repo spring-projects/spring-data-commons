@@ -45,3 +45,18 @@ public class User {
 		this.address = address;
 	}
 }
+
+@QueryEntity
+class SpecialUser extends User {
+
+	public String specialProperty;
+
+	public SpecialUser(String firstname, String lastname, Address address) {
+		super(firstname, lastname, address);
+	}
+}
+
+@QueryEntity
+class UserWrapper {
+	public User user;
+}

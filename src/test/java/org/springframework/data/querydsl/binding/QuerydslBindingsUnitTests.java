@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
@@ -71,7 +71,10 @@ public class QuerydslBindingsUnitTests {
 	 */
 	@Test
 	public void returnsNullIfNoBindingRegisteredForPath() {
-		assertThat(bindings.getBindingForPath(PropertyPath.from("lastname", User.class)), nullValue());
+
+		PathInformation path = PropertyPathInformation.of("lastname", User.class);
+
+		assertThat(bindings.getBindingForPath(path), nullValue());
 	}
 
 	/**
@@ -82,8 +85,9 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.bind(QUser.user.firstname).first(CONTAINS_BINDING);
 
-		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPath.from("firstname", User.class)),
-				CONTAINS_BINDING);
+		PathInformation path = PropertyPathInformation.of("firstname", User.class);
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(path), CONTAINS_BINDING);
 	}
 
 	/**
@@ -94,8 +98,9 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.bind(QUser.user.address.street).first(CONTAINS_BINDING);
 
-		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPath.from("address.street", User.class)),
-				CONTAINS_BINDING);
+		PathInformation path = PropertyPathInformation.of("address.street", User.class);
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(path), CONTAINS_BINDING);
 	}
 
 	/**
@@ -106,8 +111,9 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.bind(String.class).first(CONTAINS_BINDING);
 
-		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPath.from("address.street", User.class)),
-				CONTAINS_BINDING);
+		PathInformation path = PropertyPathInformation.of("address.street", User.class);
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(path), CONTAINS_BINDING);
 	}
 
 	/**
@@ -118,7 +124,9 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.bind(String.class).first(CONTAINS_BINDING);
 
-		assertThat(bindings.getBindingForPath(PropertyPath.from("inceptionYear", User.class)), nullValue());
+		PathInformation path = PropertyPathInformation.of("inceptionYear", User.class);
+
+		assertThat(bindings.getBindingForPath(path), nullValue());
 	}
 
 	/**
@@ -261,7 +269,7 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.bind(QUser.user.address.city).as("city").first(CONTAINS_BINDING);
 
-		PropertyPath path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
+		PathInformation path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
 
 		assertThat(path, is(notNullValue()));
 		assertThat(bindings.isPathAvailable("city", User.class), is(true));
@@ -279,14 +287,14 @@ public class QuerydslBindingsUnitTests {
 		bindings.including(QUser.user.address.city);
 		bindings.bind(QUser.user.address.city).as("city").first(CONTAINS_BINDING);
 
-		PropertyPath path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
+		PathInformation path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
 
 		assertThat(path, is(notNullValue()));
 		assertThat(bindings.isPathAvailable("city", User.class), is(true));
 
 		assertThat(bindings.isPathAvailable("address.city", User.class), is(true));
 
-		PropertyPath propertyPath = bindings.getPropertyPath("address.city", ClassTypeInformation.from(User.class));
+		PathInformation propertyPath = bindings.getPropertyPath("address.city", ClassTypeInformation.from(User.class));
 		assertThat(propertyPath, is(notNullValue()));
 
 		assertAdapterWithTargetBinding(bindings.getBindingForPath(propertyPath), CONTAINS_BINDING);
@@ -300,11 +308,22 @@ public class QuerydslBindingsUnitTests {
 
 		bindings.bind(QUser.user.address.city).as("city").withDefaultBinding();
 
-		PropertyPath path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
+		PathInformation path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
 		assertThat(path, is(notNullValue()));
 
 		MultiValueBinding<Path<? extends Object>, Object> binding = bindings.getBindingForPath(path);
 		assertThat(binding, is(nullValue()));
+	}
+
+	/**
+	 * @see DATACMNS-941
+	 */
+	@Test
+	public void registersBindingForPropertyOfSubtype() {
+
+		bindings.bind(QUser.user.as(QSpecialUser.class).specialProperty).first(ContainsBinding.INSTANCE);
+
+		assertThat(bindings.isPathAvailable("specialProperty", User.class), is(true));
 	}
 
 	private static <P extends Path<? extends S>, S> void assertAdapterWithTargetBinding(MultiValueBinding<P, S> binding,
@@ -312,5 +331,19 @@ public class QuerydslBindingsUnitTests {
 
 		assertThat(binding, is(instanceOf(QuerydslBindings.MultiValueBindingAdapter.class)));
 		assertThat(ReflectionTestUtils.getField(binding, "delegate"), is((Object) expected));
+	}
+
+	enum ContainsBinding implements SingleValueBinding<StringPath, String> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.querydsl.binding.SingleValueBinding#bind(com.querydsl.core.types.Path, java.lang.Object)
+		 */
+		@Override
+		public Predicate bind(StringPath path, String value) {
+			return path.contains(value);
+		}
 	}
 }
