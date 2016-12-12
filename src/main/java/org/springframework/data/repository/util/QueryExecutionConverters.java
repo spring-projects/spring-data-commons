@@ -15,11 +15,13 @@
  */
 package org.springframework.data.repository.util;
 
+import javaslang.collection.Traversable;
 import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -105,7 +107,10 @@ public abstract class QueryExecutionConverters {
 		}
 
 		if (JAVASLANG_PRESENT) {
+
 			WRAPPER_TYPES.add(NullableWrapperToJavaslangOptionConverter.getWrapperType());
+			WRAPPER_TYPES.add(JavaslangCollections.ToJavaConverter.INSTANCE.getWrapperType());
+
 			UNWRAPPERS.add(JavaslangOptionUnwrapper.INSTANCE);
 		}
 
@@ -165,6 +170,8 @@ public abstract class QueryExecutionConverters {
 
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
+		conversionService.removeConvertible(Collection.class, Object.class);
+
 		if (GUAVA_PRESENT) {
 			conversionService.addConverter(new NullableWrapperToGuavaOptionalConverter(conversionService));
 		}
@@ -180,6 +187,7 @@ public abstract class QueryExecutionConverters {
 
 		if (JAVASLANG_PRESENT) {
 			conversionService.addConverter(new NullableWrapperToJavaslangOptionConverter(conversionService));
+			conversionService.addConverter(JavaslangCollections.FromJavaConverter.INSTANCE);
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
@@ -566,8 +574,16 @@ public abstract class QueryExecutionConverters {
 		@Override
 		@SuppressWarnings("unchecked")
 		public Object convert(Object source) {
-			return source instanceof javaslang.control.Option
-					? ((javaslang.control.Option<Object>) source).getOrElse(NULL_SUPPLIER) : source;
+
+			if (source instanceof javaslang.control.Option) {
+				return ((javaslang.control.Option<Object>) source).getOrElse(NULL_SUPPLIER);
+			}
+
+			if (source instanceof Traversable) {
+				return JavaslangCollections.ToJavaConverter.INSTANCE.convert(source);
+			}
+
+			return source;
 		}
 	}
 }

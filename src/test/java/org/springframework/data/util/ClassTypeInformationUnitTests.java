@@ -19,6 +19,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
 
+import javaslang.collection.Traversable;
+
 import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.Collection;
@@ -106,7 +108,7 @@ public class ClassTypeInformationUnitTests {
 
 		property = information.getProperty("rawSet");
 		assertEquals(Set.class, property.getType());
-		assertThat(property.getComponentType().getType(), is(Matchers.<Class<?>>equalTo(Object.class)));
+		assertThat(property.getComponentType().getType(), is(Matchers.<Class<?>> equalTo(Object.class)));
 		assertNull(property.getMapValueType());
 	}
 
@@ -413,6 +415,29 @@ public class ClassTypeInformationUnitTests {
 		assertThat(information.getProperty("field").getType(), is(typeCompatibleWith(Nested.class)));
 	}
 
+	/**
+	 * @see DATACMNS-940
+	 */
+	@Test
+	public void detectsJavaslangTraversableComponentType() {
+
+		ClassTypeInformation<SampleTraversable> information = ClassTypeInformation.from(SampleTraversable.class);
+
+		assertThat(information.getComponentType().getType(), is(typeCompatibleWith(Integer.class)));
+	}
+
+	/**
+	 * @see DATACMNS-940
+	 */
+	@Test
+	public void detectsJavaslangMapComponentAndValueType() {
+
+		ClassTypeInformation<SampleMap> information = ClassTypeInformation.from(SampleMap.class);
+
+		assertThat(information.getComponentType().getType(), is(typeCompatibleWith(String.class)));
+		assertThat(information.getMapValueType().getType(), is(typeCompatibleWith(Integer.class)));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -611,4 +636,8 @@ public class ClassTypeInformationUnitTests {
 	static class Nested extends SomeType<String> {}
 
 	static class Concrete extends SomeType<Nested> {}
+
+	static interface SampleTraversable extends Traversable<Integer> {}
+
+	static interface SampleMap extends javaslang.collection.Map<String, Integer> {}
 }

@@ -35,13 +35,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -50,6 +53,22 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
+
+	private static final Iterable<Class<?>> MAP_TYPES;
+
+	static {
+
+		ClassLoader classLoader = TypeDiscoverer.class.getClassLoader();
+
+		Set<Class<?>> mapTypes = new HashSet<Class<?>>();
+		mapTypes.add(Map.class);
+
+		try {
+			mapTypes.add(ClassUtils.forName("javaslang.collection.Map", classLoader));
+		} catch (ClassNotFoundException o_O) {}
+
+		MAP_TYPES = Collections.unmodifiableSet(mapTypes);
+	}
 
 	private final Type type;
 	private final Map<TypeVariable<?>, Type> typeVariableMap;
@@ -329,7 +348,14 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#isMap()
 	 */
 	public boolean isMap() {
-		return Map.class.isAssignableFrom(getType());
+
+		for (Class<?> mapType : MAP_TYPES) {
+			if (mapType.isAssignableFrom(getType())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/*
@@ -349,7 +375,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	protected TypeInformation<?> doGetMapValueType() {
 
 		if (isMap()) {
-			return getTypeArgument(Map.class, 1);
+			return getTypeArgument(getBaseType(MAP_TYPES), 1);
 		}
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
@@ -399,7 +425,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		if (isMap()) {
-			return getTypeArgument(Map.class, 0);
+			return getTypeArgument(getBaseType(MAP_TYPES), 0);
 		}
 
 		if (Iterable.class.isAssignableFrom(rawType)) {
@@ -523,6 +549,17 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		return createInfo(arguments[index]);
+	}
+
+	private Class<?> getBaseType(Iterable<Class<?>> candidates) {
+
+		for (Class<?> candidate : candidates) {
+			if (candidate.isAssignableFrom(getType())) {
+				return candidate;
+			}
+		}
+
+		throw new IllegalArgumentException(String.format("Type %s not contained in candidates %s!", getType(), candidates));
 	}
 
 	/*

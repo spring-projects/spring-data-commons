@@ -17,7 +17,11 @@ package org.springframework.data.repository.util;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.repository.util.QueryExecutionConverters.*;
 
+import javaslang.collection.HashMap;
+import javaslang.collection.HashSet;
+import javaslang.collection.Traversable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Completable;
@@ -26,6 +30,11 @@ import rx.Single;
 import scala.Option;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -136,7 +145,7 @@ public class QueryExecutionConvertersUnitTests {
 	public void turnsNullIntoGuavaOptional() {
 
 		Optional<Object> optional = conversionService.convert(new NullableWrapper(null), Optional.class);
-		assertThat(optional, is(Optional.<Object>absent()));
+		assertThat(optional, is(Optional.<Object> absent()));
 	}
 
 	/**
@@ -148,7 +157,7 @@ public class QueryExecutionConvertersUnitTests {
 
 		java.util.Optional<Object> optional = conversionService.convert(new NullableWrapper(null),
 				java.util.Optional.class);
-		assertThat(optional, is(java.util.Optional.<Object>empty()));
+		assertThat(optional, is(java.util.Optional.<Object> empty()));
 	}
 
 	/**
@@ -205,7 +214,7 @@ public class QueryExecutionConvertersUnitTests {
 	public void turnsNullIntoScalaOptionEmpty() {
 
 		assertThat((Option<Object>) conversionService.convert(new NullableWrapper(null), Option.class),
-				is(Option.<Object>empty()));
+				is(Option.<Object> empty()));
 	}
 
 	/**
@@ -262,6 +271,71 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.unwrap(option("string")), is((Object) "string"));
 	}
 
+	/**
+	 * @see DATACMNS-940
+	 */
+	@Test
+	public void conversListToJavaslang() {
+
+		assertThat(conversionService.canConvert(List.class, javaslang.collection.Traversable.class), is(true));
+		assertThat(conversionService.canConvert(List.class, javaslang.collection.List.class), is(true));
+		assertThat(conversionService.canConvert(List.class, javaslang.collection.Set.class), is(true));
+		assertThat(conversionService.canConvert(List.class, javaslang.collection.Map.class), is(false));
+
+		List<Integer> integers = Arrays.asList(1, 2, 3);
+
+		Traversable<?> result = conversionService.convert(integers, Traversable.class);
+
+		assertThat(result, is(instanceOf(javaslang.collection.List.class)));
+	}
+
+	/**
+	 * @see DATACMNS-940
+	 */
+	@Test
+	public void convertsSetToJavaslang() {
+
+		assertThat(conversionService.canConvert(Set.class, javaslang.collection.Traversable.class), is(true));
+		assertThat(conversionService.canConvert(Set.class, javaslang.collection.Set.class), is(true));
+		assertThat(conversionService.canConvert(Set.class, javaslang.collection.List.class), is(true));
+		assertThat(conversionService.canConvert(Set.class, javaslang.collection.Map.class), is(false));
+
+		Set<Integer> integers = Collections.singleton(1);
+
+		Traversable<?> result = conversionService.convert(integers, Traversable.class);
+
+		assertThat(result, is(instanceOf(javaslang.collection.Set.class)));
+	}
+
+	/**
+	 * @see DATACMNS-940
+	 */
+	@Test
+	public void convertsMapToJavaslang() {
+
+		assertThat(conversionService.canConvert(Map.class, javaslang.collection.Traversable.class), is(true));
+		assertThat(conversionService.canConvert(Map.class, javaslang.collection.Map.class), is(true));
+		assertThat(conversionService.canConvert(Map.class, javaslang.collection.Set.class), is(false));
+		assertThat(conversionService.canConvert(Map.class, javaslang.collection.List.class), is(false));
+
+		Map<String, String> map = Collections.singletonMap("key", "value");
+
+		Traversable<?> result = conversionService.convert(map, Traversable.class);
+
+		assertThat(result, is(instanceOf(javaslang.collection.Map.class)));
+	}
+
+	/**
+	 * @see DATACMNS-940
+	 */
+	@Test
+	public void unwrapsJavaslangCollectionsToJavaOnes() {
+
+		assertThat(unwrap(javaslangList(1, 2, 3)), is(instanceOf(List.class)));
+		assertThat(unwrap(javaslangSet(1, 2, 3)), is(instanceOf(Set.class)));
+		assertThat(unwrap(javaslangMap("key", "value")), is(instanceOf(Map.class)));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static javaslang.control.Option<Object> optionNone() {
 
@@ -274,5 +348,27 @@ public class QueryExecutionConvertersUnitTests {
 
 		Method method = ReflectionUtils.findMethod(javaslang.control.Option.class, "of", Object.class);
 		return (javaslang.control.Option<T>) ReflectionUtils.invokeMethod(method, null, source);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> javaslang.collection.List<T> javaslangList(T... values) {
+
+		Method method = ReflectionUtils.findMethod(javaslang.collection.List.class, "ofAll", Iterable.class);
+		return (javaslang.collection.List<T>) ReflectionUtils.invokeMethod(method, null, Arrays.asList(values));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> javaslang.collection.Set<T> javaslangSet(T... values) {
+
+		Method method = ReflectionUtils.findMethod(HashSet.class, "ofAll", Iterable.class);
+		return (javaslang.collection.Set<T>) ReflectionUtils.invokeMethod(method, null, Arrays.asList(values));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <K, V> javaslang.collection.Map<K, V> javaslangMap(K key, V value) {
+
+		Method method = ReflectionUtils.findMethod(HashMap.class, "ofAll", Map.class);
+		return (javaslang.collection.Map<K, V>) ReflectionUtils.invokeMethod(method, null,
+				Collections.singletonMap(key, value));
 	}
 }
