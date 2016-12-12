@@ -103,7 +103,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		if (fieldType instanceof Class) {
-			return new ClassTypeInformation((Class<?>) fieldType);
+			return ClassTypeInformation.from((Class<?>) fieldType);
 		}
 
 		Class<S> resolveType = resolveType(fieldType);

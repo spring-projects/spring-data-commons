@@ -92,7 +92,8 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	public static <S> TypeInformation<S> fromReturnTypeOf(Method method) {
 
 		Assert.notNull(method, "Method must not be null!");
-		return new ClassTypeInformation(method.getDeclaringClass()).createInfo(method.getGenericReturnType());
+		return (TypeInformation<S>) ClassTypeInformation.from(method.getDeclaringClass())
+				.createInfo(method.getGenericReturnType());
 	}
 
 	/**
