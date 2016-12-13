@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package org.springframework.data.repository.query;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+
+import javaslang.collection.Seq;
+import javaslang.control.Option;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -181,6 +184,42 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
 	}
 
+	/**
+	 * @see DATACMNS-940
+	 */
+	@Test
+	public void detectsCustomCollectionReturnType() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("returnsSeq");
+
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-940
+	 */
+	@Test
+	public void detectsWrapperWithinWrapper() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("returnsFutureOfSeq");
+
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
+	}
+
+	/**
+	 * @see DATACMNS-940
+	 */
+	@Test
+	public void detectsSinglValueWrapperWithinWrapper() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("returnsFutureOfOption");
+
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(false));
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -216,6 +255,12 @@ public class QueryMethodUnitTests {
 
 		// DATACMNS-716
 		Future<List<User>> returnsFutureForEntityCollection();
+
+		Seq<User> returnsSeq();
+
+		Future<Seq<User>> returnsFutureOfSeq();
+
+		Future<Option<User>> returnsFutureOfOption();
 	}
 
 	class User {

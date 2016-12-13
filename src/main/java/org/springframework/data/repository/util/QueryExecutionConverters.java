@@ -16,6 +16,10 @@
 package org.springframework.data.repository.util;
 
 import javaslang.collection.Traversable;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
@@ -28,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -72,16 +77,16 @@ public abstract class QueryExecutionConverters {
 	private static final boolean JAVASLANG_PRESENT = ClassUtils.isPresent("javaslang.control.Option",
 			QueryExecutionConverters.class.getClassLoader());
 
-	private static final Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
-	private static final Set<Class<?>> UNWRAPPER_TYPES = new HashSet<Class<?>>();
+	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<WrapperType>();
+	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>();
 	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
 
 	static {
 
-		WRAPPER_TYPES.add(Future.class);
-		UNWRAPPER_TYPES.add(Future.class);
-		WRAPPER_TYPES.add(ListenableFuture.class);
-		UNWRAPPER_TYPES.add(ListenableFuture.class);
+		WRAPPER_TYPES.add(WrapperType.singleValue(Future.class));
+		UNWRAPPER_TYPES.add(WrapperType.singleValue(Future.class));
+		WRAPPER_TYPES.add(WrapperType.singleValue(ListenableFuture.class));
+		UNWRAPPER_TYPES.add(WrapperType.singleValue(ListenableFuture.class));
 
 		if (GUAVA_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToGuavaOptionalConverter.getWrapperType());
@@ -115,9 +120,12 @@ public abstract class QueryExecutionConverters {
 		}
 
 		if (ReactiveWrappers.isAvailable()) {
-			WRAPPER_TYPES.addAll(ReactiveWrappers.getNoValueTypes());
-			WRAPPER_TYPES.addAll(ReactiveWrappers.getSingleValueTypes());
-			WRAPPER_TYPES.addAll(ReactiveWrappers.getMultiValueTypes());
+			WRAPPER_TYPES
+					.addAll(ReactiveWrappers.getNoValueTypes().stream().map(WrapperType::noValue).collect(Collectors.toList()));
+			WRAPPER_TYPES.addAll(
+					ReactiveWrappers.getSingleValueTypes().stream().map(WrapperType::singleValue).collect(Collectors.toList()));
+			WRAPPER_TYPES.addAll(
+					ReactiveWrappers.getMultiValueTypes().stream().map(WrapperType::multiValue).collect(Collectors.toList()));
 		}
 	}
 
@@ -133,8 +141,8 @@ public abstract class QueryExecutionConverters {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		for (Class<?> candidate : WRAPPER_TYPES) {
-			if (candidate.isAssignableFrom(type)) {
+		for (WrapperType candidate : WRAPPER_TYPES) {
+			if (candidate.getType().isAssignableFrom(type)) {
 				return true;
 			}
 		}
@@ -152,9 +160,20 @@ public abstract class QueryExecutionConverters {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		for (Class<?> candidate : UNWRAPPER_TYPES) {
-			if (candidate.isAssignableFrom(type)) {
+		for (WrapperType candidate : UNWRAPPER_TYPES) {
+			if (candidate.getType().isAssignableFrom(type)) {
 				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isSingleValue(Class<?> type) {
+
+		for (WrapperType candidate : WRAPPER_TYPES) {
+			if (candidate.getType().isAssignableFrom(type)) {
+				return candidate.isSingleValue();
 			}
 		}
 
@@ -311,8 +330,8 @@ public abstract class QueryExecutionConverters {
 			return Optional.of(source);
 		}
 
-		public static Class<?> getWrapperType() {
-			return Optional.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(Optional.class);
 		}
 	}
 
@@ -341,8 +360,8 @@ public abstract class QueryExecutionConverters {
 			return java.util.Optional.of(source);
 		}
 
-		public static Class<?> getWrapperType() {
-			return java.util.Optional.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(java.util.Optional.class);
 		}
 	}
 
@@ -397,8 +416,8 @@ public abstract class QueryExecutionConverters {
 			return source instanceof CompletableFuture ? source : CompletableFuture.completedFuture(source);
 		}
 
-		public static Class<?> getWrapperType() {
-			return CompletableFuture.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(CompletableFuture.class);
 		}
 	}
 
@@ -423,8 +442,8 @@ public abstract class QueryExecutionConverters {
 			return Option.apply(source);
 		}
 
-		public static Class<?> getWrapperType() {
-			return Option.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(Option.class);
 		}
 	}
 
@@ -440,8 +459,8 @@ public abstract class QueryExecutionConverters {
 		private static final Method NONE_METHOD;
 
 		static {
-			OF_METHOD = ReflectionUtils.findMethod(getWrapperType(), "of", Object.class);
-			NONE_METHOD = ReflectionUtils.findMethod(getWrapperType(), "none");
+			OF_METHOD = ReflectionUtils.findMethod(javaslang.control.Option.class, "of", Object.class);
+			NONE_METHOD = ReflectionUtils.findMethod(javaslang.control.Option.class, "none");
 		}
 
 		/**
@@ -450,11 +469,11 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToJavaslangOptionConverter(ConversionService conversionService) {
-			super(conversionService, createEmptyOption(), getWrapperType());
+			super(conversionService, createEmptyOption(), javaslang.control.Option.class);
 		}
 
-		public static Class<?> getWrapperType() {
-			return javaslang.control.Option.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(javaslang.control.Option.class);
 		}
 
 		/* 
@@ -584,6 +603,34 @@ public abstract class QueryExecutionConverters {
 			}
 
 			return source;
+		}
+	}
+
+	@Value
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class WrapperType {
+
+		enum Cardinality {
+			NONE, SINGLE, MULTI;
+		}
+
+		Class<?> type;
+		@Getter(AccessLevel.NONE) Cardinality cardinality;
+
+		public static WrapperType singleValue(Class<?> type) {
+			return new WrapperType(type, Cardinality.SINGLE);
+		}
+
+		public static WrapperType multiValue(Class<?> type) {
+			return new WrapperType(type, Cardinality.MULTI);
+		}
+
+		public static WrapperType noValue(Class<?> type) {
+			return new WrapperType(type, Cardinality.NONE);
+		}
+
+		boolean isSingleValue() {
+			return cardinality.equals(Cardinality.SINGLE);
 		}
 	}
 }
