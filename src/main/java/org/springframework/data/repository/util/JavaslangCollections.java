@@ -28,6 +28,7 @@ import java.util.Set;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.repository.util.QueryExecutionConverters.WrapperType;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -42,8 +43,8 @@ class JavaslangCollections {
 
 		INSTANCE;
 
-		public Class<?> getWrapperType() {
-			return javaslang.collection.Traversable.class;
+		public WrapperType getWrapperType() {
+			return WrapperType.multiValue(javaslang.collection.Traversable.class);
 		}
 
 		/* 

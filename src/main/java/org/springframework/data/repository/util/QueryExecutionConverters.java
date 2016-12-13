@@ -16,6 +16,9 @@
 package org.springframework.data.repository.util;
 
 import javaslang.collection.Traversable;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
@@ -70,13 +73,13 @@ public abstract class QueryExecutionConverters {
 	private static final boolean JAVASLANG_PRESENT = ClassUtils.isPresent("javaslang.control.Option",
 			QueryExecutionConverters.class.getClassLoader());
 
-	private static final Set<Class<?>> WRAPPER_TYPES = new HashSet<Class<?>>();
+	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<WrapperType>();
 	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
 
 	static {
 
-		WRAPPER_TYPES.add(Future.class);
-		WRAPPER_TYPES.add(ListenableFuture.class);
+		WRAPPER_TYPES.add(WrapperType.singleValue(Future.class));
+		WRAPPER_TYPES.add(WrapperType.singleValue(ListenableFuture.class));
 
 		if (GUAVA_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToGuavaOptionalConverter.getWrapperType());
@@ -118,9 +121,20 @@ public abstract class QueryExecutionConverters {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		for (Class<?> candidate : WRAPPER_TYPES) {
-			if (candidate.isAssignableFrom(type)) {
+		for (WrapperType candidate : WRAPPER_TYPES) {
+			if (candidate.getType().isAssignableFrom(type)) {
 				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isSingleValue(Class<?> type) {
+
+		for (WrapperType candidate : WRAPPER_TYPES) {
+			if (candidate.getType().isAssignableFrom(type)) {
+				return candidate.isSingleValue();
 			}
 		}
 
@@ -277,8 +291,8 @@ public abstract class QueryExecutionConverters {
 			return Optional.of(source);
 		}
 
-		public static Class<?> getWrapperType() {
-			return Optional.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(Optional.class);
 		}
 	}
 
@@ -307,8 +321,8 @@ public abstract class QueryExecutionConverters {
 			return java.util.Optional.of(source);
 		}
 
-		public static Class<?> getWrapperType() {
-			return java.util.Optional.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(java.util.Optional.class);
 		}
 	}
 
@@ -363,8 +377,8 @@ public abstract class QueryExecutionConverters {
 			return source instanceof CompletableFuture ? source : CompletableFuture.completedFuture(source);
 		}
 
-		public static Class<?> getWrapperType() {
-			return CompletableFuture.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(CompletableFuture.class);
 		}
 	}
 
@@ -389,8 +403,8 @@ public abstract class QueryExecutionConverters {
 			return Option.apply(source);
 		}
 
-		public static Class<?> getWrapperType() {
-			return Option.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(Option.class);
 		}
 	}
 
@@ -406,8 +420,8 @@ public abstract class QueryExecutionConverters {
 		private static final Method NONE_METHOD;
 
 		static {
-			OF_METHOD = ReflectionUtils.findMethod(getWrapperType(), "of", Object.class);
-			NONE_METHOD = ReflectionUtils.findMethod(getWrapperType(), "none");
+			OF_METHOD = ReflectionUtils.findMethod(javaslang.control.Option.class, "of", Object.class);
+			NONE_METHOD = ReflectionUtils.findMethod(javaslang.control.Option.class, "none");
 		}
 
 		/**
@@ -416,11 +430,11 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToJavaslangOptionConverter(ConversionService conversionService) {
-			super(conversionService, createEmptyOption(), getWrapperType());
+			super(conversionService, createEmptyOption(), javaslang.control.Option.class);
 		}
 
-		public static Class<?> getWrapperType() {
-			return javaslang.control.Option.class;
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(javaslang.control.Option.class);
 		}
 
 		/* 
@@ -550,6 +564,22 @@ public abstract class QueryExecutionConverters {
 			}
 
 			return source;
+		}
+	}
+
+	@Value
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class WrapperType {
+
+		Class<?> type;
+		boolean singleValue;
+
+		public static WrapperType singleValue(Class<?> type) {
+			return new WrapperType(type, true);
+		}
+
+		public static WrapperType multiValue(Class<?> type) {
+			return new WrapperType(type, false);
 		}
 	}
 }

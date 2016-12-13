@@ -173,8 +173,22 @@ public class QueryMethod {
 	 */
 	public boolean isCollectionQuery() {
 
-		return !(isPageQuery() || isSliceQuery())
-				&& org.springframework.util.ClassUtils.isAssignable(Iterable.class, unwrappedReturnType)
+		if (isPageQuery() || isSliceQuery()) {
+			return false;
+		}
+
+		Class<?> returnType = method.getReturnType();
+
+		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
+			return true;
+		}
+
+		if (QueryExecutionConverters.supports(unwrappedReturnType)
+				&& QueryExecutionConverters.isSingleValue(unwrappedReturnType)) {
+			return false;
+		}
+
+		return org.springframework.util.ClassUtils.isAssignable(Iterable.class, unwrappedReturnType)
 				|| unwrappedReturnType.isArray();
 	}
 
