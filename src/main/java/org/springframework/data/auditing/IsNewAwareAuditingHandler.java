@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.auditing;
 
 import java.util.Arrays;
 
+import org.springframework.data.domain.Auditable;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
@@ -31,6 +32,7 @@ import org.springframework.data.support.IsNewStrategyFactory;
  * {@link #markModified(Object)} based on the {@link IsNewStrategy} determined from the factory.
  * 
  * @author Oliver Gierke
+ * @author Walery Strauch
  * @since 1.5
  */
 public class IsNewAwareAuditingHandler extends AuditingHandler {
@@ -73,7 +75,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 */
 	public void markAudited(Object object) {
 
-		if (object == null) {
+		if (!isAuditable(object)) {
 			return;
 		}
 
@@ -84,5 +86,18 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 		} else {
 			markModified(object);
 		}
+	}
+
+	private boolean isAuditable(Object object) {
+
+		if (object == null) {
+			return false;
+		}
+
+		if (object instanceof Auditable) {
+			return true;
+		}
+
+		return AnnotationAuditingMetadata.getMetadata(object.getClass()).isAuditable();
 	}
 }
