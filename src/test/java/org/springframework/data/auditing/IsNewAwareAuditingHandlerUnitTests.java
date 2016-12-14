@@ -101,8 +101,15 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 		handler.markModified(null);
 	}
 
+	@Test // DATACMNS-957
+	public void skipsEntityWithoutIdentifier() {
+		getHandler().markAudited(new EntityWithoutId());
+	}
+
 	static class Domain {
 
 		@Id Long id;
 	}
+
+	static class EntityWithoutId {}
 }
