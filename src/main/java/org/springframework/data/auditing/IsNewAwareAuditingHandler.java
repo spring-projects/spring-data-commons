@@ -73,7 +73,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 */
 	public void markAudited(Object object) {
 
-		if (object == null) {
+		if (!isAuditable(object)) {
 			return;
 		}
 

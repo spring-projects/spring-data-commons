@@ -134,6 +134,16 @@ public class AuditingHandler implements InitializingBean {
 		touch(source, false);
 	}
 
+	/**
+	 * Returns whether the given source is considered to be auditable in the first place
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	protected final boolean isAuditable(Object source) {
+		return factory.getBeanWrapperFor(source) != null;
+	}
+
 	private void touch(Object target, boolean isNew) {
 
 		AuditableBeanWrapper wrapper = factory.getBeanWrapperFor(target);
