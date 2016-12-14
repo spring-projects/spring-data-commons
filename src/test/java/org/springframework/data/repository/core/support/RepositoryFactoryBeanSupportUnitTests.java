@@ -44,10 +44,9 @@ public class RepositoryFactoryBeanSupportUnitTests {
 
 		ClassLoader classLoader = mock(ClassLoader.class);
 
-		RepositoryFactoryBeanSupport factoryBean = new DummyRepositoryFactoryBean();
+		RepositoryFactoryBeanSupport factoryBean = new DummyRepositoryFactoryBean(SampleRepository.class);
 		factoryBean.setBeanClassLoader(classLoader);
 		factoryBean.setLazyInit(true);
-		factoryBean.setRepositoryInterface(SampleRepository.class);
 		factoryBean.afterPropertiesSet();
 
 		Object factory = ReflectionTestUtils.getField(factoryBean, "factory");
@@ -58,14 +57,13 @@ public class RepositoryFactoryBeanSupportUnitTests {
 	 * @see DATACMNS-432
 	 */
 	@Test
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void initializationFailsWithMissingRepositoryInterface() {
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("Repository interface");
 
-		RepositoryFactoryBeanSupport factoryBean = new DummyRepositoryFactoryBean();
-		factoryBean.afterPropertiesSet();
+		new DummyRepositoryFactoryBean(null);
 	}
 
 	interface SampleRepository extends Repository<Object, Long> {}

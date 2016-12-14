@@ -88,7 +88,7 @@ public class TransactionRepositoryFactoryBeanSupportUnitTests {
 		private final CrudRepository<Object, Long> repository = mock(CrudRepository.class);
 
 		public SampleTransactionalRepositoryFactoryBean() {
-			setRepositoryInterface((Class) CrudRepository.class);
+			super((Class) CrudRepository.class);
 		}
 
 		@Override

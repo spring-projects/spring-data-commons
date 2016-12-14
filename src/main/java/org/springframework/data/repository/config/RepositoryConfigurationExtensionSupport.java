@@ -33,7 +33,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
-import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -50,8 +49,6 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryConfigurationExtensionSupport.class);
 	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s.";
 	private static final String MULTI_STORE_DROPPED = "Spring Data {} - Could not safely identify store assignment for repository candidate {}.";
-
-	private static final String FACTORY_BEAN_TYPE_PREDICTING_POST_PROCESSOR = "org.springframework.data.repository.core.support.FactoryBeanTypePredictingBeanPostProcessor";
 
 	/* 
 	 * (non-Javadoc)
@@ -125,18 +122,8 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#registerBeansForRoot(org.springframework.beans.factory.support.BeanDefinitionRegistry, org.springframework.data.repository.config.RepositoryConfigurationSource)
 	 */
-	public void registerBeansForRoot(BeanDefinitionRegistry registry, RepositoryConfigurationSource configurationSource) {
-
-		String typeName = RepositoryFactoryBeanSupport.class.getName();
-
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder
-				.rootBeanDefinition(FACTORY_BEAN_TYPE_PREDICTING_POST_PROCESSOR);
-		builder.addConstructorArgValue(typeName);
-		builder.addConstructorArgValue("repositoryInterface");
-
-		registerIfNotAlreadyRegistered(builder.getBeanDefinition(), registry, typeName.concat("_Predictor"),
-				configurationSource.getSource());
-	}
+	public void registerBeansForRoot(BeanDefinitionRegistry registry,
+			RepositoryConfigurationSource configurationSource) {}
 
 	/**
 	 * Returns the prefix of the module to be used to create the default location for Spring Data named queries.

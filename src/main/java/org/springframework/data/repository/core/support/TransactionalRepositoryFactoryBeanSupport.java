@@ -41,6 +41,15 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	private boolean enableDefaultTransactions = true;
 
 	/**
+	 * Creates a new {@link TransactionalRepositoryFactoryBeanSupport} for the given repository interface.
+	 * 
+	 * @param repositoryInterface must not be {@literal null}.
+	 */
+	protected TransactionalRepositoryFactoryBeanSupport(Class<? extends T> repositoryInterface) {
+		super(repositoryInterface);
+	}
+
+	/**
 	 * Setter to configure which transaction manager to be used. We have to use the bean name explicitly as otherwise the
 	 * qualifier of the {@link org.springframework.transaction.annotation.Transactional} annotation is used. By explicitly
 	 * defining the transaction manager bean name we favour let this one be the default one chosen.

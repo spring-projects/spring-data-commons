@@ -214,7 +214,7 @@ public class DomainClassConverterUnitTests {
 	private ApplicationContext initContextWithRepo() {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(DummyRepositoryFactoryBean.class);
-		builder.addPropertyValue("repositoryInterface", UserRepository.class);
+		builder.addConstructorArgValue(UserRepository.class);
 
 		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
 		factory.registerBeanDefinition("provider", builder.getBeanDefinition());

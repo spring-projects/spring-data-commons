@@ -65,7 +65,7 @@ public class RepositoryBeanNameGenerator implements BeanNameGenerator, BeanClass
 	 */
 	private Class<?> getRepositoryInterfaceFrom(BeanDefinition beanDefinition) {
 
-		Object value = beanDefinition.getPropertyValues().getPropertyValue("repositoryInterface").getValue();
+		Object value = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, Class.class).getValue();
 
 		if (value instanceof Class<?>) {
 			return (Class<?>) value;
