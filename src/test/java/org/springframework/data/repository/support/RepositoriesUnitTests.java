@@ -73,7 +73,7 @@ public class RepositoriesUnitTests {
 	private AbstractBeanDefinition getRepositoryBeanDefinition(Class<?> repositoryInterface) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(DummyRepositoryFactoryBean.class);
-		builder.addPropertyValue("repositoryInterface", repositoryInterface);
+		builder.addConstructorArgValue(repositoryInterface);
 
 		return builder.getBeanDefinition();
 	}

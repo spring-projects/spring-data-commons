@@ -51,7 +51,7 @@ public class DomainClassPropertyEditorRegistrarUnitTests {
 	public void setup() {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(DummyRepositoryFactoryBean.class);
-		builder.addPropertyValue("repositoryInterface", EntityRepository.class);
+		builder.addConstructorArgValue(EntityRepository.class);
 
 		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
 		factory.registerBeanDefinition("provider", builder.getBeanDefinition());

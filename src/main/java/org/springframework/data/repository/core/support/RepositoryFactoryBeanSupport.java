@@ -24,7 +24,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.PersistentEntity;
@@ -53,10 +52,10 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware,
 		BeanFactoryAware, ApplicationEventPublisherAware {
 
-	private RepositoryFactorySupport factory;
+	private final Class<? extends T> repositoryInterface;
 
+	private RepositoryFactorySupport factory;
 	private Key queryLookupStrategyKey;
-	private Class<? extends T> repositoryInterface;
 	private Class<?> repositoryBaseClass;
 	private Object customImplementation;
 	private NamedQueries namedQueries;
@@ -72,14 +71,13 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private RepositoryMetadata repositoryMetadata;
 
 	/**
-	 * Setter to inject the repository interface to implement.
+	 * Creates a new {@link RepositoryFactoryBeanSupport} for the given repository interface.
 	 * 
-	 * @param repositoryInterface the repository interface to set
+	 * @param repositoryInterface must not be {@literal null}.
 	 */
-	@Required
-	public void setRepositoryInterface(Class<? extends T> repositoryInterface) {
+	protected RepositoryFactoryBeanSupport(Class<? extends T> repositoryInterface) {
 
-		Assert.notNull(repositoryInterface);
+		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
 		this.repositoryInterface = repositoryInterface;
 	}
 
@@ -229,9 +227,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
-	@SuppressWarnings("unchecked")
 	public Class<? extends T> getObjectType() {
-		return (Class<? extends T>) (null == repositoryInterface ? Repository.class : repositoryInterface);
+		return repositoryInterface;
 	}
 
 	/*
@@ -247,8 +244,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	public void afterPropertiesSet() {
-
-		Assert.notNull(repositoryInterface, "Repository interface must not be null on initialization!");
 
 		this.factory = createRepositoryFactory();
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);

@@ -62,7 +62,7 @@ public class RepositoryBeanNameGeneratorUnitTests {
 	private BeanDefinition getBeanDefinitionFor(Class<?> repositoryInterface) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(RepositoryFactoryBeanSupport.class);
-		builder.addPropertyValue("repositoryInterface", repositoryInterface.getName());
+		builder.addConstructorArgValue(repositoryInterface.getName());
 		return builder.getBeanDefinition();
 	}
 

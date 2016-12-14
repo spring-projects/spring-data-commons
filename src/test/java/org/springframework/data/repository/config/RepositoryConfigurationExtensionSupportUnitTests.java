@@ -23,12 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.env.StandardEnvironment;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
@@ -63,26 +58,6 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 	@Test
 	public void considersRepositoryInterfaceExtendingStoreInterfaceStrictMatch() {
 		assertThat(extension.isStrictRepositoryCandidate(ExtendingInterface.class), is(true));
-	}
-
-	/**
-	 * @see DATACMNS-609
-	 */
-	@Test
-	public void registersRepositoryInterfaceAwareBeanPostProcessorOnlyOnceForMultipleConfigurations() {
-
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
-
-		DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
-		StandardEnvironment environment = new StandardEnvironment();
-		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(
-				annotationMetadata, EnableRepositories.class, resourceLoader, environment);
-
-		extension.registerBeansForRoot(beanFactory, configurationSource);
-		extension.registerBeansForRoot(beanFactory, configurationSource);
-
-		assertThat(beanFactory.getBeanDefinitionCount(), is(1));
 	}
 
 	static class SampleRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {

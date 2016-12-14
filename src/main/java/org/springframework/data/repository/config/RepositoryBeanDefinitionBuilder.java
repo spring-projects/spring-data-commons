@@ -82,13 +82,13 @@ class RepositoryBeanDefinitionBuilder {
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
 		String factoryBeanName = configuration.getRepositoryFactoryBeanName();
-		factoryBeanName = StringUtils.hasText(factoryBeanName) ? factoryBeanName : extension
-				.getRepositoryFactoryClassName();
+		factoryBeanName = StringUtils.hasText(factoryBeanName) ? factoryBeanName
+				: extension.getRepositoryFactoryClassName();
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(factoryBeanName);
 
 		builder.getRawBeanDefinition().setSource(configuration.getSource());
-		builder.addPropertyValue("repositoryInterface", configuration.getRepositoryInterface());
+		builder.addConstructorArgValue(configuration.getRepositoryInterface());
 		builder.addPropertyValue("queryLookupStrategyKey", configuration.getQueryLookupStrategyKey());
 		builder.addPropertyValue("lazyInit", configuration.isLazyInit());
 		builder.addPropertyValue("repositoryBaseClass", configuration.getRepositoryBaseClassName());
@@ -127,8 +127,8 @@ class RepositoryBeanDefinitionBuilder {
 			return beanName;
 		}
 
-		AbstractBeanDefinition beanDefinition = implementationDetector.detectCustomImplementation(
-				configuration.getImplementationClassName(), configuration.getBasePackages());
+		AbstractBeanDefinition beanDefinition = implementationDetector
+				.detectCustomImplementation(configuration.getImplementationClassName(), configuration.getBasePackages());
 
 		if (null == beanDefinition) {
 			return null;
