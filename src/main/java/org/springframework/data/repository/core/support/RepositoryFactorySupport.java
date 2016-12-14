@@ -206,7 +206,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.setTarget(target);
 		result.setInterfaces(new Class[] { repositoryInterface, Repository.class });
 
-		result.addAdvice(ExposeInvocationInterceptor.INSTANCE);
+		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 
 		if (TRANSACTION_PROXY_TYPE != null) {
 			result.addInterface(TRANSACTION_PROXY_TYPE);
