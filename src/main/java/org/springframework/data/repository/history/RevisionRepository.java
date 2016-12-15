@@ -23,6 +23,7 @@ import org.springframework.data.history.Revision;
 import org.springframework.data.history.RevisionSort;
 import org.springframework.data.history.Revisions;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.data.repository.Repository;
 
 /**
  * A repository which can access entities held in a variety of {@link Revisions}.
@@ -31,7 +32,8 @@ import org.springframework.data.repository.NoRepositoryBean;
  * @author Philipp Huegelmeyer
  */
 @NoRepositoryBean
-public interface RevisionRepository<T, ID extends Serializable, N extends Number & Comparable<N>> {
+public interface RevisionRepository<T, ID extends Serializable, N extends Number & Comparable<N>>
+		extends Repository<T, ID> {
 
 	/**
 	 * Returns the revision of the entity it was last changed in.
