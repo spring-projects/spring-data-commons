@@ -67,6 +67,20 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 	private RepositoryMetadata repositoryMetadata;
 
+	protected RepositoryFactoryBeanSupport() {}
+
+	/**
+	 * Creates a new {@link RepositoryFactoryBeanSupport} for the given repository interface.
+	 * 
+	 * @param repositoryInterface must not be {@literal null}.
+	 */
+	protected RepositoryFactoryBeanSupport(Class<? extends T> repositoryInterface) {
+
+		Assert.notNull(repositoryInterface, "Repository interface must not be null on initialization!");
+
+		this.repositoryInterface = repositoryInterface;
+	}
+
 	/**
 	 * Setter to inject the repository interface to implement.
 	 * 
