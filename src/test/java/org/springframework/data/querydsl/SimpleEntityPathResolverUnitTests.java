@@ -37,13 +37,11 @@ public class SimpleEntityPathResolverUnitTests {
 
 	@Test
 	public void resolvesEntityPathForInnerClassCorrectly() throws Exception {
-
 		assertThat(resolver.createPath(NamedUser.class)).isInstanceOf(QSimpleEntityPathResolverUnitTests_NamedUser.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme() throws Exception {
-
 		resolver.createPath(QSimpleEntityPathResolverUnitTests_Sample.class);
 	}
 

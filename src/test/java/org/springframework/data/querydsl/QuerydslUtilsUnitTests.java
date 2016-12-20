@@ -16,20 +16,20 @@
 package org.springframework.data.querydsl;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.querydsl.QueryDslUtils.*;
+import static org.springframework.data.querydsl.QuerydslUtils.*;
 
 import org.junit.Test;
 
 /**
- * Unit tests for {@link QueryDslUtils}.
+ * Unit tests for {@link QuerydslUtils}.
  *
  * @author Oliver Gierke
  */
-public class QueryDslUtilsUnitTests {
+public class QuerydslUtilsUnitTests {
 
 	@Test // DATACMNS-883
 	public void rendersDotPathForPathTraversalContainingAnyExpression() {
-		assertThat(QueryDslUtils.toDotPath(QUser.user.addresses.any().street)).isEqualTo("addresses.street");
+		assertThat(QuerydslUtils.toDotPath(QUser.user.addresses.any().street)).isEqualTo("addresses.street");
 	}
 
 	@Test // DATACMNS-941

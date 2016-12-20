@@ -29,10 +29,10 @@ import com.querydsl.core.types.PathType;
  * @author Oliver Gierke
  */
 @UtilityClass
-public class QueryDslUtils {
+public class QuerydslUtils {
 
 	public static final boolean QUERY_DSL_PRESENT = org.springframework.util.ClassUtils
-			.isPresent("com.querydsl.core.types.Predicate", QueryDslUtils.class.getClassLoader());
+			.isPresent("com.querydsl.core.types.Predicate", QuerydslUtils.class.getClassLoader());
 
 	/**
 	 * Returns the property path for the given {@link Path}.

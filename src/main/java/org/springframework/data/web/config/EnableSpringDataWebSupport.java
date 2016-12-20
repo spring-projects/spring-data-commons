@@ -31,7 +31,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.querydsl.QueryDslUtils;
+import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.util.ClassUtils;
 
@@ -146,7 +146,7 @@ public @interface EnableSpringDataWebSupport {
 		 */
 		@Override
 		public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-			return QueryDslUtils.QUERY_DSL_PRESENT ? new String[] { QuerydslWebConfiguration.class.getName() }
+			return QuerydslUtils.QUERY_DSL_PRESENT ? new String[] { QuerydslWebConfiguration.class.getName() }
 					: new String[0];
 		}
 	}

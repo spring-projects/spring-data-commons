@@ -17,6 +17,7 @@ package org.springframework.data.querydsl;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Optional;
 
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -50,14 +51,12 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 		String pathClassName = getQueryClassName(domainClass);
 
 		try {
-			Class<?> pathClass = ClassUtils.forName(pathClassName, domainClass.getClassLoader());
-			Field field = getStaticFieldOfType(pathClass);
 
-			if (field == null) {
-				throw new IllegalStateException(String.format(NO_FIELD_FOUND_TEMPLATE, pathClass));
-			} else {
-				return (EntityPath<T>) ReflectionUtils.getField(field, null);
-			}
+			Class<?> pathClass = ClassUtils.forName(pathClassName, domainClass.getClassLoader());
+
+			return getStaticFieldOfType(pathClass)//
+					.map(it -> (EntityPath<T>) ReflectionUtils.getField(it, null))//
+					.orElseThrow(() -> new IllegalStateException(String.format(NO_FIELD_FOUND_TEMPLATE, pathClass)));
 
 		} catch (ClassNotFoundException e) {
 			throw new IllegalArgumentException(String.format(NO_CLASS_FOUND_TEMPLATE, pathClassName, domainClass.getName()),
@@ -71,7 +70,7 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 	 * @param type
 	 * @return
 	 */
-	private Field getStaticFieldOfType(Class<?> type) {
+	private Optional<Field> getStaticFieldOfType(Class<?> type) {
 
 		for (Field field : type.getDeclaredFields()) {
 
@@ -79,12 +78,12 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 			boolean hasSameType = type.equals(field.getType());
 
 			if (isStatic && hasSameType) {
-				return field;
+				return Optional.of(field);
 			}
 		}
 
 		Class<?> superclass = type.getSuperclass();
-		return Object.class.equals(superclass) ? null : getStaticFieldOfType(superclass);
+		return Object.class.equals(superclass) ? Optional.empty() : getStaticFieldOfType(superclass);
 	}
 
 	/**

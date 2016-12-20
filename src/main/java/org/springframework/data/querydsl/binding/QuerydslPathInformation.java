@@ -23,7 +23,7 @@ import java.beans.PropertyDescriptor;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.querydsl.EntityPathResolver;
-import org.springframework.data.querydsl.QueryDslUtils;
+import org.springframework.data.querydsl.QuerydslUtils;
 
 import com.querydsl.core.types.Path;
 
@@ -82,7 +82,7 @@ class QuerydslPathInformation implements PathInformation {
 	 */
 	@Override
 	public String toDotPath() {
-		return QueryDslUtils.toDotPath(path);
+		return QuerydslUtils.toDotPath(path);
 	}
 
 	/* 

@@ -41,7 +41,7 @@ import com.querydsl.core.types.Predicate;
 public class QuerydslRepositoryInvokerAdapterUnitTests {
 
 	@Mock RepositoryInvoker delegate;
-	@Mock QueryDslPredicateExecutor<Object> executor;
+	@Mock QuerydslPredicateExecutor<Object> executor;
 	@Mock Predicate predicate;
 
 	QuerydslRepositoryInvokerAdapter adapter;

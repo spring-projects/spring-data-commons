@@ -28,7 +28,7 @@ import com.querydsl.core.types.Predicate;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public interface QueryDslPredicateExecutor<T> {
+public interface QuerydslPredicateExecutor<T> {
 
 	/**
 	 * Returns a single entity matching the given {@link Predicate} or {@literal null} if none was found.

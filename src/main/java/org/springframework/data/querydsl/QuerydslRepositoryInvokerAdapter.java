@@ -27,7 +27,7 @@ import org.springframework.util.MultiValueMap;
 import com.querydsl.core.types.Predicate;
 
 /**
- * {@link RepositoryInvoker} that is aware of a {@link QueryDslPredicateExecutor} and {@link Predicate} to be executed
+ * {@link RepositoryInvoker} that is aware of a {@link QuerydslPredicateExecutor} and {@link Predicate} to be executed
  * for all flavors of {@code findAll(…)}. All other calls are forwarded to the configured delegate.
  * 
  * @author Oliver Gierke
@@ -35,18 +35,18 @@ import com.querydsl.core.types.Predicate;
 public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 
 	private final RepositoryInvoker delegate;
-	private final QueryDslPredicateExecutor<Object> executor;
+	private final QuerydslPredicateExecutor<Object> executor;
 	private final Predicate predicate;
 
 	/**
 	 * Creates a new {@link QuerydslRepositoryInvokerAdapter} for the given delegate {@link RepositoryInvoker},
-	 * {@link QueryDslPredicateExecutor} and Querydsl {@link Predicate}.
+	 * {@link QuerydslPredicateExecutor} and Querydsl {@link Predicate}.
 	 * 
 	 * @param delegate must not be {@literal null}.
 	 * @param executor must not be {@literal null}.
 	 * @param predicate can be {@literal null}.
 	 */
-	public QuerydslRepositoryInvokerAdapter(RepositoryInvoker delegate, QueryDslPredicateExecutor<Object> executor,
+	public QuerydslRepositoryInvokerAdapter(RepositoryInvoker delegate, QuerydslPredicateExecutor<Object> executor,
 			Predicate predicate) {
 
 		Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null!");
