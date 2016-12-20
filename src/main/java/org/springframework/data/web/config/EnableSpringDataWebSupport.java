@@ -23,11 +23,9 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportSelector;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.type.AnnotationMetadata;
@@ -81,24 +79,13 @@ public @interface EnableSpringDataWebSupport {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	static class SpringDataWebConfigurationImportSelector
-			implements ImportSelector, EnvironmentAware, ResourceLoaderAware {
+	static class SpringDataWebConfigurationImportSelector implements ImportSelector, ResourceLoaderAware {
 
 		// Don't make final to allow test cases faking this to false
 		private static boolean HATEOAS_PRESENT = ClassUtils.isPresent("org.springframework.hateoas.Link", null);
 		private static boolean JACKSON_PRESENT = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", null);
 
-		private Environment environment;
 		private ResourceLoader resourceLoader;
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.context.EnvironmentAware#setEnvironment(org.springframework.core.env.Environment)
-		 */
-		@Override
-		public void setEnvironment(Environment environment) {
-			this.environment = environment;
-		}
 
 		/* 
 		 * (non-Javadoc)
