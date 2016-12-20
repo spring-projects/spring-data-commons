@@ -16,7 +16,6 @@
 package org.springframework.data.querydsl.binding;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,7 +40,6 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.CollectionPathBase;
 
 /**
  * Builder assembling {@link Predicate} out of {@link PropertyValues}.
@@ -151,36 +149,6 @@ public class QuerydslPredicateBuilder {
 		Optional<Path<?>> resolvedPath = bindings.getExistingPath(path);
 
 		return resolvedPath.orElseGet(() -> paths.computeIfAbsent(path, it -> it.reifyPath(resolver)));
-	}
-
-	/**
-	 * Tries to reify a Querydsl {@link Path} from the given {@link PropertyPath} and base.
-	 * 
-	 * @param path must not be {@literal null}.
-	 * @param base can be empty.
-	 * @return
-	 */
-	private Path<?> reifyPath(PropertyPath path, Optional<Path<?>> base) {
-
-		Optional<Path<?>> map = base.filter(it -> it instanceof CollectionPathBase)
-				.map(it -> CollectionPathBase.class.cast(it))//
-				.map(CollectionPathBase::any)//
-				.map(it -> Path.class.cast(it))//
-				.map(it -> reifyPath(path, Optional.of(it)));
-
-		return map.orElseGet(() -> {
-
-			Path<?> entityPath = base.orElseGet(() -> resolver.createPath(path.getOwningType().getType()));
-
-			Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
-			Object value = ReflectionUtils.getField(field, entityPath);
-
-			if (path.hasNext()) {
-				return reifyPath(path.next(), Optional.of((Path<?>) value));
-			}
-
-			return (Path<?>) value;
-		});
 	}
 
 	/**

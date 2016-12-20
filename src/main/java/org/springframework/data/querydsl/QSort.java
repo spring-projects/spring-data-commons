@@ -55,7 +55,6 @@ public class QSort extends Sort implements Serializable {
 	 * 
 	 * @param orderSpecifiers must not be {@literal null}.
 	 */
-
 	public QSort(List<OrderSpecifier<?>> orderSpecifiers) {
 
 		super(toOrders(orderSpecifiers));
