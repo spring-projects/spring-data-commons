@@ -393,7 +393,9 @@ public class ClassTypeInformationUnitTests {
 
 		ClassTypeInformation<SampleTraversable> information = ClassTypeInformation.from(SampleTraversable.class);
 
-		assertThat(information.getComponentType().getType(), is(typeCompatibleWith(Integer.class)));
+		assertThat(information.getComponentType()).hasValueSatisfying(it -> {
+			assertThat(it.getType()).isAssignableFrom(Integer.class);
+		});
 	}
 
 	@Test // DATACMNS-940
@@ -401,8 +403,13 @@ public class ClassTypeInformationUnitTests {
 
 		ClassTypeInformation<SampleMap> information = ClassTypeInformation.from(SampleMap.class);
 
-		assertThat(information.getComponentType().getType(), is(typeCompatibleWith(String.class)));
-		assertThat(information.getMapValueType().getType(), is(typeCompatibleWith(Integer.class)));
+		assertThat(information.getComponentType()).hasValueSatisfying(it -> {
+			assertThat(it.getType()).isAssignableFrom(String.class);
+		});
+
+		assertThat(information.getMapValueType()).hasValueSatisfying(it -> {
+			assertThat(it.getType()).isAssignableFrom(Integer.class);
+		});
 	}
 
 	static class StringMapContainer extends MapContainer<String> {

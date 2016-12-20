@@ -56,6 +56,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 	private final Class<? extends T> repositoryInterface;
 
+	private RepositoryFactorySupport factory;
 	private Key queryLookupStrategyKey;
 	private Optional<Class<?>> repositoryBaseClass = Optional.empty();
 	private Optional<Object> customImplementation = Optional.empty();

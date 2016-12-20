@@ -255,8 +255,8 @@ public class ExampleSpecificationAccessorUnitTests {
 		ExampleMatcher matcher = ExampleMatcher.matching()//
 				.withMatcher("firstname", exact());
 
-		assertThat(new ExampleMatcherAccessor(matcher).getPropertySpecifier("firstname").getStringMatcher(),
-				is(StringMatcher.EXACT));
+		assertThat(new ExampleMatcherAccessor(matcher).getPropertySpecifier("firstname").getStringMatcher())
+				.isEqualTo(StringMatcher.EXACT);
 	}
 
 	static class Person {

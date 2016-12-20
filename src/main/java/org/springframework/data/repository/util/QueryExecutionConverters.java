@@ -25,13 +25,13 @@ import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.core.convert.ConversionService;
@@ -60,8 +60,8 @@ import com.google.common.base.Optional;
  * <li>{@code org.springframework.util.concurrent.ListenableFuture<}</li>
  * <li>{@code javaslang.control.Option} - as of 1.13</li>
  * <li>{@code javaslang.collection.Seq}, {@code javaslang.collection.Map}, {@code javaslang.collection.Set} - as of
- * <li>Reactive wrappers supported by {@link ReactiveWrappers}</li>
  * 1.13</li>
+ * <li>Reactive wrappers supported by {@link ReactiveWrappers} - as of 2.0</li>
  * </ul>
  * 
  * @author Oliver Gierke
@@ -482,7 +482,7 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToJavaslangOptionConverter(ConversionService conversionService) {
-			super(conversionService, javaslang.control.Option.none(), getWrapperType());
+			super(conversionService, javaslang.control.Option.none(), javaslang.control.Option.class);
 		}
 
 		public static WrapperType getWrapperType() {
@@ -582,17 +582,6 @@ public abstract class QueryExecutionConverters {
 
 		INSTANCE;
 
-		private static final Supplier<Object> NULL_SUPPLIER = new Supplier<Object>() {
-
-			/*
-			 * (non-Javadoc)
-			 * @see java.util.function.Supplier#get()
-			 */
-			public Object get() {
-				return null;
-			}
-		};
-
 		/* 
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
@@ -602,7 +591,7 @@ public abstract class QueryExecutionConverters {
 		public Object convert(Object source) {
 
 			if (source instanceof javaslang.control.Option) {
-				return ((javaslang.control.Option<Object>) source).getOrElse(NULL_SUPPLIER);
+				return ((javaslang.control.Option<Object>) source).getOrElse(() -> null);
 			}
 
 			if (source instanceof Traversable) {

@@ -15,10 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Matchers.any;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import lombok.Getter;
@@ -101,7 +99,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 	@Test // DATACMNS-928
 	public void doesNotCreatePublishingMethodIfNoAnnotationDetected() {
-		assertThat(EventPublishingMethod.of(Object.class), is(nullValue()));
+		assertThat(EventPublishingMethod.of(Object.class)).isNull();
 	}
 
 	@Test // DATACMNS-928

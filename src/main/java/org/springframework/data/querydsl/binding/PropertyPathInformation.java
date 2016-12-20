@@ -22,6 +22,7 @@ import lombok.ToString;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mapping.PropertyPath;
@@ -118,24 +119,29 @@ class PropertyPathInformation implements PathInformation {
 	 */
 	@Override
 	public Path<?> reifyPath(EntityPathResolver resolver) {
-		return reifyPath(resolver, path, null);
+		return reifyPath(resolver, path, Optional.empty());
 	}
 
-	private static Path<?> reifyPath(EntityPathResolver resolver, PropertyPath path, Path<?> base) {
+	private static Path<?> reifyPath(EntityPathResolver resolver, PropertyPath path, Optional<Path<?>> base) {
 
-		if (base instanceof CollectionPathBase) {
-			return reifyPath(resolver, path, (Path<?>) ((CollectionPathBase<?, ?, ?>) base).any());
-		}
+		Optional<Path<?>> map = base.filter(it -> it instanceof CollectionPathBase)
+				.map(it -> CollectionPathBase.class.cast(it))//
+				.map(CollectionPathBase::any)//
+				.map(it -> Path.class.cast(it))//
+				.map(it -> reifyPath(resolver, path, Optional.of(it)));
 
-		Path<?> entityPath = base != null ? base : resolver.createPath(path.getOwningType().getType());
+		return map.orElseGet(() -> {
 
-		Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
-		Object value = ReflectionUtils.getField(field, entityPath);
+			Path<?> entityPath = base.orElseGet(() -> resolver.createPath(path.getOwningType().getType()));
 
-		if (path.hasNext()) {
-			return reifyPath(resolver, path.next(), (Path<?>) value);
-		}
+			Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
+			Object value = ReflectionUtils.getField(field, entityPath);
 
-		return (Path<?>) value;
+			if (path.hasNext()) {
+				return reifyPath(resolver, path.next(), Optional.of((Path<?>) value));
+			}
+
+			return (Path<?>) value;
+		});
 	}
 }

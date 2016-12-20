@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 package org.springframework.data.repository.util;
 
+import javaslang.collection.LinkedHashMap;
+import javaslang.collection.LinkedHashSet;
 import javaslang.collection.Traversable;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,7 +30,6 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.util.QueryExecutionConverters.WrapperType;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Converter implementations to map from and to Javaslang collections.
@@ -112,15 +112,15 @@ class JavaslangCollections {
 			public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 				if (source instanceof List) {
-					return ReflectionUtils.invokeMethod(LIST_FACTORY_METHOD, null, source);
+					return javaslang.collection.List.ofAll((Iterable<?>) source);
 				}
 
 				if (source instanceof java.util.Set) {
-					return ReflectionUtils.invokeMethod(SET_FACTORY_METHOD, null, source);
+					return LinkedHashSet.ofAll((Iterable<?>) source);
 				}
 
 				if (source instanceof java.util.Map) {
-					return ReflectionUtils.invokeMethod(MAP_FACTORY_METHOD, null, source);
+					return LinkedHashMap.ofAll((java.util.Map<?, ?>) source);
 				}
 
 				return source;
@@ -128,9 +128,6 @@ class JavaslangCollections {
 		};
 
 		private static final Set<ConvertiblePair> CONVERTIBLE_PAIRS;
-		private static final Method LIST_FACTORY_METHOD;
-		private static final Method SET_FACTORY_METHOD;
-		private static final Method MAP_FACTORY_METHOD;
 
 		static {
 
@@ -139,11 +136,6 @@ class JavaslangCollections {
 			pairs.add(new ConvertiblePair(Map.class, javaslang.collection.Traversable.class));
 
 			CONVERTIBLE_PAIRS = Collections.unmodifiableSet(pairs);
-
-			MAP_FACTORY_METHOD = ReflectionUtils.findMethod(javaslang.collection.LinkedHashMap.class, "ofAll", Map.class);
-			LIST_FACTORY_METHOD = ReflectionUtils.findMethod(javaslang.collection.List.class, "ofAll", Iterable.class);
-			SET_FACTORY_METHOD = ReflectionUtils.findMethod(javaslang.collection.LinkedHashSet.class, "ofAll",
-					Iterable.class);
 		}
 	}
 }

@@ -18,8 +18,8 @@ package org.springframework.data.repository.util;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.repository.util.QueryExecutionConverters.*;
 
-import javaslang.collection.HashMap;
-import javaslang.collection.HashSet;
+import javaslang.collection.LinkedHashMap;
+import javaslang.collection.LinkedHashSet;
 import javaslang.collection.Seq;
 import javaslang.collection.Traversable;
 import reactor.core.publisher.Flux;
@@ -29,7 +29,6 @@ import rx.Observable;
 import rx.Single;
 import scala.Option;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +43,6 @@ import org.reactivestreams.Publisher;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -201,12 +199,12 @@ public class QueryExecutionConvertersUnitTests {
 
 	@Test // DATACMNS-937
 	public void unwrapsEmptyJavaslangOption() {
-		assertThat(QueryExecutionConverters.unwrap(optionNone())).isNull();
+		assertThat(QueryExecutionConverters.unwrap(javaslang.control.Option.none())).isNull();
 	}
 
 	@Test // DATACMNS-937
 	public void unwrapsJavaslangOption() {
-		assertThat(QueryExecutionConverters.unwrap(option("string"))).isEqualTo("string");
+		assertThat(QueryExecutionConverters.unwrap(javaslang.control.Option.of("string"))).isEqualTo("string");
 	}
 
 	@Test // DATACMNS-940
@@ -257,9 +255,9 @@ public class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-940
 	public void unwrapsJavaslangCollectionsToJavaOnes() {
 
-		assertThat(unwrap(javaslangList(1, 2, 3))).isInstanceOf(List.class);
-		assertThat(unwrap(javaslangSet(1, 2, 3))).isInstanceOf(Set.class);
-		assertThat(unwrap(javaslangMap("key", "value"))).isInstanceOf(Map.class);
+		assertThat(unwrap(javaslang.collection.List.of(1, 2, 3))).isInstanceOf(List.class);
+		assertThat(unwrap(LinkedHashSet.of(1, 2, 3))).isInstanceOf(Set.class);
+		assertThat(unwrap(LinkedHashMap.of("key", "value"))).isInstanceOf(Map.class);
 	}
 
 	@Test // DATACMNS-1005
@@ -267,41 +265,5 @@ public class QueryExecutionConvertersUnitTests {
 
 		Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
 		assertThat(allowedPageableTypes).contains(Page.class, Slice.class, List.class, Seq.class);
-	}
-
-	@SuppressWarnings("unchecked")
-	private static javaslang.control.Option<Object> optionNone() {
-
-		Method method = ReflectionUtils.findMethod(javaslang.control.Option.class, "none");
-		return (javaslang.control.Option<Object>) ReflectionUtils.invokeMethod(method, null);
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T> javaslang.control.Option<T> option(T source) {
-
-		Method method = ReflectionUtils.findMethod(javaslang.control.Option.class, "of", Object.class);
-		return (javaslang.control.Option<T>) ReflectionUtils.invokeMethod(method, null, source);
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T> javaslang.collection.List<T> javaslangList(T... values) {
-
-		Method method = ReflectionUtils.findMethod(javaslang.collection.List.class, "ofAll", Iterable.class);
-		return (javaslang.collection.List<T>) ReflectionUtils.invokeMethod(method, null, Arrays.asList(values));
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T> javaslang.collection.Set<T> javaslangSet(T... values) {
-
-		Method method = ReflectionUtils.findMethod(HashSet.class, "ofAll", Iterable.class);
-		return (javaslang.collection.Set<T>) ReflectionUtils.invokeMethod(method, null, Arrays.asList(values));
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <K, V> javaslang.collection.Map<K, V> javaslangMap(K key, V value) {
-
-		Method method = ReflectionUtils.findMethod(HashMap.class, "ofAll", Map.class);
-		return (javaslang.collection.Map<K, V>) ReflectionUtils.invokeMethod(method, null,
-				Collections.singletonMap(key, value));
 	}
 }

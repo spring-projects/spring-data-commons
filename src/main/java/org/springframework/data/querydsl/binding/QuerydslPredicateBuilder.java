@@ -16,6 +16,7 @@
 package org.springframework.data.querydsl.binding;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +41,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.CollectionPathBase;
 
 /**
  * Builder assembling {@link Predicate} out of {@link PropertyValues}.
@@ -148,7 +150,7 @@ public class QuerydslPredicateBuilder {
 
 		Optional<Path<?>> resolvedPath = bindings.getExistingPath(path);
 
-		return resolvedPath.orElseGet(() -> paths.computeIfAbsent(path, it -> reifyPath(path, Optional.empty())));
+		return resolvedPath.orElseGet(() -> paths.computeIfAbsent(path, it -> it.reifyPath(resolver)));
 	}
 
 	/**
@@ -192,7 +194,7 @@ public class QuerydslPredicateBuilder {
 	 */
 	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PathInformation path) {
 
-		Class<?> targetType = path.getLeafProperty().getType();
+		Class<?> targetType = path.getLeafType();
 
 		if (source.isEmpty() || isSingleElementCollectionWithoutText(source)) {
 			return Collections.emptyList();
