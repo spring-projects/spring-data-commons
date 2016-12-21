@@ -191,7 +191,9 @@ public abstract class ReturnedType {
 			List<String> properties = new ArrayList<String>();
 
 			for (PropertyDescriptor descriptor : information.getInputProperties()) {
-				properties.add(descriptor.getName());
+				if (!properties.contains(descriptor.getName())) {
+					properties.add(descriptor.getName());
+				}
 			}
 
 			return properties;
