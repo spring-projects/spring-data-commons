@@ -1,6 +1,19 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.12.6.RELEASE (2016-12-21)
+----------------------------------------------
+* DATACMNS-963 - ReturnedType.getInputProperties() does not guarantee distinct properties.
+* DATACMNS-962 - Doc spelling mistake 'walking thought'.
+* DATACMNS-958 - Use ExposeInvocationInterceptor.ADVISOR over the advice instance.
+* DATACMNS-956 - Ensure consistent usage of ClassTypeInformation.from(…).
+* DATACMNS-953 - GenericPropertyMatchers.exact() should use exact matching.
+* DATACMNS-943 - Redeclared save(Iterable) results in wrong method overload to be invoked eventually.
+* DATACMNS-939 - Static interface methods should not be considered query methods.
+* DATACMNS-934 - BasicPersistentEntity.addAssociations(…) must not add null values to the collection of associations.
+* DATACMNS-932 - Release 1.12.6 (Hopper SR6).
+
+
 Changes in version 1.13.0.RC1 (2016-12-21)
 ------------------------------------------
 * DATACMNS-963 - ReturnedType.getInputProperties() does not guarantee distinct properties.
