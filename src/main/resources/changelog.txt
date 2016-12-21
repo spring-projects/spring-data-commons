@@ -1,6 +1,49 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.0.RC1 (2016-12-21)
+------------------------------------------
+* DATACMNS-963 - ReturnedType.getInputProperties() does not guarantee distinct properties.
+* DATACMNS-962 - Doc spelling mistake 'walking thought'.
+* DATACMNS-961 - Upgrade to a newer JDK version on TravisCI.
+* DATACMNS-960 - RevisionRepository should extend Repository.
+* DATACMNS-959 - Register repository interceptor to allow detecting a surrounding transaction.
+* DATACMNS-958 - Use ExposeInvocationInterceptor.ADVISOR over the advice instance.
+* DATACMNS-956 - Ensure consistent usage of ClassTypeInformation.from(…).
+* DATACMNS-953 - GenericPropertyMatchers.exact() should use exact matching.
+* DATACMNS-952 - Switch to less expensive lookup of Spring Data web support configuration.
+* DATACMNS-951 - Add Converters for JSR-310 Duration and Period.
+* DATACMNS-943 - Redeclared save(Iterable) results in wrong method overload to be invoked eventually.
+* DATACMNS-941 - QuerydslBindings not working with inheritance.
+* DATACMNS-940 - Support for Javaslang collection types as query method return values.
+* DATACMNS-939 - Static interface methods should not be considered query methods.
+* DATACMNS-937 - Support for Javaslang's Option as return type of query methods.
+* DATACMNS-934 - BasicPersistentEntity.addAssociations(…) must not add null values to the collection of associations.
+* DATACMNS-929 - PageableHandlerMethodArgumentResolver.isFallbackPageable() throws NullPointerException if default is configured to be null.
+* DATACMNS-928 - Support for exposing domain events from aggregate roots as Spring application events.
+* DATACMNS-925 - Improve memory consumption of Parameter and Parameters.
+* DATACMNS-923 - Remove obsolete code in DefaultRepositoryInformation.
+* DATACMNS-921 - ResultProcessor should create approximate collection instead of exact one.
+* DATACMNS-920 - Expose minInclusive and maxInclusive of org.springframework.data.domain.Range.
+* DATACMNS-918 - Provide interfaces for Pageable and Sort method argument resolvers.
+* DATACMNS-917 - Query methods returning Maps shouldn't return null if no result is present.
+* DATACMNS-916 - Generated PropertyAccessor fails lookup of setter accepting a primitive type.
+* DATACMNS-912 - Unable to write custom implementation of CRUD method with generic parameters.
+* DATACMNS-910 - Remove Spring 4.2 build profile for Travis.
+* DATACMNS-909 - Exclude decoratedClass from JSON links, created from Projection and received with Spring @RestController.
+* DATACMNS-908 - Allow creating an Order with a different property name.
+* DATACMNS-903 - Fix typo in reference documentation.
+* DATACMNS-902 - Fix attribute name in example showing how to define a custom repository base class.
+* DATACMNS-900 - ExampleMatcher.PropertySpecifiers does not implement equals/hashCode.
+* DATACMNS-899 - ParameterizedTypeInformation.getMapValueType for non-map types causes StackOverflowError.
+* DATACMNS-896 - ClassTypeInformation computes incorrect TypeVariable mappings for recursive generics.
+* DATACMNS-892 - Expose repository interface via attribute on bean definition for repository factory beans.
+* DATACMNS-891 - Switch constructor injection of the repository interface for repository factory beans.
+* DATACMNS-889 - Release 1.13 RC1 (Ingalls).
+* DATACMNS-888 - Add dedicated RevisionSort to easily capture the desire to sort by revision number.
+* DATACMNS-875 - Add support for exists projection in repository query derivation.
+
+
 Changes in version 2.0.0.M1 (2016-11-23)
 ----------------------------------------
 * DATACMNS-939 - Static interface methods should not be considered query methods.
