@@ -179,6 +179,20 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.isProjecting(), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-963
+	 */
+	@Test
+	public void detectsDistinctInputProperties() {
+
+		ReturnedType type = ReturnedType.of(Child.class, Object.class, new SpelAwareProxyProjectionFactory());
+
+		List<String> properties = type.getInputProperties();
+
+		assertThat(properties, hasSize(1));
+		assertThat(properties, contains("firstname"));
+	}
+
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor().getReturnedType();
 	}
@@ -261,5 +275,13 @@ public class ReturnedTypeUnitTests {
 
 		@Value("#{target.firstname + ' ' + target.lastname}")
 		String getFullName();
+	}
+
+	static interface Parent {
+		String getFirstname();
+	}
+
+	static interface Child extends Parent {
+		String getFirstname();
 	}
 }
