@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -36,6 +37,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * 
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Kazuki Shimizu
  */
 public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
@@ -283,6 +285,86 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		assertThat(resolver.isFallbackPageable(new PageRequest(0, 10)), is(false));
 	}
 
+	/**
+	 * @see DATACMNS-966
+	 */
+	@Test
+	public void allAllowSortProperty() throws Exception {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setOneIndexedParameters(true);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "id,title");
+
+		MethodParameter parameter = new MethodParameter(
+				Sample.class.getMethod("annotatedAllowedSortProperties", Pageable.class), 0);
+
+		Pageable result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
+
+		assertThat(result.getSort(), is(new Sort("id", "title")));
+	}
+
+	/**
+	 * @see DATACMNS-966
+	 */
+	@Test
+	public void containsInvalidSortProperty() throws Exception {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setOneIndexedParameters(true);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "id,aaaa");
+
+		MethodParameter parameter = new MethodParameter(
+				Sample.class.getMethod("annotatedAllowedSortProperties", Pageable.class), 0);
+
+		Pageable result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
+
+		assertThat(result.getSort(), is(new Sort("id")));
+	}
+
+	/**
+	 * @see DATACMNS-966
+	 */
+	@Test
+	public void allInvalidSortProperty() throws Exception {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setOneIndexedParameters(true);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "bbbb,aaaa");
+
+		MethodParameter parameter = new MethodParameter(
+				Sample.class.getMethod("annotatedAllowedSortProperties", Pageable.class), 0);
+
+		Pageable result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
+
+		assertThat(result.getSort(), nullValue());
+	}
+
+	/**
+	 * @see DATACMNS-966
+	 */
+	@Test
+	public void ignoreSortProperty() throws Exception {
+
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+		resolver.setOneIndexedParameters(true);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "id,title");
+
+		MethodParameter parameter = new MethodParameter(
+			Sample.class.getMethod("annotatedAllowedSortPropertiesIsEmpty", Pageable.class), 0);
+
+		Pageable result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
+
+		assertThat(result.getSort(), nullValue());
+	}
+
 	@Override
 	protected PageableHandlerMethodArgumentResolver getResolver() {
 		PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
@@ -322,5 +404,10 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		void validQualifier(@Qualifier("foo") Pageable pageable);
 
 		void noQualifiers(Pageable first, Pageable second);
+
+		void annotatedAllowedSortProperties(@AllowedSortProperties({ "id", "title" }) Pageable pageable);
+
+		void annotatedAllowedSortPropertiesIsEmpty(@AllowedSortProperties({}) Pageable pageable);
+
 	}
 }

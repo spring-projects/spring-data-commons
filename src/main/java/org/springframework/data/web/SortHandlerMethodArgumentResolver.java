@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,11 @@
 package org.springframework.data.web;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
@@ -41,6 +44,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Thomas Darimont
  * @author Nick Williams
  * @author Mark Paluch
+ * @author Kazuki Shimizu
  */
 public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 
@@ -119,7 +123,10 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 			return getDefaultFromAnnotationOrFallback(parameter);
 		}
 
-		return parseParameterIntoSort(directionParameter, propertyDelimiter);
+		AllowedSortProperties annotatedAllowedSortProperties = parameter
+				.getParameterAnnotation(AllowedSortProperties.class);
+
+		return parseParameterIntoSort(directionParameter, propertyDelimiter, annotatedAllowedSortProperties);
 	}
 
 	/**
@@ -198,12 +205,21 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 	 * Parses the given sort expressions into a {@link Sort} instance. The implementation expects the sources to be a
 	 * concatenation of Strings using the given delimiter. If the last element can be parsed into a {@link Direction} it's
 	 * considered a {@link Direction} and a simple property otherwise.
-	 * 
+	 *
 	 * @param source will never be {@literal null}.
 	 * @param delimiter the delimiter to be used to split up the source elements, will never be {@literal null}.
+	 * @param annotatedAllowedSortProperties annotation that indicate allowed sort properties
 	 * @return
 	 */
-	Sort parseParameterIntoSort(String[] source, String delimiter) {
+	Sort parseParameterIntoSort(String[] source, String delimiter, AllowedSortProperties annotatedAllowedSortProperties) {
+
+		Set<String> allowedSortProperties = null;
+		if (annotatedAllowedSortProperties != null) {
+			if (annotatedAllowedSortProperties.value().length == 0) {
+				return null;
+			}
+			allowedSortProperties = new HashSet<String>(Arrays.asList(annotatedAllowedSortProperties.value()));
+		}
 
 		List<Order> allOrders = new ArrayList<Sort.Order>();
 
@@ -225,6 +241,10 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 				String property = elements[i];
 
 				if (!StringUtils.hasText(property)) {
+					continue;
+				}
+
+				if (allowedSortProperties != null && !allowedSortProperties.contains(property)) {
 					continue;
 				}
 
