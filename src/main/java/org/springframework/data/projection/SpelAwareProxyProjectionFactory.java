@@ -96,6 +96,10 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 			@Override
 			protected boolean isInputProperty(PropertyDescriptor descriptor) {
 
+				if (!super.isInputProperty(descriptor)) {
+					return false;
+				}
+
 				Method readMethod = descriptor.getReadMethod();
 
 				if (readMethod == null) {
