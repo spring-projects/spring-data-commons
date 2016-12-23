@@ -16,9 +16,11 @@
 package org.springframework.data.projection;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
@@ -63,15 +65,9 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 */
 	public List<PropertyDescriptor> getInputProperties() {
 
-		List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
-
-		for (PropertyDescriptor descriptor : properties) {
-			if (isInputProperty(descriptor)) {
-				result.add(descriptor);
-			}
-		}
-
-		return result;
+		return properties.stream()//
+				.filter(it -> isInputProperty(it))//
+				.collect(Collectors.toList());
 	}
 
 	/* 
@@ -104,12 +100,27 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	private static List<PropertyDescriptor> collectDescriptors(Class<?> type) {
 
 		List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
-		result.addAll(Arrays.asList(BeanUtils.getPropertyDescriptors(type)));
+
+		result.addAll(Arrays.stream(BeanUtils.getPropertyDescriptors(type))//
+				.filter(it -> !hasDefaultGetter(it))//
+				.collect(Collectors.toList()));
 
 		for (Class<?> interfaze : type.getInterfaces()) {
 			result.addAll(collectDescriptors(interfaze));
 		}
 
 		return result;
+	}
+
+	/**
+	 * Returns whether the given {@link PropertyDescriptor} has a getter that is a Java 8 default method.
+	 * 
+	 * @param descriptor must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean hasDefaultGetter(PropertyDescriptor descriptor) {
+
+		Method method = descriptor.getReadMethod();
+		return method == null ? false : method.isDefault();
 	}
 }

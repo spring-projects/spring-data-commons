@@ -19,8 +19,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -53,15 +53,23 @@ public class DefaultProjectionInformationUnitTests {
 		assertThat(toNames(information.getInputProperties()), hasItems("age", "firstname", "lastname"));
 	}
 
+	/**
+	 * @see DATACMNS-967
+	 */
+	@Test
+	public void doesNotConsiderDefaultMethodInputProperties() throws Exception {
+
+		ProjectionInformation information = new DefaultProjectionInformation(WithDefaultMethod.class);
+
+		assertThat(information.isClosed(), is(true));
+		assertThat(toNames(information.getInputProperties()), hasItems("firstname"));
+	}
+
 	private static List<String> toNames(List<PropertyDescriptor> descriptors) {
 
-		List<String> names = new ArrayList<String>(descriptors.size());
-
-		for (PropertyDescriptor descriptor : descriptors) {
-			names.add(descriptor.getName());
-		}
-
-		return names;
+		return descriptors.stream()//
+				.map(it -> it.getName())//
+				.collect(Collectors.toList());
 	}
 
 	interface CustomerProjection {
@@ -74,5 +82,14 @@ public class DefaultProjectionInformationUnitTests {
 	interface ExtendedProjection extends CustomerProjection {
 
 		int getAge();
+	}
+
+	interface WithDefaultMethod {
+
+		String getFirstname();
+
+		default String getLastname() {
+			return null;
+		}
 	}
 }
