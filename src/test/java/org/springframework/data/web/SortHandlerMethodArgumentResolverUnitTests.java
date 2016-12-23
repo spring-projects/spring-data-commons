@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Nick Williams
+ * @author Kazuki Shimizu
  */
 public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
@@ -211,6 +212,55 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(resolveSort(request, getParameterOfMethod("containeredDefault")), is(new Sort("foo", "bar")));
 	}
 
+	/**
+	 * @see DATACMNS-966
+	 */
+	@Test
+	public void allAllowSortProperty() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "id,title");
+
+		assertThat(resolveSort(request, getParameterOfMethod("annotatedAllowedSortProperties")),
+				is(new Sort("id", "title")));
+	}
+
+	/**
+	 * @see DATACMNS-966
+	 */
+	@Test
+	public void containsInvalidSortProperty() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "id,aaaa");
+
+		assertThat(resolveSort(request, getParameterOfMethod("annotatedAllowedSortProperties")), is(new Sort("id")));
+	}
+
+	/**
+	 * @see DATACMNS-966
+	 */
+	@Test
+	public void allInvalidSortProperty() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "bbbb,aaaa");
+
+		assertThat(resolveSort(request, getParameterOfMethod("annotatedAllowedSortProperties")), nullValue());
+	}
+
+	/**
+	 * @see DATACMNS-966
+	 */
+	@Test
+	public void ignoreSortProperty() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "id,title");
+
+		assertThat(resolveSort(request, getParameterOfMethod("annotatedAllowedSortPropertiesIsEmpty")), nullValue());
+	}
+
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
@@ -271,5 +321,10 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		void containeredDefault(@SortDefaults(@SortDefault({ "foo", "bar" })) Sort sort);
 
 		void invalid(@SortDefaults(@SortDefault({ "foo", "bar" })) @SortDefault({ "bar", "foo" }) Sort sort);
+
+		void annotatedAllowedSortProperties(@AllowedSortProperties({ "id", "title" }) Sort sort);
+
+		void annotatedAllowedSortPropertiesIsEmpty(@AllowedSortProperties({}) Sort sort);
+
 	}
 }
