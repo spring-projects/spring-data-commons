@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.xmlbeam.XBProjector;
  * A read-only {@link HttpMessageConverter} to create XMLBeam-based projection instances for interfaces.
  * 
  * @author Oliver Gierke
- * @see http://www.xmlbeam.org
+ * @see <a href="http://www.xmlbeam.org">http://www.xmlbeam.org</a>
  * @soundtrack Dr. Kobayashi Maru & The Mothership Connection - Anthem (EPisode One)
  */
 public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Object> {

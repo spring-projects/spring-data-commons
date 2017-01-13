@@ -1,6 +1,6 @@
 /**
  * Querydsl integration support classes.
  * 
- * @see http://www.querydsl.com
+ * @see <a href="http://www.querydsl.com">http://www.querydsl.com</a>
  */
 package org.springframework.data.querydsl;
