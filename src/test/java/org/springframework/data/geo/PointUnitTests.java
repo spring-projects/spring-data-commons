@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,18 +29,12 @@ import org.springframework.util.SerializationUtils;
  */
 public class PointUnitTests {
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
 	public void rejectsNullforCopyConstructor() {
 		new Point(null);
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void equalsIsImplementedCorrectly() {
 
 		assertThat(new Point(1.5, 1.5), is(equalTo(new Point(1.5, 1.5))));
@@ -48,18 +42,12 @@ public class PointUnitTests {
 		assertThat(new Point(2.0, 2.0), is(not(equalTo(new Point(1.5, 1.5)))));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void invokingToStringWorksCorrectly() {
 		assertThat(new Point(1.5, 1.5).toString(), is("Point [x=1.500000, y=1.500000]"));
 	}
 
-	/**
-	 * @see DATACMNS-482
-	 */
-	@Test
+	@Test // DATACMNS-482
 	public void testSerialization() {
 
 		Point point = new Point(1.5, 1.5);

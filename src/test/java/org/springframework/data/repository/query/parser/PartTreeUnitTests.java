@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2016 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -190,18 +190,12 @@ public class PartTreeUnitTests {
 		assertThat(parts.next().shouldIgnoreCase(), is(IgnoreCaseType.NEVER));
 	}
 
-	/**
-	 * @see DATACMNS-78
-	 */
-	@Test
+	@Test // DATACMNS-78
 	public void parsesLessThanEqualCorrectly() {
 		assertType(Arrays.asList("lastnameLessThanEqual", "lastnameIsLessThanEqual"), LESS_THAN_EQUAL, "lastname");
 	}
 
-	/**
-	 * @see DATACMNS-78
-	 */
-	@Test
+	@Test // DATACMNS-78
 	public void parsesGreaterThanEqualCorrectly() {
 		assertType(Arrays.asList("lastnameGreaterThanEqual", "lastnameIsGreaterThanEqual"), GREATER_THAN_EQUAL, "lastname");
 	}
@@ -227,99 +221,63 @@ public class PartTreeUnitTests {
 		assertThat(parts, is(hasSize(1)));
 	}
 
-	/**
-	 * @see DATACMNS-94
-	 */
-	@Test
+	@Test // DATACMNS-94
 	public void parsesExistsKeywordCorrectly() {
 		assertType(asList("lastnameExists"), EXISTS, "lastname", 0, false);
 	}
 
-	/**
-	 * @see DATACMNS-94
-	 */
-	@Test
+	@Test // DATACMNS-94
 	public void parsesRegexKeywordCorrectly() {
 		assertType(asList("lastnameRegex", "lastnameMatchesRegex", "lastnameMatches"), REGEX, "lastname");
 	}
 
-	/**
-	 * @see DATACMNS-107
-	 */
-	@Test
+	@Test // DATACMNS-107
 	public void parsesTrueKeywordCorrectly() {
 		assertType(asList("activeTrue", "activeIsTrue"), TRUE, "active", 0, false);
 	}
 
-	/**
-	 * @see DATACMNS-107
-	 */
-	@Test
+	@Test // DATACMNS-107
 	public void parsesFalseKeywordCorrectly() {
 		assertType(asList("activeFalse", "activeIsFalse"), FALSE, "active", 0, false);
 	}
 
-	/**
-	 * @see DATACMNS-111
-	 */
-	@Test
+	@Test // DATACMNS-111
 	public void parsesStartingWithKeywordCorrectly() {
 		assertType(asList("firstnameStartsWith", "firstnameStartingWith", "firstnameIsStartingWith"), STARTING_WITH,
 				"firstname");
 	}
 
-	/**
-	 * @see DATACMNS-111
-	 */
-	@Test
+	@Test // DATACMNS-111
 	public void parsesEndingWithKeywordCorrectly() {
 		assertType(asList("firstnameEndsWith", "firstnameEndingWith", "firstnameIsEndingWith"), ENDING_WITH, "firstname");
 	}
 
-	/**
-	 * @see DATACMNS-111
-	 */
-	@Test
+	@Test // DATACMNS-111
 	public void parsesContainingKeywordCorrectly() {
 		assertType(asList("firstnameIsContaining", "firstnameContains", "firstnameContaining"), CONTAINING, "firstname");
 	}
 
-	/**
-	 * @see DATACMNS-141
-	 */
-	@Test
+	@Test // DATACMNS-141
 	public void parsesAfterKeywordCorrectly() {
 		assertType(asList("birthdayAfter", "birthdayIsAfter"), Type.AFTER, "birthday");
 	}
 
-	/**
-	 * @see DATACMNS-141
-	 */
-	@Test
+	@Test // DATACMNS-141
 	public void parsesBeforeKeywordCorrectly() {
 		assertType(Arrays.asList("birthdayBefore", "birthdayIsBefore"), Type.BEFORE, "birthday");
 	}
 
-	/**
-	 * @see DATACMNS-433
-	 */
-	@Test
+	@Test // DATACMNS-433
 	public void parsesLikeKeywordCorrectly() {
 		assertType(asList("activeLike", "activeIsLike"), LIKE, "active");
 	}
 
-	/**
-	 * @see DATACMNS-433
-	 */
-	@Test
+	@Test // DATACMNS-433
 	public void parsesNotLikeKeywordCorrectly() {
 		assertType(asList("activeNotLike", "activeIsNotLike"), NOT_LIKE, "active");
 	}
 
-	/**
-	 * @see DATACMNS-182
-	 */
-	@Test
+	@Test // DATACMNS-182
 	public void parsesContainingCorrectly() {
 
 		PartTree tree = new PartTree("findAllByLegalNameContainingOrCommonNameContainingAllIgnoringCase",
@@ -328,10 +286,7 @@ public class PartTreeUnitTests {
 				"commonNameContaining", Organization.class) });
 	}
 
-	/**
-	 * @see DATACMNS-221
-	 */
-	@Test
+	@Test // DATACMNS-221
 	public void parsesSpecialCharactersCorrectly() {
 		PartTree tree = new PartTree("findByØreAndÅrOrderByÅrAsc", DomainObjectWithSpecialChars.class);
 		assertPart(tree, new Part[] { new Part("øre", DomainObjectWithSpecialChars.class),
@@ -339,10 +294,7 @@ public class PartTreeUnitTests {
 		assertTrue(tree.getSort().getOrderFor("år").isAscending());
 	}
 
-	/**
-	 * @see DATACMNS-363
-	 */
-	@Test
+	@Test // DATACMNS-363
 	public void parsesSpecialCharactersOnlyCorrectly_Korean() {
 
 		PartTree tree = new PartTree("findBy이름And생일OrderBy생일Asc", DomainObjectWithSpecialChars.class);
@@ -352,10 +304,7 @@ public class PartTreeUnitTests {
 		assertTrue(tree.getSort().getOrderFor("생일").isAscending());
 	}
 
-	/**
-	 * @see DATACMNS-363
-	 */
-	@Test
+	@Test // DATACMNS-363
 	public void parsesSpecialUnicodeCharactersMixedWithRegularCharactersCorrectly_Korean() {
 
 		PartTree tree = new PartTree("findBy이름AndOrderIdOrderBy생일Asc", DomainObjectWithSpecialChars.class);
@@ -365,10 +314,7 @@ public class PartTreeUnitTests {
 		assertTrue(tree.getSort().getOrderFor("생일").isAscending());
 	}
 
-	/**
-	 * @see DATACMNS-363
-	 */
-	@Test
+	@Test // DATACMNS-363
 	public void parsesNestedSpecialUnicodeCharactersMixedWithRegularCharactersCorrectly_Korean() {
 
 		PartTree tree = new PartTree( //
@@ -391,10 +337,7 @@ public class PartTreeUnitTests {
 		assertTrue(tree.getSort().getOrderFor("생일").isAscending());
 	}
 
-	/**
-	 * @see DATACMNS-363
-	 */
-	@Test
+	@Test // DATACMNS-363
 	public void parsesNestedSpecialUnicodeCharactersMixedWithRegularCharactersCorrectly_KoreanNumbersSymbols() {
 
 		PartTree tree = new PartTree( //
@@ -427,30 +370,21 @@ public class PartTreeUnitTests {
 		assertTrue(tree.getSort().getOrderFor("생일").isAscending());
 	}
 
-	/**
-	 * @see DATACMNS-303
-	 */
-	@Test
+	@Test // DATACMNS-303
 	public void identifiesSimpleCountByCorrectly() {
 
 		PartTree tree = new PartTree("countByLastname", User.class);
 		assertThat(tree.isCountProjection(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-875
-	 */
-	@Test
+	@Test // DATACMNS-875
 	public void identifiesSimpleExistsByCorrectly() {
 
 		PartTree tree = new PartTree("existsByLastname", User.class);
 		assertThat(tree.isExistsProjection(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-399
-	 */
-	@Test
+	@Test // DATACMNS-399
 	public void queryPrefixShouldBeSupportedInRepositoryQueryMethods() {
 
 		PartTree tree = new PartTree("queryByFirstnameAndLastname", User.class);
@@ -460,20 +394,14 @@ public class PartTreeUnitTests {
 		assertThat(parts, hasItem(part("lastname")));
 	}
 
-	/**
-	 * @see DATACMNS-303
-	 */
-	@Test
+	@Test // DATACMNS-303
 	public void identifiesExtendedCountByCorrectly() {
 
 		PartTree tree = new PartTree("countUserByLastname", User.class);
 		assertThat(tree.isCountProjection(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-303
-	 */
-	@Test
+	@Test // DATACMNS-303
 	public void identifiesCountAndDistinctByCorrectly() {
 
 		PartTree tree = new PartTree("countDistinctUserByLastname", User.class);
@@ -481,42 +409,27 @@ public class PartTreeUnitTests {
 		assertThat(tree.isDistinct(), is(true));
 	}
 
-	/**
-	 * @see DATAJPA-324
-	 */
-	@Test
+	@Test // DATAJPA-324
 	public void resolvesPropertyPathFromGettersOnInterfaces() {
 		assertThat(new PartTree("findByCategoryId", Product.class), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-368
-	 */
-	@Test
+	@Test // DATACMNS-368
 	public void detectPropertyWithOrKeywordPart() {
 		assertThat(new PartTree("findByOrder", Product.class), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-368
-	 */
-	@Test
+	@Test // DATACMNS-368
 	public void detectPropertyWithAndKeywordPart() {
 		assertThat(new PartTree("findByAnders", Product.class), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-368
-	 */
-	@Test
+	@Test // DATACMNS-368
 	public void detectPropertyPathWithOrKeywordPart() {
 		assertThat(new PartTree("findByOrderId", Product.class), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-387
-	 */
-	@Test
+	@Test // DATACMNS-387
 	public void buildsPartTreeFromEmptyPredicateCorrectly() {
 
 		PartTree tree = new PartTree("findAllByOrderByLastnameAsc", User.class);
@@ -525,132 +438,87 @@ public class PartTreeUnitTests {
 		assertThat(tree.getSort(), is(new Sort(Direction.ASC, "lastname")));
 	}
 
-	/**
-	 * @see DATACMNS-448
-	 */
-	@Test
+	@Test // DATACMNS-448
 	public void identifiesSimpleDeleteByCorrectly() {
 
 		PartTree tree = new PartTree("deleteByLastname", User.class);
 		assertThat(tree.isDelete(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-448
-	 */
-	@Test
+	@Test // DATACMNS-448
 	public void identifiesExtendedDeleteByCorrectly() {
 
 		PartTree tree = new PartTree("deleteUserByLastname", User.class);
 		assertThat(tree.isDelete(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-448
-	 */
-	@Test
+	@Test // DATACMNS-448
 	public void identifiesSimpleRemoveByCorrectly() {
 
 		PartTree tree = new PartTree("removeByLastname", User.class);
 		assertThat(tree.isDelete(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-448
-	 */
-	@Test
+	@Test // DATACMNS-448
 	public void identifiesExtendedRemoveByCorrectly() {
 
 		PartTree tree = new PartTree("removeUserByLastname", User.class);
 		assertThat(tree.isDelete(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void disablesFindFirstKImplicitIfNotPresent() {
 		assertLimiting("findByLastname", User.class, false, null);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindFirstImplicit() {
 		assertLimiting("findFirstByLastname", User.class, true, 1);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindFirst1Explicit() {
 		assertLimiting("findFirstByLastname", User.class, true, 1);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindFirstKExplicit() {
 		assertLimiting("findFirst10ByLastname", User.class, true, 10);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindFirstKUsersExplicit() {
 		assertLimiting("findFirst10UsersByLastname", User.class, true, 10);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindFirstKDistinctUsersExplicit() {
 		assertLimiting("findFirst10DistinctUsersByLastname", User.class, true, 10, true);
 		assertLimiting("findDistinctFirst10UsersByLastname", User.class, true, 10, true);
 		assertLimiting("findFirst10UsersDistinctByLastname", User.class, true, 10, true);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindTopImplicit() {
 		assertLimiting("findTopByLastname", User.class, true, 1);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindTop1Explicit() {
 		assertLimiting("findTop1ByLastname", User.class, true, 1);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindTopKExplicit() {
 		assertLimiting("findTop10ByLastname", User.class, true, 10);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindTopKUsersExplicit() {
 		assertLimiting("findTop10UsersByLastname", User.class, true, 10);
 	}
 
-	/**
-	 * @see DATACMNS-516
-	 */
-	@Test
+	@Test // DATACMNS-516
 	public void identifiesFindTopKDistinctUsersExplicit() {
 		assertLimiting("findTop10DistinctUsersByLastname", User.class, true, 10, true);
 		assertLimiting("findDistinctTop10UsersByLastname", User.class, true, 10, true);
@@ -663,39 +531,27 @@ public class PartTreeUnitTests {
 		assertLimiting("countTop10DistinctUsersByLastname", User.class, false, null, true);
 	}
 
-	/**
-	 * @see DATACMNS-875
-	 */
-	@Test
+	@Test // DATACMNS-875
 	public void shouldNotSupportLimitingExistQueries() {
 
 		assertLimiting("existsFirst10DistinctUsersByLastname", User.class, false, null, true);
 		assertLimiting("existsTop10DistinctUsersByLastname", User.class, false, null, true);
 	}
 
-	/**
-	 * @see DATACMNS-581
-	 */
-	@Test
+	@Test // DATACMNS-581
 	public void parsesIsNotContainingCorrectly() throws Exception {
 		assertType(asList("firstnameIsNotContaining", "firstnameNotContaining", "firstnameNotContains"), NOT_CONTAINING,
 				"firstname");
 	}
 
-	/**
-	 * @see DATACMNS-581
-	 */
-	@Test
+	@Test // DATACMNS-581
 	public void buildsPartTreeForNotContainingCorrectly() throws Exception {
 
 		PartTree tree = new PartTree("findAllByLegalNameNotContaining", Organization.class);
 		assertPart(tree, new Part[] { new Part("legalNameNotContaining", Organization.class) });
 	}
 
-	/**
-	 * @see DATACMNS-750
-	 */
-	@Test
+	@Test // DATACMNS-750
 	public void doesNotFailOnPropertiesContainingAKeyword() {
 
 		PartTree partTree = new PartTree("findBySomeInfoIn", Category.class);

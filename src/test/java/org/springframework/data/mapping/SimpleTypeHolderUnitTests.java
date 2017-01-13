@@ -41,10 +41,7 @@ public class SimpleTypeHolderUnitTests {
 		new SimpleTypeHolder(new HashSet<Class<?>>(), null);
 	}
 
-	/**
-	 * @see DATACMNS-31
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-31
 	public void rejectsNullTypeForIsSimpleTypeCall() {
 		SimpleTypeHolder holder = new SimpleTypeHolder();
 		holder.isSimpleType(null);

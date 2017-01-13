@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,10 +57,7 @@ public class RevisionUnitTests {
 		assertThat(revisions.get(1), is(second));
 	}
 
-	/**
-	 * @see DATACMNS-187
-	 */
-	@Test
+	@Test // DATACMNS-187
 	public void returnsRevisionNumber() {
 
 		when(firstMetadata.getRevisionNumber()).thenReturn(4711);
@@ -70,10 +67,7 @@ public class RevisionUnitTests {
 		assertThat(revision.getRevisionNumber(), is(4711));
 	}
 
-	/**
-	 * @see DATACMNS-187
-	 */
-	@Test
+	@Test // DATACMNS-187
 	public void returnsRevisionDate() {
 
 		DateTime reference = new DateTime();
@@ -84,10 +78,7 @@ public class RevisionUnitTests {
 		assertThat(revision.getRevisionDate(), is(reference));
 	}
 
-	/**
-	 * @see DATACMNS-218
-	 */
-	@Test
+	@Test // DATACMNS-218
 	public void returnsRevisionMetadata() {
 
 		Revision<Integer, Object> revision = new Revision<Integer, Object>(firstMetadata, new Object());

@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 the original author or authors.
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,7 @@ import org.junit.Test;
  */
 public class ParsingUtilsUnitTests {
 
-	/**
-	 * @see DATCMNS-486
-	 */
-	@Test
+	@Test // DATCMNS-486
 	public void splitsCamelCaseWithAllSortsOfCharacters() {
 
 		String sample = "prefix" + "이름" //
@@ -55,10 +52,7 @@ public class ParsingUtilsUnitTests {
 						"suffix"));
 	}
 
-	/**
-	 * @see DATCMNS-486
-	 */
-	@Test
+	@Test // DATCMNS-486
 	public void reconcatenatesCamelCaseString() {
 		assertThat(ParsingUtils.reconcatenateCamelCase("myCamelCase", "-"), is("my-camel-case"));
 	}

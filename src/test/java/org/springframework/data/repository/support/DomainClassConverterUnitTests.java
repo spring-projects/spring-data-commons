@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,16 +95,12 @@ public class DomainClassConverterUnitTests {
 		assertMatches(false);
 	}
 
-	/**
-	 * @see DATACMNS-233
-	 */
+	// DATACMNS-233
 	public void returnsNullForNullSource() {
 		assertThat(converter.convert(null, STRING_TYPE, USER_TYPE), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-233
-	 */
+	// DATACMNS-233
 	public void returnsNullForEmptyStringSource() {
 		assertThat(converter.convert("", STRING_TYPE, USER_TYPE), is(nullValue()));
 	}
@@ -131,10 +127,7 @@ public class DomainClassConverterUnitTests {
 		verify(repo, times(1)).findOne(1L);
 	}
 
-	/**
-	 * @see DATACMNS-133
-	 */
-	@Test
+	@Test // DATACMNS-133
 	public void discoversFactoryAndRepoFromParentApplicationContext() {
 
 		ApplicationContext parent = initContextWithRepo();
@@ -147,10 +140,7 @@ public class DomainClassConverterUnitTests {
 		assertThat(converter.matches(STRING_TYPE, USER_TYPE), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-583
-	 */
-	@Test
+	@Test // DATACMNS-583
 	public void converterDoesntMatchIfTargetTypeIsAssignableFromSource() {
 
 		converter.setApplicationContext(initContextWithRepo());
@@ -159,10 +149,7 @@ public class DomainClassConverterUnitTests {
 		assertThat((User) converter.convert(USER, USER_TYPE, USER_TYPE), is(USER));
 	}
 
-	/**
-	 * @see DATACMNS-627
-	 */
-	@Test
+	@Test // DATACMNS-627
 	public void supportsConversionFromIdType() {
 
 		converter.setApplicationContext(initContextWithRepo());
@@ -170,10 +157,7 @@ public class DomainClassConverterUnitTests {
 		assertThat(converter.matches(LONG_TYPE, USER_TYPE), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-627
-	 */
-	@Test
+	@Test // DATACMNS-627
 	public void supportsConversionFromEntityToIdType() {
 
 		converter.setApplicationContext(initContextWithRepo());
@@ -181,10 +165,7 @@ public class DomainClassConverterUnitTests {
 		assertThat(converter.matches(USER_TYPE, LONG_TYPE), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-627
-	 */
-	@Test
+	@Test // DATACMNS-627
 	public void supportsConversionFromEntityToString() {
 
 		converter.setApplicationContext(initContextWithRepo());
@@ -193,10 +174,7 @@ public class DomainClassConverterUnitTests {
 		assertThat(converter.matches(USER_TYPE, STRING_TYPE), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-683
-	 */
-	@Test
+	@Test // DATACMNS-683
 	public void toIdConverterDoesNotMatchIfTargetTypeIsAssignableFromSource() throws Exception {
 
 		converter.setApplicationContext(initContextWithRepo());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,10 +116,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(resources.getLink(Link.REL_NEXT).getHref(), startsWith(link.getHref()));
 	}
 
-	/**
-	 * @see DATACMNS-358
-	 */
-	@Test
+	@Test // DATACMNS-358
 	public void createsPagedResourcesForOneIndexedArgumentResolver() {
 
 		resolver.setOneIndexedParameters(true);
@@ -130,11 +127,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assembler.toResource(page);
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 * @see DATACMNS-515
-	 */
-	@Test
+	@Test // DATACMNS-418, DATACMNS-515
 	public void createsACanonicalLinkWithoutTemplateParameters() {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
@@ -143,10 +136,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(selfLink.getHref(), endsWith("localhost"));
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void invokesCustomElementResourceAssembler() {
 
 		PersonResourceAssembler personAssembler = new PersonResourceAssembler();
@@ -160,10 +150,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(content.iterator().next().name, is("Dave"));
 	}
 
-	/**
-	 * @see DATAMCNS-563
-	 */
-	@Test
+	@Test // DATAMCNS-563
 	public void createsPaginationLinksForOneIndexedArgumentResolverCorrectly() {
 
 		HateoasPageableHandlerMethodArgumentResolver argumentResolver = new HateoasPageableHandlerMethodArgumentResolver();
@@ -179,10 +166,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(getQueryParameters(resource.getLink("next")), hasEntry("page", "3"));
 	}
 
-	/**
-	 * @see DATACMNS-515
-	 */
-	@Test
+	@Test // DATACMNS-515
 	public void generatedLinksShouldNotBeTemplated() {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
@@ -192,10 +176,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), endsWith("?page=0&size=1"));
 	}
 
-	/**
-	 * @see DATACMNS-699
-	 */
-	@Test
+	@Test // DATACMNS-699
 	public void generatesEmptyPagedResourceWithEmbeddedWrapper() {
 
 		PagedResources<?> result = assembler.toEmptyResource(EMPTY_PAGE, Person.class, null);
@@ -208,26 +189,17 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(((EmbeddedWrapper) element).getRelTargetType(), is(typeCompatibleWith(Person.class)));
 	}
 
-	/**
-	 * @see DATACMNS-699
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-699
 	public void emptyPageCreatorRejectsPageWithContent() {
 		assembler.toEmptyResource(createPage(1), Person.class, null);
 	}
 
-	/**
-	 * @see DATACMNS-699
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-699
 	public void emptyPageCreatorRejectsNullType() {
 		assembler.toEmptyResource(EMPTY_PAGE, null, null);
 	}
 
-	/**
-	 * @see DATACMNS-701
-	 */
-	@Test
+	@Test // DATACMNS-701
 	public void addsFirstAndLastLinksForMultiplePages() {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
@@ -236,10 +208,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
 	}
 
-	/**
-	 * @see DATACMNS-701
-	 */
-	@Test
+	@Test // DATACMNS-701
 	public void addsFirstAndLastLinksForFirstPage() {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
@@ -248,10 +217,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
 	}
 
-	/**
-	 * @see DATACMNS-701
-	 */
-	@Test
+	@Test // DATACMNS-701
 	public void addsFirstAndLastLinksForLastPage() {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
@@ -260,10 +226,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=2&size=1"));
 	}
 
-	/**
-	 * @see DATACMNS-701
-	 */
-	@Test
+	@Test // DATACMNS-701
 	public void alwaysAddsFirstAndLastLinkIfConfiguredTo() {
 
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
@@ -275,10 +238,7 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(resources.getLink(Link.REL_LAST).getHref(), endsWith("?page=0&size=20"));
 	}
 
-	/**
-	 * @see DATACMNS-802
-	 */
-	@Test
+	@Test // DATACMNS-802
 	public void usesCustomPagedResources() {
 
 		ResourceAssembler<Page<Person>, PagedResources<Resource<Person>>> assembler = new CustomPagedResourcesAssembler<Person>(

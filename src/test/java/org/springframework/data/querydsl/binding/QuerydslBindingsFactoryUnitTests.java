@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,10 +58,7 @@ public class QuerydslBindingsFactoryUnitTests {
 		this.factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void createBindingsShouldHonorQuerydslBinderCustomizerHookWhenPresent() {
 
@@ -81,10 +78,7 @@ public class QuerydslBindingsFactoryUnitTests {
 				is((Predicate) QUser.user.firstname.contains("rand")));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void shouldReuseExistingQuerydslBinderCustomizer() {
 
@@ -102,10 +96,7 @@ public class QuerydslBindingsFactoryUnitTests {
 				is((Predicate) QUser.user.firstname.eq("RAND")));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void rejectsPredicateResolutionIfDomainTypeCantBeAutoDetected() {
 
 		exception.expect(IllegalStateException.class);

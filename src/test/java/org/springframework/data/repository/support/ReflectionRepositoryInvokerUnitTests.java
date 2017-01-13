@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,10 +68,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		this.conversionService = new DefaultFormattingConversionService();
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesSaveMethodCorrectly() throws Exception {
 
 		ManualCrudRepository repository = mock(ManualCrudRepository.class);
@@ -80,10 +77,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeSave(new Domain());
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesFindOneCorrectly() throws Exception {
 
 		ManualCrudRepository repository = mock(ManualCrudRepository.class);
@@ -93,10 +87,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindOne(1L);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesDeleteWithDomainCorrectly() throws Exception {
 
 		RepoWithDomainDeleteAndFindOne repository = mock(RepoWithDomainDeleteAndFindOne.class);
@@ -108,10 +99,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(findOneMethod, deleteMethod)).invokeDelete(1L);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesFindAllWithoutParameterCorrectly() throws Exception {
 
 		Method method = ManualCrudRepository.class.getMethod("findAll");
@@ -123,10 +111,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new Sort("foo"));
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesFindAllWithSortCorrectly() throws Exception {
 
 		Method method = RepoWithFindAllWithSort.class.getMethod("findAll", Sort.class);
@@ -138,10 +123,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new Sort("foo"));
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesFindAllWithPageableCorrectly() throws Exception {
 
 		Method method = RepoWithFindAllWithPageable.class.getMethod("findAll", Pageable.class);
@@ -151,10 +133,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(new PageRequest(0, 10));
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesQueryMethod() throws Exception {
 
 		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
@@ -166,10 +145,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, null, null);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void considersFormattingAnnotationsOnQueryMethodParameters() throws Exception {
 
 		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
@@ -181,10 +157,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, null, null);
 	}
 
-	/**
-	 * @see DATAREST-335, DATAREST-346, DATACMNS-589
-	 */
-	@Test
+	@Test // DATAREST-335, DATAREST-346, DATACMNS-589
 	public void invokesOverriddenDeleteMethodCorrectly() throws Exception {
 
 		MyRepo repository = mock(MyRepo.class);
@@ -193,10 +166,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeDelete("1");
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACMNS-589
 	public void rejectsInvocationOfMissingDeleteMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
@@ -205,10 +175,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		invoker.invokeDelete(1L);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACMNS-589
 	public void rejectsInvocationOfMissingFindOneMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
@@ -217,10 +184,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		invoker.invokeFindOne(1L);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACMNS-589
 	public void rejectsInvocationOfMissingFindAllMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
@@ -229,10 +193,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		invoker.invokeFindAll((Pageable) null);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACMNS-589
 	public void rejectsInvocationOfMissingSaveMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
@@ -241,10 +202,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		invoker.invokeSave(new Object());
 	}
 
-	/**
-	 * @see DATACMNS-647
-	 */
-	@Test
+	@Test // DATACMNS-647
 	public void translatesCollectionRequestParametersCorrectly() throws Exception {
 
 		for (String[] ids : Arrays.asList(new String[] { "1,2" }, new String[] { "1", "2" })) {
@@ -259,10 +217,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS-700
-	 */
-	@Test
+	@Test // DATACMNS-700
 	public void failedParameterConversionCapturesContext() throws Exception {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(SimpleRepository.class));

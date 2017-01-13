@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,10 +71,7 @@ public class DefaultTypeMapperUnitTests {
 		verify(mapper, times(1)).resolveTypeFrom(STRING);
 	}
 
-	/**
-	 * @see DATACMNS-349
-	 */
-	@Test
+	@Test // DATACMNS-349
 	public void returnsTypeAliasForInformation() {
 
 		Object alias = "alias";
@@ -83,10 +80,7 @@ public class DefaultTypeMapperUnitTests {
 		assertThat(this.typeMapper.getAliasFor(STRING_TYPE_INFO), is(alias));
 	}
 
-	/**
-	 * @see DATACMNS-783
-	 */
-	@Test
+	@Test // DATACMNS-783
 	public void specializesRawSourceTypeUsingGenericContext() {
 
 		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);

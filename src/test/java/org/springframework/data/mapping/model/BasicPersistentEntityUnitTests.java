@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,10 +94,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getTypeAlias(), is((Object) "foo"));
 	}
 
-	/**
-	 * @see DATACMNS-50
-	 */
-	@Test
+	@Test // DATACMNS-50
 	@SuppressWarnings("unchecked")
 	public void considersComparatorForPropertyOrder() {
 
@@ -130,10 +127,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(iterator.next(), is(entity.getPersistentProperty("ssn")));
 	}
 
-	/**
-	 * @see DATACMNS-186
-	 */
-	@Test
+	@Test // DATACMNS-186
 	public void addingAndIdPropertySetsIdPropertyInternally() {
 
 		MutablePersistentEntity<Person, T> entity = createEntity(Person.class);
@@ -144,10 +138,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getIdProperty(), is(property));
 	}
 
-	/**
-	 * @see DATACMNS-186
-	 */
-	@Test
+	@Test // DATACMNS-186
 	public void rejectsIdPropertyIfAlreadySet() {
 
 		MutablePersistentEntity<Person, T> entity = createEntity(Person.class);
@@ -160,10 +151,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		entity.addPersistentProperty(anotherProperty);
 	}
 
-	/**
-	 * @see DATACMNS-365
-	 */
-	@Test
+	@Test // DATACMNS-365
 	public void detectsPropertyWithAnnotation() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -180,10 +168,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getPersistentProperty(CreatedDate.class), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test
+	@Test // DATACMNS-596
 	public void returnsBeanWrapperForPropertyAccessor() {
 
 		assumeThat(System.getProperty("java.version"), CoreMatchers.startsWith("1.6"));
@@ -198,10 +183,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(accessor.getBean(), is((Object) value));
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
-	@Test
+	@Test // DATACMNS-809
 	public void returnsGeneratedPropertyAccessorForPropertyAccessor() {
 
 		assumeThat(System.getProperty("java.version"), not(CoreMatchers.startsWith("1.6")));
@@ -217,10 +199,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(accessor.getBean(), is((Object) value));
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
 	public void rejectsNullBeanForPropertyAccessor() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -229,10 +208,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		entity.getPropertyAccessor(null);
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
 	public void rejectsNonMatchingBeanForPropertyAccessor() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -241,10 +217,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		entity.getPropertyAccessor("foo");
 	}
 
-	/**
-	 * @see DATACMNS-597
-	 */
-	@Test
+	@Test // DATACMNS-597
 	public void supportsSubtypeInstancesOnPropertyAccessorLookup() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -253,10 +226,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getPropertyAccessor(new Subtype()), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-825
-	 */
-	@Test
+	@Test // DATACMNS-825
 	public void returnsTypeAliasIfAnnotatedUsingComposedAnnotation() {
 
 		PersistentEntity<AliasEntityUsingComposedAnnotation, T> entity = createEntity(
@@ -264,10 +234,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getTypeAlias(), is((Object) "bar"));
 	}
 
-	/**
-	 * @see DATACMNS-866
-	 */
-	@Test
+	@Test // DATACMNS-866
 	public void invalidBeanAccessCreatesDescriptiveErrorMessage() {
 
 		PersistentEntity<Entity, T> entity = createEntity(Entity.class);
@@ -278,10 +245,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		entity.getPropertyAccessor(new Object());
 	}
 
-	/**
-	 * @see DATACMNS-934
-	 */
-	@Test
+	@Test // DATACMNS-934
 	public void doesNotThrowAnExceptionForNullAssociation() {
 
 		BasicPersistentEntity<Entity, T> entity = createEntity(Entity.class);

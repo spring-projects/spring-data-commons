@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,7 @@ public class QuerydslDefaultBindingUnitTests {
 		binding = new QuerydslDefaultBinding();
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInRoot() {
 
 		Predicate predicate = binding.bind(QUser.user.firstname, Collections.singleton("tam"));
@@ -55,10 +52,7 @@ public class QuerydslDefaultBindingUnitTests {
 		assertPredicate(predicate, is(QUser.user.firstname.eq("tam")));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void shouldCreatePredicateCorrectlyWhenPropertyIsInNestedElement() {
 
 		Predicate predicate = binding.bind(QUser.user.address.city, Collections.singleton("two rivers"));
@@ -66,10 +60,7 @@ public class QuerydslDefaultBindingUnitTests {
 		Assert.assertThat(predicate.toString(), is(QUser.user.address.city.eq("two rivers").toString()));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void shouldCreatePredicateWithContainingWhenPropertyIsCollectionLikeAndValueIsObject() {
 
 		Predicate predicate = binding.bind(QUser.user.nickNames, Collections.singleton("dragon reborn"));
@@ -77,10 +68,7 @@ public class QuerydslDefaultBindingUnitTests {
 		assertPredicate(predicate, is(QUser.user.nickNames.contains("dragon reborn")));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void shouldCreatePredicateWithInWhenPropertyIsAnObjectAndValueIsACollection() {
 
 		Predicate predicate = binding.bind(QUser.user.firstname, Arrays.asList("dragon reborn", "shadowkiller"));

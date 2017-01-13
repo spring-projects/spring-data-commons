@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,36 +35,24 @@ public class ConvertingPropertyAccessorUnitTests {
 
 	static final ConversionService CONVERSION_SERVICE = new DefaultFormattingConversionService();
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
 	public void rejectsNullPropertyAccessorDelegate() {
 		new ConvertingPropertyAccessor(null, CONVERSION_SERVICE);
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
 	public void rejectsNullConversionService() {
 		new ConvertingPropertyAccessor(new BeanWrapper<Object>(new Object()), null);
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test
+	@Test // DATACMNS-596
 	public void returnsBeanFromDelegate() {
 
 		Object entity = new Entity();
 		assertThat(getAccessor(entity, CONVERSION_SERVICE).getBean(), is(entity));
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test
+	@Test // DATACMNS-596
 	public void convertsPropertyValueToExpectedType() {
 
 		Entity entity = new Entity();
@@ -75,10 +63,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		assertThat(accessor.getProperty(getIdProperty(), String.class), is("1"));
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test
+	@Test // DATACMNS-596
 	public void doesNotInvokeConversionForNullValues() {
 
 		ConversionService conversionService = mock(ConversionService.class);
@@ -88,10 +73,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		verify(conversionService, times(0)).convert(1L, Number.class);
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test
+	@Test // DATACMNS-596
 	public void doesNotInvokeConversionIfTypeAlreadyMatches() {
 
 		Entity entity = new Entity();
@@ -104,10 +86,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		verify(conversionService, times(0)).convert(1L, Number.class);
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test
+	@Test // DATACMNS-596
 	public void convertsValueOnSetIfTypesDontMatch() {
 
 		Entity entity = new Entity();
@@ -118,10 +97,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		assertThat(entity.id, is(1L));
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test
+	@Test // DATACMNS-596
 	public void doesNotInvokeConversionIfTypeAlreadyMatchesOnSet() {
 
 		ConvertingPropertyAccessor accessor = getAccessor(new Entity(), mock(ConversionService.class));

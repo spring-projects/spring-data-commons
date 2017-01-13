@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,10 +61,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 		this.factory = new DefaultRepositoryInvokerFactory(repositories);
 	}
 
-	/**
-	 * @see DATACMNS-410, DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-410, DATACMNS-589
 	public void findOneShouldDelegateToAppropriateRepository() {
 
 		Mockito.reset(productRepository);
@@ -74,10 +71,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 		assertThat(factory.getInvokerFor(Product.class).invokeFindOne(4711L), is((Object) product));
 	}
 
-	/**
-	 * @see DATACMNS-374, DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-374, DATACMNS-589
 	public void shouldThrowMeaningfulExceptionWhenTheRepositoryForAGivenDomainClassCannotBeFound() {
 
 		exception.expect(IllegalArgumentException.class);
@@ -87,10 +81,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 		factory.getInvokerFor(Object.class);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void returnsSameInvokerInstanceForSubsequentCalls() {
 
 		RepositoryInvoker invoker = factory.getInvokerFor(Product.class);
@@ -98,10 +89,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 		assertThat(factory.getInvokerFor(Product.class), is(invoker));
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void createsReflectionRepositoryInvokerForRepositoryNotExtendingADedicatedBaseRepository() {
 
 		RepositoryInvoker invoker = factory.getInvokerFor(Product.class);
@@ -110,10 +98,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 		assertThat(invoker, is(not(instanceOf(CrudRepositoryInvoker.class))));
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void createsCrudRepositoryInvokerForRepositoryExtendingCrudRepository() {
 
 		RepositoryInvoker invoker = factory.getInvokerFor(User.class);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,10 +86,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		assertThat(parameters.hasNext(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-134
-	 */
-	@Test
+	@Test // DATACMNS-134
 	public void discoversInnerClassConstructorCorrectly() {
 
 		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class));

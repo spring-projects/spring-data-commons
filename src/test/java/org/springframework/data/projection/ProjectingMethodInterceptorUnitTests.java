@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,10 +49,7 @@ public class ProjectingMethodInterceptorUnitTests {
 	@Mock MethodInvocation invocation;
 	@Mock ProjectionFactory factory;
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void wrapsDelegateResultInProxyIfTypesDontMatch() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
@@ -63,10 +60,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		assertThat(methodInterceptor.invoke(invocation), is(instanceOf(Helper.class)));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void retunsDelegateResultAsIsIfTypesMatch() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor);
@@ -77,10 +71,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		assertThat(methodInterceptor.invoke(invocation), is((Object) "Foo"));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void returnsNullAsIs() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor);
@@ -90,10 +81,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		assertThat(methodInterceptor.invoke(invocation), is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void considersPrimitivesAsWrappers() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor);
@@ -105,10 +93,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		verify(factory, times(0)).createProjection((Class<?>) anyObject(), anyObject());
 	}
 
-	/**
-	 * @see DATAREST-394, DATAREST-408
-	 */
-	@Test
+	@Test // DATAREST-394, DATAREST-408
 	@SuppressWarnings("unchecked")
 	public void appliesProjectionToNonEmptySets() throws Throwable {
 
@@ -123,10 +108,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		assertThat(projections, hasItem(instanceOf(HelperProjection.class)));
 	}
 
-	/**
-	 * @see DATAREST-394, DATAREST-408
-	 */
-	@Test
+	@Test // DATAREST-394, DATAREST-408
 	@SuppressWarnings("unchecked")
 	public void appliesProjectionToNonEmptyLists() throws Throwable {
 
@@ -142,10 +124,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		assertThat(projections, hasItem(instanceOf(HelperProjection.class)));
 	}
 
-	/**
-	 * @see DATAREST-394, DATAREST-408
-	 */
-	@Test
+	@Test // DATAREST-394, DATAREST-408
 	@SuppressWarnings("unchecked")
 	public void allowsMaskingAnArrayIntoACollection() throws Throwable {
 
@@ -160,10 +139,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		assertThat(projections, hasItem(instanceOf(HelperProjection.class)));
 	}
 
-	/**
-	 * @see DATAREST-394, DATAREST-408
-	 */
-	@Test
+	@Test // DATAREST-394, DATAREST-408
 	@SuppressWarnings("unchecked")
 	public void appliesProjectionToNonEmptyMap() throws Throwable {
 

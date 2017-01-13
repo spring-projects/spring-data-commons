@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,27 +43,18 @@ import com.querydsl.core.types.dsl.StringPath;
  */
 public class QSortUnitTests {
 
-	/**
-	 * @see DATACMNS-402
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-402
 	public void shouldThrowIfNoOrderSpecifiersAreGiven() {
 		new QSort();
 	}
 
-	/**
-	 * @see DATACMNS-402
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-402
 	public void shouldThrowIfNullIsGiven() {
 		new QSort((List<OrderSpecifier<?>>) null);
 	}
 
-	/**
-	 * @see DATACMNS-402
-	 */
 	@SuppressWarnings("unchecked")
-	@Test
+	@Test // DATACMNS-402
 	public void sortBySingleProperty() {
 
 		QUser user = QUser.user;
@@ -74,11 +65,8 @@ public class QSortUnitTests {
 		assertThat(qsort.getOrderFor("firstname"), is(new Sort.Order(Sort.Direction.ASC, "firstname")));
 	}
 
-	/**
-	 * @see DATACMNS-402
-	 */
 	@SuppressWarnings("unchecked")
-	@Test
+	@Test // DATACMNS-402
 	public void sortByMultiplyProperties() {
 
 		QUser user = QUser.user;
@@ -91,11 +79,8 @@ public class QSortUnitTests {
 		assertThat(qsort.getOrderFor("lastname"), is(new Sort.Order(Sort.Direction.DESC, "lastname")));
 	}
 
-	/**
-	 * @see DATACMNS-402
-	 */
 	@SuppressWarnings("unchecked")
-	@Test
+	@Test // DATACMNS-402
 	public void sortByMultiplyPropertiesWithAnd() {
 
 		QUser user = QUser.user;
@@ -108,11 +93,8 @@ public class QSortUnitTests {
 		assertThat(qsort.getOrderFor("lastname"), is(new Sort.Order(Sort.Direction.DESC, "lastname")));
 	}
 
-	/**
-	 * @see DATACMNS-402
-	 */
 	@SuppressWarnings("unchecked")
-	@Test
+	@Test // DATACMNS-402
 	public void sortByMultiplyPropertiesWithAndAndVarArgs() {
 
 		QUser user = QUser.user;
@@ -125,10 +107,7 @@ public class QSortUnitTests {
 		assertThat(qsort.getOrderFor("lastname"), is(new Sort.Order(Sort.Direction.DESC, "lastname")));
 	}
 
-	/**
-	 * @see DATACMNS-402
-	 */
-	@Test
+	@Test // DATACMNS-402
 	public void ensureInteroperabilityWithSort() {
 
 		QUser user = QUser.user;
@@ -140,10 +119,7 @@ public class QSortUnitTests {
 		assertThat(sort.getOrderFor("lastname"), is(new Sort.Order(Sort.Direction.DESC, "lastname")));
 	}
 
-	/**
-	 * @see DATACMNS-402
-	 */
-	@Test
+	@Test // DATACMNS-402
 	public void concatenatesPlainSortCorrectly() {
 
 		QUser user = QUser.user;
@@ -154,10 +130,7 @@ public class QSortUnitTests {
 		assertThat(result, hasItems(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, "firstname")));
 	}
 
-	/**
-	 * @see DATACMNS-566
-	 */
-	@Test
+	@Test // DATACMNS-566
 	public void shouldSupportSortByOperatorExpressions() {
 
 		QUser user = QUser.user;
@@ -169,10 +142,7 @@ public class QSortUnitTests {
 				new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString())));
 	}
 
-	/**
-	 * @see DATACMNS-621
-	 */
-	@Test
+	@Test // DATACMNS-621
 	public void shouldCreateSortForNestedPathCorrectly() {
 
 		QSort sort = new QSort(userWrapper.user.firstname.asc());
@@ -180,10 +150,7 @@ public class QSortUnitTests {
 		assertThat(sort, hasItems(new Order(Direction.ASC, "user.firstname")));
 	}
 
-	/**
-	 * @see DATACMNS-621
-	 */
-	@Test
+	@Test // DATACMNS-621
 	public void shouldCreateSortForDeepNestedPathCorrectly() {
 
 		QSort sort = new QSort(wrapperForUserWrapper.wrapper.user.firstname.asc());
@@ -191,10 +158,7 @@ public class QSortUnitTests {
 		assertThat(sort, hasItems(new Order(Direction.ASC, "wrapper.user.firstname")));
 	}
 
-	/**
-	 * @see DATACMNS-621
-	 */
-	@Test
+	@Test // DATACMNS-621
 	public void shouldCreateSortForReallyDeepNestedPathCorrectly() {
 
 		QSort sort = new QSort(wrapperToWrapWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname.asc());
@@ -202,10 +166,7 @@ public class QSortUnitTests {
 		assertThat(sort, hasItems(new Order(Direction.ASC, "wrapperForUserWrapper.wrapper.user.firstname")));
 	}
 
-	/**
-	 * @see DATACMNS-755
-	 */
-	@Test
+	@Test // DATACMNS-755
 	public void handlesPlainStringPathsCorrectly() {
 
 		StringPath path = new PathBuilderFactory().create(User.class).getString("firstname");

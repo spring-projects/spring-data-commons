@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,64 +54,43 @@ public class CrudRepositoryInvokerUnitTests {
 	@Mock PersonRepository personRepository;
 	@Mock OrderRepository orderRepository;
 
-	/**
-	 * @see DATACMNS-589, DATAREST-216
-	 */
-	@Test
+	@Test // DATACMNS-589, DATAREST-216
 	public void invokesRedeclaredSave() {
 		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeSave(new Order());
 	}
 
-	/**
-	 * @see DATACMNS-589, DATAREST-216
-	 */
-	@Test
+	@Test // DATACMNS-589, DATAREST-216
 	public void invokesRedeclaredFindOne() {
 		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeFindOne(1L);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesRedeclaredDelete() throws Exception {
 		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeDelete(1L);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesSaveOnCrudRepository() throws Exception {
 
 		Method method = CrudRepository.class.getMethod("save", Object.class);
 		getInvokerFor(personRepository, expectInvocationOf(method)).invokeSave(new Person());
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesFindOneOnCrudRepository() throws Exception {
 
 		Method method = CrudRepository.class.getMethod("findOne", Serializable.class);
 		getInvokerFor(personRepository, expectInvocationOf(method)).invokeFindOne(1L);
 	}
 
-	/**
-	 * @see DATACMNS-589, DATAREST-216
-	 */
-	@Test
+	@Test // DATACMNS-589, DATAREST-216
 	public void invokesDeleteOnCrudRepository() throws Exception {
 
 		Method method = CrudRepository.class.getMethod("delete", Serializable.class);
 		getInvokerFor(personRepository, expectInvocationOf(method)).invokeDelete(1L);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesFindAllOnCrudRepository() throws Exception {
 
 		Method method = CrudRepository.class.getMethod("findAll");
@@ -120,10 +99,7 @@ public class CrudRepositoryInvokerUnitTests {
 		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll((Sort) null);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesCustomFindAllTakingASort() throws Exception {
 
 		CrudWithFindAllWithSort repository = mock(CrudWithFindAllWithSort.class);
@@ -135,10 +111,7 @@ public class CrudRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll((Sort) null);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesCustomFindAllTakingAPageable() throws Exception {
 
 		CrudWithFindAllWithPageable repository = mock(CrudWithFindAllWithPageable.class);

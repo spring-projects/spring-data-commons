@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,7 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  */
 public class MapDataBinderUnitTests {
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void honorsFormattingAnnotationOnAccessor() {
 
 		Date reference = new Date();
@@ -59,10 +56,7 @@ public class MapDataBinderUnitTests {
 		assertThat(bind(values), hasEntry("foo", (Object) nested));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	@SuppressWarnings("rawtypes")
 	public void bindsNestedCollectionElement() {
 
@@ -77,10 +71,7 @@ public class MapDataBinderUnitTests {
 		assertThat(result, is((Map) singletonMap("foo", singletonMap("bar", singletonMap("fooBar", list)))));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	@SuppressWarnings("rawtypes")
 	public void bindsNestedPrimitive() {
 
@@ -97,10 +88,7 @@ public class MapDataBinderUnitTests {
 		assertThat(result, is((Map) singletonMap("foo", dave)));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void skipsPropertyNotExposedByTheTypeHierarchy() {
 
 		MutablePropertyValues values = new MutablePropertyValues();

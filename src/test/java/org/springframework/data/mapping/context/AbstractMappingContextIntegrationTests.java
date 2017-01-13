@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,10 +40,7 @@ import org.springframework.data.util.TypeInformation;
  */
 public class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 
-	/**
-	 * @see DATACMNS-457
-	 */
-	@Test
+	@Test // DATACMNS-457
 	public void returnsManagedType() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -53,10 +50,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		assertThat(context.getManagedTypes(), hasItem(ClassTypeInformation.from(Person.class)));
 	}
 
-	/**
-	 * @see DATACMNS-457
-	 */
-	@Test
+	@Test // DATACMNS-457
 	public void indicatesManagedType() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -66,10 +60,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		assertThat(context.hasPersistentEntityFor(Person.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-243
-	 */
-	@Test
+	@Test // DATACMNS-243
 	public void createsPersistentEntityForInterfaceCorrectly() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -78,10 +69,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 		assertThat(entity.getIdProperty(), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-65
-	 */
-	@Test
+	@Test // DATACMNS-65
 	public void foo() throws InterruptedException {
 
 		final DummyMappingContext context = new DummyMappingContext();

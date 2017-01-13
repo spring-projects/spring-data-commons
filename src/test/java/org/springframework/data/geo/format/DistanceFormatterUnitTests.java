@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,26 +50,17 @@ public class DistanceFormatterUnitTests {
 
 	public static class UnparameterizedTests {
 
-		/**
-		 * @see DATAREST-279, DATACMNS-626
-		 */
-		@Test(expected = IllegalArgumentException.class)
+		@Test(expected = IllegalArgumentException.class) // DATAREST-279, DATACMNS-626
 		public void rejectsArbitraryNonsense() {
 			INSTANCE.convert("foo");
 		}
 
-		/**
-		 * @see DATAREST-279, DATACMNS-626
-		 */
-		@Test(expected = IllegalArgumentException.class)
+		@Test(expected = IllegalArgumentException.class) // DATAREST-279, DATACMNS-626
 		public void rejectsUnsupportedMetric() {
 			INSTANCE.convert("10.8cm");
 		}
 
-		/**
-		 * @see DATAREST-279, DATACMNS-626
-		 */
-		@Test
+		@Test // DATAREST-279, DATACMNS-626
 		public void printsDistance() {
 			assertThat(INSTANCE.print(REFERENCE, Locale.US), is("10.8km"));
 		}
@@ -87,10 +78,7 @@ public class DistanceFormatterUnitTests {
 
 		public @Parameter String source;
 
-		/**
-		 * @see DATAREST-279, DATACMNS-626
-		 */
-		@Test
+		@Test // DATAREST-279, DATACMNS-626
 		public void parsesDistanceFromString() {
 			assertThat(INSTANCE.convert(source), is(REFERENCE));
 		}

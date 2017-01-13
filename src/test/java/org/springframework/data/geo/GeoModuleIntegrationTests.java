@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,7 @@ public class GeoModuleIntegrationTests {
 		this.mapper.registerModule(new GeoModule());
 	}
 
-	/**
-	 * @see DATACMNS-475
-	 */
-	@Test
+	@Test // DATACMNS-475
 	public void deserializesDistance() throws Exception {
 
 		String json = "{\"value\":10.0,\"metric\":\"KILOMETERS\"}";
@@ -52,10 +49,7 @@ public class GeoModuleIntegrationTests {
 		assertThat(mapper.writeValueAsString(reference), is(json));
 	}
 
-	/**
-	 * @see DATACMNS-475
-	 */
-	@Test
+	@Test // DATACMNS-475
 	public void deserializesPoint() throws Exception {
 
 		String json = "{\"x\":10.0,\"y\":20.0}";
@@ -65,10 +59,7 @@ public class GeoModuleIntegrationTests {
 		assertThat(mapper.writeValueAsString(reference), is(json));
 	}
 
-	/**
-	 * @see DATACMNS-475
-	 */
-	@Test
+	@Test // DATACMNS-475
 	public void deserializesCircle() throws Exception {
 
 		String json = "{\"center\":{\"x\":10.0,\"y\":20.0},\"radius\":{\"value\":10.0,\"metric\":\"KILOMETERS\"}}";
@@ -78,10 +69,7 @@ public class GeoModuleIntegrationTests {
 		assertThat(mapper.writeValueAsString(reference), is(json));
 	}
 
-	/**
-	 * @see DATACMNS-475
-	 */
-	@Test
+	@Test // DATACMNS-475
 	public void deserializesBox() throws Exception {
 
 		String json = "{\"first\":{\"x\":1.0,\"y\":2.0},\"second\":{\"x\":2.0,\"y\":3.0}}";
@@ -91,10 +79,7 @@ public class GeoModuleIntegrationTests {
 		assertThat(mapper.writeValueAsString(reference), is(json));
 	}
 
-	/**
-	 * @see DATACMNS-475
-	 */
-	@Test
+	@Test // DATACMNS-475
 	public void deserializesPolygon() throws Exception {
 
 		String json = "{\"points\":[{\"x\":1.0,\"y\":2.0},{\"x\":2.0,\"y\":3.0},{\"x\":3.0,\"y\":4.0}]}";

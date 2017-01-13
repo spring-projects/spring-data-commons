@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,7 @@ import org.springframework.data.repository.core.EntityInformation;
  */
 public class PersistentEntityInformationUnitTests {
 
-	/**
-	 * @see DATACMNS-480
-	 */
-	@Test
+	@Test // DATACMNS-480
 	public void obtainsIdAndIdTypeInformationFromPersistentEntity() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -52,10 +49,7 @@ public class PersistentEntityInformationUnitTests {
 		assertThat(information.getId(sample), is(5L));
 	}
 
-	/**
-	 * @see DATACMNS-596
-	 */
-	@Test
+	@Test // DATACMNS-596
 	public void returnsNullIfNoIdPropertyPresent() {
 
 		SampleMappingContext context = new SampleMappingContext();

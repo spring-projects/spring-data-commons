@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,18 +39,12 @@ public class PersistentEntitiesUnitTests {
 	@Mock SampleMappingContext first;
 	@Mock SampleMappingContext second;
 
-	/**
-	 * @see DATACMNS-458
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-458
 	public void rejectsNullMappingContexts() {
 		new PersistentEntities(null);
 	}
 
-	/**
-	 * @see DATACMNS-458
-	 */
-	@Test
+	@Test // DATACMNS-458
 	public void returnsPersistentEntitiesFromMappingContexts() {
 
 		when(first.hasPersistentEntityFor(Sample.class)).thenReturn(false);
@@ -65,10 +59,7 @@ public class PersistentEntitiesUnitTests {
 		verify(second, times(1)).getPersistentEntity(Sample.class);
 	}
 
-	/**
-	 * @see DATACMNS-458
-	 */
-	@Test
+	@Test // DATACMNS-458
 	public void indicatesManagedType() {
 
 		SampleMappingContext context = new SampleMappingContext();

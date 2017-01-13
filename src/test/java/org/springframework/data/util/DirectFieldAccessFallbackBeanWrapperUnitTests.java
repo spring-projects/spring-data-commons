@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,7 @@ import org.springframework.beans.NotWritablePropertyException;
  */
 public class DirectFieldAccessFallbackBeanWrapperUnitTests {
 
-	/**
-	 * @see DATACMNS-452
-	 */
-	@Test
+	@Test // DATACMNS-452
 	public void usesFieldAccessForReadIfNoAccessorCanBeFound() {
 
 		Sample sample = new Sample();
@@ -44,10 +41,7 @@ public class DirectFieldAccessFallbackBeanWrapperUnitTests {
 		assertThat(wrapper.getPropertyValue("firstname"), is((Object) "Dave"));
 	}
 
-	/**
-	 * @see DATACMNS-452
-	 */
-	@Test
+	@Test // DATACMNS-452
 	public void usesFieldAccessForWriteIfNoAccessorCanBeFound() {
 
 		Sample sample = new Sample();
@@ -58,20 +52,14 @@ public class DirectFieldAccessFallbackBeanWrapperUnitTests {
 		assertThat(sample.firstname, is("Dave"));
 	}
 
-	/**
-	 * @see DATACMNS-452
-	 */
-	@Test(expected = NotReadablePropertyException.class)
+	@Test(expected = NotReadablePropertyException.class) // DATACMNS-452
 	public void throwsAppropriateExceptionIfNoFieldFoundForRead() {
 
 		BeanWrapper wrapper = new DirectFieldAccessFallbackBeanWrapper(new Sample());
 		wrapper.getPropertyValue("lastname");
 	}
 
-	/**
-	 * @see DATACMNS-452
-	 */
-	@Test(expected = NotWritablePropertyException.class)
+	@Test(expected = NotWritablePropertyException.class) // DATACMNS-452
 	public void throwsAppropriateExceptionIfNoFieldFoundForWrite() {
 
 		BeanWrapper wrapper = new DirectFieldAccessFallbackBeanWrapper(new Sample());

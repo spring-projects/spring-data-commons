@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,42 +40,27 @@ public class ProxyProjectionFactoryUnitTests {
 
 	ProjectionFactory factory = new ProxyProjectionFactory();
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
 	public void rejectsNullProjectionType() {
 		factory.createProjection(null);
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
 	public void rejectsNullProjectionTypeWithSource() {
 		factory.createProjection(null, new Object());
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
 	public void rejectsNullProjectionTypeForInputProperties() {
 		factory.getInputProperties(null);
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void returnsNullForNullSource() {
 		assertThat(factory.createProjection(CustomerExcerpt.class, null), is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-221, DATACMNS-630
-	 */
-	@Test
+	@Test // DATAREST-221, DATACMNS-630
 	public void createsProjectingProxy() {
 
 		Customer customer = new Customer();
@@ -92,10 +77,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(excerpt.getAddress().getZipCode(), is("ZIP"));
 	}
 
-	/**
-	 * @see DATAREST-221, DATACMNS-630
-	 */
-	@Test
+	@Test // DATAREST-221, DATACMNS-630
 	@SuppressWarnings("rawtypes")
 	public void proxyExposesTargetClassAware() {
 
@@ -105,18 +87,12 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(((TargetClassAware) proxy).getTargetClass(), is(equalTo((Class) HashMap.class)));
 	}
 
-	/**
-	 * @see DATAREST-221, DATACMNS-630
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-221, DATACMNS-630
 	public void rejectsNonInterfacesAsProjectionTarget() {
 		factory.createProjection(Object.class, new Object());
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void createsMapBasedProxyFromSource() {
 
 		HashMap<String, Object> addressSource = new HashMap<String, Object>();
@@ -137,10 +113,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(address.getZipCode(), is("ZIP"));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void createsEmptyMapBasedProxy() {
 
 		CustomerProxy proxy = factory.createProjection(CustomerProxy.class);
@@ -151,10 +124,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(proxy.getFirstname(), is("Dave"));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void returnsAllPropertiesAsInputProperties() {
 
 		ProjectionInformation projectionInformation = factory.getProjectionInformation(CustomerExcerpt.class);
@@ -163,10 +133,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(result, hasSize(6));
 	}
 
-	/**
-	 * @see DATACMNS-655
-	 */
-	@Test
+	@Test // DATACMNS-655
 	public void invokesDefaultMethodOnProxy() {
 
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
@@ -178,10 +145,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(advisors[0].getAdvice(), is(instanceOf(DefaultMethodInvokingMethodInterceptor.class)));
 	}
 
-	/**
-	 * @see DATACMNS-648
-	 */
-	@Test
+	@Test // DATACMNS-648
 	public void exposesProxyTarget() {
 
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
@@ -190,10 +154,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(((TargetAware) excerpt).getTarget(), is(instanceOf(Map.class)));
 	}
 
-	/**
-	 * @see DATACMNS-722
-	 */
-	@Test
+	@Test // DATACMNS-722
 	public void doesNotProjectPrimitiveArray() {
 
 		Customer customer = new Customer();
@@ -204,10 +165,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(excerpt.getPicture(), is(customer.picture));
 	}
 
-	/**
-	 * @see DATACMNS-722
-	 */
-	@Test
+	@Test // DATACMNS-722
 	public void projectsNonPrimitiveArray() {
 
 		Address address = new Address();
@@ -222,10 +180,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(excerpt.getShippingAddresses(), is(arrayWithSize(1)));
 	}
 
-	/**
-	 * @see DATACMNS-782
-	 */
-	@Test
+	@Test // DATACMNS-782
 	public void convertsPrimitiveValues() {
 
 		Customer customer = new Customer();
@@ -236,10 +191,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(excerpt.getId(), is(customer.id.toString()));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void exposesProjectionInformationCorrectly() {
 
 		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
@@ -248,10 +200,7 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(information.isClosed(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-829
-	 */
-	@Test
+	@Test // DATACMNS-829
 	public void projectsMapOfStringToObjectCorrectly() {
 
 		Customer customer = new Customer();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,10 +55,7 @@ public class StreamQueryResultHandlerUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACMNS-868
-	 */
-	@Test
+	@Test // DATACMNS-868
 	@SuppressWarnings("unchecked")
 	public void mapsStreamUsingConverter() {
 
@@ -89,10 +86,7 @@ public class StreamQueryResultHandlerUnitTests {
 		stream.close();
 	}
 
-	/**
-	 * @see DATACMNS-868
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-868
 	public void rejectsNullSource() {
 		handler.handle(null);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,20 +56,14 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 				environment);
 	}
 
-	/**
-	 * @see DATACMNS-47
-	 */
-	@Test
+	@Test // DATACMNS-47
 	public void findsBasePackagesForClasses() {
 
 		Iterable<String> basePackages = source.getBasePackages();
 		assertThat(basePackages, hasItem(AnnotationRepositoryConfigurationSourceUnitTests.class.getPackage().getName()));
 	}
 
-	/**
-	 * @see DATACMNS-47
-	 */
-	@Test
+	@Test // DATACMNS-47
 	public void evaluatesExcludeFiltersCorrectly() {
 
 		Collection<BeanDefinition> candidates = source.getCandidates(new DefaultResourceLoader());
@@ -79,10 +73,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(candidate.getBeanClassName(), is(MyRepository.class.getName()));
 	}
 
-	/**
-	 * @see DATACMNS-47
-	 */
-	@Test
+	@Test // DATACMNS-47
 	public void defaultsToPackageOfAnnotatedClass() {
 
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
@@ -92,10 +83,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(source.shouldConsiderNestedRepositories(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-47
-	 */
-	@Test
+	@Test // DATACMNS-47
 	public void returnsConfiguredBasePackage() {
 
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithBasePackage.class);
@@ -104,30 +92,21 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(packages, hasItem("foo"));
 	}
 
-	/**
-	 * @see DATACMNS-90
-	 */
-	@Test
+	@Test // DATACMNS-90
 	public void returnsConsiderNestedRepositories() {
 
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithNestedRepositories.class);
 		assertThat(source.shouldConsiderNestedRepositories(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-456
-	 */
-	@Test
+	@Test // DATACMNS-456
 	public void findsStringAttributeByName() {
 
 		RepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithBasePackage.class);
 		assertThat(source.getAttribute("namedQueriesLocation"), is("bar"));
 	}
 
-	/**
-	 * @see DATACMNS-502
-	 */
-	@Test
+	@Test // DATACMNS-502
 	public void returnsEmptyStringForBasePackage() throws Exception {
 
 		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(getClass().getClassLoader().loadClass(
@@ -138,20 +117,14 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(configurationSource.getBasePackages(), hasItem(""));
 	}
 
-	/**
-	 * @see DATACMNS-526
-	 */
-	@Test
+	@Test // DATACMNS-526
 	public void detectsExplicitFilterConfiguration() {
 
 		assertThat(getConfigSource(ConfigurationWithExplicitFilter.class).usesExplicitFilters(), is(true));
 		assertThat(getConfigSource(DefaultConfiguration.class).usesExplicitFilters(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-542
-	 */
-	@Test
+	@Test // DATACMNS-542
 	public void ignoresMissingRepositoryBaseClassNameAttribute() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(ConfigWithSampleAnnotation.class, true);

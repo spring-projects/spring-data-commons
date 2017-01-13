@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,20 +148,14 @@ public class ClassTypeInformationUnitTests {
 		assertThat(property.getType(), is(typeCompatibleWith(byte[].class)));
 	}
 
-	/**
-	 * @see DATACMNS-77
-	 */
-	@Test
+	@Test // DATACMNS-77
 	public void returnsSameInstanceForCachedClass() {
 
 		TypeInformation<PropertyGetter> info = ClassTypeInformation.from(PropertyGetter.class);
 		assertThat(ClassTypeInformation.from(PropertyGetter.class), is(sameInstance(info)));
 	}
 
-	/**
-	 * @see DATACMNS-39
-	 */
-	@Test
+	@Test // DATACMNS-39
 	public void resolvesWildCardTypeCorrectly() {
 
 		TypeInformation<ClassWithWildCardBound> information = ClassTypeInformation.from(ClassWithWildCardBound.class);
@@ -267,10 +261,7 @@ public class ClassTypeInformationUnitTests {
 		assertThat(information.getActualType().getActualType().getType(), is((Object) String.class));
 	}
 
-	/**
-	 * @see DATACMNS-309
-	 */
-	@Test
+	@Test // DATACMNS-309
 	@SuppressWarnings("rawtypes")
 	public void findsGetterOnInterface() {
 
@@ -281,28 +272,19 @@ public class ClassTypeInformationUnitTests {
 		assertThat(categoryIdInfo, is((TypeInformation) from(Long.class)));
 	}
 
-	/**
-	 * @see DATACMNS-387
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
 	public void rejectsNullClass() {
 		from(null);
 	}
 
-	/**
-	 * @see DATACMNS-422
-	 */
-	@Test
+	@Test // DATACMNS-422
 	public void returnsNullForRawTypesOnly() {
 
 		assertThat(from(MyRawIterable.class).getComponentType(), is(nullValue()));
 		assertThat(from(MyIterable.class).getComponentType(), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-440
-	 */
-	@Test
+	@Test // DATACMNS-440
 	public void detectsSpecialMapAsMapValueType() {
 
 		TypeInformation<SuperGenerics> information = ClassTypeInformation.from(SuperGenerics.class);
@@ -319,20 +301,14 @@ public class ClassTypeInformationUnitTests {
 		assertThat(nestedValueType.getComponentType().getType(), is((Object) Person.class));
 	}
 
-	/**
-	 * @see DATACMNS-446
-	 */
-	@Test
+	@Test // DATACMNS-446
 	public void createsToStringRepresentation() {
 
 		assertThat(from(SpecialPerson.class).toString(),
 				is("org.springframework.data.util.ClassTypeInformationUnitTests$SpecialPerson"));
 	}
 
-	/**
-	 * @see DATACMNS-590
-	 */
-	@Test
+	@Test // DATACMNS-590
 	public void resolvesNestedGenericsToConcreteType() {
 
 		ClassTypeInformation<ConcreteRoot> rootType = from(ConcreteRoot.class);
@@ -343,10 +319,7 @@ public class ClassTypeInformationUnitTests {
 		assertThat(subSubType.getType(), is((Object) ConcreteSubSub.class));
 	}
 
-	/**
-	 * @see DATACMNS-594
-	 */
-	@Test
+	@Test // DATACMNS-594
 	public void considersGenericsOfTypeBounds() {
 
 		ClassTypeInformation<ConcreteRootIntermediate> customer = ClassTypeInformation.from(ConcreteRootIntermediate.class);
@@ -355,11 +328,7 @@ public class ClassTypeInformationUnitTests {
 		assertThat(leafType.getType(), is((Object) Leaf.class));
 	}
 
-	/**
-	 * @see DATACMNS-783
-	 * @see DATACMNS-853
-	 */
-	@Test
+	@Test // DATACMNS-783, DATACMNS-853
 	public void specializesTypeUsingTypeVariableContext() {
 
 		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
@@ -372,10 +341,7 @@ public class ClassTypeInformationUnitTests {
 		assertThat(specialized.getProperty("anotherField").getType(), is((Object) Integer.class));
 	}
 
-	/**
-	 * @see DATACMNS-783
-	 */
-	@Test
+	@Test // DATACMNS-783
 	@SuppressWarnings("rawtypes")
 	public void usesTargetTypeDirectlyIfNoGenericsAreInvolved() {
 
@@ -386,10 +352,7 @@ public class ClassTypeInformationUnitTests {
 		assertThat(property.specialize(from), is((TypeInformation) from));
 	}
 
-	/**
-	 * @see DATACMNS-855
-	 */
-	@Test
+	@Test // DATACMNS-855
 	@SuppressWarnings("rawtypes")
 	public void specializedTypeEqualsAndHashCode() {
 
@@ -404,10 +367,7 @@ public class ClassTypeInformationUnitTests {
 		assertThat(left.hashCode(), is(right.hashCode()));
 	}
 
-	/**
-	 * @see DATACMNS-896
-	 */
-	@Test
+	@Test // DATACMNS-896
 	public void prefersLocalTypeMappingOverNestedWithSameGenericType() {
 
 		ClassTypeInformation<Concrete> information = ClassTypeInformation.from(Concrete.class);
@@ -415,10 +375,7 @@ public class ClassTypeInformationUnitTests {
 		assertThat(information.getProperty("field").getType(), is(typeCompatibleWith(Nested.class)));
 	}
 
-	/**
-	 * @see DATACMNS-940
-	 */
-	@Test
+	@Test // DATACMNS-940
 	public void detectsJavaslangTraversableComponentType() {
 
 		ClassTypeInformation<SampleTraversable> information = ClassTypeInformation.from(SampleTraversable.class);
@@ -426,10 +383,7 @@ public class ClassTypeInformationUnitTests {
 		assertThat(information.getComponentType().getType(), is(typeCompatibleWith(Integer.class)));
 	}
 
-	/**
-	 * @see DATACMNS-940
-	 */
-	@Test
+	@Test // DATACMNS-940
 	public void detectsJavaslangMapComponentAndValueType() {
 
 		ClassTypeInformation<SampleMap> information = ClassTypeInformation.from(SampleMap.class);

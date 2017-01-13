@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,28 +30,19 @@ public class IdPropertyIdentifierAccessorUnitTests {
 
 	SampleMappingContext mappingContext = new SampleMappingContext();
 
-	/**
-	 * @see DATACMNS-599
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-599
 	public void rejectsEntityWithoutIdentifierProperty() {
 
 		new IdPropertyIdentifierAccessor(mappingContext.getPersistentEntity(Sample.class), new Sample());
 	}
 
-	/**
-	 * @see DATACMNS-599
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-599
 	public void rejectsNullBean() {
 
 		new IdPropertyIdentifierAccessor(mappingContext.getPersistentEntity(SampleWithId.class), null);
 	}
 
-	/**
-	 * @see DATACMNS-599
-	 */
-	@Test
+	@Test // DATACMNS-599
 	public void returnsIdentifierValue() {
 
 		SampleWithId sample = new SampleWithId();

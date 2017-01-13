@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,7 @@ public class AnnotationDetectionMethodCallbackUnitTests {
 
 	public @Rule ExpectedException exception = ExpectedException.none();
 
-	/**
-	 * @see DATACMNS-452
-	 */
-	@Test
+	@Test // DATACMNS-452
 	public void findsMethodWithAnnotation() throws Exception {
 
 		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
@@ -48,10 +45,7 @@ public class AnnotationDetectionMethodCallbackUnitTests {
 		assertThat(callback.getAnnotation().value(), is("#{null}"));
 	}
 
-	/**
-	 * @see DATACMNS-452
-	 */
-	@Test
+	@Test // DATACMNS-452
 	public void detectsAmbiguousAnnotations() {
 
 		exception.expect(IllegalStateException.class);

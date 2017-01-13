@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	QueryExecutionResultHandler handler = new QueryExecutionResultHandler();
 
-	/**
-	 * @see DATACMNS-610
-	 */
-	@Test
+	@Test // DATACMNS-610
 	public void convertsListsToSet() throws Exception {
 
 		TypeDescriptor descriptor = getTypeDescriptorFor("set");
@@ -51,20 +48,14 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(handler.postProcessInvocationResult(source, descriptor), is(instanceOf(Set.class)));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	public void turnsNullIntoJdk8Optional() throws Exception {
 
 		Object result = handler.postProcessInvocationResult(null, getTypeDescriptorFor("jdk8Optional"));
 		assertThat(result, is((Object) Optional.empty()));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	@SuppressWarnings("unchecked")
 	public void wrapsValueIntoJdk8Optional() throws Exception {
 
@@ -77,20 +68,14 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(optional, is(Optional.of(entity)));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	public void turnsNullIntoGuavaOptional() throws Exception {
 
 		Object result = handler.postProcessInvocationResult(null, getTypeDescriptorFor("guavaOptional"));
 		assertThat(result, is((Object) com.google.common.base.Optional.absent()));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	@SuppressWarnings("unchecked")
 	public void wrapsValueIntoGuavaOptional() throws Exception {
 
@@ -103,10 +88,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(optional, is(com.google.common.base.Optional.of(entity)));
 	}
 
-	/**
-	 * @see DATACMNS-917
-	 */
-	@Test
+	@Test // DATACMNS-917
 	public void defaultsNullToEmptyMap() throws Exception {
 		assertThat(handler.postProcessInvocationResult(null, getTypeDescriptorFor("map")), is(instanceOf(Map.class)));
 	}

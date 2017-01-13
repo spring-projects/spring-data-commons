@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,7 @@ import org.springframework.util.SerializationUtils;
  */
 public class GeoResultsUnitTests {
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	@SuppressWarnings("unchecked")
 	public void calculatesAverageForGivenGeoResults() {
 
@@ -45,10 +42,7 @@ public class GeoResultsUnitTests {
 		assertThat(geoResults.getAverageDistance(), is(new Distance(3.5)));
 	}
 
-	/**
-	 * @see DATACMNS-482
-	 */
-	@Test
+	@Test // DATACMNS-482
 	public void testSerialization() {
 
 		GeoResult<String> result = new GeoResult<String>("test", new Distance(2));

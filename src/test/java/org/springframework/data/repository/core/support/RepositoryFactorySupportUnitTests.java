@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,20 +146,14 @@ public class RepositoryFactorySupportUnitTests {
 		assertThat(factory.getRepository(foo), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-341
-	 */
-	@Test
+	@Test // DATACMNS-341
 	public void usesDefaultClassLoaderIfNullConfigured() {
 
 		factory.setBeanClassLoader(null);
 		assertThat(ReflectionTestUtils.getField(factory, "classLoader"), is((Object) ClassUtils.getDefaultClassLoader()));
 	}
 
-	/**
-	 * @see DATACMNS-489
-	 */
-	@Test
+	@Test // DATACMNS-489
 	public void wrapsExecutionResultIntoFutureIfConfigured() throws Exception {
 
 		final Object reference = new Object();
@@ -191,10 +185,7 @@ public class RepositoryFactorySupportUnitTests {
 		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
 	}
 
-	/**
-	 * @see DATACMNS-509
-	 */
-	@Test
+	@Test // DATACMNS-509
 	public void convertsWithSameElementType() {
 
 		List<String> names = Collections.singletonList("Dave");
@@ -208,10 +199,7 @@ public class RepositoryFactorySupportUnitTests {
 		assertThat(result.iterator().next(), is("Dave"));
 	}
 
-	/**
-	 * @see DATACMNS-509
-	 */
-	@Test
+	@Test // DATACMNS-509
 	public void convertsCollectionToOtherCollectionWithElementSuperType() {
 
 		List<String> names = Collections.singletonList("Dave");
@@ -225,10 +213,7 @@ public class RepositoryFactorySupportUnitTests {
 		assertThat(result.iterator().next(), is((Object) "Dave"));
 	}
 
-	/**
-	 * @see DATACMNS-656
-	 */
-	@Test
+	@Test // DATACMNS-656
 	public void rejectsNullRepositoryProxyPostProcessor() {
 
 		exception.expect(IllegalArgumentException.class);
@@ -237,10 +222,7 @@ public class RepositoryFactorySupportUnitTests {
 		factory.addRepositoryProxyPostProcessor(null);
 	}
 
-	/**
-	 * @see DATACMNS-715, SPR-13109
-	 */
-	@Test
+	@Test // DATACMNS-715, SPR-13109
 	public void addsTransactionProxyInterfaceIfAvailable() throws Exception {
 
 		try {
@@ -255,10 +237,7 @@ public class RepositoryFactorySupportUnitTests {
 		}
 	}
 
-	/**
-	 * @see @see DATACMNS-714
-	 */
-	@Test
+	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoCompletableFutureIfConfigured() throws Exception {
 
 		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
@@ -268,10 +247,7 @@ public class RepositoryFactorySupportUnitTests {
 		expect(prepareConvertingRepository(reference).findOneByFirstname("Foo"), reference);
 	}
 
-	/**
-	 * @see @see DATACMNS-714
-	 */
-	@Test
+	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoListenableFutureIfConfigured() throws Exception {
 
 		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
@@ -281,10 +257,7 @@ public class RepositoryFactorySupportUnitTests {
 		expect(prepareConvertingRepository(reference).findOneByLastname("Foo"), reference);
 	}
 
-	/**
-	 * @see @see DATACMNS-714
-	 */
-	@Test
+	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoCompletableFutureWithEntityCollectionIfConfigured() throws Exception {
 
 		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
@@ -294,10 +267,7 @@ public class RepositoryFactorySupportUnitTests {
 		expect(prepareConvertingRepository(reference).readAllByFirstname("Foo"), reference);
 	}
 
-	/**
-	 * @see DATACMNS-714
-	 */
-	@Test
+	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoListenableFutureWithEntityCollectionIfConfigured() throws Exception {
 
 		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
@@ -307,10 +277,7 @@ public class RepositoryFactorySupportUnitTests {
 		expect(prepareConvertingRepository(reference).readAllByLastname("Foo"), reference);
 	}
 
-	/**
-	 * @see DATACMNS-763
-	 */
-	@Test
+	@Test // DATACMNS-763
 	@SuppressWarnings("rawtypes")
 	public void rejectsRepositoryBaseClassWithInvalidConstructor() {
 

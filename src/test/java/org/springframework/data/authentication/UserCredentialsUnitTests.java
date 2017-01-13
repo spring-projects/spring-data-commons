@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,20 +37,14 @@ public class UserCredentialsUnitTests {
 		assertThat(credentials.hasPassword(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-142
-	 */
-	@Test
+	@Test // DATACMNS-142
 	public void noCredentialsNullsUsernameAndPassword() {
 
 		assertThat(UserCredentials.NO_CREDENTIALS.getUsername(), is(nullValue()));
 		assertThat(UserCredentials.NO_CREDENTIALS.getPassword(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-142
-	 */
-	@Test
+	@Test // DATACMNS-142
 	public void configuresUsernameCorrectly() {
 
 		UserCredentials credentials = new UserCredentials("username", null);
@@ -61,10 +55,7 @@ public class UserCredentialsUnitTests {
 		assertThat(credentials.getPassword(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-142
-	 */
-	@Test
+	@Test // DATACMNS-142
 	public void configuresPasswordCorrectly() {
 
 		UserCredentials credentials = new UserCredentials(null, "password");
@@ -75,37 +66,24 @@ public class UserCredentialsUnitTests {
 		assertThat(credentials.getPassword(), is("password"));
 	}
 
-	/**
-	 * @see DATACMNS-275
-	 */
-
-	@Test
+	@Test // DATACMNS-275
 	public void returnsNullForNotSetObfuscatedPassword() {
 		assertThat(new UserCredentials(null, null).getObfuscatedPassword(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-275
-	 */
-	@Test
+	@Test // DATACMNS-275
 	public void obfuscatesShortPasswordsEntirely() {
 
 		assertThat(new UserCredentials(null, "sa").getObfuscatedPassword(), is("**"));
 		assertThat(new UserCredentials(null, "s").getObfuscatedPassword(), is("*"));
 	}
 
-	/**
-	 * @see DATACMNS-275
-	 */
-	@Test
+	@Test // DATACMNS-275
 	public void returnsObfuscatedPasswordCorrectly() {
 		assertThat(new UserCredentials(null, "password").getObfuscatedPassword(), is("p******d"));
 	}
 
-	/**
-	 * @see DATACMNS-275
-	 */
-	@Test
+	@Test // DATACMNS-275
 	public void toStringDoesNotExposePlainPassword() {
 
 		UserCredentials credentials = new UserCredentials(null, "mypassword");

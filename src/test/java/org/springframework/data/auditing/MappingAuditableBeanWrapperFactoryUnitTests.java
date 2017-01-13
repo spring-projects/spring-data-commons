@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,10 +58,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		factory = new MappingAuditableBeanWrapperFactory(entities);
 	}
 
-	/**
-	 * @see DATACMNS-365
-	 */
-	@Test
+	@Test // DATACMNS-365
 	public void discoversAuditingPropertyOnField() {
 
 		Sample sample = new Sample();
@@ -73,10 +70,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		assertThat(sample.createdBy, is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-365
-	 */
-	@Test
+	@Test // DATACMNS-365
 	public void discoversAuditingPropertyOnAccessor() {
 
 		Sample sample = new Sample();
@@ -88,10 +82,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		assertThat(sample.lastModifiedBy, is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-365
-	 */
-	@Test
+	@Test // DATACMNS-365
 	public void settingInavailablePropertyIsNoop() {
 
 		Sample sample = new Sample();
@@ -100,28 +91,19 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		wrapper.setLastModifiedDate(new GregorianCalendar());
 	}
 
-	/**
-	 * @see DATACMNS-365
-	 */
-	@Test
+	@Test // DATACMNS-365
 	public void doesNotReturnWrapperForEntityNotUsingAuditing() {
 		assertThat(factory.getBeanWrapperFor(new NoAuditing()), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-365
-	 */
-	@Test
+	@Test // DATACMNS-365
 	public void returnsAuditableWrapperForAuditable() {
 
 		assertThat(factory.getBeanWrapperFor(mock(ExtendingAuditable.class)),
 				is(instanceOf(AuditableInterfaceBeanWrapper.class)));
 	}
 
-	/**
-	 * @see DATACMNS-638
-	 */
-	@Test
+	@Test // DATACMNS-638
 	public void returnsLastModificationCalendarAsCalendar() {
 
 		Date reference = new Date();
@@ -132,10 +114,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		assertLastModificationDate(calendar, reference);
 	}
 
-	/**
-	 * @see DATACMNS-638
-	 */
-	@Test
+	@Test // DATACMNS-638
 	public void returnsLastModificationDateTimeAsCalendar() {
 
 		DateTime reference = new DateTime();
@@ -143,10 +122,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		assertLastModificationDate(reference, reference.toDate());
 	}
 
-	/**
-	 * @see DATACMNS-638
-	 */
-	@Test
+	@Test // DATACMNS-638
 	public void returnsLastModificationDateAsCalendar() {
 
 		Date reference = new Date();
@@ -154,10 +130,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		assertLastModificationDate(reference, reference);
 	}
 
-	/**
-	 * @see DATACMNS-638, DATACMNS-43
-	 */
-	@Test
+	@Test // DATACMNS-638, DATACMNS-43
 	public void returnsLastModificationJsr310DateTimeAsCalendar() {
 
 		LocalDateTime reference = LocalDateTime.now();
@@ -165,10 +138,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		assertLastModificationDate(reference, LocalDateTimeToDateConverter.INSTANCE.convert(reference));
 	}
 
-	/**
-	 * @see DATACMNS-638, DATACMNS-43
-	 */
-	@Test
+	@Test // DATACMNS-638, DATACMNS-43
 	public void returnsLastModificationThreeTenBpDateTimeAsCalendar() {
 
 		org.threeten.bp.LocalDateTime reference = org.threeten.bp.LocalDateTime.now();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,10 +147,7 @@ public class PropertyPathUnitTests {
 		assertThat(from.getLeafProperty(), is(PropertyPath.from("name", FooBar.class)));
 	}
 
-	/**
-	 * @see DATACMNS-45
-	 */
-	@Test
+	@Test // DATACMNS-45
 	public void handlesEmptyUnderscoresCorrectly() {
 
 		PropertyPath propertyPath = PropertyPath.from("_foo", Sample2.class);
@@ -195,10 +192,7 @@ public class PropertyPathUnitTests {
 		assertThat(iterator.hasNext(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-139
-	 */
-	@Test
+	@Test // DATACMNS-139
 	public void rejectsInvalidPropertyWithLeadingUnderscore() {
 		try {
 			PropertyPath.from("_id", Foo.class);
@@ -208,10 +202,7 @@ public class PropertyPathUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS-139
-	 */
-	@Test
+	@Test // DATACMNS-139
 	public void rejectsNestedInvalidPropertyWithLeadingUnderscore() {
 		try {
 			PropertyPath.from("_foo_id", Sample2.class);
@@ -221,10 +212,7 @@ public class PropertyPathUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS-139
-	 */
-	@Test
+	@Test // DATACMNS-139
 	public void rejectsNestedInvalidPropertyExplictlySplitWithLeadingUnderscore() {
 		try {
 			PropertyPath.from("_foo__id", Sample2.class);
@@ -234,10 +222,7 @@ public class PropertyPathUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS 158
-	 */
-	@Test(expected = PropertyReferenceException.class)
+	@Test(expected = PropertyReferenceException.class) // DATACMNS 158
 	public void rejectsInvalidPathsContainingDigits() {
 		PropertyPath.from("PropertyThatWillFail4Sure", Foo.class);
 	}
@@ -281,10 +266,7 @@ public class PropertyPathUnitTests {
 		assertThat(left.hashCode(), is(not(shortPath.hashCode())));
 	}
 
-	/**
-	 * @see DATACMNS-257
-	 */
-	@Test
+	@Test // DATACMNS-257
 	public void findsAllUppercaseProperty() {
 
 		PropertyPath path = PropertyPath.from("UUID", Foo.class);
@@ -293,10 +275,7 @@ public class PropertyPathUnitTests {
 		assertThat(path.getSegment(), is("UUID"));
 	}
 
-	/**
-	 * @see DATACMNS-257
-	 */
-	@Test
+	@Test // DATACMNS-257
 	public void findsNestedAllUppercaseProperty() {
 
 		PropertyPath path = PropertyPath.from("_fooUUID", Sample2.class);
@@ -307,10 +286,7 @@ public class PropertyPathUnitTests {
 		assertThat(path.next().getSegment(), is("UUID"));
 	}
 
-	/**
-	 * @see DATACMNS-381
-	 */
-	@Test
+	@Test // DATACMNS-381
 	public void exposesPreviouslyReferencedPathInExceptionMessage() {
 
 		exception.expect(PropertyReferenceException.class);
@@ -321,42 +297,27 @@ public class PropertyPathUnitTests {
 		PropertyPath.from("userNameBar", Bar.class);
 	}
 
-	/**
-	 * @see DATACMNS-387
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
 	public void rejectsNullSource() {
 		from(null, Foo.class);
 	}
 
-	/**
-	 * @see DATACMNS-387
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
 	public void rejectsEmptySource() {
 		from("", Foo.class);
 	}
 
-	/**
-	 * @see DATACMNS-387
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
 	public void rejectsNullClass() {
 		from("foo", (Class<?>) null);
 	}
 
-	/**
-	 * @see DATACMNS-387
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
 	public void rejectsNullTypeInformation() {
 		from("foo", (TypeInformation<?>) null);
 	}
 
-	/**
-	 * @see DATACMNS-546
-	 */
-	@Test
+	@Test // DATACMNS-546
 	public void returnsCompletePathIfResolutionFailedCompletely() {
 
 		exception.expect(PropertyReferenceException.class);
@@ -365,10 +326,7 @@ public class PropertyPathUnitTests {
 		from("somethingDifferent", Foo.class);
 	}
 
-	/**
-	 * @see DATACMNS-546
-	 */
-	@Test
+	@Test // DATACMNS-546
 	public void includesResolvedPathInExceptionMessage() {
 
 		exception.expect(PropertyReferenceException.class);
@@ -379,10 +337,7 @@ public class PropertyPathUnitTests {
 		from("userFooName", Bar.class);
 	}
 
-	/**
-	 * @see DATACMNS-703
-	 */
-	@Test
+	@Test // DATACMNS-703
 	public void includesPropertyHintsOnTypos() {
 
 		exception.expect(PropertyReferenceException.class);

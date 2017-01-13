@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,50 +40,32 @@ public class ExampleMatcherUnitTests {
 		matcher = matching();
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void defaultStringMatcherShouldReturnDefault() throws Exception {
 		assertThat(matcher.getDefaultStringMatcher(), is(StringMatcher.DEFAULT));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void ignoreCaseShouldReturnFalseByDefault() throws Exception {
 		assertThat(matcher.isIgnoreCaseEnabled(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void ignoredPathsIsEmptyByDefault() throws Exception {
 		assertThat(matcher.getIgnoredPaths(), is(empty()));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void nullHandlerShouldReturnIgnoreByDefault() throws Exception {
 		assertThat(matcher.getNullHandler(), is(NullHandler.IGNORE));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = UnsupportedOperationException.class) // DATACMNS-810
 	public void ignoredPathsIsNotModifiable() throws Exception {
 		matcher.getIgnoredPaths().add("¯\\_(ツ)_/¯");
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseEnabled() throws Exception {
 
 		matcher = matching().withIgnoreCase();
@@ -91,10 +73,7 @@ public class ExampleMatcherUnitTests {
 		assertThat(matcher.isIgnoreCaseEnabled(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseSet() throws Exception {
 
 		matcher = matching().withIgnoreCase(true);
@@ -102,10 +81,7 @@ public class ExampleMatcherUnitTests {
 		assertThat(matcher.isIgnoreCaseEnabled(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void nullHandlerShouldReturnInclude() throws Exception {
 
 		matcher = matching().withIncludeNullValues();
@@ -113,10 +89,7 @@ public class ExampleMatcherUnitTests {
 		assertThat(matcher.getNullHandler(), is(NullHandler.INCLUDE));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void nullHandlerShouldReturnIgnore() throws Exception {
 
 		matcher = matching().withIgnoreNullValues();
@@ -124,10 +97,7 @@ public class ExampleMatcherUnitTests {
 		assertThat(matcher.getNullHandler(), is(NullHandler.IGNORE));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void nullHandlerShouldReturnConfiguredValue() throws Exception {
 
 		matcher = matching().withNullHandler(NullHandler.INCLUDE);
@@ -135,10 +105,7 @@ public class ExampleMatcherUnitTests {
 		assertThat(matcher.getNullHandler(), is(NullHandler.INCLUDE));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void ignoredPathsShouldReturnCorrectProperties() throws Exception {
 
 		matcher = matching().withIgnorePaths("foo", "bar", "baz");
@@ -147,10 +114,7 @@ public class ExampleMatcherUnitTests {
 		assertThat(matcher.getIgnoredPaths(), hasSize(3));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void ignoredPathsShouldReturnUniqueProperties() throws Exception {
 
 		matcher = matching().withIgnorePaths("foo", "bar", "foo");
@@ -159,10 +123,7 @@ public class ExampleMatcherUnitTests {
 		assertThat(matcher.getIgnoredPaths(), hasSize(2));
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void withCreatesNewInstance() throws Exception {
 
 		matcher = matching().withIgnorePaths("foo", "bar", "foo");
@@ -176,40 +137,28 @@ public class ExampleMatcherUnitTests {
 		assertThat(configuredExampleSpec.isIgnoreCaseEnabled(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-879
-	 */
-	@Test
+	@Test // DATACMNS-879
 	public void defaultMatcherRequiresAllMatching() {
 
 		assertThat(matching().isAllMatching(), is(true));
 		assertThat(matching().isAnyMatching(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-879
-	 */
-	@Test
+	@Test // DATACMNS-879
 	public void allMatcherRequiresAllMatching() {
 
 		assertThat(matchingAll().isAllMatching(), is(true));
 		assertThat(matchingAll().isAnyMatching(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-879
-	 */
-	@Test
+	@Test // DATACMNS-879
 	public void anyMatcherYieldsAnyMatching() {
 
 		assertThat(matchingAny().isAnyMatching(), is(true));
 		assertThat(matchingAny().isAllMatching(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-900
-	 */
-	@Test
+	@Test // DATACMNS-900
 	public void shouldCompareUsingHashCodeAndEquals() throws Exception {
 
 		matcher = matching() //

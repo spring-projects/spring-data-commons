@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,26 +44,17 @@ public class ExampleUnitTests {
 		example = Example.of(person);
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-810
 	public void rejectsNullProbe() {
 		Example.of(null);
 	}
 
-	/**
-	 * @see DATACMNS-810
-	 */
-	@Test
+	@Test // DATACMNS-810
 	public void returnsSampleObjectsClassAsProbeType() {
 		assertThat(example.getProbeType(), is(equalTo(Person.class)));
 	}
 
-	/**
-	 * @see DATACMNS-900
-	 */
-	@Test
+	@Test // DATACMNS-900
 	public void shouldCompareUsingHashCodeAndEquals() throws Exception {
 
 		Example<Person> example = Example.of(person, matching().withIgnoreCase("firstname"));

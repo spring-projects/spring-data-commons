@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,18 +28,12 @@ import org.junit.Test;
  */
 public class RangeUnitTests {
 
-	/**
-	 * @see DATACMNS-651
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-651
 	public void rejectsNullReferenceValuesForContains() {
 		new Range<Long>(10L, 20L).contains(null);
 	}
 
-	/**
-	 * @see DATACMNS-651
-	 */
-	@Test
+	@Test // DATACMNS-651
 	public void usesBoundsInclusivelyByDefault() {
 
 		Range<Long> range = new Range<Long>(10L, 20L);
@@ -51,10 +45,7 @@ public class RangeUnitTests {
 		assertThat(range.contains(25L), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-651
-	 */
-	@Test
+	@Test // DATACMNS-651
 	public void excludesLowerBoundIfConfigured() {
 
 		Range<Long> range = new Range<Long>(10L, 20L, false, true);
@@ -66,10 +57,7 @@ public class RangeUnitTests {
 		assertThat(range.contains(25L), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-651
-	 */
-	@Test
+	@Test // DATACMNS-651
 	public void excludesUpperBoundIfConfigured() {
 
 		Range<Long> range = new Range<Long>(10L, 20L, true, false);
@@ -81,10 +69,7 @@ public class RangeUnitTests {
 		assertThat(range.contains(25L), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-651
-	 */
-	@Test
+	@Test // DATACMNS-651
 	public void handlesOpenUpperBoundCorrectly() {
 
 		Range<Long> range = new Range<Long>(10L, null);
@@ -96,10 +81,7 @@ public class RangeUnitTests {
 		assertThat(range.contains(25L), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-651
-	 */
-	@Test
+	@Test // DATACMNS-651
 	public void handlesOpenLowerBoundCorrectly() {
 
 		Range<Long> range = new Range<Long>(null, 20L);

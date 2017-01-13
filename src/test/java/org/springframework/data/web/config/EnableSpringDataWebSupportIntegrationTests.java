@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  * Integration tests for {@link EnableSpringDataWebSupport}.
  * 
  * @author Oliver Gierke
- * @see DATACMNS-330
  */
 public class EnableSpringDataWebSupportIntegrationTests {
 
@@ -75,7 +74,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		reEnable(JACKSON);
 	}
 
-	@Test
+	@Test // DATACMNS-330
 	public void registersBasicBeanDefinitions() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
@@ -87,7 +86,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 				PageableHandlerMethodArgumentResolver.class);
 	}
 
-	@Test
+	@Test // DATACMNS-330
 	public void registersHateoasSpecificBeanDefinitions() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
@@ -97,7 +96,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		assertResolversRegistered(context, PagedResourcesAssemblerArgumentResolver.class);
 	}
 
-	@Test
+	@Test // DATACMNS-330
 	public void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() throws Exception {
 
 		hide(HATEOAS);
@@ -109,10 +108,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		assertThat(names, not(hasItems("pagedResourcesAssembler", "pagedResourcesAssemblerArgumentResolver")));
 	}
 
-	/**
-	 * @see DATACMNS-475
-	 */
-	@Test
+	@Test // DATACMNS-475
 	public void registersJacksonSpecificBeanDefinitions() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
@@ -121,10 +117,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		assertThat(names, hasItem("jacksonGeoModule"));
 	}
 
-	/**
-	 * @see DATACMNS-475
-	 */
-	@Test
+	@Test // DATACMNS-475
 	public void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() throws Exception {
 
 		hide(JACKSON);
@@ -135,10 +128,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		assertThat(names, not(hasItem("jacksonGeoModule")));
 	}
 
-	/**
-	 * @see DATACMNS-626
-	 */
-	@Test
+	@Test // DATACMNS-626
 	public void registersFormatters() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
@@ -151,10 +141,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		assertThat(conversionService.canConvert(Point.class, String.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void createsProxyForInterfaceBasedControllerMethodParameter() throws Exception {
 
 		WebApplicationContext applicationContext = WebTestUtils.createApplicationContext(SampleConfig.class);
@@ -172,10 +159,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 				andExpect(status().isOk());
 	}
 
-	/**
-	 * @see DATACMNS-660
-	 */
-	@Test
+	@Test // DATACMNS-660
 	public void picksUpWebConfigurationMixins() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
