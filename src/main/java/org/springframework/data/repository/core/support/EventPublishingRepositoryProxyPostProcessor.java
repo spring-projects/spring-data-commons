@@ -87,15 +87,17 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		@Override
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
+			Object result = invocation.proceed();
+
 			if (!invocation.getMethod().getName().equals("save")) {
-				return invocation.proceed();
+				return result;
 			}
 
 			for (Object argument : invocation.getArguments()) {
 				eventMethod.publishEventsFrom(argument, publisher);
 			}
 
-			return invocation.proceed();
+			return result;
 		}
 	}
 

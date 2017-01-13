@@ -174,6 +174,23 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(publisher).publishEvent(any(SomeEvent.class));
 	}
 
+	@Test // DATACMNS-975
+	public void publishesEventsAfterSaveInvocation() throws Throwable {
+
+		doReturn(SampleRepository.class.getMethod("save", Object.class)).when(invocation).getMethod();
+		doReturn(new Object[] { OneEvent.of(new SomeEvent()) }).when(invocation).getArguments();
+
+		doThrow(new IllegalStateException()).when(invocation).proceed();
+
+		try {
+			EventPublishingMethodInterceptor//
+					.of(EventPublishingMethod.of(OneEvent.class), publisher)//
+					.invoke(invocation);
+		} catch (IllegalStateException o_O) {
+			verify(publisher, never()).publishEvent(any(SomeEvent.class));
+		}
+	}
+
 	@Value(staticConstructor = "of")
 	static class MultipleEvents {
 		@Getter(onMethod = @__(@DomainEvents)) Collection<? extends Object> events;
