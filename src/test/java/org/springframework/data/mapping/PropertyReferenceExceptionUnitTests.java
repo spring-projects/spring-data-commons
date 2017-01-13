@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,10 +67,7 @@ public class PropertyReferenceExceptionUnitTests {
 		new PropertyReferenceException("nme", TYPE_INFO, null);
 	}
 
-	/**
-	 * @see DATACMNS-801
-	 */
-	@Test
+	@Test // DATACMNS-801
 	public void exposesPotentialMatch() {
 
 		PropertyReferenceException exception = new PropertyReferenceException("nme", TYPE_INFO, NO_PATHS);

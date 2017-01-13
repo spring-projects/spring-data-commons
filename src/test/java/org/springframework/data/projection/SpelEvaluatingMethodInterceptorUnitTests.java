@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2105 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,10 +46,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 
 	SpelExpressionParser parser = new SpelExpressionParser();
 
-	/**
-	 * @see DATAREST-221, DATACMNS-630
-	 */
-	@Test
+	@Test // DATAREST-221, DATACMNS-630
 	public void invokesMethodOnTarget() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("propertyFromTarget"));
@@ -60,10 +57,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		assertThat(interceptor.invoke(invocation), is((Object) "property"));
 	}
 
-	/**
-	 * @see DATAREST-221, DATACMNS-630
-	 */
-	@Test
+	@Test // DATAREST-221, DATACMNS-630
 	public void invokesMethodOnBean() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("invokeBean"));
@@ -77,10 +71,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		assertThat(interceptor.invoke(invocation), is((Object) "value"));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void forwardNonAtValueAnnotatedMethodToDelegate() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("getName"));
@@ -93,10 +84,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		verify(delegate).invoke(invocation);
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACMNS-630
 	public void rejectsEmptySpelExpression() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(InvalidProjection.class.getMethod("getAddress"));
@@ -107,10 +95,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		interceptor.invoke(invocation);
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void allowsMapAccessViaPropertyExpression() throws Throwable {
 
 		Map<String, Object> map = new HashMap<String, Object>();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	QueryExecutionResultHandler handler = new QueryExecutionResultHandler();
 
-	/**
-	 * @see DATACMNS-610
-	 */
-	@Test
+	@Test // DATACMNS-610
 	public void convertsListsToSet() throws Exception {
 
 		TypeDescriptor descriptor = getTypeDescriptorFor("set");
@@ -60,20 +57,14 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(handler.postProcessInvocationResult(source, descriptor), is(instanceOf(Set.class)));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	public void turnsNullIntoJdk8Optional() throws Exception {
 
 		Object result = handler.postProcessInvocationResult(null, getTypeDescriptorFor("jdk8Optional"));
 		assertThat(result, is((Object) Optional.empty()));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	@SuppressWarnings("unchecked")
 	public void wrapsValueIntoJdk8Optional() throws Exception {
 
@@ -86,20 +77,14 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(optional, is(Optional.of(entity)));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	public void turnsNullIntoGuavaOptional() throws Exception {
 
 		Object result = handler.postProcessInvocationResult(null, getTypeDescriptorFor("guavaOptional"));
 		assertThat(result, is((Object) com.google.common.base.Optional.absent()));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	@SuppressWarnings("unchecked")
 	public void wrapsValueIntoGuavaOptional() throws Exception {
 
@@ -112,18 +97,12 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(optional, is(com.google.common.base.Optional.of(entity)));
 	}
 
-	/**
-	 * @see DATACMNS-917
-	 */
-	@Test
+	@Test // DATACMNS-917
 	public void defaultsNullToEmptyMap() throws Exception {
 		assertThat(handler.postProcessInvocationResult(null, getTypeDescriptorFor("map")), is(instanceOf(Map.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaSingleIntoPublisher() throws Exception {
 
@@ -136,10 +115,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(mono.block(), is(entity.toBlocking().value()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaSingleIntoMono() throws Exception {
 
@@ -152,10 +128,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(mono.block(), is(entity.toBlocking().value()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaSingleIntoFlux() throws Exception {
 
@@ -168,10 +141,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(flux.next().block(), is(entity.toBlocking().value()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaObservableIntoPublisher() throws Exception {
 
@@ -184,10 +154,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(mono.block(), is(entity.toBlocking().first()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaObservableIntoMono() throws Exception {
 
@@ -200,10 +167,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(mono.block(), is(entity.toBlocking().first()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaObservableIntoFlux() throws Exception {
 
@@ -216,10 +180,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(flux.next().block(), is(entity.toBlocking().first()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaObservableIntoSingle() throws Exception {
 
@@ -232,10 +193,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(single.toBlocking().value(), is(entity.toBlocking().first()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaSingleIntoObservable() throws Exception {
 
@@ -248,10 +206,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(observable.toBlocking().first(), is(entity.toBlocking().value()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsReactorMonoIntoSingle() throws Exception {
 
@@ -264,10 +219,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(single.toBlocking().value(), is(entity.block()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsReactorMonoIntoCompletable() throws Exception {
 
@@ -280,10 +232,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(completable.get(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsReactorMonoIntoCompletableWithException() throws Exception {
 
@@ -296,10 +245,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(completable.get(), is(instanceOf(InvalidDataAccessApiUsageException.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaCompletableIntoMono() throws Exception {
 
@@ -312,10 +258,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(mono.block(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test(expected = InvalidDataAccessApiUsageException.class)
+	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaCompletableIntoMonoWithException() throws Exception {
 
@@ -329,10 +272,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		fail("Missing InvalidDataAccessApiUsageException");
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsReactorMonoIntoObservable() throws Exception {
 
@@ -345,10 +285,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(observable.toBlocking().first(), is(entity.block()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsReactorFluxIntoSingle() throws Exception {
 
@@ -361,10 +298,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(single.toBlocking().value(), is(entity.next().block()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsReactorFluxIntoObservable() throws Exception {
 
@@ -377,10 +311,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(observable.toBlocking().first(), is(entity.next().block()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsReactorFluxIntoMono() throws Exception {
 
@@ -393,10 +324,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(mono.block(), is(entity.next().block()));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsReactorMonoIntoFlux() throws Exception {
 

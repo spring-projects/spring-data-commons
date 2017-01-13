@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,10 +102,7 @@ public class CdiRepositoryBeanUnitTests {
 		assertThat(stereotypes, hasItem(StereotypeAnnotation.class));
 	}
 
-	/**
-	 * @see DATACMNS-299
-	 */
-	@Test
+	@Test // DATACMNS-299
 	@SuppressWarnings("rawtypes")
 	public void scopeDefaultsToApplicationScoped() {
 
@@ -114,10 +111,7 @@ public class CdiRepositoryBeanUnitTests {
 		assertThat(bean.getScope(), equalTo((Class) ApplicationScoped.class));
 	}
 
-	/**
-	 * @see DATACMNS-322
-	 */
-	@Test
+	@Test // DATACMNS-322
 	public void createsPassivationId() {
 
 		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(SINGLE_ANNOTATION,

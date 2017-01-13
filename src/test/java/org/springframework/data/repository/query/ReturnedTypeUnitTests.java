@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  */
 public class ReturnedTypeUnitTests {
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void treatsSimpleDomainTypeAsIs() throws Exception {
 
 		ReturnedType type = getReturnedType("findAll");
@@ -52,10 +49,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.needsCustomConstruction(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void detectsDto() throws Exception {
 
 		ReturnedType type = getReturnedType("findAllDtos");
@@ -67,10 +61,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.needsCustomConstruction(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void detectsProjection() throws Exception {
 
 		ReturnedType type = getReturnedType("findAllProjection");
@@ -79,10 +70,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.getInputProperties(), contains("lastname"));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void detectsVoidMethod() throws Exception {
 
 		ReturnedType type = getReturnedType("voidMethod");
@@ -91,10 +79,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.getReturnedType(), is(typeCompatibleWith(void.class)));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void detectsClosedProjection() throws Exception {
 
 		ReturnedType type = getReturnedType("findOneProjection");
@@ -104,10 +89,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.needsCustomConstruction(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void detectsOpenProjection() throws Exception {
 
 		ReturnedType type = getReturnedType("findOneOpenProjection");
@@ -118,10 +100,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.getTypeToRead(), is(typeCompatibleWith(Sample.class)));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void detectsComplexNumberTypes() throws Exception {
 
 		ReturnedType type = getReturnedType("countQuery");
@@ -131,10 +110,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.getTypeToRead(), is(typeCompatibleWith(BigInteger.class)));
 	}
 
-	/**
-	 * @see DATACMNS-840
-	 */
-	@Test
+	@Test // DATACMNS-840
 	public void detectsSampleDtoWithDefaultConstructor() throws Exception {
 
 		ReturnedType type = getReturnedType("dtoWithMultipleConstructors");
@@ -143,10 +119,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.needsCustomConstruction(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-840
-	 */
-	@Test
+	@Test // DATACMNS-840
 	public void doesNotConsiderAnEnumProjecting() throws Exception {
 
 		ReturnedType type = getReturnedType("findEnum");
@@ -155,10 +128,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.isProjecting(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-850
-	 */
-	@Test
+	@Test // DATACMNS-850
 	public void considersAllJavaTypesAsNotProjecting() throws Exception {
 
 		ReturnedType type = getReturnedType("timeQuery");
@@ -167,10 +137,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.isProjecting(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-862
-	 */
-	@Test
+	@Test // DATACMNS-862
 	public void considersInterfaceImplementedByDomainTypeNotProjecting() throws Exception {
 
 		ReturnedType type = getReturnedType("findOneInterface");
@@ -179,10 +146,7 @@ public class ReturnedTypeUnitTests {
 		assertThat(type.isProjecting(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-963
-	 */
-	@Test
+	@Test // DATACMNS-963
 	public void detectsDistinctInputProperties() {
 
 		ReturnedType type = ReturnedType.of(Child.class, Object.class, new SpelAwareProxyProjectionFactory());

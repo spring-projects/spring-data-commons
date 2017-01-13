@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,18 +33,12 @@ public class PolygonUnitTests {
 	Point second = new Point(2, 2);
 	Point third = new Point(3, 3);
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
 	public void rejectsNullPoints() {
 		new Polygon(null, null, null);
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void createsSimplePolygon() {
 
 		Polygon polygon = new Polygon(third, second, first);
@@ -52,10 +46,7 @@ public class PolygonUnitTests {
 		assertThat(polygon, is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void isEqualForSamePoints() {
 
 		Polygon left = new Polygon(third, second, first);
@@ -65,20 +56,14 @@ public class PolygonUnitTests {
 		assertThat(right, is(left));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void testToString() {
 
 		assertThat(new Polygon(third, second, first).toString(),
 				is("Polygon: [Point [x=3.000000, y=3.000000],Point [x=2.000000, y=2.000000],Point [x=1.000000, y=1.000000]]"));
 	}
 
-	/**
-	 * @see DATACMNS-482
-	 */
-	@Test
+	@Test // DATACMNS-482
 	public void testSerialization() {
 
 		Polygon polygon = new Polygon(third, second, first);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,10 +57,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.<EvaluationContextExtension> emptyList());
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void usesPropertyDefinedByExtension() {
 
 		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList(new DummyExtension("_first",
@@ -69,10 +66,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("key"), is((Object) "first"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void secondExtensionOverridesFirstOne() {
 
 		List<EvaluationContextExtension> extensions = new ArrayList<EvaluationContextExtension>();
@@ -84,10 +78,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("key"), is((Object) "second"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void allowsDirectAccessToExtensionViaKey() {
 
 		List<EvaluationContextExtension> extensions = new ArrayList<EvaluationContextExtension>();
@@ -98,18 +89,12 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("_first.key"), is((Object) "first"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void exposesParametersAsVariables() {
 		assertThat(evaluateExpression("#firstname"), is((Object) "parameterValue"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void exposesMethodDefinedByExtension() {
 
 		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList(new DummyExtension("_first",
@@ -121,10 +106,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("_first.aliasedMethod()"), is((Object) "methodResult"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void exposesPropertiesDefinedByExtension() {
 
 		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList(new DummyExtension("_first",
@@ -134,10 +116,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("_first.DUMMY_KEY"), is((Object) "dummy"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void exposesPageableParameter() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Pageable.class);
@@ -149,10 +128,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 				is((Object) "lastname: DESC"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void exposesSortParameter() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class);
@@ -161,10 +137,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("#sort.toString()", new Object[] { "test", sort }), is((Object) "lastname: DESC"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void exposesSpecialParameterEvenIfItsNull() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class);
@@ -172,10 +145,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("#sort?.toString()", new Object[] { "test", null }), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void shouldBeAbleToAccessCustomRootObjectPropertiesAndFunctions() {
 
 		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList( //
@@ -197,10 +167,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("_first.stringProperty"), is((Object) "stringProperty"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void shouldBeAbleToAccessCustomRootObjectPropertiesAndFunctionsInMultipleExtensions() {
 
 		this.provider = new ExtensionAwareEvaluationContextProvider(Arrays.asList( //
@@ -226,10 +193,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("[0]"), is((Object) "parameterValue"));
 	}
 
-	/**
-	 * @see DATACMNS-533
-	 */
-	@Test
+	@Test // DATACMNS-533
 	public void shouldBeAbleToAccessCustomRootObjectPropertiesAndFunctionsFromDynamicTargetSource() {
 
 		final AtomicInteger counter = new AtomicInteger();

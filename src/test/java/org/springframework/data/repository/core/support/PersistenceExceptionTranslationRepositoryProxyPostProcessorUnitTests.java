@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,19 +52,13 @@ public class PersistenceExceptionTranslationRepositoryProxyPostProcessorUnitTest
 				beans);
 	}
 
-	/**
-	 * @see DATACMNS-318
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-318
 	public void rejectsNullBeanFactory() throws Exception {
 
 		new PersistenceExceptionTranslationRepositoryProxyPostProcessor(null);
 	}
 
-	/**
-	 * @see DATACMNS-318
-	 */
-	@Test
+	@Test // DATACMNS-318
 	public void setsUpBasicInstance() throws Exception {
 
 		RepositoryProxyPostProcessor postProcessor = new PersistenceExceptionTranslationRepositoryProxyPostProcessor(

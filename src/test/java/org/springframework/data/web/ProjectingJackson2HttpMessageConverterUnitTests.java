@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,26 +33,17 @@ public class ProjectingJackson2HttpMessageConverterUnitTests {
 	ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter();
 	MediaType ANYTHING_JSON = MediaType.parseMediaType("application/*+json");
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void canReadJsonIntoAnnotatedInterface() {
 		assertThat(converter.canRead(SampleInterface.class, ANYTHING_JSON), is(true));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void cannotReadUnannotatedInterface() {
 		assertThat(converter.canRead(UnannotatedInterface.class, ANYTHING_JSON), is(false));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void cannotReadClass() {
 		assertThat(converter.canRead(SampleClass.class, ANYTHING_JSON), is(false));
 	}

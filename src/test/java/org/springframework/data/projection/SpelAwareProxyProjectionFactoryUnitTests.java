@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,10 +45,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		factory = new SpelAwareProxyProjectionFactory();
 	}
 
-	/**
-	 * @see DATAREST-221, DATACMNS-630
-	 */
-	@Test
+	@Test // DATAREST-221, DATACMNS-630
 	public void exposesSpelInvokingMethod() {
 
 		Customer customer = new Customer();
@@ -59,10 +56,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		assertThat(excerpt.getFullName(), is("Dave Matthews"));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void excludesAtValueAnnotatedMethodsForInputProperties() {
 
 		List<String> properties = factory.getInputProperties(CustomerExcerpt.class);
@@ -71,10 +65,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		assertThat(properties, hasItem("firstname"));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void considersProjectionUsingAtValueNotClosed() {
 
 		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
@@ -82,10 +73,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		assertThat(information.isClosed(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-820
-	 */
-	@Test
+	@Test // DATACMNS-820
 	public void setsValueUsingProjection() {
 
 		Customer customer = new Customer();
@@ -97,10 +85,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		assertThat(customer.firstname, is("Carl"));
 	}
 
-	/**
-	 * @see DATACMNS-820
-	 */
-	@Test
+	@Test // DATACMNS-820
 	public void settingNotWriteablePropertyFails() {
 
 		Customer customer = new Customer();

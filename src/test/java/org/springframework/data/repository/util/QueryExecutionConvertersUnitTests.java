@@ -64,10 +64,7 @@ public class QueryExecutionConvertersUnitTests {
 		QueryExecutionConverters.registerConvertersIn(conversionService);
 	}
 
-	/**
-	 * @see DATACMNS-714
-	 */
-	@Test
+	@Test // DATACMNS-714
 	public void registersWrapperTypes() {
 
 		assertThat(QueryExecutionConverters.supports(Optional.class), is(true));
@@ -78,10 +75,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(javaslang.control.Option.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void registersReactiveWrapperTypes() {
 
 		assertThat(QueryExecutionConverters.supports(Publisher.class), is(true));
@@ -97,10 +91,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(io.reactivex.Observable.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void registersUnwrapperTypes() {
 
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Optional.class), is(true));
@@ -110,10 +101,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Option.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void doesNotRegisterReactiveUnwrapperTypes() {
 
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Publisher.class), is(false));
@@ -129,18 +117,12 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Observable.class), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-714
-	 */
-	@Test
+	@Test // DATACMNS-714
 	public void registersCompletableFutureAsWrapperTypeOnSpring42OrBetter() {
 		assertThat(QueryExecutionConverters.supports(CompletableFuture.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	@SuppressWarnings("unchecked")
 	public void turnsNullIntoGuavaOptional() {
 
@@ -148,10 +130,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(optional, is(Optional.<Object> absent()));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	@SuppressWarnings("unchecked")
 	public void turnsNullIntoJdk8Optional() {
 
@@ -160,10 +139,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(optional, is(java.util.Optional.<Object> empty()));
 	}
 
-	/**
-	 * @see DATACMNS-714
-	 */
-	@Test
+	@Test // DATACMNS-714
 	@SuppressWarnings("unchecked")
 	public void turnsNullIntoCompletableFutureForNull() throws Exception {
 
@@ -174,42 +150,27 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(result.get(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-768
-	 */
-	@Test
+	@Test // DATACMNS-768
 	public void unwrapsJdk8Optional() {
 		assertThat(QueryExecutionConverters.unwrap(java.util.Optional.of("Foo")), is((Object) "Foo"));
 	}
 
-	/**
-	 * @see DATACMNS-768
-	 */
-	@Test
+	@Test // DATACMNS-768
 	public void unwrapsGuava8Optional() {
 		assertThat(QueryExecutionConverters.unwrap(Optional.of("Foo")), is((Object) "Foo"));
 	}
 
-	/**
-	 * @see DATACMNS-768
-	 */
-	@Test
+	@Test // DATACMNS-768
 	public void unwrapsNullToNull() {
 		assertThat(QueryExecutionConverters.unwrap(null), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-768
-	 */
-	@Test
+	@Test // DATACMNS-768
 	public void unwrapsNonWrapperTypeToItself() {
 		assertThat(QueryExecutionConverters.unwrap("Foo"), is((Object) "Foo"));
 	}
 
-	/**
-	 * @see DATACMNS-795
-	 */
-	@Test
+	@Test // DATACMNS-795
 	@SuppressWarnings("unchecked")
 	public void turnsNullIntoScalaOptionEmpty() {
 
@@ -217,35 +178,23 @@ public class QueryExecutionConvertersUnitTests {
 				is(Option.<Object> empty()));
 	}
 
-	/**
-	 * @see DATACMNS-795
-	 */
-	@Test
+	@Test // DATACMNS-795
 	public void unwrapsScalaOption() {
 		assertThat(QueryExecutionConverters.unwrap(Option.apply("foo")), is((Object) "foo"));
 	}
 
-	/**
-	 * @see DATACMNS-874
-	 */
-	@Test
+	@Test // DATACMNS-874
 	public void unwrapsEmptyScalaOption() {
 		assertThat(QueryExecutionConverters.unwrap(Option.empty()), is((Object) null));
 	}
 
-	/**
-	 * @see DATACMNS-937
-	 */
-	@Test
+	@Test // DATACMNS-937
 	public void turnsNullIntoJavaslangOption() {
 		assertThat(conversionService.convert(new NullableWrapper(null), javaslang.control.Option.class),
 				is((Object) optionNone()));
 	}
 
-	/**
-	 * @see DATACMNS-937
-	 */
-	@Test
+	@Test // DATACMNS-937
 	public void wrapsValueIntoJavaslangOption() {
 
 		javaslang.control.Option<?> result = conversionService.convert(new NullableWrapper("string"),
@@ -255,26 +204,17 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(result.get(), is((Object) "string"));
 	}
 
-	/**
-	 * @see DATACMNS-937
-	 */
-	@Test
+	@Test // DATACMNS-937
 	public void unwrapsEmptyJavaslangOption() {
 		assertThat(QueryExecutionConverters.unwrap(optionNone()), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-937
-	 */
-	@Test
+	@Test // DATACMNS-937
 	public void unwrapsJavaslangOption() {
 		assertThat(QueryExecutionConverters.unwrap(option("string")), is((Object) "string"));
 	}
 
-	/**
-	 * @see DATACMNS-940
-	 */
-	@Test
+	@Test // DATACMNS-940
 	public void conversListToJavaslang() {
 
 		assertThat(conversionService.canConvert(List.class, javaslang.collection.Traversable.class), is(true));
@@ -289,10 +229,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(result, is(instanceOf(javaslang.collection.List.class)));
 	}
 
-	/**
-	 * @see DATACMNS-940
-	 */
-	@Test
+	@Test // DATACMNS-940
 	public void convertsSetToJavaslang() {
 
 		assertThat(conversionService.canConvert(Set.class, javaslang.collection.Traversable.class), is(true));
@@ -307,10 +244,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(result, is(instanceOf(javaslang.collection.Set.class)));
 	}
 
-	/**
-	 * @see DATACMNS-940
-	 */
-	@Test
+	@Test // DATACMNS-940
 	public void convertsMapToJavaslang() {
 
 		assertThat(conversionService.canConvert(Map.class, javaslang.collection.Traversable.class), is(true));
@@ -325,10 +259,7 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(result, is(instanceOf(javaslang.collection.Map.class)));
 	}
 
-	/**
-	 * @see DATACMNS-940
-	 */
-	@Test
+	@Test // DATACMNS-940
 	public void unwrapsJavaslangCollectionsToJavaOnes() {
 
 		assertThat(unwrap(javaslangList(1, 2, 3)), is(instanceOf(List.class)));

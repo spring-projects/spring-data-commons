@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2016 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -120,18 +120,12 @@ public class ParametersUnitTests {
 		assertThat(parameters.getSortIndex(), is(1));
 	}
 
-	/**
-	 * @see DATACMNS-520
-	 */
-	@Test
+	@Test // DATACMNS-520
 	public void doesNotRejectParameterIfPageableComesFirst() throws Exception {
 		getParametersFor("validWithPageableFirst", Pageable.class, String.class);
 	}
 
-	/**
-	 * @see DATACMNS-731
-	 */
-	@Test
+	@Test // DATACMNS-731
 	public void detectsExplicitlyNamedParameter() throws Exception {
 
 		Parameter parameter = getParametersFor("valid", String.class).getBindableParameter(0);
@@ -140,10 +134,7 @@ public class ParametersUnitTests {
 		assertThat(parameter.isExplicitlyNamed(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-731
-	 */
-	@Test
+	@Test // DATACMNS-731
 	public void doesNotConsiderParameterExplicitlyNamedEvenIfNamePresent() throws Exception {
 
 		Parameter parameter = getParametersFor("validWithSortFirst", Sort.class, String.class).getBindableParameter(0);
@@ -155,10 +146,7 @@ public class ParametersUnitTests {
 		assertThat(parameter.isExplicitlyNamed(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void detectsDynamicProjectionParameter() throws Exception {
 
 		Parameters<?, Parameter> parameters = getParametersFor("dynamicBind", Class.class, Class.class, Class.class);
@@ -168,10 +156,7 @@ public class ParametersUnitTests {
 		assertThat(parameters.getParameter(2).isDynamicProjectionParameter(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-863
-	 */
-	@Test
+	@Test // DATACMNS-863
 	public void unwrapsOptionals() throws Exception {
 
 		Parameters<?, Parameter> parameters = getParametersFor("methodWithOptional", Optional.class);
@@ -179,10 +164,7 @@ public class ParametersUnitTests {
 		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(String.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void keepsReactiveStreamsWrapper() throws Exception {
 
 		Parameters<?, Parameter> parameters = getParametersFor("methodWithPublisher", Publisher.class);
@@ -190,10 +172,7 @@ public class ParametersUnitTests {
 		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(Publisher.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void keepsRxJavaWrapper() throws Exception {
 
 		Parameters<?, Parameter> parameters = getParametersFor("methodWithSingle", Single.class);

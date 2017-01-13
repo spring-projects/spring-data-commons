@@ -52,48 +52,33 @@ public class QueryMethodUnitTests {
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(SampleRepository.class);
 	ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 
-	/**
-	 * @see DATAJPA-59
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATAJPA-59
 	public void rejectsPagingMethodWithInvalidReturnType() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("pagingMethodWithInvalidReturnType", Pageable.class);
 		new QueryMethod(method, metadata, factory);
 	}
 
-	/**
-	 * @see DATAJPA-59
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAJPA-59
 	public void rejectsPagingMethodWithoutPageable() throws Exception {
 		Method method = SampleRepository.class.getMethod("pagingMethodWithoutPageable");
 		new QueryMethod(method, metadata, factory);
 	}
 
-	/**
-	 * @see DATACMNS-64
-	 */
-	@Test
+	@Test // DATACMNS-64
 	public void setsUpSimpleQueryMethodCorrectly() throws Exception {
 		Method method = SampleRepository.class.getMethod("findByUsername", String.class);
 		new QueryMethod(method, metadata, factory);
 	}
 
-	/**
-	 * @see DATACMNS-61
-	 */
-	@Test
+	@Test // DATACMNS-61
 	public void considersIterableMethodForCollectionQuery() throws Exception {
 		Method method = SampleRepository.class.getMethod("sampleMethod");
 		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
 		assertThat(queryMethod.isCollectionQuery(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-67
-	 */
-	@Test
+	@Test // DATACMNS-67
 	public void doesNotConsiderPageMethodCollectionQuery() throws Exception {
 		Method method = SampleRepository.class.getMethod("anotherSampleMethod", Pageable.class);
 		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
@@ -101,10 +86,7 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isCollectionQuery(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-171
-	 */
-	@Test
+	@Test // DATACMNS-171
 	public void detectsAnEntityBeingReturned() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("returnsEntitySubclass");
@@ -113,10 +95,7 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isQueryForEntity(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-171
-	 */
-	@Test
+	@Test // DATACMNS-171
 	public void detectsNonEntityBeingReturned() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("returnsProjection");
@@ -125,10 +104,7 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isQueryForEntity(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-397
-	 */
-	@Test
+	@Test // DATACMNS-397
 	public void detectsSliceMethod() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
@@ -140,10 +116,7 @@ public class QueryMethodUnitTests {
 		assertThat(queryMethod.isPageQuery(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-471
-	 */
-	@Test
+	@Test // DATACMNS-471
 	public void detectsCollectionMethodForArrayRetrunType() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
@@ -152,10 +125,7 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-650
-	 */
-	@Test
+	@Test // DATACMNS-650
 	public void considersMethodReturningAStreamStreaming() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
@@ -164,10 +134,7 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isStreamQuery(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-650
-	 */
-	@Test
+	@Test // DATACMNS-650
 	public void doesNotRejectStreamingForPagination() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
@@ -176,10 +143,7 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isStreamQuery(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-716
-	 */
-	@Test
+	@Test // DATACMNS-716
 	public void doesNotRejectCompletableFutureQueryForSingleEntity() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
@@ -188,10 +152,7 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-716
-	 */
-	@Test
+	@Test // DATACMNS-716
 	public void doesNotRejectCompletableFutureQueryForEntityCollection() throws Exception {
 
 		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
@@ -202,10 +163,7 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-716
-	 */
-	@Test
+	@Test // DATACMNS-716
 	public void doesNotRejectFutureQueryForSingleEntity() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
@@ -214,10 +172,7 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-716
-	 */
-	@Test
+	@Test // DATACMNS-716
 	public void doesNotRejectFutureQueryForEntityCollection() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
@@ -250,24 +205,16 @@ public class QueryMethodUnitTests {
 
 		Stream<String> streaming(Pageable pageable);
 
-		/**
-		 * @see DATACMNS-716
-		 */
+		// DATACMNS-716
 		CompletableFuture<User> returnsCompletableFutureForSingleEntity();
 
-		/**
-		 * @see DATACMNS-716
-		 */
+		// DATACMNS-716
 		CompletableFuture<List<User>> returnsCompletableFutureForEntityCollection();
 
-		/**
-		 * @see DATACMNS-716
-		 */
+		// DATACMNS-716
 		Future<User> returnsFutureForSingleEntity();
 
-		/**
-		 * @see DATACMNS-716
-		 */
+		// DATACMNS-716
 		Future<List<User>> returnsFutureForEntityCollection();
 	}
 

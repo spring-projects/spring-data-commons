@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,7 @@ public class ParameterizedTypeUnitTests {
 		assertTrue(first.equals(second));
 	}
 
-	/**
-	 * @see DATACMNS-88
-	 */
-	@Test
+	@Test // DATACMNS-88
 	public void resolvesMapValueTypeCorrectly() {
 
 		TypeInformation<Foo> type = ClassTypeInformation.from(Foo.class);
@@ -92,20 +89,14 @@ public class ParameterizedTypeUnitTests {
 		assertThat(propertyType.getMapValueType().getType(), is(typeCompatibleWith(Locale.class)));
 	}
 
-	/**
-	 * @see DATACMNS-446
-	 */
-	@Test
+	@Test // DATACMNS-446
 	public void createsToStringRepresentation() {
 
 		assertThat(from(Foo.class).getProperty("param").toString(),
 				is("org.springframework.data.util.ParameterizedTypeUnitTests$Localized<java.lang.String>"));
 	}
 
-	/**
-	 * @see DATACMNS-485
-	 */
-	@Test
+	@Test // DATACMNS-485
 	@SuppressWarnings("rawtypes")
 	public void hashCodeShouldBeConsistentWithEqualsForResolvedTypes() {
 
@@ -116,10 +107,7 @@ public class ParameterizedTypeUnitTests {
 		assertThat(first.hashCode(), is(second.hashCode()));
 	}
 
-	/**
-	 * @see DATACMNS-485
-	 */
-	@Test
+	@Test // DATACMNS-485
 	@SuppressWarnings("rawtypes")
 	public void getActualTypeShouldNotUnwrapParameterizedTypes() {
 
@@ -127,10 +115,7 @@ public class ParameterizedTypeUnitTests {
 		assertThat(type.getActualType(), is(type));
 	}
 
-	/**
-	 * @see DATACMNS-697
-	 */
-	@Test
+	@Test // DATACMNS-697
 	public void usesLocalGenericInformationOfFields() {
 
 		TypeInformation<NormalizedProfile> information = ClassTypeInformation.from(NormalizedProfile.class);
@@ -138,10 +123,7 @@ public class ParameterizedTypeUnitTests {
 		assertThat(valueType.getProperty("value").getType(), is(typeCompatibleWith(Education.class)));
 	}
 
-	/**
-	 * @see DATACMNS-899
-	 */
-	@Test
+	@Test // DATACMNS-899
 	public void returnsNullMapValueTypeForNonMapProperties(){
 
 		TypeInformation<?> valueType = ClassTypeInformation.from(Bar.class).getProperty("param");

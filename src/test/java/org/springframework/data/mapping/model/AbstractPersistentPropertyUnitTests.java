@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,10 +58,7 @@ public class AbstractPersistentPropertyUnitTests {
 		typeHolder = new SimpleTypeHolder();
 	}
 
-	/**
-	 * @see DATACMNS-68
-	 */
-	@Test
+	@Test // DATACMNS-68
 	public void discoversComponentTypeCorrectly() throws Exception {
 
 		Field field = ReflectionUtils.findField(TestClassComplex.class, "testClassSet");
@@ -70,10 +67,7 @@ public class AbstractPersistentPropertyUnitTests {
 		property.getComponentType();
 	}
 
-	/**
-	 * @see DATACMNS-101
-	 */
-	@Test
+	@Test // DATACMNS-101
 	public void returnsNestedEntityTypeCorrectly() {
 
 		Field field = ReflectionUtils.findField(TestClassComplex.class, "testClassSet");
@@ -82,10 +76,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getPersistentEntityType().iterator().hasNext(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-132
-	 */
-	@Test
+	@Test // DATACMNS-132
 	public void isEntityWorksForUntypedMaps() throws Exception {
 
 		Field field = ReflectionUtils.findField(TestClassComplex.class, "map");
@@ -93,10 +84,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.isEntity(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-132
-	 */
-	@Test
+	@Test // DATACMNS-132
 	public void isEntityWorksForUntypedCollection() throws Exception {
 
 		Field field = ReflectionUtils.findField(TestClassComplex.class, "collection");
@@ -104,10 +92,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.isEntity(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-121
-	 */
-	@Test
+	@Test // DATACMNS-121
 	public void considersPropertiesEqualIfFieldEquals() {
 
 		Field first = ReflectionUtils.findField(FirstConcrete.class, "genericField");
@@ -120,10 +105,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(firstProperty.hashCode(), is(secondProperty.hashCode()));
 	}
 
-	/**
-	 * @see DATACMNS-180
-	 */
-	@Test
+	@Test // DATACMNS-180
 	public void doesNotConsiderJavaTransientFieldsTransient() {
 
 		Field transientField = ReflectionUtils.findField(TestClassComplex.class, "transientField");
@@ -132,10 +114,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.isTransient(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-206
-	 */
-	@Test
+	@Test // DATACMNS-206
 	public void findsSimpleGettersAndASetters() {
 
 		Field field = ReflectionUtils.findField(AccessorTestClass.class, "id");
@@ -146,10 +125,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getSetter(), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-206
-	 */
-	@Test
+	@Test // DATACMNS-206
 	public void doesNotUseInvalidGettersAndASetters() {
 
 		Field field = ReflectionUtils.findField(AccessorTestClass.class, "anotherId");
@@ -160,10 +136,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getSetter(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-206
-	 */
-	@Test
+	@Test // DATACMNS-206
 	public void usesCustomGetter() {
 
 		Field field = ReflectionUtils.findField(AccessorTestClass.class, "yetAnotherId");
@@ -174,10 +147,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getSetter(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-206
-	 */
-	@Test
+	@Test // DATACMNS-206
 	public void usesCustomSetter() {
 
 		Field field = ReflectionUtils.findField(AccessorTestClass.class, "yetYetAnotherId");
@@ -188,10 +158,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getSetter(), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-206
-	 */
-	@Test
+	@Test // DATACMNS-206
 	public void returnsNullGetterAndSetterIfNoPropertyDescriptorGiven() {
 
 		Field field = ReflectionUtils.findField(AccessorTestClass.class, "id");
@@ -202,10 +169,7 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getSetter(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-337
-	 */
-	@Test
+	@Test // DATACMNS-337
 	public void resolvesActualType() {
 
 		SamplePersistentProperty property = getProperty(Sample.class, "person");
@@ -221,50 +185,35 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getActualType(), is((Object) Person.class));
 	}
 
-	/**
-	 * @see DATACMNS-462
-	 */
-	@Test
+	@Test // DATACMNS-462
 	public void considersCollectionPropertyEntitiesIfComponentTypeIsEntity() {
 
 		SamplePersistentProperty property = getProperty(Sample.class, "persons");
 		assertThat(property.isEntity(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-462
-	 */
-	@Test
+	@Test // DATACMNS-462
 	public void considersMapPropertyEntitiesIfValueTypeIsEntity() {
 
 		SamplePersistentProperty property = getProperty(Sample.class, "personMap");
 		assertThat(property.isEntity(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-462
-	 */
-	@Test
+	@Test // DATACMNS-462
 	public void considersArrayPropertyEntitiesIfComponentTypeIsEntity() {
 
 		SamplePersistentProperty property = getProperty(Sample.class, "personArray");
 		assertThat(property.isEntity(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-462
-	 */
-	@Test
+	@Test // DATACMNS-462
 	public void considersCollectionPropertySimpleIfComponentTypeIsSimple() {
 
 		SamplePersistentProperty property = getProperty(Sample.class, "strings");
 		assertThat(property.isEntity(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-562
-	 */
-	@Test
+	@Test // DATACMNS-562
 	public void doesNotConsiderPropertyWithTreeMapMapValueAnEntity() {
 
 		SamplePersistentProperty property = getProperty(TreeMapWrapper.class, "map");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,18 +29,12 @@ import org.springframework.util.ReflectionUtils;
  */
 public class AnnotationDetectionFieldCallbackUnitTests {
 
-	/**
-	 * @see DATACMNS-616
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-616
 	public void rejectsNullAnnotationType() {
 		new AnnotationDetectionFieldCallback(null);
 	}
 
-	/**
-	 * @see DATACMNS-616
-	 */
-	@Test
+	@Test // DATACMNS-616
 	@SuppressWarnings("rawtypes")
 	public void looksUpValueFromPrivateField() {
 
@@ -51,10 +45,7 @@ public class AnnotationDetectionFieldCallbackUnitTests {
 		assertThat(callback.getValue(new Sample("foo")), is((Object) "foo"));
 	}
 
-	/**
-	 * @see DATACMNS-616
-	 */
-	@Test
+	@Test // DATACMNS-616
 	public void returnsNullForObjectNotContainingAFieldWithTheConfiguredAnnotation() {
 
 		AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(Autowired.class);

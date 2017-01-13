@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,7 @@ import org.junit.Test;
  */
 public class PairUnitTests {
 
-	/**
-	 * @see DATACMNS-790
-	 */
-	@Test
+	@Test // DATACMNS-790
 	public void setsUpSimpleInstance() {
 
 		Pair<Integer, Integer> pair = Pair.of(1, 2);
@@ -39,26 +36,17 @@ public class PairUnitTests {
 		assertThat(pair.getSecond(), is(2));
 	}
 
-	/**
-	 * @see DATACMNS-790
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-790
 	public void rejectsNullFirstElement() {
 		Pair.of(null, 1);
 	}
 
-	/**
-	 * @see DATACMNS-790
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-790
 	public void rejectsNullSecondElement() {
 		Pair.of(1, null);
 	}
 
-	/**
-	 * @see DATACMNS-790
-	 */
-	@Test
+	@Test // DATACMNS-790
 	public void hasCorrectEquals() {
 
 		Pair<Integer, Integer> first = Pair.of(1, 2);
@@ -69,10 +57,7 @@ public class PairUnitTests {
 		assertThat(second, is(first));
 	}
 
-	/**
-	 * @see DATACMNS-790
-	 */
-	@Test
+	@Test // DATACMNS-790
 	public void hasCorrectHashCode() {
 
 		Pair<Integer, Integer> first = Pair.of(1, 2);

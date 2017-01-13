@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,10 +120,7 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 		assertThat(twoLegs.getLength(), is(2));
 	}
 
-	/**
-	 * @see DATACMNS-444
-	 */
-	@Test
+	@Test // DATACMNS-444
 	public void skipsMappedPropertyNameIfConverterReturnsNull() {
 
 		String result = twoLegs.toDotPath(new Converter<T, String>() {
@@ -137,10 +134,7 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 		assertThat(result, is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-444
-	 */
-	@Test
+	@Test // DATACMNS-444
 	public void skipsMappedPropertyNameIfConverterReturnsEmptyStrings() {
 
 		String result = twoLegs.toDotPath(new Converter<T, String>() {

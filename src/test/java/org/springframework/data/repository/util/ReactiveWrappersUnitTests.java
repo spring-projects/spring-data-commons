@@ -33,10 +33,7 @@ import rx.Single;
  */
 public class ReactiveWrappersUnitTests {
 	
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void isSingleLikeShouldReportCorrectNoTypes() {
 
 		assertThat(ReactiveWrappers.isNoValueType(Mono.class)).isFalse();
@@ -51,10 +48,7 @@ public class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Observable.class)).isFalse();
 	}
 	
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void isSingleLikeShouldReportCorrectSingleTypes() {
 
 		assertThat(ReactiveWrappers.isSingleValueType(Mono.class)).isTrue();
@@ -70,10 +64,7 @@ public class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Observable.class)).isFalse();
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void isCollectionLikeShouldReportCorrectCollectionTypes() {
 
 		assertThat(ReactiveWrappers.isMultiValueType(Mono.class)).isFalse();

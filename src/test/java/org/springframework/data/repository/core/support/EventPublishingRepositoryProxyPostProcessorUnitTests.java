@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,26 +55,17 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Mock ApplicationEventPublisher publisher;
 	@Mock MethodInvocation invocation;
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-928
 	public void rejectsNullAggregateTypes() {
 		EventPublishingMethod.of(null);
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void publishingEventsForNullIsNoOp() {
 		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(null, publisher);
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void exposesEventsExposedByEntityToPublisher() {
 
 		SomeEvent first = new SomeEvent();
@@ -87,10 +78,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(publisher).publishEvent(eq(second));
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void exposesSingleEventByEntityToPublisher() {
 
 		SomeEvent event = new SomeEvent();
@@ -101,10 +89,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(publisher, times(1)).publishEvent(event);
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void doesNotExposeNullEvent() {
 
 		OneEvent entity = OneEvent.of(null);
@@ -114,18 +99,12 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(publisher, times(0)).publishEvent(any());
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void doesNotCreatePublishingMethodIfNoAnnotationDetected() {
 		assertThat(EventPublishingMethod.of(Object.class), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void interceptsSaveMethod() throws Throwable {
 
 		doReturn(SampleRepository.class.getMethod("save", Object.class)).when(invocation).getMethod();
@@ -141,10 +120,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(publisher).publishEvent(event);
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void doesNotInterceptNonSaveMethod() throws Throwable {
 
 		doReturn(SampleRepository.class.getMethod("findOne", Serializable.class)).when(invocation).getMethod();
@@ -156,10 +132,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(publisher, never()).publishEvent(any());
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void registersAdviceIfDomainTypeExposesEvents() {
 
 		RepositoryInformation information = new DummyRepositoryInformation(SampleRepository.class);
@@ -172,10 +145,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(factory).addAdvice(any(EventPublishingMethodInterceptor.class));
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void doesNotAddAdviceIfDomainTypeDoesNotExposeEvents() {
 
 		RepositoryInformation information = new DummyRepositoryInformation(CrudRepository.class);
@@ -188,10 +158,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(factory, never()).addAdvice(any(Advice.class));
 	}
 
-	/**
-	 * @see DATACMNS-928
-	 */
-	@Test
+	@Test // DATACMNS-928
 	public void publishesEventsForCallToSaveWithIterable() throws Throwable {
 
 		SomeEvent event = new SomeEvent();

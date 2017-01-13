@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,74 +63,47 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 		this.customer = projectionFactory.createProjection(Customer.class, new ByteArrayInputStream(json.getBytes()));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessSimpleProperty() {
 		assertThat(customer.getFirstname(), is("Dave"));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessPropertyWithExplicitAnnotation() {
 		assertThat(customer.getBar(), is("Dave"));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessPropertyWithComplexReturnType() {
 		assertThat(customer.getAddress(), is(new Address("01097", "Dresden")));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessComplexPropertyWithProjection() {
 		assertThat(customer.getAddressProjection().getCity(), is("Dresden"));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessPropertyWithNestedJsonPath() {
 		assertThat(customer.getNestedZipCode(), is("01097"));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessCollectionProperty() {
 		assertThat(customer.getAddresses().get(0), is(new Address("01097", "Dresden")));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessPropertyOnNestedProjection() {
 		assertThat(customer.getAddressProjections().get(0).getZipCode(), is("01097"));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessPropertyThatUsesJsonPathProjectionInTurn() {
 		assertThat(customer.getAnotherAddressProjection().getZipCodeButNotCity(), is("01097"));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessCollectionPropertyThatUsesJsonPathProjectionInTurn() {
 
 		List<AnotherAddressProjection> projections = customer.getAnotherAddressProjections();
@@ -139,10 +112,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 		assertThat(projections.get(0).getZipCodeButNotCity(), is("01097"));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessAsCollectionPropertyThatUsesJsonPathProjectionInTurn() {
 
 		Set<AnotherAddressProjection> projections = customer.getAnotherAddressProjectionAsCollection();
@@ -151,10 +121,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 		assertThat(projections.iterator().next().getZipCodeButNotCity(), is("01097"));
 	}
 
-	/**
-	 * @see DATCMNS-885
-	 */
-	@Test
+	@Test // DATCMNS-885
 	public void accessNestedPropertyButStayOnRootLevel() {
 
 		Name name = customer.getName();
@@ -163,10 +130,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 		assertThat(name.getFirstname(), is("Dave"));
 	}
 
-	/**
-	 * @see DATACMNS-885
-	 */
-	@Test
+	@Test // DATACMNS-885
 	public void accessNestedFields() {
 
 		assertThat(customer.getNestedCity(), is("Dresden"));

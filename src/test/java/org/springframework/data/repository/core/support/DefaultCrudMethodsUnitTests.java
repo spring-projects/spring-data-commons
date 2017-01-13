@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,10 +69,7 @@ public class DefaultCrudMethodsUnitTests {
 		assertSaveMethodPresent(type, false);
 	}
 
-	/**
-	 * @see DATACMNS-393
-	 */
-	@Test
+	@Test // DATACMNS-393
 	public void selectsFindAllWithSortParameterOnRepositoryAmongUnsuitableAlternatives() throws Exception {
 
 		Class<RepositoryWithInvalidPagingFallbackToSortFindAll> type = RepositoryWithInvalidPagingFallbackToSortFindAll.class;
@@ -98,10 +95,7 @@ public class DefaultCrudMethodsUnitTests {
 		assertFindAllMethodOn(type, null);
 	}
 
-	/**
-	 * @see DATACMNS-393
-	 */
-	@Test
+	@Test // DATACMNS-393
 	public void detectsOverloadedMethodsCorrectly() throws Exception {
 
 		Class<RepositoryWithAllCrudMethodOverloaded> type = RepositoryWithAllCrudMethodOverloaded.class;
@@ -111,10 +105,7 @@ public class DefaultCrudMethodsUnitTests {
 		assertFindAllMethodOn(type, type.getDeclaredMethod("findAll"));
 	}
 
-	/**
-	 * @see DATACMNS-393
-	 */
-	@Test
+	@Test // DATACMNS-393
 	public void ignoresWrongOverloadedMethods() throws Exception {
 
 		Class<RepositoryWithAllCrudMethodOverloadedWrong> type = RepositoryWithAllCrudMethodOverloadedWrong.class;
@@ -124,28 +115,19 @@ public class DefaultCrudMethodsUnitTests {
 		assertFindAllMethodOn(type, CrudRepository.class.getDeclaredMethod("findAll"));
 	}
 
-	/**
-	 * @see DATACMNS-464
-	 */
-	@Test
+	@Test // DATACMNS-464
 	public void detectsCustomSaveMethod() throws Exception {
 		assertSaveMethodOn(RepositoryWithCustomSave.class, RepositoryWithCustomSave.class.getMethod("save", Domain.class));
 	}
 
-	/**
-	 * @see DATACMNS-539
-	 */
-	@Test
+	@Test // DATACMNS-539
 	public void detectsOverriddenDeleteMethodForEntity() throws Exception {
 
 		assertDeleteMethodOn(RepositoryWithDeleteMethodForEntityOverloaded.class,
 				RepositoryWithDeleteMethodForEntityOverloaded.class.getMethod("delete", Domain.class));
 	}
 
-	/**
-	 * @see DATACMNS-619
-	 */
-	@Test
+	@Test // DATACMNS-619
 	public void exposedMethodsAreAccessible() {
 
 		CrudMethods methods = getMethodsFor(RepositoryWithAllCrudMethodOverloaded.class);
@@ -223,9 +205,7 @@ public class DefaultCrudMethodsUnitTests {
 		Iterable<Domain> findAll(Pageable pageable);
 	}
 
-	/**
-	 * @see DATACMNS-393
-	 */
+	// DATACMNS-393
 	interface RepositoryWithCustomSortingFindAll extends Repository<Domain, Serializable> {
 
 		Iterable<Domain> findAll(Sort sort);
@@ -236,9 +216,7 @@ public class DefaultCrudMethodsUnitTests {
 		Iterable<Domain> findAll(Object pageable);
 	}
 
-	/**
-	 * @see DATACMNS-393
-	 */
+	// DATACMNS-393
 	interface RepositoryWithInvalidPagingFallbackToSortFindAll extends Repository<Domain, Serializable> {
 
 		Iterable<Domain> findAll(Object pageable);
@@ -251,9 +229,7 @@ public class DefaultCrudMethodsUnitTests {
 		void delete(Iterable<? extends Domain> entities);
 	}
 
-	/**
-	 * @see DATACMNS-393
-	 */
+	// DATACMNS-393
 	interface RepositoryWithAllCrudMethodOverloaded extends CrudRepository<Domain, Long> {
 
 		List<Domain> findAll();
@@ -265,9 +241,7 @@ public class DefaultCrudMethodsUnitTests {
 		Domain findOne(Long id);
 	}
 
-	/**
-	 * @see DATACMNS-393
-	 */
+	// DATACMNS-393
 	interface RepositoryWithAllCrudMethodOverloadedWrong extends CrudRepository<Domain, Long> {
 
 		List<Domain> findAll(String s);
@@ -279,9 +253,7 @@ public class DefaultCrudMethodsUnitTests {
 		Domain findOne(Domain o);
 	}
 
-	/**
-	 * @see DATACMNS-539
-	 */
+	// DATACMNS-539
 	interface RepositoryWithDeleteMethodForEntityOverloaded extends CrudRepository<Domain, Long> {
 
 		void delete(Domain entity);

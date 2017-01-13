@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,10 +56,7 @@ public class DefaultRepositoryMetadataUnitTests {
 		new DefaultRepositoryMetadata(Collection.class);
 	}
 
-	/**
-	 * @see DATACMNS-406
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-406
 	public void rejectsUnparameterizedRepositoryInterface() {
 		new DefaultRepositoryMetadata(Repository.class);
 	}
@@ -95,20 +92,14 @@ public class DefaultRepositoryMetadataUnitTests {
 		assertEquals(Integer.class, metadata.getIdType());
 	}
 
-	/**
-	 * @see DATACMNS-442
-	 */
-	@Test
+	@Test // DATACMNS-442
 	public void detectsIdTypeOnIntermediateRepository() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		assertEquals(Long.class, metadata.getIdType());
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	public void discoversDomainTypeOnReturnTypeWrapper() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(OptionalRepository.class);
@@ -117,10 +108,7 @@ public class DefaultRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
-	/**
-	 * @see DATACMNS-483
-	 */
-	@Test
+	@Test // DATACMNS-483
 	public void discoversDomainTypeOnNestedReturnTypeWrapper() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(OptionalRepository.class);
@@ -129,10 +117,7 @@ public class DefaultRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
-	/**
-	 * @see DATACMNS-501
-	 */
-	@Test
+	@Test // DATACMNS-501
 	public void discoversDomainAndIdTypeForIntermediateRepository() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(IdTypeFixingRepository.class);

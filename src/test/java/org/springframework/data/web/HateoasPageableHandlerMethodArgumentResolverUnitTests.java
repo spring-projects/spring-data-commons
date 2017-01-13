@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		assertUriStringFor(REFERENCE_WITH_SORT_FIELDS, basicString + "&sort=firstname,lastname,asc");
 	}
 
-	/**
-	 * @see DATACMNS-343
-	 */
-	@Test
+	@Test // DATACMNS-343
 	public void replacesExistingPaginationInformation() throws Exception {
 
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
@@ -69,18 +66,12 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		assertThat(size.get(0), is("20"));
 	}
 
-	/**
-	 * @see DATACMNS-335
-	 */
-	@Test
+	@Test // DATACMNS-335
 	public void preventsPageSizeFromExceedingMayValueIfConfiguredOnWrite() throws Exception {
 		assertUriStringFor(new PageRequest(0, 200), "page=0&size=100");
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void appendsTemplateVariablesCorrectly() {
 
 		assertTemplateEnrichment("/foo", "{?page,size,sort}");
@@ -91,10 +82,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		assertTemplateEnrichment("/foo?page=1&size=10&sort=foo,asc", "");
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void returnsCustomizedTemplateVariables() {
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/foo").build();
@@ -106,10 +94,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests extends
 		assertThat(variables, is("{?foo,size,sort}"));
 	}
 
-	/**
-	 * @see DATACMNS-563
-	 */
-	@Test
+	@Test // DATACMNS-563
 	public void enablingOneIndexedParameterReturnsOneForFirstPage() {
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();

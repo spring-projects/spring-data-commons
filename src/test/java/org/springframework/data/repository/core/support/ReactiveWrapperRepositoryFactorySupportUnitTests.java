@@ -53,10 +53,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		factory = new DummyRepositoryFactory(backingRepo);
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void invokesCustomMethodIfItRedeclaresACRUDOne() {
 
 		ObjectRepository repository = factory.getRepository(ObjectRepository.class, customImplementation);
@@ -66,10 +63,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		verify(backingRepo, times(0)).findOne(1);
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void callsMethodOnBaseImplementationWithExactArguments() {
 
 		Serializable id = 1L;
@@ -79,10 +73,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		verify(backingRepo, times(1)).exists(id);
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void doesNotCallMethodOnBaseEvenIfDeclaredTypeCouldBeConverted() {
 
 		Long id = 1L;
@@ -92,10 +83,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		verifyZeroInteractions(backingRepo);
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void callsMethodOnBaseImplementationWithTypeConversion() {
 

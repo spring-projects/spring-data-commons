@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,28 +102,17 @@ public class SortUnitTests {
 		assertThat(sort, hasItem(new Sort.Order("foo")));
 	}
 
-	/**
-	 * @see DATACMNS-281
-	 * @author Kevin Raymond
-	 */
-	@Test
+	@Test // DATACMNS-281
 	public void configuresIgnoreCaseForOrder() {
 		assertThat(new Order(Direction.ASC, "foo").ignoreCase().isIgnoreCase(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-281
-	 * @author Kevin Raymond
-	 */
-	@Test
+	@Test // DATACMNS-281
 	public void orderDoesNotIgnoreCaseByDefault() {
 		assertThat(new Order(Direction.ASC, "foo").isIgnoreCase(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-436
-	 */
-	@Test
+	@Test // DATACMNS-436
 	public void ordersWithDifferentIgnoreCaseDoNotEqual() {
 
 		Order foo = new Order("foo");
@@ -133,42 +122,27 @@ public class SortUnitTests {
 		assertThat(foo.hashCode(), is(not(fooIgnoreCase.hashCode())));
 	}
 
-	/**
-	 * @see DATACMNS-491
-	 */
-	@Test
+	@Test // DATACMNS-491
 	public void orderWithNullHandlingHintNullsFirst() {
 		assertThat(new Order("foo").nullsFirst().getNullHandling(), is(NULLS_FIRST));
 	}
 
-	/**
-	 * @see DATACMNS-491
-	 */
-	@Test
+	@Test // DATACMNS-491
 	public void orderWithNullHandlingHintNullsLast() {
 		assertThat(new Order("foo").nullsLast().getNullHandling(), is(NULLS_LAST));
 	}
 
-	/**
-	 * @see DATACMNS-491
-	 */
-	@Test
+	@Test // DATACMNS-491
 	public void orderWithNullHandlingHintNullsNative() {
 		assertThat(new Order("foo").nullsNative().getNullHandling(), is(NATIVE));
 	}
 
-	/**
-	 * @see DATACMNS-491
-	 */
-	@Test
+	@Test // DATACMNS-491
 	public void orderWithDefaultNullHandlingHint() {
 		assertThat(new Order("foo").getNullHandling(), is(NATIVE));
 	}
 
-	/**
-	 * @see DATACMNS-908
-	 */
-	@Test
+	@Test // DATACMNS-908
 	public void createsNewOrderForDifferentProperty() {
 
 		Order source = new Order(Direction.DESC, "foo").nullsFirst().ignoreCase();

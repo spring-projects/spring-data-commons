@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Unit tests for {@link ClassGeneratingPropertyAccessorFactory}
  *
  * @author Mark Paluch
- * @see DATACMNS-809
  */
 @RunWith(Parameterized.class)
 public class ClassGeneratingPropertyAccessorFactoryTests {
@@ -96,11 +95,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		return parameters;
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACMNS-809
 	public void shouldSetAndGetProperty() throws Exception {
 
 		PersistentProperty<?> property = getProperty(bean, propertyName);
@@ -110,11 +105,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		assertThat(persistentPropertyAccessor.getProperty(property), is(equalTo((Object) "value")));
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACMNS-809
 	@SuppressWarnings("rawtypes")
 	public void accessorShouldDeclareConstructor() throws Exception {
 
@@ -126,18 +117,12 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		assertThat(declaredConstructors[0].getParameterTypes()[0], is(equalTo((Class) expectedConstructorType)));
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-809
 	public void shouldFailOnNullBean() {
 		factory.getPropertyAccessor(mappingContext.getPersistentEntity(bean.getClass()), null);
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = UnsupportedOperationException.class) // DATACMNS-809
 	public void getPropertyShouldFailOnUnhandledProperty() {
 
 		PersistentProperty<?> property = getProperty(new Dummy(), "dummy");
@@ -146,10 +131,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		persistentPropertyAccessor.getProperty(property);
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = UnsupportedOperationException.class) // DATACMNS-809
 	public void setPropertyShouldFailOnUnhandledProperty() {
 
 		PersistentProperty<?> property = getProperty(new Dummy(), "dummy");
@@ -158,10 +140,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		persistentPropertyAccessor.setProperty(property, null);
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
-	@Test
+	@Test // DATACMNS-809
 	public void shouldUseClassPropertyAccessorFactory() throws Exception {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
@@ -182,9 +161,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		return persistentEntity.getPersistentProperty(name);
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
+	// DATACMNS-809
 	@SuppressWarnings("unused")
 	private static class InnerPrivateType {
 
@@ -244,16 +221,12 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
+	// DATACMNS-809
 	public static class InnerTypeWithPrivateAncestor extends InnerPrivateType {
 
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
+	// DATACMNS-809
 	@SuppressWarnings("unused")
 	static class InnerPackageDefaultType {
 
@@ -313,9 +286,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
+	// DATACMNS-809
 	@SuppressWarnings("unused")
 	protected static class InnerProtectedType {
 
@@ -375,9 +346,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
+	// DATACMNS-809
 	@SuppressWarnings("unused")
 	public static class InnerPublicType {
 
@@ -439,9 +408,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 	public static class SubtypeOfTypeInOtherPackage extends TypeInOtherPackage {}
 
-	/**
-	 * @see DATACMNS-809
-	 */
+	// DATACMNS-809
 	@SuppressWarnings("unused")
 	private static class Dummy {
 

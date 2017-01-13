@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,26 +28,17 @@ import org.springframework.stereotype.Component;
  */
 public class AnnotationAttributeUnitTests {
 
-	/**
-	 * @see DATACMNS-607
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-607
 	public void rejectsNullAnnotationType() {
 		new AnnotationAttribute(null);
 	}
 
-	/**
-	 * @see DATACMNS-607
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-607
 	public void rejectsNullAnnotationTypeForAnnotationAndAttributeName() {
 		new AnnotationAttribute(null, "name");
 	}
 
-	/**
-	 * @see DATACMNS-607
-	 */
-	@Test
+	@Test // DATACMNS-607
 	public void looksUpAttributeFromAnnotatedElement() {
 
 		AnnotationAttribute attribute = new AnnotationAttribute(Component.class);

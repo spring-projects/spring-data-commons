@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,26 +72,17 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 		assertThat(user.modifiedDate, is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-365
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-365
 	public void rejectsNullMappingContext() {
 		new IsNewAwareAuditingHandler((PersistentEntities) null);
 	}
 
-	/**
-	 * @see DATACMNS-365
-	 */
-	@Test
+	@Test // DATACMNS-365
 	public void setsUpHandlerWithMappingContext() {
 		new IsNewAwareAuditingHandler(new PersistentEntities(Collections.<MappingContext<?, ?>> emptySet()));
 	}
 
-	/**
-	 * @see DATACMNS-638
-	 */
-	@Test
+	@Test // DATACMNS-638
 	public void handlingNullIsANoOp() {
 
 		IsNewAwareAuditingHandler handler = getHandler();

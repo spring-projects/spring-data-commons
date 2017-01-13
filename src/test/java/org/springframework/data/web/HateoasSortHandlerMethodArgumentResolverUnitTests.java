@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,18 +44,12 @@ public class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandl
 				"sort=foo,bar,asc&sort=foobar,desc");
 	}
 
-	/**
-	 * @see DATACMNS-407
-	 */
-	@Test
+	@Test // DATACMNS-407
 	public void replacesExistingRequestParameters() throws Exception {
 		assertUriStringFor(SORT, "/?sort=firstname,lastname,desc", "/?sort=foo,asc");
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void returnCorrectTemplateVariables() {
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/").build();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import org.springframework.test.util.ReflectionTestUtils;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
- * @see DATACMNS-809
  */
 @RunWith(Parameterized.class)
 public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
@@ -124,10 +123,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		return parameters;
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
-	@Test
+	@Test // DATACMNS-809
 	public void shouldSetAndGetProperty() throws Exception {
 
 		PersistentProperty<?> property = getProperty(bean, propertyName);
@@ -137,10 +133,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		assertThat(persistentPropertyAccessor.getProperty(property), is(equalTo((Object) value)));
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
-	@Test
+	@Test // DATACMNS-809
 	public void shouldUseClassPropertyAccessorFactory() throws Exception {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
@@ -161,9 +154,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		return persistentEntity.getPersistentProperty(name);
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
+	// DATACMNS-809
 	@AccessType(Type.FIELD)
 	public static class FieldAccess {
 
@@ -211,9 +202,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		String stringArray[];
 	}
 
-	/**
-	 * @see DATACMNS-809
-	 */
+	// DATACMNS-809
 	@AccessType(Type.PROPERTY)
 	@Data
 	public static class PropertyAccess {
@@ -262,9 +251,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		String stringArray[];
 	}
 
-	/**
-	 * @see DATACMNS-916
-	 */
+	// DATACMNS-916
 	@AccessType(Type.FIELD)
 	private final static class PrivateFinalFieldAccess {
 
@@ -312,9 +299,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		String stringArray[];
 	}
 
-	/**
-	 * @see DATACMNS-916
-	 */
+	// DATACMNS-916
 	@AccessType(Type.PROPERTY)
 	@Data
 	private final static class PrivateFinalPropertyAccess {

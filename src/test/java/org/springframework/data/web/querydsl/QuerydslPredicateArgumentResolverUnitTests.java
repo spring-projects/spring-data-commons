@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,44 +71,29 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		request = new MockHttpServletRequest();
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void supportsParameterReturnsTrueWhenMethodParameterIsPredicateAndAnnotatedCorrectly() {
 		assertThat(resolver.supportsParameter(getMethodParameterFor("simpleFind", Predicate.class)), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void supportsParameterReturnsTrueWhenMethodParameterIsPredicateButNotAnnotatedAsSuch() {
 		assertThat(resolver.supportsParameter(getMethodParameterFor("predicateWithoutAnnotation", Predicate.class)),
 				is(true));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
 	public void supportsParameterShouldThrowExceptionWhenMethodParameterIsNoPredicateButAnnotatedAsSuch() {
 		resolver.supportsParameter(getMethodParameterFor("nonPredicateWithAnnotation", String.class));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void supportsParameterReturnsFalseWhenMethodParameterIsNoPredicate() {
 		assertThat(resolver.supportsParameter(getMethodParameterFor("nonPredicateWithoutAnnotation", String.class)),
 				is(false));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
 
 		request.addParameter("firstname", "rand");
@@ -119,10 +104,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand")));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void resolveArgumentShouldCreateMultipleParametersPredicateCorrectly() throws Exception {
 
 		request.addParameter("firstname", "rand");
@@ -134,10 +116,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("al'thor"))));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void resolveArgumentShouldCreateNestedObjectPredicateCorrectly() throws Exception {
 
 		request.addParameter("address.city", "two rivers");
@@ -150,10 +129,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(predicate, is((Predicate) eq));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void resolveArgumentShouldResolveTypePropertyFromPageCorrectly() throws Exception {
 
 		request.addParameter("address.city", "tar valon");
@@ -164,10 +140,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(predicate, is((Predicate) QUser.user.address.city.eq("tar valon")));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void resolveArgumentShouldHonorCustomSpecification() throws Exception {
 
 		request.addParameter("firstname", "egwene");
@@ -180,10 +153,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 				.and(QUser.user.lastname.toLowerCase().eq("al'vere"))));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void shouldCreatePredicateForNonStringPropertyCorrectly() throws Exception {
 
 		request.addParameter("inceptionYear", "978");
@@ -194,10 +164,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(predicate, is((Predicate) QUser.user.inceptionYear.eq(978L)));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void shouldCreatePredicateForNonStringListPropertyCorrectly() throws Exception {
 
 		request.addParameter("inceptionYear", new String[] { "978", "998" });
@@ -208,10 +175,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(predicate, is((Predicate) QUser.user.inceptionYear.in(978L, 998L)));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void shouldExcludePropertiesCorrectly() throws Exception {
 
 		request.addParameter("address.street", "downhill");
@@ -223,10 +187,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(predicate.toString(), is(QUser.user.inceptionYear.eq(973L).toString()));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	@SuppressWarnings("rawtypes")
 	public void extractTypeInformationShouldUseTypeExtractedFromMethodReturnTypeIfPredicateNotAnnotated() {
 
@@ -236,10 +197,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		assertThat(type, is((TypeInformation) ClassTypeInformation.from(User.class)));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	@SuppressWarnings("rawtypes")
 	public void detectsDomainTypesCorrectly() {
 

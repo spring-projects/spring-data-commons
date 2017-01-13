@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,44 +58,29 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		entity = context.getPersistentEntity(Sample.class);
 	}
 
-	/**
-	 * @see DATACMNS-269
-	 */
-	@Test
+	@Test // DATACMNS-269
 	public void discoversAnnotationOnField() {
 		assertAnnotationPresent(MyAnnotation.class, entity.getPersistentProperty("field"));
 	}
 
-	/**
-	 * @see DATACMNS-269
-	 */
-	@Test
+	@Test // DATACMNS-269
 	public void discoversAnnotationOnGetters() {
 		assertAnnotationPresent(MyAnnotation.class, entity.getPersistentProperty("getter"));
 	}
 
-	/**
-	 * @see DATACMNS-269
-	 */
-	@Test
+	@Test // DATACMNS-269
 	public void discoversAnnotationOnSetters() {
 		assertAnnotationPresent(MyAnnotation.class, entity.getPersistentProperty("setter"));
 	}
 
-	/**
-	 * @see DATACMNS-269
-	 */
-	@Test
+	@Test // DATACMNS-269
 	public void findsMetaAnnotation() {
 
 		assertAnnotationPresent(MyId.class, entity.getPersistentProperty("id"));
 		assertAnnotationPresent(Id.class, entity.getPersistentProperty("id"));
 	}
 
-	/**
-	 * @see DATACMNS-282
-	 */
-	@Test
+	@Test // DATACMNS-282
 	public void populatesAnnotationCacheWithDirectAnnotationsOnCreation() {
 
 		SamplePersistentProperty property = entity.getPersistentProperty("meta");
@@ -111,10 +96,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThat(cache.containsKey(MyAnnotation.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-282
-	 */
-	@Test
+	@Test // DATACMNS-282
 	public void discoversAmbiguousMappingUsingDirectAnnotationsOnAccessors() {
 
 		try {
@@ -125,90 +107,57 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		}
 	}
 
-	/**
-	 * @see DATACMNS-243
-	 */
-	@Test
+	@Test // DATACMNS-243
 	public void defaultsToFieldAccess() {
 		assertThat(getProperty(FieldAccess.class, "name").usePropertyAccess(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-243
-	 */
-	@Test
+	@Test // DATACMNS-243
 	public void usesAccessTypeDeclaredOnTypeAsDefault() {
 		assertThat(getProperty(PropertyAccess.class, "firstname").usePropertyAccess(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-243
-	 */
-	@Test
+	@Test // DATACMNS-243
 	public void propertyAnnotationOverridesTypeConfiguration() {
 		assertThat(getProperty(PropertyAccess.class, "lastname").usePropertyAccess(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-243
-	 */
-	@Test
+	@Test // DATACMNS-243
 	public void fieldAnnotationOverridesTypeConfiguration() {
 		assertThat(getProperty(PropertyAccess.class, "emailAddress").usePropertyAccess(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-243
-	 */
-	@Test
+	@Test // DATACMNS-243
 	public void doesNotRejectSameAnnotationIfItsEqualOnBothFieldAndAccessor() {
 		context.getPersistentEntity(AnotherInvalidSample.class);
 	}
 
-	/**
-	 * @see DATACMNS-534
-	 */
-	@Test
+	@Test // DATACMNS-534
 	public void treatsNoAnnotationCorrectly() {
 		assertThat(getProperty(ClassWithReadOnlyProperties.class, "noAnnotations").isWritable(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-534
-	 */
-	@Test
+	@Test // DATACMNS-534
 	public void treatsTransientAsNotExisting() {
 		assertThat(getProperty(ClassWithReadOnlyProperties.class, "transientProperty"), nullValue());
 	}
 
-	/**
-	 * @see DATACMNS-534
-	 */
-	@Test
+	@Test // DATACMNS-534
 	public void treatsReadOnlyAsNonWritable() {
 		assertThat(getProperty(ClassWithReadOnlyProperties.class, "readOnlyProperty").isWritable(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-534
-	 */
-	@Test
+	@Test // DATACMNS-534
 	public void considersPropertyWithReadOnlyMetaAnnotationReadOnly() {
 		assertThat(getProperty(ClassWithReadOnlyProperties.class, "customReadOnlyProperty").isWritable(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-556
-	 */
-	@Test
+	@Test // DATACMNS-556
 	public void doesNotRejectNonSpringDataAnnotationsUsedOnBothFieldAndAccessor() {
 		getProperty(TypeWithCustomAnnotationsOnBothFieldAndAccessor.class, "field");
 	}
 
-	/**
-	 * @see DATACMNS-677
-	 */
-	@Test
+	@Test // DATACMNS-677
 	@SuppressWarnings("unchecked")
 	public void cachesNonPresenceOfAnnotationOnField() {
 
@@ -222,10 +171,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThat(field.get(MyAnnotation.class), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-825
-	 */
-	@Test
+	@Test // DATACMNS-825
 	public void composedAnnotationWithAliasForGetCachedCorrectly() {
 
 		SamplePersistentProperty property = entity.getPersistentProperty("metaAliased");
@@ -241,10 +187,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThat(cache.containsKey(MyAnnotation.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-825
-	 */
-	@Test
+	@Test // DATACMNS-825
 	public void composedAnnotationWithAliasShouldHaveSynthesizedAttributeValues() {
 
 		SamplePersistentProperty property = entity.getPersistentProperty("metaAliased");

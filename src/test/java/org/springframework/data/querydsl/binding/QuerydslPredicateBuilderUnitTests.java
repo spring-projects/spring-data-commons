@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,35 +64,23 @@ public class QuerydslPredicateBuilderUnitTests {
 		this.values = new LinkedMultiValueMap<String, String>();
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
 	public void rejectsNullConversionService() {
 		new QuerydslPredicateBuilder(null, SimpleEntityPathResolver.INSTANCE);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
 	public void getPredicateShouldThrowErrorWhenBindingContextIsNull() {
 		builder.getPredicate(null, values, null);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void getPredicateShouldReturnEmptyPredicateWhenPropertiesAreEmpty() {
 
 		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
 
 		values.add("firstname", "Oliver");
@@ -107,10 +95,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		assertThat(result, hasItem(Users.OLIVER));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void resolveArgumentShouldCreateNestedStringParameterPredicateCorrectly() throws Exception {
 
 		values.add("address.city", "Linz");
@@ -125,10 +110,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		assertThat(result, hasItem(Users.CHRISTOPH));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void ignoresNonDomainTypeProperties() {
 
 		values.add("firstname", "rand");
@@ -139,10 +121,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		assertThat(predicate, is((Predicate) QUser.user.firstname.eq("rand")));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void forwardsNullForEmptyParameterToSingleValueBinder() {
 
 		values.add("lastname", null);
@@ -159,10 +138,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		builder.getPredicate(USER_TYPE, values, bindings);
 	}
 
-	/**
-	 * @see DATACMNS-734
-	 */
-	@Test
+	@Test // DATACMNS-734
 	@SuppressWarnings("unchecked")
 	public void resolvesCommaSeparatedArgumentToArrayCorrectly() {
 
@@ -176,10 +152,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		assertThat((Double[]) (constant.getConstant()), arrayContaining(40.740337D, -73.995146D));
 	}
 
-	/**
-	 * @see DATACMNS-734
-	 */
-	@Test
+	@Test // DATACMNS-734
 	@SuppressWarnings("unchecked")
 	public void leavesCommaSeparatedArgumentUntouchedWhenTargetIsNotAnArray() {
 
@@ -193,10 +166,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		assertThat((String) (constant.getConstant()), equalTo("rivers,two"));
 	}
 
-	/**
-	 * @see DATACMNS-734
-	 */
-	@Test
+	@Test // DATACMNS-734
 	public void bindsDateCorrectly() throws ParseException {
 
 		DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd");
@@ -209,10 +179,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		assertThat(predicate, is((Predicate) QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate())));
 	}
 
-	/**
-	 * @see DATACMNS-883
-	 */
-	@Test
+	@Test // DATACMNS-883
 	public void automaticallyInsertsAnyStepInCollectionReference() {
 
 		values.add("addresses.street", "VALUE");
@@ -222,10 +189,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		assertThat(predicate, is((Predicate) QUser.user.addresses.any().street.eq("VALUE")));
 	}
 
-	/**
-	 * @see DATACMNS-941
-	 */
-	@Test
+	@Test // DATACMNS-941
 	public void buildsPredicateForBindingUsingDowncast() {
 
 		values.add("specialProperty", "VALUE");
@@ -239,10 +203,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		assertThat(predicate, is((Predicate) QUser.user.as(QSpecialUser.class).specialProperty.contains("VALUE")));
 	}
 
-	/**
-	 * @see DATACMNS-941
-	 */
-	@Test
+	@Test // DATACMNS-941
 	public void buildsPredicateForBindingUsingNestedDowncast() {
 
 		values.add("user.specialProperty", "VALUE");

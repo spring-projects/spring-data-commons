@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,18 +39,12 @@ public class MapAccessingMethodInterceptorUnitTests {
 
 	@Mock MethodInvocation invocation;
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
 	public void rejectsNullMap() {
 		new MapAccessingMethodInterceptor(null);
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void forwardsObjectMethodsToBackingMap() throws Throwable {
 
 		Map<String, Object> map = Collections.emptyMap();
@@ -64,10 +58,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 		assertThat(result, is((Object) map.toString()));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void setterInvocationStoresValueInMap() throws Throwable {
 
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -81,10 +72,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 		assertThat(map.get("name"), is((Object) "Foo"));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void getterInvocationReturnsValueFromMap() throws Throwable {
 
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -97,10 +85,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 		assertThat(result, is((Object) "Foo"));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test
+	@Test // DATACMNS-630
 	public void getterReturnsNullIfMapDoesNotContainValue() throws Throwable {
 
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -110,10 +95,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 		assertThat(new MapAccessingMethodInterceptor(map).invoke(invocation), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-630
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
 	public void rejectsNonAccessorInvocation() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("someMethod"));

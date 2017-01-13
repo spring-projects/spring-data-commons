@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -83,26 +83,17 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 		verify(proxyFactory).addAdvice(Mockito.any(TransactionInterceptor.class));
 	}
 
-	/**
-	 * @see DATACMNS-464
-	 */
-	@Test
+	@Test // DATACMNS-464
 	public void fallsBackToTargetMethodTransactionSettings() throws Exception {
 		assertTransactionAttributeFor(SampleImplementation.class);
 	}
 
-	/**
-	 * @see DATACMNS-464
-	 */
-	@Test
+	@Test // DATACMNS-464
 	public void fallsBackToTargetClassTransactionSettings() throws Exception {
 		assertTransactionAttributeFor(SampleImplementationWithClassAnnotation.class);
 	}
 
-	/**
-	 * @see DATACMNS-732
-	 */
-	@Test
+	@Test // DATACMNS-732
 	public void considersJtaTransactional() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("methodWithJtaOneDotTwoAtTransactional");

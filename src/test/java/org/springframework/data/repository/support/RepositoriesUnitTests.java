@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except
@@ -99,10 +99,7 @@ public class RepositoriesUnitTests {
 		new Repositories(null);
 	}
 
-	/**
-	 * @see DATACMNS-256
-	 */
-	@Test
+	@Test // DATACMNS-256
 	public void exposesPersistentEntityForDomainTypes() {
 
 		Repositories repositories = new Repositories(context);
@@ -110,18 +107,12 @@ public class RepositoriesUnitTests {
 		assertThat(repositories.getPersistentEntity(Address.class), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-634
-	 */
-	@Test
+	@Test // DATACMNS-634
 	public void findsRepositoryForSubTypes() {
 		assertThat(new Repositories(context).getPersistentEntity(AdvancedAddress.class), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-673
-	 */
-	@Test
+	@Test // DATACMNS-673
 	public void discoversRepositoryForAlternativeDomainType() {
 
 		RepositoryMetadata metadata = new CustomRepositoryMetadata(SampleRepository.class);
@@ -139,10 +130,7 @@ public class RepositoriesUnitTests {
 		context.close();
 	}
 
-	/**
-	 * @see DATACMNS-794
-	 */
-	@Test
+	@Test // DATACMNS-794
 	public void exposesRepositoryFactoryInformationForRepository() {
 
 		RepositoryInformation information = new Repositories(context).getRepositoryInformation(PersonRepository.class);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,30 +59,21 @@ public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS-47
-	 */
-	@Test
+	@Test // DATACMNS-47
 	public void testBootstrappingWithInheritedConfigClasses() {
 
 		assertThat(context.getBean(MyRepository.class), is(notNullValue()));
 		assertThat(context.getBean(MyOtherRepository.class), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-47
-	 */
-	@Test
+	@Test // DATACMNS-47
 	public void beanDefinitionSourceIsSetForJavaConfigScannedBeans() {
 
 		BeanDefinition definition = context.getBeanDefinition("myRepository");
 		assertThat(definition.getSource(), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-544
-	 */
-	@Test
+	@Test // DATACMNS-544
 	public void registersExtensionAsBeanDefinition() {
 		assertThat(context.getBean(DummyConfigurationExtension.class), is(notNullValue()));
 	}

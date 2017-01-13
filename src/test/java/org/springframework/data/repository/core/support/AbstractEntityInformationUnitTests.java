@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,10 +52,7 @@ public class AbstractEntityInformationUnitTests {
 		assertThat(metadata.isNew(new Object()), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-357
-	 */
-	@Test
+	@Test // DATACMNS-357
 	public void detectsNewStateForPrimitiveIds() {
 
 		FooEn<PrimitiveIdEntity, Serializable> fooEn = new FooEn<PrimitiveIdEntity, Serializable>(PrimitiveIdEntity.class);
@@ -67,10 +64,7 @@ public class AbstractEntityInformationUnitTests {
 		assertThat(fooEn.isNew(entity), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-357
-	 */
-	@Test
+	@Test // DATACMNS-357
 	public void detectsNewStateForPrimitiveWrapperIds() {
 
 		FooEn<PrimitiveWrapperIdEntity, Serializable> fooEn = new FooEn<PrimitiveWrapperIdEntity, Serializable>(
@@ -83,10 +77,7 @@ public class AbstractEntityInformationUnitTests {
 		assertThat(fooEn.isNew(entity), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-357
-	 */
-	@Test
+	@Test // DATACMNS-357
 	public void rejectsUnsupportedPrimitiveIdType() {
 
 		FooEn<UnsupportedPrimitiveIdEntity, ?> information = new FooEn<UnsupportedPrimitiveIdEntity, Boolean>(

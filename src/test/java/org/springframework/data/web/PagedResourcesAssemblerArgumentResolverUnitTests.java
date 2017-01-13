@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,10 +52,7 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		this.resolver = new PagedResourcesAssemblerArgumentResolver(hateoasPageableHandlerMethodArgumentResolver, null);
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void createsPlainAssemblerWithoutContext() throws Exception {
 
 		Method method = Controller.class.getMethod("noContext", PagedResourcesAssembler.class);
@@ -65,40 +62,28 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		assertThat(result, is(not(instanceOf(MethodParameterAwarePagedResourcesAssembler.class))));
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void selectsUniquePageableParameter() throws Exception {
 
 		Method method = Controller.class.getMethod("unique", PagedResourcesAssembler.class, Pageable.class);
 		assertSelectsParameter(method, 1);
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void selectsUniquePageableParameterForQualifiedAssembler() throws Exception {
 
 		Method method = Controller.class.getMethod("unnecessarilyQualified", PagedResourcesAssembler.class, Pageable.class);
 		assertSelectsParameter(method, 1);
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void selectsUniqueQualifiedPageableParameter() throws Exception {
 
 		Method method = Controller.class.getMethod("qualifiedUnique", PagedResourcesAssembler.class, Pageable.class);
 		assertSelectsParameter(method, 1);
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void selectsQualifiedPageableParameter() throws Exception {
 
 		Method method = Controller.class.getMethod("qualified", PagedResourcesAssembler.class, Pageable.class,
@@ -106,34 +91,22 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		assertSelectsParameter(method, 1);
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void rejectsAmbiguousPageableParameters() throws Exception {
 		assertRejectsAmbiguity("unqualifiedAmbiguity");
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void rejectsAmbiguousPageableParametersForQualifiedAssembler() throws Exception {
 		assertRejectsAmbiguity("assemblerQualifiedAmbiguity");
 	}
 
-	/**
-	 * @see DATACMNS-418
-	 */
-	@Test
+	@Test // DATACMNS-418
 	public void rejectsAmbiguityWithoutMatchingQualifiers() throws Exception {
 		assertRejectsAmbiguity("noMatchingQualifiers");
 	}
 
-	/**
-	 * @see DATACMNS-419
-	 */
-	@Test
+	@Test // DATACMNS-419
 	public void doesNotFailForTemplatedMethodMapping() throws Exception {
 
 		Method method = Controller.class.getMethod("methodWithPathVariable", PagedResourcesAssembler.class);
@@ -142,10 +115,7 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		assertThat(result, is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-513
-	 */
-	@Test
+	@Test // DATACMNS-513
 	public void detectsMappingOfInvokedSubType() throws Exception {
 
 		Method method = Controller.class.getMethod("methodWithMapping", PagedResourcesAssembler.class);

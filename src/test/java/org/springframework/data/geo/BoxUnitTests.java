@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,7 @@ public class BoxUnitTests {
 	Box second = new Box(new Point(1d, 1d), new Point(2d, 2d));
 	Box third = new Box(new Point(3d, 3d), new Point(1d, 1d));
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void equalsWorksCorrectly() {
 
 		assertThat(first.equals(second), is(true));
@@ -44,29 +41,20 @@ public class BoxUnitTests {
 		assertThat(first.equals(third), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void hashCodeWorksCorrectly() {
 
 		assertThat(first.hashCode(), is(second.hashCode()));
 		assertThat(first.hashCode(), is(not(third.hashCode())));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void testToString() {
 
 		assertThat(first.toString(), is("Box [Point [x=1.000000, y=1.000000], Point [x=2.000000, y=2.000000]]"));
 	}
 
-	/**
-	 * @see DATACMNS-482
-	 */
-	@Test
+	@Test // DATACMNS-482
 	public void testSerialization() {
 
 		Box serialized = (Box) SerializationUtils.deserialize(SerializationUtils.serialize(first));

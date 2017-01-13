@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,7 @@ public class XmlBeamHttpMessageConverterUnitTests {
 
 	@Mock HttpInputMessage message;
 
-	/**
-	 * @see DATACMNS-885
-	 */
-	@Test
+	@Test // DATACMNS-885
 	public void findsTopLevelElements() throws Exception {
 
 		preparePayload("<user><firstname>Dave</firstname><lastname>Matthews</lastname></user>");
@@ -58,10 +55,7 @@ public class XmlBeamHttpMessageConverterUnitTests {
 		assertThat(customer.getLastname(), is("Matthews"));
 	}
 
-	/**
-	 * @see DATACMNS-885
-	 */
-	@Test
+	@Test // DATACMNS-885
 	public void findsNestedElements() throws Exception {
 
 		preparePayload("<user><username><firstname>Dave</firstname><lastname>Matthews</lastname></username></user>");
@@ -72,34 +66,22 @@ public class XmlBeamHttpMessageConverterUnitTests {
 		assertThat(customer.getLastname(), is("Matthews"));
 	}
 
-	/**
-	 * @see DATACMNS-885
-	 */
-	@Test
+	@Test // DATACMNS-885
 	public void supportsAnnotatedInterface() {
 		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-885
-	 */
-	@Test
+	@Test // DATACMNS-885
 	public void supportsXmlBasedMediaType() {
 		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_ATOM_XML), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-885
-	 */
-	@Test
+	@Test // DATACMNS-885
 	public void doesNotSupportUnannotatedInterface() {
 		assertThat(converter.canRead(UnannotatedInterface.class, MediaType.APPLICATION_XML), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-885
-	 */
-	@Test
+	@Test // DATACMNS-885
 	public void supportsInterfaceAfterLookupForDifferrentMediaType() {
 
 		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_JSON), is(false));

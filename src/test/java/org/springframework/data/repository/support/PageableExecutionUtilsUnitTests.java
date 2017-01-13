@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,10 +41,7 @@ public class PageableExecutionUtilsUnitTests {
 
 	@Mock TotalSupplier totalSupplierMock;
 
-	/**
-	 * @see DATAMCNS-884
-	 */
-	@Test
+	@Test // DATAMCNS-884
 	public void firstPageRequestIsLessThanOneFullPageDoesNotRequireTotal() {
 
 		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), new PageRequest(0, 10),
@@ -55,10 +52,7 @@ public class PageableExecutionUtilsUnitTests {
 		verifyZeroInteractions(totalSupplierMock);
 	}
 
-	/**
-	 * @see DATAMCNS-884
-	 */
-	@Test
+	@Test // DATAMCNS-884
 	public void noPageableRequesDoesNotRequireTotal() {
 
 		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), null, totalSupplierMock);
@@ -69,10 +63,7 @@ public class PageableExecutionUtilsUnitTests {
 		verifyZeroInteractions(totalSupplierMock);
 	}
 
-	/**
-	 * @see DATAMCNS-884
-	 */
-	@Test
+	@Test // DATAMCNS-884
 	public void subsequentPageRequestIsLessThanOneFullPageDoesNotRequireTotal() {
 
 		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), new PageRequest(5, 10),
@@ -84,10 +75,7 @@ public class PageableExecutionUtilsUnitTests {
 		verifyZeroInteractions(totalSupplierMock);
 	}
 
-	/**
-	 * @see DATAMCNS-884
-	 */
-	@Test
+	@Test // DATAMCNS-884
 	public void firstPageRequestHitsUpperBoundRequiresTotal() {
 
 		doReturn(4L).when(totalSupplierMock).get();
@@ -101,10 +89,7 @@ public class PageableExecutionUtilsUnitTests {
 		verify(totalSupplierMock).get();
 	}
 
-	/**
-	 * @see DATAMCNS-884
-	 */
-	@Test
+	@Test // DATAMCNS-884
 	public void subsequentPageRequestHitsUpperBoundRequiresTotal() {
 
 		doReturn(7L).when(totalSupplierMock).get();
@@ -118,10 +103,7 @@ public class PageableExecutionUtilsUnitTests {
 		verify(totalSupplierMock).get();
 	}
 
-	/**
-	 * @see DATAMCNS-884
-	 */
-	@Test
+	@Test // DATAMCNS-884
 	public void subsequentPageRequestWithoutResultRequiresRequireTotal() {
 
 		doReturn(7L).when(totalSupplierMock).get();

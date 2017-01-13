@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,10 +51,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		PARAMETER = new MethodParameter(Controller.class.getMethod("supportedMethod", Sort.class), 0);
 	}
 
-	/**
-	 * @see DATACMNS-351
-	 */
-	@Test
+	@Test // DATACMNS-351
 	public void fallbackToGivenDefaultSort() throws Exception {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
@@ -66,10 +63,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(sort, is(fallbackSort));
 	}
 
-	/**
-	 * @see DATACMNS-351
-	 */
-	@Test
+	@Test // DATACMNS-351
 	public void fallbackToDefaultDefaultSort() throws Exception {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
@@ -120,11 +114,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(result, is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-366
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACMNS-366
 	public void requestForMultipleSortPropertiesIsUnmarshalledCorrectly() throws Exception {
 
 		MethodParameter parameter = getParameterOfMethod("supportedMethod");
@@ -137,10 +127,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(result, is(new Sort(Direction.ASC, "firstname", "lastname")));
 	}
 
-	/**
-	 * @see DATACMNS-408
-	 */
-	@Test
+	@Test // DATACMNS-408
 	public void parsesEmptySortToNull() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -149,10 +136,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-408
-	 */
-	@Test
+	@Test // DATACMNS-408
 	public void sortParamIsInvalidProperty() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -161,10 +145,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-408
-	 */
-	@Test
+	@Test // DATACMNS-408
 	public void sortParamIsInvalidPropertyWhenMultiProperty() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -173,10 +154,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property1")));
 	}
 
-	/**
-	 * @see DATACMNS-408
-	 */
-	@Test
+	@Test // DATACMNS-408
 	public void sortParamIsEmptyWhenMultiParams() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -186,10 +164,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(resolveSort(request, PARAMETER), is(new Sort(DESC, "property")));
 	}
 
-	/**
-	 * @see DATACMNS-379
-	 */
-	@Test
+	@Test // DATACMNS-379
 	public void parsesCommaParameterForSort() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -198,10 +173,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		assertThat(resolveSort(request, PARAMETER), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-753, DATACMNS-408
-	 */
-	@Test
+	@Test // DATACMNS-753, DATACMNS-408
 	public void doesNotReturnNullWhenAnnotatedWithSortDefault() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();

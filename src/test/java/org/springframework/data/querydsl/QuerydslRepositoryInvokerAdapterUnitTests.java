@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,10 +55,7 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 		this.adapter = new QuerydslRepositoryInvokerAdapter(delegate, executor, predicate);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void forwardsFindAllToExecutorWithPredicate() {
 
 		Sort sort = new Sort("firstname");
@@ -68,10 +65,7 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 		verify(delegate, times(0)).invokeFindAll(sort);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void forwardsFindAllWithPageableToExecutorWithPredicate() {
 
 		PageRequest pageable = new PageRequest(0, 10);
@@ -81,10 +75,7 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 		verify(delegate, times(0)).invokeFindAll(pageable);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void forwardsMethodsToDelegate() {
 

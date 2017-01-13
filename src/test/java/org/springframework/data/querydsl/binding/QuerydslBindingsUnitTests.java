@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,18 +58,12 @@ public class QuerydslBindingsUnitTests {
 		this.bindings = new QuerydslBindings();
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
 	public void rejectsNullPath() {
 		bindings.getBindingForPath(null);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void returnsNullIfNoBindingRegisteredForPath() {
 
 		PathInformation path = PropertyPathInformation.of("lastname", User.class);
@@ -77,10 +71,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.getBindingForPath(path), nullValue());
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void returnsRegisteredBindingForSimplePath() {
 
 		bindings.bind(QUser.user.firstname).first(CONTAINS_BINDING);
@@ -90,10 +81,7 @@ public class QuerydslBindingsUnitTests {
 		assertAdapterWithTargetBinding(bindings.getBindingForPath(path), CONTAINS_BINDING);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void getBindingForPathShouldReturnSpeficicBindingForNestedElementsWhenAvailable() {
 
 		bindings.bind(QUser.user.address.street).first(CONTAINS_BINDING);
@@ -103,10 +91,7 @@ public class QuerydslBindingsUnitTests {
 		assertAdapterWithTargetBinding(bindings.getBindingForPath(path), CONTAINS_BINDING);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void getBindingForPathShouldReturnSpeficicBindingForTypes() {
 
 		bindings.bind(String.class).first(CONTAINS_BINDING);
@@ -116,10 +101,7 @@ public class QuerydslBindingsUnitTests {
 		assertAdapterWithTargetBinding(bindings.getBindingForPath(path), CONTAINS_BINDING);
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void propertyNotExplicitlyIncludedAndWithoutTypeBindingIsInvisible() {
 
 		bindings.bind(String.class).first(CONTAINS_BINDING);
@@ -129,10 +111,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.getBindingForPath(path), nullValue());
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void pathIsVisibleIfTypeBasedBindingWasRegistered() {
 
 		bindings.bind(String.class).first(CONTAINS_BINDING);
@@ -140,10 +119,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("inceptionYear", User.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void explicitlyIncludedPathIsVisible() {
 
 		bindings.including(QUser.user.inceptionYear);
@@ -151,10 +127,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("inceptionYear", User.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void notExplicitlyIncludedPathIsInvisible() {
 
 		bindings.including(QUser.user.inceptionYear);
@@ -162,10 +135,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("firstname", User.class), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void excludedPathIsInvisible() {
 
 		bindings.excluding(QUser.user.inceptionYear);
@@ -173,10 +143,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("inceptionYear", User.class), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void pathIsVisibleIfNotExplicitlyExcluded() {
 
 		bindings.excluding(QUser.user.inceptionYear);
@@ -184,10 +151,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("firstname", User.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void pathIsVisibleIfItsBothBlackAndWhitelisted() {
 
 		bindings.excluding(QUser.user.firstname);
@@ -196,10 +160,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("firstname", User.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void nestedPathIsInvisibleIfAParanetPathWasExcluded() {
 
 		bindings.excluding(QUser.user.address);
@@ -207,10 +168,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("address.city", User.class), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void pathIsVisibleIfConcretePathIsVisibleButParentExcluded() {
 
 		bindings.excluding(QUser.user.address);
@@ -219,10 +177,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("address.city", User.class), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void isPathVisibleShouldReturnFalseWhenPartialPathContainedInExcludingAndConcretePathToDifferentPropertyIsIncluded() {
 
 		bindings.excluding(QUser.user.address);
@@ -231,10 +186,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("address.street", User.class), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-669
-	 */
-	@Test
+	@Test // DATACMNS-669
 	public void whitelistsPropertiesCorrectly() {
 
 		bindings.including(QUser.user.firstname, QUser.user.address.street);
@@ -245,26 +197,17 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("address.city", User.class), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-787
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-787
 	public void rejectsNullAlias() {
 		bindings.bind(QUser.user.address).as(null);
 	}
 
-	/**
-	 * @see DATACMNS-787
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-787
 	public void rejectsEmptyAlias() {
 		bindings.bind(QUser.user.address).as("");
 	}
 
-	/**
-	 * @see DATACMNS-787
-	 */
-	@Test
+	@Test // DATACMNS-787
 	public void aliasesBinding() {
 
 		bindings.bind(QUser.user.address.city).as("city").first(CONTAINS_BINDING);
@@ -278,10 +221,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("address.city", User.class), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-787
-	 */
-	@Test
+	@Test // DATACMNS-787
 	public void explicitlyIncludesOriginalBindingDespiteAlias() {
 
 		bindings.including(QUser.user.address.city);
@@ -300,10 +240,7 @@ public class QuerydslBindingsUnitTests {
 		assertAdapterWithTargetBinding(bindings.getBindingForPath(propertyPath), CONTAINS_BINDING);
 	}
 
-	/**
-	 * @see DATACMNS-787
-	 */
-	@Test
+	@Test // DATACMNS-787
 	public void registedAliasWithNullBinding() {
 
 		bindings.bind(QUser.user.address.city).as("city").withDefaultBinding();
@@ -315,10 +252,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(binding, is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-941
-	 */
-	@Test
+	@Test // DATACMNS-941
 	public void registersBindingForPropertyOfSubtype() {
 
 		bindings.bind(QUser.user.as(QSpecialUser.class).specialProperty).first(ContainsBinding.INSTANCE);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,10 +40,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  */
 public class AbstractRepositoryMetadataUnitTests {
 
-	/**
-	 * @see DATACMNS-98
-	 */
-	@Test
+	@Test // DATACMNS-98
 	public void discoversSimpleReturnTypeCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
@@ -51,20 +48,14 @@ public class AbstractRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
-	/**
-	 * @see DATACMNS-98
-	 */
-	@Test
+	@Test // DATACMNS-98
 	public void resolvesTypeParameterReturnType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ConcreteRepository.class);
 		Method method = ConcreteRepository.class.getMethod("intermediateMethod");
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
-	/**
-	 * @see DATACMNS-98
-	 */
-	@Test
+	@Test // DATACMNS-98
 	public void determinesReturnTypeFromPageable() throws Exception {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
@@ -72,40 +63,28 @@ public class AbstractRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
-	/**
-	 * @see DATACMNS-453
-	 */
-	@Test
+	@Test // DATACMNS-453
 	public void nonPageableRepository() {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
 		assertThat(metadata.isPagingRepository(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-453
-	 */
-	@Test
+	@Test // DATACMNS-453
 	public void pageableRepository() {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(PagedRepository.class);
 		assertThat(metadata.isPagingRepository(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-98
-	 */
-	@Test
+	@Test // DATACMNS-98
 	public void determinesReturnTypeFromGenericType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("someMethod");
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(GenericType.class)));
 	}
 
-	/**
-	 * @see DATACMNS-98
-	 */
-	@Test
+	@Test // DATACMNS-98
 	public void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
@@ -113,10 +92,7 @@ public class AbstractRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(Map.class)));
 	}
 
-	/**
-	 * @see DATACMNS-471
-	 */
-	@Test
+	@Test // DATACMNS-471
 	public void detectsArrayReturnTypeCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PagedRepository.class);

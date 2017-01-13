@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,10 +65,7 @@ public class AbstractMappingContextUnitTests {
 		assertThat(path, is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-92
-	 */
-	@Test(expected = MappingException.class)
+	@Test(expected = MappingException.class) // DATACMNS-92
 	public void doesNotAddInvalidEntity() {
 
 		context = new SampleMappingContext() {
@@ -111,36 +108,24 @@ public class AbstractMappingContextUnitTests {
 		verify(context, times(1)).publishEvent(Mockito.any(ApplicationEvent.class));
 	}
 
-	/**
-	 * @see DATACMNS-214
-	 */
-	@Test
+	@Test // DATACMNS-214
 	public void returnsNullPersistentEntityForSimpleTypes() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		assertThat(context.getPersistentEntity(String.class), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-214
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-214
 	public void rejectsNullValueForGetPersistentEntityOfClass() {
 		context.getPersistentEntity((Class<?>) null);
 	}
 
-	/**
-	 * @see DATACMNS-214
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-214
 	public void rejectsNullValueForGetPersistentEntityOfTypeInformation() {
 		context.getPersistentEntity((TypeInformation<?>) null);
 	}
 
-	/**
-	 * @see DATACMNS-228
-	 */
-	@Test
+	@Test // DATACMNS-228
 	public void doesNotCreatePersistentPropertyForGroovyMetaClass() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
@@ -150,10 +135,7 @@ public class AbstractMappingContextUnitTests {
 		assertThat(entity.getPersistentProperty("metaClass"), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-332
-	 */
-	@Test
+	@Test // DATACMNS-332
 	public void usesMostConcreteProperty() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
@@ -161,10 +143,7 @@ public class AbstractMappingContextUnitTests {
 		assertThat(entity.getPersistentProperty("foo").isIdProperty(), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-345
-	 */
-	@Test
+	@Test // DATACMNS-345
 	@SuppressWarnings("rawtypes")
 	public void returnsEntityForComponentType() {
 
@@ -177,10 +156,7 @@ public class AbstractMappingContextUnitTests {
 		assertThat(propertyEntity.getType(), is(equalTo((Class) Person.class)));
 	}
 
-	/**
-	 * @see DATACMNS-380
-	 */
-	@Test
+	@Test // DATACMNS-380
 	public void returnsPersistentPropertyPathForDotPath() {
 
 		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath("persons.name",
@@ -191,18 +167,12 @@ public class AbstractMappingContextUnitTests {
 		assertThat(path.getLeafProperty().getName(), is("name"));
 	}
 
-	/**
-	 * @see DATACMNS-380
-	 */
-	@Test(expected = MappingException.class)
+	@Test(expected = MappingException.class) // DATACMNS-380
 	public void rejectsInvalidPropertyReferenceWithMappingException() {
 		context.getPersistentPropertyPath("foo", Sample.class);
 	}
 
-	/**
-	 * @see DATACMNS-390
-	 */
-	@Test
+	@Test // DATACMNS-390
 	public void exposesCopyOfPersistentEntitiesToAvoidConcurrentModificationException() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -217,49 +187,34 @@ public class AbstractMappingContextUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS-447
-	 */
-	@Test
+	@Test // DATACMNS-447
 	public void shouldReturnNullForSimpleTypesIfInStrictIsEnabled() {
 
 		context.setStrict(true);
 		assertThat(context.getPersistentEntity(Integer.class), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-462
-	 */
-	@Test
+	@Test // DATACMNS-462
 	public void hasPersistentEntityForCollectionPropertiesAfterInitialization() {
 
 		context.getPersistentEntity(Sample.class);
 		assertHasEntityFor(Person.class, context, true);
 	}
 
-	/**
-	 * @see DATACMNS-479
-	 */
-	@Test
+	@Test // DATACMNS-479
 	public void doesNotAddMapImplementationClassesAsPersistentEntity() {
 
 		context.getPersistentEntity(Sample.class);
 		assertHasEntityFor(TreeMap.class, context, false);
 	}
 
-	/**
-	 * @see DATACMNS-695
-	 */
-	@Test
+	@Test // DATACMNS-695
 	public void persistentPropertyPathTraversesGenericTypesCorrectly() {
 		assertThat(context.getPersistentPropertyPath("field.wrapped.field", Outer.class),
 				is(Matchers.<SamplePersistentProperty> iterableWithSize(3)));
 	}
 
-	/**
-	 * @see DATACMNS-727
-	 */
-	@Test
+	@Test // DATACMNS-727
 	public void exposesContextForFailingPropertyPathLookup() {
 
 		try {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,10 +66,7 @@ public class ParametersParameterAccessorUnitTests {
 		assertThat(accessor.hasBindableNullValue(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-804
-	 */
-	@Test
+	@Test // DATACMNS-804
 	public void iteratesonlyOverBindableValues() throws Exception {
 
 		Method method = Sample.class.getMethod("method", Pageable.class, String.class);

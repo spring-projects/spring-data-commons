@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,20 +35,14 @@ public class DistanceUnitTests {
 	private static final double TEN_MILES_NORMALIZED = 0.002523219294755161;
 	private static final double TEN_KM_NORMALIZED = 0.001567855942887398;
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void defaultsMetricToNeutralOne() {
 
 		assertThat(new Distance(2.5).getMetric(), is((Metric) Metrics.NEUTRAL));
 		assertThat(new Distance(2.5, null).getMetric(), is((Metric) Metrics.NEUTRAL));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void addsDistancesWithoutExplicitMetric() {
 
 		Distance left = new Distance(2.5, KILOMETERS);
@@ -57,10 +51,7 @@ public class DistanceUnitTests {
 		assertThat(left.add(right), is(new Distance(5.0, KILOMETERS)));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void addsDistancesWithExplicitMetric() {
 
 		Distance left = new Distance(2.5, KILOMETERS);
@@ -69,10 +60,7 @@ public class DistanceUnitTests {
 		assertThat(left.add(right, MILES), is(new Distance(3.106856281073925, MILES)));
 	}
 
-	/**
-	 * @see DATACMNS-474
-	 */
-	@Test
+	@Test // DATACMNS-474
 	public void distanceWithSameMetricShoudEqualAfterConversion() {
 
 		assertThat(new Distance(1).in(NEUTRAL), is(new Distance(1)));
@@ -80,20 +68,14 @@ public class DistanceUnitTests {
 		assertThat(new Distance(TEN_MILES_NORMALIZED).in(MILES), is(new Distance(10, MILES)));
 	}
 
-	/**
-	 * @see DATACMNS-474
-	 */
-	@Test
+	@Test // DATACMNS-474
 	public void distanceWithDifferentMetricShoudEqualAfterConversion() {
 
 		assertThat(new Distance(10, MILES), is(new Distance(TEN_MILES_NORMALIZED).in(MILES)));
 		assertThat(new Distance(10, KILOMETERS), is(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS)));
 	}
 
-	/**
-	 * @see DATACMNS-474
-	 */
-	@Test
+	@Test // DATACMNS-474
 	public void conversionShouldProduceCorrectNormalizedValue() {
 
 		assertThat(new Distance(TEN_KM_NORMALIZED, NEUTRAL).in(KILOMETERS).getNormalizedValue(),
@@ -115,10 +97,7 @@ public class DistanceUnitTests {
 				closeTo(new Distance(6.21371192, MILES).getNormalizedValue(), EPS));
 	}
 
-	/**
-	 * @see DATACMNS-474
-	 */
-	@Test
+	@Test // DATACMNS-474
 	public void toStringAfterConversion() {
 
 		assertThat(new Distance(10, KILOMETERS).in(MILES).toString(), is(new Distance(6.21371256214785, MILES).toString()));
@@ -126,10 +105,7 @@ public class DistanceUnitTests {
 				is(new Distance(10, KILOMETERS).toString()));
 	}
 
-	/**
-	 * @see DATACMNS-482
-	 */
-	@Test
+	@Test // DATACMNS-482
 	public void testSerialization() {
 
 		Distance dist = new Distance(10, KILOMETERS);
@@ -138,18 +114,12 @@ public class DistanceUnitTests {
 		assertThat(serialized, is(dist));
 	}
 
-	/**
-	 * @see DATACMNS-626
-	 */
-	@Test
+	@Test // DATACMNS-626
 	public void returnsMetricsAbbreviationAsUnit() {
 		assertThat(new Distance(10, KILOMETERS).getUnit(), is("km"));
 	}
 
-	/**
-	 * @see DATACMNS-651
-	 */
-	@Test
+	@Test // DATACMNS-651
 	public void createsARangeCorrectly() {
 
 		Distance twoKilometers = new Distance(2, KILOMETERS);
@@ -162,10 +132,7 @@ public class DistanceUnitTests {
 		assertThat(range.getUpperBound(), is(tenKilometers));
 	}
 
-	/**
-	 * @see DATACMNS-651
-	 */
-	@Test
+	@Test // DATACMNS-651
 	public void createsARangeFromPiecesCorrectly() {
 
 		Distance twoKilometers = new Distance(2, KILOMETERS);
@@ -178,10 +145,7 @@ public class DistanceUnitTests {
 		assertThat(range.getUpperBound(), is(tenKilometers));
 	}
 
-	/**
-	 * @see DATACMNS-651
-	 */
-	@Test
+	@Test // DATACMNS-651
 	public void implementsComparableCorrectly() {
 
 		Distance twoKilometers = new Distance(2, KILOMETERS);

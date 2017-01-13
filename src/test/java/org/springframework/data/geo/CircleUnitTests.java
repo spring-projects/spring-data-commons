@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,26 +29,17 @@ import org.springframework.util.SerializationUtils;
  */
 public class CircleUnitTests {
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
 	public void rejectsNullOrigin() {
 		new Circle(null, new Distance(0));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
 	public void rejectsNegativeRadius() {
 		new Circle(1, 1, -1);
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void considersTwoCirclesEqualCorrectly() {
 
 		Circle left = new Circle(1, 1, 1);
@@ -63,19 +54,13 @@ public class CircleUnitTests {
 		assertThat(right, is(left));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void testToString() {
 
 		assertThat(new Circle(1, 1, 1).toString(), is("Circle: [center=Point [x=1.000000, y=1.000000], radius=1.0]"));
 	}
 
-	/**
-	 * @see DATACMNS-482
-	 */
-	@Test
+	@Test // DATACMNS-482
 	public void testSerialization() {
 
 		Circle circle = new Circle(1, 1, 1);

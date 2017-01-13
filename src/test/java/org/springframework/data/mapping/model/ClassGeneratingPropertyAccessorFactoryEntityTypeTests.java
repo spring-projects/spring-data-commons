@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
 	SampleMappingContext mappingContext = new SampleMappingContext();
 
-	/**
-	 * @see DATACMNS-853
-	 */
-	@Test
+	@Test // DATACMNS-853
 	public void getIdentifierOfInterfaceBasedEntity() {
 
 		Algorithm quickSort = new QuickSort();
@@ -49,10 +46,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 		assertThat(getEntityInformation(Algorithm.class).getId(quickSort), is((Object) quickSort.getName()));
 	}
 
-	/**
-	 * @see DATACMNS-853
-	 */
-	@Test
+	@Test // DATACMNS-853
 	public void getIdentifierOfClassBasedEntity() {
 
 		Person jonDoe = new Person("JonDoe");

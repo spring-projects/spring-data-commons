@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,10 +80,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 		assertThat(resources.getLink(Link.REL_SELF), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-471
-	 */
-	@Test
+	@Test // DATACMNS-471
 	public void setsUpPagedResourcesAssemblerFromManualXmlConfig() {
 
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("manual.xml", getClass());
@@ -91,10 +88,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 		context.close();
 	}
 
-	/**
-	 * @see DATACMNS-471
-	 */
-	@Test
+	@Test // DATACMNS-471
 	public void setsUpPagedResourcesAssemblerFromJavaConfigXmlConfig() {
 
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("via-config-class.xml", getClass());

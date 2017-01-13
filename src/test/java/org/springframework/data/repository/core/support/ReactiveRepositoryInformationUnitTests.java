@@ -43,10 +43,7 @@ public class ReactiveRepositoryInformationUnitTests {
 
 	static final Class<ReactiveJavaInterfaceWithGenerics> REPOSITORY = ReactiveJavaInterfaceWithGenerics.class;
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void discoversMethodWithoutComparingReturnType() throws Exception {
 
 		Method method = RxJava1InterfaceWithGenerics.class.getMethod("deleteAll");
@@ -58,10 +55,7 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getName(), is("deleteAll"));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void discoversMethodWithConvertibleArguments() throws Exception {
 
 		Method method = RxJava1InterfaceWithGenerics.class.getMethod("save", Observable.class);
@@ -74,10 +68,7 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void discoversMethodAssignableArguments() throws Exception {
 
 		Method method = ReactiveSortingRepository.class.getMethod("save", Publisher.class);
@@ -90,10 +81,7 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void discoversMethodExactIterableArguments() throws Exception {
 
 		Method method = ReactiveJavaInterfaceWithGenerics.class.getMethod("save", Iterable.class);
@@ -106,10 +94,7 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Iterable.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	public void discoversMethodExactObjectArguments() throws Exception {
 
 		Method method = ReactiveJavaInterfaceWithGenerics.class.getMethod("save", Object.class);

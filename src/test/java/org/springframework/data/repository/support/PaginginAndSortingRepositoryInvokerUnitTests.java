@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,10 +41,7 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  */
 public class PaginginAndSortingRepositoryInvokerUnitTests {
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesFindAllWithPageableByDefault() throws Exception {
 
 		Repository repository = mock(Repository.class);
@@ -54,10 +51,7 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Pageable) null);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesFindAllWithSortByDefault() throws Exception {
 
 		Repository repository = mock(Repository.class);
@@ -67,10 +61,7 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Sort) null);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesRedeclaredFindAllWithPageable() throws Exception {
 
 		RepositoryWithRedeclaredFindAllWithPageable repository = mock(RepositoryWithRedeclaredFindAllWithPageable.class);
@@ -80,10 +71,7 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll((Pageable) null);
 	}
 
-	/**
-	 * @see DATACMNS-589
-	 */
-	@Test
+	@Test // DATACMNS-589
 	public void invokesRedeclaredFindAllWithSort() throws Exception {
 
 		RepositoryWithRedeclaredFindAllWithSort repository = mock(RepositoryWithRedeclaredFindAllWithSort.class);

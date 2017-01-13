@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,10 +89,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		verify(provider, times(1)).getParameterValue((Parameter) constructor.getParameters().iterator().next());
 	}
 
-	/**
-	 * @see DATACMNS-300, DATACMNS-578
-	 */
-	@Test(expected = MappingInstantiationException.class)
+	@Test(expected = MappingInstantiationException.class) // DATACMNS-300, DATACMNS-578
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void throwsExceptionOnBeanInstantiationException() {
 
@@ -102,10 +99,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		INSTANCE.createInstance(entity, provider);
 	}
 
-	/**
-	 * @see DATACMNS-134, DATACMNS-578
-	 */
-	@Test
+	@Test // DATACMNS-134, DATACMNS-578
 	public void createsInnerClassInstanceCorrectly() {
 
 		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
@@ -130,10 +124,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		});
 	}
 
-	/**
-	 * @see DATACMNS-283, DATACMNS-578
-	 */
-	@Test
+	@Test // DATACMNS-283, DATACMNS-578
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void capturesContextOnInstantiationException() throws Exception {
 
@@ -162,10 +153,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
-	/**
-	 * @see DATACMNS-578
-	 */
-	@Test
+	@Test // DATACMNS-578
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtorDefault() {
 
@@ -181,10 +169,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
-	/**
-	 * @see DATACMNS-578
-	 */
-	@Test
+	@Test // DATACMNS-578
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtorNoArgs() {
 
@@ -201,10 +186,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
-	/**
-	 * @see DATACMNS-578
-	 */
-	@Test
+	@Test // DATACMNS-578
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtor1ParamString() {
 
@@ -224,10 +206,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
-	/**
-	 * @see DATACMNS-578
-	 */
-	@Test
+	@Test // DATACMNS-578
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjCtor2ParamStringString() {
 
@@ -248,10 +227,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
-	/**
-	 * @see DATACMNS-578
-	 */
-	@Test
+	@Test // DATACMNS-578
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjectCtor1ParamInt() {
 
@@ -271,10 +247,7 @@ public class BytecodeGeneratingEntityInstantiatorUnitTests<P extends PersistentP
 		}
 	}
 
-	/**
-	 * @see DATACMNS-578
-	 */
-	@Test
+	@Test // DATACMNS-578
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void instantiateObjectCtor7ParamsString5IntsString() {
 

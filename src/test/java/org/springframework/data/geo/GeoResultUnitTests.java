@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,19 +34,13 @@ public class GeoResultUnitTests {
 	GeoResult<String> third = new GeoResult<String>("Bar", new Distance(2.5));
 	GeoResult<String> fourth = new GeoResult<String>("Foo", new Distance(5.2));
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void considersSameInstanceEqual() {
 
 		assertThat(first.equals(first), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
-	@Test
+	@Test // DATACMNS-437
 	public void considersSameValuesAsEqual() {
 
 		assertThat(first.equals(second), is(true));
@@ -57,19 +51,13 @@ public class GeoResultUnitTests {
 		assertThat(fourth.equals(first), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-437
-	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
 	public void rejectsNullContent() {
 		new GeoResult(null, new Distance(2.5));
 	}
 
-	/**
-	 * @see DATACMNS-482
-	 */
-	@Test
+	@Test // DATACMNS-482
 	public void testSerialization() {
 
 		GeoResult<String> result = new GeoResult<String>("test", new Distance(2));

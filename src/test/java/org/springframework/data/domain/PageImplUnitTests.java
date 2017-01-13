@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,10 +115,7 @@ public class PageImplUnitTests {
 		assertThat(page.hasContent(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-323
-	 */
-	@Test
+	@Test // DATACMNS-323
 	public void returnsCorrectTotalPages() {
 
 		Page<String> page = new PageImpl<String>(Arrays.asList("a"));
@@ -128,10 +125,7 @@ public class PageImplUnitTests {
 		assertThat(page.hasPrevious(), is(false));
 	}
 
-	/**
-	 * @see DATACMNS-635
-	 */
-	@Test
+	@Test // DATACMNS-635
 	public void transformsPageCorrectly() {
 
 		Page<Integer> transformed = new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(0, 2), 10)
@@ -146,44 +140,29 @@ public class PageImplUnitTests {
 		assertThat(transformed.getContent(), contains(3, 3));
 	}
 
-	/**
-	 * @see DATACMNS-713
-	 */
-	@Test
+	@Test // DATACMNS-713
 	public void adaptsTotalForLastPageOnIntermediateDeletion() {
 		assertThat(new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(0, 5), 3).getTotalElements(), is(2L));
 	}
 
-	/**
-	 * @see DATACMNS-713
-	 */
-	@Test
+	@Test // DATACMNS-713
 	public void adaptsTotalForLastPageOnIntermediateInsertion() {
 		assertThat(new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(0, 5), 1).getTotalElements(), is(2L));
 	}
 
-	/**
-	 * @see DATACMNS-713
-	 */
-	@Test
+	@Test // DATACMNS-713
 	public void adaptsTotalForLastPageOnIntermediateDeletionOnLastPate() {
 		assertThat(new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(1, 10), 13).getTotalElements(),
 				is(12L));
 	}
 
-	/**
-	 * @see DATACMNS-713
-	 */
-	@Test
+	@Test // DATACMNS-713
 	public void adaptsTotalForLastPageOnIntermediateInsertionOnLastPate() {
 		assertThat(new PageImpl<String>(Arrays.asList("foo", "bar"), new PageRequest(1, 10), 11).getTotalElements(),
 				is(12L));
 	}
 
-	/**
-	 * @see DATACMNS-713
-	 */
-	@Test
+	@Test // DATACMNS-713
 	public void doesNotAdapttotalIfPageIsEmpty() {
 
 		assertThat(new PageImpl<String>(Collections.<String> emptyList(), new PageRequest(1, 10), 0).getTotalElements(),

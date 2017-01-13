@@ -53,10 +53,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  */
 public class ResultProcessorUnitTests {
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void leavesNonProjectingResultUntouched() throws Exception {
 
 		ResultProcessor information = new ResultProcessor(getQueryMethod("findAll"), new SpelAwareProxyProjectionFactory());
@@ -68,10 +65,7 @@ public class ResultProcessorUnitTests {
 		assertThat(converted, contains(sample));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void createsProjectionFromProperties() throws Exception {
 
 		ResultProcessor information = getProcessor("findOneProjection");
@@ -81,10 +75,7 @@ public class ResultProcessorUnitTests {
 		assertThat(result.getLastname(), is("Matthews"));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	@SuppressWarnings("unchecked")
 	public void createsListOfProjectionsFormNestedLists() throws Exception {
 
@@ -99,10 +90,7 @@ public class ResultProcessorUnitTests {
 		assertThat(result.get(0).getLastname(), is("Matthews"));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	@SuppressWarnings("unchecked")
 	public void createsListOfProjectionsFromMaps() throws Exception {
 
@@ -117,10 +105,7 @@ public class ResultProcessorUnitTests {
 		assertThat(result.get(0).getLastname(), is("Matthews"));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void createsListOfProjectionsFromEntity() throws Exception {
 
 		ResultProcessor information = getProcessor("findAllProjection");
@@ -132,10 +117,7 @@ public class ResultProcessorUnitTests {
 		assertThat(result.get(0).getLastname(), is("Matthews"));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void createsPageOfProjectionsFromEntity() throws Exception {
 
 		ResultProcessor information = getProcessor("findPageProjection", Pageable.class);
@@ -147,10 +129,7 @@ public class ResultProcessorUnitTests {
 		assertThat(result.getContent().get(0).getLastname(), is("Matthews"));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void createsDynamicProjectionFromEntity() throws Exception {
 
 		ResultProcessor information = getProcessor("findOneOpenProjection");
@@ -161,10 +140,7 @@ public class ResultProcessorUnitTests {
 		assertThat(result.getFullName(), is("Dave Matthews"));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void findsDynamicProjection() throws Exception {
 
 		ParameterAccessor accessor = mock(ParameterAccessor.class);
@@ -179,10 +155,7 @@ public class ResultProcessorUnitTests {
 		assertThat(processor.getReturnedType().getReturnedType(), is(typeCompatibleWith(SampleProjection.class)));
 	}
 
-	/**
-	 * @see DATACMNS-89
-	 */
-	@Test
+	@Test // DATACMNS-89
 	public void refrainsFromProjectingIfThePreparingConverterReturnsACompatibleInstance() throws Exception {
 
 		ResultProcessor processor = getProcessor("findAllDtos");
@@ -198,18 +171,12 @@ public class ResultProcessorUnitTests {
 		assertThat(result, is(instanceOf(SampleDto.class)));
 	}
 
-	/**
-	 * @see DATACMNS-828
-	 */
-	@Test
+	@Test // DATACMNS-828
 	public void returnsNullResultAsIs() throws Exception {
 		assertThat(getProcessor("findOneDto").processResult(null), is(nullValue()));
 	}
 
-	/**
-	 * @see DATACMNS-842
-	 */
-	@Test
+	@Test // DATACMNS-842
 	public void supportsSlicesAsReturnWrapper() throws Exception {
 
 		Slice<Sample> slice = new SliceImpl<Sample>(Collections.singletonList(new Sample("Dave", "Matthews")));
@@ -223,10 +190,7 @@ public class ResultProcessorUnitTests {
 		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
 	}
 
-	/**
-	 * @see DATACMNS-859
-	 */
-	@Test
+	@Test // DATACMNS-859
 	@SuppressWarnings("unchecked")
 	public void supportsStreamAsReturnWrapper() throws Exception {
 
@@ -241,10 +205,7 @@ public class ResultProcessorUnitTests {
 		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
 	}
 
-	/**
-	 * @see DATACMNS-860
-	 */
-	@Test
+	@Test // DATACMNS-860
 	public void supportsWrappingDto() throws Exception {
 
 		Object result = getProcessor("findOneWrappingDto").processResult(new Sample("Dave", "Matthews"));
@@ -252,10 +213,7 @@ public class ResultProcessorUnitTests {
 		assertThat(result, is(instanceOf(WrappingDto.class)));
 	}
 
-	/**
-	 * @see DATACMNS-921
-	 */
-	@Test
+	@Test // DATACMNS-921
 	public void fallsBackToApproximateCollectionIfNecessary() throws Exception {
 
 		ResultProcessor processor = getProcessor("findAllProjection");
@@ -266,10 +224,7 @@ public class ResultProcessorUnitTests {
 		processor.processResult(specialList);
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void supportsMonoWrapper() throws Exception {
 
@@ -284,10 +239,7 @@ public class ResultProcessorUnitTests {
 		assertThat(content, is(instanceOf(Sample.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void supportsSingleWrapper() throws Exception {
 
@@ -302,10 +254,7 @@ public class ResultProcessorUnitTests {
 		assertThat(content, is(instanceOf(Sample.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void refrainsFromProjectingUsingReactiveWrappersIfThePreparingConverterReturnsACompatibleInstance()
 			throws Exception {
@@ -321,10 +270,7 @@ public class ResultProcessorUnitTests {
 		assertThat(content, is(instanceOf(SampleDto.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void supportsFluxProjections() throws Exception {
 
@@ -340,10 +286,7 @@ public class ResultProcessorUnitTests {
 		assertThat(content.get(0), is(instanceOf(SampleProjection.class)));
 	}
 
-	/**
-	 * @see DATACMNS-836
-	 */
-	@Test
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void supportsObservableProjections() throws Exception {
 

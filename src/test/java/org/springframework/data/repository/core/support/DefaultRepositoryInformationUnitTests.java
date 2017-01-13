@@ -123,10 +123,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getQueryMethods(), is(empty));
 	}
 
-	/**
-	 * @see DATACMNS-151
-	 */
-	@Test
+	@Test // DATACMNS-151
 	public void doesNotConsiderManuallyDefinedSaveMethodAQueryMethod() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
@@ -135,10 +132,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getQueryMethods(), is(IsEmptyIterable.<Method> emptyIterable()));
 	}
 
-	/**
-	 * @see DATACMNS-151
-	 */
-	@Test
+	@Test // DATACMNS-151
 	public void doesNotConsiderRedeclaredSaveMethodAQueryMethod() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
@@ -168,10 +162,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(queryMethods, not(hasItem(intermediateMethod)));
 	}
 
-	/**
-	 * @see DATACMNS-193
-	 */
-	@Test
+	@Test // DATACMNS-193
 	public void detectsQueryMethodCorrectly() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
@@ -183,10 +174,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.isQueryMethod(queryMethod), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-364
-	 */
-	@Test
+	@Test // DATACMNS-364
 	public void ignoresCrudMethodsAnnotatedWithQuery() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
@@ -197,10 +185,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getQueryMethods(), hasItem(method));
 	}
 
-	/**
-	 * @see DATACMNS-385
-	 */
-	@Test
+	@Test // DATACMNS-385
 	public void findsTargetSaveForIterableIfEntityImplementsIterable() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(BossRepository.class);
@@ -212,10 +197,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getTargetClassMethod(method), is(reference));
 	}
 
-	/**
-	 * @see DATACMNS-441
-	 */
-	@Test
+	@Test // DATACMNS-441
 	public void getQueryShouldNotReturnAnyBridgeMethods() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomDefaultRepositoryMethodsRepository.class);
@@ -226,10 +208,7 @@ public class DefaultRepositoryInformationUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACMNS-854
-	 */
-	@Test
+	@Test // DATACMNS-854
 	public void discoversCustomlyImplementedCrudMethodWithGenerics() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
@@ -242,10 +221,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getTargetClassMethod(source), is(expected));
 	}
 
-	/**
-	 * @see DATACMNS-912
-	 */
-	@Test
+	@Test // DATACMNS-912
 	public void discoversCustomlyImplementedCrudMethodWithGenericParameters() throws Exception {
 
 		SampleRepositoryImpl customImplementation = new SampleRepositoryImpl();
@@ -257,11 +233,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
 	}
 
-	/**
-	 * @see DATACMNS-939
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACMNS-939
 	public void ignoresStaticMethod() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
@@ -273,10 +245,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getQueryMethods(), not(hasItem(method)));
 	}
 
-	/**
-	 * @see DATACMNS-939
-	 */
-	@Test
+	@Test // DATACMNS-939
 	public void ignoresDefaultMethod() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
@@ -288,11 +257,7 @@ public class DefaultRepositoryInformationUnitTests {
 		assertThat(information.getQueryMethods(), not(hasItem(method)));
 	}
 
-	/**
-	 * @see DATACMNS-943
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACMNS-943
 	public void usesCorrectSaveOverload() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(DummyRepository.class);
