@@ -18,12 +18,15 @@ package org.springframework.data.repository.core.support;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import lombok.Builder;
+
 import java.io.Serializable;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
@@ -33,6 +36,7 @@ import org.springframework.util.ReflectionUtils;
  * 
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Christoph Strobl
  */
 public class AbstractEntityInformationUnitTests {
 
@@ -88,6 +92,17 @@ public class AbstractEntityInformationUnitTests {
 		information.isNew(new UnsupportedPrimitiveIdEntity());
 	}
 
+	@Test // DATACMNS-976
+	public void considersPersistableIsNew() {
+
+		FooEn<ImplementingPersistable, String> information = new FooEn<ImplementingPersistable, String>(ImplementingPersistable.class);
+
+		assertThat(information.isNew(ImplementingPersistable.builder().id(100L).isNew(true).build()), is(true));
+		assertThat(information.isNew(ImplementingPersistable.builder().isNew(true).build()), is(true));
+		assertThat(information.isNew(ImplementingPersistable.builder().id(100L).isNew(false).build()), is(false));
+		assertThat(information.isNew(ImplementingPersistable.builder().isNew(false).build()), is(false));
+	}
+
 	static class PrimitiveIdEntity {
 
 		@Id long id;
@@ -122,6 +137,23 @@ public class AbstractEntityInformationUnitTests {
 		@SuppressWarnings("unchecked")
 		public Class<ID> getIdType() {
 			return (Class<ID>) ReflectionUtils.findField(type, "id").getType();
+		}
+	}
+
+	@Builder
+	static class ImplementingPersistable implements Persistable<Long> {
+
+		final Long id;
+		final boolean isNew;
+
+		@Override
+		public Long getId() {
+			return id;
+		}
+
+		@Override
+		public boolean isNew() {
+			return isNew;
 		}
 	}
 }

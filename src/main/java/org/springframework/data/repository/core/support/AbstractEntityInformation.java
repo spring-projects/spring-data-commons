@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
 
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
 
@@ -26,6 +27,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Christoph Strobl
  */
 public abstract class AbstractEntityInformation<T, ID extends Serializable> implements EntityInformation<T, ID> {
 
@@ -47,6 +49,10 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 	 * @see org.springframework.data.repository.core.EntityInformation#isNew(java.lang.Object)
 	 */
 	public boolean isNew(T entity) {
+
+		if(entity instanceof Persistable) {
+			return ((Persistable) entity).isNew();
+		}
 
 		ID id = getId(entity);
 		Class<ID> idType = getIdType();
