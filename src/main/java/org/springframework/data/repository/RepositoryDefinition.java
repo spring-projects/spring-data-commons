@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.stereotype.Indexed;
+
 /**
  * Annotation to demarcate interfaces a repository proxy shall be created for. Annotating an interface with
  * {@link RepositoryDefinition} will cause the same behaviour as extending {@link Repository}.
@@ -30,6 +32,7 @@ import java.lang.annotation.Target;
  * @see Repository
  * @author Oliver Gierke
  */
+@Indexed
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
