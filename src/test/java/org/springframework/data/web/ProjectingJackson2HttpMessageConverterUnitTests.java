@@ -18,6 +18,9 @@ package org.springframework.data.web;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+
 import org.junit.Test;
 import org.springframework.http.MediaType;
 
@@ -48,10 +51,36 @@ public class ProjectingJackson2HttpMessageConverterUnitTests {
 		assertThat(converter.canRead(SampleClass.class, ANYTHING_JSON), is(false));
 	}
 
+	@Test // DATACMNS-972
+	public void doesNotConsiderTypeVariableBoundTo() throws Throwable {
+
+		Method method = BaseController.class.getDeclaredMethod("createEntity", AbstractDto.class);
+		Type type = method.getGenericParameterTypes()[0];
+
+		assertThat(converter.canRead(type, BaseController.class, ANYTHING_JSON), is(false));
+	}
+
+	@Test // DATACMNS-972
+	public void genericTypeOnConcreteOne() throws Throwable {
+
+		Method method = ConcreteController.class.getMethod("createEntity", AbstractDto.class);
+		Type type = method.getGenericParameterTypes()[0];
+
+		assertThat(converter.canRead(type, ConcreteController.class, ANYTHING_JSON), is(false));
+	}
+
 	@ProjectedPayload
 	interface SampleInterface {}
 
 	interface UnannotatedInterface {}
 
 	class SampleClass {}
+
+	class AbstractDto {}
+
+	abstract class BaseController<D extends AbstractDto> {
+		public void createEntity(D dto) {}
+	}
+
+	class ConcreteController extends BaseController<AbstractDto> {}
 }
