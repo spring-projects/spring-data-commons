@@ -117,7 +117,8 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 			return false;
 		}
 
-		Class<?> rawType = ResolvableType.forType(type).getRawClass();
+		ResolvableType owner = contextClass == null ? null : ResolvableType.forClass(contextClass);
+		Class<?> rawType = ResolvableType.forType(type, owner).resolve(Object.class);
 		Boolean result = supportedTypesCache.get(rawType);
 
 		if (result != null) {
