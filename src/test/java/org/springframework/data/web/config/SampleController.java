@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@ package org.springframework.data.web.config;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import java.util.Collection;
-import java.util.Date;
+import example.SampleDto;
+import example.SampleDto.Address;
 
-import org.springframework.data.web.config.SampleController.SampleDto.Address;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
+import java.util.Collection;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -51,24 +50,5 @@ public class SampleController {
 		assertThat(sampleDto.getBillingAddress().getCity(), is("City"));
 
 		return "view";
-	}
-
-	interface SampleDto {
-
-		String getName();
-
-		@DateTimeFormat(iso = ISO.DATE)
-		Date getDate();
-
-		Address getBillingAddress();
-
-		Collection<Address> getShippingAddresses();
-
-		interface Address {
-
-			String getZipCode();
-
-			String getCity();
-		}
 	}
 }
