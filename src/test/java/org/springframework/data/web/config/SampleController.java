@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import java.util.Collection;
 import java.util.Date;
 
+import org.springframework.data.web.ProjectedPayload;
 import org.springframework.data.web.config.SampleController.SampleDto.Address;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -53,6 +54,7 @@ public class SampleController {
 		return "view";
 	}
 
+	@ProjectedPayload
 	interface SampleDto {
 
 		String getName();
