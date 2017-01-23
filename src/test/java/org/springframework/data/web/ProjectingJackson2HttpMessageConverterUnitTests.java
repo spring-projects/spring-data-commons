@@ -27,6 +27,7 @@ import org.springframework.http.MediaType;
  * Unit tests for {@link ProjectingJackson2HttpMessageConverter}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Richard Spaven - Tribute (Whole Other*)
  * @since 1.13
  */
@@ -56,7 +57,7 @@ public class ProjectingJackson2HttpMessageConverterUnitTests {
 		Method method = BaseController.class.getDeclaredMethod("createEntity", AbstractDto.class);
 		Type type = method.getGenericParameterTypes()[0];
 
-		assertThat(converter.canRead(type, BaseController.class, ANYTHING_JSON), is(false));
+		assertThat(converter.canRead(type, BaseController.class, ANYTHING_JSON)).isFalse();
 	}
 
 	@Test // DATACMNS-972
@@ -65,7 +66,7 @@ public class ProjectingJackson2HttpMessageConverterUnitTests {
 		Method method = ConcreteController.class.getMethod("createEntity", AbstractDto.class);
 		Type type = method.getGenericParameterTypes()[0];
 
-		assertThat(converter.canRead(type, ConcreteController.class, ANYTHING_JSON), is(false));
+		assertThat(converter.canRead(type, ConcreteController.class, ANYTHING_JSON)).isFalse();
 	}
 
 	@ProjectedPayload

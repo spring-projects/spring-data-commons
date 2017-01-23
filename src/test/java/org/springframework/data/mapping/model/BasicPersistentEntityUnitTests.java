@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
@@ -25,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,6 +58,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
@@ -175,12 +178,12 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assumeThat(System.getProperty("java.version"), CoreMatchers.startsWith("1.6"));
 
 		SampleMappingContext context = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Entity.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		Entity value = new Entity();
 		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
 
-		assertThat(accessor).isEqualTo(instanceOf(BeanWrapper.class));
+		assertThat(accessor).isInstanceOf(BeanWrapper.class);
 		assertThat(accessor.getBean()).isEqualTo(value);
 	}
 

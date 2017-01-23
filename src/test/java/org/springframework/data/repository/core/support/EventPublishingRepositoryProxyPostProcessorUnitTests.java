@@ -45,6 +45,7 @@ import org.springframework.data.repository.core.support.EventPublishingRepositor
  * Unit tests for {@link EventPublishingRepositoryProxyPostProcessor} and contained classes.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Henrik Freischlader Trio - Nobody Else To Blame (Openness)
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -174,9 +175,6 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 	@Test // DATACMNS-975
 	public void publishesEventsAfterSaveInvocation() throws Throwable {
-
-		doReturn(SampleRepository.class.getMethod("save", Object.class)).when(invocation).getMethod();
-		doReturn(new Object[] { OneEvent.of(new SomeEvent()) }).when(invocation).getArguments();
 
 		doThrow(new IllegalStateException()).when(invocation).proceed();
 

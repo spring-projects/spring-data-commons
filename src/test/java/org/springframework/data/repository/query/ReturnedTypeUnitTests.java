@@ -34,6 +34,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * Unit tests for {@link ReturnedType}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class ReturnedTypeUnitTests {
 
@@ -152,8 +153,7 @@ public class ReturnedTypeUnitTests {
 
 		List<String> properties = type.getInputProperties();
 
-		assertThat(properties, hasSize(1));
-		assertThat(properties, contains("firstname"));
+		assertThat(properties).hasSize(1).contains("firstname");
 	}
 
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
