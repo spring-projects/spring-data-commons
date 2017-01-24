@@ -57,6 +57,11 @@ public class ReflectionEntityInformationUnitTests {
 		assertThat(information.isNew(primitiveId)).isFalse();
 	}
 
+	@Test  // DATACMNS-867
+	public void detectsNewStateForEntityWithNullId() {
+		assertThat(new ReflectionEntityInformation<>(Sample.class).isNew(new Sample())).isTrue();
+	}
+
 	private static <T> EntityInformation<T, Serializable> getEntityInformation(Class<T> type) {
 		return new ReflectionEntityInformation<T, Serializable>(type, Id.class);
 	}

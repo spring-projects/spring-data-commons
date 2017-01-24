@@ -76,7 +76,7 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 	 */
 	@SuppressWarnings("unchecked")
 	public Optional<ID> getId(Object entity) {
-		return entity == null ? null : Optional.of((ID) ReflectionUtils.getField(field, entity));
+		return entity == null ? null : Optional.ofNullable((ID) ReflectionUtils.getField(field, entity));
 	}
 
 	/* 
