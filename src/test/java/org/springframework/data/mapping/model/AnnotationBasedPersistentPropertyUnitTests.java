@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -46,6 +47,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBasedPersistentProperty<P>> {
 
@@ -197,6 +199,16 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThat(AnnotationUtils.getValue(annotation), is((Object) "spring"));
 	}
 
+	@Test // DATACMNS-867, DATACMNS-981, DATACMNS-1273
+	public void revisedAnnotationWithAliasShouldHaveSynthesizedAttributeValues() {
+
+		SamplePersistentProperty setter = entity.getPersistentProperty("setter");
+		RevisedAnnnotationWithAliasFor annotation = setter.findAnnotation(RevisedAnnnotationWithAliasFor.class);
+		
+		assertThat(annotation.name(), is(equalTo("my-value")));
+		assertThat(annotation.value(), is(equalTo("my-value")));
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -220,7 +232,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		@MyAnnotation String field;
 		String getter;
-		String setter;
+		@RevisedAnnnotationWithAliasFor(value = "my-value") String setter;
 		String doubleMapping;
 
 		@MyAnnotationAsMeta String meta;
@@ -282,30 +294,41 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
-	public static @interface MyAnnotation {
+	public @interface MyAnnotation {
 		String value() default "";
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD })
 	@MyAnnotation
-	public static @interface MyAnnotationAsMeta {
+	public @interface MyAnnotationAsMeta {
 
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD })
 	@MyAnnotation
-	public static @interface MyComposedAnnotationUsingAliasFor {
+	public @interface MyComposedAnnotationUsingAliasFor {
 
 		@AliasFor(annotation = MyAnnotation.class, attribute = "value")
 		String name() default "spring";
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
+	@Target(value = { FIELD, METHOD })
+	@interface RevisedAnnnotationWithAliasFor {
+
+		@AliasFor("value")
+		String name() default "";
+
+		@AliasFor("name")
+		String value() default "";
+	}
+
+	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 	@Id
-	public static @interface MyId {
+	public @interface MyId {
 	}
 
 	static class FieldAccess {
@@ -352,7 +375,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@ReadOnlyProperty
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(FIELD)
-	static @interface CustomReadOnly {
+	@interface CustomReadOnly {
 
 	}
 }

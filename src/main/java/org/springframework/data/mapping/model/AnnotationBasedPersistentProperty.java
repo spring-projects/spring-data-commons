@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>>
 		extends AbstractPersistentProperty<P> {
@@ -99,7 +100,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 								+ "multiple times on accessor methods of property %s in class %s!",
 						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
 
-				cacheAndReturn(annotationType, annotation);
+				cacheAndReturn(annotationType, AnnotatedElementUtils.findMergedAnnotation(method, annotationType));
 			}
 		}
 
@@ -115,7 +116,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 					"Ambiguous mapping! Annotation %s configured " + "on field %s and one of its accessor methods in class %s!",
 					annotationType.getSimpleName(), field.getName(), getOwner().getType().getSimpleName());
 
-			cacheAndReturn(annotationType, annotation);
+			cacheAndReturn(annotationType, AnnotatedElementUtils.findMergedAnnotation(field, annotationType));
 		}
 	}
 
