@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.0.RELEASE (2017-01-26)
+----------------------------------------------
+* DATACMNS-975 - Aggregate event publication should happen after the interaction with the repository.
+* DATACMNS-974 - Update project documentation with the CLA tool integration.
+* DATACMNS-973 - Migrate ticket references in test code to Spring Framework style.
+* DATACMNS-972 - NullPointerException in ProjectingJackson2HttpMessageConverter.
+* DATACMNS-967 - Default accessors on projection interfaces must not be considered input properties.
+* DATACMNS-965 - Release 1.13 GA (Ingalls).
+* DATACMNS-957 - Persist fails on entity without id and version field if @EnableAuditing.
+* DATACMNS-776 - ProxyingHandlerMethodArgumentResolver handles interfaces not intended for projection.
+
+
 Changes in version 1.12.6.RELEASE (2016-12-21)
 ----------------------------------------------
 * DATACMNS-963 - ReturnedType.getInputProperties() does not guarantee distinct properties.
