@@ -43,6 +43,7 @@ import org.springframework.util.ReflectionUtils;
  * Unit tests for {@link AbstractPersistentProperty}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class AbstractPersistentPropertyUnitTests {
 
@@ -192,6 +193,13 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.isEntity()).isFalse();
 	}
 
+	@Test // DATACMNS-867
+	public void resolvesFieldNameWithUnderscoresCorrectly() {
+
+		SamplePersistentProperty property = getProperty(TestClassComplex.class, "var_name_with_underscores");
+		assertThat(property.getName()).isEqualTo("var_name_with_underscores");
+	}
+
 	private <T> BasicPersistentEntity<T, SamplePersistentProperty> getEntity(Class<T> type) {
 		return new BasicPersistentEntity<>(ClassTypeInformation.from(type));
 	}
@@ -244,6 +252,7 @@ public class AbstractPersistentPropertyUnitTests {
 		Map map;
 		Collection collection;
 		transient Object transientField;
+		String var_name_with_underscores;
 	}
 
 	class AccessorTestClass {

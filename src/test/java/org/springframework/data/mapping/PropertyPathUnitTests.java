@@ -21,6 +21,7 @@ import static org.springframework.data.mapping.PropertyPath.*;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import org.springframework.data.util.TypeInformation;
  * Unit tests for {@link PropertyPath}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @SuppressWarnings("unused")
 public class PropertyPathUnitTests {
@@ -333,11 +335,22 @@ public class PropertyPathUnitTests {
 		from("userAme", Foo.class);
 	}
 
+	@Test // DATACMNS-867
+	public void preservesUnderscoresForQuotedNames() {
+
+		PropertyPath path = from(Pattern.quote("var_name_with_underscore"), Foo.class);
+
+		assertThat(path).isNotNull();
+		assertThat(path.getSegment()).isEqualTo("var_name_with_underscore");
+		assertThat(path.hasNext()).isFalse();
+	}
+
 	private class Foo {
 
 		String userName;
 		String _email;
 		String UUID;
+		String var_name_with_underscore;
 	}
 
 	private class Bar {

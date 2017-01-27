@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.Association;
@@ -66,8 +67,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 		this.name = property.getName();
 		this.rawType = property.getType();
-
-		this.information = PropertyPath.from(property.getName(), owner.getTypeInformation()).getTypeInformation();
+		this.information = PropertyPath.from(Pattern.quote(property.getName()), owner.getTypeInformation()).getTypeInformation();
 		this.property = property;
 		this.association = isAssociation() ? Optional.of(createAssociation()) : Optional.empty();
 		this.owner = owner;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
  * Abstraction of a {@link PropertyPath} of a domain class.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @EqualsAndHashCode
 public class PropertyPath implements Streamable<PropertyPath> {
@@ -43,6 +44,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	private static final String DELIMITERS = "_\\.";
 	private static final String ALL_UPPERCASE = "[A-Z0-9._$]+";
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
+	private static final Pattern SPLITTER_FOR_QUOTED = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", "\\."));
 
 	private final TypeInformation<?> owningType;
 	private final String name;
@@ -59,7 +61,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @param owningType must not be {@literal null}.
 	 */
 	PropertyPath(String name, Class<?> owningType) {
-		this(name, ClassTypeInformation.from(owningType), Collections.<PropertyPath>emptyList());
+		this(name, ClassTypeInformation.from(owningType), Collections.<PropertyPath> emptyList());
 	}
 
 	/**
@@ -210,8 +212,9 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}.
-	 * 
+	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}. <br />
+	 * Uses {@link #SPLITTER} by default and {@link #SPLITTER_FOR_QUOTED} for {@link Pattern#quote(String) quoted} literals.
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param type
 	 * @return
@@ -222,7 +225,9 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.notNull(type, "TypeInformation must not be null or empty!");
 
 		List<String> iteratorSource = new ArrayList<>();
-		Matcher matcher = SPLITTER.matcher("_" + source);
+
+		Matcher matcher = isQuoted(source) ? SPLITTER_FOR_QUOTED.matcher(source.replace("\\Q", "").replace("\\E", ""))
+				: SPLITTER.matcher("_" + source);
 
 		while (matcher.find()) {
 			iteratorSource.add(matcher.group(1));
@@ -243,6 +248,10 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		}
 
 		return result;
+	}
+
+	private static boolean isQuoted(String source) {
+		return source.matches("^\\\\Q.*\\\\E$");
 	}
 
 	/**
