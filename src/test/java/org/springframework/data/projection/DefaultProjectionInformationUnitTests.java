@@ -60,6 +60,7 @@ public class DefaultProjectionInformationUnitTests {
 
 		return descriptors.stream()//
 				.map(FeatureDescriptor::getName)//
+				.distinct()
 				.collect(Collectors.toList());
 	}
 

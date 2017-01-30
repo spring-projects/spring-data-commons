@@ -20,15 +20,17 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
 /**
  * Default implementation of {@link ProjectionInformation}. Exposes all properties of the type as required input
  * properties.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.12
  */
@@ -39,7 +41,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 	/**
 	 * Creates a new {@link DefaultProjectionInformation} for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 */
 	public DefaultProjectionInformation(Class<?> type) {
@@ -47,10 +49,10 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		Assert.notNull(type, "Projection type must not be null!");
 
 		this.projectionType = type;
-		this.properties = Arrays.asList(BeanUtils.getPropertyDescriptors(type));
+		this.properties = collectDescriptors(type);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.projection.ProjectionInformation#getType()
 	 */
@@ -71,7 +73,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 				.collect(Collectors.toList());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.projection.ProjectionInformation#isDynamic()
 	 */
@@ -84,12 +86,32 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 * Returns whether the given {@link PropertyDescriptor} describes an input property for the projection, i.e. a
 	 * property that needs to be present on the source to be able to create reasonable projections for the type the
 	 * descriptor was looked up on.
-	 * 
+	 *
 	 * @param descriptor will never be {@literal null}.
 	 * @return
 	 */
 	protected boolean isInputProperty(PropertyDescriptor descriptor) {
 		return true;
+	}
+
+	/**
+	 * Collects {@link PropertyDescriptor}s for all properties exposed by the given type and all its super interfaces.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static List<PropertyDescriptor> collectDescriptors(Class<?> type) {
+
+		List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
+		result.addAll(Arrays.stream(BeanUtils.getPropertyDescriptors(type))//
+				.filter(it -> !hasDefaultGetter(it))//
+				.collect(Collectors.toList()));
+
+		for (Class<?> interfaze : type.getInterfaces()) {
+			result.addAll(collectDescriptors(interfaze));
+		}
+
+		return result.stream().distinct().collect(Collectors.toList());
 	}
 
 	/**

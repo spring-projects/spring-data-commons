@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 
 /**
  * Utility methods to work with {@link Optional}s.
- * 
+ *
  * @author Oliver Gierke
  */
 @UtilityClass
@@ -40,7 +40,7 @@ public class Optionals {
 
 	/**
 	 * Returns whether any of the given {@link Optional}s is present.
-	 * 
+	 *
 	 * @param optionals must not be {@literal null}.
 	 * @return
 	 */
@@ -53,7 +53,7 @@ public class Optionals {
 
 	/**
 	 * Turns the given {@link Optional} into a one-element {@link Stream} or an empty one if not present.
-	 * 
+	 *
 	 * @param optionals must not be {@literal null}.
 	 * @return
 	 */
@@ -67,7 +67,7 @@ public class Optionals {
 
 	/**
 	 * Applies the given function to the elements of the source and returns the first non-empty result.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param function must not be {@literal null}.
 	 * @return
@@ -85,7 +85,7 @@ public class Optionals {
 
 	/**
 	 * Applies the given function to the elements of the source and returns the first non-empty result.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param function must not be {@literal null}.
 	 * @return
@@ -103,7 +103,7 @@ public class Optionals {
 
 	/**
 	 * Invokes the given {@link Supplier}s for {@link Optional} results one by one and returns the first non-empty one.
-	 * 
+	 *
 	 * @param suppliers must not be {@literal null}.
 	 * @return
 	 */
@@ -117,7 +117,7 @@ public class Optionals {
 
 	/**
 	 * Invokes the given {@link Supplier}s for {@link Optional} results one by one and returns the first non-empty one.
-	 * 
+	 *
 	 * @param suppliers must not be {@literal null}.
 	 * @return
 	 */
@@ -134,7 +134,7 @@ public class Optionals {
 	/**
 	 * Returns the next element of the given {@link Iterator} or {@link Optional#empty()} in case there is no next
 	 * element.
-	 * 
+	 *
 	 * @param iterator must not be {@literal null}.
 	 * @return
 	 */
@@ -148,7 +148,7 @@ public class Optionals {
 	/**
 	 * Returns a {@link Pair} if both {@link Optional} instances have values or {@link Optional#empty()} if one or both
 	 * are missing.
-	 * 
+	 *
 	 * @param left
 	 * @param right
 	 * @return
@@ -159,7 +159,7 @@ public class Optionals {
 
 	/**
 	 * Invokes the given {@link BiConsumer} if all given {@link Optional} are present.
-	 * 
+	 *
 	 * @param left must not be {@literal null}.
 	 * @param right must not be {@literal null}.
 	 * @param consumer must not be {@literal null}.
@@ -178,7 +178,7 @@ public class Optionals {
 
 	/**
 	 * Maps the values contained in the given {@link Optional} if both of them are present.
-	 * 
+	 *
 	 * @param left must not be {@literal null}.
 	 * @param right must not be {@literal null}.
 	 * @param function must not be {@literal null}.
