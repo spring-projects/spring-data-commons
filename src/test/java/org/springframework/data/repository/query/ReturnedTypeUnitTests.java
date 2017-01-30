@@ -153,7 +153,8 @@ public class ReturnedTypeUnitTests {
 
 		List<String> properties = type.getInputProperties();
 
-		assertThat(properties).hasSize(1).contains("firstname");
+		assertThat(properties).hasSize(1);
+		assertThat(properties).containsExactly("firstname");
 	}
 
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {

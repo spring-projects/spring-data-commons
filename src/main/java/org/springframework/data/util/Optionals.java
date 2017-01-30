@@ -20,6 +20,8 @@ import lombok.experimental.UtilityClass;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -33,6 +35,8 @@ import org.springframework.util.Assert;
  */
 @UtilityClass
 public class Optionals {
+
+	private static final Object SUCCESS = new Object();
 
 	/**
 	 * Returns whether any of the given {@link Optional}s is present.
@@ -151,5 +155,50 @@ public class Optionals {
 	 */
 	public static <T, S> Optional<Pair<T, S>> withBoth(Optional<T> left, Optional<S> right) {
 		return left.flatMap(l -> right.map(r -> Pair.of(l, r)));
+	}
+
+	/**
+	 * Invokes the given {@link BiConsumer} if all given {@link Optional} are present.
+	 * 
+	 * @param left must not be {@literal null}.
+	 * @param right must not be {@literal null}.
+	 * @param consumer must not be {@literal null}.
+	 */
+	public static <T, S> Optional<Object> ifAllPresent(Optional<T> left, Optional<S> right, BiConsumer<T, S> consumer) {
+
+		Assert.notNull(left, "Optional must not be null!");
+		Assert.notNull(right, "Optional must not be null!");
+		Assert.notNull(consumer, "Consumer must not be null!");
+
+		return mapIfAllPresent(left, right, (l, r) -> {
+			consumer.accept(l, r);
+			return SUCCESS;
+		});
+	}
+
+	/**
+	 * Maps the values contained in the given {@link Optional} if both of them are present.
+	 * 
+	 * @param left must not be {@literal null}.
+	 * @param right must not be {@literal null}.
+	 * @param function must not be {@literal null}.
+	 * @return
+	 */
+	public static <T, S, R> Optional<R> mapIfAllPresent(Optional<T> left, Optional<S> right,
+			BiFunction<T, S, R> function) {
+
+		Assert.notNull(left, "Optional must not be null!");
+		Assert.notNull(right, "Optional must not be null!");
+		Assert.notNull(function, "BiFunctionmust not be null!");
+
+		return left.flatMap(l -> right.map(r -> function.apply(l, r)));
+	}
+
+	public static <T extends Throwable> void ifBothAbsent(Optional<?> left, Optional<?> right, Supplier<T> supplier)
+			throws T {
+
+		if (!left.isPresent() && !right.isPresent()) {
+			throw supplier.get();
+		}
 	}
 }

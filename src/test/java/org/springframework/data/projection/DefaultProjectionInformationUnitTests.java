@@ -53,7 +53,7 @@ public class DefaultProjectionInformationUnitTests {
 		ProjectionInformation information = new DefaultProjectionInformation(WithDefaultMethod.class);
 
 		assertThat(information.isClosed()).isTrue();
-		assertThat(toNames(information.getInputProperties())).contains("firstname");
+		assertThat(toNames(information.getInputProperties())).containsExactly("firstname");
 	}
 
 	private static List<String> toNames(List<PropertyDescriptor> descriptors) {
