@@ -22,6 +22,8 @@ import org.springframework.data.domain.Sort;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 
+import java.util.List;
+
 /**
  * Interface to allow execution of QueryDsl {@link Predicate} instances.
  * 
@@ -47,7 +49,7 @@ public interface QueryDslPredicateExecutor<T> {
 	 * @param predicate can be {@literal null}.
 	 * @return all entities matching the given {@link Predicate}.
 	 */
-	Iterable<T> findAll(Predicate predicate);
+	List<T> findAll(Predicate predicate);
 
 	/**
 	 * Returns all entities matching the given {@link Predicate} applying the given {@link Sort}. In case no match could
@@ -58,7 +60,7 @@ public interface QueryDslPredicateExecutor<T> {
 	 * @return all entities matching the given {@link Predicate}.
 	 * @since 1.10
 	 */
-	Iterable<T> findAll(Predicate predicate, Sort sort);
+	List<T> findAll(Predicate predicate, Sort sort);
 
 	/**
 	 * Returns all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s. In case no
@@ -68,7 +70,7 @@ public interface QueryDslPredicateExecutor<T> {
 	 * @param orders the {@link OrderSpecifier}s to sort the results by
 	 * @return all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s.
 	 */
-	Iterable<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
+	List<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
 
 	/**
 	 * Returns all entities ordered by the given {@link OrderSpecifier}s.
@@ -76,7 +78,7 @@ public interface QueryDslPredicateExecutor<T> {
 	 * @param orders the {@link OrderSpecifier}s to sort the results by.
 	 * @return all entities ordered by the given {@link OrderSpecifier}s.
 	 */
-	Iterable<T> findAll(OrderSpecifier<?>... orders);
+	List<T> findAll(OrderSpecifier<?>... orders);
 
 	/**
 	 * Returns a {@link Page} of entities matching the given {@link Predicate}. In case no match could be found, an empty
