@@ -42,8 +42,8 @@ public class Version implements Comparable<Version> {
 	 */
 	public Version(int... parts) {
 
-		Assert.notNull(parts);
-		Assert.isTrue(parts.length > 0 && parts.length < 5);
+		Assert.notNull(parts, "Parts must not be null!");
+		Assert.isTrue(parts.length > 0 && parts.length < 5, String.format("Invalid parts length. 0 < %s < 5", parts.length));
 
 		this.major = parts[0];
 		this.minor = parts.length > 1 ? parts[1] : 0;
@@ -64,7 +64,7 @@ public class Version implements Comparable<Version> {
 	 */
 	public static Version parse(String version) {
 
-		Assert.hasText(version);
+		Assert.hasText(version, "Version must not be null o empty!");
 
 		String[] parts = version.trim().split("\\.");
 		int[] intParts = new int[parts.length];

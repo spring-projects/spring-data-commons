@@ -153,7 +153,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	public void addQueryCreationListener(QueryCreationListener<?> listener) {
 
-		Assert.notNull(listener);
+		Assert.notNull(listener, "Listener must not be null!");
 		this.queryPostProcessors.add(listener);
 	}
 

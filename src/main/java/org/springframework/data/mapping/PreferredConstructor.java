@@ -58,8 +58,8 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 */
 	public PreferredConstructor(Constructor<T> constructor, Parameter<Object, P>... parameters) {
 
-		Assert.notNull(constructor);
-		Assert.notNull(parameters);
+		Assert.notNull(constructor, "Constructor must not be null!");
+		Assert.notNull(parameters, "Parameters must not be null!");
 
 		ReflectionUtils.makeAccessible(constructor);
 		this.constructor = constructor;
@@ -122,7 +122,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 */
 	public boolean isConstructorParameter(PersistentProperty<?> property) {
 
-		Assert.notNull(property);
+		Assert.notNull(property, "Property must not be null!");
 
 		try {
 
@@ -166,7 +166,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 */
 	public boolean isEnclosingClassParameter(Parameter<?, P> parameter) {
 
-		Assert.notNull(parameter);
+		Assert.notNull(parameter, "Parameter must not be null!");
 
 		if (parameters.isEmpty() || !parameter.isEnclosingClassParameter()) {
 			return false;
@@ -203,8 +203,8 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 */
 		public Parameter(String name, TypeInformation<T> type, Annotation[] annotations, PersistentEntity<T, P> entity) {
 
-			Assert.notNull(type);
-			Assert.notNull(annotations);
+			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(annotations, "Annotations must not be null!");
 
 			this.name = name;
 			this.type = type;

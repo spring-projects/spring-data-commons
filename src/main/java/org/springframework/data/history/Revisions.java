@@ -51,7 +51,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<
 	 */
 	private Revisions(List<? extends Revision<N, T>> revisions, boolean latestLast) {
 
-		Assert.notNull(revisions);
+		Assert.notNull(revisions, "Revisions must not be null!");
 		this.revisions = new ArrayList<Revision<N, T>>(revisions);
 		this.latestLast = latestLast;
 

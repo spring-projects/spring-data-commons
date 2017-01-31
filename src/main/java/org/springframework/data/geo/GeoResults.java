@@ -68,7 +68,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	@PersistenceConstructor
 	public GeoResults(List<? extends GeoResult<T>> results, Distance averageDistance) {
 
-		Assert.notNull(results);
+		Assert.notNull(results, "Results must not be null!");
 
 		this.results = results;
 		this.averageDistance = averageDistance;

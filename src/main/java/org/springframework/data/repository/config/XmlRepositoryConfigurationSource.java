@@ -62,8 +62,8 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 
 		super(environment);
 
-		Assert.notNull(element);
-		Assert.notNull(context);
+		Assert.notNull(element, "Element must not be null!");
+		Assert.notNull(context, "Context must not be null!");
 
 		this.element = element;
 		this.context = context;

@@ -82,7 +82,7 @@ public class AuditingHandler implements InitializingBean {
 	 */
 	public void setAuditorAware(final AuditorAware<?> auditorAware) {
 
-		Assert.notNull(auditorAware);
+		Assert.notNull(auditorAware, "AuditorAware must not be null!");
 		this.auditorAware = auditorAware;
 	}
 

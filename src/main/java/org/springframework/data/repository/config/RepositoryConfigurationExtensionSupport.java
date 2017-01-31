@@ -76,8 +76,8 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader, boolean strictMatchesOnly) {
 
-		Assert.notNull(configSource);
-		Assert.notNull(loader);
+		Assert.notNull(configSource, "ConfigSource must not be null!");
+		Assert.notNull(loader, "Loader must not be null!");
 
 		Set<RepositoryConfiguration<T>> result = new HashSet<RepositoryConfiguration<T>>();
 
