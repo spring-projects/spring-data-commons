@@ -67,7 +67,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 */
 	public ResourceReaderRepositoryPopulator(ResourceReader reader, ClassLoader classLoader) {
 
-		Assert.notNull(reader);
+		Assert.notNull(reader, "Reader must not be null!");
 
 		this.reader = reader;
 		this.classLoader = classLoader;
@@ -82,7 +82,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * @throws IOException
 	 */
 	public void setResourceLocation(String location) throws IOException {
-		Assert.hasText(location);
+		Assert.hasText(location, "Location must not be null!");
 		setResources(resolver.getResources(location));
 	}
 

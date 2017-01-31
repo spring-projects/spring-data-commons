@@ -62,14 +62,14 @@ public class EntityInstantiators {
 	 * Creates a new {@link EntityInstantiator} using the given fallback {@link EntityInstantiator} and the given custom
 	 * ones.
 	 * 
-	 * @param fallback must not be {@literal null}.
+	 * @param defaultInstantiator must not be {@literal null}.
 	 * @param customInstantiators must not be {@literal null}.
 	 */
 	public EntityInstantiators(EntityInstantiator defaultInstantiator,
 			Map<Class<?>, EntityInstantiator> customInstantiators) {
 
-		Assert.notNull(defaultInstantiator);
-		Assert.notNull(customInstantiators);
+		Assert.notNull(defaultInstantiator, "DefaultInstantiator must not be null!");
+		Assert.notNull(customInstantiators, "CustomInstantiators must not be null!");
 
 		this.fallback = defaultInstantiator;
 		this.customInstantiators = customInstantiators;
@@ -83,7 +83,7 @@ public class EntityInstantiators {
 	 */
 	public EntityInstantiator getInstantiatorFor(PersistentEntity<?, ?> entity) {
 
-		Assert.notNull(entity);
+		Assert.notNull(entity, "Entity must not be null!");
 		Class<?> type = entity.getType();
 
 		if (!customInstantiators.containsKey(type)) {

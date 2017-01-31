@@ -44,8 +44,8 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 */
 	public DefaultRepositoryConfiguration(T configurationSource, BeanDefinition definition) {
 
-		Assert.notNull(configurationSource);
-		Assert.notNull(definition);
+		Assert.notNull(configurationSource, "ConfigurationSource must not be null!");
+		Assert.notNull(definition, "BeanDefinition must not be null!");
 
 		this.configurationSource = configurationSource;
 		this.definition = definition;

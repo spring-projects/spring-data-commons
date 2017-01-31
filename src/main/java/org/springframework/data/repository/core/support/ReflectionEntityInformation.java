@@ -58,7 +58,7 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 	public ReflectionEntityInformation(Class<T> domainClass, final Class<? extends Annotation> annotation) {
 
 		super(domainClass);
-		Assert.notNull(annotation);
+		Assert.notNull(annotation, "Annotation must not be null!");
 
 		ReflectionUtils.doWithFields(domainClass, new FieldCallback() {
 			public void doWith(Field field) {

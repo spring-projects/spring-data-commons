@@ -160,7 +160,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	public E getPersistentEntity(TypeInformation<?> type) {
 
-		Assert.notNull(type);
+		Assert.notNull(type, "Type must not be null!");
 
 		try {
 			read.lock();

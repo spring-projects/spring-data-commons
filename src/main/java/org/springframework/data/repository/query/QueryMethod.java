@@ -87,7 +87,7 @@ public class QueryMethod {
 			}
 		}
 
-		Assert.notNull(this.parameters);
+		Assert.notNull(this.parameters, String.format("Parameters extracted from method '%s' must not be null!", method.getName()));
 
 		if (isPageQuery()) {
 			Assert.isTrue(this.parameters.hasPageableParameter(),

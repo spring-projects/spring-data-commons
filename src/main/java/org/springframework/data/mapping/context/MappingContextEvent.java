@@ -46,8 +46,8 @@ public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends Per
 
 		super(source);
 
-		Assert.notNull(source);
-		Assert.notNull(entity);
+		Assert.notNull(source, "Source MappingContext must not be null!");
+		Assert.notNull(entity, "Entity must not be null!");
 
 		this.source = source;
 		this.entity = entity;

@@ -42,7 +42,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 	 */
 	public AnnotationDetectionFieldCallback(Class<? extends Annotation> annotationType) {
 
-		Assert.notNull(annotationType);
+		Assert.notNull(annotationType, "AnnotationType must not be null!");
 		this.annotationType = annotationType;
 	}
 
@@ -83,7 +83,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 	@SuppressWarnings("unchecked")
 	public <T> T getValue(Object source) {
 
-		Assert.notNull(source);
+		Assert.notNull(source, "Source object must not be null!");
 		return field == null ? null : (T) ReflectionUtils.getField(field, source);
 	}
 }

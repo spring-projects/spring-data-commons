@@ -55,7 +55,7 @@ public class Point implements Serializable {
 	 */
 	public Point(Point point) {
 
-		Assert.notNull(point);
+		Assert.notNull(point, "Source point must not be null!");
 
 		this.x = point.x;
 		this.y = point.y;

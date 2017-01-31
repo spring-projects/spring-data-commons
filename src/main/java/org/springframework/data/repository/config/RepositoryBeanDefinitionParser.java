@@ -47,7 +47,7 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 	 */
 	public RepositoryBeanDefinitionParser(RepositoryConfigurationExtension extension) {
 
-		Assert.notNull(extension);
+		Assert.notNull(extension, "Extension must not be null!");
 		this.extension = extension;
 	}
 

@@ -70,8 +70,8 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	public TransactionalRepositoryProxyPostProcessor(ListableBeanFactory beanFactory, String transactionManagerName,
 			boolean enableDefaultTransaction) {
 
-		Assert.notNull(beanFactory);
-		Assert.notNull(transactionManagerName);
+		Assert.notNull(beanFactory, "BeanFactory must not be null!");
+		Assert.notNull(transactionManagerName, "TransactionManagerName must not be null!");
 
 		this.beanFactory = beanFactory;
 		this.transactionManagerName = transactionManagerName;

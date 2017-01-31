@@ -64,7 +64,7 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 	 */
 	public void setSortParameter(String sortParameter) {
 
-		Assert.hasText(sortParameter);
+		Assert.hasText(sortParameter, "SortParameter must not be null nor empty!");
 		this.sortParameter = sortParameter;
 	}
 
