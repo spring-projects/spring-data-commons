@@ -37,7 +37,7 @@ public class PropertiesBasedNamedQueries implements NamedQueries {
 	 * @param properties
 	 */
 	public PropertiesBasedNamedQueries(Properties properties) {
-		Assert.notNull(properties);
+		Assert.notNull(properties, "Properties must not be null!");
 		this.properties = properties;
 	}
 

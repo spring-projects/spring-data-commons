@@ -41,8 +41,8 @@ public class GeoResult<T> implements Serializable {
 	 */
 	public GeoResult(T content, Distance distance) {
 
-		Assert.notNull(content);
-		Assert.notNull(distance);
+		Assert.notNull(content, "Content must not be null!");
+		Assert.notNull(distance, "Distance must not be null!");
 
 		this.content = content;
 		this.distance = distance;

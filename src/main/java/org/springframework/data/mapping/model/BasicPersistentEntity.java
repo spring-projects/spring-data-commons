@@ -91,7 +91,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public BasicPersistentEntity(TypeInformation<T> information, Comparator<P> comparator) {
 
-		Assert.notNull(information);
+		Assert.notNull(information, "Information must not be null!");
 
 		this.information = information;
 		this.properties = new ArrayList<P>();
@@ -182,7 +182,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void addPersistentProperty(P property) {
 
-		Assert.notNull(property);
+		Assert.notNull(property, "Property must not be null!");
 
 		if (properties.contains(property)) {
 			return;
@@ -315,7 +315,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void doWithProperties(PropertyHandler<P> handler) {
 
-		Assert.notNull(handler);
+		Assert.notNull(handler, "Handler must not be null!");
 
 		for (P property : properties) {
 			if (!property.isTransient() && !property.isAssociation()) {
@@ -331,7 +331,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	@Override
 	public void doWithProperties(SimplePropertyHandler handler) {
 
-		Assert.notNull(handler);
+		Assert.notNull(handler, "Handler must not be null!");
 
 		for (PersistentProperty<?> property : properties) {
 			if (!property.isTransient() && !property.isAssociation()) {
@@ -346,7 +346,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void doWithAssociations(AssociationHandler<P> handler) {
 
-		Assert.notNull(handler);
+		Assert.notNull(handler, "Handler must not be null!");
 
 		for (Association<P> association : associations) {
 			handler.doWithAssociation(association);
@@ -359,7 +359,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void doWithAssociations(SimpleAssociationHandler handler) {
 
-		Assert.notNull(handler);
+		Assert.notNull(handler, "Handler must not be null!");
 
 		for (Association<? extends PersistentProperty<?>> association : associations) {
 			handler.doWithAssociation(association);

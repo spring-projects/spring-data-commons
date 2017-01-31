@@ -47,8 +47,8 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	public PersistentEntityParameterValueProvider(PersistentEntity<?, P> entity, PropertyValueProvider<P> provider,
 			Object parent) {
 
-		Assert.notNull(entity);
-		Assert.notNull(provider);
+		Assert.notNull(entity, "Entity must not be null!");
+		Assert.notNull(provider, "Provider must not be null!");
 
 		this.entity = entity;
 		this.provider = provider;

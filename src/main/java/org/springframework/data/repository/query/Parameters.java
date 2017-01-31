@@ -60,7 +60,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 */
 	public Parameters(Method method) {
 
-		Assert.notNull(method);
+		Assert.notNull(method, "Method must not be null!");
 
 		List<Class<?>> types = Arrays.asList(method.getParameterTypes());
 

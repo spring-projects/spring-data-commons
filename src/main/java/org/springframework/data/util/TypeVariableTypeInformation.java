@@ -47,7 +47,7 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 			Map<TypeVariable<?>, Type> typeVariableMap) {
 
 		super(variable, parent, typeVariableMap);
-		Assert.notNull(variable);
+		Assert.notNull(variable, "TypeVariable must not be null!");
 		this.variable = variable;
 		this.owningType = owningType;
 	}

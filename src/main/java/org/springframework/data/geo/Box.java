@@ -40,8 +40,8 @@ public class Box implements Shape {
 	 */
 	public Box(Point first, Point second) {
 
-		Assert.notNull(first);
-		Assert.notNull(second);
+		Assert.notNull(first, "First point must not be null!");
+		Assert.notNull(second, "Second point must not be null!");
 
 		this.first = first;
 		this.second = second;

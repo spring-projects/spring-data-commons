@@ -38,7 +38,7 @@ public abstract class AbstractEntityInformation<T, ID extends Serializable> impl
 	 */
 	public AbstractEntityInformation(Class<T> domainClass) {
 
-		Assert.notNull(domainClass);
+		Assert.notNull(domainClass, "DomainClass must not be null!");
 		this.domainClass = domainClass;
 	}
 

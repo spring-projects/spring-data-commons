@@ -72,8 +72,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	protected TypeDiscoverer(Type type, Map<TypeVariable<?>, Type> typeVariableMap) {
 
-		Assert.notNull(type);
-		Assert.notNull(typeVariableMap);
+		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(typeVariableMap, "TypeVariableMap must not be null!");
 
 		this.type = type;
 		this.typeVariableMap = typeVariableMap;
@@ -421,7 +421,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public TypeInformation<?> getReturnType(Method method) {
 
-		Assert.notNull(method);
+		Assert.notNull(method, "Method must not be null!");
 		return createInfo(method.getGenericReturnType());
 	}
 
@@ -506,7 +506,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Override
 	public TypeInformation<?> specialize(ClassTypeInformation<?> type) {
 
-		Assert.isTrue(getType().isAssignableFrom(type.getType()));
+		Assert.isTrue(getType().isAssignableFrom(type.getType()), String.format("%s must be assignable from %s", getType(), type.getType()));
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
 

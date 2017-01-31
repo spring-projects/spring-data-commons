@@ -75,7 +75,7 @@ public class RepositoryConfigurationDelegate {
 
 		Assert.isTrue(isXml || isAnnotation,
 				"Configuration source must either be an Xml- or an AnnotationBasedConfigurationSource!");
-		Assert.notNull(resourceLoader);
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
 		RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
 		generator.setBeanClassLoader(resourceLoader.getClassLoader());

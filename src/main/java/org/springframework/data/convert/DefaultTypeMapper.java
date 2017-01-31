@@ -77,8 +77,8 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 			MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext,
 			List<? extends TypeInformationMapper> additionalMappers) {
 
-		Assert.notNull(accessor);
-		Assert.notNull(additionalMappers);
+		Assert.notNull(accessor, "Accessor must not be null!");
+		Assert.notNull(additionalMappers, "AdditionalMappers must not be null!");
 
 		List<TypeInformationMapper> mappers = new ArrayList<TypeInformationMapper>(additionalMappers.size() + 1);
 		if (mappingContext != null) {
@@ -97,7 +97,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 */
 	public TypeInformation<?> readType(S source) {
 
-		Assert.notNull(source);
+		Assert.notNull(source, "Source object must not be null!");
 
 		Object alias = accessor.readAliasFrom(source);
 		return alias == null ? null : getFromCacheOrCreate(alias);
@@ -138,7 +138,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	@SuppressWarnings("unchecked")
 	public <T> TypeInformation<? extends T> readType(S source, TypeInformation<T> basicType) {
 
-		Assert.notNull(source);
+		Assert.notNull(source, "Source object must not be null!");
 		Class<?> documentsTargetType = getDefaultedTypeToBeUsed(source);
 
 		if (documentsTargetType == null) {
@@ -198,7 +198,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 */
 	public void writeType(TypeInformation<?> info, S sink) {
 
-		Assert.notNull(info);
+		Assert.notNull(info, "TypeInformation must not be null!");
 
 		Object alias = getAliasFor(info);
 		if (alias != null) {
@@ -215,7 +215,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 */
 	protected final Object getAliasFor(TypeInformation<?> info) {
 
-		Assert.notNull(info);
+		Assert.notNull(info, "TypeInformation must not be null!");
 
 		for (TypeInformationMapper mapper : mappers) {
 			Object alias = mapper.createAliasFor(info);

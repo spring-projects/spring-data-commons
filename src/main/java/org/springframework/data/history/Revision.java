@@ -37,8 +37,8 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	 */
 	public Revision(RevisionMetadata<N> metadata, T entity) {
 
-		Assert.notNull(metadata);
-		Assert.notNull(entity);
+		Assert.notNull(metadata, "Metadata must not be null!");
+		Assert.notNull(entity, "Entity must not be null!");
 
 		this.metadata = metadata;
 		this.entity = entity;

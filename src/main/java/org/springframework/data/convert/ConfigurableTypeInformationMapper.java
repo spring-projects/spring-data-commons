@@ -37,13 +37,13 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 	private final Map<ClassTypeInformation<?>, Object> typeMap;
 
 	/**
-	 * Creates a new {@link ConfigurableTypeMapper} for the given type map.
+	 * Creates a new {@link ConfigurableTypeInformationMapper} for the given type map.
 	 * 
 	 * @param sourceTypeMap must not be {@literal null}.
 	 */
 	public ConfigurableTypeInformationMapper(Map<? extends Class<?>, String> sourceTypeMap) {
 
-		Assert.notNull(sourceTypeMap);
+		Assert.notNull(sourceTypeMap, "SourceTypeMap must not be null!");
 		this.typeMap = new HashMap<ClassTypeInformation<?>, Object>(sourceTypeMap.size());
 
 		for (Entry<? extends Class<?>, String> entry : sourceTypeMap.entrySet()) {

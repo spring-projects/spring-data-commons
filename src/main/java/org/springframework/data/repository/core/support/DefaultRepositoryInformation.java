@@ -72,8 +72,8 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	public DefaultRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass,
 			Class<?> customImplementationClass) {
 
-		Assert.notNull(metadata);
-		Assert.notNull(repositoryBaseClass);
+		Assert.notNull(metadata, "Metadata must not be null!");
+		Assert.notNull(repositoryBaseClass, "RepositoryBaseClass must not be null!");
 
 		this.metadata = metadata;
 		this.repositoryBaseClass = repositoryBaseClass;
@@ -145,7 +145,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 */
 	private boolean isTargetClassMethod(Method method, Class<?> targetType) {
 
-		Assert.notNull(method);
+		Assert.notNull(method, "Method must not be null!");
 
 		if (targetType == null) {
 			return false;

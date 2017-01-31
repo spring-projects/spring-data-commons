@@ -51,7 +51,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 */
 	public DefaultPersistentPropertyPath(List<T> properties) {
 
-		Assert.notNull(properties);
+		Assert.notNull(properties, "Properties must not be null!");
 
 		this.properties = properties;
 	}

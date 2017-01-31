@@ -46,7 +46,7 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 	 * @param defaultLocation must be non-empty
 	 */
 	public NamedQueriesBeanDefinitionParser(String defaultLocation) {
-		Assert.hasText(defaultLocation);
+		Assert.hasText(defaultLocation, "DefaultLocation must not be null nor empty!");
 		this.defaultLocation = defaultLocation;
 	}
 
