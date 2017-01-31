@@ -42,8 +42,8 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 */
 	public ParametersParameterAccessor(Parameters<?, ?> parameters, Object[] values) {
 
-		Assert.notNull(parameters);
-		Assert.notNull(values);
+		Assert.notNull(parameters, "Parameters must not be null!");
+		Assert.notNull(values, "Values must not be null!");
 
 		Assert.isTrue(parameters.getNumberOfParameters() == values.length, "Invalid number of parameters given!");
 

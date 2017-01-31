@@ -45,7 +45,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	public AnnotationRevisionMetadata(final Object entity, Class<? extends Annotation> revisionNumberAnnotation,
 			Class<? extends Annotation> revisionTimeStampAnnotation) {
 
-		Assert.notNull(entity);
+		Assert.notNull(entity, "Entity must not be null!");
 		this.entity = entity;
 
 		if (revisionNumberAnnotation != null) {

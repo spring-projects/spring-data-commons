@@ -72,7 +72,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public Repositories(ListableBeanFactory factory) {
 
-		Assert.notNull(factory);
+		Assert.notNull(factory, "Factory must not be null!");
 
 		this.beanFactory = factory;
 		this.repositoryFactoryInfos = new HashMap<Class<?>, RepositoryFactoryInformation<Object, Serializable>>();

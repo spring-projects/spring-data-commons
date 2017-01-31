@@ -61,7 +61,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 
 		assertRequiredSpringVersionPresent();
 
-		Assert.notNull(includeFilters);
+		Assert.notNull(includeFilters, "Include filters must not be null!");
 
 		if (includeFilters.iterator().hasNext()) {
 			for (TypeFilter filter : includeFilters) {
@@ -204,7 +204,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		 */
 		public AllTypeFilter(List<TypeFilter> delegates) {
 
-			Assert.notNull(delegates);
+			Assert.notNull(delegates, "TypeFilter deleages must not be null!");
 			this.delegates = delegates;
 		}
 

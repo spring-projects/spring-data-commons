@@ -86,7 +86,7 @@ public class SimpleTypeHolder {
 	 */
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, boolean registerDefaults) {
 
-		Assert.notNull(customSimpleTypes);
+		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null!");
 		this.simpleTypes = new CopyOnWriteArraySet<Class<?>>(customSimpleTypes);
 
 		if (registerDefaults) {
@@ -102,8 +102,8 @@ public class SimpleTypeHolder {
 	 */
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, SimpleTypeHolder source) {
 
-		Assert.notNull(customSimpleTypes);
-		Assert.notNull(source);
+		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null!");
+		Assert.notNull(source, "SourceTypeHolder must not be null!");
 
 		this.simpleTypes = new CopyOnWriteArraySet<Class<?>>(customSimpleTypes);
 		this.simpleTypes.addAll(source.simpleTypes);
@@ -117,7 +117,7 @@ public class SimpleTypeHolder {
 	 */
 	public boolean isSimpleType(Class<?> type) {
 
-		Assert.notNull(type);
+		Assert.notNull(type, "Type must not be null!");
 
 		if (Object.class.equals(type) || simpleTypes.contains(type)) {
 			return true;

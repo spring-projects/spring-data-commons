@@ -67,7 +67,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * Creates a new {@link AnnotationRepositoryConfigurationSource} from the given {@link AnnotationMetadata} and
 	 * annotation.
 	 * 
-	 * @param configMetadata must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
 	 * @param annotation must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
 	 * @param environment
@@ -77,9 +77,9 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 		super(environment);
 
-		Assert.notNull(metadata);
-		Assert.notNull(annotation);
-		Assert.notNull(resourceLoader);
+		Assert.notNull(metadata, "Metadata must not be null!");
+		Assert.notNull(annotation, "Annotation must not be null!");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
 		this.attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(annotation.getName()));
 		this.enableAnnotationMetadata = new StandardAnnotationMetadata(annotation);

@@ -38,7 +38,7 @@ public class DelegatingEntityInformation<T, ID extends Serializable> implements 
 	 */
 	public DelegatingEntityInformation(EntityInformation<T, ID> delegate) {
 
-		Assert.notNull(delegate);
+		Assert.notNull(delegate, "Delegate EnittyInformation must not be null!");
 		this.delegate = delegate;
 	}
 

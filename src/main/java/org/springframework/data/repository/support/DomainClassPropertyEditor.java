@@ -48,9 +48,9 @@ public class DomainClassPropertyEditor<T, ID extends Serializable> extends Prope
 	public DomainClassPropertyEditor(RepositoryInvoker invoker, EntityInformation<T, ID> information,
 			PropertyEditorRegistry registry) {
 
-		Assert.notNull(invoker);
-		Assert.notNull(information);
-		Assert.notNull(registry);
+		Assert.notNull(invoker, "Invoker must not be null!");
+		Assert.notNull(information, "Information must not be null!");
+		Assert.notNull(registry, "Registry must not be null!");
 
 		this.invoker = invoker;
 		this.information = information;
