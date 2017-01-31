@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Vedran Pavic
  */
 @Configuration
 public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
@@ -54,13 +55,22 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	@Autowired private ApplicationContext context;
 	@Autowired @Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService;
 
+	@Autowired(required = false)
+	private PageableHandlerMethodArgumentResolverCustomizer pageableResolverCustomizer;
+
+	@Autowired(required = false)
+	private SortHandlerMethodArgumentResolverCustomizer sortResolverCustomizer;
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#pageableResolver()
 	 */
 	@Bean
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
-		return new PageableHandlerMethodArgumentResolver(sortResolver());
+		PageableHandlerMethodArgumentResolver pageableResolver =
+				new PageableHandlerMethodArgumentResolver(sortResolver());
+		customizePageableResolver(pageableResolver);
+		return pageableResolver;
 	}
 
 	/*
@@ -69,7 +79,9 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public SortHandlerMethodArgumentResolver sortResolver() {
-		return new SortHandlerMethodArgumentResolver();
+		SortHandlerMethodArgumentResolver sortResolver = new SortHandlerMethodArgumentResolver();
+		customizeSortResolver(sortResolver);
+		return sortResolver;
 	}
 
 	/* 
@@ -131,4 +143,17 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 			converters.add(0, new XmlBeamHttpMessageConverter());
 		}
 	}
+
+	protected void customizePageableResolver(PageableHandlerMethodArgumentResolver pageableResolver) {
+		if (this.pageableResolverCustomizer != null) {
+			this.pageableResolverCustomizer.customize(pageableResolver);
+		}
+	}
+
+	protected void customizeSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
+		if (this.sortResolverCustomizer != null) {
+			this.sortResolverCustomizer.customize(sortResolver);
+		}
+	}
+
 }

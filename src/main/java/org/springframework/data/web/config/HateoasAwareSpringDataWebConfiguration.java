@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Ben Hale
+ * @author Vedran Pavic
  */
 @Configuration
 public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfiguration {
@@ -43,7 +44,10 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	@Bean
 	@Override
 	public HateoasPageableHandlerMethodArgumentResolver pageableResolver() {
-		return new HateoasPageableHandlerMethodArgumentResolver(sortResolver());
+		HateoasPageableHandlerMethodArgumentResolver pageableResolver =
+				new HateoasPageableHandlerMethodArgumentResolver(sortResolver());
+		customizePageableResolver(pageableResolver);
+		return pageableResolver;
 	}
 
 	/*
@@ -53,7 +57,9 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	@Bean
 	@Override
 	public HateoasSortHandlerMethodArgumentResolver sortResolver() {
-		return new HateoasSortHandlerMethodArgumentResolver();
+		HateoasSortHandlerMethodArgumentResolver sortResolver = new HateoasSortHandlerMethodArgumentResolver();
+		customizeSortResolver(sortResolver);
+		return sortResolver;
 	}
 
 	@Bean
