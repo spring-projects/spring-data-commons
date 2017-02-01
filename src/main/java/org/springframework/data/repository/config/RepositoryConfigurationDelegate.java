@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  * s.
  * 
  * @author Oliver Gierke
+ * @author Sascha Woo
  */
 public class RepositoryConfigurationDelegate {
 
@@ -120,7 +121,7 @@ public class RepositoryConfigurationDelegate {
 		List<BeanComponentDefinition> definitions = new ArrayList<BeanComponentDefinition>();
 
 		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : extension
-				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode)) {
+				.getRepositoryConfigurations(configurationSource, resourceLoader, registry, inMultiStoreMode)) {
 
 			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
 

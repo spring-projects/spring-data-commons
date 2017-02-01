@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -42,12 +44,19 @@ import org.springframework.util.StringUtils;
  * {@link #getModulePrefix()}). Stubs out the post-processing methods as they might not be needed by default.
  * 
  * @author Oliver Gierke
+ * @author Sascha Woo
  */
 public abstract class RepositoryConfigurationExtensionSupport implements RepositoryConfigurationExtension {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryConfigurationExtensionSupport.class);
 	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s.";
 	private static final String MULTI_STORE_DROPPED = "Spring Data {} - Could not safely identify store assignment for repository candidate {}.";
+
+	private final BeanNameGenerator beanNameGenerator;
+
+	public RepositoryConfigurationExtensionSupport() {
+		this.beanNameGenerator = new AnnotationBeanNameGenerator();
+	}
 
 	/* 
 	 * (non-Javadoc)
@@ -59,30 +68,24 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryConfigurations(org.springframework.data.repository.config.RepositoryConfigurationSource, org.springframework.core.io.ResourceLoader)
-	 */
-	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
-			T configSource, ResourceLoader loader) {
-		return getRepositoryConfigurations(configSource, loader, false);
-	}
-
-	/*
 	 * 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryConfigurations(org.springframework.data.repository.config.RepositoryConfigurationSource, org.springframework.core.io.ResourceLoader, boolean)
 	 */
+	@Override
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
-			T configSource, ResourceLoader loader, boolean strictMatchesOnly) {
+			T configSource, ResourceLoader loader, BeanDefinitionRegistry registry, boolean strictMatchesOnly) {
 
 		Assert.notNull(configSource, "ConfigSource must not be null!");
 		Assert.notNull(loader, "Loader must not be null!");
+		Assert.notNull(registry, "Registry must not be null!");
 
 		Set<RepositoryConfiguration<T>> result = new HashSet<RepositoryConfiguration<T>>();
 
 		for (BeanDefinition candidate : configSource.getCandidates(loader)) {
+			String beanName = beanNameGenerator.generateBeanName(candidate, registry);
 
-			RepositoryConfiguration<T> configuration = getRepositoryConfiguration(candidate, configSource);
+			RepositoryConfiguration<T> configuration = getRepositoryConfiguration(candidate, beanName, configSource);
 
 			if (!strictMatchesOnly || configSource.usesExplicitFilters()) {
 				result.add(configuration);
@@ -223,12 +226,13 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * customize the behaviour.
 	 * 
 	 * @param definition will never be {@literal null} or empty.
+	 * @param beanName will never be {@literal null} or empty.
 	 * @param configSource will never be {@literal null}.
 	 * @return
 	 */
 	protected <T extends RepositoryConfigurationSource> RepositoryConfiguration<T> getRepositoryConfiguration(
-			BeanDefinition definition, T configSource) {
-		return new DefaultRepositoryConfiguration<T>(configSource, definition);
+			BeanDefinition definition, String beanName, T configSource) {
+		return new DefaultRepositoryConfiguration<T>(configSource, definition, beanName);
 	}
 
 	/**
