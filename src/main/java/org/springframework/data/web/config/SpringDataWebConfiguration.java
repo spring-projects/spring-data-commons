@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,8 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	@Override
 	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
 
-		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())) {
+		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())
+				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
 			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(new ObjectMapper());
 			converter.setBeanClassLoader(context.getClassLoader());
