@@ -18,6 +18,7 @@ package org.springframework.data.auditing;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -28,6 +29,7 @@ import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.Refl
  * Unit tests for {@link DefaultAuditableBeanWrapperFactory}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.5
  */
 public class DefaultAuditableBeanWrapperFactoryUnitTests {
@@ -77,5 +79,18 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 			assertThat(user.lastModifiedDate).isNotNull();
 		});
 
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-867
+	public void errorsWhenUnableToConvertDateViaIntermedeateJavaUtilDateConversion() {
+
+		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
+		ZonedDateTime zonedDateTime = ZonedDateTime.now();
+
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(user));
+
+		assertThat(wrapper).hasValueSatisfying(it -> {
+			it.setLastModifiedDate(Optional.of(zonedDateTime));
+		});
 	}
 }

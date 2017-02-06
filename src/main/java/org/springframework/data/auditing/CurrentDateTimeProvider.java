@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.auditing;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
@@ -25,6 +25,7 @@ import org.joda.time.DateTime;
  * Default {@link DateTimeProvider} simply creating new {@link DateTime} instances for each method call.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.5
  */
 public enum CurrentDateTimeProvider implements DateTimeProvider {
@@ -37,6 +38,6 @@ public enum CurrentDateTimeProvider implements DateTimeProvider {
 	 */
 	@Override
 	public Optional<TemporalAccessor> getNow() {
-		return Optional.of(ZonedDateTime.now());
+		return Optional.of(LocalDateTime.now());
 	}
 }
