@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -60,12 +61,14 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.13
  */
 public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
 	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor>> propertyAccessorClasses = new HashMap<TypeInformation<?>, Class<PersistentPropertyAccessor>>(
 			32);
+	private volatile Map<Class<PersistentPropertyAccessor>, Constructor<?>> constructorMap = new HashMap<>(32);
 
 	/*
 	 * (non-Javadoc)
@@ -74,14 +77,13 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	@Override
 	public PersistentPropertyAccessor getPropertyAccessor(PersistentEntity<?, ?> entity, Object bean) {
 
-		Class<PersistentPropertyAccessor> propertyAccessorClass = propertyAccessorClasses.get(entity.getTypeInformation());
-
-		if (propertyAccessorClass == null) {
-			propertyAccessorClass = potentiallyCreateAndRegisterPersistentPropertyAccessorClass(entity);
-		}
+		final Class<PersistentPropertyAccessor> propertyAccessorClass = propertyAccessorClasses.computeIfAbsent(
+				entity.getTypeInformation(), k -> potentiallyCreateAndRegisterPersistentPropertyAccessorClass(entity));
 
 		try {
-			return (PersistentPropertyAccessor) propertyAccessorClass.getConstructors()[0].newInstance(bean);
+
+			return (PersistentPropertyAccessor) constructorMap
+					.computeIfAbsent(propertyAccessorClass, k -> propertyAccessorClass.getConstructors()[0]).newInstance(bean);
 		} catch (Exception e) {
 			throw new IllegalArgumentException(String.format("Cannot create persistent property accessor for %s", entity), e);
 		}
@@ -107,26 +109,18 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		final Set<Integer> hashCodes = new HashSet<>();
 		final AtomicInteger propertyCount = new AtomicInteger();
 
-		entity.doWithProperties(new SimplePropertyHandler() {
+		entity.doWithProperties((SimplePropertyHandler) property -> {
 
-			@Override
-			public void doWithPersistentProperty(PersistentProperty<?> property) {
-
-				hashCodes.add(property.getName().hashCode());
-				propertyCount.incrementAndGet();
-			}
+			hashCodes.add(property.getName().hashCode());
+			propertyCount.incrementAndGet();
 		});
 
-		entity.doWithAssociations(new SimpleAssociationHandler() {
+		entity.doWithAssociations((SimpleAssociationHandler) association -> {
 
-			@Override
-			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
+			if (association.getInverse() != null) {
 
-				if (association.getInverse() != null) {
-
-					hashCodes.add(association.getInverse().getName().hashCode());
-					propertyCount.incrementAndGet();
-				}
+				hashCodes.add(association.getInverse().getName().hashCode());
+				propertyCount.incrementAndGet();
 			}
 		});
 
