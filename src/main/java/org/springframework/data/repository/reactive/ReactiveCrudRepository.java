@@ -91,7 +91,7 @@ public interface ReactiveCrudRepository<T, ID extends Serializable> extends Repo
 	Mono<Boolean> exists(ID id);
 
 	/**
-	 * Returns whether an entity with the given id exists supplied by a {@link Mono}.
+	 * Returns whether an entity with the given id, supplied by a {@link Mono}, exists.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise
