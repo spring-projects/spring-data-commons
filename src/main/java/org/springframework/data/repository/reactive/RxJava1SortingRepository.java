@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,32 +37,11 @@ import rx.Single;
 @NoRepositoryBean
 public interface RxJava1SortingRepository<T, ID extends Serializable> extends RxJava1CrudRepository<T, ID> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll()
-	 */
-	@Override
-	Observable<T> findAll();
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll(java.lang.Iterable)
-	 */
-	@Override
-	Observable<T> findAll(Iterable<ID> ids);
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll(org.reactivestreams.Publisher)
-	 */
-	@Override
-	Observable<T> findAll(Observable<ID> idStream);
-
 	/**
 	 * Returns all entities sorted by the given options.
 	 *
-	 * @param sort
-	 * @return all entities sorted by the given options
+	 * @param sort must not be {@literal null}.
+	 * @return all entities sorted by the given options.
 	 */
 	Observable<T> findAll(Sort sort);
 }

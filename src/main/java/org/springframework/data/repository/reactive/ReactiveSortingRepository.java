@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.springframework.data.repository.reactive;
 
 import java.io.Serializable;
 
-import org.reactivestreams.Publisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
 
@@ -37,32 +36,11 @@ import reactor.core.publisher.Mono;
 @NoRepositoryBean
 public interface ReactiveSortingRepository<T, ID extends Serializable> extends ReactiveCrudRepository<T, ID> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll()
-	 */
-	@Override
-	Flux<T> findAll();
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll(java.lang.Iterable)
-	 */
-	@Override
-	Flux<T> findAll(Iterable<ID> ids);
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll(org.reactivestreams.Publisher)
-	 */
-	@Override
-	Flux<T> findAll(Publisher<ID> idStream);
-
 	/**
 	 * Returns all entities sorted by the given options.
 	 *
-	 * @param sort
-	 * @return all entities sorted by the given options
+	 * @param sort must not be {@literal null}.
+	 * @return all entities sorted by the given options.
 	 */
 	Flux<T> findAll(Sort sort);
 }
