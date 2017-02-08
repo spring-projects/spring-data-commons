@@ -91,7 +91,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	Single<Boolean> exists(ID id);
 
 	/**
-	 * Returns whether an entity with the given id exists supplied by a {@link Single}.
+	 * Returns whether an entity with the given id, supplied by a {@link Single}, exists.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise.

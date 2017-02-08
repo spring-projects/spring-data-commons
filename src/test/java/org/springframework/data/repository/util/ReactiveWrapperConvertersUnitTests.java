@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,6 +173,22 @@ public class ReactiveWrapperConvertersUnitTests {
 
 		io.reactivex.Observable<String> foo = io.reactivex.Observable.just("foo");
 		assertThat(ReactiveWrapperConverters.toWrapper(foo, Publisher.class)).isInstanceOf(Publisher.class);
+	}
+
+	@Test // DATACMNS-988
+	public void toWrapperShouldConvertPublisherToRxJava2Observable() {
+
+		Flux<String> foo = Flux.just("foo");
+		assertThat(ReactiveWrapperConverters.toWrapper(foo, io.reactivex.Observable.class))
+				.isInstanceOf(io.reactivex.Observable.class);
+	}
+
+	@Test // DATACMNS-988
+	public void toWrapperShouldConvertPublisherToRxJava2Flowable() {
+
+		Flux<String> foo = Flux.just("foo");
+		assertThat(ReactiveWrapperConverters.toWrapper(foo, io.reactivex.Flowable.class))
+				.isInstanceOf(io.reactivex.Flowable.class);
 	}
 
 	@Test // DATACMNS-836

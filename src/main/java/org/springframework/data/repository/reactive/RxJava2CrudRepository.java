@@ -31,6 +31,7 @@ import org.springframework.data.repository.Repository;
  *
  * @author Mark Paluch
  * @since 2.0
+ * @see Maybe
  * @see Single
  * @see Flowable
  * @see Completable
@@ -93,7 +94,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	Single<Boolean> exists(ID id);
 
 	/**
-	 * Returns whether an entity with the given id exists supplied by a {@link Single}.
+	 * Returns whether an entity with the given id, supplied by a {@link Single}, exists.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise.
