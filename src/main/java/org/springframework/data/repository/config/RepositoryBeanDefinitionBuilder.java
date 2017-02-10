@@ -33,6 +33,7 @@ import org.springframework.util.StringUtils;
  * Builder to create {@link BeanDefinitionBuilder} instance to eventually create Spring Data repository instances.
  * 
  * @author Oliver Gierke
+ * @author Peter Rietzler
  */
 class RepositoryBeanDefinitionBuilder {
 
@@ -128,7 +129,7 @@ class RepositoryBeanDefinitionBuilder {
 		}
 
 		AbstractBeanDefinition beanDefinition = implementationDetector
-				.detectCustomImplementation(configuration.getImplementationClassName(), configuration.getBasePackages());
+				.detectCustomImplementation(configuration.getImplementationClassName(), configuration.getBasePackages(), configuration.getConfigurationSource().getExcludeFilters());
 
 		if (null == beanDefinition) {
 			return null;

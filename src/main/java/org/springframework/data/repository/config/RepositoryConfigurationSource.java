@@ -20,6 +20,7 @@ import java.util.Collection;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 
 /**
@@ -27,6 +28,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Peter Rietzler
  */
 public interface RepositoryConfigurationSource {
 
@@ -108,4 +110,13 @@ public interface RepositoryConfigurationSource {
 	 * @since 1.9
 	 */
 	boolean usesExplicitFilters();
+
+	/**
+	 * Return the {@link TypeFilter}s to define which types to exclude when scanning for repositories or repository implementations.
+	 *
+	 * @return must not be {@literal null}.
+	 */
+	Iterable<TypeFilter> getExcludeFilters();
+
+
 }
