@@ -23,18 +23,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupportUnitTests.DummyConfigurationExtension;
 
 /**
  * Integration tests for {@link RepositoryBeanDefinitionRegistrarSupport}.
  * 
  * @author Oliver Gierke
+ * @author Peter Rietzler
  */
 public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 
 	@Configuration
-	@EnableRepositories
+	@EnableRepositories(excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.excluded\\..*"))
 	static class SampleConfig {
 
 	}
@@ -57,6 +60,14 @@ public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 		if (context != null) {
 			this.context.close();
 		}
+	}
+
+	/**
+	 * @see DATACMNS-989
+	 */
+	@Test
+	public void duplicateImplementationsMayBeExcludedViaFilters() {
+		assertThat(context.getBean(MyOtherRepository.class).getImplementationId(), is(MyOtherRepositoryImpl.class.getName()));
 	}
 
 	/**

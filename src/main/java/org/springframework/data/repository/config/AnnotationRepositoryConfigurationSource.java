@@ -45,6 +45,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Peter Rietzler
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -179,7 +180,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getExcludeFilters()
 	 */
 	@Override
-	protected Iterable<TypeFilter> getExcludeFilters() {
+	public Iterable<TypeFilter> getExcludeFilters() {
 		return parseFilters("excludeFilters");
 	}
 

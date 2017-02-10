@@ -34,6 +34,7 @@ import org.w3c.dom.Element;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Peter Rietzler
  */
 public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -121,7 +122,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getExcludeFilters()
 	 */
 	@Override
-	protected Iterable<TypeFilter> getExcludeFilters() {
+	public Iterable<TypeFilter> getExcludeFilters() {
 		return excludeFilters;
 	}
 
