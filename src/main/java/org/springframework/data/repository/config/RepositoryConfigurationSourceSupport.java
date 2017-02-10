@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Peter Rietzler
  */
 public abstract class RepositoryConfigurationSourceSupport implements RepositoryConfigurationSource {
 
@@ -80,7 +81,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 * 
 	 * @return must not be {@literal null}.
 	 */
-	protected Iterable<TypeFilter> getExcludeFilters() {
+	public Iterable<TypeFilter> getExcludeFilters() {
 		return Collections.emptySet();
 	}
 
