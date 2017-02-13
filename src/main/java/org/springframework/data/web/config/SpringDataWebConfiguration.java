@@ -44,9 +44,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
  * {@link SortHandlerMethodArgumentResolver} and {@link DomainClassConverter}.
- * 
+ *
  * @since 1.6
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 @Configuration
 public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
@@ -72,7 +73,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		return new SortHandlerMethodArgumentResolver();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addFormatters(org.springframework.format.FormatterRegistry)
 	 */
@@ -93,7 +94,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		converter.setApplicationContext(context);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addArgumentResolvers(java.util.List)
 	 */
@@ -111,7 +112,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		argumentResolvers.add(resolver);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#extendMessageConverters(java.util.List)
 	 */
