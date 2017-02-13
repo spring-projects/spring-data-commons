@@ -17,7 +17,6 @@ package org.springframework.data.web.config;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.test.util.ReflectionTestUtils.*;
 
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -27,7 +26,7 @@ import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
@@ -39,74 +38,62 @@ import org.springframework.instrument.classloading.ShadowingClassLoader;
  *
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Oliver Gierke
  */
 public class SpringDataWebConfigurationIntegrationTests {
 
 	@Test // DATACMNS-987
 	public void shouldNotLoadJacksonConverterWhenJacksonNotPresent() {
 
-		SpringDataWebConfiguration config = createConfigWithClassLoaderExcluding("com.fasterxml.jackson");
-
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		config.extendMessageConverters(converters);
+		createConfigWithClassLoaderExcluding("com.fasterxml.jackson").extendMessageConverters(converters);
 
-		assertThat(converters, (Matcher) not(hasItem( //
-				instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
+		assertThat(converters, not(hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
 	}
 
 	@Test // DATACMNS-987
 	public void shouldNotLoadJacksonConverterWhenJaywayNotPresent() {
 
-		SpringDataWebConfiguration config = createConfigWithClassLoaderExcluding("com.jayway");
-
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		config.extendMessageConverters(converters);
+		createConfigWithClassLoaderExcluding("com.jayway").extendMessageConverters(converters);
 
-		assertThat(converters, (Matcher) not(hasItem( //
-				instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
+		assertThat(converters, not(hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
 	}
 
 	@Test // DATACMNS-987
 	public void shouldNotLoadXBeamConverterWhenXBeamNotPresent() throws Exception {
 
-		SpringDataWebConfiguration config = createConfigWithClassLoaderExcluding("org.xmlbeam");
-
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		config.extendMessageConverters(converters);
+		createConfigWithClassLoaderExcluding("org.xmlbeam").extendMessageConverters(converters);
 
-		assertThat(converters, (Matcher) not(hasItem( //
-				instanceWithClassName(XmlBeamHttpMessageConverter.class))));
+		assertThat(converters, not(hasItem(instanceWithClassName(XmlBeamHttpMessageConverter.class))));
 	}
 
 	@Test // DATACMNS-987
 	public void shouldLoadAllConvertersWhenDependenciesArePresent() throws Exception {
 
-		SpringDataWebConfiguration config = createConfigWithClassLoaderExcluding("load.everything");
-
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		config.extendMessageConverters(converters);
+		createConfigWithClassLoaderExcluding("load.everything").extendMessageConverters(converters);
 
-		assertThat(converters,
-				containsInAnyOrder( //
-						instanceWithClassName(XmlBeamHttpMessageConverter.class), //
-						instanceWithClassName(ProjectingJackson2HttpMessageConverter.class)));
+		assertThat(converters, hasItem(instanceWithClassName(XmlBeamHttpMessageConverter.class)));
+		assertThat(converters, hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class)));
 	}
 
-	private SpringDataWebConfiguration createConfigWithClassLoaderExcluding(String excludedClassNamePrefix) {
+	private static SpringDataWebConfiguration createConfigWithClassLoaderExcluding(String excludedClassNamePrefix) {
 
-		ClassLoader classLoader = initClassLoader(excludedClassNamePrefix);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				SpringDataWebConfiguration.class);
+		context.setClassLoader(initClassLoader(excludedClassNamePrefix));
 
-		SpringDataWebConfiguration config = new SpringDataWebConfiguration();
-		GenericApplicationContext applicationContext = new GenericApplicationContext();
-		applicationContext.setClassLoader(classLoader);
-
-		setField(config, "context", applicationContext);
-
-		return config;
+		try {
+			return context.getBean(SpringDataWebConfiguration.class);
+		} finally {
+			context.close();
+		}
 	}
 
 	/**
@@ -116,11 +103,11 @@ public class SpringDataWebConfigurationIntegrationTests {
 	 * @param expectedClass the class that is expected (possibly loaded by a different classloader).
 	 * @return a Matcher
 	 */
-	private Matcher<Object> instanceWithClassName(Class<?> expectedClass) {
+	private static <T> Matcher<T> instanceWithClassName(Class<T> expectedClass) {
 		return hasProperty("class", hasProperty("name", equalTo(expectedClass.getName())));
 	}
 
-	private ClassLoader initClassLoader(final String excludedClassNamePrefix) {
+	private static ClassLoader initClassLoader(final String excludedClassNamePrefix) {
 
 		return new ShadowingClassLoader(URLClassLoader.getSystemClassLoader()) {
 
