@@ -22,8 +22,8 @@ import static org.springframework.test.util.ReflectionTestUtils.*;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.hamcrest.Matcher;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
@@ -31,61 +31,18 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
-import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.instrument.classloading.ShadowingClassLoader;
-import org.springframework.web.context.support.GenericWebApplicationContext;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 /**
+ * Integration test for {@link SpringDataWebConfiguration}.
+ *
  * @author Christoph Strobl
  * @author Jens Schauder
  */
 public class SpringDataWebConfigurationIntegrationTests {
 
-	@Test // DATACMNS-669
-	public void shouldNotAddQuerydslPredicateArgumentResolverWhenQuerydslNotPresent() throws ClassNotFoundException,
-			InstantiationException, IllegalAccessException {
-
-		ClassLoader classLoader = initClassLoader("com.mysema");
-
-		Object config = classLoader.loadClass(SpringDataWebConfiguration.class.getName())
-				.newInstance();
-
-		setField(config, "context", classLoader.loadClass(GenericWebApplicationContext.class.getName()).newInstance()
-		);
-		setField(config, "conversionService", classLoader.loadClass(ObjectFactoryImpl.class.getName()).newInstance());
-
-		List<HandlerMethodArgumentResolver> argumentResolvers = new ArrayList<HandlerMethodArgumentResolver>();
-
-		invokeMethod(config, "addArgumentResolvers", argumentResolvers);
-
-		assertThat(argumentResolvers,
-				not(hasItem((Matcher) instanceWithClassName(QuerydslPredicateArgumentResolver.class))));
-	}
-
-	@Test // DATACMNS-669
-	@Ignore("currently fails because he setup is not sufficient to trigger loading of the QuerydslArgumentResolver. See DATACMNS-993")
-	public void shouldAddQuerydslPredicateArgumentResolverWhenQuerydslPresent() throws ClassNotFoundException,
-			InstantiationException, IllegalAccessException {
-
-		ClassLoader classLoader = initClassLoader("load.everything");
-
-		Object config = classLoader.loadClass(SpringDataWebConfiguration.class.getName())
-				.newInstance();
-
-		setField(config, "context", classLoader.loadClass(GenericWebApplicationContext.class.getName()).newInstance());
-		setField(config, "conversionService", classLoader.loadClass(ObjectFactoryImpl.class.getName()).newInstance());
-
-		List<HandlerMethodArgumentResolver> argumentResolvers = new ArrayList<HandlerMethodArgumentResolver>();
-
-		invokeMethod(config, "addArgumentResolvers", argumentResolvers);
-
-		assertThat(argumentResolvers,
-				hasItem((Matcher) instanceWithClassName(QuerydslPredicateArgumentResolver.class)));
-	}
-
-	@Test // DATACOMNS-987
+	@Test // DATACMNS-987
 	public void shouldNotLoadJacksonConverterWhenJacksonNotPresent() {
 
 		SpringDataWebConfiguration config = createConfigWithClassLoaderExcluding("com.fasterxml.jackson");
@@ -98,7 +55,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 				instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
 	}
 
-	@Test // DATACOMNS-987
+	@Test // DATACMNS-987
 	public void shouldNotLoadJacksonConverterWhenJaywayNotPresent() {
 
 		SpringDataWebConfiguration config = createConfigWithClassLoaderExcluding("com.jayway");
@@ -111,8 +68,8 @@ public class SpringDataWebConfigurationIntegrationTests {
 				instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
 	}
 
-	@Test // DATACOMNS-987
-	public void shouldNotLoadXBeamConverterWhenXBeamNotPresent() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+	@Test // DATACMNS-987
+	public void shouldNotLoadXBeamConverterWhenXBeamNotPresent() throws Exception {
 
 		SpringDataWebConfiguration config = createConfigWithClassLoaderExcluding("org.xmlbeam");
 
@@ -124,10 +81,8 @@ public class SpringDataWebConfigurationIntegrationTests {
 				instanceWithClassName(XmlBeamHttpMessageConverter.class))));
 	}
 
-
-	@Test // DATACOMNS-987
-	public void shouldLoadAllConvertersWhenDependenciesArePresent() throws ClassNotFoundException,
-			IllegalAccessException, InstantiationException {
+	@Test // DATACMNS-987
+	public void shouldLoadAllConvertersWhenDependenciesArePresent() throws Exception {
 
 		SpringDataWebConfiguration config = createConfigWithClassLoaderExcluding("load.everything");
 
@@ -135,12 +90,14 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		config.extendMessageConverters(converters);
 
-		assertThat(converters, containsInAnyOrder( //
-				instanceWithClassName(XmlBeamHttpMessageConverter.class), //
-				instanceWithClassName(ProjectingJackson2HttpMessageConverter.class)));
+		assertThat(converters,
+				containsInAnyOrder( //
+						instanceWithClassName(XmlBeamHttpMessageConverter.class), //
+						instanceWithClassName(ProjectingJackson2HttpMessageConverter.class)));
 	}
 
 	private SpringDataWebConfiguration createConfigWithClassLoaderExcluding(String excludedClassNamePrefix) {
+
 		ClassLoader classLoader = initClassLoader(excludedClassNamePrefix);
 
 		SpringDataWebConfiguration config = new SpringDataWebConfiguration();
@@ -153,9 +110,8 @@ public class SpringDataWebConfigurationIntegrationTests {
 	}
 
 	/**
-	 * creates a Matcher that check if an object is an instance of a class with the same name as the provided class.
-	 * This is necessary since we are dealing with multiple classloaders which would make a simple instanceof fail all
-	 * the time
+	 * creates a Matcher that check if an object is an instance of a class with the same name as the provided class. This
+	 * is necessary since we are dealing with multiple classloaders which would make a simple instanceof fail all the time
 	 *
 	 * @param expectedClass the class that is expected (possibly loaded by a different classloader).
 	 * @return a Matcher
