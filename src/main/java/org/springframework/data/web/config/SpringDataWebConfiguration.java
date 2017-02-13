@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +44,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
  * {@link SortHandlerMethodArgumentResolver} and {@link DomainClassConverter}.
- * 
+ *
  * @since 1.6
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 @Configuration
 public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
@@ -72,7 +73,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		return new SortHandlerMethodArgumentResolver();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addFormatters(org.springframework.format.FormatterRegistry)
 	 */
@@ -93,7 +94,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		converter.setApplicationContext(context);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addArgumentResolvers(java.util.List)
 	 */
@@ -111,14 +112,15 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		argumentResolvers.add(resolver);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#extendMessageConverters(java.util.List)
 	 */
 	@Override
 	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
 
-		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())) {
+		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())
+				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
 			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(new ObjectMapper());
 			converter.setBeanClassLoader(context.getClassLoader());
