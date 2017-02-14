@@ -245,7 +245,7 @@
 							<goal>test-process</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/generated-sources/test-annotations</outputDirectory>
+							<outputDirectory>${project.build.directory}/generated-test-sources/test-annotations</outputDirectory>
 							<processor>com.querydsl.apt.QuerydslAnnotationProcessor</processor>
 						</configuration>
 					</execution>

@@ -80,13 +80,10 @@ public @interface EnableSpringDataWebSupport {
 	 * https://jira.springsource.org/browse/SPR-10565).
 	 * 
 	 * @author Oliver Gierke
+	 * @author Jens Schauder
 	 */
 	static class SpringDataWebConfigurationImportSelector
 			implements ImportSelector, EnvironmentAware, ResourceLoaderAware {
-
-		// Don't make final to allow test cases faking this to false
-		private static boolean HATEOAS_PRESENT = ClassUtils.isPresent("org.springframework.hateoas.Link", null);
-		private static boolean JACKSON_PRESENT = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", null);
 
 		private Environment environment;
 		private ResourceLoader resourceLoader;
@@ -118,10 +115,11 @@ public @interface EnableSpringDataWebSupport {
 
 			List<String> imports = new ArrayList<String>();
 
-			imports.add(HATEOAS_PRESENT ? HateoasAwareSpringDataWebConfiguration.class.getName()
+			imports.add(ClassUtils.isPresent("org.springframework.hateoas.Link", resourceLoader.getClassLoader())
+					? HateoasAwareSpringDataWebConfiguration.class.getName()
 					: SpringDataWebConfiguration.class.getName());
 
-			if (JACKSON_PRESENT) {
+			if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", resourceLoader.getClassLoader())) {
 				imports.addAll(
 						SpringFactoriesLoader.loadFactoryNames(SpringDataJacksonModules.class, resourceLoader.getClassLoader()));
 			}
