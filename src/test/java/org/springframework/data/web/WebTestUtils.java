@@ -24,7 +24,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 
 /**
  * Helper methods for web integration testing.
- * 
+ *
  * @author Oliver Gierke
  */
 public class WebTestUtils {
@@ -41,13 +41,28 @@ public class WebTestUtils {
 
 	/**
 	 * Creates a {@link WebApplicationContext} from the given configuration classes.
-	 * 
+	 *
 	 * @param configClasses
 	 * @return
 	 */
 	public static WebApplicationContext createApplicationContext(Class<?>... configClasses) {
+		return createApplicationContext(null, configClasses);
+	}
+
+	/**
+	 * Creates a {@link WebApplicationContext} from the given configuration classes.
+	 *
+	 * @param classLoader gets set as ClassLoader in the context
+	 * @param configClasses
+	 * @return
+	 */
+	public static WebApplicationContext createApplicationContext(ClassLoader classLoader, Class<?>... configClasses) {
 
 		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+		if (classLoader != null) {
+			context.setClassLoader(classLoader);
+		}
+
 		context.setServletContext(new MockServletContext());
 
 		for (Class<?> configClass : configClasses) {
