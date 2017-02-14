@@ -74,7 +74,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public Repositories(ListableBeanFactory factory) {
 
-		Assert.notNull(factory, "Factory must not be null!");
+		Assert.notNull(factory, "ListableBeanFactory must not be null!");
 
 		this.beanFactory = Optional.of(factory);
 		this.repositoryFactoryInfos = new HashMap<>();
@@ -194,6 +194,19 @@ public class Repositories implements Iterable<Class<?>> {
 		RepositoryFactoryInformation<Object, Serializable> information = getRepositoryFactoryInfoFor(domainClass);
 		return information == EMPTY_REPOSITORY_FACTORY_INFO ? Optional.empty()
 				: Optional.of(information.getRepositoryInformation());
+	}
+
+	/**
+	 * Returns the {@link RepositoryInformation} for the given domain type.
+	 * 
+	 * @param domainType must not be {@literal null}.
+	 * @return the {@link RepositoryInformation} for the given domain type.
+	 * @throws IllegalArgumentException in case no {@link RepositoryInformation} could be found for the given domain type.
+	 */
+	public RepositoryInformation getRequiredRepositoryInformation(Class<?> domainType) {
+
+		return getRepositoryInformationFor(domainType).orElseThrow(() -> new IllegalArgumentException(
+				"No required RepositoryInformation found for domain type " + domainType.getName() + "!"));
 	}
 
 	/**

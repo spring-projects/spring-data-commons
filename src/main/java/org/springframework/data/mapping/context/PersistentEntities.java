@@ -47,8 +47,8 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ?>> {
 
 	/**
 	 * Returns the {@link PersistentEntity} for the given type. Will consider all {@link MappingContext}s registered but
-	 * return {@literal null} in case none of the registered ones already have a {@link PersistentEntity} registered for
-	 * the given type.
+	 * return {@literal Optional#empty()} in case none of the registered ones already have a {@link PersistentEntity}
+	 * registered for the given type.
 	 * 
 	 * @param type can be {@literal null}.
 	 * @return
@@ -58,6 +58,23 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ?>> {
 		return contexts.stream()//
 				.filter(it -> it.hasPersistentEntityFor(type))//
 				.findFirst().map(it -> it.getRequiredPersistentEntity(type));
+	}
+
+	/**
+	 * Returns the {@link PersistentEntity} for the given type. Will consider all {@link MappingContext}s registered but
+	 * throw an {@link IllegalArgumentException} in case none of the registered ones already have a
+	 * {@link PersistentEntity} registered for the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return the {@link PersistentEntity} for the given domain type.
+	 * @throws IllegalArgumentException in case no {@link PersistentEntity} can be found for the given type.
+	 */
+	public PersistentEntity<?, ?> getRequiredPersistentEntity(Class<?> type) {
+
+		Assert.notNull(type, "Domain type must not be null!");
+
+		return getPersistentEntity(type).orElseThrow(
+				() -> new IllegalArgumentException(String.format("Couldn't find PersistentEntity for type %s!", type)));
 	}
 
 	/**
@@ -79,7 +96,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ?>> {
 	@Override
 	public Iterator<PersistentEntity<?, ?>> iterator() {
 
-		return contexts.stream().<PersistentEntity<?, ?>>flatMap(it -> it.getPersistentEntities().stream())
+		return contexts.stream().<PersistentEntity<?, ?>> flatMap(it -> it.getPersistentEntities().stream())
 				.collect(Collectors.toList()).iterator();
 	}
 }
