@@ -20,59 +20,62 @@ import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.hamcrest.Matcher;
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.classloadersupport.ClassLoaderConfiguration;
+import org.springframework.data.classloadersupport.ClassLoaderRule;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
-import org.springframework.data.web.config.EnableSpringDataWebSupport.SpringDataWebConfigurationImportSelector;
+import org.springframework.hateoas.Link;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Integration tests for {@link EnableSpringDataWebSupport}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
+
+@ClassLoaderConfiguration(shadowPackage = {
+		WebMvcConfigurationSupport.class,
+		EnableSpringDataWebSupport.class,
+		EnableSpringDataWebSupportIntegrationTests.SampleConfig.class})
 public class EnableSpringDataWebSupportIntegrationTests {
 
-	private static final String HATEOAS = "HATEOAS_PRESENT";
-	private static final String JACKSON = "JACKSON_PRESENT";
 
 	@Configuration
 	@EnableWebMvc
 	@EnableSpringDataWebSupport
 	static class SampleConfig {
 
-		public @Bean SampleController controller() {
+		public
+		@Bean
+		SampleController controller() {
 			return new SampleController();
 		}
 	}
 
-	@After
-	public void tearDown() {
-		reEnable(HATEOAS);
-		reEnable(JACKSON);
-	}
+	@Rule public ClassLoaderRule classLoaderRule = new ClassLoaderRule();
+
 
 	@Test // DATACMNS-330
 	public void registersBasicBeanDefinitions() throws Exception {
@@ -97,11 +100,11 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-330
+	@ClassLoaderConfiguration(hidePackage = Link.class)
 	public void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() throws Exception {
 
-		hide(HATEOAS);
+		ApplicationContext context = WebTestUtils.createApplicationContext(classLoaderRule.classLoader, SampleConfig.class);
 
-		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names, hasItems("pageableResolver", "sortResolver"));
@@ -118,11 +121,11 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
+	@ClassLoaderConfiguration(hidePackage = com.fasterxml.jackson.databind.ObjectMapper.class)
 	public void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() throws Exception {
 
-		hide(JACKSON);
+		ApplicationContext context = WebTestUtils.createApplicationContext(classLoaderRule.classLoader, SampleConfig.class);
 
-		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names, not(hasItem("jacksonGeoModule")));
@@ -182,19 +185,5 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		}
 
 		assertThat(resolvers, hasItems(resolverMatchers.toArray(new Matcher[resolverMatchers.size()])));
-	}
-
-	private static void hide(String module) throws Exception {
-
-		Field field = ReflectionUtils.findField(SpringDataWebConfigurationImportSelector.class, module);
-		ReflectionUtils.makeAccessible(field);
-		ReflectionUtils.setField(field, null, false);
-	}
-
-	private static void reEnable(String module) {
-
-		Field field = ReflectionUtils.findField(SpringDataWebConfigurationImportSelector.class, module);
-		ReflectionUtils.makeAccessible(field);
-		ReflectionUtils.setField(field, null, true);
 	}
 }
