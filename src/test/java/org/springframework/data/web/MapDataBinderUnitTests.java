@@ -49,7 +49,7 @@ public class MapDataBinderUnitTests {
 		MutablePropertyValues values = new MutablePropertyValues();
 		values.add("foo.date", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(reference));
 
-		Map<String, Object> nested = new HashMap<String, Object>();
+		Map<String, Object> nested = new HashMap<>();
 		nested.put("date", reference);
 
 		assertThat(bind(values)).containsEntry("foo", nested);
@@ -67,7 +67,7 @@ public class MapDataBinderUnitTests {
 		List<String> list = new ArrayList<>();
 		list.add("String");
 
-		assertThat(result).isEqualTo((Map) singletonMap("foo", singletonMap("bar", singletonMap("fooBar", list))));
+		assertThat(result).isEqualTo(singletonMap("foo", singletonMap("bar", singletonMap("fooBar", list))));
 	}
 
 	@Test // DATACMNS-630
@@ -80,11 +80,11 @@ public class MapDataBinderUnitTests {
 
 		Map<String, Object> result = bind(values);
 
-		Map<String, Object> dave = new HashMap<String, Object>();
+		Map<String, Object> dave = new HashMap<>();
 		dave.put("firstname", "Dave");
 		dave.put("lastname", "Matthews");
 
-		assertThat(result).isEqualTo((Map) singletonMap("foo", dave));
+		assertThat(result).isEqualTo(singletonMap("foo", dave));
 	}
 
 	@Test // DATACMNS-630

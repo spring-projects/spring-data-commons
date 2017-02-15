@@ -93,7 +93,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 	@Test // DATACMNS-630
 	public void allowsMapAccessViaPropertyExpression() throws Throwable {
 
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 		map.put("name", "Dave");
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("propertyFromTarget"));

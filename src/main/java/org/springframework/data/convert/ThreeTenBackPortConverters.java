@@ -40,6 +40,7 @@ import org.threeten.bp.ZoneId;
  * the classpath.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @see <a href="http://www.threeten.org/threetenbp">http://www.threeten.org/threetenbp</a>
  * @since 1.10
  */
@@ -59,7 +60,7 @@ public abstract class ThreeTenBackPortConverters {
 			return Collections.emptySet();
 		}
 
-		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(DateToLocalDateTimeConverter.INSTANCE);
 		converters.add(LocalDateTimeToDateConverter.INSTANCE);
 		converters.add(DateToLocalDateConverter.INSTANCE);

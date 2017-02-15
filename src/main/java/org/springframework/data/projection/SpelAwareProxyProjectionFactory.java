@@ -41,7 +41,7 @@ import org.springframework.util.ReflectionUtils;
  */
 public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory implements BeanFactoryAware {
 
-	private final Map<Class<?>, Boolean> typeCache = new HashMap<Class<?>, Boolean>();
+	private final Map<Class<?>, Boolean> typeCache = new HashMap<>();
 	private final SpelExpressionParser parser = new SpelExpressionParser();
 
 	private BeanFactory beanFactory;

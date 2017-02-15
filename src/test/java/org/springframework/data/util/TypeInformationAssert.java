@@ -22,9 +22,7 @@ public class TypeInformationAssert extends AbstractAssert<TypeInformationAssert,
 
 	public TypeInformationAssert hasComponentType(Class<?> type) {
 
-		Assertions.assertThat(actual.getComponentType()).hasValueSatisfying(it -> {
-			Assertions.assertThat(it.getType()).isEqualTo(type);
-		});
+		Assertions.assertThat(actual.getComponentType()).hasValueSatisfying(it -> Assertions.assertThat(it.getType()).isEqualTo(type));
 
 		return this;
 	}

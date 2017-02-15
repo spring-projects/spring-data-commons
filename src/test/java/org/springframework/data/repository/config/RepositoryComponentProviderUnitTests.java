@@ -43,7 +43,7 @@ public class RepositoryComponentProviderUnitTests {
 	@Test
 	public void findsAnnotatedRepositoryInterface() {
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.<TypeFilter> emptyList());
+		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList());
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.sample");
 
 		assertThat(components).hasSize(3);
@@ -54,7 +54,7 @@ public class RepositoryComponentProviderUnitTests {
 	@Test
 	public void limitsFoundRepositoriesToIncludeFiltersOnly() {
 
-		List<? extends TypeFilter> filters = Arrays.asList(new AssignableTypeFilter(MyOtherRepository.class));
+		List<? extends TypeFilter> filters = Collections.singletonList(new AssignableTypeFilter(MyOtherRepository.class));
 
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(filters);
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository");
@@ -66,7 +66,7 @@ public class RepositoryComponentProviderUnitTests {
 	@Test // DATACMNS-90
 	public void shouldConsiderNestedRepositoryInterfacesIfEnabled() {
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.<TypeFilter> emptyList());
+		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList());
 		provider.setConsiderNestedRepositoryInterfaces(true);
 
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.config");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.springframework.util.ClassUtils;
  * 
  * @author Oliver Gierke
  * @author Barak Schoster
+ * @author Christoph Strobl
  */
 public abstract class Jsr310Converters {
 
@@ -58,7 +59,7 @@ public abstract class Jsr310Converters {
 			return Collections.emptySet();
 		}
 
-		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(DateToLocalDateTimeConverter.INSTANCE);
 		converters.add(LocalDateTimeToDateConverter.INSTANCE);
 		converters.add(DateToLocalDateConverter.INSTANCE);

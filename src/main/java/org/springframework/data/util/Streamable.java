@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
  * Simple interface to ease streamability of {@link Iterable}s.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public interface Streamable<T> extends Iterable<T> {
 
@@ -43,8 +44,8 @@ public interface Streamable<T> extends Iterable<T> {
 	 * 
 	 * @return will never be {@literal null}.
 	 */
-	public static <T> Streamable<T> empty() {
-		return () -> Collections.emptyIterator();
+	static <T> Streamable<T> empty() {
+		return Collections::emptyIterator;
 	}
 
 	/**
@@ -54,7 +55,7 @@ public interface Streamable<T> extends Iterable<T> {
 	 * @return
 	 */
 	@SafeVarargs
-	public static <T> Streamable<T> of(T... t) {
+	static <T> Streamable<T> of(T... t) {
 		return () -> Arrays.asList(t).iterator();
 	}
 
@@ -64,10 +65,10 @@ public interface Streamable<T> extends Iterable<T> {
 	 * @param iterable must not be {@literal null}.
 	 * @return
 	 */
-	public static <T> Streamable<T> of(Iterable<T> iterable) {
+	static <T> Streamable<T> of(Iterable<T> iterable) {
 
 		Assert.notNull(iterable, "Iterable must not be null!");
 
-		return () -> iterable.iterator();
+		return iterable::iterator;
 	}
 }

@@ -16,10 +16,10 @@
 package org.springframework.data.mapping.context;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 
 	@Before
 	public void setUp() {
-		oneLeg = new DefaultPersistentPropertyPath<>(Arrays.asList(first));
+		oneLeg = new DefaultPersistentPropertyPath<>(Collections.singletonList(first));
 		twoLegs = new DefaultPersistentPropertyPath<>(Arrays.asList(first, second));
 	}
 
@@ -98,7 +98,7 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 
 		PersistentPropertyPath<T> extension = twoLegs.getExtensionForBaseOf(oneLeg);
 
-		assertThat(extension).isEqualTo(new DefaultPersistentPropertyPath<>(Arrays.asList(second)));
+		assertThat(extension).isEqualTo(new DefaultPersistentPropertyPath<>(Collections.singletonList(second)));
 	}
 
 	@Test

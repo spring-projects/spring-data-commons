@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
@@ -72,7 +73,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		Class<?> rawType = getType();
 
 		Set<Type> supertypes = new HashSet<>();
-		Optional.ofNullable(rawType.getGenericSuperclass()).ifPresent(it -> supertypes.add(it));
+		Optional.ofNullable(rawType.getGenericSuperclass()).ifPresent(supertypes::add);
 		supertypes.addAll(Arrays.asList(rawType.getGenericInterfaces()));
 
 		Optional<TypeInformation<?>> result = supertypes.stream()//
@@ -95,7 +96,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	@Override
 	public List<TypeInformation<?>> getTypeArguments() {
 
-		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>();
+		List<TypeInformation<?>> result = new ArrayList<>();
 
 		for (Type argument : type.getActualTypeArguments()) {
 			result.add(createInfo(argument));

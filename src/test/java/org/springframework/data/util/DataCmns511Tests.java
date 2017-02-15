@@ -37,16 +37,16 @@ public class DataCmns511Tests {
 				ClassTypeInformation.from(AbstractRole.class).getProperty("createdBy"));
 
 		assertion.flatMap(it -> it.getProperty("roles"))//
-				.map(it -> it.getActualType())//
+				.map(TypeInformation::getActualType)//
 				.flatMap(it -> it.getProperty("createdBy"))//
 				.andAssert(second -> {
 
 					OptionalAssert<TypeInformation<?>> third = second.flatMap(it -> it.getProperty("roles"))//
-							.map(it -> it.getActualType())//
+							.map(TypeInformation::getActualType)//
 							.flatMap(it -> it.getProperty("createdBy"));
 
 					second.isEqualTo(third);
-					second.value(it -> it.hashCode()).isEqualTo(third.getActual().hashCode());
+					second.value(Object::hashCode).isEqualTo(third.getActual().hashCode());
 				});
 	}
 

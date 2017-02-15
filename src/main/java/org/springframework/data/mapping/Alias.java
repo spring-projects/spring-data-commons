@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Optional;
 
 /**
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -57,7 +58,7 @@ public class Alias {
 	}
 
 	public <T> Optional<T> mapTyped(Class<T> type) {
-		return value.filter(it -> type.isInstance(it)).map(it -> type.cast(it));
+		return value.filter(type::isInstance).map(type::cast);
 	}
 
 	public String toString() {

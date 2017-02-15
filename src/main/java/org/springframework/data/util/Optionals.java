@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
  * Utility methods to work with {@link Optional}s.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @UtilityClass
 public class Optionals {
@@ -62,7 +63,7 @@ public class Optionals {
 
 		Assert.notNull(optionals, "Optional must not be null!");
 
-		return Arrays.asList(optionals).stream().flatMap(it -> it.map(Stream::of).orElseGet(() -> Stream.empty()));
+		return Arrays.asList(optionals).stream().flatMap(it -> it.map(Stream::of).orElseGet(Stream::empty));
 	}
 
 	/**
@@ -78,9 +79,9 @@ public class Optionals {
 		Assert.notNull(function, "Function must not be null!");
 
 		return Streamable.of(source).stream()//
-				.map(it -> function.apply(it))//
-				.filter(it -> it.isPresent())//
-				.findFirst().orElseGet(() -> Optional.empty());
+				.map(function::apply)//
+				.filter(Optional::isPresent)//
+				.findFirst().orElseGet(Optional::empty);
 	}
 
 	/**
@@ -96,7 +97,7 @@ public class Optionals {
 		Assert.notNull(function, "Function must not be null!");
 
 		return Streamable.of(source).stream()//
-				.map(it -> function.apply(it))//
+				.map(function::apply)//
 				.filter(it -> !it.equals(defaultValue))//
 				.findFirst().orElse(defaultValue);
 	}
@@ -126,8 +127,8 @@ public class Optionals {
 		Assert.notNull(suppliers, "Suppliers must not be null!");
 
 		return Streamable.of(suppliers).stream()//
-				.map(it -> it.get())//
-				.filter(it -> it.isPresent())//
+				.map(Supplier::get)//
+				.filter(Optional::isPresent)//
 				.findFirst().orElse(Optional.empty());
 	}
 

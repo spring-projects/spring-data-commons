@@ -65,15 +65,13 @@ public class PersistentEntitiesUnitTests {
 		context.setInitialEntitySet(Collections.singleton(Sample.class));
 		context.initialize();
 
-		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
+		PersistentEntities entities = new PersistentEntities(Collections.singletonList(context));
 
 		assertThat(entities.getPersistentEntity(Sample.class)).isPresent();
 		assertThat(entities.getPersistentEntity(Object.class)).isNotPresent();
 		assertThat(entities.getManagedTypes()).contains(ClassTypeInformation.from(Sample.class));
 
-		assertThat(entities.getPersistentEntity(Sample.class)).hasValueSatisfying(it -> {
-			assertThat(entities).contains(it);
-		});
+		assertThat(entities.getPersistentEntity(Sample.class)).hasValueSatisfying(it -> assertThat(entities).contains(it));
 
 	}
 

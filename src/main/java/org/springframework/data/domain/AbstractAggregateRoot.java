@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
  * here, rather build your own base class and use the annotations directly.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.13
  */
 public class AbstractAggregateRoot {
@@ -37,7 +38,7 @@ public class AbstractAggregateRoot {
 	 * All domain events currently captured by the aggregate.
 	 */
 	@Getter(onMethod = @__(@DomainEvents)) //
-	private transient final List<Object> domainEvents = new ArrayList<Object>();
+	private transient final List<Object> domainEvents = new ArrayList<>();
 
 	/**
 	 * Registers the given event object for publication on a call to a Spring Data repository's save method.

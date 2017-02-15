@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.springframework.util.ReflectionUtils.MethodFilter;
  * {@link org.springframework.expression.EvaluationContext}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.9
  */
 class EvaluationContextExtensionInformation {
@@ -142,7 +143,7 @@ class EvaluationContextExtensionInformation {
 
 		private static Map<String, Function> discoverDeclaredFunctions(Class<?> type) {
 
-			Map<String, Function> map = new HashMap<String, Function>();
+			Map<String, Function> map = new HashMap<>();
 
 			ReflectionUtils.doWithMethods(type, //
 					method -> map.put(method.getName(), new Function(method, null)), //
@@ -214,7 +215,7 @@ class EvaluationContextExtensionInformation {
 
 			Assert.notNull(type, "Type must not be null!");
 
-			this.accessors = new HashMap<String, Method>();
+			this.accessors = new HashMap<>();
 			this.methods = new HashSet<>();
 			this.fields = new ArrayList<>();
 
@@ -234,7 +235,7 @@ class EvaluationContextExtensionInformation {
 
 			}, PublicMethodAndFieldFilter.NON_STATIC);
 
-			ReflectionUtils.doWithFields(type, field -> RootObjectInformation.this.fields.add(field),
+			ReflectionUtils.doWithFields(type, RootObjectInformation.this.fields::add,
 					PublicMethodAndFieldFilter.NON_STATIC);
 		}
 
@@ -250,7 +251,7 @@ class EvaluationContextExtensionInformation {
 					.collect(Collectors.toMap(//
 							Method::getName, //
 							method -> new Function(method, it))))
-					.orElseGet(() -> Collections.emptyMap());
+					.orElseGet(Collections::emptyMap);
 		}
 
 		/**
@@ -263,7 +264,7 @@ class EvaluationContextExtensionInformation {
 
 			return target.map(it -> {
 
-				Map<String, Object> properties = new HashMap<String, Object>();
+				Map<String, Object> properties = new HashMap<>();
 
 				accessors.entrySet().stream()
 						.forEach(method -> properties.put(method.getKey(), new Function(method.getValue(), it)));
@@ -271,13 +272,13 @@ class EvaluationContextExtensionInformation {
 
 				return Collections.unmodifiableMap(properties);
 
-			}).orElseGet(() -> Collections.emptyMap());
+			}).orElseGet(Collections::emptyMap);
 		}
 	}
 
 	private static Map<String, Object> discoverDeclaredProperties(Class<?> type) {
 
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 
 		ReflectionUtils.doWithFields(type, field -> map.put(field.getName(), field.get(null)),
 				PublicMethodAndFieldFilter.STATIC);

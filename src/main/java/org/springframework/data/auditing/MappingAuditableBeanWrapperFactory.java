@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.springframework.util.Assert;
  * values.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.8
  */
 public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrapperFactory {
@@ -56,7 +57,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		Assert.notNull(entities, "PersistentEntities must not be null!");
 
 		this.entities = entities;
-		this.metadataCache = new HashMap<Class<?>, MappingAuditingMetadata>();
+		this.metadataCache = new HashMap<>();
 	}
 
 	/* 
@@ -159,9 +160,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		@Override
 		public Optional<? extends Object> setCreatedBy(Optional<? extends Object> value) {
 
-			metadata.createdByProperty.ifPresent(it -> {
-				this.accessor.setProperty(it, value);
-			});
+			metadata.createdByProperty.ifPresent(it -> this.accessor.setProperty(it, value));
 
 			return value;
 		}
@@ -173,9 +172,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		@Override
 		public Optional<TemporalAccessor> setCreatedDate(Optional<TemporalAccessor> value) {
 
-			metadata.createdDateProperty.ifPresent(it -> {
-				this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it));
-			});
+			metadata.createdDateProperty.ifPresent(it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it)));
 
 			return value;
 		}
@@ -187,9 +184,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		@Override
 		public Optional<? extends Object> setLastModifiedBy(Optional<? extends Object> value) {
 
-			metadata.lastModifiedByProperty.ifPresent(it -> {
-				this.accessor.setProperty(it, value);
-			});
+			metadata.lastModifiedByProperty.ifPresent(it -> this.accessor.setProperty(it, value));
 
 			return value;
 		}
@@ -200,7 +195,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 */
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
-			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.map(it -> accessor.getProperty(it)),
+			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.map(accessor::getProperty),
 					TemporalAccessor.class);
 		}
 
@@ -211,9 +206,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		@Override
 		public Optional<TemporalAccessor> setLastModifiedDate(Optional<TemporalAccessor> value) {
 
-			metadata.lastModifiedDateProperty.ifPresent(it -> {
-				this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it));
-			});
+			metadata.lastModifiedDateProperty.ifPresent(it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it)));
 
 			return value;
 		}

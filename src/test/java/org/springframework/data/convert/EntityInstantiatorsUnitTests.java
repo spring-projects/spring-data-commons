@@ -56,7 +56,7 @@ public class EntityInstantiatorsUnitTests {
 		doReturn(String.class).when(entity).getType();
 
 		Map<Class<?>, EntityInstantiator> customInstantiators = Collections
-				.<Class<?>, EntityInstantiator> singletonMap(String.class, customInstantiator);
+				.singletonMap(String.class, customInstantiator);
 
 		EntityInstantiators instantiators = new EntityInstantiators(customInstantiators);
 		assertThat(instantiators.getInstantiatorFor(entity)).isEqualTo(customInstantiator);
@@ -68,7 +68,7 @@ public class EntityInstantiatorsUnitTests {
 		doReturn(Object.class).when(entity).getType();
 
 		Map<Class<?>, EntityInstantiator> customInstantiators = Collections
-				.<Class<?>, EntityInstantiator> singletonMap(String.class, ReflectionEntityInstantiator.INSTANCE);
+				.singletonMap(String.class, ReflectionEntityInstantiator.INSTANCE);
 
 		EntityInstantiators instantiators = new EntityInstantiators(customInstantiator, customInstantiators);
 		instantiators.getInstantiatorFor(entity);

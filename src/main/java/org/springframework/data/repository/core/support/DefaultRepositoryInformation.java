@@ -54,6 +54,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class DefaultRepositoryInformation implements RepositoryInformation {
 
@@ -62,7 +63,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	private static final String DOMAIN_TYPE_NAME = PARAMETERS[0].getName();
 	private static final String ID_TYPE_NAME = PARAMETERS[1].getName();
 
-	private final Map<Method, Method> methodCache = new ConcurrentHashMap<Method, Method>();
+	private final Map<Method, Method> methodCache = new ConcurrentHashMap<>();
 
 	private final RepositoryMetadata metadata;
 	private final Class<?> repositoryBaseClass;

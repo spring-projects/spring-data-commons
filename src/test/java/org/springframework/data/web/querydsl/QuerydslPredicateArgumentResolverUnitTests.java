@@ -97,7 +97,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("firstname", "rand");
 
-		Predicate predicate = (BooleanExpression) resolver.resolveArgument(
+		Predicate predicate = resolver.resolveArgument(
 				getMethodParameterFor("simpleFind", Predicate.class), null, new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("rand"));
@@ -157,7 +157,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("inceptionYear", "978");
 
-		Predicate predicate = (BooleanExpression) resolver.resolveArgument(
+		Predicate predicate = resolver.resolveArgument(
 				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo((Predicate) QUser.user.inceptionYear.eq(978L));
@@ -168,7 +168,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("inceptionYear", new String[] { "978", "998" });
 
-		Predicate predicate = (BooleanExpression) resolver.resolveArgument(
+		Predicate predicate = resolver.resolveArgument(
 				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo((Predicate) QUser.user.inceptionYear.in(978L, 998L));

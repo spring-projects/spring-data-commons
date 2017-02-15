@@ -20,7 +20,6 @@ import static org.springframework.data.domain.ExampleMatcher.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 
 /**
  * Test for {@link Example}.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.springframework.util.StringUtils;
  * Abstraction of a path of {@link PersistentProperty}s.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements PersistentPropertyPath<T> {
 
@@ -77,7 +78,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 		Assert.notNull(property, "Property must not be null!");
 
 		if (isEmpty()) {
-			return new DefaultPersistentPropertyPath<>(Arrays.asList(property));
+			return new DefaultPersistentPropertyPath<>(Collections.singletonList(property));
 		}
 
 		Class<?> leafPropertyType = getLeafProperty().getActualType();
@@ -121,8 +122,8 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	public String toPath(String delimiter, Converter<? super T, String> converter) {
 
 		@SuppressWarnings("unchecked")
-		Converter<? super T, String> converterToUse = (Converter<? super T, String>) (converter == null
-				? PropertyNameConverter.INSTANCE : converter);
+		Converter<? super T, String> converterToUse = converter == null
+				? PropertyNameConverter.INSTANCE : converter;
 		String delimiterToUse = delimiter == null ? "." : delimiter;
 
 		List<String> result = new ArrayList<>();

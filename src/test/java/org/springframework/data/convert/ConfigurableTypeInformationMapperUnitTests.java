@@ -52,7 +52,7 @@ public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProp
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNonBijectionalMap() {
 
-		Map<Class<?>, String> map = new HashMap<Class<?>, String>();
+		Map<Class<?>, String> map = new HashMap<>();
 		map.put(String.class, "1");
 		map.put(Object.class, "1");
 

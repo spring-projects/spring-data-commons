@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,11 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
- * Default implementation of {@link MongoTypeMapper} allowing configuration of the key to lookup and store type
- * information in {@link DBObject}. The key defaults to {@link #DEFAULT_TYPE_KEY}. Actual type-to-{@link String}
- * conversion and back is done in {@link #getTypeString(TypeInformation)} or {@link #getTypeInformation(String)}
- * respectively.
+ * Default implementation of {@link TypeMapper}.
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Christoph Strobl
  */
 public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
@@ -53,7 +51,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 * @param accessor must not be {@literal null}.
 	 */
 	public DefaultTypeMapper(TypeAliasAccessor<S> accessor) {
-		this(accessor, Arrays.asList(new SimpleTypeInformationMapper()));
+		this(accessor, Collections.singletonList(new SimpleTypeInformationMapper()));
 	}
 
 	/**
@@ -151,7 +149,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 		return readType(source)//
 				.map(it -> readType(source))//
 				.orElseGet(() -> getFallbackTypeFor(source))//
-				.map(it -> it.getType());
+				.map(TypeInformation::getType);
 	}
 
 	/**

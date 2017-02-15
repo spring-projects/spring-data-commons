@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.springframework.util.ClassUtils;
  * types.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @see SpelAwareProxyProjectionFactory
  * @since 1.10
  */
@@ -55,7 +56,7 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 	 */
 	protected ProxyProjectionFactory() {
 
-		this.factories = new ArrayList<MethodInterceptorFactory>();
+		this.factories = new ArrayList<>();
 		this.factories.add(MapAccessingMethodInterceptorFactory.INSTANCE);
 		this.factories.add(PropertyAccessingMethodInvokerFactory.INSTANCE);
 	}

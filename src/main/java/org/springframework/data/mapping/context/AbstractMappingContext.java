@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,7 @@ import org.springframework.util.StringUtils;
  * @author Tomasz Wysocki
  * @author Mark Paluch
  * @author Mikael Klamra
+ * @author Christoph Strobl
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
@@ -86,7 +87,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	private ApplicationEventPublisher applicationEventPublisher;
 
-	private Set<? extends Class<?>> initialEntitySet = new HashSet<Class<?>>();
+	private Set<? extends Class<?>> initialEntitySet = new HashSet<>();
 	private boolean strict = false;
 	private SimpleTypeHolder simpleTypeHolder = new SimpleTypeHolder();
 
@@ -147,7 +148,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			read.lock();
 
 			return persistentEntities.values().stream()//
-					.flatMap(it -> Optionals.toStream(it))//
+					.flatMap(Optionals::toStream)//
 					.collect(Collectors.toSet());
 
 		} finally {
@@ -391,7 +392,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
 
-			final Map<String, PropertyDescriptor> descriptors = new HashMap<String, PropertyDescriptor>();
+			final Map<String, PropertyDescriptor> descriptors = new HashMap<>();
 			for (PropertyDescriptor descriptor : pds) {
 				descriptors.put(descriptor.getName(), descriptor);
 			}
@@ -415,7 +416,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			// Inform listeners
 			if (null != applicationEventPublisher) {
-				applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(this, entity));
+				applicationEventPublisher.publishEvent(new MappingContextEvent<>(this, entity));
 			}
 
 			return Optional.of(entity);
@@ -437,7 +438,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		try {
 
 			read.lock();
-			return Collections.unmodifiableSet(new HashSet<TypeInformation<?>>(persistentEntities.keySet()));
+			return Collections.unmodifiableSet(new HashSet<>(persistentEntities.keySet()));
 
 		} finally {
 			read.unlock();
@@ -478,7 +479,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * context.
 	 */
 	public void initialize() {
-		initialEntitySet.forEach(it -> addPersistentEntity(it));
+		initialEntitySet.forEach(this::addPersistentEntity);
 	}
 
 	/**
@@ -551,13 +552,13 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			}
 
 			entity.addPersistentProperty(property);
-			property.getAssociation().ifPresent(it -> entity.addAssociation(it));
+			property.getAssociation().ifPresent(entity::addAssociation);
 
 			if (entity.getType().equals(property.getRawType())) {
 				return;
 			}
 
-			property.getPersistentEntityType().forEach(it -> addPersistentEntity(it));
+			property.getPersistentEntityType().forEach(AbstractMappingContext.this::addPersistentEntity);
 		}
 	}
 

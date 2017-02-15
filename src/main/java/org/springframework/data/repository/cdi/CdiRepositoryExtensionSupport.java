@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,13 +53,14 @@ import org.springframework.data.repository.config.CustomRepositoryImplementation
  * @author Dirk Mahler
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CdiRepositoryExtensionSupport.class);
 
-	private final Map<Class<?>, Set<Annotation>> repositoryTypes = new HashMap<Class<?>, Set<Annotation>>();
-	private final Set<CdiRepositoryBean<?>> eagerRepositories = new HashSet<CdiRepositoryBean<?>>();
+	private final Map<Class<?>, Set<Annotation>> repositoryTypes = new HashMap<>();
+	private final Set<CdiRepositoryBean<?>> eagerRepositories = new HashSet<>();
 	private final CustomRepositoryImplementationDetector customImplementationDetector;
 
 	protected CdiRepositoryExtensionSupport() {

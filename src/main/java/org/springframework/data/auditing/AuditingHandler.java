@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.auditing;
 
 import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 import org.joda.time.DateTime;
@@ -35,6 +36,7 @@ import org.springframework.util.Assert;
  * Auditing handler to mark entity objects created and modified.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.5
  */
 public class AuditingHandler implements InitializingBean {
@@ -59,7 +61,7 @@ public class AuditingHandler implements InitializingBean {
 	@Deprecated
 	public AuditingHandler(
 			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
-		this(new PersistentEntities(Arrays.asList(mappingContext)));
+		this(new PersistentEntities(Collections.singletonList(mappingContext)));
 	}
 
 	/**

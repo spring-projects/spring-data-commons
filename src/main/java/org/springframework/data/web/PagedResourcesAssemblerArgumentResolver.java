@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Christoph Strobl
  */
 public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -115,7 +116,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */
-	private static final MethodParameter findMatchingPageableParameter(MethodParameter parameter) {
+	private static MethodParameter findMatchingPageableParameter(MethodParameter parameter) {
 
 		MethodParameters parameters = new MethodParameters(parameter.getMethod());
 		List<MethodParameter> pageableParameters = parameters.getParametersOfType(Pageable.class);

@@ -58,7 +58,7 @@ public class ResultProcessorUnitTests {
 		ResultProcessor information = new ResultProcessor(getQueryMethod("findAll"), new SpelAwareProxyProjectionFactory());
 
 		Sample sample = new Sample("Dave", "Matthews");
-		List<Sample> result = new ArrayList<>(Arrays.asList(sample));
+		List<Sample> result = new ArrayList<>(Collections.singletonList(sample));
 		List<Sample> converted = information.processResult(result);
 
 		assertThat(converted).contains(sample);
@@ -69,7 +69,7 @@ public class ResultProcessorUnitTests {
 
 		ResultProcessor information = getProcessor("findOneProjection");
 
-		SampleProjection result = information.processResult(Arrays.asList("Matthews"));
+		SampleProjection result = information.processResult(Collections.singletonList("Matthews"));
 
 		assertThat(result.getLastname()).isEqualTo("Matthews");
 	}
@@ -80,8 +80,8 @@ public class ResultProcessorUnitTests {
 
 		ResultProcessor information = getProcessor("findAllProjection");
 
-		List<String> columns = Arrays.asList("Matthews");
-		List<List<String>> source = new ArrayList<List<String>>(Arrays.asList(columns));
+		List<String> columns = Collections.singletonList("Matthews");
+		List<List<String>> source = new ArrayList<>(Collections.singletonList(columns));
 
 		List<SampleProjection> result = information.processResult(source);
 
@@ -94,8 +94,8 @@ public class ResultProcessorUnitTests {
 
 		ResultProcessor information = getProcessor("findAllProjection");
 
-		List<Map<String, Object>> source = new ArrayList<Map<String, Object>>(
-				Arrays.asList(Collections.<String, Object>singletonMap("lastname", "Matthews")));
+		List<Map<String, Object>> source = new ArrayList<>(
+				Collections.singletonList(Collections.singletonMap("lastname", "Matthews")));
 
 		List<SampleProjection> result = information.processResult(source);
 
@@ -108,7 +108,7 @@ public class ResultProcessorUnitTests {
 
 		ResultProcessor information = getProcessor("findAllProjection");
 
-		List<Sample> source = new ArrayList<>(Arrays.asList(new Sample("Dave", "Matthews")));
+		List<Sample> source = new ArrayList<>(Collections.singletonList(new Sample("Dave", "Matthews")));
 		List<SampleProjection> result = information.processResult(source);
 
 		assertThat(result).hasSize(1);
@@ -120,7 +120,7 @@ public class ResultProcessorUnitTests {
 
 		ResultProcessor information = getProcessor("findPageProjection", Pageable.class);
 
-		Page<Sample> source = new PageImpl<>(Arrays.asList(new Sample("Dave", "Matthews")));
+		Page<Sample> source = new PageImpl<>(Collections.singletonList(new Sample("Dave", "Matthews")));
 		Page<SampleProjection> result = information.processResult(source);
 
 		assertThat(result.getContent()).hasSize(1);
@@ -186,7 +186,7 @@ public class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	public void supportsStreamAsReturnWrapper() throws Exception {
 
-		Stream<Sample> samples = Arrays.asList(new Sample("Dave", "Matthews")).stream();
+		Stream<Sample> samples = Collections.singletonList(new Sample("Dave", "Matthews")).stream();
 
 		Object result = getProcessor("findStreamProjection").processResult(samples);
 
@@ -209,7 +209,7 @@ public class ResultProcessorUnitTests {
 
 		ResultProcessor processor = getProcessor("findAllProjection");
 
-		SpecialList<Sample> specialList = new SpecialList<Sample>(new Object());
+		SpecialList<Sample> specialList = new SpecialList<>(new Object());
 		specialList.add(new Sample("Dave", "Matthews"));
 
 		processor.processResult(specialList);

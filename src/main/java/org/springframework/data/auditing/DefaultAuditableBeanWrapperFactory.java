@@ -162,9 +162,9 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 			DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
 
-			JodaTimeConverters.getConvertersToRegister().forEach(it -> conversionService.addConverter(it));
-			Jsr310Converters.getConvertersToRegister().forEach(it -> conversionService.addConverter(it));
-			ThreeTenBackPortConverters.getConvertersToRegister().forEach(it -> conversionService.addConverter(it));
+			JodaTimeConverters.getConvertersToRegister().forEach(conversionService::addConverter);
+			Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
+			ThreeTenBackPortConverters.getConvertersToRegister().forEach(conversionService::addConverter);
 
 			this.conversionService = conversionService;
 		}
@@ -214,9 +214,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@SuppressWarnings("unchecked")
 		protected <T> Optional<T> getAsTemporalAccessor(Optional<?> source, Class<T> target) {
 
-			return source.map(it -> {
-				return target.isInstance(it) ? (T) it : conversionService.convert(it, target);
-			});
+			return source.map(it -> target.isInstance(it) ? (T) it : conversionService.convert(it, target));
 		}
 	}
 
@@ -302,10 +300,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 */
 		private Optional<? extends Object> setField(Optional<Field> field, Optional<? extends Object> value) {
 
-			field.ifPresent(it -> {
-				ReflectionUtils.setField(it, target,
-						Optional.class.isAssignableFrom(it.getType()) ? value : value.orElse(null));
-			});
+			field.ifPresent(it -> ReflectionUtils.setField(it, target,
+					Optional.class.isAssignableFrom(it.getType()) ? value : value.orElse(null)));
 
 			return value;
 		}

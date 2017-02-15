@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.data.domain.jaxb.SpringDataJaxb.SortDto;
  * {@link XmlAdapter} to convert {@link Pageable} instances int a {@link PageRequestDto} and vice versa.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 
@@ -42,7 +43,7 @@ class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 		SortDto sortDto = SortAdapter.INSTANCE.marshal(request.getSort());
 
 		PageRequestDto dto = new PageRequestDto();
-		dto.orders = sortDto == null ? Collections.<OrderDto>emptyList() : sortDto.orders;
+		dto.orders = sortDto == null ? Collections.emptyList() : sortDto.orders;
 		dto.page = request.getPageNumber();
 		dto.size = request.getPageSize();
 

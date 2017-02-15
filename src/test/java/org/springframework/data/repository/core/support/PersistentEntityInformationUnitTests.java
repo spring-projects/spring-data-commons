@@ -39,7 +39,7 @@ public class PersistentEntityInformationUnitTests {
 		SampleMappingContext context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Sample.class);
 
-		EntityInformation<Object, Long> information = new PersistentEntityInformation<Object, Long>(entity);
+		EntityInformation<Object, Long> information = new PersistentEntityInformation<>(entity);
 		assertThat(information.getIdType()).isEqualTo(Long.class);
 
 		Sample sample = new Sample();
@@ -55,7 +55,7 @@ public class PersistentEntityInformationUnitTests {
 		PersistentEntity<Object, SamplePersistentProperty> entity = context
 				.getRequiredPersistentEntity(EntityWithoutId.class);
 
-		PersistentEntityInformation<Object, Serializable> information = new PersistentEntityInformation<Object, Serializable>(
+		PersistentEntityInformation<Object, Serializable> information = new PersistentEntityInformation<>(
 				entity);
 		assertThat(information.getId(new EntityWithoutId())).isNotPresent();
 	}

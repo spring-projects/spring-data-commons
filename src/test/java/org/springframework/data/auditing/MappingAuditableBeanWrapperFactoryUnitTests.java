@@ -96,9 +96,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(sample));
 
-		assertThat(wrapper).hasValueSatisfying(it -> {
-			it.setLastModifiedDate(Optional.of(Instant.now()));
-		});
+		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(Optional.of(Instant.now())));
 	}
 
 	@Test // DATACMNS-365
@@ -109,9 +107,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-365
 	public void returnsAuditableWrapperForAuditable() {
 
-		assertThat(factory.getBeanWrapperFor(Optional.of(mock(ExtendingAuditable.class)))).hasValueSatisfying(it -> {
-			assertThat(it).isInstanceOf(AuditableInterfaceBeanWrapper.class);
-		});
+		assertThat(factory.getBeanWrapperFor(Optional.of(mock(ExtendingAuditable.class)))).hasValueSatisfying(it -> assertThat(it).isInstanceOf(AuditableInterfaceBeanWrapper.class));
 	}
 
 	@Test // DATACMNS-638
@@ -166,9 +162,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(sample));
 
-		assertThat(wrapper).hasValueSatisfying(it -> {
-			assertThat(it.getLastModifiedDate()).isEqualTo(expected);
-		});
+		assertThat(wrapper).hasValueSatisfying(it -> assertThat(it.getLastModifiedDate()).isEqualTo(expected));
 	}
 
 	static class Sample {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.springframework.util.ReflectionUtils;
  * retrieve the id.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class ReflectionEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
 
@@ -66,7 +67,7 @@ public class ReflectionEntityInformation<T, ID extends Serializable> extends Abs
 			}
 		});
 
-		Assert.notNull(this.field, String.format("No field annotated with %s found!", annotation.toString()));
+		Assert.notNull(this.field, () -> String.format("No field annotated with %s found!", annotation.toString()));
 		ReflectionUtils.makeAccessible(field);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
  * Allows iterating over the underlying {@link Revisions} starting with older revisions.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<Revision<N, T>> {
 
@@ -64,7 +65,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<
 	}
 
 	public static <N extends Number & Comparable<N>, T> Revisions<N, T> of(List<? extends Revision<N, T>> revisions) {
-		return new Revisions<N, T>(revisions);
+		return new Revisions<>(revisions);
 	}
 
 	/**
@@ -83,7 +84,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<
 	 * @return
 	 */
 	public Revisions<N, T> reverse() {
-		return new Revisions<N, T>(revisions, !latestLast);
+		return new Revisions<>(revisions, !latestLast);
 	}
 
 	/* 

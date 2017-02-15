@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,18 +26,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * on each and every request.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @RequiredArgsConstructor
 public class CachingIsNewStrategyFactory implements IsNewStrategyFactory {
 
 	private final @NonNull IsNewStrategyFactory delegate;
-	private final Map<Class<?>, IsNewStrategy> cache = new ConcurrentHashMap<Class<?>, IsNewStrategy>();
+	private final Map<Class<?>, IsNewStrategy> cache = new ConcurrentHashMap<>();
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.IsNewStrategyFactory#getIsNewStrategy(java.lang.Class)
 	 */
 	public IsNewStrategy getIsNewStrategy(Class<?> type) {
-		return cache.computeIfAbsent(type, it -> delegate.getIsNewStrategy(it));
+		return cache.computeIfAbsent(type, delegate::getIsNewStrategy);
 	}
 }

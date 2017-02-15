@@ -253,7 +253,7 @@ public class PagedResourcesAssemblerUnitTests {
 		Person person = new Person();
 		person.name = "Dave";
 
-		return new PageImpl<>(Arrays.asList(person), request, 3);
+		return new PageImpl<>(Collections.singletonList(person), request, 3);
 	}
 
 	private static Map<String, String> getQueryParameters(Link link) {

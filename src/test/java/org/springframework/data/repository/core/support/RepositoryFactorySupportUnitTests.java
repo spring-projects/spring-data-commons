@@ -248,7 +248,7 @@ public class RepositoryFactorySupportUnitTests {
 
 		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
 
-		List<User> reference = Arrays.asList(new User());
+		List<User> reference = Collections.singletonList(new User());
 
 		expect(prepareConvertingRepository(reference).readAllByFirstname("Foo"), reference);
 	}
@@ -256,7 +256,7 @@ public class RepositoryFactorySupportUnitTests {
 	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoListenableFutureWithEntityCollectionIfConfigured() throws Exception {
 
-		List<User> reference = Arrays.asList(new User());
+		List<User> reference = Collections.singletonList(new User());
 
 		expect(prepareConvertingRepository(reference).readAllByLastname("Foo"), reference);
 	}

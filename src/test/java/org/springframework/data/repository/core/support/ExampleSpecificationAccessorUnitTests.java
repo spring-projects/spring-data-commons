@@ -21,6 +21,7 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatcher;
 import org.springframework.data.domain.ExampleMatcher.NoOpPropertyValueTransformer;
 import org.springframework.data.domain.ExampleMatcher.NullHandler;
 import org.springframework.data.domain.ExampleMatcher.PropertyValueTransformer;
@@ -153,7 +154,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		specification = ExampleMatcher.matching().withStringMatcher(StringMatcher.ENDING)
 				.withMatcher("firstname", contains()).withMatcher("address.city", startsWith())
-				.withMatcher("lastname", matcher -> matcher.ignoreCase());
+				.withMatcher("lastname", GenericPropertyMatcher::ignoreCase);
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
@@ -168,7 +169,7 @@ public class ExampleSpecificationAccessorUnitTests {
 
 		specification = ExampleMatcher.matching().//
 				withStringMatcher(StringMatcher.STARTING).//
-				withMatcher("firstname", matcher -> matcher.ignoreCase());
+				withMatcher("firstname", GenericPropertyMatcher::ignoreCase);
 
 		exampleSpecificationAccessor = new ExampleMatcherAccessor(specification);
 
@@ -217,13 +218,7 @@ public class ExampleSpecificationAccessorUnitTests {
 	@Test // DATACMNS-810
 	public void getValueTransformerForPathReturnsConfigurtedTransformerForPath() {
 
-		PropertyValueTransformer transformer = new PropertyValueTransformer() {
-
-			@Override
-			public Object convert(Object source) {
-				return source.toString();
-			}
-		};
+		PropertyValueTransformer transformer = source -> source.toString();
 
 		specification = ExampleMatcher.matching().//
 				withTransformer("firstname", transformer);

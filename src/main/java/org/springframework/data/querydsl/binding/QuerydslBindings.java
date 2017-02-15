@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,8 +79,8 @@ public class QuerydslBindings {
 	 */
 	public QuerydslBindings() {
 
-		this.pathSpecs = new LinkedHashMap<String, PathAndBinding<?, ?>>();
-		this.typeSpecs = new LinkedHashMap<Class<?>, PathAndBinding<?, ?>>();
+		this.pathSpecs = new LinkedHashMap<>();
+		this.typeSpecs = new LinkedHashMap<>();
 		this.whiteList = new HashSet<>();
 		this.blackList = new HashSet<>();
 		this.aliases = new HashSet<>();
@@ -94,7 +94,7 @@ public class QuerydslBindings {
 	 * @return
 	 */
 	public final <T extends Path<S>, S> AliasingPathBinder<T, S> bind(T path) {
-		return new AliasingPathBinder<T, S>(path);
+		return new AliasingPathBinder<>(path);
 	}
 
 	/**
@@ -105,7 +105,7 @@ public class QuerydslBindings {
 	 */
 	@SafeVarargs
 	public final <T extends Path<S>, S> PathBinder<T, S> bind(T... paths) {
-		return new PathBinder<T, S>(paths);
+		return new PathBinder<>(paths);
 	}
 
 	/**
@@ -231,7 +231,7 @@ public class QuerydslBindings {
 
 		Assert.notNull(path, "PropertyPath must not be null!");
 
-		return Optional.ofNullable(pathSpecs.get(path.toDotPath())).flatMap(it -> it.getPath());
+		return Optional.ofNullable(pathSpecs.get(path.toDotPath())).flatMap(PathAndBinding::getPath);
 	}
 
 	/**
@@ -252,7 +252,7 @@ public class QuerydslBindings {
 
 		if (pathSpecs.containsKey(path)) {
 			return pathSpecs.get(path).getPath()//
-					.map(it -> QuerydslPathInformation.of(it))//
+					.map(QuerydslPathInformation::of)//
 					.orElse(null);
 		}
 
@@ -427,7 +427,7 @@ public class QuerydslBindings {
 		public AliasingPathBinder<P, T> as(String alias) {
 
 			Assert.hasText(alias, "Alias must not be null or empty!");
-			return new AliasingPathBinder<P, T>(alias, path);
+			return new AliasingPathBinder<>(alias, path);
 		}
 
 		/**
@@ -472,25 +472,13 @@ public class QuerydslBindings {
 		public <P extends Path<T>> void firstOptional(OptionalValueBinding<P, T> binding) {
 
 			Assert.notNull(binding, "Binding must not be null!");
-			all(new MultiValueBinding<P, T>() {
-
-				@Override
-				public Optional<Predicate> bind(P path, Collection<? extends T> value) {
-					return binding.bind(path, Optionals.next(value.iterator()));
-				}
-			});
+			all((MultiValueBinding<P, T>) (path, value) -> binding.bind(path, Optionals.next(value.iterator())));
 		}
 
 		public <P extends Path<T>> void first(SingleValueBinding<P, T> binding) {
 
 			Assert.notNull(binding, "Binding must not be null!");
-			all(new MultiValueBinding<P, T>() {
-
-				@Override
-				public Optional<Predicate> bind(P path, Collection<? extends T> value) {
-					return Optionals.next(value.iterator()).flatMap(t -> binding.bind(path, t));
-				}
-			});
+			all((MultiValueBinding<P, T>) (path, value) -> Optionals.next(value.iterator()).flatMap(t -> binding.bind(path, t)));
 		}
 
 		/**
@@ -520,15 +508,15 @@ public class QuerydslBindings {
 		@NonNull Optional<MultiValueBinding<P, T>> binding;
 
 		public static <T, P extends Path<? extends T>> PathAndBinding<P, T> withPath(P path) {
-			return new PathAndBinding<P, T>(Optional.of(path), Optional.empty());
+			return new PathAndBinding<>(Optional.of(path), Optional.empty());
 		}
 
 		public static <T, S extends Path<? extends T>> PathAndBinding<S, T> withoutPath() {
-			return new PathAndBinding<S, T>(Optional.empty(), Optional.empty());
+			return new PathAndBinding<>(Optional.empty(), Optional.empty());
 		}
 
 		public PathAndBinding<P, T> with(MultiValueBinding<P, T> binding) {
-			return new PathAndBinding<P, T>(path, Optional.of(binding));
+			return new PathAndBinding<>(path, Optional.of(binding));
 		}
 	}
 }

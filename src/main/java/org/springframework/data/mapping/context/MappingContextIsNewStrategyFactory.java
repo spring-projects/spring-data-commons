@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -37,6 +38,7 @@ import org.springframework.util.Assert;
  * value of 0 in case of a version property.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupport {
 
@@ -50,7 +52,7 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	 */
 	@Deprecated
 	public MappingContextIsNewStrategyFactory(MappingContext<? extends PersistentEntity<?, ?>, ?> context) {
-		this(new PersistentEntities(Arrays.asList(context)));
+		this(new PersistentEntities(Collections.singletonList(context)));
 	}
 
 	/**
@@ -73,7 +75,7 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	protected IsNewStrategy doGetIsNewStrategy(Class<?> type) {
 
 		return context.getPersistentEntity(type)//
-				.flatMap(it -> foo(it))//
+				.flatMap(MappingContextIsNewStrategyFactory::foo)//
 				.orElseThrow(() -> new MappingException(String.format("Cannot determine IsNewStrategy for type %s!", type)));
 	}
 

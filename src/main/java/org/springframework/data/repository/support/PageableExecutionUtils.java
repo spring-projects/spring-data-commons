@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.13
  */
 @UtilityClass
@@ -55,16 +56,16 @@ public class PageableExecutionUtils {
 		if (pageable == Pageable.NONE || pageable.getOffset() == 0) {
 
 			if (pageable == Pageable.NONE || pageable.getPageSize() > content.size()) {
-				return new PageImpl<T>(content, pageable, content.size());
+				return new PageImpl<>(content, pageable, content.size());
 			}
 
-			return new PageImpl<T>(content, pageable, totalSupplier.getAsLong());
+			return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
 		}
 
 		if (content.size() != 0 && pageable.getPageSize() > content.size()) {
-			return new PageImpl<T>(content, pageable, pageable.getOffset() + content.size());
+			return new PageImpl<>(content, pageable, pageable.getOffset() + content.size());
 		}
 
-		return new PageImpl<T>(content, pageable, totalSupplier.getAsLong());
+		return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
 	}
 }

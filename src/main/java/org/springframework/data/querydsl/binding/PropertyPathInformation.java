@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.querydsl.core.types.dsl.CollectionPathBase;
  * {@link PropertyPath} based implementation of {@link PathInformation}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.13
  */
 @ToString
@@ -125,9 +126,9 @@ class PropertyPathInformation implements PathInformation {
 	private static Path<?> reifyPath(EntityPathResolver resolver, PropertyPath path, Optional<Path<?>> base) {
 
 		Optional<Path<?>> map = base.filter(it -> it instanceof CollectionPathBase)
-				.map(it -> CollectionPathBase.class.cast(it))//
+				.map(CollectionPathBase.class::cast)//
 				.map(CollectionPathBase::any)//
-				.map(it -> Path.class.cast(it))//
+				.map(Path.class::cast)//
 				.map(it -> reifyPath(resolver, path, Optional.of(it)));
 
 		return map.orElseGet(() -> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
  * Value object to represent {@link MethodParameters} to allow to easily find the ones with a given annotation.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.10
  */
 class MethodParameters {
@@ -146,12 +147,9 @@ class MethodParameters {
 			super(method, parameterIndex);
 
 			this.attribute = attribute;
-			this.name = Lazy.of(() -> {
-
-				return this.attribute.//
-						flatMap(it -> it.getValueFrom(this).map(Object::toString)).//
-						orElseGet(() -> super.getParameterName());
-			});
+			this.name = Lazy.of(() -> this.attribute.//
+					flatMap(it -> it.getValueFrom(this).map(Object::toString)).//
+					orElseGet(super::getParameterName));
 		}
 
 		/* 

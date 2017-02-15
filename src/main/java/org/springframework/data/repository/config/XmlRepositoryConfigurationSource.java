@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.TypeFilterParser;
 import org.springframework.data.config.TypeFilterParser.Type;
 import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.util.ParsingUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -35,6 +36,7 @@ import org.w3c.dom.Element;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Christoph Strobl
  * @author Peter Rietzler
  */
 public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
@@ -98,7 +100,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getQueryLookupStrategyKey()
 	 */
 	public Optional<Object> getQueryLookupStrategyKey() {
-		return getNullDefaultedAttribute(element, QUERY_LOOKUP_STRATEGY).map(it -> QueryLookupStrategy.Key.create(it));
+		return getNullDefaultedAttribute(element, QUERY_LOOKUP_STRATEGY).map(Key::create);
 	}
 
 	/* 
@@ -173,7 +175,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public boolean shouldConsiderNestedRepositories() {
 
-		return getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES).map(it -> Boolean.parseBoolean(it))
+		return getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES).map(Boolean::parseBoolean)
 				.orElse(false);
 	}
 

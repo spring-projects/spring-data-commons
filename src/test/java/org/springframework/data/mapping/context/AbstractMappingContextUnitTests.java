@@ -142,9 +142,7 @@ public class AbstractMappingContextUnitTests {
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
 				.getRequiredPersistentEntity(Extension.class);
 
-		assertThat(entity.getPersistentProperty("foo")).hasValueSatisfying(it -> {
-			assertThat(it.isIdProperty()).isTrue();
-		});
+		assertThat(entity.getPersistentProperty("foo")).hasValueSatisfying(it -> assertThat(it.isIdProperty()).isTrue());
 	}
 
 	@Test // DATACMNS-345
@@ -155,11 +153,7 @@ public class AbstractMappingContextUnitTests {
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
 				.getRequiredPersistentEntity(Sample.class);
 
-		assertThat(entity.getPersistentProperty("persons")).hasValueSatisfying(it -> {
-			assertThat(mappingContext.getPersistentEntity(it)).hasValueSatisfying(inner -> {
-				assertThat(inner.getType()).isEqualTo(Person.class);
-			});
-		});
+		assertThat(entity.getPersistentProperty("persons")).hasValueSatisfying(it -> assertThat(mappingContext.getPersistentEntity(it)).hasValueSatisfying(inner -> assertThat(inner.getType()).isEqualTo(Person.class)));
 	}
 
 	@Test // DATACMNS-380

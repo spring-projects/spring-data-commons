@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
  * 
  * @author Ranie Jade Ramiso
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.5
  */
 final class AnnotationAuditingMetadata {
@@ -51,7 +52,7 @@ final class AnnotationAuditingMetadata {
 	private static final AnnotationFieldFilter LAST_MODIFIED_DATE_FILTER = new AnnotationFieldFilter(
 			LastModifiedDate.class);
 
-	private static final Map<Class<?>, AnnotationAuditingMetadata> METADATA_CACHE = new ConcurrentHashMap<Class<?>, AnnotationAuditingMetadata>();
+	private static final Map<Class<?>, AnnotationAuditingMetadata> METADATA_CACHE = new ConcurrentHashMap<>();
 
 	public static final boolean IS_JDK_8 = org.springframework.util.ClassUtils.isPresent("java.time.Clock",
 			AnnotationAuditingMetadata.class.getClassLoader());
@@ -124,7 +125,7 @@ final class AnnotationAuditingMetadata {
 	 * @param type the type to inspect, must not be {@literal null}.
 	 */
 	public static AnnotationAuditingMetadata getMetadata(Class<?> type) {
-		return METADATA_CACHE.computeIfAbsent(type, it -> new AnnotationAuditingMetadata(it));
+		return METADATA_CACHE.computeIfAbsent(type, AnnotationAuditingMetadata::new);
 	}
 
 	/**

@@ -53,7 +53,7 @@ public class DefaultTypeMapperUnitTests {
 	@Before
 	public void setUp() {
 
-		this.typeMapper = new DefaultTypeMapper<Map<String, String>>(accessor, Arrays.asList(mapper));
+		this.typeMapper = new DefaultTypeMapper<>(accessor, Collections.singletonList(mapper));
 		this.source = Collections.singletonMap("key", ALIAS.toString());
 
 		doReturn(ALIAS).when(accessor).readAliasFrom(source);
@@ -98,7 +98,7 @@ public class DefaultTypeMapperUnitTests {
 		TypeInformation<?> typeInformation = TypeInformation.class.cast(result);
 
 		assertThat(typeInformation.getType()).isEqualTo(Bar.class);
-		OptionalAssert.assertOptional(typeInformation.getProperty("field")).value(nested -> nested.getType())
+		OptionalAssert.assertOptional(typeInformation.getProperty("field")).value(TypeInformation::getType)
 				.isEqualTo(Character.class);
 	}
 

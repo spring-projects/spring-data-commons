@@ -44,17 +44,13 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 	@Test
 	public void returnsAuditableInterfaceBeanWrapperForAuditable() {
 
-		assertThat(factory.getBeanWrapperFor(Optional.of(new AuditedUser()))).hasValueSatisfying(it -> {
-			assertThat(it).isInstanceOf(AuditableInterfaceBeanWrapper.class);
-		});
+		assertThat(factory.getBeanWrapperFor(Optional.of(new AuditedUser()))).hasValueSatisfying(it -> assertThat(it).isInstanceOf(AuditableInterfaceBeanWrapper.class));
 	}
 
 	@Test
 	public void returnsReflectionAuditingBeanWrapperForNonAuditableButAnnotated() {
 
-		assertThat(factory.getBeanWrapperFor(Optional.of(new AnnotatedUser()))).hasValueSatisfying(it -> {
-			assertThat(it).isInstanceOf(ReflectionAuditingBeanWrapper.class);
-		});
+		assertThat(factory.getBeanWrapperFor(Optional.of(new AnnotatedUser()))).hasValueSatisfying(it -> assertThat(it).isInstanceOf(ReflectionAuditingBeanWrapper.class));
 	}
 
 	@Test
@@ -89,8 +85,6 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 
 		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(user));
 
-		assertThat(wrapper).hasValueSatisfying(it -> {
-			it.setLastModifiedDate(Optional.of(zonedDateTime));
-		});
+		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(Optional.of(zonedDateTime)));
 	}
 }

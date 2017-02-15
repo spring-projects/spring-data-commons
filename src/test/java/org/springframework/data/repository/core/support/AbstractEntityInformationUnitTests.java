@@ -51,7 +51,7 @@ public class AbstractEntityInformationUnitTests {
 	@Test // DATACMNS-357
 	public void detectsNewStateForPrimitiveIds() {
 
-		CustomEntityInformation<PrimitiveIdEntity, Serializable> fooEn = new CustomEntityInformation<PrimitiveIdEntity, Serializable>(
+		CustomEntityInformation<PrimitiveIdEntity, Serializable> fooEn = new CustomEntityInformation<>(
 				PrimitiveIdEntity.class);
 
 		PrimitiveIdEntity entity = new PrimitiveIdEntity();
@@ -64,7 +64,7 @@ public class AbstractEntityInformationUnitTests {
 	@Test // DATACMNS-357
 	public void detectsNewStateForPrimitiveWrapperIds() {
 
-		CustomEntityInformation<PrimitiveWrapperIdEntity, Serializable> fooEn = new CustomEntityInformation<PrimitiveWrapperIdEntity, Serializable>(
+		CustomEntityInformation<PrimitiveWrapperIdEntity, Serializable> fooEn = new CustomEntityInformation<>(
 				PrimitiveWrapperIdEntity.class);
 
 		PrimitiveWrapperIdEntity entity = new PrimitiveWrapperIdEntity();

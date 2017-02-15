@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -103,8 +104,8 @@ public class SpringDataJaxbUnitTests {
 		PageWrapper wrapper = new PageWrapper();
 		Content content = new Content();
 		content.name = "Foo";
-		wrapper.page = new PageImpl<>(Arrays.asList(content));
-		wrapper.pageWithLinks = new PageImpl<>(Arrays.asList(content));
+		wrapper.page = new PageImpl<>(Collections.singletonList(content));
+		wrapper.pageWithLinks = new PageImpl<>(Collections.singletonList(content));
 
 		marshaller.marshal(wrapper, new StringWriter());
 	}

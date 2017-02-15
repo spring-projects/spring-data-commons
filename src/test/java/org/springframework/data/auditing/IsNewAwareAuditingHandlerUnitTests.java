@@ -82,7 +82,7 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 
 	@Test // DATACMNS-365
 	public void setsUpHandlerWithMappingContext() {
-		new IsNewAwareAuditingHandler(new PersistentEntities(Collections.<MappingContext<?, ?>> emptySet()));
+		new IsNewAwareAuditingHandler(new PersistentEntities(Collections.emptySet()));
 	}
 
 	@Test // DATACMNS-638

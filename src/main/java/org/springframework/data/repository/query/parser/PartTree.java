@@ -238,7 +238,7 @@ public class PartTree implements Streamable<OrPart> {
 			String[] split = split(source, "And");
 
 			this.children = Arrays.stream(split)//
-					.filter(part -> StringUtils.hasText(part))//
+					.filter(StringUtils::hasText)//
 					.map(part -> new Part(part, domainClass, alwaysIgnoreCase))//
 					.collect(Collectors.toList());
 		}
@@ -339,7 +339,7 @@ public class PartTree implements Streamable<OrPart> {
 			return maxResults;
 		}
 
-		private final boolean matches(Optional<String> subject, Pattern pattern) {
+		private boolean matches(Optional<String> subject, Pattern pattern) {
 			return subject.map(it -> pattern.matcher(it).find()).orElse(false);
 		}
 	}

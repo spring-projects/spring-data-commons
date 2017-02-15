@@ -39,7 +39,7 @@ public class SimpleTypeHolderUnitTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullOriginal() {
-		new SimpleTypeHolder(new HashSet<Class<?>>(), null);
+		new SimpleTypeHolder(new HashSet<>(), null);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-31
@@ -59,7 +59,7 @@ public class SimpleTypeHolderUnitTests {
 	@Test
 	public void doesNotAddDefaultConvertersIfConfigured() {
 
-		SimpleTypeHolder holder = new SimpleTypeHolder(new HashSet<Class<?>>(), false);
+		SimpleTypeHolder holder = new SimpleTypeHolder(new HashSet<>(), false);
 
 		assertThat(holder.isSimpleType(UUID.class)).isFalse();
 	}

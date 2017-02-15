@@ -35,7 +35,7 @@ public class OptionalAssert<T> extends org.assertj.core.api.OptionalAssert<T> {
 	}
 
 	public static <T> OptionalAssert<T> assertOptional(Optional<T> optional) {
-		return new OptionalAssert<T>(optional);
+		return new OptionalAssert<>(optional);
 	}
 
 	public Optional<T> getActual() {
@@ -60,7 +60,7 @@ public class OptionalAssert<T> extends org.assertj.core.api.OptionalAssert<T> {
 
 		Assertions.assertThat(actual).isPresent();
 
-		return Assertions.assertThat(actual.map(function).orElseThrow(() -> new IllegalStateException()));
+		return Assertions.assertThat(actual.map(function).orElseThrow(IllegalStateException::new));
 	}
 
 	public OptionalAssert<T> isEqualTo(OptionalAssert<?> other) {

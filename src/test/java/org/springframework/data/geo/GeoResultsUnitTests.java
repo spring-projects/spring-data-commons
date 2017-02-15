@@ -18,6 +18,7 @@ package org.springframework.data.geo;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Test;
 import org.springframework.util.SerializationUtils;
@@ -45,7 +46,7 @@ public class GeoResultsUnitTests {
 	public void testSerialization() {
 
 		GeoResult<String> result = new GeoResult<>("test", new Distance(2));
-		GeoResults<String> geoResults = new GeoResults<>(Arrays.asList(result));
+		GeoResults<String> geoResults = new GeoResults<>(Collections.singletonList(result));
 
 		@SuppressWarnings("unchecked")
 		GeoResults<String> serialized = (GeoResults<String>) SerializationUtils

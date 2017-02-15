@@ -136,11 +136,7 @@ public class DefaultCrudMethodsUnitTests {
 		Arrays
 				.asList(methods.getSaveMethod(), methods.getDeleteMethod(), methods.getFindAllMethod(),
 						methods.getFindOneMethod())//
-				.forEach(method -> {
-					assertThat(method).hasValueSatisfying(it -> {
-						assertThat(it.isAccessible()).isTrue();
-					});
-				});
+				.forEach(method -> assertThat(method).hasValueSatisfying(it -> assertThat(it.isAccessible()).isTrue()));
 	}
 
 	private static CrudMethods getMethodsFor(Class<?> repositoryInterface) {

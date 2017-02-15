@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ import org.springframework.util.StringUtils;
  */
 public class ExtensionAwareEvaluationContextProvider implements EvaluationContextProvider, ApplicationContextAware {
 
-	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new HashMap<Class<?>, EvaluationContextExtensionInformation>();
+	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new HashMap<>();
 
 	private List<? extends EvaluationContextExtension> extensions;
 	private Optional<ListableBeanFactory> beanFactory = Optional.empty();
@@ -131,7 +131,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 */
 	private <T extends Parameters<?, ?>> Map<String, Object> collectVariables(T parameters, Object[] arguments) {
 
-		Map<String, Object> variables = new HashMap<String, Object>();
+		Map<String, Object> variables = new HashMap<>();
 
 		parameters.stream()//
 				.filter(Parameter::isSpecialParameter)//
@@ -162,10 +162,8 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		this.extensions = Collections.emptyList();
 
-		beanFactory.ifPresent(it -> {
-			this.extensions = new ArrayList<>(
-					it.getBeansOfType(EvaluationContextExtension.class, true, false).values());
-		});
+		beanFactory.ifPresent(it -> this.extensions = new ArrayList<>(
+				it.getBeansOfType(EvaluationContextExtension.class, true, false).values()));
 
 		return extensions;
 	}
@@ -220,7 +218,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 			this.adapters = toAdapters(extensions);
 			this.adapterMap = adapters.stream()//
-					.collect(Collectors.toMap(it -> it.getExtensionId(), it -> it));
+					.collect(Collectors.toMap(EvaluationContextExtensionAdapter::getExtensionId, it -> it));
 
 			Collections.reverse(this.adapters);
 		}
@@ -410,12 +408,12 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			ExtensionTypeInformation extensionTypeInformation = information.getExtensionTypeInformation();
 			RootObjectInformation rootObjectInformation = information.getRootObjectInformation(target);
 
-			this.functions = new HashMap<String, Function>();
+			this.functions = new HashMap<>();
 			this.functions.putAll(extensionTypeInformation.getFunctions());
 			this.functions.putAll(rootObjectInformation.getFunctions(target));
 			this.functions.putAll(extension.getFunctions());
 
-			this.properties = new HashMap<String, Object>();
+			this.properties = new HashMap<>();
 			this.properties.putAll(extensionTypeInformation.getProperties());
 			this.properties.putAll(rootObjectInformation.getProperties(target));
 			this.properties.putAll(extension.getProperties());

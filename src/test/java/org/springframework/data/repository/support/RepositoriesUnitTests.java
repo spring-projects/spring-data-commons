@@ -116,7 +116,7 @@ public class RepositoriesUnitTests {
 	public void discoversRepositoryForAlternativeDomainType() {
 
 		RepositoryMetadata metadata = new CustomRepositoryMetadata(SampleRepository.class);
-		RepositoryFactoryInformation<?, ?> information = new SampleRepoFactoryInformation<Object, Serializable>(metadata);
+		RepositoryFactoryInformation<?, ?> information = new SampleRepoFactoryInformation<>(metadata);
 
 		GenericApplicationContext context = new GenericApplicationContext();
 		context.getBeanFactory().registerSingleton("foo", information);
@@ -217,7 +217,7 @@ public class RepositoriesUnitTests {
 		 */
 		@Override
 		public Set<Class<?>> getAlternativeDomainTypes() {
-			return Collections.<Class<?>>singleton(super.getDomainType());
+			return Collections.singleton(super.getDomainType());
 		}
 	}
 

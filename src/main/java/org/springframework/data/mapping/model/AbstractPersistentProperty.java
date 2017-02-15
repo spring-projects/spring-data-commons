@@ -72,7 +72,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.association = isAssociation() ? Optional.of(createAssociation()) : Optional.empty();
 		this.owner = owner;
 		this.simpleTypeHolder = simpleTypeHolder;
-		this.hashCode = Lazy.of(() -> property.hashCode());
+		this.hashCode = Lazy.of(property::hashCode);
 	}
 
 	protected abstract Association<P> createAssociation();
@@ -125,7 +125,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		}
 
 		TypeInformation<?> candidate = getTypeInformationIfEntityCandidate();
-		return candidate != null ? Collections.singleton(candidate) : Collections.<TypeInformation<?>>emptySet();
+		return candidate != null ? Collections.singleton(candidate) : Collections.emptySet();
 	}
 
 	private TypeInformation<?> getTypeInformationIfEntityCandidate() {
@@ -267,7 +267,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Class<?> getMapValueType() {
-		return isMap() ? information.getMapValueType().map(it -> it.getType()).orElse(null) : null;
+		return isMap() ? information.getMapValueType().map(TypeInformation::getType).orElse(null) : null;
 	}
 
 	/* 

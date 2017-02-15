@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.asm.ClassWriter;
@@ -66,7 +67,7 @@ import org.springframework.util.ReflectionUtils;
  */
 public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
-	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor>> propertyAccessorClasses = new HashMap<TypeInformation<?>, Class<PersistentPropertyAccessor>>(
+	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor>> propertyAccessorClasses = new HashMap<>(
 			32);
 	private volatile Map<Class<PersistentPropertyAccessor>, Constructor<?>> constructorMap = new HashMap<>(32);
 
@@ -303,25 +304,15 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		private static List<PersistentProperty<?>> getPersistentProperties(PersistentEntity<?, ?> entity) {
 
-			final List<PersistentProperty<?>> persistentProperties = new ArrayList<PersistentProperty<?>>();
+			final List<PersistentProperty<?>> persistentProperties = new ArrayList<>();
 
-			entity.doWithAssociations(new SimpleAssociationHandler() {
-
-				@Override
-				public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
-					if (association.getInverse() != null) {
-						persistentProperties.add(association.getInverse());
-					}
+			entity.doWithAssociations((SimpleAssociationHandler) association -> {
+				if (association.getInverse() != null) {
+					persistentProperties.add(association.getInverse());
 				}
 			});
 
-			entity.doWithProperties(new SimplePropertyHandler() {
-
-				@Override
-				public void doWithPersistentProperty(PersistentProperty<?> property) {
-					persistentProperties.add(property);
-				}
-			});
+			entity.doWithProperties((SimplePropertyHandler) property -> persistentProperties.add(property));
 
 			return persistentProperties;
 		}
@@ -360,15 +351,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			for (PersistentProperty<?> property : persistentProperties) {
 
-				property.getSetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> {
-					cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, setterName(property),
-							referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE), null, null).visitEnd();
-				});
-				property.getGetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> {
-
-					cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, getterName(property),
-							referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE), null, null).visitEnd();
-				});
+				property.getSetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, setterName(property),
+						referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE), null, null).visitEnd());
+				property.getGetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, getterName(property),
+						referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE), null, null).visitEnd());
 
 				property.getField().filter(it -> generateSetterMethodHandle(entity, it)).ifPresent(it -> {
 
@@ -497,18 +483,12 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 				if (property.usePropertyAccess()) {
 
-					property.getGetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> {
-						visitPropertyGetterInitializer(property, mv, entityClasses, internalClassName);
-					});
+					property.getGetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> visitPropertyGetterInitializer(property, mv, entityClasses, internalClassName));
 
-					property.getSetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> {
-						visitPropertySetterInitializer(property, mv, entityClasses, internalClassName);
-					});
+					property.getSetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> visitPropertySetterInitializer(property, mv, entityClasses, internalClassName));
 				}
 
-				property.getField().filter(it -> generateSetterMethodHandle(entity, it)).ifPresent(it -> {
-					visitFieldGetterSetterInitializer(property, mv, entityClasses, internalClassName);
-				});
+				property.getField().filter(it -> generateSetterMethodHandle(entity, it)).ifPresent(it -> visitFieldGetterSetterInitializer(property, mv, entityClasses, internalClassName));
 			}
 
 			mv.visitLabel(l1);
@@ -1249,7 +1229,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	private static Map<String, PropertyStackAddress> createPropertyStackMap(
 			List<PersistentProperty<?>> persistentProperties) {
 
-		Map<String, PropertyStackAddress> stackmap = new HashMap<String, PropertyStackAddress>();
+		Map<String, PropertyStackAddress> stackmap = new HashMap<>();
 
 		for (PersistentProperty<?> property : persistentProperties) {
 			stackmap.put(property.getName(), new PropertyStackAddress(new Label(), property.getName().hashCode()));

@@ -65,7 +65,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	@Parameters(name = "{3}")
 	public static List<Object[]> parameters() {
 
-		List<Object[]> parameters = new ArrayList<Object[]>();
+		List<Object[]> parameters = new ArrayList<>();
 		List<String> propertyNames = Arrays.asList("privateField", "packageDefaultField", "protectedField", "publicField",
 				"privateProperty", "packageDefaultProperty", "protectedProperty", "publicProperty", "syntheticProperty");
 
@@ -86,7 +86,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 	private static List<Object[]> parameters(Object bean, List<String> propertyNames, Class<?> expectedConstructorType) {
 
-		List<Object[]> parameters = new ArrayList<Object[]>();
+		List<Object[]> parameters = new ArrayList<>();
 
 		for (String propertyName : propertyNames) {
 			parameters.add(new Object[] { bean, propertyName, expectedConstructorType,
@@ -128,21 +128,15 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	@Test // DATACMNS-809
 	public void getPropertyShouldFailOnUnhandledProperty() {
 
-		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> {
-
-			assertThatExceptionOfType(UnsupportedOperationException.class)//
-					.isThrownBy(() -> getPersistentPropertyAccessor(bean).getProperty(property));
-		});
+		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
+				.isThrownBy(() -> getPersistentPropertyAccessor(bean).getProperty(property)));
 	}
 
 	@Test // DATACMNS-809
 	public void setPropertyShouldFailOnUnhandledProperty() {
 
-		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> {
-
-			assertThatExceptionOfType(UnsupportedOperationException.class)//
-					.isThrownBy(() -> getPersistentPropertyAccessor(bean).setProperty(property, Optional.empty()));
-		});
+		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
+				.isThrownBy(() -> getPersistentPropertyAccessor(bean).setProperty(property, Optional.empty())));
 	}
 
 	@Test // DATACMNS-809

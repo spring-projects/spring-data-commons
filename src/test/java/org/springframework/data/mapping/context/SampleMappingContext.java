@@ -12,7 +12,7 @@ public class SampleMappingContext
 	@SuppressWarnings("unchecked")
 	protected <S> BasicPersistentEntity<Object, SamplePersistentProperty> createPersistentEntity(
 			TypeInformation<S> typeInformation) {
-		return new BasicPersistentEntity<Object, SamplePersistentProperty>((TypeInformation<Object>) typeInformation);
+		return new BasicPersistentEntity<>((TypeInformation<Object>) typeInformation);
 	}
 
 	@Override

@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @author Peter Rietzler
  */
 @RequiredArgsConstructor
@@ -111,7 +112,7 @@ public class CustomRepositoryImplementationDetector {
 		throw new IllegalStateException(
 				String.format("Ambiguous custom implementations detected! Found %s but expected a single implementation!", //
 						definitions.stream()//
-								.map(it -> it.getBeanClassName())//
+								.map(BeanDefinition::getBeanClassName)//
 								.collect(Collectors.joining(", "))));
 	}
 }

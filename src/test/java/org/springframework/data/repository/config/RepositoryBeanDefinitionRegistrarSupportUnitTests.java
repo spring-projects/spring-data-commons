@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;

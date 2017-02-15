@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * 
  * @author Tobias Trelle
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @param <S> Type of the first thing.
  * @param <T> Type of the second thing.
  * @since 1.12
@@ -50,7 +51,7 @@ public final class Pair<S, T> {
 	 * @return
 	 */
 	public static <S, T> Pair<S, T> of(S first, T second) {
-		return new Pair<S, T>(first, second);
+		return new Pair<>(first, second);
 	}
 
 	/**

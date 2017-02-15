@@ -38,7 +38,7 @@ public class StreamUtilsTests {
 
 		List<String> input = Arrays.asList("a", "b", "c");
 		Stream<String> stream = createStreamFromIterator(input.iterator());
-		List<String> output = stream.collect(Collectors.<String> toList());
+		List<String> output = stream.collect(Collectors.toList());
 
 		assertThat(input).isEqualTo(output);
 	}

@@ -75,9 +75,9 @@ public class TypeDiscovererUnitTests {
 	public void dealsWithTypesReferencingThemselves() {
 
 		TypeInformation<SelfReferencing> information = from(SelfReferencing.class);
-		Optional<TypeInformation<?>> first = information.getProperty("parent").flatMap(it -> it.getMapValueType());
+		Optional<TypeInformation<?>> first = information.getProperty("parent").flatMap(TypeInformation::getMapValueType);
 		Optional<TypeInformation<?>> second = first.flatMap(it -> it.getProperty("map"))
-				.flatMap(it -> it.getMapValueType());
+				.flatMap(TypeInformation::getMapValueType);
 
 		assertThat(second).isEqualTo(first);
 	}
@@ -88,9 +88,7 @@ public class TypeDiscovererUnitTests {
 		TypeInformation<SelfReferencingMap> information = from(SelfReferencingMap.class);
 		Optional<TypeInformation<?>> property = information.getProperty("map");
 
-		assertThat(property).hasValueSatisfying(it -> {
-			assertThat(it.getMapValueType()).hasValue(information);
-		});
+		assertThat(property).hasValueSatisfying(it -> assertThat(it.getMapValueType()).hasValue(information));
 	}
 
 	@Test
@@ -98,13 +96,9 @@ public class TypeDiscovererUnitTests {
 
 		TypeInformation<?> discoverer = new TypeDiscoverer<>(CustomMap.class, EMPTY_MAP);
 
-		assertThat(discoverer.getMapValueType()).hasValueSatisfying(it -> {
-			assertThat(it.getType()).isEqualTo(Locale.class);
-		});
+		assertThat(discoverer.getMapValueType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Locale.class));
 
-		assertThat(discoverer.getComponentType()).hasValueSatisfying(it -> {
-			assertThat(it.getType()).isEqualTo(String.class);
-		});
+		assertThat(discoverer.getComponentType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test
@@ -112,19 +106,15 @@ public class TypeDiscovererUnitTests {
 
 		TypeDiscoverer<CustomCollection> discoverer = new TypeDiscoverer<>(CustomCollection.class, firstMap);
 
-		assertThat(discoverer.getComponentType()).hasValueSatisfying(it -> {
-			assertThat(it.getType()).isEqualTo(String.class);
-		});
+		assertThat(discoverer.getComponentType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test
 	public void returnsComponentTypeForArrays() {
 
-		TypeDiscoverer<String[]> discoverer = new TypeDiscoverer<String[]>(String[].class, EMPTY_MAP);
+		TypeDiscoverer<String[]> discoverer = new TypeDiscoverer<>(String[].class, EMPTY_MAP);
 
-		assertThat(discoverer.getComponentType()).hasValueSatisfying(it -> {
-			assertThat(it.getType()).isEqualTo(String.class);
-		});
+		assertThat(discoverer.getComponentType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test // DATACMNS-57
@@ -137,9 +127,7 @@ public class TypeDiscovererUnitTests {
 
 		assertThat(types).hasSize(2);
 		assertThat(types.get(0).getType()).isEqualTo(List.class);
-		assertThat(types.get(0).getComponentType()).hasValueSatisfying(it -> {
-			assertThat(it.getType()).isEqualTo(String.class);
-		});
+		assertThat(types.get(0).getComponentType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test

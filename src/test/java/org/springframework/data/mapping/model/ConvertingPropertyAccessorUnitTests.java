@@ -59,9 +59,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		Entity entity = new Entity();
 		entity.id = 1L;
 
-		assertThat(getIdProperty()).hasValueSatisfying(it -> {
-			assertThat(getAccessor(entity, CONVERSION_SERVICE).getProperty(it, String.class)).hasValue("1");
-		});
+		assertThat(getIdProperty()).hasValueSatisfying(it -> assertThat(getAccessor(entity, CONVERSION_SERVICE).getProperty(it, String.class)).hasValue("1"));
 	}
 
 	@Test // DATACMNS-596

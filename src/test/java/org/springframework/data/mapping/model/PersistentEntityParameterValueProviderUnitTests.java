@@ -16,7 +16,6 @@
 package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Iterator;
@@ -77,13 +76,10 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 		ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider,
 				Optional.of(property));
 
-		assertThat(entity.getPersistenceConstructor()).hasValueSatisfying(constructor -> {
-
-			assertThatExceptionOfType(MappingException.class)//
-					.isThrownBy(() -> provider.getParameterValue(constructor.getParameters().iterator().next()))//
-					.withMessageContaining("bar")//
-					.withMessageContaining(Entity.class.getName());
-		});
+		assertThat(entity.getPersistenceConstructor()).hasValueSatisfying(constructor -> assertThatExceptionOfType(MappingException.class)//
+				.isThrownBy(() -> provider.getParameterValue(constructor.getParameters().iterator().next()))//
+				.withMessageContaining("bar")//
+				.withMessageContaining(Entity.class.getName()));
 	}
 
 	static class Outer {

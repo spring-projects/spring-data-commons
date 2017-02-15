@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
  * 
  * @author Michael Hunger
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.6
  */
 class MultiTransactionStatus implements TransactionStatus {
@@ -175,7 +176,7 @@ class MultiTransactionStatus implements TransactionStatus {
 
 	private static class SavePoints {
 
-		private final Map<TransactionStatus, Object> savepoints = new HashMap<TransactionStatus, Object>();
+		private final Map<TransactionStatus, Object> savepoints = new HashMap<>();
 
 		private void addSavePoint(TransactionStatus status, Object savepoint) {
 

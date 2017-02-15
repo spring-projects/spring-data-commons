@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.util.Assert;
  * Abstracts method parameters that have to be bound to query parameters or applied to the query independently.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Streamable<T> {
 
@@ -283,7 +284,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * 
 	 * @param method
 	 */
-	private final void assertEitherAllParamAnnotatedOrNone() {
+	private void assertEitherAllParamAnnotatedOrNone() {
 
 		boolean nameFound = false;
 		int index = 0;

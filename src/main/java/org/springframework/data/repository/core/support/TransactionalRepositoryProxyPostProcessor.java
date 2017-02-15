@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import org.springframework.util.ObjectUtils;
  * the proxy.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
 
@@ -300,7 +301,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		 * As this base class is not marked Serializable, the cache will be recreated after serialization - provided that
 		 * the concrete subclass is Serializable.
 		 */
-		final Map<Object, TransactionAttribute> attributeCache = new ConcurrentHashMap<Object, TransactionAttribute>();
+		final Map<Object, TransactionAttribute> attributeCache = new ConcurrentHashMap<>();
 
 		private RepositoryInformation repositoryInformation;
 		private boolean enableDefaultTransactions = true;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.springframework.util.ReflectionUtils;
  * will be invoked after all events have been published.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.13
  * @soundtrack Henrik Freischlader Trio - Master Plan (Openness)
  */
@@ -110,7 +111,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	@RequiredArgsConstructor
 	static class EventPublishingMethod {
 
-		private static Map<Class<?>, EventPublishingMethod> CACHE = new ConcurrentReferenceHashMap<Class<?>, EventPublishingMethod>();
+		private static Map<Class<?>, EventPublishingMethod> CACHE = new ConcurrentReferenceHashMap<>();
 		private static EventPublishingMethod NONE = new EventPublishingMethod(null, null);
 
 		private final Method publishingMethod;
@@ -133,14 +134,14 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return eventPublishingMethod.orNull();
 			}
 
-			AnnotationDetectionMethodCallback<DomainEvents> publishing = new AnnotationDetectionMethodCallback<DomainEvents>(
+			AnnotationDetectionMethodCallback<DomainEvents> publishing = new AnnotationDetectionMethodCallback<>(
 					DomainEvents.class);
 			ReflectionUtils.doWithMethods(type, publishing);
 
 			// TODO: Lazify this as the inspection might not be needed if the publishing callback didn't find an annotation in
 			// the first place
 
-			AnnotationDetectionMethodCallback<AfterDomainEventPublication> clearing = new AnnotationDetectionMethodCallback<AfterDomainEventPublication>(
+			AnnotationDetectionMethodCallback<AfterDomainEventPublication> clearing = new AnnotationDetectionMethodCallback<>(
 					AfterDomainEventPublication.class);
 			ReflectionUtils.doWithMethods(type, clearing);
 
@@ -240,7 +241,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return (Collection<Object>) source;
 			}
 
-			return Arrays.asList(source);
+			return Collections.singletonList(source);
 		}
 	}
 }

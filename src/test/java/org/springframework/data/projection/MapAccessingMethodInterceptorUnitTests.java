@@ -60,7 +60,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 	@Test // DATACMNS-630
 	public void setterInvocationStoresValueInMap() throws Throwable {
 
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("setName", String.class));
 		when(invocation.getArguments()).thenReturn(new Object[] { "Foo" });
@@ -74,7 +74,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 	@Test // DATACMNS-630
 	public void getterInvocationReturnsValueFromMap() throws Throwable {
 
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 		map.put("name", "Foo");
 
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("getName"));
@@ -87,7 +87,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 	@Test // DATACMNS-630
 	public void getterReturnsNullIfMapDoesNotContainValue() throws Throwable {
 
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("getName"));
 
@@ -98,7 +98,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 	public void rejectsNonAccessorInvocation() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("someMethod"));
-		new MapAccessingMethodInterceptor(Collections.<String, Object> emptyMap()).invoke(invocation);
+		new MapAccessingMethodInterceptor(Collections.emptyMap()).invoke(invocation);
 	}
 
 	interface Sample {

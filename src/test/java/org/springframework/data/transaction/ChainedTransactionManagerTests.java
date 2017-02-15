@@ -47,7 +47,7 @@ public class ChainedTransactionManagerTests {
 
 		createAndCommitTransaction();
 
-		assertThat(transactionManager).matches(tptm -> tptm.isCommitted());
+		assertThat(transactionManager).matches(TestPlatformTransactionManager::isCommitted);
 	}
 
 	@Test
@@ -56,7 +56,7 @@ public class ChainedTransactionManagerTests {
 		setupTransactionManagers(createFailingTransactionManager("single"));
 
 		assertThatExceptionOfType(HeuristicCompletionException.class)//
-				.isThrownBy(() -> createAndCommitTransaction())//
+				.isThrownBy(this::createAndCommitTransaction)//
 				.matches(e -> e.getOutcomeState() == HeuristicCompletionException.STATE_ROLLED_BACK);
 	}
 
@@ -69,8 +69,8 @@ public class ChainedTransactionManagerTests {
 		setupTransactionManagers(first, second);
 		createAndCommitTransaction();
 
-		assertThat(first).matches(ptm -> ptm.isCommitted());
-		assertThat(second).matches(ptm -> ptm.isCommitted());
+		assertThat(first).matches(TestPlatformTransactionManager::isCommitted);
+		assertThat(second).matches(TestPlatformTransactionManager::isCommitted);
 	}
 
 	@Test
@@ -92,7 +92,7 @@ public class ChainedTransactionManagerTests {
 				createNonFailingTransactionManager("second"));
 
 		assertThatExceptionOfType(HeuristicCompletionException.class)//
-				.isThrownBy(() -> createAndCommitTransaction())//
+				.isThrownBy(this::createAndCommitTransaction)//
 				.matches(e -> e.getOutcomeState() == HeuristicCompletionException.STATE_MIXED);
 	}
 
@@ -105,8 +105,8 @@ public class ChainedTransactionManagerTests {
 		setupTransactionManagers(first, second);
 		createAndRollbackTransaction();
 
-		assertThat(first).matches(ptm -> ptm.wasRolledBack());
-		assertThat(second).matches(ptm -> ptm.wasRolledBack());
+		assertThat(first).matches(TestPlatformTransactionManager::wasRolledBack);
+		assertThat(second).matches(TestPlatformTransactionManager::wasRolledBack);
 
 	}
 

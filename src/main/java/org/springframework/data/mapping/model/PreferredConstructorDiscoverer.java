@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.data.util.TypeInformation;
  * Helper class to find a {@link PreferredConstructor}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
 
@@ -104,7 +105,7 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 		List<TypeInformation<?>> parameterTypes = typeInformation.getParameterTypes(constructor);
 
 		if (parameterTypes.isEmpty()) {
-			return new PreferredConstructor<T, P>((Constructor<T>) constructor);
+			return new PreferredConstructor<>((Constructor<T>) constructor);
 		}
 
 		String[] parameterNames = discoverer.getParameterNames(constructor);
@@ -121,7 +122,7 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 			parameters[i] = new Parameter(name, type, annotations, entity);
 		}
 
-		return new PreferredConstructor<T, P>((Constructor<T>) constructor, parameters);
+		return new PreferredConstructor<>((Constructor<T>) constructor, parameters);
 	}
 
 	/**

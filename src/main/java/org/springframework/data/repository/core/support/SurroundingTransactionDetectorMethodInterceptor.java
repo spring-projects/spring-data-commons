@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * proxy.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.13
  * @soundtrack Hendrik Freischlader Trio - Openness (Openness)
  */
@@ -33,7 +34,7 @@ public enum SurroundingTransactionDetectorMethodInterceptor implements MethodInt
 
 	INSTANCE;
 
-	private final ThreadLocal<Boolean> SURROUNDING_TX_ACTIVE = new ThreadLocal<Boolean>();
+	private final ThreadLocal<Boolean> SURROUNDING_TX_ACTIVE = new ThreadLocal<>();
 
 	/**
 	 * Returns whether a transaction was active before the method call entered the repository proxy.

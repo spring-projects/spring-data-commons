@@ -15,7 +15,6 @@
  */
 package org.springframework.data.querydsl;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;

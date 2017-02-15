@@ -35,6 +35,7 @@ import org.springframework.data.repository.util.QueryExecutionConverters.Wrapper
  * Converter implementations to map from and to Javaslang collections.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.13
  */
 class JavaslangCollections {
@@ -131,7 +132,7 @@ class JavaslangCollections {
 
 		static {
 
-			Set<ConvertiblePair> pairs = new HashSet<ConvertiblePair>();
+			Set<ConvertiblePair> pairs = new HashSet<>();
 			pairs.add(new ConvertiblePair(Collection.class, javaslang.collection.Traversable.class));
 			pairs.add(new ConvertiblePair(Map.class, javaslang.collection.Traversable.class));
 

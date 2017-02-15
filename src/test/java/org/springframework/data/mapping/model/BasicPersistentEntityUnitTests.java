@@ -159,15 +159,11 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 		Optional<SamplePersistentProperty> property = entity.getPersistentProperty(LastModifiedBy.class);
 
-		assertThat(property).hasValueSatisfying(it -> {
-			assertThat(it.getName()).isEqualTo("field");
-		});
+		assertThat(property).hasValueSatisfying(it -> assertThat(it.getName()).isEqualTo("field"));
 
 		property = entity.getPersistentProperty(CreatedBy.class);
 
-		assertThat(property).hasValueSatisfying(it -> {
-			assertThat(it.getName()).isEqualTo("property");
-		});
+		assertThat(property).hasValueSatisfying(it -> assertThat(it.getName()).isEqualTo("property"));
 
 		assertThat(entity.getPersistentProperty(CreatedDate.class)).isNotPresent();
 	}
@@ -253,13 +249,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		BasicPersistentEntity<Entity, T> entity = createEntity(Entity.class);
 		entity.addAssociation(null);
 
-		entity.doWithAssociations(new SimpleAssociationHandler() {
-
-			@Override
-			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
-				Assert.fail("Expected the method to never be called!");
-			}
-		});
+		entity.doWithAssociations((SimpleAssociationHandler) association -> Assert.fail("Expected the method to never be called!"));
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
@@ -267,7 +257,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type, Comparator<T> comparator) {
-		return new BasicPersistentEntity<S, T>(ClassTypeInformation.from(type), Optional.ofNullable(comparator));
+		return new BasicPersistentEntity<>(ClassTypeInformation.from(type), Optional.ofNullable(comparator));
 	}
 
 	@TypeAlias("foo")

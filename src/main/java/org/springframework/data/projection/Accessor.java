@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
  * Helper value to abstract an accessor.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @soundtrack Benny Greb - Soulfood (Live)
  * @since 1.13
  */
@@ -46,7 +47,7 @@ public final class Accessor {
 		this.descriptor = BeanUtils.findPropertyForMethod(method);
 		this.method = method;
 
-		Assert.notNull(descriptor, String.format("Invoked method %s is no accessor method!", method));
+		Assert.notNull(descriptor, () -> String.format("Invoked method %s is no accessor method!", method));
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011.2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.core.convert.ConversionService;
  * 
  * @author Thomas Risberg
  * @author Rod Johnson
+ * @author Christoph Strobl
  */
 public class HashMapChangeSet implements ChangeSet {
 
@@ -36,7 +37,7 @@ public class HashMapChangeSet implements ChangeSet {
 	}
 
 	public HashMapChangeSet() {
-		this(new HashMap<String, Object>());
+		this(new HashMap<>());
 	}
 
 	public void set(String key, Object o) {

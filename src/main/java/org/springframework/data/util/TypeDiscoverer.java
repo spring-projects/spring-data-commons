@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.springframework.util.ReflectionUtils;
  * Basic {@link TypeDiscoverer} that contains basic functionality to discover property types.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
@@ -60,7 +61,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		ClassLoader classLoader = TypeDiscoverer.class.getClassLoader();
 
-		Set<Class<?>> mapTypes = new HashSet<Class<?>>();
+		Set<Class<?>> mapTypes = new HashSet<>();
 		mapTypes.add(Map.class);
 
 		try {
@@ -92,8 +93,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		this.type = type;
 		this.resolvedType = Lazy.of(() -> resolveType(type));
-		this.componentType = Lazy.of(() -> doGetComponentType());
-		this.valueType = Lazy.of(() -> doGetMapValueType());
+		this.componentType = Lazy.of(this::doGetComponentType);
+		this.valueType = Lazy.of(this::doGetMapValueType);
 		this.typeVariableMap = typeVariableMap;
 		this.hashCode = 17 + (31 * type.hashCode()) + (31 * typeVariableMap.hashCode());
 	}
@@ -108,7 +109,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	private TypeInformation<?> createInfo(Optional<Type> fieldType) {
-		return fieldType.map(it -> createInfo(it)).orElseThrow(() -> new IllegalArgumentException());
+		return fieldType.map(this::createInfo).orElseThrow(IllegalArgumentException::new);
 	}
 
 	/**
@@ -129,7 +130,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		Class<S> resolveType = resolveType(fieldType);
-		Map<TypeVariable, Type> variableMap = new HashMap<TypeVariable, Type>();
+		Map<TypeVariable, Type> variableMap = new HashMap<>();
 		variableMap.putAll(GenericTypeResolver.getTypeVariableMap(resolveType));
 
 		if (fieldType instanceof ParameterizedType) {
@@ -183,7 +184,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@SuppressWarnings({ "unchecked", "rawtypes", "deprecation" })
 	protected Class<S> resolveType(Type type) {
 
-		Map<TypeVariable, Type> map = new HashMap<TypeVariable, Type>();
+		Map<TypeVariable, Type> map = new HashMap<>();
 		map.putAll(getTypeVariableMap());
 
 		return (Class<S>) GenericTypeResolver.resolveType(type, map);
@@ -198,7 +199,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.notNull(constructor, "Constructor must not be null!");
 
 		Type[] types = constructor.getGenericParameterTypes();
-		List<TypeInformation<?>> result = new ArrayList<TypeInformation<?>>(types.length);
+		List<TypeInformation<?>> result = new ArrayList<>(types.length);
 
 		for (Type parameterType : types) {
 			result.add(createInfo(parameterType));
@@ -216,13 +217,13 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		int separatorIndex = fieldname.indexOf('.');
 
 		if (separatorIndex == -1) {
-			return fieldTypes.computeIfAbsent(fieldname, it -> getPropertyInformation(it));
+			return fieldTypes.computeIfAbsent(fieldname, this::getPropertyInformation);
 		}
 
 		String head = fieldname.substring(0, separatorIndex);
 		Optional<TypeInformation<?>> info = getProperty(head);
 
-		return info.map(it -> it.getProperty(fieldname.substring(separatorIndex + 1))).orElseGet(() -> Optional.empty());
+		return info.map(it -> it.getProperty(fieldname.substring(separatorIndex + 1))).orElseGet(Optional::empty);
 	}
 
 	/**
@@ -261,7 +262,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return Optional.of(descriptor);
 		}
 
-		List<Class<?>> superTypes = new ArrayList<Class<?>>();
+		List<Class<?>> superTypes = new ArrayList<>();
 		superTypes.addAll(Arrays.asList(type.getInterfaces()));
 		superTypes.add(type.getSuperclass());
 
@@ -415,7 +416,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.notNull(method, "Method most not be null!");
 
 		return Streamable.of(method.getGenericParameterTypes()).stream()//
-				.map(it -> createInfo(it))//
+				.map(this::createInfo)//
 				.collect(Collectors.toList());
 	}
 

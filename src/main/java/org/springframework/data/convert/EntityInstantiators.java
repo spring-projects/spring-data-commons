@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Christoph Strobl
  */
 public class EntityInstantiators {
 
@@ -37,7 +38,7 @@ public class EntityInstantiators {
 	 * Creates a new {@link EntityInstantiators} using the default fallback instantiator and no custom ones.
 	 */
 	public EntityInstantiators() {
-		this(Collections.<Class<?>, EntityInstantiator> emptyMap());
+		this(Collections.emptyMap());
 	}
 
 	/**
@@ -46,7 +47,7 @@ public class EntityInstantiators {
 	 * @param fallback must not be {@literal null}.
 	 */
 	public EntityInstantiators(EntityInstantiator fallback) {
-		this(fallback, Collections.<Class<?>, EntityInstantiator> emptyMap());
+		this(fallback, Collections.emptyMap());
 	}
 
 	/**

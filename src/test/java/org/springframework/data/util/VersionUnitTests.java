@@ -157,7 +157,7 @@ public class VersionUnitTests {
 	public void rejectsNonNumericPartOnNonLastPosition() {
 
 		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(Matchers.<Throwable> instanceOf(IllegalArgumentException.class));
+		exception.expectCause(Matchers.instanceOf(IllegalArgumentException.class));
 		exception.expectMessage("1.RELEASE.2");
 
 		Version.parse("1.RELEASE.2");

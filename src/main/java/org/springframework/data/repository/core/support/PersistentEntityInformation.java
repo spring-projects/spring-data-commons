@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.EntityInformation;
 
 /**
@@ -26,6 +27,7 @@ import org.springframework.data.repository.core.EntityInformation;
  * a {@link org.springframework.data.mapping.IdentifierAccessor} to access the property value if requested.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @SuppressWarnings("unchecked")
 public class PersistentEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
@@ -58,6 +60,6 @@ public class PersistentEntityInformation<T, ID extends Serializable> extends Abs
 	 */
 	@Override
 	public Class<ID> getIdType() {
-		return (Class<ID>) persistentEntity.getIdProperty().map(it -> it.getType()).orElse(null);
+		return (Class<ID>) persistentEntity.getIdProperty().map(PersistentProperty::getType).orElse(null);
 	}
 }

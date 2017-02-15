@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
  * A chunk of data restricted by the configured {@link Pageable}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.8
  */
 abstract class Chunk<T> implements Slice<T>, Serializable {
@@ -159,7 +160,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 
 		Assert.notNull(converter, "Converter must not be null!");
 
-		return this.stream().map(it -> converter.convert(it)).collect(Collectors.toList());
+		return this.stream().map(converter::convert).collect(Collectors.toList());
 	}
 
 	/*

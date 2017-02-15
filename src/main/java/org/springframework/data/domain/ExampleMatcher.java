@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class ExampleMatcher {
 	@Wither(AccessLevel.PRIVATE) MatchMode mode;
 
 	private ExampleMatcher() {
-		this(NullHandler.IGNORE, StringMatcher.DEFAULT, new PropertySpecifiers(), Collections.<String>emptySet(), false,
+		this(NullHandler.IGNORE, StringMatcher.DEFAULT, new PropertySpecifiers(), Collections.emptySet(), false,
 				MatchMode.ALL);
 	}
 
@@ -807,7 +807,7 @@ public class ExampleMatcher {
 	@EqualsAndHashCode
 	public static class PropertySpecifiers {
 
-		private final Map<String, PropertySpecifier> propertySpecifiers = new LinkedHashMap<String, PropertySpecifier>();
+		private final Map<String, PropertySpecifier> propertySpecifiers = new LinkedHashMap<>();
 
 		PropertySpecifiers() {}
 

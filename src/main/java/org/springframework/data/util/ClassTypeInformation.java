@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.springframework.util.ClassUtils;
  * {@link TypeInformation} for a plain {@link Class}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
@@ -54,7 +55,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	static {
 		for (ClassTypeInformation<?> info : Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT)) {
-			CACHE.put(info.getType(), new WeakReference<ClassTypeInformation<?>>(info));
+			CACHE.put(info.getType(), new WeakReference<>(info));
 		}
 	}
 
@@ -79,7 +80,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		}
 
 		ClassTypeInformation<S> result = new ClassTypeInformation<>(type);
-		CACHE.put(type, new WeakReference<ClassTypeInformation<?>>(result));
+		CACHE.put(type, new WeakReference<>(result));
 		return result;
 	}
 
@@ -126,7 +127,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		}
 
 		Map<TypeVariable, Type> source = GenericTypeResolver.getTypeVariableMap(type);
-		Map<TypeVariable<?>, Type> map = new HashMap<TypeVariable<?>, Type>(source.size());
+		Map<TypeVariable<?>, Type> map = new HashMap<>(source.size());
 
 		for (Entry<TypeVariable, Type> entry : source.entrySet()) {
 

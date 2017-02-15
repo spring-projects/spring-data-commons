@@ -16,7 +16,6 @@
 package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
 
@@ -90,9 +89,7 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 
 		assertThat(instance.createInstance(entity, provider)).isInstanceOf(Foo.class);
 
-		assertThat(constructor).hasValueSatisfying(it -> {
-			verify(provider, times(1)).getParameterValue(it.getParameters().iterator().next());
-		});
+		assertThat(constructor).hasValueSatisfying(it -> verify(provider, times(1)).getParameterValue(it.getParameters().iterator().next()));
 	}
 
 	@Test(expected = MappingInstantiationException.class) // DATACMNS-300, DATACMNS-578
@@ -108,7 +105,7 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 	@Test // DATACMNS-134, DATACMNS-578
 	public void createsInnerClassInstanceCorrectly() {
 
-		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
+		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(from(Inner.class));
 		assertThat(entity.getPersistenceConstructor()).hasValueSatisfying(constructor -> {
 
 			Parameter<Object, P> parameter = constructor.getParameters().iterator().next();
@@ -167,9 +164,7 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		doReturn(new PreferredConstructorDiscoverer<>(ObjCtorDefault.class).getConstructor())//
 				.when(entity).getPersistenceConstructor();
 
-		IntStream.range(0, 2).forEach(i -> {
-			assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ObjCtorDefault.class);
-		});
+		IntStream.range(0, 2).forEach(i -> assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ObjCtorDefault.class));
 	}
 
 	@Test // DATACMNS-578

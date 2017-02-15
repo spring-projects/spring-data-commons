@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.springframework.util.Assert;
  * expression evaluation.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class PersistentEntityParameterValueProvider<P extends PersistentProperty<P>>
 		implements ParameterValueProvider<P> {
@@ -72,7 +73,7 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 		}
 
 		return provider.getPropertyValue(parameter.getName()//
-				.flatMap(it -> entity.getPersistentProperty(it))//
+				.flatMap(entity::getPersistentProperty)//
 				.orElseThrow(() -> new MappingException(
 						String.format("No property %s found on entity %s to bind constructor parameter to!", parameter.getName(),
 								entity.getType()))));

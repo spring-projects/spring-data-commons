@@ -62,7 +62,7 @@ public class PersistableEntityInformationUnitTests {
 	@Test
 	public void returnsGivenClassAsEntityType() throws Exception {
 
-		PersistableEntityInformation<PersistableEntity, Long> info = new PersistableEntityInformation<PersistableEntity, Long>(
+		PersistableEntityInformation<PersistableEntity, Long> info = new PersistableEntityInformation<>(
 				PersistableEntity.class);
 
 		assertThat(info.getJavaType()).isEqualTo(PersistableEntity.class);

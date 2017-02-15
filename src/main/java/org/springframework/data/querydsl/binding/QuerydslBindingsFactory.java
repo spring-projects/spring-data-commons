@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import com.querydsl.core.types.EntityPath;
  * Factory to create {@link QuerydslBindings} using an {@link EntityPathResolver}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.11
  */
 public class QuerydslBindingsFactory implements ApplicationContextAware {
@@ -58,7 +59,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		Assert.notNull(entityPathResolver, "EntityPathResolver must not be null!");
 
 		this.entityPathResolver = entityPathResolver;
-		this.entityPaths = new ConcurrentReferenceHashMap<TypeInformation<?>, EntityPath<?>>();
+		this.entityPaths = new ConcurrentReferenceHashMap<>();
 		this.beanFactory = Optional.empty();
 		this.repositories = Optional.empty();
 	}
@@ -140,12 +141,9 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 
 		return customizer//
 				.filter(it -> !QuerydslBinderCustomizer.class.equals(it))//
-				.map(it -> createQuerydslBinderCustomizer(it)).orElseGet(() -> {
-
-					return repositories.flatMap(it -> it.getRepositoryFor(domainType))//
-							.map(it -> it instanceof QuerydslBinderCustomizer ? (QuerydslBinderCustomizer<EntityPath<?>>) it : null)//
-							.orElse(NoOpCustomizer.INSTANCE);
-				});
+				.map(this::createQuerydslBinderCustomizer).orElseGet(() -> repositories.flatMap(it -> it.getRepositoryFor(domainType))//
+						.map(it -> it instanceof QuerydslBinderCustomizer ? (QuerydslBinderCustomizer<EntityPath<?>>) it : null)//
+						.orElse(NoOpCustomizer.INSTANCE));
 	}
 
 	/**

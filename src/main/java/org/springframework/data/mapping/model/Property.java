@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -28,6 +29,7 @@ import org.springframework.util.Assert;
 
 /**
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @RequiredArgsConstructor
 public class Property {
@@ -42,10 +44,10 @@ public class Property {
 
 		this.field = field;
 		this.descriptor = descriptor;
-		this.hashCode = Lazy.of(() -> computeHashCode());
+		this.hashCode = Lazy.of(this::computeHashCode);
 		this.rawType = Lazy
-				.of(() -> field.<Class<?>>map(Field::getType).orElseGet(() -> descriptor.map(it -> it.getPropertyType())//
-						.orElseThrow(() -> new IllegalStateException())));
+				.of(() -> field.<Class<?>>map(Field::getType).orElseGet(() -> descriptor.map(PropertyDescriptor::getPropertyType)//
+						.orElseThrow(IllegalStateException::new)));
 	}
 
 	public static Property of(Field field) {
@@ -70,12 +72,12 @@ public class Property {
 	}
 
 	public Optional<Method> getGetter() {
-		return descriptor.map(it -> it.getReadMethod())//
+		return descriptor.map(PropertyDescriptor::getReadMethod)//
 				.filter(it -> getType().isAssignableFrom(it.getReturnType()));
 	}
 
 	public Optional<Method> getSetter() {
-		return descriptor.map(it -> it.getWriteMethod())//
+		return descriptor.map(PropertyDescriptor::getWriteMethod)//
 				.filter(it -> it.getParameterTypes()[0].isAssignableFrom(getType()));
 	}
 
@@ -87,8 +89,8 @@ public class Property {
 	 * @return
 	 */
 	public String getName() {
-		return field.map(Field::getName).orElseGet(() -> descriptor.map(it -> it.getName())//
-				.orElseThrow(() -> new IllegalStateException()));
+		return field.map(Field::getName).orElseGet(() -> descriptor.map(FeatureDescriptor::getName)//
+				.orElseThrow(IllegalStateException::new));
 	}
 
 	public Class<?> getType() {
@@ -97,8 +99,8 @@ public class Property {
 
 	private int computeHashCode() {
 
-		return this.field.map(it -> it.hashCode())
-				.orElseGet(() -> this.descriptor.map(it -> it.hashCode()).orElseThrow(() -> new IllegalStateException()));
+		return this.field.map(Field::hashCode)
+				.orElseGet(() -> this.descriptor.map(PropertyDescriptor::hashCode).orElseThrow(IllegalStateException::new));
 	}
 
 	/* 
@@ -137,6 +139,6 @@ public class Property {
 	@Override
 	public String toString() {
 		return field.map(Object::toString)
-				.orElseGet(() -> descriptor.map(Object::toString).orElseThrow(() -> new IllegalStateException()));
+				.orElseGet(() -> descriptor.map(Object::toString).orElseThrow(IllegalStateException::new));
 	}
 }

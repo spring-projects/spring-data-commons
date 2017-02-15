@@ -42,6 +42,7 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
  * {@link ProjectedPayload}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @soundtrack Richard Spaven - Ice Is Nice (Spaven's 5ive)
  * @since 1.13
  */
@@ -49,7 +50,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		implements BeanClassLoaderAware, BeanFactoryAware {
 
 	private final SpelAwareProxyProjectionFactory projectionFactory;
-	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentReferenceHashMap<Class<?>, Boolean>();
+	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentReferenceHashMap<>();
 
 	/**
 	 * Creates a new {@link ProjectingJackson2HttpMessageConverter} using a default {@link ObjectMapper}.

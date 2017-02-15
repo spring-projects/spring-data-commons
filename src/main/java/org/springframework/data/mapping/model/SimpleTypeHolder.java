@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,11 @@ import org.springframework.util.Assert;
  * Simple container to hold a set of types to be considered simple types.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class SimpleTypeHolder {
 
-	private static final Set<Class<?>> DEFAULTS = new HashSet<Class<?>>();
+	private static final Set<Class<?>> DEFAULTS = new HashSet<>();
 
 	static {
 		DEFAULTS.add(boolean.class);
@@ -74,7 +75,7 @@ public class SimpleTypeHolder {
 	 */
 	@SuppressWarnings("unchecked")
 	public SimpleTypeHolder() {
-		this(Collections.EMPTY_SET, true);
+		this(Collections.emptySet(), true);
 	}
 
 	/**
@@ -87,7 +88,7 @@ public class SimpleTypeHolder {
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, boolean registerDefaults) {
 
 		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null!");
-		this.simpleTypes = new CopyOnWriteArraySet<Class<?>>(customSimpleTypes);
+		this.simpleTypes = new CopyOnWriteArraySet<>(customSimpleTypes);
 
 		if (registerDefaults) {
 			this.simpleTypes.addAll(DEFAULTS);
@@ -105,7 +106,7 @@ public class SimpleTypeHolder {
 		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null!");
 		Assert.notNull(source, "SourceTypeHolder must not be null!");
 
-		this.simpleTypes = new CopyOnWriteArraySet<Class<?>>(customSimpleTypes);
+		this.simpleTypes = new CopyOnWriteArraySet<>(customSimpleTypes);
 		this.simpleTypes.addAll(source.simpleTypes);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Thomas Darimont
  * @author Nick Williams
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 
@@ -208,7 +209,7 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 	 */
 	Sort parseParameterIntoSort(String[] source, String delimiter) {
 
-		List<Order> allOrders = new ArrayList<Sort.Order>();
+		List<Order> allOrders = new ArrayList<>();
 
 		for (String part : source) {
 
@@ -224,7 +225,7 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 			int lastIndex = direction.map(it -> elements.length - 1).orElseGet(() -> elements.length);
 
 			for (int i = 0; i < lastIndex; i++) {
-				toOrder(elements[i], direction).ifPresent(it -> allOrders.add(it));
+				toOrder(elements[i], direction).ifPresent(allOrders::add);
 			}
 		}
 
@@ -266,7 +267,7 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 			builder.add(order.getProperty());
 		}
 
-		return builder == null ? Collections.<String>emptyList() : builder.dumpExpressionIfPresentInto(expressions);
+		return builder == null ? Collections.emptyList() : builder.dumpExpressionIfPresentInto(expressions);
 	}
 
 	/**
@@ -296,7 +297,7 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 			builder.add(order.getProperty());
 		}
 
-		return builder == null ? Collections.<String>emptyList() : builder.dumpExpressionIfPresentInto(expressions);
+		return builder == null ? Collections.emptyList() : builder.dumpExpressionIfPresentInto(expressions);
 	}
 
 	/**

@@ -72,12 +72,12 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 
 		@Override
 		protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-			return Collections.<Class<? extends Annotation>>singleton(Primary.class);
+			return Collections.singleton(Primary.class);
 		}
 
 		@Override
 		protected Collection<Class<?>> getIdentifyingTypes() {
-			return Collections.<Class<?>>singleton(StoreInterface.class);
+			return Collections.singleton(StoreInterface.class);
 		}
 	}
 

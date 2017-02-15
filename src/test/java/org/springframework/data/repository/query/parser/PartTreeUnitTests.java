@@ -22,6 +22,7 @@ import static org.springframework.data.repository.query.parser.Part.Type.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -138,12 +139,12 @@ public class PartTreeUnitTests {
 
 	@Test
 	public void parsesNearCorrectly() {
-		assertType(asList("locationNear"), NEAR, "location");
+		assertType(Collections.singletonList("locationNear"), NEAR, "location");
 	}
 
 	@Test
 	public void supportToStringWithoutSortOrder() throws Exception {
-		assertType(asList("firstname"), SIMPLE_PROPERTY, "firstname");
+		assertType(Collections.singletonList("firstname"), SIMPLE_PROPERTY, "firstname");
 	}
 
 	@Test
@@ -222,7 +223,7 @@ public class PartTreeUnitTests {
 
 	@Test // DATACMNS-94
 	public void parsesExistsKeywordCorrectly() {
-		assertType(asList("lastnameExists"), EXISTS, "lastname", 0, false);
+		assertType(Collections.singletonList("lastnameExists"), EXISTS, "lastname", 0, false);
 	}
 
 	@Test // DATACMNS-94

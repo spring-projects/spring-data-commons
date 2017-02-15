@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.springframework.util.Assert;
  * invocations over reflection ones.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.10
  */
 public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory {
@@ -67,7 +68,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 
 		this.repositories = repositories;
 		this.conversionService = conversionService;
-		this.invokers = new HashMap<Class<?>, RepositoryInvoker>();
+		this.invokers = new HashMap<>();
 	}
 
 	/* 
@@ -76,7 +77,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 	 */
 	@Override
 	public RepositoryInvoker getInvokerFor(Class<?> domainType) {
-		return invokers.computeIfAbsent(domainType, type -> prepareInvokers(type));
+		return invokers.computeIfAbsent(domainType, this::prepareInvokers);
 	}
 
 	/**
@@ -90,7 +91,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 		Optional<RepositoryInformation> information = repositories.getRepositoryInformationFor(domainType);
 		Optional<Object> repository = repositories.getRepositoryFor(domainType);
 
-		return mapIfAllPresent(information, repository, (left, right) -> createInvoker(left, right))//
+		return mapIfAllPresent(information, repository, this::createInvoker)//
 				.orElseThrow(
 						() -> new IllegalArgumentException(String.format("No repository found for domain type: %s", domainType)));
 	}

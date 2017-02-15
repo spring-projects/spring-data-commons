@@ -16,7 +16,6 @@
 package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import lombok.Getter;
@@ -25,6 +24,7 @@ import lombok.Value;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 
 import org.aopalliance.aop.Advice;
@@ -109,7 +109,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		doReturn(SampleRepository.class.getMethod("save", Object.class)).when(invocation).getMethod();
 
 		SomeEvent event = new SomeEvent();
-		MultipleEvents sample = MultipleEvents.of(Arrays.asList(event));
+		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
 		doReturn(new Object[] { sample }).when(invocation).getArguments();
 
 		EventPublishingMethodInterceptor//
@@ -161,8 +161,8 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	public void publishesEventsForCallToSaveWithIterable() throws Throwable {
 
 		SomeEvent event = new SomeEvent();
-		MultipleEvents sample = MultipleEvents.of(Arrays.asList(event));
-		doReturn(new Object[] { Arrays.asList(sample) }).when(invocation).getArguments();
+		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		doReturn(new Object[] {Collections.singletonList(sample)}).when(invocation).getArguments();
 
 		doReturn(SampleRepository.class.getMethod("save", Iterable.class)).when(invocation).getMethod();
 

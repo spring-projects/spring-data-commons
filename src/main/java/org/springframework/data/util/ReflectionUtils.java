@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Christoph Strobl
  * @since 1.5
  */
 public abstract class ReflectionUtils {
@@ -277,7 +278,7 @@ public abstract class ReflectionUtils {
 
 	public static Optional<Method> getMethod(Class<?> type, String name, ResolvableType... parameterTypes) {
 
-		List<Class<?>> collect = Arrays.stream(parameterTypes).map(it -> it.getRawClass()).collect(Collectors.toList());
+		List<Class<?>> collect = Arrays.stream(parameterTypes).map(ResolvableType::getRawClass).collect(Collectors.toList());
 
 		Optional<Method> method = Optional.ofNullable(
 				org.springframework.util.ReflectionUtils.findMethod(type, name, collect.toArray(new Class<?>[collect.size()])));
@@ -286,7 +287,7 @@ public abstract class ReflectionUtils {
 				.allMatch(index -> ResolvableType.forMethodParameter(it, index).equals(parameterTypes[index])));
 	}
 
-	private static final boolean argumentsMatch(Class<?>[] parameterTypes, Object[] arguments) {
+	private static boolean argumentsMatch(Class<?>[] parameterTypes, Object[] arguments) {
 
 		if (parameterTypes.length != arguments.length) {
 			return false;

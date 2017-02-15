@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.springframework.util.Assert;
  * Simply helper to reference a dedicated attribute of an {@link Annotation}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.10
  */
 @RequiredArgsConstructor
@@ -67,7 +68,7 @@ class AnnotationAttribute {
 		Assert.notNull(parameter, "MethodParameter must not be null!");
 		Annotation annotation = parameter.getParameterAnnotation(annotationType);
 
-		return Optional.ofNullable(annotation).map(it -> getValueFrom(it));
+		return Optional.ofNullable(annotation).map(this::getValueFrom);
 	}
 
 	/**
@@ -93,7 +94,7 @@ class AnnotationAttribute {
 	public Object getValueFrom(Annotation annotation) {
 
 		Assert.notNull(annotation, "Annotation must not be null!");
-		return (String) attributeName.map(it -> AnnotationUtils.getValue(annotation, it))
+		return attributeName.map(it -> AnnotationUtils.getValue(annotation, it))
 				.orElseGet(() -> AnnotationUtils.getValue(annotation));
 	}
 }

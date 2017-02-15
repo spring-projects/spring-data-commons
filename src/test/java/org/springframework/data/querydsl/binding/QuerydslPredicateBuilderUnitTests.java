@@ -59,7 +59,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	public void setUp() {
 		this.builder = new QuerydslPredicateBuilder(new DefaultFormattingConversionService(),
 				SimpleEntityPathResolver.INSTANCE);
-		this.values = new LinkedMultiValueMap<String, String>();
+		this.values = new LinkedMultiValueMap<>();
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
@@ -122,7 +122,7 @@ public class QuerydslPredicateBuilderUnitTests {
 		values.add("lastname", null);
 
 		QuerydslBindings bindings = new QuerydslBindings();
-		bindings.bind(QUser.user.lastname).firstOptional((path, value) -> value.map(it -> path.contains(it)));
+		bindings.bind(QUser.user.lastname).firstOptional((path, value) -> value.map(path::contains));
 
 		builder.getPredicate(USER_TYPE, values, bindings);
 	}

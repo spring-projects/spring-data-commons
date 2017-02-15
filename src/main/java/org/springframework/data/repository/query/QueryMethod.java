@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Christoph Strobl
  * @author Maciek Opała
  */
 public class QueryMethod {
@@ -90,7 +91,7 @@ public class QueryMethod {
 			}
 		}
 
-		Assert.notNull(this.parameters,
+		Assert.notNull(this.parameters, () ->
 				String.format("Parameters extracted from method '%s' must not be null!", method.getName()));
 
 		if (isPageQuery()) {
@@ -265,7 +266,7 @@ public class QueryMethod {
 
 		if (QueryExecutionConverters.supports(method.getReturnType())) {
 			// unwrap only one level to handle cases like Future<List<Entity>> correctly.
-			return ClassTypeInformation.fromReturnTypeOf(method).getComponentType().map(it -> it.getType())
+			return ClassTypeInformation.fromReturnTypeOf(method).getComponentType().map(TypeInformation::getType)
 					.orElseThrow(() -> new IllegalStateException(
 							String.format("Couldn't find component type for return value of method %s!", method)));
 		}

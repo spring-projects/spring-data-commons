@@ -96,8 +96,8 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 	@Test // DATACMNS-134
 	public void discoversInnerClassConstructorCorrectly() {
 
-		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class));
-		PreferredConstructorDiscoverer<Inner, P> discoverer = new PreferredConstructorDiscoverer<Inner, P>(entity);
+		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(ClassTypeInformation.from(Inner.class));
+		PreferredConstructorDiscoverer<Inner, P> discoverer = new PreferredConstructorDiscoverer<>(entity);
 
 		assertThat(discoverer.getConstructor()).hasValueSatisfying(constructor -> {
 

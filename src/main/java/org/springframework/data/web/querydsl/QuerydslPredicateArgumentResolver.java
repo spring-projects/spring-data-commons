@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	public Predicate resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 
 		for (Entry<String, String[]> entry : webRequest.getParameterMap().entrySet()) {
 			parameters.put(entry.getKey(), Arrays.asList(entry.getValue()));
@@ -104,7 +104,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 		TypeInformation<?> domainType = extractTypeInfo(parameter).getActualType();
 
 		Optional<? extends Class<? extends QuerydslBinderCustomizer>> map = annotation
-				.<Class<? extends QuerydslBinderCustomizer>>map(it -> it.bindings());
+				.<Class<? extends QuerydslBinderCustomizer>>map(QuerydslPredicate::bindings);
 
 		QuerydslBindings bindings = bindingsFactory.createBindingsFor(domainType,
 				(Optional<Class<? extends QuerydslBinderCustomizer<?>>>) map);

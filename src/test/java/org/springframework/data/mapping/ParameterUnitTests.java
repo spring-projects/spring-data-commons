@@ -45,8 +45,8 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithIdenticalSetupEqual() {
 
-		Parameter<Object, P> left = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.of(entity));
-		Parameter<Object, P> right = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.of(entity));
+		Parameter<Object, P> left = new Parameter<>(Optional.of("name"), type, annotations, Optional.of(entity));
+		Parameter<Object, P> right = new Parameter<>(Optional.of("name"), type, annotations, Optional.of(entity));
 
 		assertThat(left).isEqualTo(right);
 		assertThat(left.hashCode()).isEqualTo(right.hashCode());
@@ -55,8 +55,8 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithIdenticalSetupAndNullNameEqual() {
 
-		Parameter<Object, P> left = new Parameter<Object, P>(Optional.empty(), type, annotations, Optional.of(entity));
-		Parameter<Object, P> right = new Parameter<Object, P>(Optional.empty(), type, annotations, Optional.of(entity));
+		Parameter<Object, P> left = new Parameter<>(Optional.empty(), type, annotations, Optional.of(entity));
+		Parameter<Object, P> right = new Parameter<>(Optional.empty(), type, annotations, Optional.of(entity));
 
 		assertThat(left).isEqualTo(right);
 		assertThat(left.hashCode()).isEqualTo(right.hashCode());
@@ -65,8 +65,8 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithIdenticalAndNullEntitySetupEqual() {
 
-		Parameter<Object, P> left = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.empty());
-		Parameter<Object, P> right = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.empty());
+		Parameter<Object, P> left = new Parameter<>(Optional.of("name"), type, annotations, Optional.empty());
+		Parameter<Object, P> right = new Parameter<>(Optional.of("name"), type, annotations, Optional.empty());
 
 		assertThat(left).isEqualTo(right);
 		assertThat(left.hashCode()).isEqualTo(right.hashCode());
@@ -75,8 +75,8 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithDifferentNameAreNotEqual() {
 
-		Parameter<Object, P> left = new Parameter<Object, P>(Optional.of("first"), type, annotations, Optional.of(entity));
-		Parameter<Object, P> right = new Parameter<Object, P>(Optional.of("second"), type, annotations,
+		Parameter<Object, P> left = new Parameter<>(Optional.of("first"), type, annotations, Optional.of(entity));
+		Parameter<Object, P> right = new Parameter<>(Optional.of("second"), type, annotations,
 				Optional.of(entity));
 
 		assertThat(left).isNotEqualTo(right);
@@ -85,8 +85,8 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithDifferenTypeAreNotEqual() {
 
-		Parameter<Object, P> left = new Parameter<Object, P>(Optional.of("name"), type, annotations, Optional.of(entity));
-		Parameter<String, P> right = new Parameter<String, P>(Optional.of("name"), ClassTypeInformation.from(String.class),
+		Parameter<Object, P> left = new Parameter<>(Optional.of("name"), type, annotations, Optional.of(entity));
+		Parameter<String, P> right = new Parameter<>(Optional.of("name"), ClassTypeInformation.from(String.class),
 				annotations, Optional.of(stringEntity));
 
 		assertThat(left).isNotEqualTo(right);

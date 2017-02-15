@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Thomas Eizinger
+ * @author Christoph Strobl
  */
 public class Repositories implements Iterable<Class<?>> {
 
@@ -76,8 +77,8 @@ public class Repositories implements Iterable<Class<?>> {
 		Assert.notNull(factory, "Factory must not be null!");
 
 		this.beanFactory = Optional.of(factory);
-		this.repositoryFactoryInfos = new HashMap<Class<?>, RepositoryFactoryInformation<Object, Serializable>>();
-		this.repositoryBeanNames = new HashMap<Class<?>, String>();
+		this.repositoryFactoryInfos = new HashMap<>();
+		this.repositoryBeanNames = new HashMap<>();
 
 		populateRepositoryFactoryInformation(factory);
 	}
@@ -102,7 +103,7 @@ public class Repositories implements Iterable<Class<?>> {
 		Set<Class<?>> alternativeDomainTypes = information.getAlternativeDomainTypes();
 		String beanName = BeanFactoryUtils.transformedBeanName(name);
 
-		Set<Class<?>> typesToRegister = new HashSet<Class<?>>(alternativeDomainTypes.size() + 1);
+		Set<Class<?>> typesToRegister = new HashSet<>(alternativeDomainTypes.size() + 1);
 		typesToRegister.add(domainType);
 		typesToRegister.addAll(alternativeDomainTypes);
 
@@ -136,7 +137,7 @@ public class Repositories implements Iterable<Class<?>> {
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
 		Optional<String> repositoryBeanName = Optional.ofNullable(repositoryBeanNames.get(domainClass));
-		return beanFactory.flatMap(it -> repositoryBeanName.map(name -> it.getBean(name)));
+		return beanFactory.flatMap(it -> repositoryBeanName.map(it::getBean));
 	}
 
 	/**
@@ -271,7 +272,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		@Override
 		public List<QueryMethod> getQueryMethods() {
-			return Collections.<QueryMethod>emptyList();
+			return Collections.emptyList();
 		}
 	}
 }

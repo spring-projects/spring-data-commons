@@ -128,7 +128,7 @@ public class Jsr310ConvertersUnitTests {
 		@Test
 		public void convertsZoneIdToStringAndBack() {
 
-			Map<String, ZoneId> ids = new HashMap<String, ZoneId>();
+			Map<String, ZoneId> ids = new HashMap<>();
 			ids.put("Europe/Berlin", ZoneId.of("Europe/Berlin"));
 			ids.put("+06:00", ZoneId.of("+06:00"));
 

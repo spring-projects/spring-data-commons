@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,13 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Jon Brisbin
  * @author Thomas Darimont
+ * @author Christoph Strobl
  */
 public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 	private final Constructor<T> constructor;
 	private final List<Parameter<Object, P>> parameters;
-	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new HashMap<PersistentProperty<?>, Boolean>();
+	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new HashMap<>();
 
 	private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 	private final Lock read = lock.readLock();
@@ -218,7 +219,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 			this.entity = entity;
 
 			this.enclosingClassCache = Lazy.of(() -> {
-				Class<T> owningType = entity.orElseThrow(() -> new IllegalStateException()).getType();
+				Class<T> owningType = entity.orElseThrow(IllegalStateException::new).getType();
 				return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
 			});
 
@@ -230,7 +231,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 			return Arrays.stream(annotations)//
 					.filter(it -> it.annotationType() == Value.class)//
 					.findFirst().map(it -> ((Value) it).value())//
-					.filter(it -> StringUtils.hasText(it));
+					.filter(StringUtils::hasText);
 		}
 
 		/**
@@ -286,13 +287,11 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 */
 		boolean maps(PersistentProperty<?> property) {
 
-			if (!name.isPresent()) {
-				return false;
-			}
-
-			return entity//
-					.flatMap(it -> it.getPersistentProperty(name.get()))//
-					.map(it -> property.equals(it)).orElse(false);
+			//
+//
+			return name.map(s -> entity
+					.flatMap(it -> it.getPersistentProperty(s))
+					.map(property::equals).orElse(false)).orElse(false);
 		}
 
 		private boolean isEnclosingClassParameter() {

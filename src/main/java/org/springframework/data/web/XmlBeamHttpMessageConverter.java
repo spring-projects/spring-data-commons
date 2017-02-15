@@ -35,13 +35,14 @@ import org.xmlbeam.XBProjector;
  * A read-only {@link HttpMessageConverter} to create XMLBeam-based projection instances for interfaces.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @see <a href="http://www.xmlbeam.org">http://www.xmlbeam.org</a>
  * @soundtrack Dr. Kobayashi Maru & The Mothership Connection - Anthem (EPisode One)
  */
 public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Object> {
 
 	private final ProjectionFactory projectionFactory;
-	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentReferenceHashMap<Class<?>, Boolean>();
+	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentReferenceHashMap<>();
 
 	/**
 	 * Creates a new {@link XmlBeamHttpMessageConverter}.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,13 +48,14 @@ import org.springframework.util.ClassUtils;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Phillip Webb
+ * @author Christoph Strobl
  * @since 1.11
  */
 public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	private final ObjectInstantiatorClassGenerator generator;
 
-	private volatile Map<TypeInformation<?>, EntityInstantiator> entityInstantiators = new HashMap<TypeInformation<?>, EntityInstantiator>(
+	private volatile Map<TypeInformation<?>, EntityInstantiator> entityInstantiators = new HashMap<>(
 			32);
 
 	/**
@@ -97,7 +98,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		instantiator = createEntityInstantiator(entity);
 
-		map = new HashMap<TypeInformation<?>, EntityInstantiator>(map);
+		map = new HashMap<>(map);
 		map.put(entity.getTypeInformation(), instantiator);
 
 		this.entityInstantiators = map;
@@ -217,7 +218,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 				}
 
 				return it.getParameters().stream()//
-						.map(parameter -> provider.getParameterValue(parameter))//
+						.map(provider::getParameterValue)//
 						.toArray();
 
 			}).orElse(EMPTY_ARRAY);

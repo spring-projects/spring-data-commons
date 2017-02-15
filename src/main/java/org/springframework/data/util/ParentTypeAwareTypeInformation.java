@@ -52,7 +52,7 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 	 */
 	private static Map<TypeVariable<?>, Type> mergeMaps(TypeDiscoverer<?> parent, Map<TypeVariable<?>, Type> map) {
 
-		Map<TypeVariable<?>, Type> typeVariableMap = new HashMap<TypeVariable<?>, Type>();
+		Map<TypeVariable<?>, Type> typeVariableMap = new HashMap<>();
 		typeVariableMap.putAll(map);
 		typeVariableMap.putAll(parent.getTypeVariableMap());
 

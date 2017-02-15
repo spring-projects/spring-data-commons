@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.Optional;
  * 
  * @author Oliver Gierke
  * @author Philipp Huegelmeyer
+ * @author Christoph Strobl
  */
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -51,7 +52,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	 * @return
 	 */
 	public static <N extends Number & Comparable<N>, T> Revision<N, T> of(RevisionMetadata<N> metadata, T entity) {
-		return new Revision<N, T>(metadata, entity);
+		return new Revision<>(metadata, entity);
 	}
 
 	/**
@@ -81,9 +82,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 		Optional<N> thisRevisionNumber = getRevisionNumber();
 		Optional<N> thatRevisionNumber = that.getRevisionNumber();
 
-		return thisRevisionNumber.map(left -> {
-			return thatRevisionNumber.map(right -> left.compareTo(right)).orElse(1);
-		}).orElse(-1);
+		return thisRevisionNumber.map(left -> thatRevisionNumber.map(left::compareTo).orElse(1)).orElse(-1);
 	}
 
 	/* 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.data.mapping.PreferredConstructor;
  * 
  * @author Oliver Gierke
  * @author Jon Brisbin
+ * @author Christoph Strobl
  */
 public class MappingInstantiationException extends RuntimeException {
 
@@ -57,13 +58,13 @@ public class MappingInstantiationException extends RuntimeException {
 
 		super(buildExceptionMessage(entity, arguments.stream(), message), cause);
 
-		this.entityType = entity.map(it -> it.getType()).orElse(null);
-		this.constructor = entity.flatMap(it -> it.getPersistenceConstructor()).map(c -> c.getConstructor()).orElse(null);
+		this.entityType = entity.map(PersistentEntity::getType).orElse(null);
+		this.constructor = entity.flatMap(PersistentEntity::getPersistenceConstructor).map(PreferredConstructor::getConstructor).orElse(null);
 		this.constructorArguments = arguments;
 	}
 
-	private static final String buildExceptionMessage(Optional<PersistentEntity<?, ?>> entity, Stream<Object> arguments,
-			String defaultMessage) {
+	private static String buildExceptionMessage(Optional<PersistentEntity<?, ?>> entity, Stream<Object> arguments,
+												String defaultMessage) {
 
 		return entity.map(it -> {
 

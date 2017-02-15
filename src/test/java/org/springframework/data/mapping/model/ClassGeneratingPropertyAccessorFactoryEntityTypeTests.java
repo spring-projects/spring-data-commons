@@ -56,7 +56,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 	private EntityInformation<Object, Serializable> getEntityInformation(Class<?> type) {
 
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext.getRequiredPersistentEntity(type);
-		return new PersistentEntityInformation<Object, Serializable>(entity);
+		return new PersistentEntityInformation<>(entity);
 	}
 
 	interface Algorithm {

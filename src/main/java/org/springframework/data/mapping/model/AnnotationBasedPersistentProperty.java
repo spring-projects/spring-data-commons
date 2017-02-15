@@ -83,7 +83,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param property
 	 * @throws MappingException in case we find an ambiguous mapping on the accessor methods
 	 */
-	private final void populateAnnotationCache(Property property) {
+	private void populateAnnotationCache(Property property) {
 
 		Optionals.toStream(property.getGetter(), property.getSetter()).forEach(it -> {
 
@@ -221,7 +221,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return cacheAndReturn(annotationType,
 				getAccessors()//
 						.map(it -> it.map(inner -> AnnotatedElementUtils.findMergedAnnotation(inner, annotationType)))//
-						.flatMap(it -> Optionals.toStream(it))//
+						.flatMap(Optionals::toStream)//
 						.findFirst());
 	}
 
@@ -281,12 +281,15 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			populateAnnotationCache(getProperty());
 		}
 
-		StringBuilder builder = new StringBuilder().append(annotationCache.values().stream()//
-				.flatMap(it -> Optionals.toStream(it))//
+		String builder = annotationCache.values().stream()//
+				.flatMap(Optionals::toStream)//
 				.map(Object::toString)//
-				.collect(Collectors.joining(" ")));
+				.collect(Collectors.joining(" "));
 
-		return builder.toString() + super.toString();
+		return builder//
+//
+//
+				+ super.toString();
 	}
 
 	private Stream<Optional<? extends AnnotatedElement>> getAccessors() {

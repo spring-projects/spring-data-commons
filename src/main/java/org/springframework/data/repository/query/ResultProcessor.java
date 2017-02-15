@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author John Blum
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 1.12
  */
 public class ResultProcessor {
@@ -88,7 +89,7 @@ public class ResultProcessor {
 	 */
 	public ResultProcessor withDynamicProjection(Optional<ParameterAccessor> accessor) {
 
-		return accessor.flatMap(it -> it.getDynamicProjection())//
+		return accessor.flatMap(ParameterAccessor::getDynamicProjection)//
 				.map(it -> new ResultProcessor(method, factory, it))//
 				.orElse(this);
 	}
@@ -267,7 +268,7 @@ public class ResultProcessor {
 		private static Map<String, Object> toMap(Collection<?> values, List<String> names) {
 
 			int i = 0;
-			Map<String, Object> result = new HashMap<String, Object>(values.size());
+			Map<String, Object> result = new HashMap<>(values.size());
 
 			for (Object element : values) {
 				result.put(names.get(i++), element);

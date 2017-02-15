@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public class PageableHandlerMethodArgumentResolver implements PageableArgumentResolver {
 
@@ -252,19 +253,19 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 		}
 
 		int p = page.orElseGet(
-				() -> defaultOrFallback.map(it -> it.getPageNumber()).orElseThrow(() -> new IllegalStateException()));
+				() -> defaultOrFallback.map(Pageable::getPageNumber).orElseThrow(IllegalStateException::new));
 		int ps = pageSize
-				.orElseGet(() -> defaultOrFallback.map(it -> it.getPageSize()).orElseThrow(() -> new IllegalStateException()));
+				.orElseGet(() -> defaultOrFallback.map(Pageable::getPageSize).orElseThrow(IllegalStateException::new));
 
 		// Limit lower bound
-		ps = ps < 1 ? defaultOrFallback.map(it -> it.getPageSize()).orElseThrow(() -> new IllegalStateException()) : ps;
+		ps = ps < 1 ? defaultOrFallback.map(Pageable::getPageSize).orElseThrow(IllegalStateException::new) : ps;
 		// Limit upper bound
 		ps = ps > maxPageSize ? maxPageSize : ps;
 
 		Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
 
 		return PageRequest.of(p, ps,
-				sort.isSorted() ? sort : defaultOrFallback.map(it -> it.getSort()).orElseGet(() -> Sort.unsorted()));
+				sort.isSorted() ? sort : defaultOrFallback.map(Pageable::getSort).orElseGet(Sort::unsorted));
 	}
 
 	/**

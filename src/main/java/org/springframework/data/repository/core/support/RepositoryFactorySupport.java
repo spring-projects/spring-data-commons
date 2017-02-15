@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2016 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
@@ -363,12 +364,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		Class<?> baseClass = information.getRepositoryBaseClass();
 		Optional<Constructor<?>> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
 
-		return constructor.map(it -> (R) BeanUtils.instantiateClass(it, constructorArguments)).orElseThrow(() -> {
-
-			return new IllegalStateException(String.format(
-					"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
-					baseClass, Arrays.stream(constructorArguments).map(Object::getClass).collect(Collectors.toList())));
-		});
+		return constructor.map(it -> (R) BeanUtils.instantiateClass(it, constructorArguments)).orElseThrow(() -> new IllegalStateException(String.format(
+				"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
+				baseClass, Arrays.stream(constructorArguments).map(Object::getClass).collect(Collectors.toList()))));
 	}
 
 	/**

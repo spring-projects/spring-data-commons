@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.12
  */
 public class ExampleMatcherAccessor {
@@ -143,7 +144,7 @@ public class ExampleMatcherAccessor {
 		}
 
 		ExampleMatcher.PropertySpecifier specifier = getPropertySpecifier(path);
-		return specifier.getIgnoreCase() != null ? specifier.getIgnoreCase().booleanValue() : matcher.isIgnoreCaseEnabled();
+		return specifier.getIgnoreCase() != null ? specifier.getIgnoreCase() : matcher.isIgnoreCaseEnabled();
 	}
 
 	/**

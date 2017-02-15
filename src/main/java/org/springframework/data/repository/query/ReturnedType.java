@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.springframework.util.ClassUtils;
  * A representation of the type returned by a {@link QueryMethod}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.12
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -60,9 +61,9 @@ public abstract class ReturnedType {
 		Assert.notNull(domainType, "Domain type must not be null!");
 		Assert.notNull(factory, "ProjectionFactory must not be null!");
 
-		return (ReturnedType) (returnedType.isInterface()
+		return returnedType.isInterface()
 				? new ReturnedInterface(factory.getProjectionInformation(returnedType), domainType)
-				: new ReturnedClass(returnedType, domainType));
+				: new ReturnedClass(returnedType, domainType);
 	}
 
 	/**
@@ -209,7 +210,7 @@ public abstract class ReturnedType {
 	 */
 	private static final class ReturnedClass extends ReturnedType {
 
-		private static final Set<Class<?>> VOID_TYPES = new HashSet<Class<?>>(Arrays.asList(Void.class, void.class));
+		private static final Set<Class<?>> VOID_TYPES = new HashSet<>(Arrays.asList(Void.class, void.class));
 
 		private final Class<?> type;
 		private final List<String> inputProperties;
@@ -285,13 +286,9 @@ public abstract class ReturnedType {
 
 			PreferredConstructorDiscoverer<?, ?> discoverer = new PreferredConstructorDiscoverer(type);
 
-			return discoverer.getConstructor().map(it -> {
-
-				return it.getParameters().stream()//
-						.flatMap(parameter -> Optionals.toStream(parameter.getName()))//
-						.collect(Collectors.toList());
-
-			}).orElseGet(() -> Collections.emptyList());
+			return discoverer.getConstructor().map(it -> it.getParameters().stream()//
+					.flatMap(parameter -> Optionals.toStream(parameter.getName()))//
+					.collect(Collectors.toList())).orElseGet(Collections::emptyList);
 		}
 
 		private boolean isDto() {

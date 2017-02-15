@@ -34,17 +34,17 @@ public class PageImplUnitTests {
 	@Test
 	public void assertEqualsForSimpleSetup() throws Exception {
 
-		PageImpl<String> page = new PageImpl<>(Arrays.asList("Foo"));
+		PageImpl<String> page = new PageImpl<>(Collections.singletonList("Foo"));
 
 		assertEqualsAndHashcode(page, page);
-		assertEqualsAndHashcode(page, new PageImpl<>(Arrays.asList("Foo")));
+		assertEqualsAndHashcode(page, new PageImpl<>(Collections.singletonList("Foo")));
 	}
 
 	@Test
 	public void assertEqualsForComplexSetup() throws Exception {
 
 		Pageable pageable = PageRequest.of(0, 10);
-		List<String> content = Arrays.asList("Foo");
+		List<String> content = Collections.singletonList("Foo");
 
 		PageImpl<String> page = new PageImpl<>(content, pageable, 100);
 
@@ -68,7 +68,7 @@ public class PageImplUnitTests {
 	@Test
 	public void returnsNextPageable() {
 
-		Page<Object> page = new PageImpl<>(Arrays.asList(new Object()), PageRequest.of(0, 1), 10);
+		Page<Object> page = new PageImpl<>(Collections.singletonList(new Object()), PageRequest.of(0, 1), 10);
 
 		assertThat(page.isFirst()).isTrue();
 		assertThat(page.hasPrevious()).isFalse();
@@ -82,7 +82,7 @@ public class PageImplUnitTests {
 	@Test
 	public void returnsPreviousPageable() {
 
-		Page<Object> page = new PageImpl<>(Arrays.asList(new Object()), PageRequest.of(1, 1), 2);
+		Page<Object> page = new PageImpl<>(Collections.singletonList(new Object()), PageRequest.of(1, 1), 2);
 
 		assertThat(page.isFirst()).isFalse();
 		assertThat(page.hasPrevious()).isTrue();
@@ -116,7 +116,7 @@ public class PageImplUnitTests {
 	@Test // DATACMNS-323
 	public void returnsCorrectTotalPages() {
 
-		Page<String> page = new PageImpl<>(Arrays.asList("a"));
+		Page<String> page = new PageImpl<>(Collections.singletonList("a"));
 
 		assertThat(page.getTotalPages()).isEqualTo(1);
 		assertThat(page.hasNext()).isFalse();
@@ -127,7 +127,7 @@ public class PageImplUnitTests {
 	public void transformsPageCorrectly() {
 
 		Page<Integer> transformed = new PageImpl<>(Arrays.asList("foo", "bar"), PageRequest.of(0, 2), 10)
-				.map(source -> source.length());
+				.map(String::length);
 
 		assertThat(transformed.getContent()).hasSize(2);
 		assertThat(transformed.getContent()).contains(3, 3);

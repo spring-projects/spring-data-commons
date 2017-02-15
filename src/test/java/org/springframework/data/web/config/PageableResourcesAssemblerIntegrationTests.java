@@ -18,6 +18,7 @@ package org.springframework.data.web.config;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -99,7 +100,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 		@RequestMapping("/persons")
 		PagedResources<Resource<Person>> sample(Pageable pageable) {
 
-			Page<Person> page = new PageImpl<>(Arrays.asList(new Person()), pageable,
+			Page<Person> page = new PageImpl<>(Collections.singletonList(new Person()), pageable,
 					pageable.getOffset() + pageable.getPageSize() + 1);
 
 			return assembler.toResource(page);

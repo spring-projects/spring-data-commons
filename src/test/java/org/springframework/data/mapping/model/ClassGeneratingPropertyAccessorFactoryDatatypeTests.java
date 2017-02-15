@@ -108,7 +108,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 
 	private static List<Object[]> parameters(List<Class<?>> types, String propertyName, Object value) throws Exception {
 
-		List<Object[]> parameters = new ArrayList<Object[]>();
+		List<Object[]> parameters = new ArrayList<>();
 
 		for (Class<?> type : types) {
 

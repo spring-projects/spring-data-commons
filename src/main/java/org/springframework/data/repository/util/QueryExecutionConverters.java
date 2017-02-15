@@ -66,6 +66,7 @@ import com.google.common.base.Optional;
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @author Maciek Opała
  * @since 1.8
  * @see ReactiveWrappers

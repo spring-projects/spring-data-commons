@@ -120,7 +120,7 @@ public class QuerydslBindingsFactoryUnitTests {
 
 		@Override
 		public void customize(QuerydslBindings bindings, QUser user) {
-			bindings.bind(QUser.user.firstname).firstOptional((path, value) -> value.map(it -> path.contains(it)));
+			bindings.bind(QUser.user.firstname).firstOptional((path, value) -> value.map(path::contains));
 		}
 	}
 }

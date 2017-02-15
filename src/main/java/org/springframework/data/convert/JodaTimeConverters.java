@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.util.ClassUtils;
  * classpath.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @SuppressWarnings("deprecation")
 public abstract class JodaTimeConverters {
@@ -50,7 +51,7 @@ public abstract class JodaTimeConverters {
 			return Collections.emptySet();
 		}
 
-		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(LocalDateToDateConverter.INSTANCE);
 		converters.add(LocalDateTimeToDateConverter.INSTANCE);
 		converters.add(DateTimeToDateConverter.INSTANCE);

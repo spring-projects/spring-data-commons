@@ -94,11 +94,11 @@ public class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-630
 	public void createsMapBasedProxyFromSource() {
 
-		HashMap<String, Object> addressSource = new HashMap<String, Object>();
+		HashMap<String, Object> addressSource = new HashMap<>();
 		addressSource.put("zipCode", "ZIP");
 		addressSource.put("city", "NewYork");
 
-		Map<String, Object> source = new HashMap<String, Object>();
+		Map<String, Object> source = new HashMap<>();
 		source.put("firstname", "Dave");
 		source.put("lastname", "Matthews");
 		source.put("address", addressSource);

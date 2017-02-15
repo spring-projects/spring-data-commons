@@ -55,7 +55,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	public void setUp() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class);
-		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.<EvaluationContextExtension>emptyList());
+		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.emptyList());
 	}
 
 	@Test // DATACMNS-533
@@ -199,7 +199,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 
 		final AtomicInteger counter = new AtomicInteger();
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(Arrays.asList( //
+		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList( //
 				new DummyExtension("_first", "first") {
 
 					@Override

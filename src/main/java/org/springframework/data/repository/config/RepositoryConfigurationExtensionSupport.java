@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public abstract class RepositoryConfigurationExtensionSupport implements RepositoryConfigurationExtension {
 
@@ -79,7 +80,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		Assert.notNull(configSource, "ConfigSource must not be null!");
 		Assert.notNull(loader, "Loader must not be null!");
 
-		Set<RepositoryConfiguration<T>> result = new HashSet<RepositoryConfiguration<T>>();
+		Set<RepositoryConfiguration<T>> result = new HashSet<>();
 
 		for (BeanDefinition candidate : configSource.getCandidates(loader)) {
 

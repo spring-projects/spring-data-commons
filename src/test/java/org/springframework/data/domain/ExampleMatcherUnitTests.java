@@ -21,11 +21,6 @@ import static org.springframework.data.domain.ExampleMatcher.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatcher;
-import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
-import org.springframework.data.domain.ExampleMatcher.MatcherConfigurer;
-import org.springframework.data.domain.ExampleMatcher.NullHandler;
-import org.springframework.data.domain.ExampleMatcher.StringMatcher;
 
 /**
  * Unit test for {@link ExampleMatcher}.
@@ -169,24 +164,14 @@ public class ExampleMatcherUnitTests {
 				.withNullHandler(NullHandler.IGNORE) //
 				.withIgnoreCase("ignored-case") //
 				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
-				.withMatcher("world", new MatcherConfigurer<GenericPropertyMatcher>() {
-					@Override
-					public void configureMatcher(GenericPropertyMatcher matcher) {
-						matcher.endsWith();
-					}
-				});
+				.withMatcher("world", matcher -> matcher.endsWith());
 
 		ExampleMatcher sameAsMatcher = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //
 				.withNullHandler(NullHandler.IGNORE) //
 				.withIgnoreCase("ignored-case") //
 				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
-				.withMatcher("world", new MatcherConfigurer<GenericPropertyMatcher>() {
-					@Override
-					public void configureMatcher(GenericPropertyMatcher matcher) {
-						matcher.endsWith();
-					}
-				});
+				.withMatcher("world", matcher -> matcher.endsWith());
 
 		ExampleMatcher different = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //

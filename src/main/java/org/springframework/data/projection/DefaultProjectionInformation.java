@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -32,6 +30,7 @@ import org.springframework.util.Assert;
  * properties.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.12
  */
 class DefaultProjectionInformation implements ProjectionInformation {
@@ -102,7 +101,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 */
 	private static List<PropertyDescriptor> collectDescriptors(Class<?> type) {
 
-		List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
+		List<PropertyDescriptor> result = new ArrayList<>();
 		result.addAll(Arrays.stream(BeanUtils.getPropertyDescriptors(type))//
 				.filter(it -> !hasDefaultGetter(it))//
 				.collect(Collectors.toList()));

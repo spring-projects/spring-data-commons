@@ -53,9 +53,7 @@ public class QuerydslDefaultBindingUnitTests {
 
 		Optional<Predicate> predicate = binding.bind(QUser.user.address.city, Collections.singleton("two rivers"));
 
-		assertThat(predicate).hasValueSatisfying(it -> {
-			assertThat(it.toString()).isEqualTo(QUser.user.address.city.eq("two rivers").toString());
-		});
+		assertThat(predicate).hasValueSatisfying(it -> assertThat(it.toString()).isEqualTo(QUser.user.address.city.eq("two rivers").toString()));
 	}
 
 	@Test // DATACMNS-669

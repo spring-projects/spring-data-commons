@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * to avoid reflection overhead introduced by the base class if we know we work with a {@link CrudRepository}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.10
  */
 class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
@@ -89,7 +90,7 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T invokeFindOne(Serializable id) {
-		return customFindOneMethod ? super.<T>invokeFindOne(id) : (T) repository.findOne(convertId(id));
+		return customFindOneMethod ? super.invokeFindOne(id) : (T) repository.findOne(convertId(id));
 	}
 
 	/*

@@ -45,7 +45,6 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.Person;
 import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.PersonRepository;
-import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -135,7 +134,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	@Test // DATACMNS-589
 	public void invokesQueryMethod() throws Exception {
 
-		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 		parameters.add("firstName", "John");
 
 		Method method = PersonRepository.class.getMethod("findByFirstName", String.class, Pageable.class);
@@ -148,7 +147,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	@Test // DATACMNS-589
 	public void considersFormattingAnnotationsOnQueryMethodParameters() throws Exception {
 
-		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 		parameters.add("date", "2013-07-18T10:49:00.000+02:00");
 
 		Method method = PersonRepository.class.getMethod("findByCreatedUsingISO8601Date", Date.class, Pageable.class);
@@ -208,7 +207,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		for (String[] ids : Arrays.asList(new String[] { "1,2" }, new String[] { "1", "2" })) {
 
-			MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+			MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 			parameters.put("ids", Arrays.asList(ids));
 
 			Method method = PersonRepository.class.getMethod("findByIdIn", Collection.class);
@@ -224,7 +223,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(SimpleRepository.class));
 
-		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
+		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
 		parameters.add("value", "value");
 
 		Method method = SimpleRepository.class.getMethod("findByClass", int.class);

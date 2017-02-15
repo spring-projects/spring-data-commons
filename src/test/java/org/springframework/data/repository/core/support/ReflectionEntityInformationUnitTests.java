@@ -49,7 +49,7 @@ public class ReflectionEntityInformationUnitTests {
 
 		PrimitiveId primitiveId = new PrimitiveId();
 
-		EntityInformation<PrimitiveId, Serializable> information = new ReflectionEntityInformation<PrimitiveId, Serializable>(
+		EntityInformation<PrimitiveId, Serializable> information = new ReflectionEntityInformation<>(
 				PrimitiveId.class);
 		assertThat(information.isNew(primitiveId)).isTrue();
 
@@ -63,7 +63,7 @@ public class ReflectionEntityInformationUnitTests {
 	}
 
 	private static <T> EntityInformation<T, Serializable> getEntityInformation(Class<T> type) {
-		return new ReflectionEntityInformation<T, Serializable>(type, Id.class);
+		return new ReflectionEntityInformation<>(type, Id.class);
 	}
 
 	static class Sample {
