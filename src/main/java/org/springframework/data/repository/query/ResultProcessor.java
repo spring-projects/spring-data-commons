@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.core.CollectionFactory;
@@ -84,12 +83,14 @@ public class ResultProcessor {
 	/**
 	 * Returns a new {@link ResultProcessor} with a new projection type obtained from the given {@link ParameterAccessor}.
 	 * 
-	 * @param accessor can be {@literal null}.
+	 * @param accessor must not be {@literal null}.
 	 * @return
 	 */
-	public ResultProcessor withDynamicProjection(Optional<ParameterAccessor> accessor) {
+	public ResultProcessor withDynamicProjection(ParameterAccessor accessor) {
 
-		return accessor.flatMap(ParameterAccessor::getDynamicProjection)//
+		Assert.notNull(accessor, "Parameter accessor must not be null!");
+
+		return accessor.getDynamicProjection()//
 				.map(it -> new ResultProcessor(method, factory, it))//
 				.orElse(this);
 	}

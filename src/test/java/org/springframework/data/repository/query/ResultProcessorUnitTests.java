@@ -25,7 +25,6 @@ import rx.Single;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -144,12 +143,11 @@ public class ResultProcessorUnitTests {
 		ParameterAccessor accessor = mock(ParameterAccessor.class);
 
 		ResultProcessor factory = getProcessor("findOneDynamic", Class.class);
-		assertThat(factory.withDynamicProjection(Optional.empty())).isEqualTo(factory);
-		assertThat(factory.withDynamicProjection(Optional.of(accessor))).isEqualTo(factory);
+		assertThat(factory.withDynamicProjection(accessor)).isEqualTo(factory);
 
 		doReturn(Optional.of(SampleProjection.class)).when(accessor).getDynamicProjection();
 
-		ResultProcessor processor = factory.withDynamicProjection(Optional.of(accessor));
+		ResultProcessor processor = factory.withDynamicProjection(accessor);
 		assertThat(processor.getReturnedType().getReturnedType()).isEqualTo(SampleProjection.class);
 	}
 
