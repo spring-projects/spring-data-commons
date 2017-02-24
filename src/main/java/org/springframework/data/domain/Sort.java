@@ -83,7 +83,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	/**
 	 * Creates a new {@link Sort} instance.
 	 * 
-	 * @param direction defaults to {@linke Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
+	 * @param direction defaults to {@link Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
 	 * @param properties must not be {@literal null}, empty or contain {@literal null} or empty strings.
 	 */
 	public Sort(Direction direction, String... properties) {
@@ -109,36 +109,78 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		}
 	}
 
+	/**
+	 * Creates a new {@link Sort} for the given properties.
+	 * 
+	 * @param properties must not be {@literal null}.
+	 * @return
+	 */
 	public static Sort by(String... properties) {
+
+		Assert.notNull(properties, "Properties must not be null!");
+
 		return properties.length == 0 ? Sort.unsorted() : new Sort(properties);
 	}
 
+	/**
+	 * Creates a new {@link Sort} for the given {@link Order}s.
+	 * 
+	 * @param orders must not be {@literal null}.
+	 * @return
+	 */
 	public static Sort by(List<Order> orders) {
+
+		Assert.notNull(orders, "Orders must not be null!");
+
 		return orders.isEmpty() ? Sort.unsorted() : new Sort(orders);
 	}
 
+	/**
+	 * Creates a new {@link Sort} for the given {@link Order}s.
+	 * 
+	 * @param orders must not be {@literal null}.
+	 * @return
+	 */
 	public static Sort by(Order... orders) {
+
+		Assert.notNull(orders, "Orders must not be null!");
+
 		return new Sort(orders);
 	}
 
+	/**
+	 * Returns a {@link Sort} instances representing no sorting setup at all.
+	 * 
+	 * @return
+	 */
 	public static Sort unsorted() {
 		return UNSORTED;
 	}
 
+	/**
+	 * Returns a new {@link Sort} with the current setup but descending order direction.
+	 * 
+	 * @return
+	 */
 	public Sort descending() {
 		return withDirection(Direction.DESC);
 	}
 
+	/**
+	 * Returns a new {@link Sort} with the current setup but ascendin order direction.
+	 * 
+	 * @return
+	 */
 	public Sort ascending() {
 		return withDirection(Direction.ASC);
 	}
 
-	private Sort withDirection(Direction direction) {
-		return new Sort(orders.stream().map(it -> new Order(direction, it.getProperty())).collect(Collectors.toList()));
-	}
-
 	public boolean isSorted() {
 		return !orders.isEmpty();
+	}
+
+	public boolean isUnorted() {
+		return !isSorted();
 	}
 
 	/**
@@ -160,7 +202,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 			these.add(order);
 		}
 
-		return new Sort(these);
+		return Sort.by(these);
 	}
 
 	/**
@@ -227,6 +269,17 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	@Override
 	public String toString() {
 		return orders.isEmpty() ? "UNSORTED" : StringUtils.collectionToCommaDelimitedString(orders);
+	}
+
+	/**
+	 * Creates a new {@link Sort} with the current setup but the given order direction.
+	 * 
+	 * @param direction
+	 * @return
+	 */
+	private Sort withDirection(Direction direction) {
+
+		return Sort.by(orders.stream().map(it -> new Order(direction, it.getProperty())).collect(Collectors.toList()));
 	}
 
 	/**

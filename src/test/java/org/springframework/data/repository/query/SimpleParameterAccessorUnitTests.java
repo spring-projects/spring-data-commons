@@ -71,7 +71,7 @@ public class SimpleParameterAccessorUnitTests {
 
 		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { "test" });
 
-		assertThat(accessor.getPageable()).isEqualTo(Pageable.NONE);
+		assertThat(accessor.getPageable().isPaged()).isFalse();
 		assertThat(accessor.getSort().isSorted()).isFalse();
 	}
 
@@ -82,7 +82,7 @@ public class SimpleParameterAccessorUnitTests {
 		ParameterAccessor accessor = new ParametersParameterAccessor(sortParameters, new Object[] { "test", sort });
 
 		assertThat(accessor.getSort()).isEqualTo(sort);
-		assertThat(accessor.getPageable()).isEqualTo(Pageable.NONE);
+		assertThat(accessor.getPageable().isPaged()).isFalse();
 	}
 
 	@Test

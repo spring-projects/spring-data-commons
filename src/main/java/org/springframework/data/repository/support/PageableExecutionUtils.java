@@ -53,9 +53,9 @@ public class PageableExecutionUtils {
 		Assert.notNull(pageable, "Pageable must not be null!");
 		Assert.notNull(totalSupplier, "TotalSupplier must not be null!");
 
-		if (pageable == Pageable.NONE || pageable.getOffset() == 0) {
+		if (pageable.isUnpaged() || pageable.getOffset() == 0) {
 
-			if (pageable == Pageable.NONE || pageable.getPageSize() > content.size()) {
+			if (pageable.isUnpaged() || pageable.getPageSize() > content.size()) {
 				return new PageImpl<>(content, pageable, content.size());
 			}
 

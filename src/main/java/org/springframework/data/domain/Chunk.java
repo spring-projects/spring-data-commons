@@ -58,7 +58,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	 * @see org.springframework.data.domain.Slice#getNumber()
 	 */
 	public int getNumber() {
-		return pageable == Pageable.NONE ? 0 : pageable.getPageNumber();
+		return pageable.isPaged() ? pageable.getPageNumber() : 0;
 	}
 
 	/*
@@ -66,7 +66,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	 * @see org.springframework.data.domain.Slice#getSize()
 	 */
 	public int getSize() {
-		return pageable == Pageable.NONE ? 0 : pageable.getPageSize();
+		return pageable.isPaged() ? pageable.getPageSize() : 0;
 	}
 
 	/*
@@ -106,7 +106,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	 * @see org.springframework.data.domain.Slice#nextPageable()
 	 */
 	public Pageable nextPageable() {
-		return hasNext() ? pageable.next() : Pageable.NONE;
+		return hasNext() ? pageable.next() : Pageable.unpaged();
 	}
 
 	/*
@@ -114,7 +114,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	 * @see org.springframework.data.domain.Slice#previousPageable()
 	 */
 	public Pageable previousPageable() {
-		return hasPrevious() ? pageable.previousOrFirst() : Pageable.NONE;
+		return hasPrevious() ? pageable.previousOrFirst() : Pageable.unpaged();
 	}
 
 	/*

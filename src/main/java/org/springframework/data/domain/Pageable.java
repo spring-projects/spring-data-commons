@@ -15,12 +15,41 @@
  */
 package org.springframework.data.domain;
 
+import org.springframework.util.Assert;
+
 /**
  * Abstract interface for pagination information.
  * 
  * @author Oliver Gierke
  */
 public interface Pageable {
+
+	/**
+	 * Returns a {@link Pageable} instance representing no pagination setup.
+	 * 
+	 * @return
+	 */
+	static Pageable unpaged() {
+		return Unpaged.INSTANCE;
+	}
+
+	/**
+	 * Returns whether the current {@link Pageable} contains pagination information.
+	 * 
+	 * @return
+	 */
+	default boolean isPaged() {
+		return true;
+	}
+
+	/**
+	 * Returns whether the current {@link Pageable} does not contain pagination information.
+	 * 
+	 * @return
+	 */
+	default boolean isUnpaged() {
+		return !isPaged();
+	}
 
 	/**
 	 * Returns the page to be returned.
@@ -50,7 +79,16 @@ public interface Pageable {
 	 */
 	Sort getSort();
 
+	/**
+	 * Returns the current {@link Sort} or the given one if the current one is unsorted.
+	 * 
+	 * @param sort must not be {@literal null}.
+	 * @return
+	 */
 	default Sort getSortOr(Sort sort) {
+
+		Assert.notNull(sort, "Fallback Sort must not be null!");
+
 		return getSort().isSorted() ? getSort() : sort;
 	}
 
@@ -82,47 +120,4 @@ public interface Pageable {
 	 * @return
 	 */
 	boolean hasPrevious();
-
-	public static Pageable NONE = new Pageable() {
-
-		@Override
-		public Pageable previousOrFirst() {
-			return this;
-		}
-
-		@Override
-		public Pageable next() {
-			return this;
-		}
-
-		@Override
-		public boolean hasPrevious() {
-			return false;
-		}
-
-		@Override
-		public Sort getSort() {
-			return Sort.unsorted();
-		}
-
-		@Override
-		public int getPageSize() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int getPageNumber() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public long getOffset() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Pageable first() {
-			return this;
-		}
-	};
 }

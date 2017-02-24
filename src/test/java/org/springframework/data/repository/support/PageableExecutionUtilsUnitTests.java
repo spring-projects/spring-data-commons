@@ -55,7 +55,7 @@ public class PageableExecutionUtilsUnitTests {
 	@Test // DATAMCNS-884
 	public void noPageableRequestDoesNotRequireTotal() {
 
-		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), Pageable.NONE, totalSupplierMock);
+		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), Pageable.unpaged(), totalSupplierMock);
 
 		assertThat(page).contains(1, 2, 3);
 		assertThat(page.getTotalElements()).isEqualTo(3L);
@@ -107,7 +107,7 @@ public class PageableExecutionUtilsUnitTests {
 	public void subsequentPageRequestWithoutResultRequiresRequireTotal() {
 
 		doReturn(7L).when(totalSupplierMock).getAsLong();
-		Page<Integer> page = PageableExecutionUtils.getPage(Collections.<Integer>emptyList(), PageRequest.of(5, 10),
+		Page<Integer> page = PageableExecutionUtils.getPage(Collections.<Integer> emptyList(), PageRequest.of(5, 10),
 				totalSupplierMock);
 
 		assertThat(page.getTotalElements()).isEqualTo(7L);

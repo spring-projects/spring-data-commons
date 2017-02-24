@@ -39,6 +39,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -95,7 +96,7 @@ public class CrudRepositoryInvokerUnitTests {
 
 		Method method = CrudRepository.class.getMethod("findAll");
 
-		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll(Pageable.unpaged());
 		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll(Sort.unsorted());
 	}
 
@@ -108,7 +109,7 @@ public class CrudRepositoryInvokerUnitTests {
 
 		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(Sort.unsorted());
 		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(PageRequest.of(0, 10));
-		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(Pageable.unpaged());
 	}
 
 	@Test // DATACMNS-589
@@ -118,7 +119,7 @@ public class CrudRepositoryInvokerUnitTests {
 
 		Method findAllWithPageable = CrudWithFindAllWithPageable.class.getMethod("findAll", Pageable.class);
 
-		getInvokerFor(repository, expectInvocationOf(findAllWithPageable)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(repository, expectInvocationOf(findAllWithPageable)).invokeFindAll(Pageable.unpaged());
 		getInvokerFor(repository, expectInvocationOf(findAllWithPageable)).invokeFindAll(PageRequest.of(0, 10));
 	}
 

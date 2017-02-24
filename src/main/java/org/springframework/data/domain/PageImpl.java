@@ -47,7 +47,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 
 		this.pageable = pageable;
 
-		Optional<Pageable> foo = Pageable.NONE == pageable ? Optional.empty() : Optional.of(pageable);
+		Optional<Pageable> foo = pageable.isPaged() ? Optional.of(pageable) : Optional.empty();
 
 		this.total = foo.filter(it -> !content.isEmpty())//
 				.filter(it -> it.getOffset() + it.getPageSize() > total)//
@@ -62,7 +62,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 * @param content must not be {@literal null}.
 	 */
 	public PageImpl(List<T> content) {
-		this(content, Pageable.NONE, null == content ? 0 : content.size());
+		this(content, Pageable.unpaged(), null == content ? 0 : content.size());
 	}
 
 	/*

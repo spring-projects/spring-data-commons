@@ -29,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
 import org.springframework.format.support.DefaultFormattingConversionService;
 
 /**
@@ -45,7 +46,7 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 		Method method = PagingAndSortingRepository.class.getMethod("findAll", Pageable.class);
 
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.unpaged());
 	}
 
 	@Test // DATACMNS-589
@@ -65,7 +66,7 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 		Method method = RepositoryWithRedeclaredFindAllWithPageable.class.getMethod("findAll", Pageable.class);
 
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.NONE);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.unpaged());
 	}
 
 	@Test // DATACMNS-589

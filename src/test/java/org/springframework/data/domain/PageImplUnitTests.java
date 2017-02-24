@@ -72,7 +72,7 @@ public class PageImplUnitTests {
 
 		assertThat(page.isFirst()).isTrue();
 		assertThat(page.hasPrevious()).isFalse();
-		assertThat(page.previousPageable()).isEqualTo(Pageable.NONE);
+		assertThat(page.previousPageable().isPaged()).isFalse();
 
 		assertThat(page.isLast()).isFalse();
 		assertThat(page.hasNext()).isTrue();
@@ -90,7 +90,7 @@ public class PageImplUnitTests {
 
 		assertThat(page.isLast()).isTrue();
 		assertThat(page.hasNext()).isFalse();
-		assertThat(page.nextPageable()).isEqualTo(Pageable.NONE);
+		assertThat(page.nextPageable().isPaged()).isFalse();
 	}
 
 	@Test
@@ -158,7 +158,7 @@ public class PageImplUnitTests {
 	@Test // DATACMNS-713
 	public void doesNotAdapttotalIfPageIsEmpty() {
 
-		assertThat(new PageImpl<>(Collections.<String>emptyList(), PageRequest.of(1, 10), 0).getTotalElements())
+		assertThat(new PageImpl<>(Collections.<String> emptyList(), PageRequest.of(1, 10), 0).getTotalElements())
 				.isEqualTo(0L);
 	}
 }

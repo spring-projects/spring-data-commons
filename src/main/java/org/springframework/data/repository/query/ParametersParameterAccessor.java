@@ -71,12 +71,12 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	public Pageable getPageable() {
 
 		if (!parameters.hasPageableParameter()) {
-			return Pageable.NONE;
+			return Pageable.unpaged();
 		}
 
 		Pageable pageable = (Pageable) values.get(parameters.getPageableIndex());
 
-		return pageable == null ? Pageable.NONE : pageable;
+		return pageable == null ? Pageable.unpaged() : pageable;
 	}
 
 	/*
