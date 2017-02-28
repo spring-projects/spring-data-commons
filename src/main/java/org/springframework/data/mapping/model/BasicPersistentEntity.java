@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -420,9 +420,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public PersistentPropertyAccessor getPropertyAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
-
 		Assert.isTrue(getType().isInstance(bean),
-				String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
+				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
 
 		return propertyAccessorFactory.getPropertyAccessor(this, bean);
 	}
@@ -435,7 +434,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public IdentifierAccessor getIdentifierAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
-		Assert.isTrue(getType().isInstance(bean), "Target bean is not of type of the persistent entity!");
+		Assert.isTrue(getType().isInstance(bean),
+				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
 
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : NullReturningIdentifierAccessor.INSTANCE;
 	}
