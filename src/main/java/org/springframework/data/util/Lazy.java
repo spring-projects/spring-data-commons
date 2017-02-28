@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,22 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
+
+import org.springframework.util.Assert;
 
 /**
  * Simple value type to delay the creation of an object using a {@link Supplier} returning the produced object for
- * subsequent lookups.
+ * subsequent lookups. Note, that no concurrency control is applied during the lookup of {@link #get()}, which means in
+ * concurrent access scenarios, the provided {@link Supplier} can be called multiple times.
  * 
  * @author Oliver Gierke
  * @since 2.0
  */
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class Lazy<T> {
+public class Lazy<T> implements Supplier<T> {
 
 	private final Supplier<T> supplier;
 	private Optional<T> value;
@@ -59,5 +63,31 @@ public class Lazy<T> {
 		}
 
 		return value.orElse(null);
+	}
+
+	/**
+	 * Creates a new {@link Lazy} with the given {@link Function} lazily applied to the current one.
+	 * 
+	 * @param function must not be {@literal null}.
+	 * @return
+	 */
+	public <S> Lazy<S> map(Function<T, S> function) {
+
+		Assert.notNull(function, "Function must not be null!");
+
+		return Lazy.of(() -> function.apply(get()));
+	}
+
+	/**
+	 * Creates a new {@link Lazy} with the given {@link Function} lazily applied to the current one.
+	 * 
+	 * @param function must not be {@literal null}.
+	 * @return
+	 */
+	public <S> Lazy<S> flatMap(Function<T, Lazy<S>> function) {
+
+		Assert.notNull(function, "Function must not be null!");
+
+		return Lazy.of(() -> function.apply(get()).get());
 	}
 }
