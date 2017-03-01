@@ -747,7 +747,7 @@ Spring Data provides an annotation `@DomainEvents` you can use on a method of yo
 ====
 [source, java]
 ----
-class AnAggreagteRoot {
+class AnAggregateRoot {
 
     @DomainEvents <1>
     Collection<Object> domainEvents() {
