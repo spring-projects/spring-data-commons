@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -262,8 +262,8 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		for (Class<?> filterClass : filterAttributes.getClassArray("value")) {
 			switch (filterType) {
 				case ANNOTATION:
-					Assert.isAssignable(Annotation.class, filterClass, "An error occured when processing a @ComponentScan "
-							+ "ANNOTATION type filter: ");
+					Assert.isAssignable(Annotation.class, filterClass,
+							"An error occured when processing a @ComponentScan " + "ANNOTATION type filter: ");
 					@SuppressWarnings("unchecked")
 					Class<Annotation> annoClass = (Class<Annotation>) filterClass;
 					typeFilters.add(new AnnotationTypeFilter(annoClass));
@@ -272,8 +272,8 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 					typeFilters.add(new AssignableTypeFilter(filterClass));
 					break;
 				case CUSTOM:
-					Assert.isAssignable(TypeFilter.class, filterClass, "An error occured when processing a @ComponentScan "
-							+ "CUSTOM type filter: ");
+					Assert.isAssignable(TypeFilter.class, filterClass,
+							"An error occured when processing a @ComponentScan " + "CUSTOM type filter: ");
 					typeFilters.add(BeanUtils.instantiateClass(filterClass, TypeFilter.class));
 					break;
 				default:
