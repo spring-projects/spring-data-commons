@@ -128,8 +128,7 @@ class RepositoryBeanDefinitionBuilder {
 			return beanName;
 		}
 
-		AbstractBeanDefinition beanDefinition = implementationDetector
-				.detectCustomImplementation(configuration.getImplementationClassName(), configuration.getBasePackages(), configuration.getConfigurationSource().getExcludeFilters());
+		AbstractBeanDefinition beanDefinition = implementationDetector.detectCustomImplementation(configuration);
 
 		if (null == beanDefinition) {
 			return null;
