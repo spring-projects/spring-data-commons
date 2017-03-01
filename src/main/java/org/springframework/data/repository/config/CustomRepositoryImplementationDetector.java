@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,11 +72,27 @@ public class CustomRepositoryImplementationDetector {
 	/**
 	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
 	 * 
+	 * @param configuration the {@link RepositoryConfiguration} to consider.
+	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found.
+	 */
+	public AbstractBeanDefinition detectCustomImplementation(RepositoryConfiguration<?> configuration) {
+
+		// TODO 2.0: Extract into dedicated interface for custom implementation lookup configuration.
+
+		return detectCustomImplementation(configuration.getImplementationClassName(), //
+				configuration.getBasePackages(), //
+				configuration.getExcludeFilters());
+	}
+
+	/**
+	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
+	 * 
 	 * @param className must not be {@literal null}.
 	 * @param basePackages must not be {@literal null}.
-	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found
+	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found.
 	 */
-	public AbstractBeanDefinition detectCustomImplementation(String className, Iterable<String> basePackages, Iterable<TypeFilter> excludeFilters) {
+	public AbstractBeanDefinition detectCustomImplementation(String className, Iterable<String> basePackages,
+			Iterable<TypeFilter> excludeFilters) {
 
 		Assert.notNull(className, "ClassName must not be null!");
 		Assert.notNull(basePackages, "BasePackages must not be null!");
@@ -91,7 +107,8 @@ public class CustomRepositoryImplementationDetector {
 		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
 		provider.setMetadataReaderFactory(metadataReaderFactory);
 		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
-		for(TypeFilter excludeFilter : excludeFilters) {
+
+		for (TypeFilter excludeFilter : excludeFilters) {
 			provider.addExcludeFilter(excludeFilter);
 		}
 
@@ -114,8 +131,8 @@ public class CustomRepositoryImplementationDetector {
 			implementationClassNames.add(bean.getBeanClassName());
 		}
 
-		throw new IllegalStateException(String.format(
-				"Ambiguous custom implementations detected! Found %s but expected a single implementation!",
-				StringUtils.collectionToCommaDelimitedString(implementationClassNames)));
+		throw new IllegalStateException(
+				String.format("Ambiguous custom implementations detected! Found %s but expected a single implementation!",
+						StringUtils.collectionToCommaDelimitedString(implementationClassNames)));
 	}
 }
