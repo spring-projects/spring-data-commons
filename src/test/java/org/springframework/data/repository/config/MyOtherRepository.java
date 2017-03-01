@@ -18,6 +18,6 @@ package org.springframework.data.repository.config;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSourceUnitTests.Person;
 
-interface MyOtherRepository extends Repository<Person, Long> {
+interface MyOtherRepository extends Repository<Person, Long>, MyOtherRepositoryExtensions {
 
 }

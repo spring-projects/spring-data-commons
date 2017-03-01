@@ -42,9 +42,10 @@ import org.springframework.util.StringUtils;
 
 /**
  * Annotation based {@link RepositoryConfigurationSource}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Peter Rietzler
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -66,7 +67,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	/**
 	 * Creates a new {@link AnnotationRepositoryConfigurationSource} from the given {@link AnnotationMetadata} and
 	 * annotation.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param annotation must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
@@ -90,7 +91,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/**
 	 * Returns whether there's explicit configuration of include- or exclude filters.
-	 * 
+	 *
 	 * @param attributes must not be {@literal null}.
 	 * @return
 	 */
@@ -179,7 +180,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getExcludeFilters()
 	 */
 	@Override
-	protected Iterable<TypeFilter> getExcludeFilters() {
+	public Iterable<TypeFilter> getExcludeFilters() {
 		return parseFilters("excludeFilters");
 	}
 
@@ -197,7 +198,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/**
 	 * Returns the {@link String} attribute with the given name and defaults it to {@literal null} in case it's empty.
-	 * 
+	 *
 	 * @param attributeName
 	 * @return
 	 */
@@ -231,7 +232,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/**
 	 * Returns the {@link AnnotationAttributes} of the annotation configured.
-	 * 
+	 *
 	 * @return the attributes will never be {@literal null}.
 	 */
 	public AnnotationAttributes getAttributes() {
@@ -240,7 +241,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/**
 	 * Returns the {@link AnnotationMetadata} for the {@code @Enable} annotation that triggered the configuration.
-	 * 
+	 *
 	 * @return the enableAnnotationMetadata
 	 */
 	public AnnotationMetadata getEnableAnnotationMetadata() {
@@ -249,7 +250,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/**
 	 * Copy of {@code ComponentScanAnnotationParser#typeFiltersFor}.
-	 * 
+	 *
 	 * @param filterAttributes
 	 * @return
 	 */
@@ -328,7 +329,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	/**
 	 * Safely reads the {@code pattern} attribute from the given {@link AnnotationAttributes} and returns an empty list if
 	 * the attribute is not present.
-	 * 
+	 *
 	 * @param filterAttributes must not be {@literal null}.
 	 * @return
 	 */

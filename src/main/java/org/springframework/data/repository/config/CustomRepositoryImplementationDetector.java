@@ -29,6 +29,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -37,6 +38,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Peter Rietzler
  */
 public class CustomRepositoryImplementationDetector {
 
@@ -74,7 +76,7 @@ public class CustomRepositoryImplementationDetector {
 	 * @param basePackages must not be {@literal null}.
 	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found
 	 */
-	public AbstractBeanDefinition detectCustomImplementation(String className, Iterable<String> basePackages) {
+	public AbstractBeanDefinition detectCustomImplementation(String className, Iterable<String> basePackages, Iterable<TypeFilter> excludeFilters) {
 
 		Assert.notNull(className, "ClassName must not be null!");
 		Assert.notNull(basePackages, "BasePackages must not be null!");
@@ -89,6 +91,9 @@ public class CustomRepositoryImplementationDetector {
 		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
 		provider.setMetadataReaderFactory(metadataReaderFactory);
 		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
+		for(TypeFilter excludeFilter : excludeFilters) {
+			provider.addExcludeFilter(excludeFilter);
+		}
 
 		Set<BeanDefinition> definitions = new HashSet<BeanDefinition>();
 

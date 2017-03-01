@@ -37,6 +37,7 @@ import javax.enterprise.inject.spi.PassivationCapable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.data.repository.config.DefaultRepositoryConfiguration;
 import org.springframework.util.Assert;
@@ -49,6 +50,7 @@ import org.springframework.util.StringUtils;
  * @author Dirk Mahler
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Peter Rietzler
  */
 public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapable {
 
@@ -244,7 +246,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 		String className = getCustomImplementationClassName(repositoryType, cdiRepositoryConfiguration);
 		AbstractBeanDefinition beanDefinition = detector.detectCustomImplementation(className,
-				Collections.singleton(repositoryType.getPackage().getName()));
+				Collections.singleton(repositoryType.getPackage().getName()), Collections.<TypeFilter>emptySet());
 
 		if (beanDefinition == null) {
 			return null;
