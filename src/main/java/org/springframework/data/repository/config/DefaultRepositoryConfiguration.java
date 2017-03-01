@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.repository.config;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -26,8 +27,8 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
-public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSource> implements
-		RepositoryConfiguration<T> {
+public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSource>
+		implements RepositoryConfiguration<T> {
 
 	public static final String DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX = "Impl";
 	private static final Key DEFAULT_QUERY_LOOKUP_STRATEGY = Key.CREATE_IF_NOT_FOUND;
@@ -166,5 +167,14 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	@Override
 	public boolean isLazyInit() {
 		return definition.isLazyInit();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getExcludeFilters()
+	 */
+	@Override
+	public Iterable<TypeFilter> getExcludeFilters() {
+		return configurationSource.getExcludeFilters();
 	}
 }

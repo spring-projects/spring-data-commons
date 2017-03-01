@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -246,7 +246,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 		String className = getCustomImplementationClassName(repositoryType, cdiRepositoryConfiguration);
 		AbstractBeanDefinition beanDefinition = detector.detectCustomImplementation(className,
-				Collections.singleton(repositoryType.getPackage().getName()), Collections.<TypeFilter>emptySet());
+				Collections.singleton(repositoryType.getPackage().getName()), Collections.<TypeFilter> emptySet());
 
 		if (beanDefinition == null) {
 			return null;
@@ -255,8 +255,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		try {
 			return Class.forName(beanDefinition.getBeanClassName());
 		} catch (ClassNotFoundException e) {
-			throw new UnsatisfiedResolutionException(String.format("Unable to resolve class for '%s'",
-					beanDefinition.getBeanClassName()), e);
+			throw new UnsatisfiedResolutionException(
+					String.format("Unable to resolve class for '%s'", beanDefinition.getBeanClassName()), e);
 		}
 	}
 
@@ -367,9 +367,9 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
 
 		Bean<?> customImplementationBean = getCustomImplementationBean(repositoryType, beanManager, qualifiers);
-		Object customImplementation = customImplementationBean == null ? null : beanManager.getReference(
-				customImplementationBean, customImplementationBean.getBeanClass(),
-				beanManager.createCreationalContext(customImplementationBean));
+		Object customImplementation = customImplementationBean == null ? null
+				: beanManager.getReference(customImplementationBean, customImplementationBean.getBeanClass(),
+						beanManager.createCreationalContext(customImplementationBean));
 
 		return create(creationalContext, repositoryType, customImplementation);
 	}
@@ -393,8 +393,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 */
 	@Override
 	public String toString() {
-		return String
-				.format("CdiRepositoryBean: type='%s', qualifiers=%s", repositoryType.getName(), qualifiers.toString());
+		return String.format("CdiRepositoryBean: type='%s', qualifiers=%s", repositoryType.getName(),
+				qualifiers.toString());
 	}
 
 	static enum DefaultCdiRepositoryConfiguration implements CdiRepositoryConfiguration {
