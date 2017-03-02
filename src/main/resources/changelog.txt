@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.12.8.RELEASE (2017-03-02)
+----------------------------------------------
+* DATACMNS-999 - Improve resource extensive error message concatenation.
+* DATACMNS-989 - CustomRepositoryImplementationDetector ignores excludeFilters.
+* DATACMNS-985 - Remove references to single-argument assertion methods of Spring.
+* DATACMNS-979 - Release 1.12.8 (Hopper SR8).
+
+
 Changes in version 1.13.1.RELEASE (2017-03-02)
 ----------------------------------------------
 * DATACMNS-1000 - Typo in reference documentation about domain events.
