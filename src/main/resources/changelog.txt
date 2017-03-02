@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.1.RELEASE (2017-03-02)
+----------------------------------------------
+* DATACMNS-1000 - Typo in reference documentation about domain events.
+* DATACMNS-999 - Improve resource extensive error message concatenation.
+* DATACMNS-989 - CustomRepositoryImplementationDetector ignores excludeFilters.
+* DATACMNS-987 - SpringDataWebConfiguration now forces an application to have Jackson on the classpath if it uses JSON Path.
+* DATACMNS-985 - Remove references to single-argument assertion methods of Spring.
+* DATACMNS-980 - Release 1.13.1 (Ingalls SR1).
+
+
 Changes in version 1.12.7.RELEASE (2017-01-26)
 ----------------------------------------------
 * DATACMNS-967 - Default accessors on projection interfaces must not be considered input properties.
