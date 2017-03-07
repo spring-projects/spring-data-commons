@@ -18,7 +18,8 @@ package org.springframework.data.repository.query;
 import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.lang.reflect.Method;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.ReflectionUtils;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
@@ -78,7 +80,8 @@ public class QueryMethod {
 		if (hasParameterOfType(method, Pageable.class)) {
 
 			if (!isStreamQuery()) {
-				assertReturnTypeAssignable(method, Slice.class, Page.class, List.class);
+				final Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
+				assertReturnTypeAssignable(method, allowedPageableTypes.toArray(new Class<?>[allowedPageableTypes.size()]));
 			}
 
 			if (hasParameterOfType(method, Sort.class)) {
@@ -274,5 +277,22 @@ public class QueryMethod {
 		}
 
 		return method.getReturnType();
+	}
+
+	private static void assertReturnTypeAssignable(Method method, Class<?>... types) {
+
+		Assert.notNull(method, "Method must not be null!");
+		Assert.notEmpty(types, "Types must not be null or empty!");
+
+		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) ? returnType.getComponentType() : returnType;
+
+		for (Class<?> type : types) {
+			if (type.isAssignableFrom(returnType.getType())) {
+				return;
+			}
+		}
+
+		throw new IllegalStateException("Method has to have one of the following return types! " + Arrays.toString(types));
 	}
 }
