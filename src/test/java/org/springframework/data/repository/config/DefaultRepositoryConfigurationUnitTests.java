@@ -23,11 +23,15 @@ import lombok.Value;
 
 import java.util.Optional;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
@@ -35,6 +39,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * Unit tests for {@link DefaultRepositoryConfiguration}.
  * 
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryConfigurationUnitTests {
@@ -43,6 +48,14 @@ public class DefaultRepositoryConfigurationUnitTests {
 
 	BeanDefinition definition = new RootBeanDefinition("com.acme.MyRepository");
 	RepositoryConfigurationExtension extension = new SimplerRepositoryConfigurationExtension("factory", "module");
+
+	@Before
+	public void before() {
+
+		RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator(getClass().getClassLoader());
+		Answer<Object> answer = invocation -> generator.generateBeanName((BeanDefinition) invocation.getArguments()[0]);
+		when(source.generateBeanName(Mockito.any(BeanDefinition.class))).then(answer);
+	}
 
 	@Test
 	public void supportsBasicConfiguration() {
@@ -72,12 +85,24 @@ public class DefaultRepositoryConfigurationUnitTests {
 
 	private DefaultRepositoryConfiguration<RepositoryConfigurationSource> getConfiguration(
 			RepositoryConfigurationSource source) {
-		return new DefaultRepositoryConfiguration<>(source, definition, extension);
+		RootBeanDefinition beanDefinition = createBeanDefinition();
+		return new DefaultRepositoryConfiguration<>(source, beanDefinition, extension);
 	}
 
 	@Value
 	@EqualsAndHashCode(callSuper = true)
 	private static class SimplerRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 		String repositoryFactoryBeanClassName, modulePrefix;
+	}
+
+	private static RootBeanDefinition createBeanDefinition() {
+
+		RootBeanDefinition beanDefinition = new RootBeanDefinition("com.acme.MyRepository");
+
+		ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
+		constructorArgumentValues.addGenericArgumentValue(MyRepository.class);
+		beanDefinition.setConstructorArgumentValues(constructorArgumentValues);
+
+		return beanDefinition;
 	}
 }

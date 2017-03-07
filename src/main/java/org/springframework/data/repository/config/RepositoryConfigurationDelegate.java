@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
@@ -38,8 +37,9 @@ import org.springframework.util.Assert;
  * providing a configuration format specific {@link RepositoryConfigurationSource} (currently either XML or annotations
  * are supported). The actual registration can then be triggered for different {@link RepositoryConfigurationExtension}
  * s.
- * 
+ *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class RepositoryConfigurationDelegate {
 
@@ -53,7 +53,6 @@ public class RepositoryConfigurationDelegate {
 	private final RepositoryConfigurationSource configurationSource;
 	private final ResourceLoader resourceLoader;
 	private final Environment environment;
-	private final BeanNameGenerator beanNameGenerator;
 	private final boolean isXml;
 	private final boolean inMultiStoreMode;
 
@@ -75,10 +74,6 @@ public class RepositoryConfigurationDelegate {
 				"Configuration source must either be an Xml- or an AnnotationBasedConfigurationSource!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
-		RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
-		generator.setBeanClassLoader(resourceLoader.getClassLoader());
-
-		this.beanNameGenerator = generator;
 		this.configurationSource = configurationSource;
 		this.resourceLoader = resourceLoader;
 		this.environment = defaultEnvironment(environment, resourceLoader);
@@ -133,7 +128,7 @@ public class RepositoryConfigurationDelegate {
 			}
 
 			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
-			String beanName = beanNameGenerator.generateBeanName(beanDefinition, registry);
+			String beanName = configurationSource.generateBeanName(beanDefinition);
 
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName,

@@ -38,9 +38,12 @@ import javax.enterprise.inject.spi.PassivationCapable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.data.repository.config.DefaultRepositoryConfiguration;
+import org.springframework.data.repository.config.RepositoryBeanNameGenerator;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -52,6 +55,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Peter Rietzler
+ * @author Jens Schauder
  * @author Christoph Strobl
  */
 public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapable {
@@ -66,6 +70,10 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	private final String passivationId;
 
 	private transient T repoInstance;
+
+	private final AnnotationBeanNameGenerator annotationBeanNameGenerator = new AnnotationBeanNameGenerator();
+	private final RepositoryBeanNameGenerator beanNameGenerator =
+			new RepositoryBeanNameGenerator(getClass().getClassLoader());
 
 	/**
 	 * Creates a new {@link CdiRepositoryBean}.
@@ -247,8 +255,13 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 			CdiRepositoryConfiguration cdiRepositoryConfiguration, CustomRepositoryImplementationDetector detector) {
 
 		String className = getCustomImplementationClassName(repositoryType, cdiRepositoryConfiguration);
-		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(className,
-				Collections.singleton(repositoryType.getPackage().getName()), Collections.emptySet());
+		Optional<AbstractBeanDefinition>  beanDefinition = detector.detectCustomImplementation( //
+				className, //
+				getCustomImplementationBeanName(repositoryType), //
+				Collections.singleton(repositoryType.getPackage().getName()), //
+				Collections.emptySet(), //
+				beanNameGenerator::generateBeanName //
+		);
 
 		return beanDefinition.map(it -> {
 
@@ -259,6 +272,11 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 						String.format("Unable to resolve class for '%s'", it.getBeanClassName()), e);
 			}
 		});
+	}
+
+	private String getCustomImplementationBeanName(Class<?> repositoryType) {
+		return annotationBeanNameGenerator.generateBeanName(new AnnotatedGenericBeanDefinition(repositoryType), null)
+				+ DEFAULT_CONFIGURATION.getRepositoryImplementationPostfix();
 	}
 
 	private String getCustomImplementationClassName(Class<?> repositoryType,
@@ -356,8 +374,10 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * @param creationalContext will never be {@literal null}.
 	 * @param repositoryType will never be {@literal null}.
 	 * @return
+	 * @deprecated overide {@link #create(CreationalContext, Class, Object)} instead.
 	 */
-	private T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
+	@Deprecated
+	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
 
 		Optional<Bean<?>> customImplementationBean = getCustomImplementationBean(repositoryType, beanManager, qualifiers);
 		Optional<Object> customImplementation = customImplementationBean

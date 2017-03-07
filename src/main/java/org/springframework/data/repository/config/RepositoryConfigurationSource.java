@@ -29,6 +29,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Peter Rietzler
+ * @author Jens Schauder
  */
 public interface RepositoryConfigurationSource {
 
@@ -115,4 +116,13 @@ public interface RepositoryConfigurationSource {
 	 * @return must not be {@literal null}.
 	 */
 	Iterable<TypeFilter> getExcludeFilters();
+
+	/**
+	 * Returns a name for the beanDefinition.
+	 *
+	 * @param beanDefinition Must not be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
+	String generateBeanName(BeanDefinition beanDefinition);
 }

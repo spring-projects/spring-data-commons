@@ -124,8 +124,7 @@ class RepositoryBeanDefinitionBuilder {
 			return Optional.of(beanName);
 		}
 
-		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(
-				configuration.getImplementationClassName(), configuration.getBasePackages(), configuration.getExcludeFilters());
+		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(configuration);
 
 		return beanDefinition.map(it -> {
 

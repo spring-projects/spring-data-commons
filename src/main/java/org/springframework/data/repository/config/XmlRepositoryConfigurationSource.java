@@ -37,6 +37,7 @@ import org.w3c.dom.Element;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Peter Rietzler
+ * @author Jens Schauder
  */
 public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -63,7 +64,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 */
 	public XmlRepositoryConfigurationSource(Element element, ParserContext context, Environment environment) {
 
-		super(environment);
+		super(environment, context.getReaderContext().getBeanClassLoader());
 
 		Assert.notNull(element, "Element must not be null!");
 		Assert.notNull(context, "Context must not be null!");
@@ -128,7 +129,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return excludeFilters;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getIncludeFilters()
 	 */
