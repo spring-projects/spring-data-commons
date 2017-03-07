@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package org.springframework.data.mapping;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -60,7 +62,7 @@ public class SimpleTypeHolderUnitTests {
 
 		SimpleTypeHolder holder = new SimpleTypeHolder(new HashSet<Class<?>>(), false);
 
-		assertThat(holder.isSimpleType(String.class), is(false));
+		assertThat(holder.isSimpleType(UUID.class), is(false));
 	}
 
 	@Test
@@ -102,6 +104,14 @@ public class SimpleTypeHolderUnitTests {
 
 		SimpleTypeHolder holder = new SimpleTypeHolder();
 		assertThat(holder.isSimpleType(ComplexEnum.FOO.getClass()), is(true));
+	}
+
+	@Test // DATACMNS-1006
+	public void considersJavaLangTypesSimple() {
+
+		SimpleTypeHolder holder = new SimpleTypeHolder();
+
+		assertThat(holder.isSimpleType(Type.class), is(true));
 	}
 
 	enum SimpleEnum {
