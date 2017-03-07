@@ -123,6 +123,10 @@ public class SimpleTypeHolder {
 			return true;
 		}
 
+		if (type.getName().startsWith("java.lang")) {
+			return true;
+		}
+
 		for (Class<?> clazz : simpleTypes) {
 			if (clazz.isAssignableFrom(type)) {
 				simpleTypes.add(type);
