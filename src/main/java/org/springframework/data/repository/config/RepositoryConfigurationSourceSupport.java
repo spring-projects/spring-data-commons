@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,26 +28,32 @@ import org.springframework.util.Assert;
 
 /**
  * Base class to implement {@link RepositoryConfigurationSource}s.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Peter Rietzler
+ * @author Jens Schauder
  */
 public abstract class RepositoryConfigurationSourceSupport implements RepositoryConfigurationSource {
 
 	protected static final String DEFAULT_REPOSITORY_IMPL_POSTFIX = "Impl";
 
 	private final Environment environment;
+	private final RepositoryBeanNameGenerator beanNameGenerator;
 
 	/**
 	 * Creates a new {@link RepositoryConfigurationSourceSupport} with the given environment.
-	 * 
+	 *
 	 * @param environment must not be {@literal null}.
+	 * @param classLoader must not be {@literal null}.
 	 */
-	public RepositoryConfigurationSourceSupport(Environment environment) {
+	public RepositoryConfigurationSourceSupport(Environment environment, ClassLoader classLoader) {
 
 		Assert.notNull(environment, "Environment must not be null!");
+		Assert.notNull(classLoader, "ClassLoader must not be null!");
+
 		this.environment = environment;
+		this.beanNameGenerator = new RepositoryBeanNameGenerator(classLoader);
 	}
 
 	/* 
@@ -78,7 +84,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	/**
 	 * Return the {@link TypeFilter}s to define which types to exclude when scanning for repositories. Default
 	 * implementation returns an empty collection.
-	 * 
+	 *
 	 * @return must not be {@literal null}.
 	 */
 	public Iterable<TypeFilter> getExcludeFilters() {
@@ -88,7 +94,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	/**
 	 * Return the {@link TypeFilter}s to define which types to include when scanning for repositories. Default
 	 * implementation returns an empty collection.
-	 * 
+	 *
 	 * @return must not be {@literal null}.
 	 */
 	protected Iterable<TypeFilter> getIncludeFilters() {
@@ -98,10 +104,19 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	/**
 	 * Returns whether we should consider nested repositories, i.e. repository interface definitions nested in other
 	 * classes.
-	 * 
+	 *
 	 * @return {@literal true} if the container should look for nested repository interface definitions.
 	 */
 	public boolean shouldConsiderNestedRepositories() {
 		return false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBeanNameGenerator()
+	 */
+	@Override
+	public String generateBeanName(BeanDefinition beanDefinition) {
+		return beanNameGenerator.generateBeanName(beanDefinition);
 	}
 }

@@ -649,6 +649,37 @@ If you use namespace configuration, the repository infrastructure tries to autod
 
 The first configuration example will try to look up a class `com.acme.repository.UserRepositoryImpl` to act as custom repository implementation, whereas the second example will try to lookup `com.acme.repository.UserRepositoryFooBar`.
 
+===== Resolution of ambiguity
+
+If multiple implementations with matching class names get found in different packages Spring Data uses the bean names to identify the correct one to use.
+
+Given the following two custom implementations for the `UserRepository` introduced above the first implementation will get picked. Its bean name is `userRepositoryImpl` matches that of the repository interface (`userRepository`) plus the postfix `Impl`.
+
+.Resolution of amibiguous implementations
+====
+[source, java]
+----
+package com.acme.impl.one;
+
+class UserRepositoryImpl implements UserRepositoryCustom {
+
+  // Your custom implementation
+}
+----
+[source, java]
+----
+package com.acme.impl.two;
+
+@Component("specialCustomImpl")
+class UserRepositoryImpl implements UserRepositoryCustom {
+
+  // Your custom implementation
+}
+----
+====
+
+If you annotate the `UserRepository` interface with `Component("specialCustom")' the bean name plus `Impl` matches that of the second Repository and it will be picked instead of the first one.
+
 ===== Manual wiring
 
 The approach just shown works well if your custom implementation uses annotation-based configuration and autowiring only, as it will be treated as any other Spring bean. If your custom implementation bean needs special wiring, you simply declare the bean and name it after the conventions just described. The infrastructure will then refer to the manually defined bean definition by name instead of creating one itself.

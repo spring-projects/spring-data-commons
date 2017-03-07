@@ -16,6 +16,7 @@
 package org.springframework.data.repository.cdi;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -23,17 +24,21 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Named;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 
 /**
  * Unit tests for {@link CdiRepositoryBean}.
@@ -69,8 +74,8 @@ public class CdiRepositoryBeanUnitTests {
 	@Test
 	public void returnsBasicMetadata() {
 
-		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS,
-				SampleRepository.class, beanManager);
+		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class,
+				beanManager);
 
 		assertThat(bean.getBeanClass()).isEqualTo(SampleRepository.class);
 		assertThat(bean.getName()).isEqualTo(SampleRepository.class.getName());
@@ -80,8 +85,8 @@ public class CdiRepositoryBeanUnitTests {
 	@Test
 	public void returnsAllImplementedTypes() {
 
-		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS,
-				SampleRepository.class, beanManager);
+		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class,
+				beanManager);
 
 		Set<Type> types = bean.getTypes();
 		assertThat(types).containsExactlyInAnyOrder(SampleRepository.class, Repository.class);
@@ -91,8 +96,8 @@ public class CdiRepositoryBeanUnitTests {
 	@SuppressWarnings("unchecked")
 	public void detectsStereotypes() {
 
-		DummyCdiRepositoryBean<StereotypedSampleRepository> bean = new DummyCdiRepositoryBean<>(
-				NO_ANNOTATIONS, StereotypedSampleRepository.class, beanManager);
+		DummyCdiRepositoryBean<StereotypedSampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS,
+				StereotypedSampleRepository.class, beanManager);
 
 		assertThat(bean.getStereotypes()).containsExactly(StereotypeAnnotation.class);
 	}
@@ -101,22 +106,57 @@ public class CdiRepositoryBeanUnitTests {
 	@SuppressWarnings("rawtypes")
 	public void scopeDefaultsToApplicationScoped() {
 
-		Bean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class,
-				beanManager);
+		Bean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class, beanManager);
 		assertThat(bean.getScope()).isEqualTo(ApplicationScoped.class);
 	}
 
 	@Test // DATACMNS-322
 	public void createsPassivationId() {
 
-		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(SINGLE_ANNOTATION,
-				SampleRepository.class, beanManager);
+		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>( //
+				SINGLE_ANNOTATION, //
+				SampleRepository.class, //
+				beanManager //
+		);
 		assertThat(bean.getId()).isEqualTo(PASSIVATION_ID);
+	}
+
+	@Test // DATACMNS-764
+	public void passesCorrectBeanNameToTheImplementationDetector() {
+
+		CustomRepositoryImplementationDetector detector = mock(CustomRepositoryImplementationDetector.class);
+
+		CdiRepositoryBean<SampleRepository> bean = new CdiRepositoryBean<SampleRepository>( //
+				SINGLE_ANNOTATION, //
+				SampleRepository.class, //
+				beanManager, //
+				Optional.of(detector) //
+		) {
+
+			@Override
+			protected SampleRepository create( //
+					CreationalContext<SampleRepository> creationalContext, //
+					Class<SampleRepository> repositoryType, //
+					Optional<Object> customImplementation //
+			) {
+				return null;
+			}
+		};
+
+		bean.create(mock(CreationalContext.class), SampleRepository.class);
+
+		verify(detector).detectCustomImplementation( //
+				eq("CdiRepositoryBeanUnitTests.SampleRepositoryImpl"), //
+				eq("namedRepositoryImpl"), //
+				anySet(), //
+				anySet(), //
+				Mockito.any(Function.class) //
+		);
 	}
 
 	static class DummyCdiRepositoryBean<T> extends CdiRepositoryBean<T> {
 
-		public DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager) {
+		DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager) {
 			super(qualifiers, repositoryType, beanManager);
 		}
 
@@ -127,6 +167,7 @@ public class CdiRepositoryBeanUnitTests {
 		}
 	}
 
+	@Named("namedRepository")
 	static interface SampleRepository extends Repository<Object, Serializable> {
 
 	}

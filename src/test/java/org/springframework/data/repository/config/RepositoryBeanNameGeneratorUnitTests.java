@@ -32,30 +32,27 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
  * Unit tests for {@link RepositoryBeanNameGenerator}.
  * 
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class RepositoryBeanNameGeneratorUnitTests {
 
-	BeanNameGenerator generator;
+	RepositoryBeanNameGenerator generator;
 	BeanDefinitionRegistry registry;
 
 	@Before
 	public void setUp() {
 
-		RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator();
-		generator.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
-
-		this.generator = generator;
-		this.registry = new DefaultListableBeanFactory();
+		this.generator = new RepositoryBeanNameGenerator(Thread.currentThread().getContextClassLoader());
 	}
 
 	@Test
 	public void usesPlainClassNameIfNoAnnotationPresent() {
-		assertThat(generator.generateBeanName(getBeanDefinitionFor(MyRepository.class), registry)).isEqualTo("myRepository");
+		assertThat(generator.generateBeanName(getBeanDefinitionFor(MyRepository.class))).isEqualTo("myRepository");
 	}
 
 	@Test
 	public void usesAnnotationValueIfAnnotationPresent() {
-		assertThat(generator.generateBeanName(getBeanDefinitionFor(AnnotatedInterface.class), registry)).isEqualTo("specialName");
+		assertThat(generator.generateBeanName(getBeanDefinitionFor(AnnotatedInterface.class))).isEqualTo("specialName");
 	}
 
 	private BeanDefinition getBeanDefinitionFor(Class<?> repositoryInterface) {

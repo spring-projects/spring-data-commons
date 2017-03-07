@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,55 +15,68 @@
  */
 package org.springframework.data.repository.config;
 
-import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
+import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.util.ClassUtils;
 
 /**
  * Special {@link BeanNameGenerator} to create bean names for Spring Data repositories. Will delegate to an
  * {@link AnnotationBeanNameGenerator} but let the delegate work with a customized {@link BeanDefinition} to make sure
  * the repository interface is inspected and not the actual bean definition class.
- * 
+ *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
-public class RepositoryBeanNameGenerator implements BeanNameGenerator, BeanClassLoaderAware {
+public class RepositoryBeanNameGenerator {
 
 	private static final BeanNameGenerator DELEGATE = new AnnotationBeanNameGenerator();
 
-	private ClassLoader beanClassLoader;
+	private final ClassLoader beanClassLoader;
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.beanClassLoader = classLoader;
+	public RepositoryBeanNameGenerator(ClassLoader beanClassLoader) {
+		this.beanClassLoader = beanClassLoader;
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.support.BeanNameGenerator#generateBeanName(org.springframework.beans.factory.config.BeanDefinition, org.springframework.beans.factory.support.BeanDefinitionRegistry)
+	/**
+	 * Generate a bean name for the given bean definition.
+	 *
+	 * @param definition the bean definition to generate a name for
+	 * @return the generated bean name
+	 * @since 2.0
 	 */
-	public String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
+	public String generateBeanName(BeanDefinition definition) {
 
 		AnnotatedBeanDefinition beanDefinition = new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
-		return DELEGATE.generateBeanName(beanDefinition, registry);
+		return DELEGATE.generateBeanName(beanDefinition, null);
 	}
 
 	/**
 	 * Returns the type configured for the {@code repositoryInterface} property of the given bean definition. Uses a
 	 * potential {@link Class} being configured as is or tries to load a class with the given value's {@link #toString()}
 	 * representation.
-	 * 
+	 *
 	 * @param beanDefinition
 	 * @return
 	 */
 	private Class<?> getRepositoryInterfaceFrom(BeanDefinition beanDefinition) {
+
+		if (beanDefinition instanceof ScannedGenericBeanDefinition) {
+			try {
+				return ((ScannedGenericBeanDefinition) beanDefinition).resolveBeanClass(beanClassLoader);
+			} catch (ClassNotFoundException e) {
+				throw new IllegalStateException("Could not resolve bean class.", e);
+			}
+		} else {
+			return getRepositoryInterfaceFromFactory(beanDefinition);
+		}
+	}
+
+	private Class<?> getRepositoryInterfaceFromFactory(BeanDefinition beanDefinition) {
 
 		Object value = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, Class.class).getValue();
 

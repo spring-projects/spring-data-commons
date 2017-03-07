@@ -28,8 +28,9 @@ import org.springframework.util.StringUtils;
 
 /**
  * Default implementation of {@link RepositoryConfiguration}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 @RequiredArgsConstructor
 public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSource>
@@ -104,7 +105,8 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationBeanName()
 	 */
 	public String getImplementationBeanName() {
-		return StringUtils.uncapitalize(getImplementationClassName());
+		return configurationSource.generateBeanName(definition)
+				+ configurationSource.getRepositoryImplementationPostfix().orElse("Impl");
 	}
 
 	/* 

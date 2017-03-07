@@ -47,6 +47,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Peter Rietzler
+ * @author Jens Schauder
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -77,7 +78,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
 			ResourceLoader resourceLoader, Environment environment) {
 
-		super(environment);
+		super(environment, resourceLoader.getClassLoader());
 
 		Assert.notNull(metadata, "Metadata must not be null!");
 		Assert.notNull(annotation, "Annotation must not be null!");
