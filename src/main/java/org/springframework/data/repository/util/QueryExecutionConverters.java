@@ -15,10 +15,13 @@
  */
 package org.springframework.data.repository.util;
 
+import javaslang.collection.Seq;
 import javaslang.collection.Traversable;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
@@ -27,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -75,11 +79,16 @@ public abstract class QueryExecutionConverters {
 
 	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<WrapperType>();
 	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
+	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<Class<?>>();
 
 	static {
 
 		WRAPPER_TYPES.add(WrapperType.singleValue(Future.class));
 		WRAPPER_TYPES.add(WrapperType.singleValue(ListenableFuture.class));
+
+		ALLOWED_PAGEABLE_TYPES.add(Slice.class);
+		ALLOWED_PAGEABLE_TYPES.add(Page.class);
+		ALLOWED_PAGEABLE_TYPES.add(List.class);
 
 		if (GUAVA_PRESENT) {
 			WRAPPER_TYPES.add(NullableWrapperToGuavaOptionalConverter.getWrapperType());
@@ -106,6 +115,8 @@ public abstract class QueryExecutionConverters {
 			WRAPPER_TYPES.add(JavaslangCollections.ToJavaConverter.INSTANCE.getWrapperType());
 
 			UNWRAPPERS.add(JavaslangOptionUnwrapper.INSTANCE);
+
+			ALLOWED_PAGEABLE_TYPES.add(Seq.class);
 		}
 	}
 
@@ -139,6 +150,10 @@ public abstract class QueryExecutionConverters {
 		}
 
 		return false;
+	}
+
+	public static Set<Class<?>> getAllowedPageableTypes() {
+		return Collections.unmodifiableSet(ALLOWED_PAGEABLE_TYPES);
 	}
 
 	/**

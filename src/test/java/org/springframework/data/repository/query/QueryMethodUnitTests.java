@@ -211,6 +211,15 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(false));
 	}
 
+	@Test // DATACMNS-1005
+	public void doesNotRejectSeqForPagination() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("returnsSeq", Pageable.class);
+
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -248,6 +257,9 @@ public class QueryMethodUnitTests {
 		Future<List<User>> returnsFutureForEntityCollection();
 
 		Seq<User> returnsSeq();
+
+		// DATACMNS-1005
+		Seq<User> returnsSeq(Pageable pageable);
 
 		Future<Seq<User>> returnsFutureOfSeq();
 

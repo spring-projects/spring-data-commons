@@ -21,7 +21,10 @@ import static org.springframework.data.repository.util.QueryExecutionConverters.
 
 import javaslang.collection.HashMap;
 import javaslang.collection.HashSet;
+import javaslang.collection.Seq;
 import javaslang.collection.Traversable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import scala.Option;
 
 import java.lang.reflect.Method;
@@ -217,6 +220,16 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(unwrap(javaslangList(1, 2, 3)), is(instanceOf(List.class)));
 		assertThat(unwrap(javaslangSet(1, 2, 3)), is(instanceOf(Set.class)));
 		assertThat(unwrap(javaslangMap("key", "value")), is(instanceOf(Map.class)));
+	}
+
+	@Test // DATACMNS-1005
+	public void registersAllowedPageabletypes() {
+
+		final Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
+		assertThat(allowedPageableTypes, hasItem(Page.class));
+		assertThat(allowedPageableTypes, hasItem(Slice.class));
+		assertThat(allowedPageableTypes, hasItem(List.class));
+		assertThat(allowedPageableTypes, hasItem(Seq.class));
 	}
 
 	@SuppressWarnings("unchecked")
