@@ -63,7 +63,8 @@ public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 
 	@Test // DATACMNS-989
 	public void duplicateImplementationsMayBeExcludedViaFilters() {
-		assertThat(context.getBean(MyOtherRepository.class).getImplementationId(), is(MyOtherRepositoryImpl.class.getName()));
+		assertThat(context.getBean(MyOtherRepository.class).getImplementationId())
+				.isEqualTo(MyOtherRepositoryImpl.class.getName());
 	}
 
 	@Test // DATACMNS-47

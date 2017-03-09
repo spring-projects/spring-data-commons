@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2016 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -194,7 +194,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsSeq");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
 
 	/**
@@ -206,7 +206,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsFutureOfSeq");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsFutureOfOption");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(false));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isFalse();
 	}
 
 	@Test // DATACMNS-1005
@@ -227,7 +227,7 @@ public class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsSeq", Pageable.class);
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery(), is(true));
+		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
 
 	interface SampleRepository extends Repository<User, Serializable> {

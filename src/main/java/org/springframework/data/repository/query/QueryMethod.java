@@ -91,8 +91,8 @@ public class QueryMethod {
 			}
 		}
 
-		Assert.notNull(this.parameters, () ->
-				String.format("Parameters extracted from method '%s' must not be null!", method.getName()));
+		Assert.notNull(this.parameters,
+				() -> String.format("Parameters extracted from method '%s' must not be null!", method.getName()));
 
 		if (isPageQuery()) {
 			Assert.isTrue(this.parameters.hasPageableParameter(),
@@ -280,7 +280,7 @@ public class QueryMethod {
 		Assert.notEmpty(types, "Types must not be null or empty!");
 
 		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
-		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) ? returnType.getComponentType()
+		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) ? returnType.getRequiredComponentType()
 				: returnType;
 
 		for (Class<?> type : types) {
