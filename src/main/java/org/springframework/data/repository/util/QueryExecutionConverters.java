@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import javaslang.collection.Traversable;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Slice;
 import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
@@ -41,6 +39,8 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -60,10 +60,13 @@ import com.google.common.base.Optional;
  * <li>{@code java.util.concurrent.CompletableFuture}</li>
  * <li>{@code org.springframework.util.concurrent.ListenableFuture<}</li>
  * <li>{@code javaslang.control.Option} - as of 1.13</li>
+ * <li>{@code javaslang.collection.Seq}, {@code javaslang.collection.Map}, {@code javaslang.collection.Set} - as of
+ * 1.13</li>
  * </ul>
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Maciek Opała
  * @since 1.8
  */
 public abstract class QueryExecutionConverters {
@@ -152,6 +155,12 @@ public abstract class QueryExecutionConverters {
 		return false;
 	}
 
+	/**
+	 * Returns the types that are supported on paginating query methods. Will include custom collection types of e.g.
+	 * Javaslang.
+	 * 
+	 * @return
+	 */
 	public static Set<Class<?>> getAllowedPageableTypes() {
 		return Collections.unmodifiableSet(ALLOWED_PAGEABLE_TYPES);
 	}
