@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.util;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.repository.util.QueryExecutionConverters.*;
 
@@ -23,8 +23,6 @@ import javaslang.collection.HashMap;
 import javaslang.collection.HashSet;
 import javaslang.collection.Seq;
 import javaslang.collection.Traversable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Slice;
 import scala.Option;
 
 import java.lang.reflect.Method;
@@ -36,9 +34,12 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -49,6 +50,7 @@ import com.google.common.base.Optional;
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Maciek Opała
  */
 public class QueryExecutionConvertersUnitTests {
 
@@ -225,11 +227,8 @@ public class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-1005
 	public void registersAllowedPageabletypes() {
 
-		final Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
-		assertThat(allowedPageableTypes, hasItem(Page.class));
-		assertThat(allowedPageableTypes, hasItem(Slice.class));
-		assertThat(allowedPageableTypes, hasItem(List.class));
-		assertThat(allowedPageableTypes, hasItem(Seq.class));
+		Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
+		assertThat(allowedPageableTypes, Matchers.<Class<?>> hasItems(Page.class, Slice.class, List.class, Seq.class));
 	}
 
 	@SuppressWarnings("unchecked")
