@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.springframework.data.repository.query;
 import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -40,6 +39,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Maciek Opała
  */
 public class QueryMethod {
 
@@ -80,8 +80,7 @@ public class QueryMethod {
 		if (hasParameterOfType(method, Pageable.class)) {
 
 			if (!isStreamQuery()) {
-				final Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
-				assertReturnTypeAssignable(method, allowedPageableTypes.toArray(new Class<?>[allowedPageableTypes.size()]));
+				assertReturnTypeAssignable(method, QueryExecutionConverters.getAllowedPageableTypes());
 			}
 
 			if (hasParameterOfType(method, Sort.class)) {
@@ -90,7 +89,8 @@ public class QueryMethod {
 			}
 		}
 
-		Assert.notNull(this.parameters, String.format("Parameters extracted from method '%s' must not be null!", method.getName()));
+		Assert.notNull(this.parameters,
+				String.format("Parameters extracted from method '%s' must not be null!", method.getName()));
 
 		if (isPageQuery()) {
 			Assert.isTrue(this.parameters.hasPageableParameter(),
@@ -279,13 +279,14 @@ public class QueryMethod {
 		return method.getReturnType();
 	}
 
-	private static void assertReturnTypeAssignable(Method method, Class<?>... types) {
+	private static void assertReturnTypeAssignable(Method method, Set<Class<?>> types) {
 
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notEmpty(types, "Types must not be null or empty!");
 
 		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
-		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) ? returnType.getComponentType() : returnType;
+		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) ? returnType.getComponentType()
+				: returnType;
 
 		for (Class<?> type : types) {
 			if (type.isAssignableFrom(returnType.getType())) {
@@ -293,6 +294,6 @@ public class QueryMethod {
 			}
 		}
 
-		throw new IllegalStateException("Method has to have one of the following return types! " + Arrays.toString(types));
+		throw new IllegalStateException("Method has to have one of the following return types! " + types.toString());
 	}
 }

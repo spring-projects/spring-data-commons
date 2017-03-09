@@ -46,6 +46,7 @@ import org.springframework.data.util.Version;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Maciek Opała
  */
 public class QueryMethodUnitTests {
 
