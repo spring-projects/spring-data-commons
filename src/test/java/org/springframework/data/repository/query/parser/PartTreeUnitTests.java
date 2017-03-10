@@ -221,6 +221,16 @@ public class PartTreeUnitTests {
 		assertThat(parts, is(hasSize(1)));
 	}
 
+	@Test
+	public void parsesEmptyKeywordCorrectly() {
+		assertType(asList("friendsIsEmpty", "friendsEmpty"), IS_EMPTY, "friends", 0, false);
+	}
+
+	@Test
+	public void parsesNotEmptyKeywordCorrectly() {
+		assertType(asList("friendsIsNotEmpty", "friendsNotEmpty"), IS_NOT_EMPTY, "friends", 0, false);
+	}
+
 	@Test // DATACMNS-94
 	public void parsesExistsKeywordCorrectly() {
 		assertType(asList("lastnameExists"), EXISTS, "lastname", 0, false);
@@ -651,6 +661,7 @@ public class PartTreeUnitTests {
 		double[] location;
 		boolean active;
 		Date birthday;
+		List<User> friends;
 	}
 
 	class Organization {

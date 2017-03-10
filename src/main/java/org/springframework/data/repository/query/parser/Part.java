@@ -188,13 +188,15 @@ public class Part {
 				"IsNotContaining", "NotContaining", "NotContains"), CONTAINING("IsContaining", "Containing", "Contains"), NOT_IN(
 				"IsNotIn", "NotIn"), IN("IsIn", "In"), NEAR("IsNear", "Near"), WITHIN("IsWithin", "Within"), REGEX(
 				"MatchesRegex", "Matches", "Regex"), EXISTS(0, "Exists"), TRUE(0, "IsTrue", "True"), FALSE(0, "IsFalse",
-				"False"), NEGATING_SIMPLE_PROPERTY("IsNot", "Not"), SIMPLE_PROPERTY("Is", "Equals");
+				"False"), NEGATING_SIMPLE_PROPERTY("IsNot", "Not"), SIMPLE_PROPERTY("Is", "Equals"), IS_NOT_EMPTY(0, "IsNotEmpty",
+				"NotEmpty"), IS_EMPTY(0, "IsEmpty", "Empty");
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)
 		private static final List<Part.Type> ALL = Arrays.asList(IS_NOT_NULL, IS_NULL, BETWEEN, LESS_THAN, LESS_THAN_EQUAL,
-				GREATER_THAN, GREATER_THAN_EQUAL, BEFORE, AFTER, NOT_LIKE, LIKE, STARTING_WITH, ENDING_WITH, NOT_CONTAINING,
-				CONTAINING, NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, TRUE, FALSE, NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
+				GREATER_THAN, GREATER_THAN_EQUAL, BEFORE, AFTER, NOT_LIKE, LIKE, STARTING_WITH, ENDING_WITH, IS_NOT_EMPTY,
+				IS_EMPTY, NOT_CONTAINING, CONTAINING, NOT_IN, IN, NEAR, WITHIN, REGEX, EXISTS, TRUE, FALSE,
+				NEGATING_SIMPLE_PROPERTY, SIMPLE_PROPERTY);
 
 		public static final Collection<String> ALL_KEYWORDS;
 
