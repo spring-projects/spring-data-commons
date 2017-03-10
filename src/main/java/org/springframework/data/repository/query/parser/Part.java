@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Martin Baumgartner
+ * @author Michael Cramer
  */
 public class Part {
 

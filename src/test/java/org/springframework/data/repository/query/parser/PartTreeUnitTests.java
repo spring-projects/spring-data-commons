@@ -45,6 +45,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * @author Martin Baumgartner
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Michael Cramer
  */
 public class PartTreeUnitTests {
 
@@ -221,12 +222,12 @@ public class PartTreeUnitTests {
 		assertThat(parts, is(hasSize(1)));
 	}
 
-	@Test
+	@Test // DATACMNS-1007
 	public void parsesEmptyKeywordCorrectly() {
 		assertType(asList("friendsIsEmpty", "friendsEmpty"), IS_EMPTY, "friends", 0, false);
 	}
 
-	@Test
+	@Test // DATACMNS-1007
 	public void parsesNotEmptyKeywordCorrectly() {
 		assertType(asList("friendsIsNotEmpty", "friendsNotEmpty"), IS_NOT_EMPTY, "friends", 0, false);
 	}
