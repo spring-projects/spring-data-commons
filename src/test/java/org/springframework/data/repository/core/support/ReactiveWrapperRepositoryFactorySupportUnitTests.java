@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.springframework.data.repository.core.support;
 
 import static org.mockito.Mockito.*;
 
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import reactor.core.publisher.Mono;
 import rx.Single;
 
@@ -36,6 +38,7 @@ import org.springframework.data.repository.reactive.ReactiveSortingRepository;
  * Unit tests for {@link RepositoryFactorySupport} using reactive wrapper types.
  * 
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class ReactiveWrapperRepositoryFactorySupportUnitTests {
@@ -63,10 +66,10 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 	}
 
 	@Test // DATACMNS-836
-	public void callsMethodOnBaseImplementationWithExactArguments() {
+	public void callsRxJava1MethodOnBaseImplementationWithExactArguments() {
 
 		Serializable id = 1L;
-		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
+		RxJava1ConvertingRepository repository = factory.getRepository(RxJava1ConvertingRepository.class);
 		repository.exists(id);
 		repository.exists((Long) id);
 
@@ -75,23 +78,53 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void callsMethodOnBaseImplementationWithTypeConversion() {
+	public void callsRxJava1MethodOnBaseImplementationWithTypeConversion() {
 
 		Single<Long> ids = Single.just(1L);
 
-		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
+		RxJava1ConvertingRepository repository = factory.getRepository(RxJava1ConvertingRepository.class);
 		repository.exists(ids);
 
 		verify(backingRepo, times(1)).exists(any(Mono.class));
 	}
 
-	interface ConvertingRepository extends Repository<Object, Long> {
+	@Test // DATACMNS-988
+	public void callsRxJava2MethodOnBaseImplementationWithExactArguments() {
+
+		Long id = 1L;
+		RxJava2ConvertingRepository repository = factory.getRepository(RxJava2ConvertingRepository.class);
+		repository.findOne(id);
+
+		verify(backingRepo, times(1)).findOne(id);
+	}
+
+	@Test // DATACMNS-988
+	public void callsRxJava2MethodOnBaseImplementationWithTypeConversion() {
+
+		Serializable id = 1L;
+
+		RxJava2ConvertingRepository repository = factory.getRepository(RxJava2ConvertingRepository.class);
+		repository.delete(id);
+
+		verify(backingRepo, times(1)).delete(id);
+	}
+
+	interface RxJava1ConvertingRepository extends Repository<Object, Long> {
 
 		Single<Boolean> exists(Single<Long> id);
 
 		Single<Boolean> exists(Serializable id);
 
 		Single<Boolean> exists(Long id);
+	}
+
+	interface RxJava2ConvertingRepository extends Repository<Object, Long> {
+
+		Maybe<Boolean> findOne(Serializable id);
+
+		Single<Boolean> exists(Long id);
+
+		Completable delete(Serializable id);
 	}
 
 	interface ObjectRepository
