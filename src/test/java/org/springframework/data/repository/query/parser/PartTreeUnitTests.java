@@ -45,6 +45,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * @author Martin Baumgartner
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Michael Cramer
  */
 public class PartTreeUnitTests {
 
@@ -219,6 +220,16 @@ public class PartTreeUnitTests {
 		parts = toCollection(tree.getParts(Type.GREATER_THAN));
 		assertThat(parts, hasItem(new Part("FirstnameGreaterThan", User.class)));
 		assertThat(parts, is(hasSize(1)));
+	}
+
+	@Test // DATACMNS-1007
+	public void parsesEmptyKeywordCorrectly() {
+		assertType(asList("friendsIsEmpty", "friendsEmpty"), IS_EMPTY, "friends", 0, false);
+	}
+
+	@Test // DATACMNS-1007
+	public void parsesNotEmptyKeywordCorrectly() {
+		assertType(asList("friendsIsNotEmpty", "friendsNotEmpty"), IS_NOT_EMPTY, "friends", 0, false);
 	}
 
 	@Test // DATACMNS-94
@@ -651,6 +662,7 @@ public class PartTreeUnitTests {
 		double[] location;
 		boolean active;
 		Date birthday;
+		List<User> friends;
 	}
 
 	class Organization {
