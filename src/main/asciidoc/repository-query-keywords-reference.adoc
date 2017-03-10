@@ -22,6 +22,8 @@ The following table lists the keywords generally supported by the Spring Data re
 |`GREATER_THAN_EQUALS`|`GreaterThanEqual`, `IsGreaterThanEqual`
 |`IN`|`In`, `IsIn`
 |`IS`|`Is`, `Equals`, (or no keyword)
+|`IS_EMPTY`|`IsEmpty`, `Empty`
+|`IS_NOT_EMPTY`|`IsNotEmpty`, `NotEmpty`
 |`IS_NOT_NULL`|`NotNull`, `IsNotNull`
 |`IS_NULL`|`Null`, `IsNull`
 |`LESS_THAN`|`LessThan`, `IsLessThan`
