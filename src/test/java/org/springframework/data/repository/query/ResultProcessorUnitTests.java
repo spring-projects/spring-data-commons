@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.repository.query;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import io.reactivex.Flowable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Observable;
@@ -48,6 +49,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public class ResultProcessorUnitTests {
 
@@ -290,6 +292,22 @@ public class ResultProcessorUnitTests {
 		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
 	}
 
+	@Test // DATACMNS-988
+	@SuppressWarnings("unchecked")
+	public void supportsFlowableProjections() throws Exception {
+
+		Flowable<Sample> samples = Flowable.just(new Sample("Dave", "Matthews"));
+
+		Object result = getProcessor("findFlowableProjection").processResult(samples);
+
+		assertThat(result).isInstanceOf(Flowable.class);
+
+		List<Object> content = ((Flowable<Object>) result).toList().blockingGet();
+
+		assertThat(content).isNotEmpty();
+		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
+	}
+
 	private static ResultProcessor getProcessor(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor();
 	}
@@ -336,6 +354,8 @@ public class ResultProcessorUnitTests {
 		Flux<SampleProjection> findFluxProjection();
 
 		Observable<SampleProjection> findObservableProjection();
+
+		Flowable<SampleProjection> findFlowableProjection();
 	}
 
 	static class Sample {
