@@ -222,16 +222,6 @@ public class PartTreeUnitTests {
 		assertThat(parts, is(hasSize(1)));
 	}
 
-	@Test // DATACMNS-1007
-	public void parsesEmptyKeywordCorrectly() {
-		assertType(asList("friendsIsEmpty", "friendsEmpty"), IS_EMPTY, "friends", 0, false);
-	}
-
-	@Test // DATACMNS-1007
-	public void parsesNotEmptyKeywordCorrectly() {
-		assertType(asList("friendsIsNotEmpty", "friendsNotEmpty"), IS_NOT_EMPTY, "friends", 0, false);
-	}
-
 	@Test // DATACMNS-94
 	public void parsesExistsKeywordCorrectly() {
 		assertType(asList("lastnameExists"), EXISTS, "lastname", 0, false);
@@ -577,6 +567,23 @@ public class PartTreeUnitTests {
 		assertThat(part.getProperty(), is(PropertyPath.from("someInfo", Category.class)));
 	}
 
+	@Test // DATACMNS-1007
+	public void parsesEmptyKeywordCorrectly() {
+		assertType(asList("friendsIsEmpty", "friendsEmpty"), IS_EMPTY, "friends", 0, false);
+	}
+
+	@Test // DATACMNS-1007
+	public void parsesNotEmptyKeywordCorrectly() {
+		assertType(asList("friendsIsNotEmpty", "friendsNotEmpty"), IS_NOT_EMPTY, "friends", 0, false);
+	}
+
+	@Test // DATACMNS-1007
+	public void parsesEmptyAsPropertyIfDifferentKeywordIsUsed() {
+
+		assertType(asList("emptyIsTrue"), TRUE, "empty", 0, false);
+		assertType(asList("emptyIs"), SIMPLE_PROPERTY, "empty", 1, true);
+	}
+
 	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {
 		assertLimiting(methodName, entityType, limiting, maxResults, false);
 	}
@@ -663,6 +670,7 @@ public class PartTreeUnitTests {
 		boolean active;
 		Date birthday;
 		List<User> friends;
+		boolean empty;
 	}
 
 	class Organization {
