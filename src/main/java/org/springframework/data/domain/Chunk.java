@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.core.convert.converter.Converter;
@@ -156,11 +157,11 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	 * @param converter must not be {@literal null}.
 	 * @return
 	 */
-	protected <U> List<U> getConvertedContent(Converter<? super T, ? extends U> converter) {
+	protected <U> List<U> getConvertedContent(Function<? super T, ? extends U> converter) {
 
 		Assert.notNull(converter, "Converter must not be null!");
 
-		return this.stream().map(converter::convert).collect(Collectors.toList());
+		return this.stream().map(converter::apply).collect(Collectors.toList());
 	}
 
 	/*

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2016 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package org.springframework.data.domain;
 
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.core.convert.converter.Converter;
+import java.util.function.Function;
 
 /**
  * Basic {@code Page} implementation.
@@ -106,7 +105,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 * @see org.springframework.data.domain.Slice#transform(org.springframework.core.convert.converter.Converter)
 	 */
 	@Override
-	public <U> Page<U> map(Converter<? super T, ? extends U> converter) {
+	public <U> Page<U> map(Function<? super T, ? extends U> converter) {
 		return new PageImpl<>(getConvertedContent(converter), pageable, total);
 	}
 

@@ -16,8 +16,7 @@
 package org.springframework.data.domain;
 
 import java.util.List;
-
-import org.springframework.core.convert.converter.Converter;
+import java.util.function.Function;
 
 /**
  * Default implementation of {@link Slice}.
@@ -70,7 +69,7 @@ public class SliceImpl<T> extends Chunk<T> {
 	 * @see org.springframework.data.domain.Slice#transform(org.springframework.core.convert.converter.Converter)
 	 */
 	@Override
-	public <U> Slice<U> map(Converter<? super T, ? extends U> converter) {
+	public <U> Slice<U> map(Function<? super T, ? extends U> converter) {
 		return new SliceImpl<>(getConvertedContent(converter), pageable, hasNext);
 	}
 

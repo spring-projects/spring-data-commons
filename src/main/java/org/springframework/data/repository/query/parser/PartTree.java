@@ -177,7 +177,7 @@ public class PartTree implements Streamable<OrPart> {
 	 * @return the iterable {@link Part}s
 	 */
 	public Streamable<Part> getParts() {
-		return Streamable.of(this.stream().flatMap(OrPart::stream).collect(Collectors.toList()));
+		return flatMap(OrPart::stream);
 	}
 
 	/**
@@ -187,10 +187,7 @@ public class PartTree implements Streamable<OrPart> {
 	 * @return
 	 */
 	public Streamable<Part> getParts(Type type) {
-
-		return Streamable.of(getParts().stream()//
-				.filter(part -> part.getType().equals(type))//
-				.collect(Collectors.toList()));
+		return getParts().filter(part -> part.getType().equals(type));
 	}
 
 	/*

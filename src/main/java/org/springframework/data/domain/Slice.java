@@ -16,6 +16,7 @@
 package org.springframework.data.domain;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.util.Streamable;
@@ -124,5 +125,5 @@ public interface Slice<T> extends Streamable<T> {
 	 * @return a new {@link Slice} with the content of the current one mapped by the given {@link Converter}.
 	 * @since 1.10
 	 */
-	<U> Slice<U> map(Converter<? super T, ? extends U> converter);
+	<U> Slice<U> map(Function<? super T, ? extends U> converter);
 }

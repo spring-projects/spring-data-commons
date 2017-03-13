@@ -17,6 +17,9 @@ package org.springframework.data.util;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -28,16 +31,8 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
+@FunctionalInterface
 public interface Streamable<T> extends Iterable<T> {
-
-	/**
-	 * Creates a non-parallel {@link Stream} of the underlying {@link Iterable}.
-	 * 
-	 * @return will never be {@literal null}.
-	 */
-	default Stream<T> stream() {
-		return StreamSupport.stream(spliterator(), false);
-	}
 
 	/**
 	 * Returns an empty {@link Streamable}.
@@ -70,5 +65,60 @@ public interface Streamable<T> extends Iterable<T> {
 		Assert.notNull(iterable, "Iterable must not be null!");
 
 		return iterable::iterator;
+	}
+
+	static <T> Streamable<T> of(Supplier<? extends Stream<T>> supplier) {
+		return LazyStreamable.of(supplier);
+	}
+
+	/**
+	 * Creates a non-parallel {@link Stream} of the underlying {@link Iterable}.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
+	default Stream<T> stream() {
+		return StreamSupport.stream(spliterator(), false);
+	}
+
+	/**
+	 * Returns a new {@link Streamable} that will apply the given {@link Function} to the current one.
+	 * 
+	 * @param mapper must not be {@literal null}.
+	 * @return
+	 * @see Stream#map(Function)
+	 */
+	default <R> Streamable<R> map(Function<? super T, ? extends R> mapper) {
+
+		Assert.notNull(mapper, "Mapping function must not be null!");
+
+		return Streamable.of(() -> stream().map(mapper));
+	}
+
+	/**
+	 * Returns a new {@link Streamable} that will apply the given {@link Function} to the current one.
+	 * 
+	 * @param mapper must not be {@literal null}.
+	 * @return
+	 * @see Stream#flatMap(Function)
+	 */
+	default <R> Streamable<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper) {
+
+		Assert.notNull(mapper, "Mapping function must not be null!");
+
+		return Streamable.of(() -> stream().flatMap(mapper));
+	}
+
+	/**
+	 * Returns a new {@link Streamable} that will apply the given filter {@link Predicate} to the current one.
+	 * 
+	 * @param predicate must not be {@literal null}.
+	 * @return
+	 * @see Stream#filter(Predicate)
+	 */
+	default Streamable<T> filter(Predicate<? super T> predicate) {
+
+		Assert.notNull(predicate, "Filter predicate must not be null!");
+
+		return Streamable.of(() -> stream().filter(predicate));
 	}
 }
