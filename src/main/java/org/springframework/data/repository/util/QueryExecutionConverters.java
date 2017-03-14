@@ -19,12 +19,14 @@ import javaslang.collection.Seq;
 import javaslang.collection.Traversable;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,6 +43,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.util.Streamable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -264,28 +267,27 @@ public abstract class QueryExecutionConverters {
 	 *
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	private static abstract class AbstractWrapperTypeConverter implements GenericConverter {
 
-		@SuppressWarnings("unused") //
-		private final ConversionService conversionService;
-		private final Class<?>[] wrapperTypes;
-		private final Object nullValue;
+		private final @NonNull ConversionService conversionService;
+		private final @NonNull Object nullValue;
+		private final @NonNull Iterable<Class<?>> wrapperTypes;
 
 		/**
 		 * Creates a new {@link AbstractWrapperTypeConverter} using the given {@link ConversionService} and wrapper type.
 		 * 
 		 * @param conversionService must not be {@literal null}.
-		 * @param wrapperTypes must not be {@literal null}.
+		 * @param nullValue must not be {@literal null}.
 		 */
-		protected AbstractWrapperTypeConverter(ConversionService conversionService, Object nullValue,
-				Class<?>... wrapperTypes) {
+		protected AbstractWrapperTypeConverter(ConversionService conversionService, Object nullValue) {
 
 			Assert.notNull(conversionService, "ConversionService must not be null!");
-			Assert.notEmpty(wrapperTypes, "Wrapper type must not be empty!");
+			Assert.notNull(nullValue, "Null value must not be null!");
 
 			this.conversionService = conversionService;
-			this.wrapperTypes = wrapperTypes;
 			this.nullValue = nullValue;
+			this.wrapperTypes = Collections.singleton(nullValue.getClass());
 		}
 
 		/* 
@@ -295,13 +297,9 @@ public abstract class QueryExecutionConverters {
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 
-			Set<ConvertiblePair> pairs = new HashSet<>(wrapperTypes.length);
-
-			for (Class<?> wrapperType : wrapperTypes) {
-				pairs.add(new ConvertiblePair(NullableWrapper.class, wrapperType));
-			}
-
-			return Collections.unmodifiableSet(pairs);
+			return Streamable.of(wrapperTypes)//
+					.map(it -> new ConvertiblePair(NullableWrapper.class, it))//
+					.stream().collect(Collectors.toSet());
 		}
 
 		/* 
@@ -340,7 +338,7 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToGuavaOptionalConverter(ConversionService conversionService) {
-			super(conversionService, Optional.absent(), Optional.class);
+			super(conversionService, Optional.absent(), Collections.singleton(Optional.class));
 		}
 
 		/* 
@@ -370,7 +368,7 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToJdk8OptionalConverter(ConversionService conversionService) {
-			super(conversionService, java.util.Optional.empty(), java.util.Optional.class);
+			super(conversionService, java.util.Optional.empty());
 		}
 
 		/* 
@@ -400,7 +398,7 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToFutureConverter(ConversionService conversionService) {
-			super(conversionService, new AsyncResult<>(null), Future.class, ListenableFuture.class);
+			super(conversionService, new AsyncResult<>(null), Arrays.asList(Future.class, ListenableFuture.class));
 		}
 
 		/* 
@@ -426,7 +424,7 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToCompletableFutureConverter(ConversionService conversionService) {
-			super(conversionService, CompletableFuture.completedFuture(null), CompletableFuture.class);
+			super(conversionService, CompletableFuture.completedFuture(null));
 		}
 
 		/* 
@@ -452,7 +450,7 @@ public abstract class QueryExecutionConverters {
 	private static class NullableWrapperToScalaOptionConverter extends AbstractWrapperTypeConverter {
 
 		public NullableWrapperToScalaOptionConverter(ConversionService conversionService) {
-			super(conversionService, Option.empty(), Option.class);
+			super(conversionService, Option.empty(), Collections.singleton(Option.class));
 		}
 
 		/* 
@@ -483,7 +481,7 @@ public abstract class QueryExecutionConverters {
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToJavaslangOptionConverter(ConversionService conversionService) {
-			super(conversionService, javaslang.control.Option.none(), javaslang.control.Option.class);
+			super(conversionService, javaslang.control.Option.none(), Collections.singleton(javaslang.control.Option.class));
 		}
 
 		public static WrapperType getWrapperType() {
