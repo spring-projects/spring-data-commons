@@ -372,6 +372,10 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 				continue;
 			}
 
+			if (types[i].equals(parameterType)) {
+				continue;
+			}
+
 			if (!type.isAssignableFrom(parameterType) || !type.equals(methodParameterTypes[i])) {
 				return false;
 			}
