@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
@@ -28,7 +29,6 @@ import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -140,7 +140,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		Class<?> rawType = type.getType();
 
 		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray()
-				|| QueryExecutionConverters.supports(rawType) || ReflectionUtils.isJava8StreamType(rawType);
+				|| QueryExecutionConverters.supports(rawType) || Stream.class.isAssignableFrom(rawType);
 
 		return needToUnwrap ? unwrapWrapperTypes(type.getRequiredComponentType()) : rawType;
 	}

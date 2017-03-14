@@ -15,6 +15,8 @@
  */
 package org.springframework.data.util;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +31,8 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @since 1.5
  */
-public abstract class ParsingUtils {
+@UtilityClass
+public class ParsingUtils {
 
 	private static final String UPPER = "\\p{Lu}|\\P{InBASIC_LATIN}";
 	private static final String LOWER = "\\p{Ll}";
@@ -37,8 +40,6 @@ public abstract class ParsingUtils {
 			replace("%u", UPPER).replace("%l", LOWER);
 
 	private static final Pattern CAMEL_CASE = Pattern.compile(CAMEL_CASE_REGEX);
-
-	private ParsingUtils() {}
 
 	/**
 	 * Splits up the given camel-case {@link String}.

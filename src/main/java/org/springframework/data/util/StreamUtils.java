@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.10
  */
-public class StreamUtils {
-
-	private StreamUtils() {}
+public interface StreamUtils {
 
 	/**
 	 * Returns a {@link Stream} backed by the given {@link Iterator}.
@@ -51,50 +49,8 @@ public class StreamUtils {
 		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL);
 		Stream<T> stream = StreamSupport.stream(spliterator, false);
 
-		return iterator instanceof CloseableIterator
-				? stream.onClose(new CloseableIteratorDisposingRunnable((CloseableIterator<T>) iterator)) : stream;
-	}
-
-	/**
-	 * A {@link Runnable} that closes the given {@link CloseableIterator} in its {@link #run()} method. If the given
-	 * {@code closeable} is {@literal null} the {@link #run()} method effectively becomes a noop.
-	 * <p>
-	 * Can be used in conjunction with streams as close action via:
-	 * 
-	 * <pre>
-	 * CloseableIterator<T> result = ...;
-	 * Spliterator<T> spliterator = ...;
-	 * 
-	 * return StreamSupport.stream(spliterator, false).onClose(new CloseableIteratorDisposingRunnable(result));
-	 * </pre>
-	 * 
-	 * @author Thomas Darimont
-	 * @author Oliver Gierke
-	 * @since 1.10
-	 */
-	private static class CloseableIteratorDisposingRunnable implements Runnable {
-
-		private CloseableIterator<?> closeable;
-
-		/**
-		 * Creates a new {@link CloseableIteratorDisposingRunnable} for the given {@link CloseableIterator}.
-		 * 
-		 * @param closeable can be {@literal null}.
-		 */
-		public CloseableIteratorDisposingRunnable(CloseableIterator<?> closeable) {
-			this.closeable = closeable;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
-		@Override
-		public void run() {
-
-			if (closeable != null) {
-				closeable.close();
-			}
-		}
+		return iterator instanceof CloseableIterator//
+				? stream.onClose(() -> ((CloseableIterator<T>) iterator).close()) //
+				: stream;
 	}
 }

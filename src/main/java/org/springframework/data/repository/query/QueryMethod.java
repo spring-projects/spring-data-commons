@@ -19,6 +19,7 @@ import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.lang.reflect.Method;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +31,6 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -232,7 +232,7 @@ public class QueryMethod {
 	 * @since 1.10
 	 */
 	public boolean isStreamQuery() {
-		return ReflectionUtils.isJava8StreamType(unwrappedReturnType);
+		return Stream.class.isAssignableFrom(unwrappedReturnType);
 	}
 
 	/**

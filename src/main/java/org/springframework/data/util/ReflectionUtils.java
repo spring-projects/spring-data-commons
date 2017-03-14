@@ -17,12 +17,12 @@ package org.springframework.data.util;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -45,22 +45,8 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Christoph Strobl
  * @since 1.5
  */
-public abstract class ReflectionUtils {
-
-	private static final Class<?> JAVA8_STREAM_TYPE;
-
-	static {
-
-		Class<?> cls = null;
-
-		try {
-			cls = Class.forName("java.util.stream.Stream");
-		} catch (ClassNotFoundException ignore) {}
-
-		JAVA8_STREAM_TYPE = cls;
-	}
-
-	private ReflectionUtils() {}
+@UtilityClass
+public class ReflectionUtils {
 
 	/**
 	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
@@ -79,18 +65,6 @@ public abstract class ReflectionUtils {
 		} catch (Exception e) {
 			return defaultInstance;
 		}
-	}
-
-	/**
-	 * Back-port of Java 8's {@code isDefault()} method on {@link Method}.
-	 * 
-	 * @param method must not be {@literal null}.
-	 * @return
-	 */
-	public static boolean isDefaultMethod(Method method) {
-
-		return ((method.getModifiers() & (Modifier.ABSTRACT | Modifier.PUBLIC | Modifier.STATIC)) == Modifier.PUBLIC)
-				&& method.getDeclaringClass().isInterface();
 	}
 
 	/**
@@ -228,21 +202,6 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
-	 * Tests whether the given type is assignable to a Java 8 {@link Stream}.
-	 * 
-	 * @param type can be {@literal null}.
-	 * @return
-	 */
-	public static boolean isJava8StreamType(Class<?> type) {
-
-		if (type == null || JAVA8_STREAM_TYPE == null) {
-			return false;
-		}
-
-		return JAVA8_STREAM_TYPE.isAssignableFrom(type);
-	}
-
-	/**
 	 * Finds a constructor on the given type that matches the given constructor arguments.
 	 * 
 	 * @param type must not be {@literal null}.
@@ -276,15 +235,31 @@ public abstract class ReflectionUtils {
 		return Stream.concat(returnType, parameterTypes);
 	}
 
+	/**
+	 * Returns the {@link Method} with the given name and parameters declared on the given type, if available.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param name must not be {@literal null} or empty.
+	 * @param parameterTypes must not be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
 	public static Optional<Method> getMethod(Class<?> type, String name, ResolvableType... parameterTypes) {
 
-		List<Class<?>> collect = Arrays.stream(parameterTypes).map(ResolvableType::getRawClass).collect(Collectors.toList());
+		Assert.notNull(type, "Type must not be null!");
+		Assert.hasText(name, "Name must not be null or empty!");
+		Assert.notNull(parameterTypes, "Parameter types must not be null!");
 
-		Optional<Method> method = Optional.ofNullable(
-				org.springframework.util.ReflectionUtils.findMethod(type, name, collect.toArray(new Class<?>[collect.size()])));
+		List<Class<?>> collect = Arrays.stream(parameterTypes)//
+				.map(ResolvableType::getRawClass)//
+				.collect(Collectors.toList());
 
-		return method.filter(it -> IntStream.range(0, it.getParameterCount())//
-				.allMatch(index -> ResolvableType.forMethodParameter(it, index).equals(parameterTypes[index])));
+		Method method = org.springframework.util.ReflectionUtils.findMethod(type, name,
+				collect.toArray(new Class<?>[collect.size()]));
+
+		return Optional.ofNullable(method)//
+				.filter(it -> IntStream.range(0, it.getParameterCount())//
+						.allMatch(index -> ResolvableType.forMethodParameter(it, index).equals(parameterTypes[index])));
 	}
 
 	private static boolean argumentsMatch(Class<?>[] parameterTypes, Object[] arguments) {
