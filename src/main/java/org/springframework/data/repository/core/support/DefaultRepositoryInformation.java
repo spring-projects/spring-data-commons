@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ import org.springframework.util.ClassUtils;
  */
 class DefaultRepositoryInformation implements RepositoryInformation {
 
-	@SuppressWarnings("rawtypes") private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class
-			.getTypeParameters();
+	@SuppressWarnings("rawtypes") //
+	private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class.getTypeParameters();
 	private static final String DOMAIN_TYPE_NAME = PARAMETERS[0].getName();
 	private static final String ID_TYPE_NAME = PARAMETERS[1].getName();
 
