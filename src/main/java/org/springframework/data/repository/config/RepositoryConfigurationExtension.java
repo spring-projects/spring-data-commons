@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.core.io.ResourceLoader;
  * 
  * @see RepositoryConfigurationExtensionSupport
  * @author Oliver Gierke
+ * @author Sascha Woo
  */
 public interface RepositoryConfigurationExtension {
 
@@ -40,21 +41,9 @@ public interface RepositoryConfigurationExtension {
 	/**
 	 * Returns all {@link RepositoryConfiguration}s obtained through the given {@link RepositoryConfigurationSource}.
 	 * 
-	 * @param configSource must not be {@literal null}.
-	 * @param loader must not be {@literal null}.
-	 * @deprecated call or implement
-	 *             {@link #getRepositoryConfigurations(RepositoryConfigurationSource, ResourceLoader, boolean)} instead.
-	 * @return
-	 */
-	@Deprecated
-	<T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
-			T configSource, ResourceLoader loader);
-
-	/**
-	 * Returns all {@link RepositoryConfiguration}s obtained through the given {@link RepositoryConfigurationSource}.
-	 * 
 	 * @param configSource
 	 * @param loader
+	 * @param registry
 	 * @param strictMatchesOnly whether to return strict repository matches only. Handing in {@literal true} will cause
 	 *          the repository interfaces and domain types handled to be checked whether they are managed by the current
 	 *          store.
@@ -62,7 +51,7 @@ public interface RepositoryConfigurationExtension {
 	 * @since 1.9
 	 */
 	<T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
-			T configSource, ResourceLoader loader, boolean strictMatchesOnly);
+			T configSource, ResourceLoader loader, BeanDefinitionRegistry registry, boolean strictMatchesOnly);
 
 	/**
 	 * Returns the default location of the Spring Data named queries.

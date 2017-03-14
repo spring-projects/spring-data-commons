@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * Unit tests for {@link DefaultRepositoryConfiguration}.
  * 
  * @author Oliver Gierke
+ * @author Sascha Woo
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryConfigurationUnitTests {
@@ -39,10 +40,10 @@ public class DefaultRepositoryConfigurationUnitTests {
 	public void supportsBasicConfiguration() {
 
 		RepositoryConfiguration<RepositoryConfigurationSource> configuration = new DefaultRepositoryConfiguration<RepositoryConfigurationSource>(
-				source, new RootBeanDefinition("com.acme.MyRepository"));
+				source, new RootBeanDefinition("com.acme.MyRepository"), "myRepositoryBeanName");
 
 		assertThat(configuration.getConfigurationSource(), is(source));
-		assertThat(configuration.getImplementationBeanName(), is("myRepositoryImpl"));
+		assertThat(configuration.getImplementationBeanName(), is("myRepositoryBeanNameImpl"));
 		assertThat(configuration.getImplementationClassName(), is("MyRepositoryImpl"));
 		assertThat(configuration.getRepositoryInterface(), is("com.acme.MyRepository"));
 		assertThat(configuration.getQueryLookupStrategyKey(), is((Object) Key.CREATE_IF_NOT_FOUND));
