@@ -223,12 +223,12 @@ public class DefaultRepositoryInformationUnitTests {
 	@Test // DATACMNS-912
 	public void discoversCustomlyImplementedCrudMethodWithGenericParameters() throws Exception {
 
-		SampleRepositoryImpl customImplementation = new SampleRepositoryImpl();
-		RepositoryMetadata metadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		GenericsSaveRepositoryImpl customImplementation = new GenericsSaveRepositoryImpl();
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericsSaveRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, RepositoryFactorySupport.class,
 				customImplementation.getClass());
 
-		Method customBaseRepositoryMethod = SampleRepository.class.getMethod("save", Object.class);
+		Method customBaseRepositoryMethod = GenericsSaveRepository.class.getMethod("save", Object.class);
 		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
 	}
 
@@ -242,6 +242,18 @@ public class DefaultRepositoryInformationUnitTests {
 
 		assertThat(information.getTargetClassMethod(method),
 				is(DummyRepositoryImpl.class.getMethod("save", Iterable.class)));
+	}
+
+	@Test // DATACMNS-1008, DATACMNS-912, DATACMNS-854
+	public void discoversCustomlyImplementedCrudMethodWithoutGenericParameters() throws Exception {
+
+		SimpleSaveRepositoryImpl customImplementation = new SimpleSaveRepositoryImpl();
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(SimpleSaveRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, RepositoryFactorySupport.class,
+				customImplementation.getClass());
+
+		Method customBaseRepositoryMethod = SimpleSaveRepository.class.getMethod("save", Object.class);
+		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
 	}
 
 	private static Method getMethodFrom(Class<?> type, String name) {
@@ -346,11 +358,13 @@ public class DefaultRepositoryInformationUnitTests {
 		List<User> findAll();
 	}
 
-	interface SampleRepository extends CrudRepository<Sample, Long> {}
+	// DATACMNS-854, DATACMNS-912
 
-	static class SampleRepositoryImpl {
+	interface GenericsSaveRepository extends CrudRepository<Sample, Long> {}
 
-		public <S extends Sample> S save(S entity) {
+	static class GenericsSaveRepositoryImpl {
+
+		public <T extends Sample> T save(T entity) {
 			return entity;
 		}
 	}
@@ -366,5 +380,16 @@ public class DefaultRepositoryInformationUnitTests {
 	static class DummyRepositoryImpl<T, ID extends Serializable> implements CrudRepository<T, ID> {
 
 		private @Delegate CrudRepository<T, ID> delegate;
+	}
+
+	// DATACMNS-1008, DATACMNS-854, DATACMNS-912
+
+	interface SimpleSaveRepository extends CrudRepository<Sample, Long> {}
+
+	static class SimpleSaveRepositoryImpl {
+
+		public Sample save(Sample entity) {
+			return entity;
+		}
 	}
 }
