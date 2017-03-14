@@ -234,7 +234,7 @@ public class DefaultRepositoryInformationUnitTests {
 				Optional.of(customImplementation.getClass()));
 
 		Method customBaseRepositoryMethod = GenericsSaveRepository.class.getMethod("save", Object.class);
-		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
+		assertThat(information.isCustomMethod(customBaseRepositoryMethod)).isTrue();
 	}
 
 	@Test // DATACMNS-939
@@ -280,10 +280,10 @@ public class DefaultRepositoryInformationUnitTests {
 		SimpleSaveRepositoryImpl customImplementation = new SimpleSaveRepositoryImpl();
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(SimpleSaveRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, RepositoryFactorySupport.class,
-				customImplementation.getClass());
+				Optional.of(customImplementation.getClass()));
 
 		Method customBaseRepositoryMethod = SimpleSaveRepository.class.getMethod("save", Object.class);
-		assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
+		assertThat(information.isCustomMethod(customBaseRepositoryMethod)).isTrue();
 	}
 
 	private static Method getMethodFrom(Class<?> type, String name) {
