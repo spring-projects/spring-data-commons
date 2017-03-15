@@ -82,6 +82,12 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 */
 	Optional<P> getIdProperty();
 
+	default P getRequiredIdProperty() {
+
+		return getIdProperty().orElseThrow(
+				() -> new IllegalStateException(String.format("Required identifier property not found for %s!", getType())));
+	}
+
 	/**
 	 * Returns the version property of the {@link PersistentEntity}. Can be {@literal null} in case no version property is
 	 * available on the entity.
@@ -94,11 +100,22 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	 * Obtains a {@link PersistentProperty} instance by name.
 	 * 
 	 * @param name The name of the property
-	 * @return the {@link PersistentProperty} or {@literal null} if it doesn't exist.
+	 * @return the {@link PersistentProperty} or {@literal Optional#empty()} if it doesn't exist.
 	 */
 	Optional<P> getPersistentProperty(String name);
 
-	P getRequiredPersistentProperty(String name);
+	/**
+	 * Returns the {@link PersistentProperty} with the given name.
+	 * 
+	 * @param name the name of the property, must not be {@literal null} or empty.
+	 * @return the {@link PersistentProperty} with the given name.
+	 * @throws IllegalArgumentException in case no property with the given name exists.
+	 */
+	default P getRequiredPersistentProperty(String name) {
+
+		return getPersistentProperty(name).orElseThrow(
+				() -> new IllegalArgumentException(String.format("No property %s found for type %s!", name, getType())));
+	}
 
 	/**
 	 * Returns the property equipped with an annotation of the given type.

@@ -56,8 +56,9 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	protected final Optional<Association<P>> association;
 	private final @Getter PersistentEntity<?, P> owner;
 	private final @Getter(AccessLevel.PROTECTED) Property property;
-	private final SimpleTypeHolder simpleTypeHolder;
 	private final Lazy<Integer> hashCode;
+	private final Lazy<Boolean> usePropertyAccess;
+	private final Lazy<Optional<? extends TypeInformation<?>>> entityTypeInformation;
 
 	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,
 			SimpleTypeHolder simpleTypeHolder) {
@@ -67,12 +68,19 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 		this.name = property.getName();
 		this.rawType = property.getType();
-		this.information = PropertyPath.from(Pattern.quote(property.getName()), owner.getTypeInformation()).getTypeInformation();
+		this.information = PropertyPath.from(Pattern.quote(property.getName()), owner.getTypeInformation())
+				.getTypeInformation();
 		this.property = property;
 		this.association = isAssociation() ? Optional.of(createAssociation()) : Optional.empty();
 		this.owner = owner;
-		this.simpleTypeHolder = simpleTypeHolder;
+
 		this.hashCode = Lazy.of(property::hashCode);
+		this.usePropertyAccess = Lazy
+				.of(() -> owner.getType().isInterface() || getField().map(it -> it.equals(CAUSE_FIELD)).orElse(false));
+		this.entityTypeInformation = Lazy.of(() -> Optional.ofNullable(information.getActualType())//
+				.filter(it -> !simpleTypeHolder.isSimpleType(it.getType()))//
+				.filter(it -> !it.isCollectionLike())//
+				.filter(it -> !it.isMap()));
 	}
 
 	protected abstract Association<P> createAssociation();
@@ -124,19 +132,9 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 			return Collections.emptySet();
 		}
 
-		TypeInformation<?> candidate = getTypeInformationIfEntityCandidate();
-		return candidate != null ? Collections.singleton(candidate) : Collections.emptySet();
-	}
-
-	private TypeInformation<?> getTypeInformationIfEntityCandidate() {
-
-		TypeInformation<?> candidate = information.getActualType();
-
-		if (candidate == null || simpleTypeHolder.isSimpleType(candidate.getType())) {
-			return null;
-		}
-
-		return candidate.isCollectionLike() || candidate.isMap() ? null : candidate;
+		return entityTypeInformation.get()//
+				.map(it -> Collections.singleton(it))//
+				.orElseGet(() -> Collections.emptySet());
 	}
 
 	/* 
@@ -244,7 +242,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public boolean isEntity() {
-		return !isTransient() && getTypeInformationIfEntityCandidate() != null;
+		return !isTransient() && entityTypeInformation.get().isPresent();
 	}
 
 	/*
@@ -284,7 +282,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mongodb.core.mapping.MongoPersistentProperty#usePropertyAccess()
 	 */
 	public boolean usePropertyAccess() {
-		return owner.getType().isInterface() || getField().map(it -> it.equals(CAUSE_FIELD)).orElse(false);
+		return usePropertyAccess.get();
 	}
 
 	/* 

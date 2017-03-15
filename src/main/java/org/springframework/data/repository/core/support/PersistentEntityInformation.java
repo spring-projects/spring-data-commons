@@ -32,7 +32,7 @@ import org.springframework.data.repository.core.EntityInformation;
 @SuppressWarnings("unchecked")
 public class PersistentEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
 
-	private final PersistentEntity<T, ?> persistentEntity;
+	private final PersistentEntity<T, ? extends PersistentProperty<?>> persistentEntity;
 
 	/**
 	 * Creates a new {@link PersistableEntityInformation} for the given {@link PersistentEntity}.

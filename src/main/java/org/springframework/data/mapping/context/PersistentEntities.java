@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -30,7 +31,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.8
  */
-public class PersistentEntities implements Streamable<PersistentEntity<?, ?>> {
+public class PersistentEntities implements Streamable<PersistentEntity<?, ? extends PersistentProperty<?>>> {
 
 	private final Streamable<? extends MappingContext<?, ?>> contexts;
 
@@ -53,7 +54,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ?>> {
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
-	public Optional<PersistentEntity<?, ?>> getPersistentEntity(Class<?> type) {
+	public Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> getPersistentEntity(Class<?> type) {
 
 		return contexts.stream()//
 				.filter(it -> it.hasPersistentEntityFor(type))//
@@ -69,7 +70,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ?>> {
 	 * @return the {@link PersistentEntity} for the given domain type.
 	 * @throws IllegalArgumentException in case no {@link PersistentEntity} can be found for the given type.
 	 */
-	public PersistentEntity<?, ?> getRequiredPersistentEntity(Class<?> type) {
+	public PersistentEntity<?, ? extends PersistentProperty<?>> getRequiredPersistentEntity(Class<?> type) {
 
 		Assert.notNull(type, "Domain type must not be null!");
 
@@ -94,9 +95,10 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ?>> {
 	 * @see java.lang.Iterable#iterator()
 	 */
 	@Override
-	public Iterator<PersistentEntity<?, ?>> iterator() {
+	public Iterator<PersistentEntity<?, ? extends PersistentProperty<?>>> iterator() {
 
-		return contexts.stream().<PersistentEntity<?, ?>> flatMap(it -> it.getPersistentEntities().stream())
+		return contexts.stream()
+				.<PersistentEntity<?, ? extends PersistentProperty<?>>> flatMap(it -> it.getPersistentEntities().stream())
 				.collect(Collectors.toList()).iterator();
 	}
 }

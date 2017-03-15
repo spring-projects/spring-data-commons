@@ -91,6 +91,10 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	Optional<Association<P>> getAssociation();
 
+	default Association<P> getRequiredAssociation() {
+		return getAssociation().orElseThrow(() -> new IllegalStateException("No association found!"));
+	}
+
 	/**
 	 * Returns whether the type of the {@link PersistentProperty} is actually to be regarded as {@link PersistentEntity}
 	 * in turn.

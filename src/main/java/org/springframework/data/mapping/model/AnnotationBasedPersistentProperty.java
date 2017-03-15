@@ -37,6 +37,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 
@@ -55,8 +56,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	private final Optional<Value> value;
 	private final Map<Class<? extends Annotation>, Optional<? extends Annotation>> annotationCache = new HashMap<>();
 
-	private Boolean isTransient;
-	private boolean usePropertyAccess;
+	private Lazy<Boolean> isTransient;
+	private Lazy<Boolean> usePropertyAccess;
 
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
@@ -71,9 +72,12 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 		populateAnnotationCache(property);
 
-		this.usePropertyAccess = findPropertyOrOwnerAnnotation(AccessType.class).map(it -> Type.PROPERTY.equals(it.value()))
-				.orElse(false);
 		this.value = findAnnotation(Value.class);
+		this.usePropertyAccess = Lazy.of(() -> findPropertyOrOwnerAnnotation(AccessType.class)//
+				.map(it -> Type.PROPERTY.equals(it.value()))//
+				.orElse(super.usePropertyAccess()));
+		this.isTransient = Lazy.of(() -> super.isTransient() || isAnnotationPresent(Transient.class)
+				|| isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class));
 	}
 
 	/**
@@ -152,20 +156,13 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	/**
 	 * Considers plain transient fields, fields annotated with {@link Transient}, {@link Value} or {@link Autowired} as
-	 * transien.
+	 * transient.
 	 *
 	 * @see org.springframework.data.mapping.BasicPersistentProperty#isTransient()
 	 */
 	@Override
 	public boolean isTransient() {
-
-		if (this.isTransient == null) {
-			boolean potentiallyTransient = super.isTransient() || isAnnotationPresent(Transient.class);
-			this.isTransient = potentiallyTransient || isAnnotationPresent(Value.class)
-					|| isAnnotationPresent(Autowired.class);
-		}
-
-		return this.isTransient;
+		return isTransient.get();
 	}
 
 	/*
@@ -267,7 +264,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	@Override
 	public boolean usePropertyAccess() {
-		return super.usePropertyAccess() || usePropertyAccess;
+		return usePropertyAccess.get();
 	}
 
 	/*
@@ -281,15 +278,12 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			populateAnnotationCache(getProperty());
 		}
 
-		String builder = annotationCache.values().stream()//
-				.flatMap(Optionals::toStream)//
-				.map(Object::toString)//
+		String builder = annotationCache.values().stream() //
+				.flatMap(it -> Optionals.toStream(it)) //
+				.map(Object::toString) //
 				.collect(Collectors.joining(" "));
 
-		return builder//
-//
-//
-				+ super.toString();
+		return builder + super.toString();
 	}
 
 	private Stream<Optional<? extends AnnotatedElement>> getAccessors() {
