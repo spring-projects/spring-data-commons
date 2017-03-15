@@ -65,7 +65,7 @@ public class QuerydslBindingsFactoryUnitTests {
 		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 		ReflectionTestUtils.setField(factory, "repositories", Optional.of(repositories));
 
-		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, Optional.empty());
+		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE);
 		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
 				.getBindingForPath(PropertyPathInformation.of("firstname", User.class));
 
@@ -85,7 +85,7 @@ public class QuerydslBindingsFactoryUnitTests {
 		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 		ReflectionTestUtils.setField(factory, "beanFactory", Optional.of(beanFactory));
 
-		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, Optional.of(SpecificBinding.class));
+		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, SpecificBinding.class);
 		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
 				.getBindingForPath(PropertyPathInformation.of("firstname", User.class));
 
@@ -99,7 +99,7 @@ public class QuerydslBindingsFactoryUnitTests {
 	public void rejectsPredicateResolutionIfDomainTypeCantBeAutoDetected() {
 
 		assertThatExceptionOfType(IllegalStateException.class)//
-				.isThrownBy(() -> factory.createBindingsFor(ClassTypeInformation.from(ModelAndView.class), Optional.empty()))//
+				.isThrownBy(() -> factory.createBindingsFor(ClassTypeInformation.from(ModelAndView.class)))//
 				.withMessageContaining(QuerydslPredicate.class.getSimpleName())//
 				.withMessageContaining("root");
 

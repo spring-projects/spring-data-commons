@@ -85,6 +85,30 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	}
 
 	/**
+	 * Creates the {@link QuerydslBindings} to be used using for the given domain type. A {@link QuerydslBinderCustomizer}
+	 * will be auto-detected.
+	 * 
+	 * @param domainType must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	public QuerydslBindings createBindingsFor(TypeInformation<?> domainType) {
+		return createBindingsFor(domainType, Optional.empty());
+	}
+
+	/**
+	 * Creates the {@link QuerydslBindings} to be used using for the given domain type and a pre-defined
+	 * {@link QuerydslBinderCustomizer}.
+	 * 
+	 * @param domainType must not be {@literal null}.
+	 * @param customizer the {@link QuerydslBinderCustomizer} to use, must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	public QuerydslBindings createBindingsFor(TypeInformation<?> domainType,
+			Class<? extends QuerydslBinderCustomizer<?>> customizer) {
+		return createBindingsFor(domainType, Optional.of(customizer));
+	}
+
+	/**
 	 * Creates the {@link QuerydslBindings} to be used using for the given domain type and a pre-defined
 	 * {@link QuerydslBinderCustomizer}. If no customizer is given, auto-detection will be applied.
 	 * 
@@ -93,7 +117,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	 *          detection for the given domain type will be applied.
 	 * @return
 	 */
-	public QuerydslBindings createBindingsFor(TypeInformation<?> domainType,
+	private QuerydslBindings createBindingsFor(TypeInformation<?> domainType,
 			Optional<Class<? extends QuerydslBinderCustomizer<?>>> customizer) {
 
 		Assert.notNull(customizer, "Customizer must not be null!");
@@ -141,7 +165,8 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 
 		return customizer//
 				.filter(it -> !QuerydslBinderCustomizer.class.equals(it))//
-				.map(this::createQuerydslBinderCustomizer).orElseGet(() -> repositories.flatMap(it -> it.getRepositoryFor(domainType))//
+				.map(this::createQuerydslBinderCustomizer)
+				.orElseGet(() -> repositories.flatMap(it -> it.getRepositoryFor(domainType))//
 						.map(it -> it instanceof QuerydslBinderCustomizer ? (QuerydslBinderCustomizer<EntityPath<?>>) it : null)//
 						.orElse(NoOpCustomizer.INSTANCE));
 	}

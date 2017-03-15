@@ -23,10 +23,10 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
-import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
+import org.springframework.data.util.CastUtils;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.LinkedMultiValueMap;
@@ -89,7 +89,6 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Predicate resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
@@ -103,13 +102,13 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
 		TypeInformation<?> domainType = extractTypeInfo(parameter).getActualType();
 
-		Optional<? extends Class<? extends QuerydslBinderCustomizer>> map = annotation
-				.<Class<? extends QuerydslBinderCustomizer>>map(QuerydslPredicate::bindings);
+		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindings = annotation//
+				.map(QuerydslPredicate::bindings)//
+				.map(CastUtils::cast);
 
-		QuerydslBindings bindings = bindingsFactory.createBindingsFor(domainType,
-				(Optional<Class<? extends QuerydslBinderCustomizer<?>>>) map);
-
-		return predicateBuilder.getPredicate(domainType, parameters, bindings);
+		return predicateBuilder.getPredicate(domainType, parameters,
+				bindings.map(it -> bindingsFactory.createBindingsFor(domainType, it))
+						.orElseGet(() -> bindingsFactory.createBindingsFor(domainType)));
 	}
 
 	/**
@@ -125,7 +124,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
 
 		return annotation.filter(it -> !Object.class.equals(it.root()))//
-				.<TypeInformation<?>>map(it -> ClassTypeInformation.from(it.root()))//
+				.<TypeInformation<?>> map(it -> ClassTypeInformation.from(it.root()))//
 				.orElseGet(() -> detectDomainType(ClassTypeInformation.fromReturnTypeOf(parameter.getMethod())));
 	}
 

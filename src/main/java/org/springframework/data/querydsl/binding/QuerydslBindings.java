@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,7 +36,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Path;
-import com.querydsl.core.types.Predicate;
 
 /**
  * {@link QuerydslBindings} allows definition of path specific bindings.
@@ -478,7 +476,8 @@ public class QuerydslBindings {
 		public <P extends Path<T>> void first(SingleValueBinding<P, T> binding) {
 
 			Assert.notNull(binding, "Binding must not be null!");
-			all((MultiValueBinding<P, T>) (path, value) -> Optionals.next(value.iterator()).flatMap(t -> binding.bind(path, t)));
+			all((MultiValueBinding<P, T>) (path, value) -> Optionals.next(value.iterator())
+					.flatMap(t -> binding.bind(path, t)));
 		}
 
 		/**
@@ -490,7 +489,7 @@ public class QuerydslBindings {
 
 			Assert.notNull(binding, "Binding must not be null!");
 
-			QuerydslBindings.this.typeSpecs.put(type, PathAndBinding.<T, P>withoutPath().with(binding));
+			QuerydslBindings.this.typeSpecs.put(type, PathAndBinding.<T, P> withoutPath().with(binding));
 		}
 	}
 
