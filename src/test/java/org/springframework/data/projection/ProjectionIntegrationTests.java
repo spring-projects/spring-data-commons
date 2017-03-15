@@ -15,8 +15,7 @@
  */
 package org.springframework.data.projection;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 
@@ -43,7 +42,7 @@ public class ProjectionIntegrationTests {
 		ParseContext context = JsonPath.using(new ConfigurationBuilder().options(Option.SUPPRESS_EXCEPTIONS).build());
 		DocumentContext json = context.parse(new ObjectMapper().writeValueAsString(projection));
 
-		assertThat(json.read("$.decoratedClass", String.class), is(nullValue()));
+		assertThat(json.read("$.decoratedClass", String.class)).isNull();
 	}
 
 	interface SampleProjection {
