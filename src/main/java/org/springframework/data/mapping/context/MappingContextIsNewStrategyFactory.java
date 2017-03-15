@@ -18,7 +18,6 @@ package org.springframework.data.mapping.context;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
@@ -112,11 +111,11 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		 * @see org.springframework.data.support.IsNewStrategy#isNew(java.util.Optional)
 		 */
 		@Override
-		public boolean isNew(Optional<? extends Object> entity) {
+		public boolean isNew(Object entity) {
 
-			return entity//
-					.map(it -> isNew.apply(property.getOwner().getPropertyAccessor(it).getProperty(property)))//
-					.orElse(false);
+			Assert.notNull(entity, "Entity must not be null!");
+
+			return isNew.apply(property.getOwner().getPropertyAccessor(entity).getProperty(property));
 		}
 	}
 

@@ -15,8 +15,8 @@
  */
 package org.springframework.data.auditing;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -25,9 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.context.SampleMappingContext;
 
@@ -57,7 +55,7 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 
 		AuditedUser user = new AuditedUser();
 
-		getHandler().markAudited(Optional.of(user));
+		getHandler().markAudited(user);
 
 		assertThat(user.createdDate).isNotNull();
 		assertThat(user.modifiedDate).isNotNull();
@@ -69,7 +67,7 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 		AuditedUser user = new AuditedUser();
 		user.id = 1L;
 
-		getHandler().markAudited(Optional.of(user));
+		getHandler().markAudited(user);
 
 		assertThat(user.createdDate).isNull();
 		assertThat(user.modifiedDate).isNotNull();

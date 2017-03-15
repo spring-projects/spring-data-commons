@@ -15,7 +15,6 @@
  */
 package org.springframework.data.auditing;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -74,7 +73,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 * 
 	 * @param object
 	 */
-	public void markAudited(Optional<Object> object) {
+	public void markAudited(Object object) {
 
 		Assert.notNull(object, "Source object must not be null!");
 
@@ -82,15 +81,12 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 			return;
 		}
 
-		object.ifPresent(it -> {
+		IsNewStrategy strategy = isNewStrategyFactory.getIsNewStrategy(object.getClass());
 
-			IsNewStrategy strategy = isNewStrategyFactory.getIsNewStrategy(it.getClass());
-
-			if (strategy.isNew(object)) {
-				markCreated(object);
-			} else {
-				markModified(object);
-			}
-		});
+		if (strategy.isNew(object)) {
+			markCreated(object);
+		} else {
+			markModified(object);
+		}
 	}
 }

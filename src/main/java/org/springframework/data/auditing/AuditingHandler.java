@@ -16,7 +16,6 @@
 package org.springframework.data.auditing;
 
 import java.time.temporal.TemporalAccessor;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -125,7 +124,7 @@ public class AuditingHandler implements InitializingBean {
 	 * 
 	 * @param source
 	 */
-	public void markCreated(Optional<? extends Object> source) {
+	public void markCreated(Object source) {
 		touch(source, true);
 	}
 
@@ -134,7 +133,7 @@ public class AuditingHandler implements InitializingBean {
 	 * 
 	 * @param source
 	 */
-	public void markModified(Optional<? extends Object> source) {
+	public void markModified(Object source) {
 		touch(source, false);
 	}
 
@@ -144,15 +143,16 @@ public class AuditingHandler implements InitializingBean {
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
-	protected final boolean isAuditable(Optional<Object> source) {
-		return source.flatMap(o -> factory.getBeanWrapperFor(source)).isPresent();
+	protected final boolean isAuditable(Object source) {
+
+		Assert.notNull(source, "Source must not be null!");
+
+		return factory.getBeanWrapperFor(source).isPresent();
 	}
 
-	private void touch(Optional<? extends Object> target, boolean isNew) {
+	private void touch(Object target, boolean isNew) {
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(target);
-
-		wrapper.ifPresent(it -> {
+		factory.getBeanWrapperFor(target).ifPresent(it -> {
 
 			Optional<Object> auditor = touchAuditor(it, isNew);
 			Optional<TemporalAccessor> now = dateTimeForNow ? touchDate(it, isNew) : Optional.empty();

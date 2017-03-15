@@ -50,9 +50,11 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public Optional<AuditableBeanWrapper> getBeanWrapperFor(Optional<? extends Object> source) {
+	public Optional<AuditableBeanWrapper> getBeanWrapperFor(Object source) {
 
-		return source.map(it -> {
+		Assert.notNull(source, "Source must not be null!");
+
+		return Optional.of(source).map(it -> {
 
 			if (it instanceof Auditable) {
 				return new AuditableInterfaceBeanWrapper((Auditable<Object, ?, TemporalAccessor>) it);
@@ -191,9 +193,10 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 				if (conversionService.canConvert(Date.class, targetType)) {
 
-					if(!conversionService.canConvert(it.getClass(), Date.class)) {
-						throw new IllegalArgumentException(String.format("Cannot convert date type for member %s! From %s to java.util.Date to %s.",
-								source, it.getClass(), targetType));
+					if (!conversionService.canConvert(it.getClass(), Date.class)) {
+						throw new IllegalArgumentException(
+								String.format("Cannot convert date type for member %s! From %s to java.util.Date to %s.", source,
+										it.getClass(), targetType));
 					}
 
 					Date date = conversionService.convert(it, Date.class);

@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,16 +53,16 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(VersionedEntity.class);
 
-		Optional<VersionedEntity> entity = Optional.of(new VersionedEntity());
+		VersionedEntity entity = new VersionedEntity();
 		assertThat(strategy.isNew(entity)).isTrue();
 
-		entity.get().id = 1L;
+		entity.id = 1L;
 		assertThat(strategy.isNew(entity)).isTrue();
 
-		entity.get().version = 0L;
+		entity.version = 0L;
 		assertThat(strategy.isNew(entity)).isTrue();
 
-		entity.get().version = 1L;
+		entity.version = 1L;
 		assertThat(strategy.isNew(entity)).isFalse();
 	}
 
@@ -72,13 +71,13 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(VersionedEntity.class);
 
-		Optional<VersionedEntity> entity = Optional.of(new VersionedEntity());
+		VersionedEntity entity = new VersionedEntity();
 		assertThat(strategy.isNew(entity)).isTrue();
 
-		entity.get().id = 1L;
+		entity.id = 1L;
 		assertThat(strategy.isNew(entity)).isTrue();
 
-		entity.get().version = 1L;
+		entity.version = 1L;
 		assertThat(strategy.isNew(entity)).isFalse();
 	}
 
@@ -87,10 +86,10 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(Entity.class);
 
-		Optional<Entity> entity = Optional.of(new Entity());
+		Entity entity = new Entity();
 		assertThat(strategy.isNew(entity)).isTrue();
 
-		entity.get().id = 1L;
+		entity.id = 1L;
 		assertThat(strategy.isNew(entity)).isFalse();
 	}
 

@@ -65,9 +65,9 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 	 * @see org.springframework.data.auditing.AuditableBeanWrapperFactory#getBeanWrapperFor(java.lang.Object)
 	 */
 	@Override
-	public Optional<AuditableBeanWrapper> getBeanWrapperFor(Optional<? extends Object> source) {
+	public Optional<AuditableBeanWrapper> getBeanWrapperFor(Object source) {
 
-		return source.flatMap(it -> {
+		return Optional.of(source).flatMap(it -> {
 
 			if (it instanceof Auditable) {
 				return super.getBeanWrapperFor(source);
@@ -80,7 +80,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 				MappingAuditingMetadata metadata = metadataCache.computeIfAbsent(type,
 						key -> new MappingAuditingMetadata(entity));
 
-				return Optional.<AuditableBeanWrapper>ofNullable(metadata.isAuditable()
+				return Optional.<AuditableBeanWrapper> ofNullable(metadata.isAuditable()
 						? new MappingMetadataAuditableBeanWrapper(entity.getPropertyAccessor(it), metadata) : null);
 
 			}).orElseGet(() -> super.getBeanWrapperFor(source));
@@ -172,7 +172,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		@Override
 		public Optional<TemporalAccessor> setCreatedDate(Optional<TemporalAccessor> value) {
 
-			metadata.createdDateProperty.ifPresent(it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it)));
+			metadata.createdDateProperty
+					.ifPresent(it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it)));
 
 			return value;
 		}
@@ -206,7 +207,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		@Override
 		public Optional<TemporalAccessor> setLastModifiedDate(Optional<TemporalAccessor> value) {
 
-			metadata.lastModifiedDateProperty.ifPresent(it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it)));
+			metadata.lastModifiedDateProperty
+					.ifPresent(it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it)));
 
 			return value;
 		}

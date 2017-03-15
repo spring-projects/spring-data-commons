@@ -17,8 +17,6 @@ package org.springframework.data.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Optional;
-
 import org.junit.Test;
 import org.springframework.data.domain.Persistable;
 
@@ -34,16 +32,16 @@ public class PersistableIsNewStrategyUnitTests {
 	@Test
 	public void invokesPersistableIsNewForTest() {
 
-		Optional<PersistableEntity> entity = Optional.of(new PersistableEntity());
+		PersistableEntity entity = new PersistableEntity();
 		assertThat(strategy.isNew(entity)).isTrue();
 
-		entity.get().isNew = false;
+		entity.isNew = false;
 		assertThat(strategy.isNew(entity)).isFalse();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNonPersistableEntity() {
-		strategy.isNew(Optional.of(new Object()));
+		strategy.isNew(new Object());
 	}
 
 	@SuppressWarnings("serial")

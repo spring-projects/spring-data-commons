@@ -36,26 +36,28 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 
 	DefaultAuditableBeanWrapperFactory factory = new DefaultAuditableBeanWrapperFactory();
 
-	@Test
-	public void returnsEmptyForEmptySource() {
-		assertThat(factory.getBeanWrapperFor(Optional.empty())).isNotPresent();
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullSource() {
+		factory.getBeanWrapperFor(null);
 	}
 
 	@Test
 	public void returnsAuditableInterfaceBeanWrapperForAuditable() {
 
-		assertThat(factory.getBeanWrapperFor(Optional.of(new AuditedUser()))).hasValueSatisfying(it -> assertThat(it).isInstanceOf(AuditableInterfaceBeanWrapper.class));
+		assertThat(factory.getBeanWrapperFor(new AuditedUser()))
+				.hasValueSatisfying(it -> assertThat(it).isInstanceOf(AuditableInterfaceBeanWrapper.class));
 	}
 
 	@Test
 	public void returnsReflectionAuditingBeanWrapperForNonAuditableButAnnotated() {
 
-		assertThat(factory.getBeanWrapperFor(Optional.of(new AnnotatedUser()))).hasValueSatisfying(it -> assertThat(it).isInstanceOf(ReflectionAuditingBeanWrapper.class));
+		assertThat(factory.getBeanWrapperFor(new AnnotatedUser()))
+				.hasValueSatisfying(it -> assertThat(it).isInstanceOf(ReflectionAuditingBeanWrapper.class));
 	}
 
 	@Test
 	public void returnsEmptyForNonAuditableType() {
-		assertThat(factory.getBeanWrapperFor(Optional.of(new Object()))).isNotPresent();
+		assertThat(factory.getBeanWrapperFor(new Object())).isNotPresent();
 	}
 
 	@Test // DATACMNS-643
@@ -64,7 +66,7 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
 		Instant instant = Instant.now();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(user));
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(user);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
@@ -83,7 +85,7 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
 		ZonedDateTime zonedDateTime = ZonedDateTime.now();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(user));
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(user);
 
 		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(Optional.of(zonedDateTime)));
 	}
