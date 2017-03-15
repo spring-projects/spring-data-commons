@@ -18,8 +18,6 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.web.PageableHandlerMethodArgumentResolver.*;
 
-import java.util.Optional;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -140,20 +138,20 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-477
-	public void returnsNullIfFallbackIsNullAndNoParametersGiven() throws Exception {
+	public void returnsNullIfFallbackIsUnpagedAndNoParametersGiven() throws Exception {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
-		resolver.setFallbackPageable(Optional.empty());
+		resolver.setFallbackPageable(Pageable.unpaged());
 
 		assertSupportedAndResult(supportedMethodParameter, null, new ServletWebRequest(new MockHttpServletRequest()),
 				resolver);
 	}
 
 	@Test // DATACMNS-477
-	public void returnsNullIfFallbackIsNullAndOnlyPageIsGiven() throws Exception {
+	public void returnsNullIfFallbackIsUnpagedAndOnlyPageIsGiven() throws Exception {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
-		resolver.setFallbackPageable(Optional.empty());
+		resolver.setFallbackPageable(Pageable.unpaged());
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("page", "20");
@@ -162,10 +160,10 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-477
-	public void returnsNullIfFallbackIsNullAndOnlySizeIsGiven() throws Exception {
+	public void returnsNullIfFallbackIsUnpagedAndOnlySizeIsGiven() throws Exception {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
-		resolver.setFallbackPageable(Optional.empty());
+		resolver.setFallbackPageable(Pageable.unpaged());
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("size", "10");
@@ -191,7 +189,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	public void usesNullSortIfNoDefaultIsConfiguredAndPageAndSizeAreGiven() {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
-		resolver.setFallbackPageable(Optional.empty());
+		resolver.setFallbackPageable(Pageable.unpaged());
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("page", "0");
@@ -236,7 +234,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	public void detectsFallbackPageableIfNullOneIsConfigured() {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
-		resolver.setFallbackPageable(Optional.empty());
+		resolver.setFallbackPageable(Pageable.unpaged());
 
 		assertThat(resolver.isFallbackPageable(null)).isFalse();
 		assertThat(resolver.isFallbackPageable(PageRequest.of(0, 10))).isFalse();

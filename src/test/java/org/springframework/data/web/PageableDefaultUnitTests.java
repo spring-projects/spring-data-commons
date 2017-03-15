@@ -69,8 +69,8 @@ public abstract class PageableDefaultUnitTests {
 
 	@Test
 	public void returnsDefaultIfNoRequestParametersAndNoDefault() throws Exception {
-		assertSupportedAndResult(getParameterOfMethod("supportedMethod"), ReflectionTestUtils
-				.invokeMethod(ReflectionTestUtils.getField(getResolver(), "fallbackPageable"), "get"));
+		assertSupportedAndResult(getParameterOfMethod("supportedMethod"),
+				(Pageable) ReflectionTestUtils.getField(getResolver(), "fallbackPageable"));
 	}
 
 	@Test

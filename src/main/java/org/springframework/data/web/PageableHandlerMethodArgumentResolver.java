@@ -54,7 +54,7 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 	private static final int DEFAULT_MAX_PAGE_SIZE = 2000;
 	static final Pageable DEFAULT_PAGE_REQUEST = PageRequest.of(0, 20);
 
-	private Optional<Pageable> fallbackPageable = Optional.of(DEFAULT_PAGE_REQUEST);
+	private Pageable fallbackPageable = DEFAULT_PAGE_REQUEST;
 	private SortArgumentResolver sortResolver;
 	private String pageParameterName = DEFAULT_PAGE_PARAMETER;
 	private String sizeParameterName = DEFAULT_SIZE_PARAMETER;
@@ -101,7 +101,7 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 	 * 
 	 * @param fallbackPageable the {@link Pageable} to be used as general fallback.
 	 */
-	public void setFallbackPageable(Optional<Pageable> fallbackPageable) {
+	public void setFallbackPageable(Pageable fallbackPageable) {
 
 		Assert.notNull(fallbackPageable, "Fallback Pageable must not be null!");
 
@@ -240,7 +240,7 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 
 		assertPageableUniqueness(methodParameter);
 
-		Optional<Pageable> defaultOrFallback = getDefaultFromAnnotationOrFallback(methodParameter);
+		Optional<Pageable> defaultOrFallback = getDefaultFromAnnotationOrFallback(methodParameter).toOptional();
 
 		String pageString = webRequest.getParameter(getParameterNameToUse(pageParameterName, methodParameter));
 		String pageSizeString = webRequest.getParameter(getParameterNameToUse(sizeParameterName, methodParameter));
@@ -252,8 +252,8 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 			return null;
 		}
 
-		int p = page.orElseGet(
-				() -> defaultOrFallback.map(Pageable::getPageNumber).orElseThrow(IllegalStateException::new));
+		int p = page
+				.orElseGet(() -> defaultOrFallback.map(Pageable::getPageNumber).orElseThrow(IllegalStateException::new));
 		int ps = pageSize
 				.orElseGet(() -> defaultOrFallback.map(Pageable::getPageSize).orElseThrow(IllegalStateException::new));
 
@@ -288,10 +288,10 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 		return builder.append(source).toString();
 	}
 
-	private Optional<Pageable> getDefaultFromAnnotationOrFallback(MethodParameter methodParameter) {
+	private Pageable getDefaultFromAnnotationOrFallback(MethodParameter methodParameter) {
 
 		if (methodParameter.hasParameterAnnotation(PageableDefault.class)) {
-			return Optional.of(getDefaultPageRequestFrom(methodParameter));
+			return getDefaultPageRequestFrom(methodParameter);
 		}
 
 		return fallbackPageable;

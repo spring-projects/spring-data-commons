@@ -83,7 +83,7 @@ public interface QuerydslPredicateExecutor<T> {
 	 * {@link Page} is returned.
 	 * 
 	 * @param predicate can be {@literal null}.
-	 * @param pageable can be {@literal null}.
+	 * @param pageable must not be {@literal null}.
 	 * @return a {@link Page} of entities matching the given {@link Predicate}.
 	 */
 	Page<T> findAll(Predicate predicate, Pageable pageable);

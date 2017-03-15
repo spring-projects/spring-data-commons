@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.domain;
+
+import java.util.Optional;
 
 import org.springframework.util.Assert;
 
@@ -120,4 +122,13 @@ public interface Pageable {
 	 * @return
 	 */
 	boolean hasPrevious();
+
+	/**
+	 * Returns an {@link Optional} so that it can easily be mapped on.
+	 * 
+	 * @return
+	 */
+	default Optional<Pageable> toOptional() {
+		return isUnpaged() ? Optional.empty() : Optional.of(this);
+	}
 }
