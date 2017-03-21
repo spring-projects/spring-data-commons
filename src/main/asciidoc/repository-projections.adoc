@@ -46,16 +46,7 @@ interface PersonRepository extends CrudRepository<Person, Long> {
 }
 ----
 
-Spring Data will return the domain object including all of its attributes. There are two options just to retrieve the `address` attribute. One option is to define a repository for `Address` objects like this:
-
-[source,java]
-----
-interface AddressRepository extends CrudRepository<Address, Long> {}
-----
-
-In this situation, using `PersonRepository` will still return the whole `Person` object. Using `AddressRepository` will return just the `Address`.
-
-However, what if you do not want to expose `address` details at all? You can offer the consumer of your repository service an alternative by defining one or more projections.
+Spring Data will return the domain object including all of its attributes. If you do not want to expose `Address` details you can offer the consumer of your repository service an alternative by defining one or more projections.
 
 .Simple Projection
 ====
@@ -85,7 +76,9 @@ interface PersonRepository extends CrudRepository<Person, Long> {
 }
 ----
 
-Projections declare a contract between the underlying type and the method signatures related to the exposed properties. Hence it is required to name getter methods according to the property name of the underlying type. If the underlying property is named `firstName`, then the getter method must be named `getFirstName` otherwise Spring Data is not able to look up the source property. This type of projection is also called _closed projection_. Closed projections expose a subset of properties hence they can be used to optimize the query in a way to reduce the selected fields from the data store. The other type is, as you might imagine, an _open projection_. 
+Projections declare a contract between the underlying type and the method signatures related to the exposed properties. Hence it is required to name getter methods according to the property name of the underlying type. If the underlying property is named `firstName`, then the getter method must be named `getFirstName` otherwise Spring Data is not able to look up the source property. This type of projection is also called _closed projection_. Closed projections expose a subset of properties and do not use `@Value` annotations. Hence they can be used to optimize the query by reducing the selected fields from the data store.
+
+The other type is, as you might imagine, an _open projection_, which does contain one or more `@Value` annotations. Projections using the `@Value` annotation can access all the properties of an entity, hence the selected fields can not be reduced.
 
 [[projections.remodelling-data]]
 == Remodelling data
@@ -161,3 +154,61 @@ interface PasswordProjection {
 
 The expression checks whether the password is `null` or empty and returns `null` in this case, otherwise six asterisks to indicate a password was set.
 
+== Nested Projections
+
+Projections can return projections for types they reference. Lets go back to persons with addresses:
+
+[source,java]
+----
+@Entity
+public class Person {
+
+  @Id @GeneratedValue
+  private Long id;
+
+  @OneToOne
+  private Address address;
+  …
+}
+
+@Entity
+public class Address {
+
+  @Id @GeneratedValue
+  private Long id;
+
+  private String street, state, country;
+
+  …
+}
+----
+
+What if you don't want to make the full address accessible, but only the `state` and `country` attributes? It should be clear by now that you can define a projection for this purpose.
+
+[source,java]
+----
+interface PartialAddress {
+
+  String getState();
+  String getCountry();
+}
+----
+
+But `Person` entities have a reference to a normal `Address`, so you need another projection for `Person` which returns a `PartialAddress`.
+
+[source,java]
+----
+interface PersonWithPartioalAddress {
+  PartialAddress getAddress();
+}
+----
+
+Note that the name of the property is unchanged, just the return type is replaced with the `PartialAddress` projection.
+
+== Choice of return types
+
+When including a property in a projection one should choose either the original return type or a projection of that return type. If you want to return a completely different type projections are not the right tool. Depending on what exactly you want to do there are multiple other options.
+
+Complex computations on properties can be implemented as separate getters, either on the entity or as default implementations on projections.
+
+In some cases the transformation in question are more about the representation of an entity or an entity attribute. In this case you should consult the technology you are using for creating that representation, for example the http://docs.spring.io/spring-data/rest/docs/{springVersion}/reference/html/#representations.mapping[representations mapping of Spring Data Rest].
