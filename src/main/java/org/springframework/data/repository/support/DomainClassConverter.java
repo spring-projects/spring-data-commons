@@ -152,11 +152,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 			Class<?> domainType = targetType.getType();
 			RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(domainType);
+			RepositoryInformation information = repositories.getRequiredRepositoryInformation(domainType);
 
-			return repositories.getRepositoryInformationFor(domainType)//
-					.map(it -> invoker.invokeFindOne(conversionService.convert(source, it.getIdType())))//
-					.orElseThrow(() -> new IllegalStateException(
-							String.format("Couldn't find RepositoryInformation for %s!", domainType)));
+			return invoker.invokeFindOne(conversionService.convert(source, information.getIdType())).orElse(null);
 		}
 
 		/*

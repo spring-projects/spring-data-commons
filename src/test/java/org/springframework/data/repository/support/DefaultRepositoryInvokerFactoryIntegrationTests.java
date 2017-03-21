@@ -18,6 +18,8 @@ package org.springframework.data.repository.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,9 +61,9 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 		Product product = new Product();
 		when(productRepository.findOne(4711L)).thenReturn(product);
 
-		Object invokeFindOne = factory.getInvokerFor(Product.class).invokeFindOne(4711L);
+		Optional<Object> invokeFindOne = factory.getInvokerFor(Product.class).invokeFindOne(4711L);
 
-		assertThat(invokeFindOne).isEqualTo(product);
+		assertThat(invokeFindOne).isEqualTo(Optional.of(product));
 	}
 
 	@Test // DATACMNS-374, DATACMNS-589

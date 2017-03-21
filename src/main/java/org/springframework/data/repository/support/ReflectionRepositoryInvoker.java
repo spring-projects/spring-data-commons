@@ -30,6 +30,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
@@ -135,12 +136,23 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 	 */
 	@Override
-	public <T> T invokeFindOne(Serializable id) {
+	@SuppressWarnings("unchecked")
+	public <T> Optional<T> invokeFindOne(Serializable id) {
 
 		Method method = methods.getFindOneMethod()//
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-one-method declared!"));
 
-		return invoke(method, convertId(id));
+		Object invoke = invoke(method, convertId(id));
+
+		if (Optional.class.isInstance(invoke)) {
+			return (Optional<T>) invoke;
+		}
+
+		if (invoke == null) {
+			return Optional.empty();
+		}
+
+		return conversionService.convert(QueryExecutionConverters.unwrap(invoke), Optional.class);
 	}
 
 	/* 
@@ -169,7 +181,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		if (idTypes.contains(parameterType)) {
 			invoke(method, convertId(id));
 		} else {
-			invoke(method, this.<Object>invokeFindOne(id));
+			invoke(method, this.<Object> invokeFindOne(id).orElse(null));
 		}
 	}
 

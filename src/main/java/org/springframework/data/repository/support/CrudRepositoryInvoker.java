@@ -89,8 +89,8 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T invokeFindOne(Serializable id) {
-		return customFindOneMethod ? super.invokeFindOne(id) : (T) repository.findOne(convertId(id));
+	public <T> Optional<T> invokeFindOne(Serializable id) {
+		return customFindOneMethod ? super.invokeFindOne(id) : (Optional<T>) repository.findOne(convertId(id));
 	}
 
 	/*

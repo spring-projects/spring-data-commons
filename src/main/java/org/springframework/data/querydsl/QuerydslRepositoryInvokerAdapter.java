@@ -17,6 +17,7 @@ package org.springframework.data.querydsl;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -125,7 +126,7 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 	 */
 	@Override
-	public <T> T invokeFindOne(Serializable id) {
+	public <T> Optional<T> invokeFindOne(Serializable id) {
 		return delegate.invokeFindOne(id);
 	}
 

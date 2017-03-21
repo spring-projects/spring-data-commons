@@ -16,6 +16,7 @@
 package org.springframework.data.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 
@@ -25,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -239,6 +241,19 @@ public class ReflectionRepositoryInvokerUnitTests {
 		}
 	}
 
+	@Test // DATACMNS-867
+	public void convertsWrapperTypeToJdkOptional() {
+
+		GuavaRepository mock = mock(GuavaRepository.class);
+		when(mock.findOne(any())).thenReturn(com.google.common.base.Optional.of(new Domain()));
+
+		RepositoryInvoker invoker = getInvokerFor(mock);
+
+		Optional<Object> invokeFindOne = invoker.invokeFindOne(1L);
+
+		assertThat(invokeFindOne).isPresent();
+	}
+
 	private static RepositoryInvoker getInvokerFor(Object repository) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repository.getClass().getInterfaces()[0]);
@@ -297,5 +312,10 @@ public class ReflectionRepositoryInvokerUnitTests {
 	interface SimpleRepository extends Repository<Domain, Long> {
 
 		Domain findByClass(@Param("value") int value);
+	}
+
+	interface GuavaRepository extends Repository<Domain, Long> {
+
+		com.google.common.base.Optional<Domain> findOne(Long id);
 	}
 }

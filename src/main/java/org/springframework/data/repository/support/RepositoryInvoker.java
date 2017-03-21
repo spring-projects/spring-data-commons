@@ -17,6 +17,7 @@ package org.springframework.data.repository.support;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -49,7 +50,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	 * @return the entity with the given id.
 	 * @throws IllegalStateException if the repository does not expose a find-one-method.
 	 */
-	<T> T invokeFindOne(Serializable id);
+	<T> Optional<T> invokeFindOne(Serializable id);
 
 	/**
 	 * Invokes the find-all method of the underlying repository using the method taking a {@link Pageable} as parameter if
