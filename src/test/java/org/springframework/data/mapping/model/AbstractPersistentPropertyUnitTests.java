@@ -61,7 +61,7 @@ public class AbstractPersistentPropertyUnitTests {
 
 	@Test // DATACMNS-68
 	public void discoversComponentTypeCorrectly() throws Exception {
-		assertThat(getProperty(TestClassComplex.class, "testClassSet").getComponentType()).isEqualTo(Object.class);
+		assertThat(getProperty(TestClassComplex.class, "testClassSet").getComponentType()).hasValue(Object.class);
 	}
 
 	@Test // DATACMNS-101

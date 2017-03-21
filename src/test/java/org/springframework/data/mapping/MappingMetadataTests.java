@@ -50,7 +50,8 @@ public class MappingMetadataTests {
 
 		PersistentEntity<?, SamplePersistentProperty> person = ctx.getRequiredPersistentEntity(PersonWithChildren.class);
 
-		person.doWithAssociations((AssociationHandler<SamplePersistentProperty>) association -> assertThat(
-				association.getInverse().getComponentType()).isEqualTo(Child.class));
+		person.doWithAssociations((AssociationHandler<SamplePersistentProperty>) association -> {
+			assertThat(association.getInverse().getComponentType()).hasValue(Child.class);
+		});
 	}
 }

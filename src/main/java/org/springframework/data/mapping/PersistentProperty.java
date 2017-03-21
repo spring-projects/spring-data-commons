@@ -171,10 +171,10 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * Returns the component type of the type if it is a {@link java.util.Collection}. Will return the type of the key if
 	 * the property is a {@link java.util.Map}.
 	 * 
-	 * @return the component type, the map's key type or {@literal null} if neither {@link java.util.Collection} nor
-	 *         {@link java.util.Map}.
+	 * @return the component type, the map's key type or {@link Optional#empty()} if neither {@link java.util.Collection}
+	 *         nor {@link java.util.Map}.
 	 */
-	Class<?> getComponentType();
+	Optional<Class<?>> getComponentType();
 
 	/**
 	 * Returns the raw type as it's pulled from from the reflected property.
@@ -186,9 +186,9 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	/**
 	 * Returns the type of the values if the property is a {@link java.util.Map}.
 	 * 
-	 * @return the map's value type or {@literal null} if no {@link java.util.Map}
+	 * @return the map's value type or {@link Optional#empty()} if no {@link java.util.Map}
 	 */
-	Class<?> getMapValueType();
+	Optional<Class<?>> getMapValueType();
 
 	/**
 	 * Returns the actual type of the property. This will be the original property type if no generics were used, the
