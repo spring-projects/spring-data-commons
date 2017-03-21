@@ -56,8 +56,11 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	private final Optional<Value> value;
 	private final Map<Class<? extends Annotation>, Optional<? extends Annotation>> annotationCache = new HashMap<>();
 
-	private Lazy<Boolean> isTransient;
-	private Lazy<Boolean> usePropertyAccess;
+	private final Lazy<Boolean> usePropertyAccess = Lazy.of(() -> findPropertyOrOwnerAnnotation(AccessType.class)//
+			.map(it -> Type.PROPERTY.equals(it.value()))//
+			.orElse(super.usePropertyAccess()));
+	private final Lazy<Boolean> isTransient = Lazy.of(() -> super.isTransient() || isAnnotationPresent(Transient.class)
+			|| isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class));
 
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
@@ -73,11 +76,6 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		populateAnnotationCache(property);
 
 		this.value = findAnnotation(Value.class);
-		this.usePropertyAccess = Lazy.of(() -> findPropertyOrOwnerAnnotation(AccessType.class)//
-				.map(it -> Type.PROPERTY.equals(it.value()))//
-				.orElse(super.usePropertyAccess()));
-		this.isTransient = Lazy.of(() -> super.isTransient() || isAnnotationPresent(Transient.class)
-				|| isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class));
 	}
 
 	/**

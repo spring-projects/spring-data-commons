@@ -50,10 +50,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		CAUSE_FIELD = ReflectionUtils.findField(Throwable.class, "cause");
 	}
 
-	protected final String name;
-	protected final TypeInformation<?> information;
-	protected final Class<?> rawType;
-	protected final Optional<Association<P>> association;
+	private final String name;
+	private final TypeInformation<?> information;
+	private final Class<?> rawType;
+	private final Lazy<Optional<Association<P>>> association;
 	private final @Getter PersistentEntity<?, P> owner;
 	private final @Getter(AccessLevel.PROTECTED) Property property;
 	private final Lazy<Integer> hashCode;
@@ -71,7 +71,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.information = PropertyPath.from(Pattern.quote(property.getName()), owner.getTypeInformation())
 				.getTypeInformation();
 		this.property = property;
-		this.association = isAssociation() ? Optional.of(createAssociation()) : Optional.empty();
+		this.association = Lazy.of(() -> isAssociation() ? Optional.of(createAssociation()) : Optional.empty());
 		this.owner = owner;
 
 		this.hashCode = Lazy.of(property::hashCode);
@@ -206,7 +206,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Optional<Association<P>> getAssociation() {
-		return association;
+		return association.get();
 	}
 
 	/*
