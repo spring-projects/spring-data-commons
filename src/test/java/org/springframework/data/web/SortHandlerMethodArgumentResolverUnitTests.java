@@ -55,7 +55,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		Sort fallbackSort = new Sort(Direction.ASC, "ID");
+		Sort fallbackSort = Sort.by(Direction.ASC, "ID");
 		resolver.setFallbackSort(fallbackSort);
 
 		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
@@ -123,7 +123,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
-		assertThat(result).isEqualTo(new Sort(Direction.ASC, "firstname", "lastname"));
+		assertThat(result).isEqualTo(Sort.by(Direction.ASC, "firstname", "lastname"));
 	}
 
 	@Test // DATACMNS-408
@@ -150,7 +150,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("sort", "property1,,DESC");
 
-		assertThat(resolveSort(request, PARAMETER)).isEqualTo(new Sort(DESC, "property1"));
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(DESC, "property1"));
 	}
 
 	@Test // DATACMNS-408
@@ -160,7 +160,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		request.addParameter("sort", "property,DESC");
 		request.addParameter("sort", "");
 
-		assertThat(resolveSort(request, PARAMETER)).isEqualTo(new Sort(DESC, "property"));
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(DESC, "property"));
 	}
 
 	@Test // DATACMNS-379

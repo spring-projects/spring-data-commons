@@ -57,7 +57,7 @@ public class SpringDataJaxbUnitTests {
 	Marshaller marshaller;
 	Unmarshaller unmarshaller;
 
-	Sort sort = new Sort(Direction.ASC, "firstname", "lastname");
+	Sort sort = Sort.by(Direction.ASC, "firstname", "lastname");
 	Pageable pageable = PageRequest.of(2, 15, sort);
 	Resource resource = new ClassPathResource("pageable.xml", this.getClass());
 	Resource schemaFile = new ClassPathResource("spring-data-jaxb.xsd", this.getClass());

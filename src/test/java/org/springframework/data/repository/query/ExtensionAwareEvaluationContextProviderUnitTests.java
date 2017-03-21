@@ -121,7 +121,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	public void exposesPageableParameter() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Pageable.class);
-		PageRequest pageable = PageRequest.of(2, 3, new Sort(Direction.DESC, "lastname"));
+		PageRequest pageable = PageRequest.of(2, 3, Sort.by(Direction.DESC, "lastname"));
 
 		assertThat(evaluateExpression("#pageable.offset", new Object[] { "test", pageable })).isEqualTo(6L);
 		assertThat(evaluateExpression("#pageable.pageSize", new Object[] { "test", pageable })).isEqualTo(3);
@@ -133,7 +133,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	public void exposesSortParameter() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class);
-		Sort sort = new Sort(Direction.DESC, "lastname");
+		Sort sort = Sort.by(Direction.DESC, "lastname");
 
 		assertThat(evaluateExpression("#sort.toString()", new Object[] { "test", sort })).isEqualTo("lastname: DESC");
 	}

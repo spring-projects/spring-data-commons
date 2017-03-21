@@ -44,7 +44,6 @@ public class OrderBySourceUnitTests {
 
 		OrderBySource orderBySource = new OrderBySource("LastnameAscUsernameDesc");
 		assertThat(orderBySource.toSort()).isEqualTo(Sort.by("lastname").ascending().and(Sort.by("username").descending()));
-		// assertThat(orderBySource.toSort()).hasValue(new Sort(new Order(ASC, "lastname"), new Order(DESC, "username")));
 	}
 
 	@Test(expected = IllegalArgumentException.class)

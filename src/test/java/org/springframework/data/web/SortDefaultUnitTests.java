@@ -44,7 +44,7 @@ public abstract class SortDefaultUnitTests {
 	static final String[] SORT_FIELDS = new String[] { "firstname", "lastname" };
 	static final Direction SORT_DIRECTION = Direction.DESC;
 
-	static final Sort SORT = new Sort(SORT_DIRECTION, SORT_FIELDS);
+	static final Sort SORT = Sort.by(SORT_DIRECTION, SORT_FIELDS);
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 

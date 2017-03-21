@@ -114,7 +114,7 @@ public class QSortUnitTests {
 		QUser user = QUser.user;
 		QSort sort = new QSort(user.firstname.asc());
 
-		Sort result = sort.and(new Sort(Direction.ASC, "lastname"));
+		Sort result = sort.and(Sort.by(Direction.ASC, "lastname"));
 		assertThat(result).hasSize(2);
 		assertThat(result).contains(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, "firstname"));
 	}
@@ -125,7 +125,7 @@ public class QSortUnitTests {
 		QUser user = QUser.user;
 		QSort sort = new QSort(user.dateOfBirth.yearMonth().asc());
 
-		Sort result = sort.and(new Sort(Direction.ASC, "lastname"));
+		Sort result = sort.and(Sort.by(Direction.ASC, "lastname"));
 		assertThat(result).hasSize(2);
 		assertThat(result).contains(new Order(Direction.ASC, "lastname"),
 				new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString()));

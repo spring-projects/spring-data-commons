@@ -37,9 +37,9 @@ public class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandl
 	public void buildsUpRequestParameters() throws Exception {
 
 		assertUriStringFor(SORT, "sort=firstname,lastname,desc");
-		assertUriStringFor(new Sort(ASC, "foo").and(new Sort(DESC, "bar").and(new Sort(ASC, "foobar"))),
+		assertUriStringFor(Sort.by(ASC, "foo").and(Sort.by(DESC, "bar").and(Sort.by(ASC, "foobar"))),
 				"sort=foo,asc&sort=bar,desc&sort=foobar,asc");
-		assertUriStringFor(new Sort(ASC, "foo").and(new Sort(ASC, "bar").and(new Sort(DESC, "foobar"))),
+		assertUriStringFor(Sort.by(ASC, "foo").and(Sort.by(ASC, "bar").and(Sort.by(DESC, "foobar"))),
 				"sort=foo,bar,asc&sort=foobar,desc");
 	}
 

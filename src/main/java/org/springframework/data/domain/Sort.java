@@ -39,7 +39,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 
 	private static final long serialVersionUID = 5737186511678863905L;
 
-	private static final Sort UNSORTED = new Sort(new Order[0]);
+	private static final Sort UNSORTED = Sort.by(new Order[0]);
 
 	public static final Direction DEFAULT_DIRECTION = Direction.ASC;
 
@@ -93,7 +93,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 	/**
 	 * Creates a new {@link Sort} instance.
 	 * 
-	 * @param direction defaults to {@linke Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
+	 * @param direction defaults to {@link Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
 	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings.
 	 */
 	public Sort(Direction direction, List<String> properties) {
@@ -146,6 +146,24 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		Assert.notNull(orders, "Orders must not be null!");
 
 		return new Sort(orders);
+	}
+
+	/**
+	 * Creates a new {@link Sort} for the given {@link Order}s.
+	 * 
+	 * @param direction must not be {@literal null}.
+	 * @param properties must not be {@literal null}.
+	 * @return
+	 */
+	public static Sort by(Direction direction, String... properties) {
+
+		Assert.notNull(direction, "Direction must not be null!");
+		Assert.notNull(properties, "Properties must not be null!");
+		Assert.isTrue(properties.length > 0, "At least one property must be given!");
+
+		return Sort.by(Arrays.stream(properties)//
+				.map(it -> new Order(direction, it))//
+				.collect(Collectors.toList()));
 	}
 
 	/**
@@ -419,6 +437,10 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 			this(DEFAULT_DIRECTION, property);
 		}
 
+		public static Order by(String property) {
+			return new Order(property);
+		}
+
 		/**
 		 * Creates a new {@link Order} instance. if order is {@literal null} then order defaults to
 		 * {@link Sort#DEFAULT_DIRECTION}
@@ -515,7 +537,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * @return
 		 */
 		public Sort withProperties(String... properties) {
-			return new Sort(this.direction, properties);
+			return Sort.by(this.direction, properties);
 		}
 
 		/**

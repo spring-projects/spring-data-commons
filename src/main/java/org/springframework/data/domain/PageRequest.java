@@ -55,7 +55,7 @@ public class PageRequest extends AbstractPageRequest {
 	 */
 	@Deprecated
 	public PageRequest(int page, int size, Direction direction, String... properties) {
-		this(page, size, new Sort(direction, properties));
+		this(page, size, Sort.by(direction, properties));
 	}
 
 	/**
@@ -83,7 +83,7 @@ public class PageRequest extends AbstractPageRequest {
 	}
 
 	public static PageRequest of(int page, int size, Direction direction, String... properties) {
-		return of(page, size, new Sort(direction, properties));
+		return of(page, size, Sort.by(direction, properties));
 	}
 
 	/*

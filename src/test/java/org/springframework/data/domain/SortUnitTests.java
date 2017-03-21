@@ -38,9 +38,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	public void appliesDefaultForOrder() throws Exception {
-
 		assertThat(Sort.by("foo").iterator().next().getDirection()).isEqualTo(Sort.DEFAULT_DIRECTION);
-		assertThat(new Sort((Direction) null, "foo").iterator().next().getDirection()).isEqualTo(Sort.DEFAULT_DIRECTION);
 	}
 
 	/**
@@ -51,7 +49,7 @@ public class SortUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNullProperties() throws Exception {
 
-		new Sort(Direction.ASC, (String[]) null);
+		Sort.by(Direction.ASC, (String[]) null);
 	}
 
 	/**
@@ -62,7 +60,7 @@ public class SortUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNullProperty() throws Exception {
 
-		new Sort(Direction.ASC, (String) null);
+		Sort.by(Direction.ASC, (String) null);
 	}
 
 	/**
@@ -73,7 +71,7 @@ public class SortUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsEmptyProperty() throws Exception {
 
-		new Sort(Direction.ASC, "");
+		Sort.by(Direction.ASC, "");
 	}
 
 	/**
@@ -84,7 +82,7 @@ public class SortUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNoProperties() throws Exception {
 
-		new Sort(Direction.ASC);
+		Sort.by(Direction.ASC);
 	}
 
 	@Test
@@ -151,5 +149,13 @@ public class SortUnitTests {
 		assertThat(result.getDirection()).isEqualTo(source.getDirection());
 		assertThat(result.getNullHandling()).isEqualTo(source.getNullHandling());
 		assertThat(result.isIgnoreCase()).isEqualTo(source.isIgnoreCase());
+	}
+
+	@Test
+	public void preventsNullDirection() {
+
+		assertThatExceptionOfType(IllegalArgumentException.class)//
+				.isThrownBy(() -> Sort.by((Direction) null, "foo"))//
+				.withMessageContaining("Direction");
 	}
 }

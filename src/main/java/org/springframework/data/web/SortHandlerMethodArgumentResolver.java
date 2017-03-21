@@ -178,7 +178,7 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 			return Sort.unsorted();
 		}
 
-		return sortOrNull.and(new Sort(sortDefault.direction(), fields));
+		return sortOrNull.and(Sort.by(sortDefault.direction(), fields));
 	}
 
 	/**
