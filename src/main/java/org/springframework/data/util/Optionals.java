@@ -15,13 +15,12 @@
  */
 package org.springframework.data.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -34,10 +33,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-@UtilityClass
-public class Optionals {
-
-	private static final Object SUCCESS = new Object();
+public interface Optionals {
 
 	/**
 	 * Returns whether any of the given {@link Optional}s is present.
@@ -165,15 +161,15 @@ public class Optionals {
 	 * @param right must not be {@literal null}.
 	 * @param consumer must not be {@literal null}.
 	 */
-	public static <T, S> Optional<Object> ifAllPresent(Optional<T> left, Optional<S> right, BiConsumer<T, S> consumer) {
+	public static <T, S> void ifAllPresent(Optional<T> left, Optional<S> right, BiConsumer<T, S> consumer) {
 
 		Assert.notNull(left, "Optional must not be null!");
 		Assert.notNull(right, "Optional must not be null!");
 		Assert.notNull(consumer, "Consumer must not be null!");
 
-		return mapIfAllPresent(left, right, (l, r) -> {
+		mapIfAllPresent(left, right, (l, r) -> {
 			consumer.accept(l, r);
-			return SUCCESS;
+			return null;
 		});
 	}
 
@@ -195,11 +191,23 @@ public class Optionals {
 		return left.flatMap(l -> right.map(r -> function.apply(l, r)));
 	}
 
-	public static <T extends Throwable> void ifBothAbsent(Optional<?> left, Optional<?> right, Supplier<T> supplier)
-			throws T {
+	/**
+	 * Invokes the given {@link Consumer} if the {@link Optional} is present or the {@link Runnable} if not.
+	 * 
+	 * @param optional must not be {@literal null}.
+	 * @param consumer must not be {@literal null}.
+	 * @param runnable must not be {@literal null}.
+	 */
+	public static <T> void ifPresentOrElse(Optional<T> optional, Consumer<? super T> consumer, Runnable runnable) {
 
-		if (!left.isPresent() && !right.isPresent()) {
-			throw supplier.get();
+		Assert.notNull(optional, "Optional must not be null!");
+		Assert.notNull(consumer, "Consumer must not be null!");
+		Assert.notNull(runnable, "Runnable must not be null!");
+
+		if (optional.isPresent()) {
+			optional.ifPresent(consumer);
+		} else {
+			runnable.run();
 		}
 	}
 }
