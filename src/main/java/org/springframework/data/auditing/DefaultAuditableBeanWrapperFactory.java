@@ -94,10 +94,9 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
 		 */
 		@Override
-		public Optional<? extends Object> setCreatedBy(Optional<? extends Object> value) {
+		public Object setCreatedBy(Object value) {
 
 			auditable.setCreatedBy(value);
-
 			return value;
 		}
 
@@ -106,9 +105,10 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Optional)
 		 */
 		@Override
-		public Optional<TemporalAccessor> setCreatedDate(Optional<TemporalAccessor> value) {
+		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
 
-			auditable.setCreatedDate(getAsTemporalAccessor(value, type));
+			auditable.setCreatedDate(
+					getAsTemporalAccessor(Optional.of(value), type).orElseThrow(() -> new IllegalStateException()));
 
 			return value;
 		}
@@ -118,7 +118,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper#setLastModifiedBy(java.util.Optional)
 		 */
 		@Override
-		public Optional<? extends Object> setLastModifiedBy(Optional<? extends Object> value) {
+		public Object setLastModifiedBy(Object value) {
+
 			auditable.setLastModifiedBy(value);
 
 			return value;
@@ -138,9 +139,10 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Optional)
 		 */
 		@Override
-		public Optional<TemporalAccessor> setLastModifiedDate(Optional<TemporalAccessor> value) {
+		public TemporalAccessor setLastModifiedDate(TemporalAccessor value) {
 
-			auditable.setLastModifiedDate(getAsTemporalAccessor(value, type));
+			auditable.setLastModifiedDate(
+					getAsTemporalAccessor(Optional.of(value), type).orElseThrow(() -> new IllegalStateException()));
 
 			return value;
 		}
@@ -179,33 +181,30 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param source must not be {@literal null}.
 		 * @return
 		 */
-		protected Optional<Object> getDateValueToSet(Optional<TemporalAccessor> value, Class<?> targetType, Object source) {
+		protected Object getDateValueToSet(TemporalAccessor value, Class<?> targetType, Object source) {
 
-			return value.map(it -> {
+			if (TemporalAccessor.class.equals(targetType)) {
+				return value;
+			}
 
-				if (TemporalAccessor.class.equals(targetType)) {
-					return it;
+			if (conversionService.canConvert(value.getClass(), targetType)) {
+				return conversionService.convert(value, targetType);
+			}
+
+			if (conversionService.canConvert(Date.class, targetType)) {
+
+				if (!conversionService.canConvert(value.getClass(), Date.class)) {
+					throw new IllegalArgumentException(
+							String.format("Cannot convert date type for member %s! From %s to java.util.Date to %s.", source,
+									value.getClass(), targetType));
 				}
 
-				if (conversionService.canConvert(it.getClass(), targetType)) {
-					return conversionService.convert(it, targetType);
-				}
+				Date date = conversionService.convert(value, Date.class);
+				return conversionService.convert(date, targetType);
+			}
 
-				if (conversionService.canConvert(Date.class, targetType)) {
-
-					if (!conversionService.canConvert(it.getClass(), Date.class)) {
-						throw new IllegalArgumentException(
-								String.format("Cannot convert date type for member %s! From %s to java.util.Date to %s.", source,
-										it.getClass(), targetType));
-					}
-
-					Date date = conversionService.convert(it, Date.class);
-					return conversionService.convert(date, targetType);
-				}
-
-				throw new IllegalArgumentException(String.format("Invalid date type for member %s! Supported types are %s.",
-						source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
-			});
+			throw new IllegalArgumentException(String.format("Invalid date type for member %s! Supported types are %s.",
+					source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
 		}
 
 		/**
@@ -215,8 +214,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
-		protected <T> Optional<T> getAsTemporalAccessor(Optional<?> source, Class<T> target) {
-
+		protected <T extends TemporalAccessor> Optional<T> getAsTemporalAccessor(Optional<? extends Object> source,
+				Class<? extends T> target) {
 			return source.map(it -> target.isInstance(it) ? (T) it : conversionService.convert(it, target));
 		}
 	}
@@ -249,7 +248,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
 		 */
 		@Override
-		public Optional<? extends Object> setCreatedBy(Optional<? extends Object> value) {
+		public Object setCreatedBy(Object value) {
 			return setField(metadata.getCreatedByField(), value);
 		}
 
@@ -258,7 +257,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Optional)
 		 */
 		@Override
-		public Optional<TemporalAccessor> setCreatedDate(Optional<TemporalAccessor> value) {
+		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
+
 			return setDateField(metadata.getCreatedDateField(), value);
 		}
 
@@ -267,7 +267,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedBy(java.util.Optional)
 		 */
 		@Override
-		public Optional<? extends Object> setLastModifiedBy(Optional<? extends Object> value) {
+		public Object setLastModifiedBy(Object value) {
 			return setField(metadata.getLastModifiedByField(), value);
 		}
 
@@ -291,7 +291,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Optional)
 		 */
 		@Override
-		public Optional<TemporalAccessor> setLastModifiedDate(Optional<TemporalAccessor> value) {
+		public TemporalAccessor setLastModifiedDate(TemporalAccessor value) {
 			return setDateField(metadata.getLastModifiedDateField(), value);
 		}
 
@@ -301,10 +301,9 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param field
 		 * @param value
 		 */
-		private Optional<? extends Object> setField(Optional<Field> field, Optional<? extends Object> value) {
+		private <T> T setField(Optional<Field> field, T value) {
 
-			field.ifPresent(it -> ReflectionUtils.setField(it, target,
-					Optional.class.isAssignableFrom(it.getType()) ? value : value.orElse(null)));
+			field.ifPresent(it -> ReflectionUtils.setField(it, target, value));
 
 			return value;
 		}
@@ -315,13 +314,9 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param field
 		 * @param value
 		 */
-		private Optional<TemporalAccessor> setDateField(Optional<Field> field, Optional<TemporalAccessor> value) {
+		private TemporalAccessor setDateField(Optional<Field> field, TemporalAccessor value) {
 
-			field.ifPresent(it -> {
-				Optional<Object> toSet = getDateValueToSet(value, it.getType(), it);
-				ReflectionUtils.setField(it, target,
-						Optional.class.isAssignableFrom(it.getType()) ? toSet : toSet.orElse(null));
-			});
+			field.ifPresent(it -> ReflectionUtils.setField(it, target, getDateValueToSet(value, it.getType(), it)));
 
 			return value;
 		}

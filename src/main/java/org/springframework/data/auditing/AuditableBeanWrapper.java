@@ -31,21 +31,21 @@ public interface AuditableBeanWrapper {
 	 * 
 	 * @param value
 	 */
-	Optional<? extends Object> setCreatedBy(Optional<? extends Object> value);
+	Object setCreatedBy(Object value);
 
 	/**
 	 * Set the date the object was created.
 	 * 
 	 * @param value
 	 */
-	Optional<TemporalAccessor> setCreatedDate(Optional<TemporalAccessor> value);
+	TemporalAccessor setCreatedDate(TemporalAccessor value);
 
 	/**
 	 * Set the last modifier of the object.
 	 * 
 	 * @param value
 	 */
-	Optional<? extends Object> setLastModifiedBy(Optional<? extends Object> value);
+	Object setLastModifiedBy(Object value);
 
 	/**
 	 * Returns the date of the last modification date of the backing bean.
@@ -60,5 +60,5 @@ public interface AuditableBeanWrapper {
 	 * 
 	 * @param value
 	 */
-	Optional<TemporalAccessor> setLastModifiedDate(Optional<TemporalAccessor> value);
+	TemporalAccessor setLastModifiedDate(TemporalAccessor value);
 }

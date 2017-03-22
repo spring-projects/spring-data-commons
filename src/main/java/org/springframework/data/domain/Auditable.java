@@ -41,7 +41,7 @@ public interface Auditable<U, ID extends Serializable, T extends TemporalAccesso
 	 * 
 	 * @param createdBy the creating entity to set
 	 */
-	void setCreatedBy(Optional<? extends U> createdBy);
+	void setCreatedBy(U createdBy);
 
 	/**
 	 * Returns the creation date of the entity.
@@ -55,7 +55,7 @@ public interface Auditable<U, ID extends Serializable, T extends TemporalAccesso
 	 * 
 	 * @param creationDate the creation date to set
 	 */
-	void setCreatedDate(Optional<? extends T> creationDate);
+	void setCreatedDate(T creationDate);
 
 	/**
 	 * Returns the user who modified the entity lastly.
@@ -69,7 +69,7 @@ public interface Auditable<U, ID extends Serializable, T extends TemporalAccesso
 	 * 
 	 * @param lastModifiedBy the last modifying entity to set
 	 */
-	void setLastModifiedBy(Optional<? extends U> lastModifiedBy);
+	void setLastModifiedBy(U lastModifiedBy);
 
 	/**
 	 * Returns the date of the last modification.
@@ -83,5 +83,5 @@ public interface Auditable<U, ID extends Serializable, T extends TemporalAccesso
 	 * 
 	 * @param lastModifiedDate the date of the last modification to set
 	 */
-	void setLastModifiedDate(Optional<? extends T> lastModifiedDate);
+	void setLastModifiedDate(T lastModifiedDate);
 }

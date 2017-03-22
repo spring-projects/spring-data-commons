@@ -15,6 +15,7 @@
  */
 package org.springframework.data.auditing;
 
+import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.Map;
@@ -158,9 +159,9 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
 		 */
 		@Override
-		public Optional<? extends Object> setCreatedBy(Optional<? extends Object> value) {
+		public Object setCreatedBy(Object value) {
 
-			metadata.createdByProperty.ifPresent(it -> this.accessor.setProperty(it, value));
+			metadata.createdByProperty.ifPresent(it -> this.accessor.setProperty(it, Optional.of(value)));
 
 			return value;
 		}
@@ -170,12 +171,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Optional)
 		 */
 		@Override
-		public Optional<TemporalAccessor> setCreatedDate(Optional<TemporalAccessor> value) {
-
-			metadata.createdDateProperty
-					.ifPresent(it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it)));
-
-			return value;
+		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
+			return setDateProperty(metadata.createdDateProperty, value);
 		}
 
 		/* 
@@ -183,11 +180,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedBy(java.util.Optional)
 		 */
 		@Override
-		public Optional<? extends Object> setLastModifiedBy(Optional<? extends Object> value) {
-
-			metadata.lastModifiedByProperty.ifPresent(it -> this.accessor.setProperty(it, value));
-
-			return value;
+		public Object setLastModifiedBy(Object value) {
+			return setProperty(metadata.lastModifiedByProperty, value);
 		}
 
 		/* 
@@ -196,8 +190,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 */
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
-			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.map(accessor::getProperty),
-					TemporalAccessor.class);
+			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.flatMap(accessor::getProperty),
+					LocalDateTime.class);
 		}
 
 		/* 
@@ -205,10 +199,22 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Optional)
 		 */
 		@Override
-		public Optional<TemporalAccessor> setLastModifiedDate(Optional<TemporalAccessor> value) {
+		public TemporalAccessor setLastModifiedDate(TemporalAccessor value) {
+			return setDateProperty(metadata.lastModifiedDateProperty, value);
+		}
 
-			metadata.lastModifiedDateProperty
-					.ifPresent(it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), it)));
+		private <T, P extends PersistentProperty<?>> T setProperty(Optional<P> property, T value) {
+
+			property.ifPresent(it -> this.accessor.setProperty(it, Optional.of(value)));
+
+			return value;
+		}
+
+		private <P extends PersistentProperty<?>> TemporalAccessor setDateProperty(Optional<P> property,
+				TemporalAccessor value) {
+
+			property.ifPresent(
+					it -> this.accessor.setProperty(it, Optional.of(getDateValueToSet(value, it.getType(), accessor.getBean()))));
 
 			return value;
 		}

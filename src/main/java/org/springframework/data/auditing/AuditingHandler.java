@@ -157,11 +157,14 @@ public class AuditingHandler implements InitializingBean {
 			Optional<Object> auditor = touchAuditor(it, isNew);
 			Optional<TemporalAccessor> now = dateTimeForNow ? touchDate(it, isNew) : Optional.empty();
 
-			Object defaultedNow = now.map(Object::toString).orElse("not set");
-			Object defaultedAuditor = auditor.map(Object::toString).orElse("unknown");
+			if (LOGGER.isDebugEnabled()) {
 
-			LOGGER.debug("Touched {} - Last modification at {} by {}",
-					new Object[] { target, defaultedNow, defaultedAuditor });
+				Object defaultedNow = now.map(Object::toString).orElse("not set");
+				Object defaultedAuditor = auditor.map(Object::toString).orElse("unknown");
+
+				LOGGER.debug("Touched {} - Last modification at {} by {}",
+						new Object[] { target, defaultedNow, defaultedAuditor });
+			}
 		});
 	}
 
@@ -177,14 +180,10 @@ public class AuditingHandler implements InitializingBean {
 
 			Optional<?> auditor = it.getCurrentAuditor();
 
-			if (isNew) {
-				wrapper.setCreatedBy(auditor);
-				if (!modifyOnCreation) {
-					return auditor;
-				}
-			}
+			auditor.filter(__ -> isNew).ifPresent(foo -> wrapper.setCreatedBy(foo));
+			auditor.filter(__ -> !isNew || modifyOnCreation).ifPresent(foo -> wrapper.setLastModifiedBy(foo));
 
-			return wrapper.setLastModifiedBy(auditor);
+			return auditor;
 		});
 
 	}
@@ -199,14 +198,10 @@ public class AuditingHandler implements InitializingBean {
 
 		Optional<TemporalAccessor> now = dateTimeProvider.getNow();
 
-		if (isNew) {
-			wrapper.setCreatedDate(now);
-			if (!modifyOnCreation) {
-				return now;
-			}
-		}
+		now.filter(__ -> isNew).ifPresent(it -> wrapper.setCreatedDate(it));
+		now.filter(__ -> !isNew || modifyOnCreation).ifPresent(it -> wrapper.setLastModifiedDate(it));
 
-		return wrapper.setLastModifiedDate(now);
+		return now;
 	}
 
 	/*

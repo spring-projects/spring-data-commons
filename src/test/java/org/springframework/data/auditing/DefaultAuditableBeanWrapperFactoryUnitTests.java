@@ -70,13 +70,12 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
-			it.setCreatedDate(Optional.of(instant));
-			it.setLastModifiedDate(Optional.of(instant));
+			it.setCreatedDate(instant);
+			it.setLastModifiedDate(instant);
 
 			assertThat(user.createdDate).isNotNull();
 			assertThat(user.lastModifiedDate).isNotNull();
 		});
-
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-867
@@ -87,6 +86,6 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 
 		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(user);
 
-		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(Optional.of(zonedDateTime)));
+		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(zonedDateTime));
 	}
 }

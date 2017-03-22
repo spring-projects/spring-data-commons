@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Optional;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -53,14 +52,14 @@ public class ReflectionAuditingBeanWrapperUnitTests {
 	@Test
 	public void setsDateTimeFieldCorrectly() {
 
-		wrapper.setCreatedDate(Optional.of(time));
+		wrapper.setCreatedDate(time);
 		assertThat(user.createdDate).isEqualTo(new DateTime(LocalDateTimeToDateConverter.INSTANCE.convert(time)));
 	}
 
 	@Test
 	public void setsDateFieldCorrectly() {
 
-		wrapper.setLastModifiedDate(Optional.of(time));
+		wrapper.setLastModifiedDate(time);
 		assertThat(user.lastModifiedDate).isEqualTo(LocalDateTimeToDateConverter.INSTANCE.convert(time));
 	}
 
@@ -77,10 +76,10 @@ public class ReflectionAuditingBeanWrapperUnitTests {
 		Sample sample = new Sample();
 		AuditableBeanWrapper wrapper = new ReflectionAuditingBeanWrapper(sample);
 
-		wrapper.setCreatedDate(Optional.of(time));
+		wrapper.setCreatedDate(time);
 		assertThat(sample.createdDate).isEqualTo(time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli());
 
-		wrapper.setLastModifiedDate(Optional.of(time));
+		wrapper.setLastModifiedDate(time);
 		assertThat(sample.modifiedDate).isEqualTo(time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli());
 	}
 
@@ -89,10 +88,10 @@ public class ReflectionAuditingBeanWrapperUnitTests {
 
 		Object object = new Object();
 
-		wrapper.setCreatedBy(Optional.of(object));
+		wrapper.setCreatedBy(object);
 		assertThat(user.createdBy).isEqualTo(object);
 
-		wrapper.setLastModifiedBy(Optional.of(object));
+		wrapper.setLastModifiedBy(object);
 		assertThat(user.lastModifiedBy).isEqualTo(object);
 	}
 }
