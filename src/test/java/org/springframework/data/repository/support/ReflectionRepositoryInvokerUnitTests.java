@@ -254,6 +254,22 @@ public class ReflectionRepositoryInvokerUnitTests {
 		assertThat(invokeFindOne).isPresent();
 	}
 
+	@Test // DATACMNS-867
+	public void wrapsSingleElementCollectionIntoOptional() throws Exception {
+
+		ManualCrudRepository mock = mock(ManualCrudRepository.class);
+		when(mock.findAll()).thenReturn(Arrays.asList(new Domain()));
+
+		Method method = ManualCrudRepository.class.getMethod("findAll");
+
+		Optional<Object> result = getInvokerFor(mock).invokeQueryMethod(method, new LinkedMultiValueMap<>(), Pageable.unpaged(),
+				Sort.unsorted());
+
+		assertThat(result).hasValueSatisfying(it -> {
+			assertThat(it).isInstanceOf(Collection.class);
+		});
+	}
+
 	private static RepositoryInvoker getInvokerFor(Object repository) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repository.getClass().getInterfaces()[0]);

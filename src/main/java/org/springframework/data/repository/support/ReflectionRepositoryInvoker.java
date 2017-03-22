@@ -253,16 +253,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	@SuppressWarnings("unchecked")
 	private <T> Optional<T> returnAsOptional(Object source) {
-
-		if (Optional.class.isInstance(source)) {
-			return (Optional<T>) source;
-		}
-
-		if (source == null) {
-			return Optional.empty();
-		}
-
-		return conversionService.convert(QueryExecutionConverters.unwrap(source), Optional.class);
+		return (Optional<T>) (Optional.class.isInstance(source) ? source
+				: Optional.ofNullable(QueryExecutionConverters.unwrap(source)));
 	}
 
 	/**
