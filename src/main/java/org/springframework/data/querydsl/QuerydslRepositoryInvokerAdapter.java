@@ -135,8 +135,8 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, org.springframework.util.MultiValueMap, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
 	 */
 	@Override
-	public Object invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters, Pageable pageable,
-			Sort sort) {
+	public Optional<Object> invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters,
+			Pageable pageable, Sort sort) {
 		return delegate.invokeQueryMethod(method, parameters, pageable, sort);
 	}
 

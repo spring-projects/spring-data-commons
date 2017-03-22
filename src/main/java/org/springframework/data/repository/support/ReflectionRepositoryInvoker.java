@@ -136,23 +136,12 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public <T> Optional<T> invokeFindOne(Serializable id) {
 
 		Method method = methods.getFindOneMethod()//
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-one-method declared!"));
 
-		Object invoke = invoke(method, convertId(id));
-
-		if (Optional.class.isInstance(invoke)) {
-			return (Optional<T>) invoke;
-		}
-
-		if (invoke == null) {
-			return Optional.empty();
-		}
-
-		return conversionService.convert(QueryExecutionConverters.unwrap(invoke), Optional.class);
+		return returnAsOptional(invoke(method, convertId(id)));
 	}
 
 	/* 
@@ -190,8 +179,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, java.util.Map, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
 	 */
 	@Override
-	public Object invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters, Pageable pageable,
-			Sort sort) {
+	public Optional<Object> invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters,
+			Pageable pageable, Sort sort) {
 
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notNull(parameters, "Parameters must not be null!");
@@ -200,7 +189,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 		ReflectionUtils.makeAccessible(method);
 
-		return invoke(method, prepareParameters(method, parameters, pageable, sort));
+		return returnAsOptional(invoke(method, prepareParameters(method, parameters, pageable, sort)));
 	}
 
 	private Object[] prepareParameters(Method method, MultiValueMap<String, ? extends Object> rawParameters,
@@ -260,6 +249,20 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	@SuppressWarnings("unchecked")
 	private <T> T invoke(Method method, Object... arguments) {
 		return (T) ReflectionUtils.invokeMethod(method, repository, arguments);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> Optional<T> returnAsOptional(Object source) {
+
+		if (Optional.class.isInstance(source)) {
+			return (Optional<T>) source;
+		}
+
+		if (source == null) {
+			return Optional.empty();
+		}
+
+		return conversionService.convert(QueryExecutionConverters.unwrap(source), Optional.class);
 	}
 
 	/**

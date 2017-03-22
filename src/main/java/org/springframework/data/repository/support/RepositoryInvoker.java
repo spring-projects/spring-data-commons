@@ -99,6 +99,6 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	 * @return the result of the invoked query method.
 	 * @since 1.11
 	 */
-	Object invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters, Pageable pageable,
-			Sort sort);
+	Optional<Object> invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters,
+			Pageable pageable, Sort sort);
 }
