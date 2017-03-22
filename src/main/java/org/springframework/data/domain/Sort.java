@@ -197,7 +197,7 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		return !orders.isEmpty();
 	}
 
-	public boolean isUnorted() {
+	public boolean isUnsorted() {
 		return !isSorted();
 	}
 
