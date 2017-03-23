@@ -22,6 +22,7 @@ import java.util.Optional;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.domain.AuditorAware;
@@ -125,6 +126,9 @@ public class AuditingHandler implements InitializingBean {
 	 * @param source
 	 */
 	public void markCreated(Object source) {
+
+		Assert.notNull(source, "Entity must not be null!");
+
 		touch(source, true);
 	}
 
@@ -134,6 +138,9 @@ public class AuditingHandler implements InitializingBean {
 	 * @param source
 	 */
 	public void markModified(Object source) {
+
+		Assert.notNull(source, "Entity must not be null!");
+
 		touch(source, false);
 	}
 
@@ -169,16 +176,21 @@ public class AuditingHandler implements InitializingBean {
 	}
 
 	/**
-	 * Sets modifying and creating auditioner. Creating auditioner is only set on new auditables.
+	 * Sets modifying and creating auditor. Creating auditor is only set on new auditables.
 	 * 
 	 * @param auditable
 	 * @return
 	 */
 	private Optional<Object> touchAuditor(AuditableBeanWrapper wrapper, boolean isNew) {
 
+		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null!");
+
 		return auditorAware.map(it -> {
 
 			Optional<?> auditor = it.getCurrentAuditor();
+
+			Assert.notNull(auditor,
+					() -> String.format("Auditor must not be null! Returned by: %s!", AopUtils.getTargetClass(it)));
 
 			auditor.filter(__ -> isNew).ifPresent(foo -> wrapper.setCreatedBy(foo));
 			auditor.filter(__ -> !isNew || modifyOnCreation).ifPresent(foo -> wrapper.setLastModifiedBy(foo));
@@ -196,7 +208,11 @@ public class AuditingHandler implements InitializingBean {
 	 */
 	private Optional<TemporalAccessor> touchDate(AuditableBeanWrapper wrapper, boolean isNew) {
 
+		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null!");
+
 		Optional<TemporalAccessor> now = dateTimeProvider.getNow();
+
+		Assert.notNull(now, () -> String.format("Now must not be null! Returned by: %s!", dateTimeProvider.getClass()));
 
 		now.filter(__ -> isNew).ifPresent(it -> wrapper.setCreatedDate(it));
 		now.filter(__ -> !isNew || modifyOnCreation).ifPresent(it -> wrapper.setLastModifiedDate(it));
