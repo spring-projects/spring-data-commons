@@ -16,7 +16,7 @@
 package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,13 +40,11 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Alias;
-import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentEntitySpec;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.Person;
-import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
@@ -243,13 +240,12 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		entity.getPropertyAccessor(new Object());
 	}
 
-	@Test // DATACMNS-934
-	public void doesNotThrowAnExceptionForNullAssociation() {
+	@Test // DATACMNS-934, DATACMNS-867
+	public void rejectsNullAssociation() {
 
-		BasicPersistentEntity<Entity, T> entity = createEntity(Entity.class);
-		entity.addAssociation(null);
+		MutablePersistentEntity<Entity, T> entity = createEntity(Entity.class);
 
-		entity.doWithAssociations((SimpleAssociationHandler) association -> Assert.fail("Expected the method to never be called!"));
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> entity.addAssociation(null));
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {

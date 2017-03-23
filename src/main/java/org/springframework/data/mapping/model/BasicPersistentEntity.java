@@ -255,10 +255,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void addAssociation(Association<P> association) {
 
-		if (association == null) {
-			LOGGER.warn(String.format(NULL_ASSOCIATION, this.getClass().getName()));
-			return;
-		}
+		Assert.notNull(association, "Association must not be null!");
 
 		if (!associations.contains(association)) {
 			associations.add(association);
