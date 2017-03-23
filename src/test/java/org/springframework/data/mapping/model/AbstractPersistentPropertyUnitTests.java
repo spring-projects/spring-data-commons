@@ -207,10 +207,16 @@ public class AbstractPersistentPropertyUnitTests {
 	private <T> SamplePersistentProperty getProperty(Class<T> type, String name) {
 
 		Optional<Field> field = Optional.ofNullable(ReflectionUtils.findField(type, name));
+		Optional<PropertyDescriptor> descriptor = getPropertyDescriptor(type, name);
 
-		Property property = field.map(it -> Property.of(it, getPropertyDescriptor(type, name)))
-				.orElseGet(() -> Property.of(getPropertyDescriptor(type, name).orElseThrow(
-						() -> new IllegalArgumentException(String.format("Couldn't find property %s on %s!", name, type)))));
+		Property property = field
+				.map(it -> descriptor//
+						.map(foo -> Property.of(it, foo))//
+						.orElseGet(() -> Property.of(it)))
+				.orElseGet(() -> getPropertyDescriptor(type, name)//
+						.map(it -> Property.of(it))//
+						.orElseThrow(
+								() -> new IllegalArgumentException(String.format("Couldn't find property %s on %s!", name, type))));
 
 		return new SamplePersistentProperty(property, getEntity(type), typeHolder);
 	}

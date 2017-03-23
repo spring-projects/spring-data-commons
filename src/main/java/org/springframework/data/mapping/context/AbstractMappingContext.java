@@ -520,7 +520,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			String fieldName = field.getName();
 
 			ReflectionUtils.makeAccessible(field);
-			createAndRegisterProperty(Property.of(field, Optional.ofNullable(descriptors.get(fieldName))));
+
+			Property property = Optional.ofNullable(descriptors.get(fieldName))//
+					.map(it -> Property.of(field, it))//
+					.orElseGet(() -> Property.of(field));
+
+			createAndRegisterProperty(property);
 
 			this.remainingDescriptors.remove(fieldName);
 		}

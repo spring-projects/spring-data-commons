@@ -16,7 +16,6 @@
 package org.springframework.data.mapping.model;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyDescriptor;
@@ -28,10 +27,11 @@ import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 
 /**
+ * Value object to abstract the concept of a property backed by a {@link Field} and / or a {@link PropertyDescriptor}.
+ * 
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-@RequiredArgsConstructor
 public class Property {
 
 	private final @Getter Optional<Field> field;
@@ -45,54 +45,107 @@ public class Property {
 		this.field = field;
 		this.descriptor = descriptor;
 		this.hashCode = Lazy.of(this::computeHashCode);
-		this.rawType = Lazy
-				.of(() -> field.<Class<?>>map(Field::getType).orElseGet(() -> descriptor.map(PropertyDescriptor::getPropertyType)//
+		this.rawType = Lazy.of(
+				() -> field.<Class<?>> map(Field::getType).orElseGet(() -> descriptor.map(PropertyDescriptor::getPropertyType)//
 						.orElseThrow(IllegalStateException::new)));
 	}
 
+	/**
+	 * Creates a new {@link Property} backed by the given field.
+	 * 
+	 * @param field must not be {@literal null}.
+	 * @return
+	 */
 	public static Property of(Field field) {
-		return of(field, Optional.empty());
-	}
-
-	public static Property of(Field field, Optional<PropertyDescriptor> descriptor) {
 
 		Assert.notNull(field, "Field must not be null!");
 
-		return new Property(Optional.of(field), descriptor);
+		return new Property(Optional.of(field), Optional.empty());
 	}
 
+	/**
+	 * Creates a new {@link Property} backed by the given {@link Field} and {@link PropertyDescriptor}.
+	 * 
+	 * @param field must not be {@literal null}.
+	 * @param descriptor must not be {@literal null}.
+	 * @return
+	 */
+	public static Property of(Field field, PropertyDescriptor descriptor) {
+
+		Assert.notNull(field, "Field must not be null!");
+		Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
+
+		return new Property(Optional.of(field), Optional.of(descriptor));
+	}
+
+	/**
+	 * Creates a new {@link Property} for the given {@link PropertyDescriptor}.
+	 * 
+	 * @param descriptor must not be {@literal null}.
+	 * @return
+	 */
 	public static Property of(PropertyDescriptor descriptor) {
 
 		Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
+
 		return new Property(Optional.empty(), Optional.of(descriptor));
 	}
 
+	/**
+	 * Returns whether the property is backed by a field.
+	 * 
+	 * @return
+	 */
 	public boolean isFieldBacked() {
 		return field.isPresent();
 	}
 
+	/**
+	 * Returns the getter of the property if available and if it matches the type of the property.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
 	public Optional<Method> getGetter() {
 		return descriptor.map(PropertyDescriptor::getReadMethod)//
 				.filter(it -> getType().isAssignableFrom(it.getReturnType()));
 	}
 
+	/**
+	 * Returns the setter of the property if available and if its first (only) parameter matches the type of the property.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
 	public Optional<Method> getSetter() {
 		return descriptor.map(PropertyDescriptor::getWriteMethod)//
 				.filter(it -> it.getParameterTypes()[0].isAssignableFrom(getType()));
 	}
 
+	/**
+	 * Returns whether the property exposes a getter or a setter.
+	 * 
+	 * @return
+	 */
 	public boolean hasAccessor() {
 		return getGetter().isPresent() || getSetter().isPresent();
 	}
 
 	/**
-	 * @return
+	 * Returns the name of the property.
+	 * 
+	 * @return will never be {@literal null}.
 	 */
 	public String getName() {
-		return field.map(Field::getName).orElseGet(() -> descriptor.map(FeatureDescriptor::getName)//
-				.orElseThrow(IllegalStateException::new));
+
+		return field.map(Field::getName)//
+				.orElseGet(() -> descriptor.map(FeatureDescriptor::getName)//
+						.orElseThrow(IllegalStateException::new));
 	}
 
+	/**
+	 * Returns the type of the property.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
 	public Class<?> getType() {
 		return rawType.get();
 	}
