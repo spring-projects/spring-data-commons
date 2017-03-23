@@ -16,8 +16,10 @@
 package org.springframework.data.web.config;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -55,18 +57,17 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	private final ApplicationContext context;
 	private final ObjectFactory<ConversionService> conversionService;
 
-	public SpringDataWebConfiguration(ApplicationContext context,
-			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
+	@Autowired private Optional<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
+	@Autowired private Optional<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
+
+	public SpringDataWebConfiguration( //
+			ApplicationContext context, //
+			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService //
+	) {
 
 		this.context = context;
 		this.conversionService = conversionService;
 	}
-
-	@Autowired(required = false)
-	private PageableHandlerMethodArgumentResolverCustomizer pageableResolverCustomizer;
-
-	@Autowired(required = false)
-	private SortHandlerMethodArgumentResolverCustomizer sortResolverCustomizer;
 
 	/*
 	 * (non-Javadoc)
@@ -74,7 +75,8 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
-		PageableHandlerMethodArgumentResolver pageableResolver =
+
+		PageableHandlerMethodArgumentResolver pageableResolver = //
 				new PageableHandlerMethodArgumentResolver(sortResolver());
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
@@ -86,6 +88,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public SortHandlerMethodArgumentResolver sortResolver() {
+
 		SortHandlerMethodArgumentResolver sortResolver = new SortHandlerMethodArgumentResolver();
 		customizeSortResolver(sortResolver);
 		return sortResolver;
@@ -107,8 +110,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 		FormattingConversionService conversionService = (FormattingConversionService) registry;
 
-		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<>(
-				conversionService);
+		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<>(conversionService);
 		converter.setApplicationContext(context);
 	}
 
@@ -153,15 +155,11 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	}
 
 	protected void customizePageableResolver(PageableHandlerMethodArgumentResolver pageableResolver) {
-		if (this.pageableResolverCustomizer != null) {
-			this.pageableResolverCustomizer.customize(pageableResolver);
-		}
+		pageableResolverCustomizer.ifPresent(c -> c.customize(pageableResolver));
 	}
 
 	protected void customizeSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
-		if (this.sortResolverCustomizer != null) {
-			this.sortResolverCustomizer.customize(sortResolver);
-		}
+		sortResolverCustomizer.ifPresent(c -> c.customize(sortResolver));
 	}
 
 }

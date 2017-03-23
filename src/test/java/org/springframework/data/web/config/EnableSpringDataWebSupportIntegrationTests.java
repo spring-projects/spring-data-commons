@@ -51,6 +51,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @author Oliver Gierke
  * @author Vedran Pavic
+ * @author Jens Schauder
  */
 public class EnableSpringDataWebSupportIntegrationTests {
 
@@ -74,16 +75,8 @@ public class EnableSpringDataWebSupportIntegrationTests {
 
 		@Bean
 		public PageableHandlerMethodArgumentResolverCustomizer testPageableResolverCustomizer() {
-			return new PageableHandlerMethodArgumentResolverCustomizer() {
-
-				@Override
-				public void customize(PageableHandlerMethodArgumentResolver pageableResolver) {
-					pageableResolver.setMaxPageSize(100);
-				}
-
-			};
+			return pageableResolver -> pageableResolver.setMaxPageSize(100);
 		}
-
 	}
 
 	@Configuration
@@ -93,20 +86,13 @@ public class EnableSpringDataWebSupportIntegrationTests {
 
 		@Bean
 		public SortHandlerMethodArgumentResolverCustomizer testSortResolverCustomizer() {
-			return new SortHandlerMethodArgumentResolverCustomizer() {
-
-				@Override
-				public void customize(SortHandlerMethodArgumentResolver sortResolver) {
-					sortResolver.setSortParameter("foo");
-				}
-
-			};
+			return sortResolver -> sortResolver.setSortParameter("foo");
 		}
-
 	}
 
 	@After
 	public void tearDown() {
+
 		reEnable(HATEOAS);
 		reEnable(JACKSON);
 	}
@@ -207,22 +193,24 @@ public class EnableSpringDataWebSupportIntegrationTests {
 
 	@Test // DATACMNS-822
 	public void picksUpPageableResolverCustomizer() {
+
 		ApplicationContext context = WebTestUtils.createApplicationContext(PageableResolverCustomizerConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 		PageableHandlerMethodArgumentResolver resolver = context.getBean(PageableHandlerMethodArgumentResolver.class);
 
-		assertThat(names, hasItem("testPageableResolverCustomizer"));
-		assertThat((Integer) ReflectionTestUtils.getField(resolver, "maxPageSize"), equalTo(100));
+		assertThat(names).contains("testPageableResolverCustomizer");
+		assertThat((Integer) ReflectionTestUtils.getField(resolver, "maxPageSize")).isEqualTo(100);
 	}
 
 	@Test // DATACMNS-822
 	public void picksUpSortResolverCustomizer() {
+
 		ApplicationContext context = WebTestUtils.createApplicationContext(SortResolverCustomizerConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 		SortHandlerMethodArgumentResolver resolver = context.getBean(SortHandlerMethodArgumentResolver.class);
 
-		assertThat(names, hasItem("testSortResolverCustomizer"));
-		assertThat((String) ReflectionTestUtils.getField(resolver, "sortParameter"), equalTo("foo"));
+		assertThat(names).contains("testSortResolverCustomizer");
+		assertThat((String) ReflectionTestUtils.getField(resolver, "sortParameter")).isEqualTo("foo");
 	}
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
