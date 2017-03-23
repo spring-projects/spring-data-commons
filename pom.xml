@@ -18,7 +18,6 @@
 	<properties>
 		<javaslang>2.0.4</javaslang>
 		<scala>2.11.7</scala>
-		<mockito>2.2.17</mockito>
 		<xmlbeam>1.4.8</xmlbeam>
 	</properties>
 
