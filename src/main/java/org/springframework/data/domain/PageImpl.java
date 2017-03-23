@@ -16,7 +16,6 @@
 package org.springframework.data.domain;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -45,10 +44,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		super(content, pageable);
 
 		this.pageable = pageable;
-
-		Optional<Pageable> foo = pageable.isPaged() ? Optional.of(pageable) : Optional.empty();
-
-		this.total = foo.filter(it -> !content.isEmpty())//
+		this.total = pageable.toOptional().filter(it -> !content.isEmpty())//
 				.filter(it -> it.getOffset() + it.getPageSize() > total)//
 				.map(it -> it.getOffset() + content.size())//
 				.orElse(total);

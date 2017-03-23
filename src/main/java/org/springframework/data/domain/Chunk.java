@@ -49,6 +49,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	public Chunk(List<T> content, Pageable pageable) {
 
 		Assert.notNull(content, "Content must not be null!");
+		Assert.notNull(pageable, "Pageable must not be null!");
 
 		this.content.addAll(content);
 		this.pageable = pageable;
