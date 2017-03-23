@@ -26,7 +26,7 @@ import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.reactivestreams.Publisher;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;

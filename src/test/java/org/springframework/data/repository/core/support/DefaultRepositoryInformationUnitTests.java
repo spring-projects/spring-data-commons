@@ -34,7 +34,7 @@ import java.util.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
