@@ -74,7 +74,6 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	@SuppressWarnings("unchecked")
 	public void createsListOfProjectionsFormNestedLists() throws Exception {
 
 		ResultProcessor information = getProcessor("findAllProjection");

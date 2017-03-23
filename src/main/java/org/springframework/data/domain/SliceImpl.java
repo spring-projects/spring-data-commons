@@ -53,7 +53,7 @@ public class SliceImpl<T> extends Chunk<T> {
 	 * @param content must not be {@literal null}.
 	 */
 	public SliceImpl(List<T> content) {
-		this(content, null, false);
+		this(content, Pageable.unpaged(), false);
 	}
 
 	/*
