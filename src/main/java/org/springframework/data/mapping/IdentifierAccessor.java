@@ -21,13 +21,27 @@ import java.util.Optional;
  * Interface for a component allowing the access of identifier values.
  * 
  * @author Oliver Gierke
+ * @see TargetAwareIdentifierAccessor
  */
 public interface IdentifierAccessor {
 
 	/**
 	 * Returns the value of the identifier.
 	 * 
-	 * @return
+	 * @return the identifier of the underlying instance.
 	 */
 	Optional<Object> getIdentifier();
+
+	/**
+	 * Returns the identifier of the underlying instance. Implementations are strongly recommended to extends either
+	 * {@link TargetAwareIdentifierAccessor} or override this method to add more context to the exception being thrown in
+	 * case of the absence of an identifier.
+	 * 
+	 * @return the identifier of the underlying instance
+	 * @throws IllegalStateException in case no identifier could be retrieved.
+	 * @since 2.0
+	 */
+	default Object getRequiredIdentifier() {
+		return getIdentifier().orElseThrow(() -> new IllegalStateException(String.format("Could not obtain identifier!")));
+	}
 }

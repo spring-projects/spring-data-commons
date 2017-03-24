@@ -21,6 +21,7 @@ import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
 import org.springframework.util.Assert;
 
 /**
@@ -30,10 +31,10 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 1.10
  */
-public class IdPropertyIdentifierAccessor implements IdentifierAccessor {
+public class IdPropertyIdentifierAccessor extends TargetAwareIdentifierAccessor {
 
 	private final PersistentPropertyAccessor accessor;
-	private final Optional<? extends PersistentProperty<?>> idProperty;
+	private final PersistentProperty<?> idProperty;
 
 	/**
 	 * Creates a new {@link IdPropertyIdentifierAccessor} for the given {@link PersistentEntity} and
@@ -42,13 +43,15 @@ public class IdPropertyIdentifierAccessor implements IdentifierAccessor {
 	 * @param entity must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 */
-
 	public IdPropertyIdentifierAccessor(PersistentEntity<?, ?> entity, Object target) {
 
-		Assert.notNull(entity, "PersistentEntity must not be 'null'");
-		Assert.isTrue(entity.hasIdProperty(), "PersistentEntity does not have an identifier property!");
+		super(() -> target);
 
-		this.idProperty = entity.getIdProperty();
+		Assert.notNull(entity, "PersistentEntity must not be null!");
+		Assert.isTrue(entity.hasIdProperty(), "PersistentEntity must have an identifier property!");
+		Assert.notNull(target, "Target bean must not be null!");
+
+		this.idProperty = entity.getRequiredIdProperty();
 		this.accessor = entity.getPropertyAccessor(target);
 	}
 
@@ -57,6 +60,6 @@ public class IdPropertyIdentifierAccessor implements IdentifierAccessor {
 	 * @see org.springframework.data.keyvalue.core.IdentifierAccessor#getIdentifier()
 	 */
 	public Optional<Object> getIdentifier() {
-		return idProperty.flatMap(accessor::getProperty);
+		return accessor.getProperty(idProperty);
 	}
 }

@@ -46,6 +46,7 @@ import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
+import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -438,7 +439,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		Assert.isTrue(getType().isInstance(bean),
 				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
 
-		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : NullReturningIdentifierAccessor.INSTANCE;
+		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : new AbsentIdentifierAccessor(bean);
 	}
 
 	/**
@@ -447,9 +448,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static enum NullReturningIdentifierAccessor implements IdentifierAccessor {
+	private static class AbsentIdentifierAccessor extends TargetAwareIdentifierAccessor {
 
-		INSTANCE;
+		public AbsentIdentifierAccessor(Object target) {
+			super(() -> target);
+		}
 
 		/*
 		 * (non-Javadoc)
