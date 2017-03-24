@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -31,6 +33,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
+@Getter
 public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 
 	private static final String MUST_BE_A_REPOSITORY = String.format("Given type must be assignable to %s!",
@@ -51,24 +54,6 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 
 		this.idType = resolveIdType(repositoryInterface);
 		this.domainType = resolveDomainType(repositoryInterface);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getDomainType()
-	 */
-	@Override
-	public Class<?> getDomainType() {
-		return this.domainType;
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getIdType()
-	 */
-	@Override
-	public Class<? extends Serializable> getIdType() {
-		return this.idType;
 	}
 
 	@SuppressWarnings("unchecked")

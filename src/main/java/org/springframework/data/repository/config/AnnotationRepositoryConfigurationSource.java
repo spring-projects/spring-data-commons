@@ -211,10 +211,11 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryFactoryBeanName()
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryFactoryBeanClassName()
 	 */
-	public String getRepositoryFactoryBeanName() {
-		return attributes.getClass(REPOSITORY_FACTORY_BEAN_CLASS).getName();
+	@Override
+	public Optional<String> getRepositoryFactoryBeanClassName() {
+		return Optional.of(attributes.getClass(REPOSITORY_FACTORY_BEAN_CLASS).getName());
 	}
 
 	/* 

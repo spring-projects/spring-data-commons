@@ -84,7 +84,8 @@ class RepositoryBeanDefinitionBuilder {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(extension.getRepositoryFactoryClassName());
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder
+				.rootBeanDefinition(configuration.getRepositoryFactoryBeanClassName());
 
 		builder.getRawBeanDefinition().setSource(configuration.getSource());
 		builder.addConstructorArgValue(configuration.getRepositoryInterface());

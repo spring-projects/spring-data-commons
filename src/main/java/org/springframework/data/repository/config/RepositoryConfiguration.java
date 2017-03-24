@@ -80,6 +80,13 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	Optional<String> getRepositoryBaseClassName();
 
 	/**
+	 * Returns the name of the repository factory bean class to be used.
+	 * 
+	 * @return
+	 */
+	String getRepositoryFactoryBeanClassName();
+
+	/**
 	 * Returns the source of the {@link RepositoryConfiguration}.
 	 * 
 	 * @return

@@ -232,7 +232,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	/**
 	 * Creates a actual {@link RepositoryConfiguration} instance for the given {@link RepositoryConfigurationSource} and
 	 * interface name. Defaults to the {@link DefaultRepositoryConfiguration} but allows sub-classes to override this to
-	 * customize the behaviour.
+	 * customize the behavior.
 	 * 
 	 * @param definition will never be {@literal null} or empty.
 	 * @param configSource will never be {@literal null}.
@@ -240,7 +240,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 */
 	protected <T extends RepositoryConfigurationSource> RepositoryConfiguration<T> getRepositoryConfiguration(
 			BeanDefinition definition, T configSource) {
-		return new DefaultRepositoryConfiguration<>(configSource, definition);
+		return new DefaultRepositoryConfiguration<>(configSource, definition, this);
 	}
 
 	/**

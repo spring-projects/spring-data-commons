@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,18 @@
 package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
@@ -34,11 +41,13 @@ public class DefaultRepositoryConfigurationUnitTests {
 
 	@Mock RepositoryConfigurationSource source;
 
+	BeanDefinition definition = new RootBeanDefinition("com.acme.MyRepository");
+	RepositoryConfigurationExtension extension = new SimplerRepositoryConfigurationExtension("factory", "module");
+
 	@Test
 	public void supportsBasicConfiguration() {
 
-		RepositoryConfiguration<RepositoryConfigurationSource> configuration = new DefaultRepositoryConfiguration<>(
-				source, new RootBeanDefinition("com.acme.MyRepository"));
+		RepositoryConfiguration<RepositoryConfigurationSource> configuration = getConfiguration(source);
 
 		assertThat(configuration.getConfigurationSource()).isEqualTo(source);
 		assertThat(configuration.getImplementationBeanName()).isEqualTo("myRepositoryImpl");
@@ -46,5 +55,29 @@ public class DefaultRepositoryConfigurationUnitTests {
 		assertThat(configuration.getRepositoryInterface()).isEqualTo("com.acme.MyRepository");
 		assertThat(configuration.getQueryLookupStrategyKey()).isEqualTo(Key.CREATE_IF_NOT_FOUND);
 		assertThat(configuration.isLazyInit()).isFalse();
+	}
+
+	@Test // DATACMNS-1018
+	public void usesExtensionFactoryBeanClassNameIfNoneDefinedInSource() {
+		assertThat(getConfiguration(source).getRepositoryFactoryBeanClassName()).isEqualTo("factory");
+	}
+
+	@Test // DATACMNS-1018
+	public void prefersSourcesRepositoryFactoryBeanClass() {
+
+		when(source.getRepositoryFactoryBeanClassName()).thenReturn(Optional.of("custom"));
+
+		assertThat(getConfiguration(source).getRepositoryFactoryBeanClassName()).isEqualTo("custom");
+	}
+
+	private DefaultRepositoryConfiguration<RepositoryConfigurationSource> getConfiguration(
+			RepositoryConfigurationSource source) {
+		return new DefaultRepositoryConfiguration<>(source, definition, extension);
+	}
+
+	@Value
+	@EqualsAndHashCode(callSuper = true)
+	private static class SimplerRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
+		String repositoryFactoryBeanClassName, modulePrefix;
 	}
 }

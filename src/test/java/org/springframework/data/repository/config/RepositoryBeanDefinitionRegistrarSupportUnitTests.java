@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
@@ -120,7 +121,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 	static class DummyConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
-		public String getRepositoryFactoryClassName() {
+		public String getRepositoryFactoryBeanClassName() {
 			return DummyRepositoryFactoryBean.class.getName();
 		}
 

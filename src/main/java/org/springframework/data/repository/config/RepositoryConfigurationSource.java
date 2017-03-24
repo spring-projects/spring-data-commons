@@ -57,7 +57,7 @@ public interface RepositoryConfigurationSource {
 	/**
 	 * Returns the configured postfix to be used for looking up custom implementation classes.
 	 * 
-	 * @return the postfix to use or {@literal null} in case none is configured.
+	 * @return the postfix to use or {@link Optional#empty()} in case none is configured.
 	 */
 	Optional<String> getRepositoryImplementationPostfix();
 
@@ -67,13 +67,20 @@ public interface RepositoryConfigurationSource {
 	Optional<String> getNamedQueryLocation();
 
 	/**
-	 * Returns the name of the repository base class to be used or {@literal null} if the store specific defaults shall be
-	 * applied.
+	 * Returns the name of the repository base class to be used or {@link Optional#empty()} if the store specific defaults
+	 * shall be applied.
 	 * 
 	 * @return
 	 * @since 1.11
 	 */
 	Optional<String> getRepositoryBaseClassName();
+
+	/**
+	 * Returns the name of the repository factory bean class or {@link Optional#empty()} if not defined in the source.
+	 * 
+	 * @return
+	 */
+	Optional<String> getRepositoryFactoryBeanClassName();
 
 	/**
 	 * Returns the source {@link BeanDefinition}s of the repository interfaces to create repository instances for.
@@ -88,7 +95,7 @@ public interface RepositoryConfigurationSource {
 	 * camel-case.
 	 * 
 	 * @param name must not be {@literal null} or empty.
-	 * @return the attribute with the given name or {@literal null} if not configured or empty.
+	 * @return the attribute with the given name or {@link Optional#empty()} if not configured or empty.
 	 * @since 1.8
 	 */
 	Optional<String> getAttribute(String name);

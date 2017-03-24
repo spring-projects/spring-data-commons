@@ -76,7 +76,7 @@ public interface RepositoryConfigurationExtension {
 	 * 
 	 * @return
 	 */
-	String getRepositoryFactoryClassName();
+	String getRepositoryFactoryBeanClassName();
 
 	/**
 	 * Callback to register additional bean definitions for a {@literal repositories} root node. This usually includes

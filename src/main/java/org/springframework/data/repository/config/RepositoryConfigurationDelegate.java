@@ -137,7 +137,7 @@ public class RepositoryConfigurationDelegate {
 
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName,
-						configuration.getRepositoryInterface(), extension.getRepositoryFactoryClassName());
+						configuration.getRepositoryInterface(), configuration.getRepositoryFactoryBeanClassName());
 			}
 
 			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, configuration.getRepositoryInterface());

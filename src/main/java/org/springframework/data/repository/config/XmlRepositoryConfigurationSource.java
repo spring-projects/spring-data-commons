@@ -24,7 +24,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.TypeFilterParser;
 import org.springframework.data.config.TypeFilterParser.Type;
-import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.util.ParsingUtils;
 import org.springframework.util.Assert;
@@ -162,6 +161,15 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return getNullDefaultedAttribute(element, REPOSITORY_BASE_CLASS_NAME);
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryFactoryBeanClassName()
+	 */
+	@Override
+	public Optional<String> getRepositoryFactoryBeanClassName() {
+		return getNullDefaultedAttribute(element, REPOSITORY_FACTORY_BEAN_CLASS_NAME);
+	}
+
 	private Optional<String> getNullDefaultedAttribute(Element element, String attributeName) {
 
 		String attribute = element.getAttribute(attributeName);
@@ -175,8 +183,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public boolean shouldConsiderNestedRepositories() {
 
-		return getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES).map(Boolean::parseBoolean)
-				.orElse(false);
+		return getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES).map(Boolean::parseBoolean).orElse(false);
 	}
 
 	/* 

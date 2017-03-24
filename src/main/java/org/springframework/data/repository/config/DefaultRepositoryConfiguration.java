@@ -40,6 +40,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 
 	private final @NonNull T configurationSource;
 	private final @NonNull BeanDefinition definition;
+	private final @NonNull RepositoryConfigurationExtension extension;
 
 	/*
 	 * (non-Javadoc)
@@ -133,7 +134,18 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return configurationSource.getRepositoryBaseClassName();
 	}
 
-	/* 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryFactoryBeanClassName()
+	 */
+	@Override
+	public String getRepositoryFactoryBeanClassName() {
+
+		return configurationSource.getRepositoryFactoryBeanClassName()
+				.orElseGet(() -> extension.getRepositoryFactoryBeanClassName());
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#isLazyInit()
 	 */

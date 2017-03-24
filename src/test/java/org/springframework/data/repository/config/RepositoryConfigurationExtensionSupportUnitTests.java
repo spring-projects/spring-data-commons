@@ -66,7 +66,7 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 		}
 
 		@Override
-		public String getRepositoryFactoryClassName() {
+		public String getRepositoryFactoryBeanClassName() {
 			return RepositoryFactorySupport.class.getName();
 		}
 
