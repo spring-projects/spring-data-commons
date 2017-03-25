@@ -16,6 +16,7 @@
 package org.springframework.data.repository.history;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,7 +42,7 @@ public interface RevisionRepository<T, ID extends Serializable, N extends Number
 	 * @param id must not be {@literal null}.
 	 * @return
 	 */
-	Revision<N, T> findLastChangeRevision(ID id);
+	Optional<Revision<N, T>> findLastChangeRevision(ID id);
 
 	/**
 	 * Returns all {@link Revisions} of an entity with the given id.
@@ -70,5 +71,5 @@ public interface RevisionRepository<T, ID extends Serializable, N extends Number
 	 * @return the entity with the given ID in the given revision number.
 	 * @since 1.12
 	 */
-	Revision<N, T> findRevision(ID id, N revisionNumber);
+	Optional<Revision<N, T>> findRevision(ID id, N revisionNumber);
 }

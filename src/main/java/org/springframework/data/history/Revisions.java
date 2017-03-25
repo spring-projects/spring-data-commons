@@ -19,8 +19,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.springframework.data.util.StreamUtils;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 /**
@@ -30,7 +31,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<Revision<N, T>> {
+public class Revisions<N extends Number & Comparable<N>, T> implements Streamable<Revision<N, T>> {
 
 	private final Comparator<Revision<N, T>> NATURAL_ORDER = Comparator.naturalOrder();
 
@@ -59,13 +60,27 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Iterable<
 
 		this.revisions = revisions.stream()//
 				.sorted(latestLast ? NATURAL_ORDER : NATURAL_ORDER.reversed())//
-				.collect(Collectors.toList());
+				.collect(StreamUtils.toUnmodifiableList());
 
 		this.latestLast = latestLast;
 	}
 
+	/**
+	 * Creates a new {@link Revisions} instance for the given {@link Revision}s.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
 	public static <N extends Number & Comparable<N>, T> Revisions<N, T> of(List<? extends Revision<N, T>> revisions) {
 		return new Revisions<>(revisions);
+	}
+
+	/**
+	 * Creates a new empty {@link Revisions} instance.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
+	public static <N extends Number & Comparable<N>, T> Revisions<N, T> none() {
+		return new Revisions<>(Collections.emptyList());
 	}
 
 	/**

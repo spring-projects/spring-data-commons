@@ -15,9 +15,15 @@
  */
 package org.springframework.data.util;
 
+import static java.util.stream.Collectors.*;
+
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -52,5 +58,23 @@ public interface StreamUtils {
 		return iterator instanceof CloseableIterator//
 				? stream.onClose(() -> ((CloseableIterator<T>) iterator).close()) //
 				: stream;
+	}
+
+	/**
+	 * Returns a {@link Collector} to create an unmodifiable {@link List}.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
+	public static <T> Collector<T, ?, List<T>> toUnmodifiableList() {
+		return collectingAndThen(toList(), Collections::unmodifiableList);
+	}
+
+	/**
+	 * Returns a {@link Collector} to create an unmodifiable {@link Set}.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
+	public static <T> Collector<T, ?, Set<T>> toUnmodifiableSet() {
+		return collectingAndThen(toSet(), Collections::unmodifiableSet);
 	}
 }

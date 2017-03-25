@@ -15,6 +15,8 @@
  */
 package org.springframework.data.history;
 
+import static org.springframework.data.util.Optionals.*;
+
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +67,15 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	}
 
 	/**
+	 * Returns the revision number of the revision, immediately failing on absence.
+	 * 
+	 * @return the revision number.
+	 */
+	public N getRequiredRevisionNumber() {
+		return metadata.getRequiredRevisionNumber();
+	}
+
+	/**
 	 * Returns the revision date of the revision.
 	 * 
 	 * @return
@@ -73,16 +84,22 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 		return metadata.getRevisionDate();
 	}
 
+	/**
+	 * Returns the revision date of the revision, immediately failing on absence.
+	 * 
+	 * @return the revision date.
+	 */
+	public LocalDateTime getRequiredRevisionDate() {
+		return metadata.getRequiredRevisionDate();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Revision<N, ?> that) {
-
-		Optional<N> thisRevisionNumber = getRevisionNumber();
-		Optional<N> thatRevisionNumber = that.getRevisionNumber();
-
-		return thisRevisionNumber.map(left -> thatRevisionNumber.map(left::compareTo).orElse(1)).orElse(-1);
+		return mapIfAllPresent(getRevisionNumber(), that.getRevisionNumber(), //
+				(left, right) -> left.compareTo(right)).orElse(-1);
 	}
 
 	/* 
@@ -91,6 +108,8 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	 */
 	@Override
 	public String toString() {
-		return String.format("Revision %s of entity %s - Revision metadata %s", getRevisionNumber(), entity, metadata);
+
+		return String.format("Revision %s of entity %s - Revision metadata %s",
+				getRevisionNumber().map(Object::toString).orElse("<unknown>"), entity, metadata);
 	}
 }

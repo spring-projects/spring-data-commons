@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,16 +29,38 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 	/**
 	 * Returns the revision number of the revision.
 	 *
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
 	Optional<N> getRevisionNumber();
 
 	/**
+	 * Returns the revision number of the revision, immediately failing on absence.
+	 *
+	 * @return will never be {@literal null}.
+	 * @throws IllegalStateException if no revision number is available.
+	 */
+	default N getRequiredRevisionNumber() {
+		return getRevisionNumber()
+				.orElseThrow(() -> new IllegalStateException(String.format("No revision number found on %s!", getDelegate())));
+	}
+
+	/**
 	 * Returns the date of the revision.
 	 *
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
 	Optional<LocalDateTime> getRevisionDate();
+
+	/**
+	 * Returns the revision date of the revision, immediately failing on absence.
+	 * 
+	 * @return will never be {@literal null}.
+	 * @throw IllegalStateException if no revision date is available.
+	 */
+	default LocalDateTime getRequiredRevisionDate() {
+		return getRevisionDate()
+				.orElseThrow(() -> new IllegalStateException(String.format("No revision date found on %s!", getDelegate())));
+	}
 
 	/**
 	 * Returns the underlying revision metadata which might provider more detailed implementation specific information.

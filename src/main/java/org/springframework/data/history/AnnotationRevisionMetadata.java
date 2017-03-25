@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.data.util.AnnotationDetectionFieldCallback;
+import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -32,39 +33,27 @@ import org.springframework.util.ReflectionUtils;
 public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implements RevisionMetadata<N> {
 
 	private final Object entity;
-	private final N revisionNumber;
-	private final LocalDateTime revisionDate;
+	private final Lazy<Optional<N>> revisionNumber;
+	private final Lazy<Optional<LocalDateTime>> revisionDate;
 
 	/**
 	 * Creates a new {@link AnnotationRevisionMetadata} inspecting the given entity for the given annotations. If no
 	 * annotations will be provided these values will not be looked up from the entity and return {@literal null}.
 	 *
 	 * @param entity must not be {@literal null}.
-	 * @param revisionNumberAnnotation
-	 * @param revisionTimeStampAnnotation
+	 * @param revisionNumberAnnotation must not be {@literal null}.
+	 * @param revisionTimeStampAnnotation must not be {@literal null}.
 	 */
-	public AnnotationRevisionMetadata(final Object entity, Class<? extends Annotation> revisionNumberAnnotation,
+	public AnnotationRevisionMetadata(Object entity, Class<? extends Annotation> revisionNumberAnnotation,
 			Class<? extends Annotation> revisionTimeStampAnnotation) {
 
 		Assert.notNull(entity, "Entity must not be null!");
+		Assert.notNull(revisionNumberAnnotation, "Revision number annotation must not be null!");
+		Assert.notNull(revisionTimeStampAnnotation, "Revision time stamp annotation must not be null!");
+
 		this.entity = entity;
-
-		if (revisionNumberAnnotation != null) {
-			AnnotationDetectionFieldCallback numberCallback = new AnnotationDetectionFieldCallback(revisionNumberAnnotation);
-			ReflectionUtils.doWithFields(entity.getClass(), numberCallback);
-			this.revisionNumber = numberCallback.getValue(entity);
-		} else {
-			this.revisionNumber = null;
-		}
-
-		if (revisionTimeStampAnnotation != null) {
-			AnnotationDetectionFieldCallback revisionCallback = new AnnotationDetectionFieldCallback(
-					revisionTimeStampAnnotation);
-			ReflectionUtils.doWithFields(entity.getClass(), revisionCallback);
-			this.revisionDate = revisionCallback.getValue(entity);
-		} else {
-			this.revisionDate = null;
-		}
+		this.revisionNumber = detectAnnotation(entity, revisionNumberAnnotation);
+		this.revisionDate = detectAnnotation(entity, revisionTimeStampAnnotation);
 	}
 
 	/*
@@ -72,7 +61,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	 * @see org.springframework.data.repository.history.RevisionMetadata#getRevisionNumber()
 	 */
 	public Optional<N> getRevisionNumber() {
-		return Optional.ofNullable(revisionNumber);
+		return revisionNumber.get();
 	}
 
 	/*
@@ -80,7 +69,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	 * @see org.springframework.data.history.RevisionMetadata#getRevisionDate()
 	 */
 	public Optional<LocalDateTime> getRevisionDate() {
-		return Optional.ofNullable(revisionDate);
+		return revisionDate.get();
 	}
 
 	/*
@@ -90,5 +79,15 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	@SuppressWarnings("unchecked")
 	public <T> T getDelegate() {
 		return (T) entity;
+	}
+
+	private static <T> Lazy<Optional<T>> detectAnnotation(Object entity, Class<? extends Annotation> annotationType) {
+
+		return Lazy.of(() -> {
+
+			AnnotationDetectionFieldCallback numberCallback = new AnnotationDetectionFieldCallback(annotationType);
+			ReflectionUtils.doWithFields(entity.getClass(), numberCallback);
+			return numberCallback.getValue(entity);
+		});
 	}
 }

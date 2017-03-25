@@ -36,14 +36,13 @@ public class AnnotationDetectionFieldCallbackUnitTests {
 	}
 
 	@Test // DATACMNS-616
-	@SuppressWarnings("rawtypes")
 	public void looksUpValueFromPrivateField() {
 
 		AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(Autowired.class);
 		ReflectionUtils.doWithFields(Sample.class, callback);
 
-		assertThat(callback.getType()).isEqualTo(String.class);
-		assertThat(callback.<String> getValue(new Sample("foo"))).isEqualTo("foo");
+		assertThat(callback.getType()).hasValue(String.class);
+		assertThat(callback.getValue(new Sample("foo"))).hasValue("foo");
 	}
 
 	@Test // DATACMNS-616
@@ -52,8 +51,8 @@ public class AnnotationDetectionFieldCallbackUnitTests {
 		AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(Autowired.class);
 		ReflectionUtils.doWithFields(Empty.class, callback);
 
-		assertThat(callback.getType()).isNull();
-		assertThat(callback.<Object> getValue(new Empty())).isNull();
+		assertThat(callback.getType()).isNotPresent();
+		assertThat(callback.getValue(new Empty())).isNotPresent();
 	}
 
 	@Value
