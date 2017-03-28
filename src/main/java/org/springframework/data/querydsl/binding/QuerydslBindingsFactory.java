@@ -44,6 +44,8 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	private final EntityPathResolver entityPathResolver;
 	private final Map<TypeInformation<?>, EntityPath<?>> entityPaths;
 
+	private QuerydslBinderCustomizer defaultBindings;
+
 	private AutowireCapableBeanFactory beanFactory;
 	private Repositories repositories;
 
@@ -58,6 +60,20 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 
 		this.entityPathResolver = entityPathResolver;
 		this.entityPaths = new ConcurrentReferenceHashMap<TypeInformation<?>, EntityPath<?>>();
+	}
+
+	/**
+	 * Creates a new {@link QuerydslBindingsFactory} using the given {@link EntityPathResolver} and default bindings
+	 * {@link QuerydslBinderCustomizer}.
+	 *
+	 * @param entityPathResolver must not be {@literal null}.
+	 * @param defaultBindings the default bindings {@link QuerydslBinderCustomizer} to apply to each {@link QuerydslBindings}
+	 *                        created by this factory.
+	 */
+	public QuerydslBindingsFactory(EntityPathResolver entityPathResolver, QuerydslBinderCustomizer defaultBindings) {
+		this(entityPathResolver);
+
+		this.defaultBindings = defaultBindings;
 	}
 
 	/* 
@@ -97,6 +113,11 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		EntityPath<?> path = verifyEntityPathPresent(domainType);
 
 		QuerydslBindings bindings = new QuerydslBindings();
+
+		if (defaultBindings != null) {
+			defaultBindings.customize(bindings, path);
+		}
+
 		findCustomizerForDomainType(customizer, domainType.getType()).customize(bindings, path);
 
 		return bindings;
