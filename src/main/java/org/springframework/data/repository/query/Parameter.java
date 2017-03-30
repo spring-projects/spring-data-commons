@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * Class to abstract a single parameter of a query method. It is held in the context of a {@link Parameters} instance.
  * 
  * @author Oliver Gierke
+ * @author Michael Bragg
  */
 public class Parameter {
 
@@ -76,7 +77,7 @@ public class Parameter {
 	 * @return
 	 */
 	public boolean isBindable() {
-		return !isSpecialParameter();
+		return this.isExplicitlyNamed() || !isSpecialParameter();
 	}
 
 	/**

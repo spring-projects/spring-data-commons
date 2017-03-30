@@ -31,6 +31,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Unit test for {@link Parameters}.
  * 
  * @author Oliver Gierke
+ * @author Michael Bragg
  */
 public class ParametersUnitTests {
 
@@ -131,6 +132,16 @@ public class ParametersUnitTests {
 		assertThat(parameter.isExplicitlyNamed(), is(true));
 	}
 
+	@Test // DATACMNS-1002
+	public void detectsAndBindsDynamicProjectionParameter() throws Exception {
+
+		Parameter parameter = getParametersFor("validWithDynamicBind", Class.class).getBindableParameter(0);
+
+		assertThat(parameter.getName(), is(notNullValue()));
+		assertThat(parameter.isBindable(), is(true));
+		assertThat(parameter.isExplicitlyNamed(), is(true));
+	}
+
 	@Test // DATACMNS-731
 	public void doesNotConsiderParameterExplicitlyNamedEvenIfNamePresent() throws Exception {
 
@@ -192,6 +203,8 @@ public class ParametersUnitTests {
 		User emptyParameters();
 
 		<T> T dynamicBind(Class<T> type, Class<?> one, Class<Object> two);
+
+		<T> T validWithDynamicBind(@Param("type") Class<T> type);
 
 		void methodWithOptional(Optional<String> optional);
 	}
