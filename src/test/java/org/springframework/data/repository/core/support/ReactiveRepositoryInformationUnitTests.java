@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import reactor.core.publisher.Flux;
 import rx.Observable;
 
 import java.io.Serializable;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.reactivestreams.Publisher;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
@@ -112,6 +114,19 @@ public class ReactiveRepositoryInformationUnitTests {
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Object.class)));
 	}
 
+	@Test // DATACMNS-1023
+	public void usesCorrectSaveOverload() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(DummyRepository.class);
+		RepositoryInformation information = new ReactiveRepositoryInformation(metadata, ReactiveCrudRepository.class,
+				Optional.empty());
+
+		Method method = DummyRepository.class.getMethod("save", Iterable.class);
+
+		assertThat(information.getTargetClassMethod(method),
+				is(ReactiveCrudRepository.class.getMethod("save", Iterable.class)));
+	}
+
 	interface RxJava1InterfaceWithGenerics extends RxJava1CrudRepository<User, String> {}
 
 	interface ReactiveJavaInterfaceWithGenerics extends ReactiveCrudRepository<User, String> {}
@@ -119,6 +134,12 @@ public class ReactiveRepositoryInformationUnitTests {
 	static abstract class DummyGenericReactiveRepositorySupport<T, ID extends Serializable>
 			implements ReactiveCrudRepository<T, ID> {
 
+	}
+
+	interface DummyRepository extends ReactiveCrudRepository<User, Integer> {
+
+		@Override
+		<S extends User> Flux<S> save(Iterable<S> entities);
 	}
 
 	static class User {
