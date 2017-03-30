@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 package org.springframework.data.repository.core.support;
 
 import static org.springframework.core.GenericTypeResolver.*;
+import static org.springframework.util.ReflectionUtils.*;
+
+import lombok.Value;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -29,7 +32,6 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import lombok.Value;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
@@ -76,7 +78,10 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 	@Override
 	Method getTargetClassMethod(Method method, Optional<Class<?>> baseClass) {
 
-		return baseClass.flatMap(it -> {
+		Supplier<Optional<Method>> directMatch = () -> baseClass
+				.map(it -> findMethod(it, method.getName(), method.getParameterTypes()));
+
+		Supplier<Optional<Method>> detailedComparison = () -> baseClass.flatMap(it -> {
 
 			List<Supplier<Optional<Method>>> suppliers = new ArrayList<>();
 
@@ -88,8 +93,9 @@ public class ReactiveRepositoryInformation extends DefaultRepositoryInformation 
 			suppliers.add(() -> getMethodCandidate(method, it, matchParameterOrComponentType(getRepositoryInterface())));
 
 			return Optionals.firstNonEmpty(Streamable.of(suppliers));
+		});
 
-		}).orElse(method);
+		return Optionals.firstNonEmpty(directMatch, detailedComparison).orElse(method);
 	}
 
 	/**
