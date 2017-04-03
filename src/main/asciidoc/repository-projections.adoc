@@ -1,214 +1,276 @@
 [[projections]]
 = Projections
 
-Spring Data Repositories usually return the domain model when using query methods. However, sometimes, you may need to alter the view of that model for various reasons. In this section, you will learn how to define projections to serve up simplified and reduced views of resources.
+The result of a Spring Data query method is usually one or multiple instances of the aggregate root managed by the repository.
+However, it might sometimes be desirable to rather project on certain attributes of those types.
+Spring Data allows to model dedicated return types to more selectively retrieve partial views onto the managed aggregates.
 
-Look at the following domain model:
+Imagine a sample repository and aggregate root type like this:
 
-[source,java]
-----
-@Entity
-public class Person {
-
-  @Id @GeneratedValue
-  private Long id;
-  private String firstName, lastName;
-
-  @OneToOne
-  private Address address;
-  …
-}
-
-@Entity
-public class Address {
-
-  @Id @GeneratedValue
-  private Long id;
-  private String street, state, country;
-
-  …
-}
-----
-
-This `Person` has several attributes:
-
-* `id` is the primary key
-* `firstName` and `lastName` are data attributes
-* `address` is a link to another domain object
-
-Now assume we create a corresponding repository as follows:
-
-[source,java]
-----
-interface PersonRepository extends CrudRepository<Person, Long> {
-
-  Person findPersonByFirstName(String firstName);
-}
-----
-
-Spring Data will return the domain object including all of its attributes. If you do not want to expose `Address` details you can offer the consumer of your repository service an alternative by defining one or more projections.
-
-.Simple Projection
+.A sample aggregate and repository
 ====
-[source,java]
+[source, java]
 ----
-interface NoAddresses {  <1>
+class Person {
 
-  String getFirstName(); <2>
+  @Id UUID id;
+  String firstname, lastname;
+  Address address;
 
-  String getLastName();  <3>
+  static class Address {
+    String zipCode, city, street;
+  }
+}
+
+interface PersonRepository extends Repository<Person, UUID> {
+
+  Collection<Person> findByLastname(String lastname);
 }
 ----
-This projection has the following details:
-
-<1> A plain Java interface making it declarative.
-<2> Export the `firstName`.
-<3> Export the `lastName`.
 ====
 
-The `NoAddresses` projection only has getters for `firstName` and `lastName` meaning that it will not serve up any address information. The query method definition returns in this case `NoAdresses` instead of `Person`. 
+Now imagine we'd want to retrieve the person's name attributes only.
+What means does Spring Data offer to achieve this?
 
-[source,java]
+[[projections.interfaces]]
+== Interface-based projections
+
+The easiest way to limit the result of the queries to expose the name attributes only is by declaring an interface that will expose accessor methods for the properties to be read:
+
+.A projection interface to retrieve a subset of attributes
+====
+[source, java]
 ----
-interface PersonRepository extends CrudRepository<Person, Long> {
+interface NamesOnly {
 
-  NoAddresses findByFirstName(String firstName);
+  String getFirstname();
+  String getLastname();
 }
 ----
-
-Projections declare a contract between the underlying type and the method signatures related to the exposed properties. Hence it is required to name getter methods according to the property name of the underlying type. If the underlying property is named `firstName`, then the getter method must be named `getFirstName` otherwise Spring Data is not able to look up the source property. This type of projection is also called _closed projection_. Closed projections expose a subset of properties and do not use `@Value` annotations. Hence they can be used to optimize the query by reducing the selected fields from the data store.
-
-The other type is, as you might imagine, an _open projection_, which does contain one or more `@Value` annotations. Projections using the `@Value` annotation can access all the properties of an entity, hence the selected fields can not be reduced.
-
-[[projections.remodelling-data]]
-== Remodelling data
-
-So far, you have seen how projections can be used to reduce the information that is presented to the user. Projections can be used to adjust the exposed data model. You can add virtual properties to your projection. Look at the following projection interface:
-
-.Renaming a property
 ====
-[source,java]
+
+The important bit here is that the properties defined here exactly match properties in the aggregate root.
+This allows a query method to be added like this:
+
+.A repository using an interface based projection with a query method
+====
+[source, java]
 ----
-interface RenamedProperty {    <1>
+interface PersonRepository extends Repository<Person, UUID> {
 
-  String getFirstName();       <2>
-
-  @Value("#{target.lastName}")
-  String getName();            <3>
+  Collection<NamesOnly> findByLastname(String lastname);
 }
 ----
-This projection has the following details:
-
-<1> A plain Java interface making it declarative.
-<2> Export the `firstName`.
-<3> Export the `name` property. Since this property is virtual it requires `@Value("#{target.lastName}")` to specify the property source.
 ====
 
-The backing domain model does not have this property so we need to tell Spring Data from where this property is obtained.
-Virtual properties are the place where `@Value` comes into play. The `name` getter is annotated with `@Value` to use http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/html/expressions.html[SpEL expressions] pointing to the backing property `lastName`. You may have noticed `lastName` is prefixed with `target` which is the variable name pointing to the backing object. Using `@Value` on methods allows defining where and how the value is obtained.
+The query execution engine will create proxy instances of that interface at runtime for each element returned and forward calls to the exposed methods to the target object.
 
-Some applications require the full name of a person. Concatenating strings with `String.format("%s %s", person.getFirstName(), person.getLastName())` would be one possibility but this piece of code needs to be called in every place the full name is required. Virtual properties on projections leverage the need for repeating that code all over.
+[[projections.interfaces.nested]]
+Projections can be used recursively. If you wanted to include some of the `Address` information as well, create a projection interface for that and return that interface from the declaration of `getAddress()`.
 
-[source,java]
+.A projection interface to retrieve a subset of attributes
+====
+[source, java]
 ----
-interface FullNameAndCountry {
+interface PersonSummary {
 
-  @Value("#{target.firstName} #{target.lastName}")
+  String getFirstname();
+  String getLastname();
+  AddressSummary getAddress();
+
+  interface AddressSummary {
+    String getCity();
+  }
+}
+----
+====
+
+On method invocation, the `address` property of the target instance will be obtained and wrapped into a projecting proxy in turn.
+
+[[projections.interfaces.closed]]
+=== Closed projections
+
+A projection interface whose accessor methods all match properties of the target aggregate are considered closed projections.
+
+.A closed projection
+====
+[source, java]
+----
+interface NamesOnly {
+
+  String getFirstname();
+  String getLastname();
+}
+----
+====
+
+If a closed projection is used, Spring Data modules can even optimize the query execution as we exactly know about all attributes that are needed to back the projection proxy.
+For more details on that, please refer to the module specific part of the reference documentation.
+
+[[projections.interfaces.open]]
+=== Open projections
+
+Accessor methods in projection interfaces can also be used to compute new values by using the `@Value` annotation on it:
+
+[[projections.interfaces.open.simple]]
+.An Open Projection
+====
+[source, java]
+----
+interface NamesOnly {
+
+  @Value("#{target.firstname + ' ' + target.lastname}")
   String getFullName();
-
-  @Value("#{target.address.country}")
-  String getCountry();
-}
-----
-
-In fact, `@Value` gives full access to the target object and its nested properties. SpEL expressions are extremly powerful as the definition is always applied to the projection method. Let's take SpEL expressions in projections to the next level.
-
-
-Imagine you had the following domain model definition:
-
-[source,java]
-----
-@Entity
-public class User {
-
-  @Id @GeneratedValue
-  private Long id;
-  private String name;
-
-  private String password;
   …
 }
 ----
+====
 
-IMPORTANT: This example may seem a bit contrived, but it is possible with a richer domain model and many projections, to accidentally leak such details. Since Spring Data cannot discern the sensitivity of such data, it is up to the developers to avoid such situations. Storing a password as plain-text is discouraged. You really should not do this. For this example, you could also replace `password` with anything else that is secret.
+The aggregate root backing the projection is available via the `target` variable.
+A projection interface using `@Value` is called open projection, and will cause Spring Data not being able to apply query execution optimizations anymore as the SpEL expression could use any attributes of the aggregate root.
 
-In some cases, you might keep the `password` as secret as possible and not expose it more than it should be. The solution is to create a projection using `@Value` together with a SpEL expression.
+The expressions used in `@Value` shouldn't become to complex as you'd want to avoid programming in ``String``s.
+For very simple expressions, one option might be to resort to default methods:
 
-[source,java]
+[[projections.interfaces.open.default]]
+.A projection interface using a default method for custom logic
+====
+[source, java]
 ----
-interface PasswordProjection {
-  @Value("#{(target.password == null || target.password.empty) ? null : '******'}")
-  String getPassword();
+interface NamesOnly {
+
+  String getFirstname();
+  String getLastname();
+
+  default String getFullName() {
+    return getFirstname.concat(" ").concat(getLastname());
+  }
 }
 ----
+====
 
-The expression checks whether the password is `null` or empty and returns `null` in this case, otherwise six asterisks to indicate a password was set.
+This approach requires you to be able to implement logic purely based on the other accessor methods exposed on the projection interface.
+A second, more flexible option is to implement the custom logic in a Spring bean and then simply invoke that from the SpEL expression:
 
-== Nested Projections
-
-Projections can return projections for types they reference. Lets go back to persons with addresses:
-
-[source,java]
+[[projections.interfaces.open.bean-reference]]
+.Sample Person object
+====
+[source, java]
 ----
-@Entity
-public class Person {
+@Component
+class MyBean {
 
-  @Id @GeneratedValue
-  private Long id;
+  String getFullName(Person person) {
+    …
+  }
+}
 
-  @OneToOne
-  private Address address;
+interface NamesOnly {
+
+  @Value("#{@myBean.getFullName(target)}")
+  String getFullName();
   …
 }
+----
+====
 
-@Entity
-public class Address {
+Note, how the SpEL expression refers to `myBean` and invokes the `getFullName(…)` method forwarding the projection target as method parameter.
+Methods backed by SpEL expression evaluation can also use method parameters which can then be referred to from the expression.
+The method parameters are available via an `Object` array named `args`.
 
-  @Id @GeneratedValue
-  private Long id;
+.Sample Person object
+====
+[source, java]
+----
+interface NamesOnly {
 
-  private String street, state, country;
-
-  …
+  @Value("#{args[0] + ' ' + target.firstname + '!'}")
+  String getSalutation(String prefix);
 }
 ----
+====
 
-What if you don't want to make the full address accessible, but only the `state` and `country` attributes? It should be clear by now that you can define a projection for this purpose.
+Again, for more complex expressions rather use a Spring bean and let the expression just invoke a method as described in <<projections.interfaces.open.bean-reference, above>>.
 
-[source,java]
+[[projections.dtos]]
+== Class-based projections (DTOs)
+
+Another way of defining
+
+.A projecting DTO
+====
+[source, java]
 ----
-interface PartialAddress {
+class NamesOnly {
 
-  String getState();
-  String getCountry();
+  private final String firstname, lastname;
+
+  NamesOnly(String firstname, String lastname) {
+    this.firstname = firstname;
+    this.lastname = lastname;
+  }
+
+  String getFirstname() {
+    return this.firstname;
+  }
+
+  String getLastname() {
+    return this.lastname;
+  }
+
+  // equals(…) and hashCode() implementations
 }
 ----
+====
 
-But `Person` entities have a reference to a normal `Address`, so you need another projection for `Person` which returns a `PartialAddress`.
+[TIP]
+.Avoiding boilerplate code for projection DTOs
+====
+The code that needs to be written for a DTO can be dramatically simplified using https://projectlombok.org[Project Lombok], which provides an `@Value` annotation (not to mix up with Spring's `@Value` annotation shown in the interface examples above).
+The sample DTO above would become this:
 
-[source,java]
+[source, java]
 ----
-interface PersonWithPartioalAddress {
-  PartialAddress getAddress();
+@Value
+class NamesOnly {
+	String firstname, lastname;
 }
 ----
+Fields are private final by default, the class exposes a constructor taking all fields and automatically gets `equals(…)` and `hashCode()` methods implemented.
 
-Note that the name of the property is unchanged, just the return type is replaced with the `PartialAddress` projection.
+====
 
-== Choice of return types
+[[projection.dynamic]]
+== Dynamic projections
 
-When including a property in a projection one should choose either the original return type or a projection of that return type. If you want to return a completely different type projections are not the right tool. Depending on what exactly you want to do there are multiple other options.
+So far we have seen the projection type to be used declared as return type or element type of a collection.
+However, it might be desirable to rather select the type to be used at invocation time.
+To achieve this, a repository query method can be used like this:
 
-Complex computations on properties can be implemented as separate getters, either on the entity or as default implementations on projections.
+.A repository using a dynamic projection parameter
+====
+[source, java]
+----
+interface PersonRepository extends Repository<Person, UUID> {
 
-In some cases the transformation in question are more about the representation of an entity or an entity attribute. In this case you should consult the technology you are using for creating that representation, for example the http://docs.spring.io/spring-data/rest/docs/{springVersion}/reference/html/#representations.mapping[representations mapping of Spring Data Rest].
+  Collection<T> findByLastname(String lastname, Class<T> type);
+}
+----
+====
+
+This way the method can be used to obtain the aggregates as is, or with a projection applied:
+
+.Using a repository with dynamic projections
+====
+[source, java]
+----
+void someMethod(PersonRepository people) {
+
+  Collection<Person> aggregates =
+    people.findByLastname("Matthews", Person.class);
+
+  Collection<NamesOnly> aggregates =
+    people.findByLastname("Matthews", NamesOnly.class);
+}
+----
+====
