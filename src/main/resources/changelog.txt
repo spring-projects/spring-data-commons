@@ -1,6 +1,52 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.0.M2 (2017-04-04)
+----------------------------------------
+* DATACMNS-1027 - Adapt to API changes in AssertJ 3.6.
+* DATACMNS-1024 - RootObjectInformation.getFunctions(…) fails with overloaded methods.
+* DATACMNS-1020 - Improvements to revision package.
+* DATACMNS-1018 - Reinstantiate ability to customize repository factory bean through annotation and XML namespace.
+* DATACMNS-1015 - Introduce IdentifierAccessor.getRequiredIdentifier().
+* DATACMNS-1008 - Custom implementation of CrudRepository.save(…) not called if generics not declared exactly.
+* DATACMNS-1007 - Add IsEmpty and IsNotEmpty keywords to query derivation.
+* DATACMNS-1006 - SimpleTypeHolder should consider java.lang types simple ones.
+* DATACMNS-1005 - Javaslang collections cannot be returned from paginating query methods.
+* DATACMNS-1000 - Typo in reference documentation about domain events.
+* DATACMNS-999 - Improve resource extensive error message concatenation.
+* DATACMNS-989 - CustomRepositoryImplementationDetector ignores excludeFilters.
+* DATACMNS-988 - Provide RxJava 2 Repository interfaces.
+* DATACMNS-987 - SpringDataWebConfiguration now forces an application to have Jackson on the classpath if it uses JSON Path.
+* DATACMNS-985 - Remove references to single-argument assertion methods of Spring.
+* DATACMNS-981 - AnnotationBasedPersistentProperty does not consider @AliasFor with own, revised annotations.
+* DATACMNS-977 - Introduce support for component index creation in Spring 5.
+* DATACMNS-975 - Aggregate event publication should happen after the interaction with the repository.
+* DATACMNS-974 - Update project documentation with the CLA tool integration.
+* DATACMNS-973 - Migrate ticket references in test code to Spring Framework style.
+* DATACMNS-972 - NullPointerException in ProjectingJackson2HttpMessageConverter.
+* DATACMNS-967 - Default accessors on projection interfaces must not be considered input properties.
+* DATACMNS-963 - ReturnedType.getInputProperties() does not guarantee distinct properties.
+* DATACMNS-962 - Doc spelling mistake 'walking thought'.
+* DATACMNS-961 - Upgrade to a newer JDK version on TravisCI.
+* DATACMNS-960 - RevisionRepository should extend Repository.
+* DATACMNS-959 - Register repository interceptor to allow detecting a surrounding transaction.
+* DATACMNS-958 - Use ExposeInvocationInterceptor.ADVISOR over the advice instance.
+* DATACMNS-957 - Persist fails on entity without id and version field if @EnableAuditing.
+* DATACMNS-956 - Ensure consistent usage of ClassTypeInformation.from(…).
+* DATACMNS-953 - GenericPropertyMatchers.exact() should use exact matching.
+* DATACMNS-952 - Switch to less expensive lookup of Spring Data web support configuration.
+* DATACMNS-951 - Add Converters for JSR-310 Duration and Period.
+* DATACMNS-947 - Adopt ReactiveTypeDescriptor changes.
+* DATACMNS-943 - Redeclared save(Iterable) results in wrong method overload to be invoked eventually.
+* DATACMNS-942 - Release 2.0 M2 (Kay).
+* DATACMNS-941 - QuerydslBindings not working with inheritance.
+* DATACMNS-940 - Support for Javaslang collection types as query method return values.
+* DATACMNS-934 - BasicPersistentEntity.addAssociations(…) must not add null values to the collection of associations.
+* DATACMNS-928 - Support for exposing domain events from aggregate roots as Spring application events.
+* DATACMNS-867 - Upgrade to Java 8 and adapt APIs.
+* DATACMNS-776 - ProxyingHandlerMethodArgumentResolver handles interfaces not intended for projection.
+
+
 Changes in version 1.12.8.RELEASE (2017-03-02)
 ----------------------------------------------
 * DATACMNS-999 - Improve resource extensive error message concatenation.
