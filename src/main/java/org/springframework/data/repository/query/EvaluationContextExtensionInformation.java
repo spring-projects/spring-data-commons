@@ -250,7 +250,8 @@ class EvaluationContextExtensionInformation {
 			return target.map(it -> methods.stream()//
 					.collect(Collectors.toMap(//
 							Method::getName, //
-							method -> new Function(method, it))))
+							method -> new Function(method, it), //
+							(left, right) -> right)))
 					.orElseGet(Collections::emptyMap);
 		}
 
