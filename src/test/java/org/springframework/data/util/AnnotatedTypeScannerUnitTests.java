@@ -28,7 +28,6 @@ import org.springframework.data.annotation.Persistent;
 public class AnnotatedTypeScannerUnitTests {
 
 	@Test // DATACMNS-452
-	@SuppressWarnings("unchecked")
 	public void findsAnnotatedTypes() {
 
 		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Persistent.class);

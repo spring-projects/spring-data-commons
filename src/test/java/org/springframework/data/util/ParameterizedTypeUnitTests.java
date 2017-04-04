@@ -18,7 +18,6 @@ package org.springframework.data.util;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.util.ClassTypeInformation.*;
-import static org.springframework.data.util.OptionalAssert.*;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -30,6 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import org.assertj.core.api.OptionalAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,26 +83,29 @@ public class ParameterizedTypeUnitTests {
 		TypeInformation<Foo> type = ClassTypeInformation.from(Foo.class);
 		Optional<TypeInformation<?>> propertyType = type.getProperty("param");
 
-		OptionalAssert<TypeInformation<?>> assertion = assertOptional(propertyType);
+		OptionalAssert<TypeInformation<?>> assertion = assertThat(propertyType);
 
-		assertion.flatMap(it -> it.getProperty("value")).value(TypeInformation::getType).isEqualTo(String.class);
-		assertion.flatMap(TypeInformation::getMapValueType).value(TypeInformation::getType).isEqualTo(String.class);
+		assertion.flatMap(it -> it.getProperty("value"))
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertion.flatMap(TypeInformation::getMapValueType)
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 
 		propertyType = type.getProperty("param2");
 
-		assertion.flatMap(it -> it.getProperty("value")).value(TypeInformation::getType).isEqualTo(String.class);
-		assertion.flatMap(TypeInformation::getMapValueType).value(TypeInformation::getType).isEqualTo(String.class);
+		assertion.flatMap(it -> it.getProperty("value"))
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertion.flatMap(TypeInformation::getMapValueType)
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test // DATACMNS-446
 	public void createsToStringRepresentation() {
 
-		assertOptional(from(Foo.class).getProperty("param")).value(Object::toString)
-				.isEqualTo("org.springframework.data.util.ParameterizedTypeUnitTests$Localized<java.lang.String>");
+		assertThat(from(Foo.class).getProperty("param")).map(Object::toString)
+				.hasValue("org.springframework.data.util.ParameterizedTypeUnitTests$Localized<java.lang.String>");
 	}
 
 	@Test // DATACMNS-485
-	@SuppressWarnings("rawtypes")
 	public void hashCodeShouldBeConsistentWithEqualsForResolvedTypes() {
 
 		Optional<TypeInformation<?>> first = from(First.class).getProperty("property");
@@ -110,16 +113,16 @@ public class ParameterizedTypeUnitTests {
 
 		assertThat(first).isEqualTo(second);
 
-		assertThat(first).hasValueSatisfying(left -> assertThat(second).hasValueSatisfying(right -> assertThat(left.hashCode()).isEqualTo(right.hashCode())));
+		assertThat(first).hasValueSatisfying(left -> assertThat(second)
+				.hasValueSatisfying(right -> assertThat(left.hashCode()).isEqualTo(right.hashCode())));
 	}
 
 	@Test // DATACMNS-485
-	@SuppressWarnings("rawtypes")
 	public void getActualTypeShouldNotUnwrapParameterizedTypes() {
 
 		Optional<TypeInformation<?>> type = from(First.class).getProperty("property");
 
-		assertOptional(type).map(TypeInformation::getActualType).isEqualTo(type);
+		assertThat(type).map(TypeInformation::getActualType).isEqualTo(type);
 	}
 
 	@Test // DATACMNS-697
@@ -127,17 +130,16 @@ public class ParameterizedTypeUnitTests {
 
 		TypeInformation<NormalizedProfile> information = ClassTypeInformation.from(NormalizedProfile.class);
 
-		assertOptional(information.getProperty("education2.data"))//
+		assertThat(information.getProperty("education2.data"))//
 				.flatMap(TypeInformation::getComponentType)//
 				.flatMap(it -> it.getProperty("value"))//
-				.value(TypeInformation::getType)//
-				.isEqualTo(Education.class);
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Education.class));
 	}
 
 	@Test // DATACMNS-899
 	public void returnsEmptyOptionalMapValueTypeForNonMapProperties() {
 
-		OptionalAssert<TypeInformation<?>> assertion = assertOptional(
+		OptionalAssert<TypeInformation<?>> assertion = assertThat(
 				ClassTypeInformation.from(Bar.class).getProperty("param"));
 
 		assertion.hasValueSatisfying(it -> assertThat(it).isInstanceOf(ParameterizedTypeInformation.class));

@@ -98,7 +98,8 @@ public class TypeDiscovererUnitTests {
 
 		assertThat(discoverer.getMapValueType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Locale.class));
 
-		assertThat(discoverer.getComponentType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertThat(discoverer.getComponentType())
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test
@@ -106,7 +107,8 @@ public class TypeDiscovererUnitTests {
 
 		TypeDiscoverer<CustomCollection> discoverer = new TypeDiscoverer<>(CustomCollection.class, firstMap);
 
-		assertThat(discoverer.getComponentType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertThat(discoverer.getComponentType())
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test
@@ -114,11 +116,11 @@ public class TypeDiscovererUnitTests {
 
 		TypeDiscoverer<String[]> discoverer = new TypeDiscoverer<>(String[].class, EMPTY_MAP);
 
-		assertThat(discoverer.getComponentType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertThat(discoverer.getComponentType())
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test // DATACMNS-57
-	@SuppressWarnings("rawtypes")
 	public void discoveresConstructorParameterTypesCorrectly() throws NoSuchMethodException, SecurityException {
 
 		TypeDiscoverer<GenericConstructors> discoverer = new TypeDiscoverer<>(GenericConstructors.class, firstMap);
@@ -127,7 +129,8 @@ public class TypeDiscovererUnitTests {
 
 		assertThat(types).hasSize(2);
 		assertThat(types.get(0).getType()).isEqualTo(List.class);
-		assertThat(types.get(0).getComponentType()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertThat(types.get(0).getComponentType())
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test

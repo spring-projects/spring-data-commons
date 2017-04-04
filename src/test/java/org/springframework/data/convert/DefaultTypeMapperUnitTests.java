@@ -18,7 +18,6 @@ package org.springframework.data.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.OptionalAssert;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -98,8 +96,8 @@ public class DefaultTypeMapperUnitTests {
 		TypeInformation<?> typeInformation = TypeInformation.class.cast(result);
 
 		assertThat(typeInformation.getType()).isEqualTo(Bar.class);
-		OptionalAssert.assertOptional(typeInformation.getProperty("field")).value(TypeInformation::getType)
-				.isEqualTo(Character.class);
+		assertThat(typeInformation.getProperty("field"))
+				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Character.class));
 	}
 
 	static class TypeWithAbstractGenericType<T> {

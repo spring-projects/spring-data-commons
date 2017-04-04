@@ -15,11 +15,13 @@
  */
 package org.springframework.data.util;
 
-import static org.springframework.data.util.OptionalAssert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
+import org.assertj.core.api.OptionalAssert;
 import org.junit.Test;
 
 /**
@@ -30,23 +32,22 @@ import org.junit.Test;
 public class DataCmns511Tests {
 
 	@Test // DATACMNS-511
-	@SuppressWarnings("rawtypes")
 	public void detectsEqualTypeVariableTypeInformationInstances() {
 
-		OptionalAssert<TypeInformation<?>> assertion = assertOptional(
+		OptionalAssert<TypeInformation<?>> assertion = assertThat(
 				ClassTypeInformation.from(AbstractRole.class).getProperty("createdBy"));
 
 		assertion.flatMap(it -> it.getProperty("roles"))//
 				.map(TypeInformation::getActualType)//
 				.flatMap(it -> it.getProperty("createdBy"))//
-				.andAssert(second -> {
+				.hasValueSatisfying(second -> {
 
-					OptionalAssert<TypeInformation<?>> third = second.flatMap(it -> it.getProperty("roles"))//
+					Optional<TypeInformation<?>> third = second.getProperty("roles")//
 							.map(TypeInformation::getActualType)//
 							.flatMap(it -> it.getProperty("createdBy"));
 
-					second.isEqualTo(third);
-					second.value(Object::hashCode).isEqualTo(third.getActual().hashCode());
+					assertThat(third).hasValue(second);
+					assertThat(third).map(Object::hashCode).hasValue(second.hashCode());
 				});
 	}
 
