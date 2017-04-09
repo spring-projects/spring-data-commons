@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * 
  * @since 1.6
  * @author Oliver Gierke
+ * @author Thomas Darimont
  */
 public abstract class SortDefaultUnitTests {
 
@@ -41,6 +42,14 @@ public abstract class SortDefaultUnitTests {
 	static final String[] SORT_2 = new String[] { "username,ASC", "lastname,firstname,DESC" };
 	static final String SORT_3 = "firstname,lastname";
 
+	static final String SORT_1_COMPACT_ASC = "+username";
+	static final String SORT_1_COMPACT_DESC = "-username";
+	static final String SORT_2_COMPACT_DESC_ASC = "-firstname,+lastname";
+	static final String SORT_2_COMPACT_DEFAULT_AT_END = "-firstname,lastname";
+	static final String SORT_2_COMPACT_DEFAULT_AT_START = "firstname,-lastname";
+	static final String SORT_2_COMPACT_DEFAULT_SPACES = "   firstname    ,    -lastname   ";
+	static final String SORT_3_COMPACT_MIXED = "-field1,+field2,field3,DESC";
+	
 	static final String[] SORT_FIELDS = new String[] { "firstname", "lastname" };
 	static final Direction SORT_DIRECTION = Direction.DESC;
 
@@ -56,6 +65,23 @@ public abstract class SortDefaultUnitTests {
 		assertSortStringParsedInto(Sort.by(new Order(ASC, "username"), //
 				new Order(DESC, "lastname"), new Order(DESC, "firstname")), SORT_2);
 		assertSortStringParsedInto(Sort.by("firstname", "lastname"), SORT_3);
+	}
+	
+	@Test //DATACMNS-531 
+	public void parsesCompactSortStringCorrectly() {
+
+		assertSortStringParsedInto(Sort.by(new Order(ASC, "username")), SORT_1_COMPACT_ASC);
+		assertSortStringParsedInto(Sort.by(new Order(DESC, "username")), SORT_1_COMPACT_DESC);
+		assertSortStringParsedInto(Sort.by(new Order(DESC, "firstname"), // 
+				new Order(ASC, "lastname")), SORT_2_COMPACT_DESC_ASC);
+		assertSortStringParsedInto(Sort.by(new Order(DESC, "firstname"), //
+				new Order(ASC, "lastname")), SORT_2_COMPACT_DEFAULT_AT_END);
+		assertSortStringParsedInto(Sort.by(new Order(ASC, "firstname"), // 
+				new Order(DESC, "lastname")), SORT_2_COMPACT_DEFAULT_AT_START);
+		assertSortStringParsedInto(Sort.by(new Order(ASC, "firstname"), // 
+				new Order(DESC, "lastname")), SORT_2_COMPACT_DEFAULT_SPACES);
+		assertSortStringParsedInto(Sort.by(new Order(DESC, "field1"), // 
+				new Order(ASC, "field2"), new Order(DESC, "field3")), SORT_3_COMPACT_MIXED);
 	}
 
 	private static void assertSortStringParsedInto(Sort expected, String... source) {

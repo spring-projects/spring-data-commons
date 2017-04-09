@@ -232,13 +232,32 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 		return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
 	}
 
+	/**
+	 * Return an {@link Order} for the given {@code property}.
+	 * 
+	 * If the given {@code property} is prefixed with {@code '+'} or {@code '-'} 
+	 * the {@link Direction} will resolve to{@value Direction#ASC} or {@link Direction#DESC} 
+	 * effectively ignoring the provided {@code direction}.  
+	 *  
+	 * @param property
+	 * @param direction
+	 * @return
+	 */
 	private static Optional<Order> toOrder(String property, Optional<Direction> direction) {
 
 		if (!StringUtils.hasText(property)) {
 			return Optional.empty();
 		}
-
-		return Optional.of(direction.map(it -> new Order(it, property)).orElseGet(() -> new Order(property)));
+		
+		String trimmed = property.trim();
+		switch (trimmed.charAt(0)) {
+		case '+':
+			return Optional.of(new Order(Direction.ASC, trimmed.substring(1)));
+		case '-':
+			return Optional.of(new Order(Direction.DESC, trimmed.substring(1)));
+		default:
+			return Optional.of(direction.map(it -> new Order(it, trimmed)).orElseGet(() -> new Order(trimmed)));
+		}
 	}
 
 	/**
