@@ -37,7 +37,7 @@ public class SelectionSetUnitTests {
 	}
 
 	@Test // DATACMNS-764
-	public void useseFallbackWhenConfigured() {
+	public void usesFallbackWhenConfigured() {
 
 		String value = new SelectionSet<>(asList("one", "two"), c -> String.valueOf(c.size())).uniqueResult();
 

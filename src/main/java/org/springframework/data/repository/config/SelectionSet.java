@@ -51,9 +51,9 @@ class SelectionSet<T> {
 	}
 
 	/**
-	 * Get the result after applying all filters sequentially until a unique result is identified. If no unique result can
-	 * be identified the callback passed in at the constructor gets called and its return value becomes the return value
-	 * of this method.
+	 * If this <code>SelectionSet</code> contains exactly one element it gets returned. If no unique result can
+	 * be identified the fallback function passed in at the constructor gets called and its return value becomes
+	 * the return value of this method.
 	 *
 	 * @return a unique result, or the result of the callback provided in the constructor.
 	 */
