@@ -1,4 +1,4 @@
- # Spring Data Commons
+# Spring Data Commons
 
 [Spring Data Commons](http://projects.spring.io/spring-data/) is part of the umbrella Spring Data project that provides shared infrastructure across the Spring Data projects. It contains technology neutral repository interfaces as well as a metadata model for persisting Java classes.
 
