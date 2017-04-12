@@ -15,13 +15,12 @@
  */
 package org.springframework.data.web.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.Matcher;
+import org.assertj.core.api.Condition;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.classloadersupport.HidingClassLoader;
@@ -49,7 +48,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		createConfigWithClassLoader(HidingClassLoader.hide(ObjectMapper.class)).extendMessageConverters(converters);
 
-		assertThat(converters, not(hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
+		assertThat(converters).areNot(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-987
@@ -59,7 +58,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		createConfigWithClassLoader(HidingClassLoader.hide(DocumentContext.class)).extendMessageConverters(converters);
 
-		assertThat(converters, not(hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
+		assertThat(converters).areNot(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-987
@@ -70,7 +69,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 		ClassLoader classLoader = HidingClassLoader.hide(ProjectionFactory.class);
 		createConfigWithClassLoader(classLoader).extendMessageConverters(converters);
 
-		assertThat(converters, not(hasItem(instanceWithClassName(XmlBeamHttpMessageConverter.class))));
+		assertThat(converters).areNot(instanceWithClassName(XmlBeamHttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-987
@@ -80,8 +79,8 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		createConfigWithClassLoader(getClass().getClassLoader()).extendMessageConverters(converters);
 
-		assertThat(converters, hasItem(instanceWithClassName(XmlBeamHttpMessageConverter.class)));
-		assertThat(converters, hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class)));
+		assertThat(converters).haveAtLeastOne(instanceWithClassName(XmlBeamHttpMessageConverter.class));
+		assertThat(converters).haveAtLeastOne(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class));
 	}
 
 	private SpringDataWebConfiguration createConfigWithClassLoader(ClassLoader classLoader) {
@@ -99,13 +98,16 @@ public class SpringDataWebConfigurationIntegrationTests {
 	}
 
 	/**
-	 * creates a Matcher that check if an object is an instance of a class with the same name as the provided class. This
-	 * is necessary since we are dealing with multiple classloaders which would make a simple instanceof fail all the time
+	 * Creates a {@link Condition} that checks if an object is an instance of a class with the same name as the provided
+	 * class. This is necessary since we are dealing with multiple classloaders which would make a simple instanceof fail
+	 * all the time
 	 *
 	 * @param expectedClass the class that is expected (possibly loaded by a different classloader).
-	 * @return a Matcher
+	 * @return a {@link Condition}
 	 */
-	private static <T> Matcher<T> instanceWithClassName(Class<T> expectedClass) {
-		return hasProperty("class", hasProperty("name", equalTo(expectedClass.getName())));
+	private static Condition<Object> instanceWithClassName(Class<?> expectedClass) {
+
+		return new Condition<>(it -> it.getClass().getName().equals(expectedClass.getName()), //
+				"with class name %s!", expectedClass.getName());
 	}
 }
