@@ -25,14 +25,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.Matcher;
-import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.classloadersupport.ClassLoaderConfiguration;
-import org.springframework.data.classloadersupport.ClassLoaderRule;
+import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -45,9 +43,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for {@link EnableSpringDataWebSupport}.
@@ -55,9 +54,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Oliver Gierke
  * @author Jens Schauder
  */
-
-@ClassLoaderConfiguration(shadowPackage = { WebMvcConfigurationSupport.class, EnableSpringDataWebSupport.class,
-		EnableSpringDataWebSupportIntegrationTests.SampleConfig.class })
 public class EnableSpringDataWebSupportIntegrationTests {
 
 	@Configuration
@@ -69,8 +65,6 @@ public class EnableSpringDataWebSupportIntegrationTests {
 			return new SampleController();
 		}
 	}
-
-	@Rule public ClassLoaderRule classLoaderRule = new ClassLoaderRule();
 
 	@Test // DATACMNS-330
 	public void registersBasicBeanDefinitions() throws Exception {
@@ -95,10 +89,12 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-330
-	@ClassLoaderConfiguration(hidePackage = Link.class)
+	// @ClassLoaderConfiguration(hidePackage = Link.class)
 	public void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() throws Exception {
 
-		ApplicationContext context = WebTestUtils.createApplicationContext(classLoaderRule.classLoader, SampleConfig.class);
+		HidingClassLoader classLoader = HidingClassLoader.hide(Link.class);
+
+		ApplicationContext context = WebTestUtils.createApplicationContext(classLoader, SampleConfig.class);
 
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
@@ -116,10 +112,10 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	@ClassLoaderConfiguration(hidePackage = com.fasterxml.jackson.databind.ObjectMapper.class)
 	public void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() throws Exception {
 
-		ApplicationContext context = WebTestUtils.createApplicationContext(classLoaderRule.classLoader, SampleConfig.class);
+		ApplicationContext context = WebTestUtils.createApplicationContext(HidingClassLoader.hide(ObjectMapper.class),
+				SampleConfig.class);
 
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
