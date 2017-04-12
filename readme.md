@@ -1,4 +1,4 @@
-# Spring Data Commons
+ # Spring Data Commons
 
 [Spring Data Commons](http://projects.spring.io/spring-data/) is part of the umbrella Spring Data project that provides shared infrastructure across the Spring Data projects. It contains technology neutral repository interfaces as well as a metadata model for persisting Java classes.
 
@@ -31,7 +31,7 @@ This README as well as the [reference documentation](http://docs.spring.io/sprin
 
 The main project [website](http://projects.spring.io/spring-data/) contains links to basic project information such as source code, JavaDocs, Issue tracking, etc.
 
-For more detailed questions, please refer to [spring-data on stackoverflow](http://stackoverflow.com/questions/tagged/spring-data). If you are new to Spring as well as to Spring Data, look for information about [Spring projects](https://spring.io/projects). 
+For more detailed questions, please refer to [spring-data on stackoverflow](http://stackoverflow.com/questions/tagged/spring-data). If you are new to Spring as well as to Spring Data, look for information about [Spring projects](https://spring.io/projects).
 
 ## Contributing to Spring Data Commons
 
