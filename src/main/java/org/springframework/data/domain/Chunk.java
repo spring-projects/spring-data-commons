@@ -15,6 +15,8 @@
  */
 package org.springframework.data.domain;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +40,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	private static final long serialVersionUID = 867755909294344406L;
 
 	private final List<T> content = new ArrayList<>();
-	private final Pageable pageable;
+	private final @Getter Pageable pageable;
 
 	/**
 	 * Creates a new {@link Chunk} with the given content and the given governing {@link Pageable}.
