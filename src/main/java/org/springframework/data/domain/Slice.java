@@ -101,6 +101,16 @@ public interface Slice<T> extends Streamable<T> {
 	boolean hasPrevious();
 
 	/**
+	 * Returns the {@link Pageable} that's been used to request the current {@link Slice}.
+	 * 
+	 * @return
+	 * @since 2.0
+	 */
+	default Pageable getPageable() {
+		return PageRequest.of(getNumber(), getSize(), getSort());
+	}
+
+	/**
 	 * Returns the {@link Pageable} to request the next {@link Slice}. Can be {@literal null} in case the current
 	 * {@link Slice} is already the last one. Clients should check {@link #hasNext()} before calling this method to make
 	 * sure they receive a non-{@literal null} value.
