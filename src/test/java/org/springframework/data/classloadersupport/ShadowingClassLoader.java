@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,24 +33,21 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * ClassLoader decorator that shadows an enclosing ClassLoader,
- * applying registered transformers to all affected classes.
+ * Copy of Spring Frameworks {@link org.springframework.instrument.classloading.ShadowingClassLoader} tweaked to not
+ * register default exclusions. ClassLoader decorator that shadows an enclosing ClassLoader, applying registered
+ * transformers to all affected classes.
  *
  * @author Rob Harrop
  * @author Juergen Hoeller
  * @author Costin Leau
+ * @author Jens Schauder
+ * @author Oliver Gierke
  * @since 2.0
  * @see #addTransformer
  * @see org.springframework.core.OverridingClassLoader
+ * @see https://jira.spring.io/browse/SPR-15439
  */
 public class ShadowingClassLoader extends DecoratingClassLoader {
-
-	/** Packages that are excluded by default */
-	public static final String[] DEFAULT_EXCLUDED_PACKAGES =
-			new String[] {"java.", "javax.", "sun.", "oracle.", "com.sun.", "com.ibm.", "COM.ibm.",
-					"org.w3c.", "org.xml.", "org.dom4j.", "org.eclipse", "org.aspectj.", "net.sf.cglib",
-					"org.springframework.cglib", "org.apache.xerces.", "org.apache.commons.logging."};
-
 
 	private final ClassLoader enclosingClassLoader;
 
@@ -58,9 +55,9 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 
 	private final Map<String, Class<?>> classCache = new HashMap<String, Class<?>>();
 
-
 	/**
 	 * Create a new ShadowingClassLoader, decorating the given ClassLoader.
+	 * 
 	 * @param enclosingClassLoader the ClassLoader to decorate
 	 */
 	public ShadowingClassLoader(ClassLoader enclosingClassLoader) {
@@ -68,10 +65,9 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 		this.enclosingClassLoader = enclosingClassLoader;
 	}
 
-
 	/**
-	 * Add the given ClassFileTransformer to the list of transformers that this
-	 * ClassLoader will apply.
+	 * Add the given ClassFileTransformer to the list of transformers that this ClassLoader will apply.
+	 * 
 	 * @param transformer the ClassFileTransformer
 	 */
 	public void addTransformer(ClassFileTransformer transformer) {
@@ -80,15 +76,15 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 	}
 
 	/**
-	 * Copy all ClassFileTransformers from the given ClassLoader to the list of
-	 * transformers that this ClassLoader will apply.
+	 * Copy all ClassFileTransformers from the given ClassLoader to the list of transformers that this ClassLoader will
+	 * apply.
+	 * 
 	 * @param other the ClassLoader to copy from
 	 */
 	public void copyTransformers(ShadowingClassLoader other) {
 		Assert.notNull(other, "Other ClassLoader must not be null");
 		this.classFileTransformers.addAll(other.classFileTransformers);
 	}
-
 
 	@Override
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
@@ -99,25 +95,25 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 				return cls;
 			}
 			return doLoadClass(name);
-		}
-		else {
+		} else {
 			return this.enclosingClassLoader.loadClass(name);
 		}
 	}
 
 	/**
 	 * Determine whether the given class should be excluded from shadowing.
+	 * 
 	 * @param className the name of the class
 	 * @return whether the specified class should be shadowed
 	 */
 	private boolean shouldShadow(String className) {
-		return (!className.equals(getClass().getName()) && !className.endsWith("ShadowingClassLoader") &&
-				isEligibleForShadowing(className));
+		return (!className.equals(getClass().getName()) && !className.endsWith("ShadowingClassLoader")
+				&& isEligibleForShadowing(className));
 	}
 
 	/**
-	 * Determine whether the specified class is eligible for shadowing
-	 * by this class loader.
+	 * Determine whether the specified class is eligible for shadowing by this class loader.
+	 * 
 	 * @param className the class name to check
 	 * @return whether the specified class is eligible
 	 * @see #isExcluded
@@ -125,7 +121,6 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 	protected boolean isEligibleForShadowing(String className) {
 		return isExcluded(className);
 	}
-
 
 	private Class<?> doLoadClass(String name) throws ClassNotFoundException {
 		String internalName = StringUtils.replace(name, ".", "/") + ".class";
@@ -147,8 +142,7 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 			}
 			this.classCache.put(name, cls);
 			return cls;
-		}
-		catch (IOException ex) {
+		} catch (IOException ex) {
 			throw new ClassNotFoundException("Cannot load resource for class [" + name + "]", ex);
 		}
 	}
@@ -161,12 +155,10 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 				bytes = (transformed != null ? transformed : bytes);
 			}
 			return bytes;
-		}
-		catch (IllegalClassFormatException ex) {
+		} catch (IllegalClassFormatException ex) {
 			throw new IllegalStateException(ex);
 		}
 	}
-
 
 	@Override
 	public URL getResource(String name) {
@@ -182,5 +174,4 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 	public Enumeration<URL> getResources(String name) throws IOException {
 		return this.enclosingClassLoader.getResources(name);
 	}
-
 }

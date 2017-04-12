@@ -20,15 +20,18 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.hamcrest.Matcher;
-import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.data.classloadersupport.ClassLoaderConfiguration;
-import org.springframework.data.classloadersupport.ClassLoaderRule;
+import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.xmlbeam.ProjectionFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.DocumentContext;
 
 /**
  * Integration test for {@link SpringDataWebConfiguration}.
@@ -39,37 +42,33 @@ import org.springframework.http.converter.HttpMessageConverter;
  */
 public class SpringDataWebConfigurationIntegrationTests {
 
-	@Rule public ClassLoaderRule classLoader = new ClassLoaderRule();
-
 	@Test // DATACMNS-987
-	@ClassLoaderConfiguration(hidePackage = com.fasterxml.jackson.databind.ObjectMapper.class)
 	public void shouldNotLoadJacksonConverterWhenJacksonNotPresent() {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		createConfigWithClassLoader().extendMessageConverters(converters);
+		createConfigWithClassLoader(HidingClassLoader.hide(ObjectMapper.class)).extendMessageConverters(converters);
 
 		assertThat(converters, not(hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
 	}
 
 	@Test // DATACMNS-987
-	@ClassLoaderConfiguration(hidePackage = com.jayway.jsonpath.DocumentContext.class)
 	public void shouldNotLoadJacksonConverterWhenJaywayNotPresent() {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		createConfigWithClassLoader().extendMessageConverters(converters);
+		createConfigWithClassLoader(HidingClassLoader.hide(DocumentContext.class)).extendMessageConverters(converters);
 
 		assertThat(converters, not(hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
 	}
 
 	@Test // DATACMNS-987
-	@ClassLoaderConfiguration(hidePackage = org.xmlbeam.ProjectionFactory.class)
 	public void shouldNotLoadXBeamConverterWhenXBeamNotPresent() throws Exception {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		createConfigWithClassLoader().extendMessageConverters(converters);
+		ClassLoader classLoader = HidingClassLoader.hide(ProjectionFactory.class);
+		createConfigWithClassLoader(classLoader).extendMessageConverters(converters);
 
 		assertThat(converters, not(hasItem(instanceWithClassName(XmlBeamHttpMessageConverter.class))));
 	}
@@ -79,17 +78,18 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		createConfigWithClassLoader().extendMessageConverters(converters);
+		createConfigWithClassLoader(getClass().getClassLoader()).extendMessageConverters(converters);
 
 		assertThat(converters, hasItem(instanceWithClassName(XmlBeamHttpMessageConverter.class)));
 		assertThat(converters, hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class)));
 	}
 
-	private SpringDataWebConfiguration createConfigWithClassLoader() {
+	private SpringDataWebConfiguration createConfigWithClassLoader(ClassLoader classLoader) {
 
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				SpringDataWebConfiguration.class);
-		context.setClassLoader(classLoader.classLoader);
+
+		context.setClassLoader(classLoader);
 
 		try {
 			return context.getBean(SpringDataWebConfiguration.class);
