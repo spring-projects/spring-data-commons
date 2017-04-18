@@ -219,7 +219,9 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			resources.add(createLink(base, page.previousPageable(), Link.REL_PREVIOUS));
 		}
 
-		resources.add(createLink(base, null, Link.REL_SELF));
+		Pageable current = new PageRequest(page.getNumber(), page.getSize(), page.getSort());
+
+		resources.add(link == null ? createLink(base, current, Link.REL_SELF) : link.withSelfRel());
 
 		if (page.hasNext()) {
 			resources.add(createLink(base, page.nextPageable(), Link.REL_NEXT));
