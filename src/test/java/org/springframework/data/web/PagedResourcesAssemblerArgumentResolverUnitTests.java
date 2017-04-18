@@ -18,6 +18,7 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -130,9 +131,12 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		Object result = resolver.resolveArgument(methodParameter, null, null, null);
 
 		assertThat(result).isInstanceOf(PagedResourcesAssembler.class);
-		UriComponents uriComponents = (UriComponents) ReflectionTestUtils.getField(result, "baseUri");
 
-		assertThat(uriComponents.getPath()).isEqualTo("/foo/mapping");
+		Optional<UriComponents> uriComponents = (Optional<UriComponents>) ReflectionTestUtils.getField(result, "baseUri");
+
+		assertThat(uriComponents).hasValueSatisfying(it -> {
+			assertThat(it.getPath()).isEqualTo("/foo/mapping");
+		});
 	}
 
 	private void assertSelectsParameter(Method method, int expectedIndex) throws Exception {

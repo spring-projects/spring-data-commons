@@ -20,6 +20,7 @@ import static org.springframework.web.util.UriComponentsBuilder.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
@@ -49,7 +50,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, PagedResources<Resource<T>>> {
 
 	private final HateoasPageableHandlerMethodArgumentResolver pageableResolver;
-	private final UriComponents baseUri;
+	private final Optional<UriComponents> baseUri;
 	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
 	private boolean forceFirstAndLastRels = false;
@@ -65,7 +66,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	public PagedResourcesAssembler(HateoasPageableHandlerMethodArgumentResolver resolver, UriComponents baseUri) {
 
 		this.pageableResolver = resolver == null ? new HateoasPageableHandlerMethodArgumentResolver() : resolver;
-		this.baseUri = baseUri;
+		this.baseUri = Optional.ofNullable(baseUri);
 	}
 
 	/**
@@ -87,7 +88,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 */
 	@Override
 	public PagedResources<Resource<T>> toResource(Page<T> entity) {
-		return toResource(entity, new SimplePagedResourceAssembler<>());
+		return toResource(entity, it -> new Resource<>(it));
 	}
 
 	/**
@@ -100,7 +101,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @return
 	 */
 	public PagedResources<Resource<T>> toResource(Page<T> page, Link selfLink) {
-		return toResource(page, new SimplePagedResourceAssembler<>(), selfLink);
+		return toResource(page, it -> new Resource<>(it), selfLink);
 	}
 
 	/**
@@ -112,7 +113,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @return
 	 */
 	public <R extends ResourceSupport> PagedResources<R> toResource(Page<T> page, ResourceAssembler<T, R> assembler) {
-		return createResource(page, assembler, null);
+		return createResource(page, assembler, Optional.empty());
 	}
 
 	/**
@@ -129,7 +130,8 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			Link link) {
 
 		Assert.notNull(link, "Link must not be null!");
-		return createResource(page, assembler, link);
+
+		return createResource(page, assembler, Optional.of(link));
 	}
 
 	/**
@@ -137,15 +139,32 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * 
 	 * @param page must not be {@literal null}, content must be empty.
 	 * @param type must not be {@literal null}.
-	 * @param link can be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
+	public PagedResources<?> toEmptyResource(Page<?> page, Class<?> type) {
+		return toEmptyResource(page, type, Optional.empty());
+	}
+
+	/**
+	 * Creates a {@link PagedResources} with an empt collection {@link EmbeddedWrapper} for the given domain type.
+	 * 
+	 * @param page must not be {@literal null}, content must be empty.
+	 * @param type must not be {@literal null}.
+	 * @param link must not be {@literal null}.
 	 * @return
 	 * @since 1.11
 	 */
 	public PagedResources<?> toEmptyResource(Page<?> page, Class<?> type, Link link) {
+		return toEmptyResource(page, type, Optional.of(link));
+	}
+
+	private PagedResources<?> toEmptyResource(Page<?> page, Class<?> type, Optional<Link> link) {
 
 		Assert.notNull(page, "Page must must not be null!");
 		Assert.isTrue(!page.hasContent(), "Page must not have any content!");
 		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(link, "Link must not be null!");
 
 		PageMetadata metadata = asPageMetadata(page);
 
@@ -153,21 +172,6 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		List<EmbeddedWrapper> embedded = Collections.singletonList(wrapper);
 
 		return addPaginationLinks(new PagedResources<>(embedded, metadata), page, link);
-	}
-
-	/**
-	 * Adds the pagination parameters for all parameters not already present in the given {@link Link}.
-	 * 
-	 * @param link must not be {@literal null}.
-	 * @return
-	 * @deprecated this method will be removed in 1.11 as no Spring Data module actually calls it. Other clients calling
-	 *             it should stop doing so as {@link Link}s used for pagination shouldn't be templated in the first place.
-	 */
-	@Deprecated
-	public Link appendPaginationParameterTemplates(Link link) {
-
-		Assert.notNull(link, "Link must not be null!");
-		return createLink(new UriTemplate(link.getHref()), null, link.getRel());
 	}
 
 	/**
@@ -189,7 +193,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	}
 
 	private <S, R extends ResourceSupport> PagedResources<R> createResource(Page<S> page,
-			ResourceAssembler<S, R> assembler, Link link) {
+			ResourceAssembler<S, R> assembler, Optional<Link> link) {
 
 		Assert.notNull(page, "Page must not be null!");
 		Assert.notNull(assembler, "ResourceAssembler must not be null!");
@@ -205,7 +209,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		return addPaginationLinks(resource, page, link);
 	}
 
-	private <R> PagedResources<R> addPaginationLinks(PagedResources<R> resources, Page<?> page, Link link) {
+	private <R> PagedResources<R> addPaginationLinks(PagedResources<R> resources, Page<?> page, Optional<Link> link) {
 
 		UriTemplate base = getUriTemplate(link);
 
@@ -219,7 +223,10 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 			resources.add(createLink(base, page.previousPageable(), Link.REL_PREVIOUS));
 		}
 
-		resources.add(createLink(base, null, Link.REL_SELF));
+		Link selfLink = link.map(it -> it.withSelfRel())//
+				.orElseGet(() -> createLink(base, page.getPageable(), Link.REL_SELF));
+
+		resources.add(selfLink);
 
 		if (page.hasNext()) {
 			resources.add(createLink(base, page.nextPageable(), Link.REL_NEXT));
@@ -241,12 +248,8 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * 
 	 * @return
 	 */
-	private UriTemplate getUriTemplate(Link baseLink) {
-
-		String href = baseLink != null ? baseLink.getHref()
-				: baseUri == null ? ServletUriComponentsBuilder.fromCurrentRequest().build().toString() : baseUri.toString();
-
-		return new UriTemplate(href);
+	private UriTemplate getUriTemplate(Optional<Link> baseLink) {
+		return new UriTemplate(baseLink.map(Link::getHref).orElseGet(this::baseUriOrCurrentRequest));
 	}
 
 	/**
@@ -289,11 +292,11 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		return new PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
 	}
 
-	private static class SimplePagedResourceAssembler<T> implements ResourceAssembler<T, Resource<T>> {
+	private String baseUriOrCurrentRequest() {
+		return baseUri.map(Object::toString).orElseGet(PagedResourcesAssembler::currentRequest);
+	}
 
-		@Override
-		public Resource<T> toResource(T entity) {
-			return new Resource<>(entity);
-		}
+	private static String currentRequest() {
+		return ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
 	}
 }
