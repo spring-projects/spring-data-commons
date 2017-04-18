@@ -18,7 +18,6 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -111,7 +110,7 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1), link);
 
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref()).startsWith(link.getHref());
-		assertThat(resources.getLink(Link.REL_SELF)).isNotNull();
+		assertThat(resources.getLink(Link.REL_SELF)).isEqualTo(link.withSelfRel());
 		assertThat(resources.getLink(Link.REL_NEXT).getHref()).startsWith(link.getHref());
 	}
 
@@ -131,8 +130,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		Link selfLink = resources.getLink(Link.REL_SELF);
-		assertThat(selfLink.getHref()).endsWith("localhost");
+		assertThat(resources.getLink(Link.REL_SELF).getHref()).doesNotContain("{").doesNotContain("}");
 	}
 
 	@Test // DATACMNS-418
@@ -170,7 +168,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getLink(Link.REL_SELF).getHref()).endsWith("localhost");
+		assertThat(resources.getLink(Link.REL_SELF).getHref()).doesNotContain("{").doesNotContain("}");
 		assertThat(resources.getLink(Link.REL_NEXT).getHref()).endsWith("?page=2&size=1");
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref()).endsWith("?page=0&size=1");
 	}
@@ -178,7 +176,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-699
 	public void generatesEmptyPagedResourceWithEmbeddedWrapper() {
 
-		PagedResources<?> result = assembler.toEmptyResource(EMPTY_PAGE, Person.class, null);
+		PagedResources<?> result = assembler.toEmptyResource(EMPTY_PAGE, Person.class);
 
 		Collection<?> content = result.getContent();
 		assertThat(content).hasSize(1);
@@ -190,12 +188,12 @@ public class PagedResourcesAssemblerUnitTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-699
 	public void emptyPageCreatorRejectsPageWithContent() {
-		assembler.toEmptyResource(createPage(1), Person.class, null);
+		assembler.toEmptyResource(createPage(1), Person.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-699
 	public void emptyPageCreatorRejectsNullType() {
-		assembler.toEmptyResource(EMPTY_PAGE, null, null);
+		assembler.toEmptyResource(EMPTY_PAGE, null);
 	}
 
 	@Test // DATACMNS-701
@@ -244,6 +242,14 @@ public class PagedResourcesAssemblerUnitTests {
 				resolver, null);
 
 		assertThat(assembler.toResource(EMPTY_PAGE)).isInstanceOf(CustomPagedResources.class);
+	}
+
+	@Test // DATACMNS-1042
+	public void selfLinkContainsCoordinatesForCurrentPage() {
+
+		PagedResources<Resource<Person>> resource = assembler.toResource(createPage(0));
+
+		assertThat(resource.getLink(Link.REL_SELF).getHref()).endsWith("?page=0&size=1");
 	}
 
 	private static Page<Person> createPage(int index) {
