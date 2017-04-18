@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.AbstractPageRequest;
@@ -52,6 +53,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 	static final Pageable PAGEABLE = new PageRequest(0, 20);
 	static final Page<Person> EMPTY_PAGE = new PageImpl<Person>(Collections.<Person> emptyList(), PAGEABLE, 0);
+	static final Matcher<String> NO_TEMPLATE_VARIABLES = allOf(not(containsString("{")), not(containsString("}")));
 
 	HateoasPageableHandlerMethodArgumentResolver resolver = new HateoasPageableHandlerMethodArgumentResolver();
 	PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<Person>(resolver, null);
@@ -140,7 +142,7 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
 		Link selfLink = resources.getLink(Link.REL_SELF);
-		assertThat(selfLink.getHref(), endsWith("localhost"));
+		assertThat(selfLink.getHref(), NO_TEMPLATE_VARIABLES);
 	}
 
 	/**
@@ -187,7 +189,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getLink(Link.REL_SELF).getHref(), endsWith("localhost"));
+		assertThat(resources.getLink(Link.REL_SELF).getHref(), NO_TEMPLATE_VARIABLES);
 		assertThat(resources.getLink(Link.REL_NEXT).getHref(), endsWith("?page=2&size=1"));
 		assertThat(resources.getLink(Link.REL_PREVIOUS).getHref(), endsWith("?page=0&size=1"));
 	}
@@ -285,6 +287,14 @@ public class PagedResourcesAssemblerUnitTests {
 				resolver, null);
 
 		assertThat(assembler.toResource(EMPTY_PAGE), is(instanceOf(CustomPagedResources.class)));
+	}
+
+	@Test // DATACMNS-1042
+	public void selfLinkContainsCoordinatesForCurrentPage() {
+
+		PagedResources<Resource<Person>> resource = assembler.toResource(createPage(0));
+
+		assertThat(resource.getLink(Link.REL_SELF).getHref(), endsWith("?page=0&size=1"));
 	}
 
 	private static Page<Person> createPage(int index) {
