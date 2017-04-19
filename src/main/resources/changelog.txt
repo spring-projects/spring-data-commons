@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.12.10.RELEASE (2017-04-19)
+-----------------------------------------------
+* DATACMNS-1045 - Release 1.12.10 (Hopper SR10).
+
+
 Changes in version 1.13.3.RELEASE (2017-04-19)
 ----------------------------------------------
 * DATACMNS-1044 - Release 1.13.3 (Ingalls SR3).
