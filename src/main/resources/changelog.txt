@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.2.RELEASE (2017-04-19)
+----------------------------------------------
+* DATACMNS-1042 - Self Link created by PagedResourcesAssembler should have pagination request parameters.
+* DATACMNS-1008 - Custom implementation of CrudRepository.save(…) not called if generics not declared exactly.
+* DATACMNS-1006 - SimpleTypeHolder should consider java.lang types simple ones.
+* DATACMNS-1005 - Javaslang collections cannot be returned from paginating query methods.
+* DATACMNS-1003 - Release 1.13.2 (Ingalls SR2).
+* DATACMNS-993 - Clean up class loader hacking in tests.
+
+
 Changes in version 2.0.0.M2 (2017-04-04)
 ----------------------------------------
 * DATACMNS-1027 - Adapt to API changes in AssertJ 3.6.
