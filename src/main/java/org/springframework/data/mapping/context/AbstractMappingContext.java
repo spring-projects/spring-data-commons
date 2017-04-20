@@ -89,7 +89,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	private Set<? extends Class<?>> initialEntitySet = new HashSet<>();
 	private boolean strict = false;
-	private SimpleTypeHolder simpleTypeHolder = new SimpleTypeHolder();
+	private SimpleTypeHolder simpleTypeHolder = SimpleTypeHolder.DEFAULT;
 
 	private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 	private final Lock read = lock.readLock();

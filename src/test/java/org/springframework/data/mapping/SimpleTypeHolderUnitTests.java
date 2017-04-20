@@ -44,14 +44,14 @@ public class SimpleTypeHolderUnitTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-31
 	public void rejectsNullTypeForIsSimpleTypeCall() {
-		SimpleTypeHolder holder = new SimpleTypeHolder();
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
 		holder.isSimpleType(null);
 	}
 
 	@Test
 	public void addsDefaultTypes() {
 
-		SimpleTypeHolder holder = new SimpleTypeHolder();
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
 
 		assertThat(holder.isSimpleType(String.class)).isTrue();
 	}
@@ -87,28 +87,28 @@ public class SimpleTypeHolderUnitTests {
 
 	@Test
 	public void considersObjectToBeSimpleType() {
-		SimpleTypeHolder holder = new SimpleTypeHolder();
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
 		assertThat(holder.isSimpleType(Object.class)).isTrue();
 	}
 
 	@Test
 	public void considersSimpleEnumAsSimple() {
 
-		SimpleTypeHolder holder = new SimpleTypeHolder();
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
 		assertThat(holder.isSimpleType(SimpleEnum.FOO.getClass())).isTrue();
 	}
 
 	@Test
 	public void considersComplexEnumAsSimple() {
 
-		SimpleTypeHolder holder = new SimpleTypeHolder();
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
 		assertThat(holder.isSimpleType(ComplexEnum.FOO.getClass())).isTrue();
 	}
 
 	@Test // DATACMNS-1006
 	public void considersJavaLangTypesSimple() {
 
-		SimpleTypeHolder holder = new SimpleTypeHolder();
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
 
 		assertThat(holder.isSimpleType(Type.class)).isTrue();
 	}

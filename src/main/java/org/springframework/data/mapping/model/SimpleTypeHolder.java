@@ -32,39 +32,43 @@ import org.springframework.util.Assert;
  */
 public class SimpleTypeHolder {
 
-	private static final Set<Class<?>> DEFAULTS = new HashSet<>();
+	private static final Set<Class<?>> DEFAULTS = new HashSet<Class<?>>() {
 
-	static {
-		DEFAULTS.add(boolean.class);
-		DEFAULTS.add(boolean[].class);
-		DEFAULTS.add(long.class);
-		DEFAULTS.add(long[].class);
-		DEFAULTS.add(short.class);
-		DEFAULTS.add(short[].class);
-		DEFAULTS.add(int.class);
-		DEFAULTS.add(int[].class);
-		DEFAULTS.add(byte.class);
-		DEFAULTS.add(byte[].class);
-		DEFAULTS.add(float.class);
-		DEFAULTS.add(float[].class);
-		DEFAULTS.add(double.class);
-		DEFAULTS.add(double[].class);
-		DEFAULTS.add(char.class);
-		DEFAULTS.add(char[].class);
-		DEFAULTS.add(Boolean.class);
-		DEFAULTS.add(Long.class);
-		DEFAULTS.add(Short.class);
-		DEFAULTS.add(Integer.class);
-		DEFAULTS.add(Byte.class);
-		DEFAULTS.add(Float.class);
-		DEFAULTS.add(Double.class);
-		DEFAULTS.add(Character.class);
-		DEFAULTS.add(String.class);
-		DEFAULTS.add(Date.class);
-		DEFAULTS.add(Locale.class);
-		DEFAULTS.add(Class.class);
-		DEFAULTS.add(Enum.class);
-	}
+		private static final long serialVersionUID = -1738594126505221500L;
+
+		{
+			add(boolean.class);
+			add(boolean[].class);
+			add(long.class);
+			add(long[].class);
+			add(short.class);
+			add(short[].class);
+			add(int.class);
+			add(int[].class);
+			add(byte.class);
+			add(byte[].class);
+			add(float.class);
+			add(float[].class);
+			add(double.class);
+			add(double[].class);
+			add(char.class);
+			add(char[].class);
+			add(Boolean.class);
+			add(Long.class);
+			add(Short.class);
+			add(Integer.class);
+			add(Byte.class);
+			add(Float.class);
+			add(Double.class);
+			add(Character.class);
+			add(String.class);
+			add(Date.class);
+			add(Locale.class);
+			add(Class.class);
+			add(Enum.class);
+		}
+	};
+	public static final SimpleTypeHolder DEFAULT = new SimpleTypeHolder();
 
 	private final Set<Class<?>> simpleTypes;
 
@@ -73,8 +77,7 @@ public class SimpleTypeHolder {
 	 * 
 	 * @see #SimpleTypeHolder(Set, boolean)
 	 */
-	@SuppressWarnings("unchecked")
-	public SimpleTypeHolder() {
+	protected SimpleTypeHolder() {
 		this(Collections.emptySet(), true);
 	}
 
@@ -128,13 +131,8 @@ public class SimpleTypeHolder {
 			return true;
 		}
 
-		for (Class<?> clazz : simpleTypes) {
-			if (clazz.isAssignableFrom(type)) {
-				simpleTypes.add(type);
-				return true;
-			}
-		}
-
-		return false;
+		return simpleTypes.stream()//
+				.filter(it -> it.isAssignableFrom(type))//
+				.peek(it -> simpleTypes.add(type)).findFirst().isPresent();
 	}
 }
