@@ -48,7 +48,7 @@ import org.springframework.util.StringUtils;
  */
 public class AbstractMappingContextUnitTests {
 
-	final SimpleTypeHolder holder = new SimpleTypeHolder();
+	final SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
 	SampleMappingContext context;
 
 	@Before
@@ -153,7 +153,9 @@ public class AbstractMappingContextUnitTests {
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
 				.getRequiredPersistentEntity(Sample.class);
 
-		assertThat(entity.getPersistentProperty("persons")).hasValueSatisfying(it -> assertThat(mappingContext.getPersistentEntity(it)).hasValueSatisfying(inner -> assertThat(inner.getType()).isEqualTo(Person.class)));
+		assertThat(entity.getPersistentProperty("persons"))
+				.hasValueSatisfying(it -> assertThat(mappingContext.getPersistentEntity(it))
+						.hasValueSatisfying(inner -> assertThat(inner.getType()).isEqualTo(Person.class)));
 	}
 
 	@Test // DATACMNS-380
