@@ -32,8 +32,10 @@ import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
+import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.threeten.bp.LocalDateTime;
 
@@ -158,6 +160,24 @@ public class CustomConversionsUnitTests {
 		assertThat(customConversions.getCustomWriteTarget(String.class, SimpleDateFormat.class)).isPresent();
 	}
 
+	@Test // DATACMNS-1034
+	public void registersConverterFromConverterAware() {
+
+		ConverterAware converters = ConverterBuilder.reading(Left.class, Right.class, left -> new Right())
+				.andWriting(right -> new Left());
+
+		CustomConversions conversions = new CustomConversions(StoreConversions.NONE, Collections.singletonList(converters));
+
+		assertThat(conversions.hasCustomWriteTarget(Right.class)).isTrue();
+		assertThat(conversions.hasCustomReadTarget(Left.class, Right.class)).isTrue();
+
+		ConfigurableConversionService conversionService = new GenericConversionService();
+		conversions.registerConvertersIn(conversionService);
+
+		assertThat(conversionService.canConvert(Left.class, Right.class)).isTrue();
+		assertThat(conversionService.canConvert(Right.class, Left.class)).isTrue();
+	}
+
 	private static Class<?> createProxyTypeFor(Class<?> type) {
 
 		ProxyFactory factory = new ProxyFactory();
@@ -274,4 +294,8 @@ public class CustomConversionsUnitTests {
 			}
 		}
 	}
+
+	static class Left {}
+
+	static class Right {}
 }

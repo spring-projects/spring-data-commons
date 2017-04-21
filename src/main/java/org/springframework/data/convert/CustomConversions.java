@@ -37,9 +37,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
+import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Streamable;
@@ -90,10 +92,12 @@ public class CustomConversions {
 	/**
 	 * Creates a new {@link CustomConversions} instance registering the given converters.
 	 * 
-	 * @param converters
+	 * @param storeConversions must not be {@literal null}.
+	 * @param converters must not be {@literal null}.
 	 */
-	public CustomConversions(StoreConversions storeConversions, List<?> converters) {
+	public CustomConversions(StoreConversions storeConversions, Collection<?> converters) {
 
+		Assert.notNull(storeConversions, "StoreConversions must not be null!");
 		Assert.notNull(converters, "List of converters must not be null!");
 
 		this.readingPairs = new LinkedHashSet<>();
@@ -149,33 +153,46 @@ public class CustomConversions {
 	 * 
 	 * @param conversionService
 	 */
-	public void registerConvertersIn(GenericConversionService conversionService) {
+	public void registerConvertersIn(ConverterRegistry conversionService) {
 
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
-		converters.forEach(it -> {
+		converters.forEach(it -> registerConverterIn(it, conversionService));
+	}
 
-			boolean added = false;
+	/**
+	 * Registers the given converter in the given {@link GenericConversionService}.
+	 * 
+	 * @param candidate must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
+	 */
+	private void registerConverterIn(Object candidate, ConverterRegistry conversionService) {
 
-			if (it instanceof Converter) {
-				conversionService.addConverter(Converter.class.cast(it));
-				added = true;
-			}
+		boolean added = false;
 
-			if (it instanceof ConverterFactory) {
-				conversionService.addConverterFactory(ConverterFactory.class.cast(it));
-				added = true;
-			}
+		if (candidate instanceof Converter) {
+			conversionService.addConverter(Converter.class.cast(candidate));
+			added = true;
+		}
 
-			if (it instanceof GenericConverter) {
-				conversionService.addConverter(GenericConverter.class.cast(it));
-				added = true;
-			}
+		if (candidate instanceof ConverterFactory) {
+			conversionService.addConverterFactory(ConverterFactory.class.cast(candidate));
+			added = true;
+		}
 
-			if (!added) {
-				throw new IllegalArgumentException(String.format(NOT_A_CONVERTER, it));
-			}
-		});
+		if (candidate instanceof GenericConverter) {
+			conversionService.addConverter(GenericConverter.class.cast(candidate));
+			added = true;
+		}
+
+		if (candidate instanceof ConverterAware) {
+			ConverterAware.class.cast(candidate).getConverters().forEach(it -> registerConverterIn(it, conversionService));
+			added = true;
+		}
+
+		if (!added) {
+			throw new IllegalArgumentException(String.format(NOT_A_CONVERTER, candidate));
+		}
 	}
 
 	/**
@@ -460,10 +477,15 @@ public class CustomConversions {
 			boolean isWriting = type.isAnnotationPresent(WritingConverter.class);
 			boolean isReading = type.isAnnotationPresent(ReadingConverter.class);
 
-			if (converter instanceof GenericConverter) {
+			if (converter instanceof ConverterAware) {
 
-				GenericConverter genericConverter = (GenericConverter) converter;
-				return Streamable.of(genericConverter.getConvertibleTypes()).map(it -> register(it, isReading, isWriting));
+				return Streamable.of(() -> ConverterAware.class.cast(converter).getConverters().stream()//
+						.flatMap(it -> getRegistrationsFor(it).stream()));
+
+			} else if (converter instanceof GenericConverter) {
+
+				return Streamable.of(GenericConverter.class.cast(converter).getConvertibleTypes())//
+						.map(it -> register(it, isReading, isWriting));
 
 			} else if (converter instanceof ConverterFactory) {
 
@@ -474,7 +496,7 @@ public class CustomConversions {
 				return getRegistrationFor(converter, Converter.class, isReading, isWriting);
 
 			} else {
-				throw new IllegalArgumentException("Unsupported converter type!");
+				throw new IllegalArgumentException(String.format("Unsupported converter type %s!", converter));
 			}
 		}
 
