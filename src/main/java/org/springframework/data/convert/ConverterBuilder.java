@@ -45,8 +45,8 @@ public interface ConverterBuilder {
 	 * @param function must not be {@literal null}.
 	 * @return
 	 */
-	static <S, T> ReadingConverterBuilder<T, S> reading(Class<T> source, Class<S> target,
-			Function<? super T, ? extends S> function) {
+	static <S, T> ReadingConverterBuilder<S, T> reading(Class<S> source, Class<T> target,
+			Function<? super S, ? extends T> function) {
 
 		Assert.notNull(source, "Source type must not be null!");
 		Assert.notNull(target, "Target type must not be null!");
@@ -148,7 +148,7 @@ public interface ConverterBuilder {
 	}
 
 	/**
-	 * A {@link ConverterBuilder} ware of both a reading and writing converter.
+	 * A {@link ConverterBuilder} aware of both a reading and writing converter.
 	 *
 	 * @author Oliver Gierke
 	 * @since 2.0

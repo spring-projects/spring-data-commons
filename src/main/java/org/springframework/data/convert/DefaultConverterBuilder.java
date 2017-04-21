@@ -99,7 +99,10 @@ class DefaultConverterBuilder<S, T>
 	 */
 	@Override
 	public Set<GenericConverter> getConverters() {
-		return Optionals.toStream(getOptionalReadingConverter(), getOptionalWritingConverter()).collect(Collectors.toSet());
+
+		return Optionals//
+				.toStream(getOptionalReadingConverter(), getOptionalWritingConverter())//
+				.collect(Collectors.toSet());
 	}
 
 	private Optional<GenericConverter> getOptionalReadingConverter() {
@@ -143,7 +146,7 @@ class DefaultConverterBuilder<S, T>
 		@WritingConverter
 		private static class Writing<S, T> extends ConfigurableGenericConverter<S, T> {
 
-			public Writing(ConvertiblePair convertiblePair, Function<? super S, ? extends T> function) {
+			Writing(ConvertiblePair convertiblePair, Function<? super S, ? extends T> function) {
 				super(convertiblePair, function);
 			}
 		}
@@ -151,7 +154,7 @@ class DefaultConverterBuilder<S, T>
 		@ReadingConverter
 		private static class Reading<S, T> extends ConfigurableGenericConverter<S, T> {
 
-			public Reading(ConvertiblePair convertiblePair, Function<? super S, ? extends T> function) {
+			Reading(ConvertiblePair convertiblePair, Function<? super S, ? extends T> function) {
 				super(convertiblePair, function);
 			}
 		}
