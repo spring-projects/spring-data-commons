@@ -62,6 +62,19 @@ public class CustomConversions {
 
 	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type! You might wanna check you annotation setup at the converter implementation.";
 	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type! You might wanna check you annotation setup at the converter implementation.";
+	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory!";
+	private static final List<Object> DEFAULT_CONVERTERS;
+
+	static {
+
+		List<Object> defaults = new ArrayList<>();
+
+		defaults.addAll(JodaTimeConverters.getConvertersToRegister());
+		defaults.addAll(Jsr310Converters.getConvertersToRegister());
+		defaults.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
+
+		DEFAULT_CONVERTERS = Collections.unmodifiableList(defaults);
+	}
 
 	private final Set<ConvertiblePair> readingPairs;
 	private final Set<ConvertiblePair> writingPairs;
@@ -76,6 +89,7 @@ public class CustomConversions {
 
 	/**
 	 * Creates a new {@link CustomConversions} instance registering the given converters.
+	 * 
 	 * @param converters
 	 */
 	public CustomConversions(StoreConversions storeConversions, List<?> converters) {
@@ -93,10 +107,8 @@ public class CustomConversions {
 
 		// Add user provided converters to make sure they can override the defaults
 		toRegister.addAll(converters);
-		toRegister.addAll(JodaTimeConverters.getConvertersToRegister());
-		toRegister.addAll(Jsr310Converters.getConvertersToRegister());
-		toRegister.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
 		toRegister.addAll(storeConversions.getStoreConverters());
+		toRegister.addAll(DEFAULT_CONVERTERS);
 
 		toRegister.stream()//
 				.flatMap(it -> storeConversions.getRegistrationsFor(it).stream())//
@@ -161,8 +173,7 @@ public class CustomConversions {
 			}
 
 			if (!added) {
-				throw new IllegalArgumentException(
-						"Given set contains element that is neither Converter nor ConverterFactory!");
+				throw new IllegalArgumentException(String.format(NOT_A_CONVERTER, it));
 			}
 		});
 	}
@@ -401,7 +412,7 @@ public class CustomConversions {
 		public static final StoreConversions NONE = StoreConversions.of(SimpleTypeHolder.DEFAULT, Collections.emptyList());
 
 		SimpleTypeHolder storeTypeHolder;
-		List<Object> storeConverters;
+		Collection<?> storeConverters;
 
 		/**
 		 * Creates a new {@link StoreConversions} for the given store-specific {@link SimpleTypeHolder} and the given
@@ -427,7 +438,7 @@ public class CustomConversions {
 		 * @param converters must not be {@literal null}.
 		 * @return
 		 */
-		public static StoreConversions of(SimpleTypeHolder storeTypeHolder, List<Object> converters) {
+		public static StoreConversions of(SimpleTypeHolder storeTypeHolder, Collection<?> converters) {
 
 			Assert.notNull(storeTypeHolder, "SimpleTypeHolder must not be null!");
 			Assert.notNull(converters, "Converters must not be null!");
