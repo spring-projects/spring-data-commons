@@ -18,11 +18,13 @@ package org.springframework.data.domain;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
+import org.springframework.data.domain.Range.Boundary;
 
 /**
  * Unit tests for {@link Range}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.10
  */
 public class RangeUnitTests {
@@ -35,7 +37,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-651
 	public void usesBoundsInclusivelyByDefault() {
 
-		Range<Long> range = new Range<>(10L, 20L);
+		Range<Long> range = Range.from(10L, 20L);
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();
@@ -68,7 +70,7 @@ public class RangeUnitTests {
 		assertThat(range.contains(25L)).isFalse();
 	}
 
-	@Test // DATACMNS-651
+	@Test // DATACMNS-651, DATACMNS-1050
 	public void handlesOpenUpperBoundCorrectly() {
 
 		Range<Long> range = new Range<>(10L, null);
@@ -78,9 +80,12 @@ public class RangeUnitTests {
 		assertThat(range.contains(15L)).isTrue();
 		assertThat(range.contains(5L)).isFalse();
 		assertThat(range.contains(25L)).isTrue();
+		assertThat(range.getLowerBound().isBounded()).isTrue();
+		assertThat(range.getUpperBound().isBounded()).isFalse();
+		assertThat(range.toString()).isEqualTo("[10-unbounded");
 	}
 
-	@Test // DATACMNS-651
+	@Test // DATACMNS-651, DATACMNS-1050
 	public void handlesOpenLowerBoundCorrectly() {
 
 		Range<Long> range = new Range<>(null, 20L);
@@ -90,5 +95,103 @@ public class RangeUnitTests {
 		assertThat(range.contains(15L)).isTrue();
 		assertThat(range.contains(5L)).isTrue();
 		assertThat(range.contains(25L)).isFalse();
+		assertThat(range.getLowerBound().isBounded()).isFalse();
+		assertThat(range.getUpperBound().isBounded()).isTrue();
+	}
+
+	@Test // DATACMNS-1050
+	public void createsInclusiveBoundaryCorrectly() {
+
+		Boundary<Integer> boundary = Boundary.inclusive(10);
+
+		assertThat(boundary.isInclusive()).isTrue();
+		assertThat(boundary.getValue()).contains(10);
+	}
+
+	@Test // DATACMNS-1050
+	public void createsExclusiveBoundaryCorrectly() {
+
+		Boundary<Double> boundary = Boundary.exclusive(10d);
+
+		assertThat(boundary.isInclusive()).isFalse();
+		assertThat(boundary.getValue()).contains(10d);
+	}
+
+	@Test // DATACMNS-1050
+	public void createsRangeFromBoundariesCorrectly() {
+
+		Boundary<Long> lower = Boundary.inclusive(10L);
+		Boundary<Long> upper = Boundary.inclusive(20L);
+
+		Range<Long> range = Range.of(lower, upper);
+
+		assertThat(range.contains(9L)).isFalse();
+		assertThat(range.contains(10L)).isTrue();
+		assertThat(range.contains(20L)).isTrue();
+		assertThat(range.contains(21L)).isFalse();
+	}
+
+	@Test // DATACMNS-1050
+	public void shouldExclusiveBuildRangeLowerFirst() {
+
+		Range<Long> range = Range.greaterThan(10L).andLessThan(20L);
+
+		assertThat(range.contains(9L)).isFalse();
+		assertThat(range.contains(10L)).isFalse();
+		assertThat(range.contains(11L)).isTrue();
+		assertThat(range.contains(19L)).isTrue();
+		assertThat(range.contains(20L)).isFalse();
+		assertThat(range.contains(21L)).isFalse();
+		assertThat(range.toString()).isEqualTo("(10-20)");
+	}
+
+	@Test // DATACMNS-1050
+	public void shouldBuildRange() {
+
+		Range<Long> range = Range.greaterThanOrEquals(10L).andLessThanOrEquals(20L);
+
+		assertThat(range.contains(9L)).isFalse();
+		assertThat(range.contains(10L)).isTrue();
+		assertThat(range.contains(11L)).isTrue();
+		assertThat(range.contains(19L)).isTrue();
+		assertThat(range.contains(20L)).isTrue();
+		assertThat(range.contains(21L)).isFalse();
+		assertThat(range.toString()).isEqualTo("[10-20]");
+	}
+
+	@Test // DATACMNS-1050
+	public void createsUnboundedRange() {
+
+		Range<Long> range = Range.unbounded();
+
+		assertThat(range.contains(10L)).isTrue();
+		assertThat(range.getLowerBound().getValue()).isEmpty();
+		assertThat(range.getUpperBound().getValue()).isEmpty();
+	}
+
+	@Test // DATACMNS-1050
+	public void createsPrimitiveIntInclusiveRange() {
+
+		Range<Integer> range = Range.from(10, 20);
+
+		assertThat(range.contains(9)).isFalse();
+		assertThat(range.contains(10)).isTrue();
+		assertThat(range.contains(11)).isTrue();
+		assertThat(range.contains(19)).isTrue();
+		assertThat(range.contains(20)).isTrue();
+		assertThat(range.contains(21)).isFalse();
+	}
+
+	@Test // DATACMNS-1050
+	public void createsPrimitiveDoubleInclusiveRange() {
+
+		Range<Double> range = Range.from(10d, 20f);
+
+		assertThat(range.contains(9d)).isFalse();
+		assertThat(range.contains(10d)).isTrue();
+		assertThat(range.contains(11d)).isTrue();
+		assertThat(range.contains(19d)).isTrue();
+		assertThat(range.contains(20d)).isTrue();
+		assertThat(range.contains(21d)).isFalse();
 	}
 }
