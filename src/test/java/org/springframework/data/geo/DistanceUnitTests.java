@@ -21,7 +21,7 @@ import static org.springframework.data.geo.Metrics.*;
 import org.assertj.core.data.Offset;
 import org.junit.Test;
 import org.springframework.data.domain.Range;
-import org.springframework.data.domain.Range.Boundary;
+import org.springframework.data.domain.Range.Bound;
 import org.springframework.util.SerializationUtils;
 
 /**
@@ -131,8 +131,8 @@ public class DistanceUnitTests {
 		Range<Distance> range = Distance.between(twoKilometers, tenKilometers);
 
 		assertThat(range).isNotNull();
-		assertThat(range.getLowerBound()).isEqualTo(Boundary.inclusive(twoKilometers));
-		assertThat(range.getUpperBound()).isEqualTo(Boundary.inclusive(tenKilometers));
+		assertThat(range.getLowerBound()).isEqualTo(Bound.inclusive(twoKilometers));
+		assertThat(range.getUpperBound()).isEqualTo(Bound.inclusive(tenKilometers));
 	}
 
 	@Test // DATACMNS-651
@@ -144,8 +144,8 @@ public class DistanceUnitTests {
 		Range<Distance> range = Distance.between(2, KILOMETERS, 10, KILOMETERS);
 
 		assertThat(range).isNotNull();
-		assertThat(range.getLowerBound()).isEqualTo(Boundary.inclusive(twoKilometers));
-		assertThat(range.getUpperBound()).isEqualTo(Boundary.inclusive(tenKilometers));
+		assertThat(range.getLowerBound()).isEqualTo(Bound.inclusive(twoKilometers));
+		assertThat(range.getUpperBound()).isEqualTo(Bound.inclusive(tenKilometers));
 	}
 
 	@Test // DATACMNS-651

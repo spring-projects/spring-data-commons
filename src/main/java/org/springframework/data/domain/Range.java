@@ -31,23 +31,23 @@ import org.springframework.util.Assert;
 @Value
 public class Range<T extends Comparable<T>> {
 
-	private final static Range<?> UNBOUNDED = Range.of(Boundary.unbounded(), Boundary.UNBOUNDED);
+	private final static Range<?> UNBOUNDED = Range.of(Bound.unbounded(), Bound.UNBOUNDED);
 
 	/**
 	 * The lower bound of the range.
 	 */
-	private final Boundary<T> lowerBound;
+	private final Bound<T> lowerBound;
 
 	/**
 	 * The upper bound of the range.
 	 */
-	private final Boundary<T> upperBound;
+	private final Bound<T> upperBound;
 
 	/**
 	 * Creates a new {@link Range} with the given lower and upper bound. Treats the given values as inclusive bounds. Use
 	 * {@link #Range(Comparable, Comparable, boolean, boolean)} to configure different bound behavior.
 	 * 
-	 * @see Range#of(Boundary, Boundary)
+	 * @see Range#of(Bound, Bound)
 	 * @param lowerBound can be {@literal null} in case upperBound is not {@literal null}.
 	 * @param upperBound can be {@literal null} in case lowerBound is not {@literal null}.
 	 */
@@ -63,21 +63,20 @@ public class Range<T extends Comparable<T>> {
 	 * @param upperBound can be {@literal null}.
 	 * @param lowerInclusive
 	 * @param upperInclusive
-	 * @deprecated since 2.0. Use {@link Range#of(Boundary, Boundary)} and {@link Boundary} factory methods:
-	 *             {@link Boundary#inclusive(Comparable)},
-	 *             {@link Boundary#exclusive(Comparable)}/{@link Boundary#unbounded()}.
+	 * @deprecated since 2.0. Use {@link Range#of(Bound, Bound)} and {@link Bound} factory methods:
+	 *             {@link Bound#inclusive(Comparable)}, {@link Bound#exclusive(Comparable)}/{@link Bound#unbounded()}.
 	 */
 	@Deprecated
 	public Range(T lowerBound, T upperBound, boolean lowerInclusive, boolean upperInclusive) {
 
-		this.lowerBound = lowerBound == null ? Boundary.unbounded()
-				: lowerInclusive ? Boundary.inclusive(lowerBound) : Boundary.exclusive(lowerBound);
+		this.lowerBound = lowerBound == null ? Bound.unbounded()
+				: lowerInclusive ? Bound.inclusive(lowerBound) : Bound.exclusive(lowerBound);
 
-		this.upperBound = upperBound == null ? Boundary.unbounded()
-				: upperInclusive ? Boundary.inclusive(upperBound) : Boundary.exclusive(upperBound);
+		this.upperBound = upperBound == null ? Bound.unbounded()
+				: upperInclusive ? Bound.inclusive(upperBound) : Bound.exclusive(upperBound);
 	}
 
-	private Range(Boundary<T> lowerBound, Boundary<T> upperBound) {
+	private Range(Bound<T> lowerBound, Bound<T> upperBound) {
 
 		Assert.notNull(lowerBound, "Lower boundary must not be null!");
 		Assert.notNull(upperBound, "Upper boundary must not be null!");
@@ -98,25 +97,16 @@ public class Range<T extends Comparable<T>> {
 	}
 
 	/**
-	 * Create a {@link UpperRangeBuilder} for values greater than or equals {@code min} value.
+	 * Create a {@link RangeBuilder} given the lower {@link Bound}.
 	 * 
-	 * @param min must not be {@literal null}.
+	 * @param lower must not be {@literal null}.
 	 * @return
 	 * @since 2.0
 	 */
-	public static <T extends Comparable<T>> UpperRangeBuilder<T> greaterThanOrEquals(T min) {
-		return new UpperRangeBuilder<T>(Boundary.inclusive(min));
-	}
+	public static <T extends Comparable<T>> RangeBuilder<T> from(Bound<T> lower) {
 
-	/**
-	 * Create a {@link UpperRangeBuilder} for values greater than {@code min} value.
-	 * 
-	 * @param min must not be {@literal null}.
-	 * @return
-	 * @since 2.0
-	 */
-	public static <T extends Comparable<T>> UpperRangeBuilder<T> greaterThan(T min) {
-		return new UpperRangeBuilder<T>(Boundary.exclusive(min));
+		Assert.notNull(lower, "Lower bound must not be null!");
+		return new RangeBuilder<>(lower);
 	}
 
 	/**
@@ -126,61 +116,61 @@ public class Range<T extends Comparable<T>> {
 	 * @param upperBound must not be {@literal null}.
 	 * @since 2.0
 	 */
-	public static <T extends Comparable<T>> Range<T> of(Boundary<T> lowerBound, Boundary<T> upperBound) {
+	public static <T extends Comparable<T>> Range<T> of(Bound<T> lowerBound, Bound<T> upperBound) {
 		return new Range<>(lowerBound, upperBound);
 	}
 
 	/**
 	 * Creates a new {@link Integer} {@link Range} with the given lower and upper bound. Treats the given values as
-	 * including bounds. Use {@link #of(Boundary, Boundary)} to configure different bound behavior.
+	 * including bounds. Use {@link #of(Bound, Bound)} to configure different bound behavior.
 	 * 
 	 * @param lowerBound
 	 * @param upperBound
 	 * @since 2.0
 	 */
 	public static Range<Integer> from(int lowerBoundInclusive, int upperBoundInclusive) {
-		return of(Boundary.inclusive(lowerBoundInclusive), Boundary.inclusive(upperBoundInclusive));
+		return of(Bound.inclusive(lowerBoundInclusive), Bound.inclusive(upperBoundInclusive));
 	}
 
 	/**
 	 * Creates a new {@link Long} {@link Range} with the given lower and upper bound. Treats the given values as including
-	 * bounds. Use {@link #of(Boundary, Boundary)} to configure different bound behavior.
+	 * bounds. Use {@link #of(Bound, Bound)} to configure different bound behavior.
 	 * 
 	 * @param lowerBound
 	 * @param upperBound
 	 * @since 2.0
 	 */
 	public static Range<Long> from(long lowerBoundInclusive, long upperBoundInclusive) {
-		return of(Boundary.inclusive(lowerBoundInclusive), Boundary.inclusive(upperBoundInclusive));
+		return of(Bound.inclusive(lowerBoundInclusive), Bound.inclusive(upperBoundInclusive));
 	}
 
 	/**
 	 * Creates a new {@link Float} {@link Range} with the given lower and upper bound. Treats the given values as
-	 * including bounds. Use {@link #of(Boundary, Boundary)} to configure different bound behavior.
+	 * including bounds. Use {@link #of(Bound, Bound)} to configure different bound behavior.
 	 * 
 	 * @param lowerBound
 	 * @param upperBound
 	 * @since 2.0
 	 */
 	public static Range<Float> from(float lowerBoundInclusive, float upperBoundInclusive) {
-		return of(Boundary.inclusive(lowerBoundInclusive), Boundary.inclusive(upperBoundInclusive));
+		return of(Bound.inclusive(lowerBoundInclusive), Bound.inclusive(upperBoundInclusive));
 	}
 
 	/**
 	 * Creates a new {@link Double} {@link Range} with the given lower and upper bound. Treats the given values as
-	 * including bounds. Use {@link #of(Boundary, Boundary)} to configure different bound behavior.
+	 * including bounds. Use {@link #of(Bound, Bound)} to configure different bound behavior.
 	 * 
 	 * @param lowerBound
 	 * @param upperBound
 	 * @since 2.0
 	 */
 	public static Range<Double> from(double lowerBoundInclusive, double upperBoundInclusive) {
-		return of(Boundary.inclusive(lowerBoundInclusive), Boundary.inclusive(upperBoundInclusive));
+		return of(Bound.inclusive(lowerBoundInclusive), Bound.inclusive(upperBoundInclusive));
 	}
 
 	/**
 	 * @return
-	 * @deprecated since 2.0, use {@link #getLowerBound()} and {@link Boundary#isInclusive()}.
+	 * @deprecated since 2.0, use {@link #getLowerBound()} and {@link Bound#isInclusive()}.
 	 */
 	@Deprecated
 	public boolean isLowerInclusive() {
@@ -189,7 +179,7 @@ public class Range<T extends Comparable<T>> {
 
 	/**
 	 * @return
-	 * @deprecated since 2.0, use {@link #getUpperBound()} and {@link Boundary#isInclusive()}.
+	 * @deprecated since 2.0, use {@link #getUpperBound()} and {@link Bound#isInclusive()}.
 	 */
 	@Deprecated
 	public boolean isUpperInclusive() {
@@ -223,24 +213,7 @@ public class Range<T extends Comparable<T>> {
 	 */
 	@Override
 	public String toString() {
-
-		String lower = this.lowerBound.getValue().map(Object::toString).map(it -> {
-
-			if (this.lowerBound.isInclusive()) {
-				return "[".concat(it);
-			}
-			return "(".concat(it);
-		}).orElse("unbounded");
-
-		String upper = this.upperBound.getValue().map(Object::toString).map(it -> {
-
-			if (this.upperBound.isInclusive()) {
-				return it.concat("]");
-			}
-			return it.concat(")");
-		}).orElse("unbounded");
-
-		return String.format("%s-%s", lower, upper);
+		return String.format("%s-%s", lowerBound.toPrefixString(), upperBound.toSuffixString());
 	}
 
 	/**
@@ -252,26 +225,20 @@ public class Range<T extends Comparable<T>> {
 	 * @soundtrack Mohamed Ragab - Excelsior Sessions (March 2017)
 	 */
 	@Value
-	public static class Boundary<T extends Comparable<T>> {
+	public static class Bound<T extends Comparable<T>> {
 
-		@SuppressWarnings({ "rawtypes",
-				"unchecked" }) private static final Range.Boundary<?> UNBOUNDED = new Boundary(Optional.empty(), true);
+		@SuppressWarnings({ "rawtypes", "unchecked" }) //
+		private static final Bound<?> UNBOUNDED = new Bound(Optional.empty(), true);
 
 		private final Optional<T> value;
 		private final boolean inclusive;
 
-		private Boundary(Optional<T> value, boolean inclusive) {
-
-			this.value = value;
-			this.inclusive = inclusive;
-		}
-
 		/**
-		 * Creates an unbounded {@link Boundary}.
+		 * Creates an unbounded {@link Bound}.
 		 */
 		@SuppressWarnings("unchecked")
-		public static <T extends Comparable<T>> Boundary<T> unbounded() {
-			return (Boundary<T>) UNBOUNDED;
+		public static <T extends Comparable<T>> Bound<T> unbounded() {
+			return (Bound<T>) UNBOUNDED;
 		}
 
 		/**
@@ -289,10 +256,10 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static <T extends Comparable<T>> Boundary<T> inclusive(T value) {
+		public static <T extends Comparable<T>> Bound<T> inclusive(T value) {
 
 			Assert.notNull(value, "Value must not be null!");
-			return new Boundary<>(Optional.of(value), true);
+			return new Bound<>(Optional.of(value), true);
 		}
 
 		/**
@@ -301,7 +268,7 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static Boundary<Integer> inclusive(int value) {
+		public static Bound<Integer> inclusive(int value) {
 			return inclusive((Integer) value);
 		}
 
@@ -311,7 +278,7 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static Boundary<Long> inclusive(long value) {
+		public static Bound<Long> inclusive(long value) {
 			return inclusive((Long) value);
 		}
 
@@ -321,7 +288,7 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static Boundary<Float> inclusive(float value) {
+		public static Bound<Float> inclusive(float value) {
 			return inclusive((Float) value);
 		}
 
@@ -331,7 +298,7 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static Boundary<Double> inclusive(double value) {
+		public static Bound<Double> inclusive(double value) {
 			return inclusive((Double) value);
 		}
 
@@ -341,10 +308,10 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static <T extends Comparable<T>> Boundary<T> exclusive(T value) {
+		public static <T extends Comparable<T>> Bound<T> exclusive(T value) {
 
 			Assert.notNull(value, "Value must not be null!");
-			return new Boundary<>(Optional.of(value), false);
+			return new Bound<>(Optional.of(value), false);
 		}
 
 		/**
@@ -353,7 +320,7 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static Boundary<Integer> exclusive(int value) {
+		public static Bound<Integer> exclusive(int value) {
 			return exclusive((Integer) value);
 		}
 
@@ -363,7 +330,7 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static Boundary<Long> exclusive(long value) {
+		public static Bound<Long> exclusive(long value) {
 			return exclusive((Long) value);
 		}
 
@@ -373,7 +340,7 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static Boundary<Float> exclusive(float value) {
+		public static Bound<Float> exclusive(float value) {
 			return exclusive((Float) value);
 		}
 
@@ -383,8 +350,24 @@ public class Range<T extends Comparable<T>> {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		public static Boundary<Double> exclusive(double value) {
+		public static Bound<Double> exclusive(double value) {
 			return exclusive((Double) value);
+		}
+
+		String toPrefixString() {
+
+			return getValue() //
+					.map(Object::toString) //
+					.map(it -> isInclusive() ? "[".concat(it) : "(".concat(it)) //
+					.orElse("unbounded");
+		}
+
+		String toSuffixString() {
+
+			return getValue() //
+					.map(Object::toString) //
+					.map(it -> isInclusive() ? it.concat("]") : it.concat(")")) //
+					.orElse("unbounded");
 		}
 
 		/* 
@@ -395,6 +378,7 @@ public class Range<T extends Comparable<T>> {
 		public String toString() {
 			return value.map(Object::toString).orElse("unbounded");
 		}
+
 	}
 
 	/**
@@ -404,32 +388,24 @@ public class Range<T extends Comparable<T>> {
 	 * @since 2.0
 	 * @soundtrack Aly and Fila - Future Sound Of Egypt 493
 	 */
-	public static class UpperRangeBuilder<T extends Comparable<T>> {
+	public static class RangeBuilder<T extends Comparable<T>> {
 
-		private final Boundary<T> lower;
+		private final Bound<T> lower;
 
-		UpperRangeBuilder(Boundary<T> lower) {
+		RangeBuilder(Bound<T> lower) {
 			this.lower = lower;
 		}
 
 		/**
-		 * Create a {@link Range} for values less than or equals {@code max} value.
+		 * Create a {@link Range} given the upper {@link Bound}.
 		 * 
-		 * @param max must not be {@literal null}.
+		 * @param upper must not be {@literal null}.
 		 * @return
 		 */
-		public Range<T> andLessThanOrEquals(T max) {
-			return new Range<>(lower, Boundary.inclusive(max));
-		}
+		public Range<T> to(Bound<T> upper) {
 
-		/**
-		 * Create a {@link Range} for values less than {@code max} value.
-		 * 
-		 * @param max must not be {@literal null}.
-		 * @return
-		 */
-		public Range<T> andLessThan(T max) {
-			return new Range<>(lower, Boundary.exclusive(max));
+			Assert.notNull(upper, "Upper bound must not be null!");
+			return new Range<>(lower, upper);
 		}
 	}
 }

@@ -18,7 +18,7 @@ package org.springframework.data.domain;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
-import org.springframework.data.domain.Range.Boundary;
+import org.springframework.data.domain.Range.Bound;
 
 /**
  * Unit tests for {@link Range}.
@@ -102,26 +102,26 @@ public class RangeUnitTests {
 	@Test // DATACMNS-1050
 	public void createsInclusiveBoundaryCorrectly() {
 
-		Boundary<Integer> boundary = Boundary.inclusive(10);
+		Bound<Integer> bound = Bound.inclusive(10);
 
-		assertThat(boundary.isInclusive()).isTrue();
-		assertThat(boundary.getValue()).contains(10);
+		assertThat(bound.isInclusive()).isTrue();
+		assertThat(bound.getValue()).contains(10);
 	}
 
 	@Test // DATACMNS-1050
 	public void createsExclusiveBoundaryCorrectly() {
 
-		Boundary<Double> boundary = Boundary.exclusive(10d);
+		Bound<Double> bound = Bound.exclusive(10d);
 
-		assertThat(boundary.isInclusive()).isFalse();
-		assertThat(boundary.getValue()).contains(10d);
+		assertThat(bound.isInclusive()).isFalse();
+		assertThat(bound.getValue()).contains(10d);
 	}
 
 	@Test // DATACMNS-1050
 	public void createsRangeFromBoundariesCorrectly() {
 
-		Boundary<Long> lower = Boundary.inclusive(10L);
-		Boundary<Long> upper = Boundary.inclusive(20L);
+		Bound<Long> lower = Bound.inclusive(10L);
+		Bound<Long> upper = Bound.inclusive(20L);
 
 		Range<Long> range = Range.of(lower, upper);
 
@@ -134,7 +134,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-1050
 	public void shouldExclusiveBuildRangeLowerFirst() {
 
-		Range<Long> range = Range.greaterThan(10L).andLessThan(20L);
+		Range<Long> range = Range.from(Bound.exclusive(10L)).to(Bound.exclusive(20L));
 
 		assertThat(range.contains(9L)).isFalse();
 		assertThat(range.contains(10L)).isFalse();
@@ -148,7 +148,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-1050
 	public void shouldBuildRange() {
 
-		Range<Long> range = Range.greaterThanOrEquals(10L).andLessThanOrEquals(20L);
+		Range<Long> range = Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L));
 
 		assertThat(range.contains(9L)).isFalse();
 		assertThat(range.contains(10L)).isTrue();
