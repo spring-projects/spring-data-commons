@@ -25,8 +25,8 @@ import org.springframework.util.Assert;
 
 /**
  * API to easily set up {@link GenericConverter} instances using Java 8 lambdas, mostly in bidirectional fashion for
- * easy registration as custom type converters of the SPring Data mapping subsystem. The registration starts either with
- * the definition of a reading or writing converter that can then be completed
+ * easy registration as custom type converters of the Spring Data mapping subsystem. The registration starts either with
+ * the definition of a reading or writing converter that can then be completed.
  * 
  * @author Oliver Gierke
  * @since 2.0
@@ -57,7 +57,7 @@ public interface ConverterBuilder {
 
 	/**
 	 * Creates a new {@link WritingConverterBuilder} to produce a converter to write values of the given source (the
-	 * domain type type) into the given target (the store type).
+	 * domain type) into the given target (the store type).
 	 * 
 	 * @param source must not be {@literal null}.
 	 * @param target must not be {@literal null}.
@@ -87,7 +87,7 @@ public interface ConverterBuilder {
 	 * @author Oliver Gierke
 	 * @since 2.0
 	 */
-	public interface WritingConverterAware {
+	interface WritingConverterAware {
 
 		/**
 		 * Returns the writing converter already created.
@@ -103,7 +103,7 @@ public interface ConverterBuilder {
 	 * @author Oliver Gierke
 	 * @since 2.0
 	 */
-	public interface ReadingConverterAware {
+	interface ReadingConverterAware {
 
 		/**
 		 * Returns the reading converter already created.
@@ -119,7 +119,7 @@ public interface ConverterBuilder {
 	 * @author Oliver Gierke
 	 * @since 2.0
 	 */
-	public interface ReadingConverterBuilder<T, S> extends ConverterBuilder, ReadingConverterAware {
+	interface ReadingConverterBuilder<T, S> extends ConverterBuilder, ReadingConverterAware {
 
 		/**
 		 * Creates a new {@link ConverterAware} by registering the given {@link Function} to add a write converter.
@@ -136,7 +136,7 @@ public interface ConverterBuilder {
 	 * @author Oliver Gierke
 	 * @since 2.0
 	 */
-	public interface WritingConverterBuilder<S, T> extends ConverterBuilder, WritingConverterAware {
+	interface WritingConverterBuilder<S, T> extends ConverterBuilder, WritingConverterAware {
 
 		/**
 		 * Creates a new {@link ConverterAware} by registering the given {@link Function} to add a write converter.
@@ -153,5 +153,5 @@ public interface ConverterBuilder {
 	 * @author Oliver Gierke
 	 * @since 2.0
 	 */
-	public interface ConverterAware extends ConverterBuilder, ReadingConverterAware, WritingConverterAware {}
+	interface ConverterAware extends ConverterBuilder, ReadingConverterAware, WritingConverterAware {}
 }
