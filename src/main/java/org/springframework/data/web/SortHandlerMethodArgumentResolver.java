@@ -238,7 +238,7 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 			return Optional.empty();
 		}
 
-		return Optional.of(direction.map(it -> new Order(it, property)).orElseGet(() -> new Order(property)));
+		return Optional.of(direction.map(it -> new Order(it, property)).orElseGet(() -> Order.by(property)));
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2016 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 public class Sort implements Iterable<org.springframework.data.domain.Sort.Order>, Serializable {
 
@@ -432,13 +433,44 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * {@link Sort#DEFAULT_DIRECTION}.
 		 * 
 		 * @param property must not be {@literal null} or empty.
+		 * @deprecated since 2.0, use {@link Order#by(String)}.
 		 */
+		@Deprecated
 		public Order(String property) {
 			this(DEFAULT_DIRECTION, property);
 		}
 
+		/**
+		 * Creates a new {@link Order} instance. Takes a single property. Direction defaults to
+		 * {@link Sort#DEFAULT_DIRECTION}.
+		 * 
+		 * @param property must not be {@literal null} or empty.
+		 * @since 2.0
+		 */
 		public static Order by(String property) {
-			return new Order(property);
+			return new Order(DEFAULT_DIRECTION, property);
+		}
+
+		/**
+		 * Creates a new {@link Order} instance. Takes a single property. Direction is {@link Direction#ASC} and
+		 * NullHandling {@link NullHandling#NATIVE}.
+		 *
+		 * @param property must not be {@literal null} or empty.
+		 * @since 2.0
+		 */
+		public static Order asc(String property) {
+			return new Order(Direction.ASC, property, null);
+		}
+
+		/**
+		 * Creates a new {@link Order} instance. Takes a single property. Direction is {@link Direction#ASC} and
+		 * NullHandling {@link NullHandling#NATIVE}.
+		 *
+		 * @param property must not be {@literal null} or empty.
+		 * @since 2.0
+		 */
+		public static Order desc(String property) {
+			return new Order(Direction.DESC, property, null);
 		}
 
 		/**

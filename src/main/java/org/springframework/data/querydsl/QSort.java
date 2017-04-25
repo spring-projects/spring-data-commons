@@ -33,6 +33,7 @@ import com.querydsl.core.types.Path;
  * 
  * @author Thomas Darimont
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class QSort extends Sort implements Serializable {
 
@@ -99,7 +100,7 @@ public class QSort extends Sort implements Serializable {
 
 		Assert.notNull(targetElement, "Target element must not be null!");
 
-		return new Order(targetElement.toString()).with(orderSpecifier.isAscending() ? Direction.ASC : Direction.DESC);
+		return Order.by(targetElement.toString()).with(orderSpecifier.isAscending() ? Direction.ASC : Direction.DESC);
 	}
 
 	/**

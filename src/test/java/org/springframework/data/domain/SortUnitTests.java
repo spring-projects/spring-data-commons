@@ -28,6 +28,7 @@ import org.springframework.data.domain.Sort.Order;
  * @author Oliver Gierke
  * @author Kevin Raymond
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 public class SortUnitTests {
 
@@ -99,14 +100,24 @@ public class SortUnitTests {
 		assertThat(sort).containsExactly(new Sort.Order("foo"));
 	}
 
-	@Test // DATACMNS-281
+	@Test // DATACMNS-281, DATACMNS-1021
 	public void configuresIgnoreCaseForOrder() {
-		assertThat(new Order(Direction.ASC, "foo").ignoreCase().isIgnoreCase()).isTrue();
+		assertThat(Order.asc("foo").ignoreCase().isIgnoreCase()).isTrue();
 	}
 
-	@Test // DATACMNS-281
+	@Test // DATACMNS-281, DATACMNS-1021
 	public void orderDoesNotIgnoreCaseByDefault() {
+
 		assertThat(new Order(Direction.ASC, "foo").isIgnoreCase()).isFalse();
+		assertThat(Order.asc("foo").isIgnoreCase()).isFalse();
+		assertThat(Order.desc("foo").isIgnoreCase()).isFalse();
+	}
+
+	@Test // DATACMNS-1021
+	public void createsOrderWithDirection() {
+
+		assertThat(Order.asc("foo").getDirection()).isEqualTo(Direction.ASC);
+		assertThat(Order.desc("foo").getDirection()).isEqualTo(Direction.DESC);
 	}
 
 	@Test // DATACMNS-436
