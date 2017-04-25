@@ -433,13 +433,22 @@ public class Sort implements Iterable<org.springframework.data.domain.Sort.Order
 		 * {@link Sort#DEFAULT_DIRECTION}.
 		 * 
 		 * @param property must not be {@literal null} or empty.
+		 * @deprecated since 2.0, use {@link Order#by(String)}.
 		 */
+		@Deprecated
 		public Order(String property) {
 			this(DEFAULT_DIRECTION, property);
 		}
 
+		/**
+		 * Creates a new {@link Order} instance. Takes a single property. Direction defaults to
+		 * {@link Sort#DEFAULT_DIRECTION}.
+		 * 
+		 * @param property must not be {@literal null} or empty.
+		 * @since 2.0
+		 */
 		public static Order by(String property) {
-			return new Order(property);
+			return new Order(DEFAULT_DIRECTION, property);
 		}
 
 		/**

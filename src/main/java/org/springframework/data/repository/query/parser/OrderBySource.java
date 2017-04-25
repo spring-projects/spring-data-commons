@@ -37,6 +37,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 class OrderBySource {
 
@@ -110,11 +111,11 @@ class OrderBySource {
 
 			PropertyPath propertyPath = PropertyPath.from(propertySource, type);
 			return direction.map(it -> new Order(it, propertyPath.toDotPath()))
-					.orElseGet(() -> new Order(propertyPath.toDotPath()));
+					.orElseGet(() -> Order.by(propertyPath.toDotPath()));
 
 		}).orElseGet(() -> direction//
 				.map(it -> new Order(it, StringUtils.uncapitalize(propertySource)))
-				.orElseGet(() -> new Order(StringUtils.uncapitalize(propertySource))));
+				.orElseGet(() -> Order.by(StringUtils.uncapitalize(propertySource))));
 	}
 
 	/**
