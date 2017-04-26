@@ -15,6 +15,9 @@
  */
 package org.springframework.data.domain;
 
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import java.util.Optional;
@@ -29,6 +32,7 @@ import org.springframework.util.Assert;
  * @since 1.10
  */
 @Value
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Range<T extends Comparable<T>> {
 
 	private final static Range<?> UNBOUNDED = Range.of(Bound.unbounded(), Bound.UNBOUNDED);
@@ -36,12 +40,12 @@ public class Range<T extends Comparable<T>> {
 	/**
 	 * The lower bound of the range.
 	 */
-	private final Bound<T> lowerBound;
+	private final @NonNull Bound<T> lowerBound;
 
 	/**
 	 * The upper bound of the range.
 	 */
-	private final Bound<T> upperBound;
+	private final @NonNull Bound<T> upperBound;
 
 	/**
 	 * Creates a new {@link Range} with the given lower and upper bound. Treats the given values as inclusive bounds. Use
@@ -50,7 +54,9 @@ public class Range<T extends Comparable<T>> {
 	 * @see Range#of(Bound, Bound)
 	 * @param lowerBound can be {@literal null} in case upperBound is not {@literal null}.
 	 * @param upperBound can be {@literal null} in case lowerBound is not {@literal null}.
+	 * @deprecated since 2.0 in favor of {@link Range#of(Bound, Bound)}.
 	 */
+	@Deprecated
 	public Range(T lowerBound, T upperBound) {
 		this(lowerBound, upperBound, true, true);
 	}
@@ -74,15 +80,6 @@ public class Range<T extends Comparable<T>> {
 
 		this.upperBound = upperBound == null ? Bound.unbounded()
 				: upperInclusive ? Bound.inclusive(upperBound) : Bound.exclusive(upperBound);
-	}
-
-	private Range(Bound<T> lowerBound, Bound<T> upperBound) {
-
-		Assert.notNull(lowerBound, "Lower boundary must not be null!");
-		Assert.notNull(upperBound, "Upper boundary must not be null!");
-
-		this.lowerBound = lowerBound;
-		this.upperBound = upperBound;
 	}
 
 	/**
@@ -118,54 +115,6 @@ public class Range<T extends Comparable<T>> {
 	 */
 	public static <T extends Comparable<T>> Range<T> of(Bound<T> lowerBound, Bound<T> upperBound) {
 		return new Range<>(lowerBound, upperBound);
-	}
-
-	/**
-	 * Creates a new {@link Integer} {@link Range} with the given lower and upper bound. Treats the given values as
-	 * including bounds. Use {@link #of(Bound, Bound)} to configure different bound behavior.
-	 * 
-	 * @param lowerBound
-	 * @param upperBound
-	 * @since 2.0
-	 */
-	public static Range<Integer> from(int lowerBoundInclusive, int upperBoundInclusive) {
-		return of(Bound.inclusive(lowerBoundInclusive), Bound.inclusive(upperBoundInclusive));
-	}
-
-	/**
-	 * Creates a new {@link Long} {@link Range} with the given lower and upper bound. Treats the given values as including
-	 * bounds. Use {@link #of(Bound, Bound)} to configure different bound behavior.
-	 * 
-	 * @param lowerBound
-	 * @param upperBound
-	 * @since 2.0
-	 */
-	public static Range<Long> from(long lowerBoundInclusive, long upperBoundInclusive) {
-		return of(Bound.inclusive(lowerBoundInclusive), Bound.inclusive(upperBoundInclusive));
-	}
-
-	/**
-	 * Creates a new {@link Float} {@link Range} with the given lower and upper bound. Treats the given values as
-	 * including bounds. Use {@link #of(Bound, Bound)} to configure different bound behavior.
-	 * 
-	 * @param lowerBound
-	 * @param upperBound
-	 * @since 2.0
-	 */
-	public static Range<Float> from(float lowerBoundInclusive, float upperBoundInclusive) {
-		return of(Bound.inclusive(lowerBoundInclusive), Bound.inclusive(upperBoundInclusive));
-	}
-
-	/**
-	 * Creates a new {@link Double} {@link Range} with the given lower and upper bound. Treats the given values as
-	 * including bounds. Use {@link #of(Bound, Bound)} to configure different bound behavior.
-	 * 
-	 * @param lowerBound
-	 * @param upperBound
-	 * @since 2.0
-	 */
-	public static Range<Double> from(double lowerBoundInclusive, double upperBoundInclusive) {
-		return of(Bound.inclusive(lowerBoundInclusive), Bound.inclusive(upperBoundInclusive));
 	}
 
 	/**
@@ -225,6 +174,7 @@ public class Range<T extends Comparable<T>> {
 	 * @soundtrack Mohamed Ragab - Excelsior Sessions (March 2017)
 	 */
 	@Value
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class Bound<T extends Comparable<T>> {
 
 		@SuppressWarnings({ "rawtypes", "unchecked" }) //

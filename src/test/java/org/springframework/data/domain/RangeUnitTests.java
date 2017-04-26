@@ -31,25 +31,13 @@ public class RangeUnitTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-651
 	public void rejectsNullReferenceValuesForContains() {
-		new Range<>(10L, 20L).contains(null);
-	}
-
-	@Test // DATACMNS-651
-	public void usesBoundsInclusivelyByDefault() {
-
-		Range<Long> range = Range.from(10L, 20L);
-
-		assertThat(range.contains(10L)).isTrue();
-		assertThat(range.contains(20L)).isTrue();
-		assertThat(range.contains(15L)).isTrue();
-		assertThat(range.contains(5L)).isFalse();
-		assertThat(range.contains(25L)).isFalse();
+		Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L)).contains(null);
 	}
 
 	@Test // DATACMNS-651
 	public void excludesLowerBoundIfConfigured() {
 
-		Range<Long> range = new Range<>(10L, 20L, false, true);
+		Range<Long> range = Range.from(Bound.exclusive(10L)).to(Bound.inclusive(20L));
 
 		assertThat(range.contains(10L)).isFalse();
 		assertThat(range.contains(20L)).isTrue();
@@ -61,7 +49,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-651
 	public void excludesUpperBoundIfConfigured() {
 
-		Range<Long> range = new Range<>(10L, 20L, true, false);
+		Range<Long> range = Range.of(Bound.inclusive(10L), Bound.exclusive(20L));
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isFalse();
@@ -73,7 +61,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-651, DATACMNS-1050
 	public void handlesOpenUpperBoundCorrectly() {
 
-		Range<Long> range = new Range<>(10L, null);
+		Range<Long> range = Range.of(Bound.inclusive(10L), Bound.unbounded());
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();
@@ -88,7 +76,7 @@ public class RangeUnitTests {
 	@Test // DATACMNS-651, DATACMNS-1050
 	public void handlesOpenLowerBoundCorrectly() {
 
-		Range<Long> range = new Range<>(null, 20L);
+		Range<Long> range = Range.of(Bound.unbounded(), Bound.inclusive(20L));
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();
@@ -167,31 +155,5 @@ public class RangeUnitTests {
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.getLowerBound().getValue()).isEmpty();
 		assertThat(range.getUpperBound().getValue()).isEmpty();
-	}
-
-	@Test // DATACMNS-1050
-	public void createsPrimitiveIntInclusiveRange() {
-
-		Range<Integer> range = Range.from(10, 20);
-
-		assertThat(range.contains(9)).isFalse();
-		assertThat(range.contains(10)).isTrue();
-		assertThat(range.contains(11)).isTrue();
-		assertThat(range.contains(19)).isTrue();
-		assertThat(range.contains(20)).isTrue();
-		assertThat(range.contains(21)).isFalse();
-	}
-
-	@Test // DATACMNS-1050
-	public void createsPrimitiveDoubleInclusiveRange() {
-
-		Range<Double> range = Range.from(10d, 20f);
-
-		assertThat(range.contains(9d)).isFalse();
-		assertThat(range.contains(10d)).isTrue();
-		assertThat(range.contains(11d)).isTrue();
-		assertThat(range.contains(19d)).isTrue();
-		assertThat(range.contains(20d)).isTrue();
-		assertThat(range.contains(21d)).isFalse();
 	}
 }
