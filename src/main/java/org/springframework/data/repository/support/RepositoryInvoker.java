@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -44,13 +43,13 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	<T> T invokeSave(T object);
 
 	/**
-	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#findOne(Serializable)}.
+	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#findById(Object)}.
 	 * 
 	 * @param id must not be {@literal null}.
 	 * @return the entity with the given id.
 	 * @throws IllegalStateException if the repository does not expose a find-one-method.
 	 */
-	<T> Optional<T> invokeFindOne(Serializable id);
+	<T> Optional<T> invokeFindById(Object id);
 
 	/**
 	 * Invokes the find-all method of the underlying repository using the method taking a {@link Pageable} as parameter if
@@ -80,13 +79,13 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	Iterable<Object> invokeFindAll(Sort sort);
 
 	/**
-	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#delete(Serializable)}.
-	 * The given id is assumed to be of a type convertable into the actual identifier type of the backing repository.
+	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#deleteById(Object)}. The
+	 * given id is assumed to be of a type convertible into the actual identifier type of the backing repository.
 	 * 
 	 * @param id must not be {@literal null}.
 	 * @throws {@link IllegalStateException} if the repository does not expose a delete-method.
 	 */
-	void invokeDelete(Serializable id);
+	void invokeDeleteById(Object id);
 
 	/**
 	 * Invokes the query method backed by the given {@link Method} using the given parameters, {@link Pageable} and

@@ -17,7 +17,6 @@ package org.springframework.data.repository.core.support;
 
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.data.repository.Repository;
@@ -39,7 +38,7 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 	private static final String MUST_BE_A_REPOSITORY = String.format("Given type must be assignable to %s!",
 			Repository.class);
 
-	private final Class<? extends Serializable> idType;
+	private final Class<?> idType;
 	private final Class<?> domainType;
 
 	/**
@@ -56,8 +55,7 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 		this.domainType = resolveDomainType(repositoryInterface);
 	}
 
-	@SuppressWarnings("unchecked")
-	private Class<? extends Serializable> resolveIdType(Class<?> repositoryInterface) {
+	private static Class<?> resolveIdType(Class<?> repositoryInterface) {
 
 		TypeInformation<?> information = ClassTypeInformation.from(repositoryInterface);
 		List<TypeInformation<?>> arguments = information.getSuperTypeInformation(Repository.class).getTypeArguments();
@@ -66,10 +64,10 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 			throw new IllegalArgumentException(String.format("Could not resolve id type of %s!", repositoryInterface));
 		}
 
-		return (Class<? extends Serializable>) arguments.get(1).getType();
+		return arguments.get(1).getType();
 	}
 
-	private Class<?> resolveDomainType(Class<?> repositoryInterface) {
+	private static Class<?> resolveDomainType(Class<?> repositoryInterface) {
 
 		TypeInformation<?> information = ClassTypeInformation.from(repositoryInterface);
 		List<TypeInformation<?>> arguments = information.getSuperTypeInformation(Repository.class).getTypeArguments();

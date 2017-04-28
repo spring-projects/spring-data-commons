@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -32,7 +30,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable>
+public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> implements BeanFactoryAware {
 
 	private String transactionManagerName = TxUtils.DEFAULT_TRANSACTION_MANAGER;

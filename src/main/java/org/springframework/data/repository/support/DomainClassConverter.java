@@ -154,7 +154,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(domainType);
 			RepositoryInformation information = repositories.getRequiredRepositoryInformation(domainType);
 
-			return invoker.invokeFindOne(conversionService.convert(source, information.getIdType())).orElse(null);
+			return invoker.invokeFindById(conversionService.convert(source, information.getIdType())).orElse(null);
 		}
 
 		/*

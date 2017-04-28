@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -36,7 +35,7 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 		this.metadata = metadata;
 	}
 
-	public Class<? extends Serializable> getIdType() {
+	public Class<?> getIdType() {
 		return metadata.getIdType();
 	}
 

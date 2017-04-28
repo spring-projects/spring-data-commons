@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +49,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID extends Serializable>
+public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID>
 		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware,
 		BeanFactoryAware, ApplicationEventPublisherAware {
 

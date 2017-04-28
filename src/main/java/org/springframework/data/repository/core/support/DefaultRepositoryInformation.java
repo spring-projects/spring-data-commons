@@ -19,7 +19,6 @@ import static org.springframework.core.GenericTypeResolver.*;
 import static org.springframework.data.repository.util.ClassUtils.*;
 import static org.springframework.util.ReflectionUtils.*;
 
-import java.io.Serializable;
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -101,7 +100,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
 	 */
 	@Override
-	public Class<? extends Serializable> getIdType() {
+	public Class<?> getIdType() {
 		return metadata.getIdType();
 	}
 

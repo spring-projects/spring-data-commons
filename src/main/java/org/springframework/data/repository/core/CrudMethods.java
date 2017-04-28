@@ -65,7 +65,7 @@ public interface CrudMethods {
 
 	/**
 	 * Returns the find one method of the repository. Usually signature compatible to
-	 * {@link CrudRepository#findOne(java.io.Serializable)}
+	 * {@link CrudRepository#findById(Object)}
 	 * 
 	 * @return the find one method of the repository or {@literal null} if not available.
 	 * @see #hasFindOneMethod()

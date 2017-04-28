@@ -15,11 +15,12 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Optional;
 
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.util.Assert;
 
 /**
  * Base class for implementations of {@link EntityInformation}. Considers an entity to be new whenever
@@ -28,20 +29,10 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Nick Williams
  */
-public abstract class AbstractEntityInformation<T, ID extends Serializable> implements EntityInformation<T, ID> {
+@RequiredArgsConstructor
+public abstract class AbstractEntityInformation<T, ID> implements EntityInformation<T, ID> {
 
-	private final Class<T> domainClass;
-
-	/**
-	 * Creates a new {@link AbstractEntityInformation} from the given domain class.
-	 * 
-	 * @param domainClass must not be {@literal null}.
-	 */
-	public AbstractEntityInformation(Class<T> domainClass) {
-
-		Assert.notNull(domainClass, "DomainClass must not be null!");
-		this.domainClass = domainClass;
-	}
+	private final @NonNull Class<T> domainClass;
 
 	/*
 	 * (non-Javadoc)

@@ -86,11 +86,11 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 		adapter.hasSaveMethod();
 		verify(delegate, times(1)).hasSaveMethod();
 
-		adapter.invokeDelete(any(Serializable.class));
-		verify(delegate, times(1)).invokeDelete(any());
+		adapter.invokeDeleteById(any(Serializable.class));
+		verify(delegate, times(1)).invokeDeleteById(any());
 
-		adapter.invokeFindOne(any(Serializable.class));
-		verify(delegate, times(1)).invokeFindOne(any());
+		adapter.invokeFindById(any(Serializable.class));
+		verify(delegate, times(1)).invokeFindById(any());
 
 		adapter.invokeQueryMethod(any(), any(), any(), any());
 

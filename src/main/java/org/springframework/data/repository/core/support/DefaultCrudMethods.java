@@ -16,19 +16,21 @@
 package org.springframework.data.repository.core.support;
 
 import static java.util.Arrays.*;
-import static org.springframework.util.ClassUtils.*;
-import static org.springframework.util.ReflectionUtils.*;
+import static org.springframework.data.util.Optionals.*;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import org.springframework.core.BridgeMethodResolver;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.util.Optionals;
+import org.springframework.data.util.Pair;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -44,10 +46,12 @@ import org.springframework.util.ReflectionUtils;
  */
 public class DefaultCrudMethods implements CrudMethods {
 
-	private static final String FIND_ONE = "findOne";
+	private static final String FIND_ONE = "findById";
 	private static final String SAVE = "save";
 	private static final String FIND_ALL = "findAll";
+
 	private static final String DELETE = "delete";
+	private static final String DELETE_BY_ID = "deleteById";
 
 	private final Optional<Method> findAllMethod;
 	private final Optional<Method> findOneMethod;
@@ -79,18 +83,12 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private Optional<Method> selectMostSuitableSaveMethod(RepositoryMetadata metadata) {
+	private static Optional<Method> selectMostSuitableSaveMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : asList(metadata.getDomainType(), Object.class)) {
-
-			Method saveMethodCandidate = findMethod(metadata.getRepositoryInterface(), SAVE, type);
-
-			if (saveMethodCandidate != null) {
-				return getMostSpecificMethod(saveMethodCandidate, metadata.getRepositoryInterface());
-			}
-		}
-
-		return Optional.empty();
+		return asList(metadata.getDomainType(), Object.class).stream()//
+				.flatMap(it -> toStream(findMethod(metadata.getRepositoryInterface(), SAVE, it)))//
+				.flatMap(it -> toStream(getMostSpecificMethod(it, metadata.getRepositoryInterface())))//
+				.findFirst();
 	}
 
 	/**
@@ -98,25 +96,28 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * <ol>
 	 * <li>a {@link RepositoryMetadata#getDomainType()} as first parameter over</li>
 	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over</li>
-	 * <li>a {@link Serializable} as first parameter over</li>
+	 * <li>a {@link Object} as first parameter over</li>
 	 * <li>an {@link Iterable} as first parameter.</li>
 	 * </ol>
 	 * 
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private Optional<Method> selectMostSuitableDeleteMethod(RepositoryMetadata metadata) {
+	private static Optional<Method> selectMostSuitableDeleteMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : asList(metadata.getDomainType(), metadata.getIdType(), Serializable.class, Iterable.class)) {
+		Stream<Pair<String, Class<?>>> source = Stream.of(//
+				Pair.of(DELETE, metadata.getDomainType()), //
+				Pair.of(DELETE_BY_ID, metadata.getIdType()), //
+				Pair.of(DELETE, Object.class), //
+				Pair.of(DELETE_BY_ID, Object.class), //
+				Pair.of(DELETE, Iterable.class));
 
-			Method candidate = findMethod(metadata.getRepositoryInterface(), DELETE, type);
+		Class<?> repositoryInterface = metadata.getRepositoryInterface();
 
-			if (candidate != null) {
-				return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());
-			}
-		}
-
-		return Optional.empty();
+		return source//
+				.flatMap(it -> toStream(findMethod(repositoryInterface, it.getFirst(), it.getSecond())))//
+				.flatMap(it -> toStream(getMostSpecificMethod(it, repositoryInterface)))//
+				.findFirst();
 	}
 
 	/**
@@ -130,49 +131,37 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private Optional<Method> selectMostSuitableFindAllMethod(RepositoryMetadata metadata) {
+	private static Optional<Method> selectMostSuitableFindAllMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : asList(Pageable.class, Sort.class)) {
+		Class<?> repositoryInterface = metadata.getRepositoryInterface();
 
-			if (hasMethod(metadata.getRepositoryInterface(), FIND_ALL, type)) {
+		Supplier<Optional<Method>> withPageableOrSort = () -> Stream.of(Pageable.class, Sort.class)//
+				.flatMap(it -> toStream(findMethod(repositoryInterface, FIND_ALL, it)))//
+				.flatMap(it -> toStream(getMostSpecificMethod(it, repositoryInterface)))//
+				.findFirst();
 
-				Method candidate = findMethod(PagingAndSortingRepository.class, FIND_ALL, type);
+		Supplier<Optional<Method>> withoutParameter = () -> findMethod(repositoryInterface, FIND_ALL)//
+				.flatMap(it -> getMostSpecificMethod(it, repositoryInterface));
 
-				if (candidate != null) {
-					return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());
-				}
-			}
-		}
-
-		if (hasMethod(metadata.getRepositoryInterface(), FIND_ALL)) {
-			return getMostSpecificMethod(findMethod(CrudRepository.class, FIND_ALL), metadata.getRepositoryInterface());
-		}
-
-		return Optional.empty();
+		return firstNonEmpty(withPageableOrSort, withoutParameter);
 	}
 
 	/**
-	 * The most suitable findOne method is selected as follows: We prefer
+	 * The most suitable {@code findById} method is selected as follows: We prefer
 	 * <ol>
 	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over</li>
-	 * <li>a {@link Serializable} as first parameter</li>
+	 * <li>a {@link Object} as first parameter</li>
 	 * </ol>
 	 * 
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
-	private Optional<Method> selectMostSuitableFindOneMethod(RepositoryMetadata metadata) {
+	private static Optional<Method> selectMostSuitableFindOneMethod(RepositoryMetadata metadata) {
 
-		for (Class<?> type : asList(metadata.getIdType(), Serializable.class)) {
-
-			Method candidate = findMethod(metadata.getRepositoryInterface(), FIND_ONE, type);
-
-			if (candidate != null) {
-				return getMostSpecificMethod(candidate, metadata.getRepositoryInterface());
-			}
-		}
-
-		return Optional.empty();
+		return asList(metadata.getIdType(), Object.class).stream()//
+				.flatMap(it -> toStream(findMethod(metadata.getRepositoryInterface(), FIND_ONE, it)))//
+				.flatMap(it -> toStream(getMostSpecificMethod(it, metadata.getRepositoryInterface())))//
+				.findFirst();
 	}
 
 	/**
@@ -186,10 +175,10 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	private static Optional<Method> getMostSpecificMethod(Method method, Class<?> type) {
 
-		return Optional.ofNullable(ClassUtils.getMostSpecificMethod(method, type)).map(it -> {
-			ReflectionUtils.makeAccessible(it);
-			return it;
-		});
+		return Optionals.toStream(Optional.ofNullable(ClassUtils.getMostSpecificMethod(method, type)))//
+				.map(it -> BridgeMethodResolver.findBridgedMethod(it))//
+				.peek(it -> ReflectionUtils.makeAccessible(it))//
+				.findFirst();
 	}
 
 	/* 
@@ -262,5 +251,9 @@ public class DefaultCrudMethods implements CrudMethods {
 	@Override
 	public Optional<Method> getDeleteMethod() {
 		return this.deleteMethod;
+	}
+
+	private static Optional<Method> findMethod(Class<?> type, String name, Class<?>... parameterTypes) {
+		return Optional.ofNullable(ReflectionUtils.findMethod(type, name, parameterTypes));
 	}
 }

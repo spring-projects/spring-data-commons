@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
@@ -34,7 +33,7 @@ public interface RepositoryMetadata {
 	 * 
 	 * @return the id class of the entity managed by the repository for or {@code null} if none found.
 	 */
-	Class<? extends Serializable> getIdType();
+	Class<?> getIdType();
 
 	/**
 	 * Returns the domain class the repository is declared for.

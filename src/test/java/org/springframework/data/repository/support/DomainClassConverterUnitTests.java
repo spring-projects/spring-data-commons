@@ -121,7 +121,7 @@ public class DomainClassConverterUnitTests {
 		UserRepository bean = context.getBean(UserRepository.class);
 		UserRepository repo = (UserRepository) ((Advised) bean).getTargetSource().getTarget();
 
-		verify(repo, times(1)).findOne(1L);
+		verify(repo, times(1)).findById(1L);
 	}
 
 	@Test // DATACMNS-133

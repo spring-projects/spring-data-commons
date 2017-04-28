@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import io.reactivex.Completable;
@@ -59,10 +60,10 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 	public void invokesCustomMethodIfItRedeclaresACRUDOne() {
 
 		ObjectRepository repository = factory.getRepository(ObjectRepository.class, customImplementation);
-		repository.findOne(1);
+		repository.findById(1);
 
-		verify(customImplementation, times(1)).findOne(1);
-		verify(backingRepo, times(0)).findOne(1);
+		verify(customImplementation, times(1)).findById(1);
+		verify(backingRepo, times(0)).findById(1);
 	}
 
 	@Test // DATACMNS-836
@@ -70,10 +71,10 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 
 		Serializable id = 1L;
 		RxJava1ConvertingRepository repository = factory.getRepository(RxJava1ConvertingRepository.class);
-		repository.exists(id);
-		repository.exists((Long) id);
+		repository.existsById(id);
+		repository.existsById((Long) id);
 
-		verify(backingRepo, times(2)).exists(id);
+		verify(backingRepo, times(2)).existsById(id);
 	}
 
 	@Test // DATACMNS-836
@@ -83,9 +84,9 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		Single<Long> ids = Single.just(1L);
 
 		RxJava1ConvertingRepository repository = factory.getRepository(RxJava1ConvertingRepository.class);
-		repository.exists(ids);
+		repository.existsById(ids);
 
-		verify(backingRepo, times(1)).exists(any(Mono.class));
+		verify(backingRepo, times(1)).existsById(any(Mono.class));
 	}
 
 	@Test // DATACMNS-988
@@ -93,9 +94,9 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 
 		Long id = 1L;
 		RxJava2ConvertingRepository repository = factory.getRepository(RxJava2ConvertingRepository.class);
-		repository.findOne(id);
+		repository.findById(id);
 
-		verify(backingRepo, times(1)).findOne(id);
+		verify(backingRepo, times(1)).findById(id);
 	}
 
 	@Test // DATACMNS-988
@@ -104,36 +105,36 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		Serializable id = 1L;
 
 		RxJava2ConvertingRepository repository = factory.getRepository(RxJava2ConvertingRepository.class);
-		repository.delete(id);
+		repository.deleteById(id);
 
-		verify(backingRepo, times(1)).delete(id);
+		verify(backingRepo, times(1)).deleteById(id);
 	}
 
 	interface RxJava1ConvertingRepository extends Repository<Object, Long> {
 
-		Single<Boolean> exists(Single<Long> id);
+		Single<Boolean> existsById(Single<Long> id);
 
-		Single<Boolean> exists(Serializable id);
+		Single<Boolean> existsById(Serializable id);
 
-		Single<Boolean> exists(Long id);
+		Single<Boolean> existsById(Long id);
 	}
 
 	interface RxJava2ConvertingRepository extends Repository<Object, Long> {
 
-		Maybe<Boolean> findOne(Serializable id);
+		Maybe<Boolean> findById(Serializable id);
 
-		Single<Boolean> exists(Long id);
+		Single<Boolean> existsById(Long id);
 
-		Completable delete(Serializable id);
+		Completable deleteById(Serializable id);
 	}
 
 	interface ObjectRepository
-			extends Repository<Object, Serializable>, RepositoryFactorySupportUnitTests.ObjectRepositoryCustom {
+			extends Repository<Object, Object>, RepositoryFactorySupportUnitTests.ObjectRepositoryCustom {
 
 	}
 
 	interface ObjectRepositoryCustom {
 
-		Object findOne(Serializable id);
+		Object findById(Object id);
 	}
 }

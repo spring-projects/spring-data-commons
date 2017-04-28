@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -36,7 +35,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  */
 class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
-	private final CrudRepository<Object, Serializable> repository;
+	private final CrudRepository<Object, Object> repository;
 
 	private final boolean customSaveMethod;
 	private final boolean customFindOneMethod;
@@ -51,7 +50,7 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 	 * @param metadata must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
 	 */
-	public CrudRepositoryInvoker(CrudRepository<Object, Serializable> repository, RepositoryMetadata metadata,
+	public CrudRepositoryInvoker(CrudRepository<Object, Object> repository, RepositoryMetadata metadata,
 			ConversionService conversionService) {
 
 		super(repository, metadata, conversionService);
@@ -85,12 +84,12 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
+	 * @see org.springframework.data.repository.support.ReflectionRepositoryInvoker#invokeFindById(java.lang.Object)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> Optional<T> invokeFindOne(Serializable id) {
-		return customFindOneMethod ? super.invokeFindOne(id) : (Optional<T>) repository.findOne(convertId(id));
+	public <T> Optional<T> invokeFindById(Object id) {
+		return customFindOneMethod ? super.invokeFindById(id) : (Optional<T>) repository.findById(convertId(id));
 	}
 
 	/*
@@ -104,15 +103,15 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeDelete(java.io.Serializable)
+	 * @see org.springframework.data.repository.support.ReflectionRepositoryInvoker#invokeDeleteById(java.lang.Object)
 	 */
 	@Override
-	public void invokeDelete(Serializable id) {
+	public void invokeDeleteById(Object id) {
 
 		if (customDeleteMethod) {
-			super.invokeDelete(id);
+			super.invokeDeleteById(id);
 		} else {
-			repository.delete(convertId(id));
+			repository.deleteById(convertId(id));
 		}
 	}
 

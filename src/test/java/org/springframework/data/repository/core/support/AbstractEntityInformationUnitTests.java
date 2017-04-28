@@ -100,7 +100,7 @@ public class AbstractEntityInformationUnitTests {
 		@Id boolean id;
 	}
 
-	static class CustomEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
+	static class CustomEntityInformation<T, ID> extends AbstractEntityInformation<T, ID> {
 
 		private final Class<T> type;
 

@@ -16,12 +16,12 @@
 package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import lombok.Getter;
 import lombok.Value;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -122,7 +122,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-928
 	public void doesNotInterceptNonSaveMethod() throws Throwable {
 
-		doReturn(SampleRepository.class.getMethod("findOne", Serializable.class)).when(invocation).getMethod();
+		doReturn(SampleRepository.class.getMethod("findById", Object.class)).when(invocation).getMethod();
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -162,9 +162,9 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
-		doReturn(new Object[] {Collections.singletonList(sample)}).when(invocation).getArguments();
+		doReturn(new Object[] { Collections.singletonList(sample) }).when(invocation).getArguments();
 
-		doReturn(SampleRepository.class.getMethod("save", Iterable.class)).when(invocation).getMethod();
+		doReturn(SampleRepository.class.getMethod("saveAll", Iterable.class)).when(invocation).getMethod();
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//

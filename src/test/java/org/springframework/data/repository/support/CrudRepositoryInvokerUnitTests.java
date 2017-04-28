@@ -18,7 +18,6 @@ package org.springframework.data.repository.support;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Date;
@@ -62,12 +61,12 @@ public class CrudRepositoryInvokerUnitTests {
 
 	@Test // DATACMNS-589, DATAREST-216
 	public void invokesRedeclaredFindOne() {
-		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeFindOne(1L);
+		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeFindById(1L);
 	}
 
 	@Test // DATACMNS-589
 	public void invokesRedeclaredDelete() throws Exception {
-		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeDelete(1L);
+		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeDeleteById(1L);
 	}
 
 	@Test // DATACMNS-589
@@ -80,15 +79,15 @@ public class CrudRepositoryInvokerUnitTests {
 	@Test // DATACMNS-589
 	public void invokesFindOneOnCrudRepository() throws Exception {
 
-		Method method = CrudRepository.class.getMethod("findOne", Serializable.class);
-		getInvokerFor(personRepository, expectInvocationOf(method)).invokeFindOne(1L);
+		Method method = CrudRepository.class.getMethod("findById", Object.class);
+		getInvokerFor(personRepository, expectInvocationOf(method)).invokeFindById(1L);
 	}
 
 	@Test // DATACMNS-589, DATAREST-216
 	public void invokesDeleteOnCrudRepository() throws Exception {
 
-		Method method = CrudRepository.class.getMethod("delete", Serializable.class);
-		getInvokerFor(personRepository, expectInvocationOf(method)).invokeDelete(1L);
+		Method method = CrudRepository.class.getMethod("deleteById", Object.class);
+		getInvokerFor(personRepository, expectInvocationOf(method)).invokeDeleteById(1L);
 	}
 
 	@Test // DATACMNS-589
@@ -142,10 +141,10 @@ public class CrudRepositoryInvokerUnitTests {
 		<S extends Order> S save(S entity);
 
 		@Override
-		Optional<Order> findOne(Long id);
+		Optional<Order> findById(Long id);
 
 		@Override
-		void delete(Long id);
+		void deleteById(Long id);
 	}
 
 	static class Person {}
@@ -172,6 +171,6 @@ public class CrudRepositoryInvokerUnitTests {
 
 	interface CrudWithRedeclaredDelete extends CrudRepository<Order, Long> {
 
-		void delete(Long id);
+		void deleteById(Long id);
 	}
 }

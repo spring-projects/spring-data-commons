@@ -17,7 +17,6 @@ package org.springframework.data.repository.core.support;
 
 import static org.mockito.Mockito.*;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -61,7 +60,7 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+	public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
 		return mock(EntityInformation.class);
 	}
 

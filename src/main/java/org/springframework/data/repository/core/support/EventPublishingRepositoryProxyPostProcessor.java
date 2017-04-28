@@ -18,10 +18,10 @@ package org.springframework.data.repository.core.support;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -90,7 +90,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 			Object result = invocation.proceed();
 
-			if (!invocation.getMethod().getName().equals("save")) {
+			if (!Stream.of("save", "saveAll").anyMatch(it -> invocation.getMethod().getName().equals(it))) {
 				return result;
 			}
 

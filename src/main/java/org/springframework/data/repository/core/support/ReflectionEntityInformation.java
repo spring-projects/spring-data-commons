@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -32,7 +31,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-public class ReflectionEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
+public class ReflectionEntityInformation<T, ID> extends AbstractEntityInformation<T, ID> {
 
 	private static final Class<Id> DEFAULT_ID_ANNOTATION = Id.class;
 

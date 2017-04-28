@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
-
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.Assert;
@@ -33,7 +31,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	private static final String NO_ANNOTATION_FOUND = String.format("Interface must be annotated with @%s!",
 			RepositoryDefinition.class.getName());
 
-	private final Class<? extends Serializable> idType;
+	private final Class<?> idType;
 	private final Class<?> domainType;
 
 	/**
@@ -56,7 +54,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getIdType()
 	 */
 	@Override
-	public Class<? extends Serializable> getIdType() {
+	public Class<?> getIdType() {
 		return this.idType;
 	}
 
@@ -69,7 +67,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 		return this.domainType;
 	}
 
-	private Class<? extends Serializable> resolveIdType(Class<?> repositoryInterface) {
+	private Class<?> resolveIdType(Class<?> repositoryInterface) {
 
 		RepositoryDefinition annotation = repositoryInterface.getAnnotation(RepositoryDefinition.class);
 

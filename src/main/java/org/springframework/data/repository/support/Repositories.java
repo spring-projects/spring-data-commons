@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,12 +48,12 @@ public class Repositories implements Iterable<Class<?>> {
 
 	static final Repositories NONE = new Repositories();
 
-	private static final RepositoryFactoryInformation<Object, Serializable> EMPTY_REPOSITORY_FACTORY_INFO = EmptyRepositoryFactoryInformation.INSTANCE;
+	private static final RepositoryFactoryInformation<Object, Object> EMPTY_REPOSITORY_FACTORY_INFO = EmptyRepositoryFactoryInformation.INSTANCE;
 	private static final String DOMAIN_TYPE_MUST_NOT_BE_NULL = "Domain type must not be null!";
 
 	private final Optional<BeanFactory> beanFactory;
 	private final Map<Class<?>, String> repositoryBeanNames;
-	private final Map<Class<?>, RepositoryFactoryInformation<Object, Serializable>> repositoryFactoryInfos;
+	private final Map<Class<?>, RepositoryFactoryInformation<Object, Object>> repositoryFactoryInfos;
 
 	/**
 	 * Constructor to create the {@link #NONE} instance.
@@ -148,12 +147,12 @@ public class Repositories implements Iterable<Class<?>> {
 	 * @return the {@link RepositoryFactoryInformation} for the given domain class or {@literal null} if no repository
 	 *         registered for this domain class.
 	 */
-	private RepositoryFactoryInformation<Object, Serializable> getRepositoryFactoryInfoFor(Class<?> domainClass) {
+	private RepositoryFactoryInformation<Object, Object> getRepositoryFactoryInfoFor(Class<?> domainClass) {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
 		Class<?> userType = ClassUtils.getUserClass(domainClass);
-		RepositoryFactoryInformation<Object, Serializable> repositoryInfo = repositoryFactoryInfos.get(userType);
+		RepositoryFactoryInformation<Object, Object> repositoryInfo = repositoryFactoryInfos.get(userType);
 
 		if (repositoryInfo != null) {
 			return repositoryInfo;
@@ -173,7 +172,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T, S extends Serializable> EntityInformation<T, S> getEntityInformationFor(Class<?> domainClass) {
+	public <T, S> EntityInformation<T, S> getEntityInformationFor(Class<?> domainClass) {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
@@ -191,7 +190,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		RepositoryFactoryInformation<Object, Serializable> information = getRepositoryFactoryInfoFor(domainClass);
+		RepositoryFactoryInformation<Object, Object> information = getRepositoryFactoryInfoFor(domainClass);
 		return information == EMPTY_REPOSITORY_FACTORY_INFO ? Optional.empty()
 				: Optional.of(information.getRepositoryInformation());
 	}
@@ -264,12 +263,12 @@ public class Repositories implements Iterable<Class<?>> {
 	 * 
 	 * @author Thomas Darimont
 	 */
-	private static enum EmptyRepositoryFactoryInformation implements RepositoryFactoryInformation<Object, Serializable> {
+	private static enum EmptyRepositoryFactoryInformation implements RepositoryFactoryInformation<Object, Object> {
 
 		INSTANCE;
 
 		@Override
-		public EntityInformation<Object, Serializable> getEntityInformation() {
+		public EntityInformation<Object, Object> getEntityInformation() {
 			return null;
 		}
 

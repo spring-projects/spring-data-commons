@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.User;
@@ -138,12 +139,14 @@ public class AbstractRepositoryMetadataUnitTests {
 			super(repositoryInterface);
 		}
 
+		@SuppressWarnings("unchecked")
 		public Class<? extends Serializable> getIdType() {
-			return null;
+			return (Class<? extends Serializable>) ResolvableType//
+					.forClass(Repository.class, getRepositoryInterface()).getGeneric(1).resolve();
 		}
 
 		public Class<?> getDomainType() {
-			return null;
+			return ResolvableType.forClass(Repository.class, getRepositoryInterface()).getGeneric(0).resolve();
 		}
 	}
 

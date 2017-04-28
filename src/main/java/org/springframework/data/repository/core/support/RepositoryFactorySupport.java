@@ -19,7 +19,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -291,7 +290,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @param domainClass
 	 * @return
 	 */
-	public abstract <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass);
+	public abstract <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass);
 
 	/**
 	 * Create a repository instance as backing for the query proxy.

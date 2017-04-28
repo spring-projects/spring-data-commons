@@ -15,14 +15,12 @@
  */
 package org.springframework.data.repository.reactive;
 
-import java.io.Serializable;
-
-import org.springframework.data.repository.NoRepositoryBean;
-import org.springframework.data.repository.Repository;
-
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
+
+import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.data.repository.Repository;
 
 /**
  * Interface for generic CRUD operations on a repository for a specific type. This repository follows reactive paradigms
@@ -34,7 +32,7 @@ import rx.Single;
  * @see Observable
  */
 @NoRepositoryBean
-public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repository<T, ID> {
+public interface RxJava1CrudRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Saves a given entity. Use the returned instance for further operations as the save operation might have changed the
@@ -52,7 +50,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return the saved entities.
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
 	 */
-	<S extends T> Observable<S> save(Iterable<S> entities);
+	<S extends T> Observable<S> saveAll(Iterable<S> entities);
 
 	/**
 	 * Saves all given entities.
@@ -61,7 +59,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return the saved entities.
 	 * @throws IllegalArgumentException in case the given {@code Publisher} is {@literal null}.
 	 */
-	<S extends T> Observable<S> save(Observable<S> entityStream);
+	<S extends T> Observable<S> saveAll(Observable<S> entityStream);
 
 	/**
 	 * Retrieves an entity by its id.
@@ -70,7 +68,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return the entity with the given id or {@link Observable#empty()} if none found.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
-	Observable<T> findOne(ID id);
+	Observable<T> findById(ID id);
 
 	/**
 	 * Retrieves an entity by its id supplied by a {@link Single}.
@@ -79,7 +77,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return the entity with the given id or {@link Observable#empty()} if none found.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
-	Observable<T> findOne(Single<ID> id);
+	Observable<T> findById(Single<ID> id);
 
 	/**
 	 * Returns whether an entity with the given id exists.
@@ -88,7 +86,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
-	Single<Boolean> exists(ID id);
+	Single<Boolean> existsById(ID id);
 
 	/**
 	 * Returns whether an entity with the given id, supplied by a {@link Single}, exists.
@@ -97,7 +95,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
-	Single<Boolean> exists(Single<ID> id);
+	Single<Boolean> existsById(Single<ID> id);
 
 	/**
 	 * Returns all instances of the type.
@@ -112,7 +110,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param ids must not be {@literal null}.
 	 * @return the found entities.
 	 */
-	Observable<T> findAll(Iterable<ID> ids);
+	Observable<T> findAllById(Iterable<ID> ids);
 
 	/**
 	 * Returns all instances of the type with the given IDs.
@@ -120,7 +118,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param idStream must not be {@literal null}.
 	 * @return the found entities.
 	 */
-	Observable<T> findAll(Observable<ID> idStream);
+	Observable<T> findAllById(Observable<ID> idStream);
 
 	/**
 	 * Returns the number of entities available.
@@ -135,7 +133,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param id must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@code id} is {@literal null}.
 	 */
-	Completable delete(ID id);
+	Completable deleteById(ID id);
 
 	/**
 	 * Deletes a given entity.
@@ -151,7 +149,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param entities must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@link Iterable} is {@literal null}.
 	 */
-	Completable delete(Iterable<? extends T> entities);
+	Completable deleteAll(Iterable<? extends T> entities);
 
 	/**
 	 * Deletes the given entities.
@@ -159,7 +157,7 @@ public interface RxJava1CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param entityStream must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@link Observable} is {@literal null}.
 	 */
-	Completable delete(Observable<? extends T> entityStream);
+	Completable deleteAll(Observable<? extends T> entityStream);
 
 	/**
 	 * Deletes all entities managed by the repository.

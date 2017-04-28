@@ -15,10 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
 import java.util.Optional;
 
-import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.core.EntityMetadata;
 
@@ -28,8 +27,7 @@ import org.springframework.data.repository.core.EntityMetadata;
  * 
  * @author Oliver Gierke
  */
-public class PersistableEntityInformation<T extends Persistable<ID>, ID extends Serializable>
-		extends AbstractEntityInformation<T, ID> {
+public class PersistableEntityInformation<T extends Persistable<ID>, ID> extends AbstractEntityInformation<T, ID> {
 
 	private Class<ID> idClass;
 
@@ -42,7 +40,7 @@ public class PersistableEntityInformation<T extends Persistable<ID>, ID extends 
 	public PersistableEntityInformation(Class<T> domainClass) {
 
 		super(domainClass);
-		this.idClass = (Class<ID>) GenericTypeResolver.resolveTypeArgument(domainClass, Persistable.class);
+		this.idClass = (Class<ID>) ResolvableType.forClass(Persistable.class, domainClass).resolveGeneric(0);
 	}
 
 	/*

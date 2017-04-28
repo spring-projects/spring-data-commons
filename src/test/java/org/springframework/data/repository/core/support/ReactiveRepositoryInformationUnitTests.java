@@ -22,7 +22,6 @@ import io.reactivex.Flowable;
 import reactor.core.publisher.Flux;
 import rx.Observable;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -60,10 +59,11 @@ public class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-836
 	public void discoversRxJava1MethodWithConvertibleArguments() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(RxJava1InterfaceWithGenerics.class, "save", Observable.class);
+		Method reference = extractTargetMethodFromRepository(RxJava1InterfaceWithGenerics.class, "saveAll",
+				Observable.class);
 
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("save"));
+		assertThat(reference.getName(), is("saveAll"));
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
 	}
 
@@ -79,31 +79,31 @@ public class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-988
 	public void discoversRxJava2MethodWithConvertibleArguments() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(RxJava2InterfaceWithGenerics.class, "save", Flowable.class);
+		Method reference = extractTargetMethodFromRepository(RxJava2InterfaceWithGenerics.class, "saveAll", Flowable.class);
 
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("save"));
+		assertThat(reference.getName(), is("saveAll"));
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
 	}
 
 	@Test // DATACMNS-836
 	public void discoversMethodAssignableArguments() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(ReactiveSortingRepository.class, "save", Publisher.class);
+		Method reference = extractTargetMethodFromRepository(ReactiveSortingRepository.class, "saveAll", Publisher.class);
 
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("save"));
+		assertThat(reference.getName(), is("saveAll"));
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
 	}
 
 	@Test // DATACMNS-836
 	public void discoversMethodExactIterableArguments() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "save",
+		Method reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "saveAll",
 				Iterable.class);
 
 		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("save"));
+		assertThat(reference.getName(), is("saveAll"));
 		assertThat(reference.getParameterTypes()[0], is(equalTo(Iterable.class)));
 	}
 
@@ -120,12 +120,12 @@ public class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-1023
 	public void usesCorrectSaveOverload() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(DummyRepository.class, "save", Iterable.class);
+		Method reference = extractTargetMethodFromRepository(DummyRepository.class, "saveAll", Iterable.class);
 
-		assertThat(reference, is(ReactiveCrudRepository.class.getMethod("save", Iterable.class)));
+		assertThat(reference, is(ReactiveCrudRepository.class.getMethod("saveAll", Iterable.class)));
 	}
 
-	private Method extractTargetMethodFromRepository(Class<?> repositoryType, String methodName, Class... args)
+	private Method extractTargetMethodFromRepository(Class<?> repositoryType, String methodName, Class<?>... args)
 			throws NoSuchMethodException {
 
 		RepositoryInformation information = new ReactiveRepositoryInformation(new DefaultRepositoryMetadata(repositoryType),
@@ -139,15 +139,14 @@ public class ReactiveRepositoryInformationUnitTests {
 
 	interface ReactiveJavaInterfaceWithGenerics extends ReactiveCrudRepository<User, String> {}
 
-	static abstract class DummyGenericReactiveRepositorySupport<T, ID extends Serializable>
-			implements ReactiveCrudRepository<T, ID> {
+	static abstract class DummyGenericReactiveRepositorySupport<T, ID> implements ReactiveCrudRepository<T, ID> {
 
 	}
 
 	interface DummyRepository extends ReactiveCrudRepository<User, Integer> {
 
 		@Override
-		<S extends User> Flux<S> save(Iterable<S> entities);
+		<S extends User> Flux<S> saveAll(Iterable<S> entities);
 	}
 
 	static class User {

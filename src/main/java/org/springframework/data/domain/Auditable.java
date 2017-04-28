@@ -15,7 +15,6 @@
  */
 package org.springframework.data.domain;
 
-import java.io.Serializable;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
@@ -27,7 +26,7 @@ import java.util.Optional;
  * @param <ID> the type of the audited type's identifier
  * @author Oliver Gierke
  */
-public interface Auditable<U, ID extends Serializable, T extends TemporalAccessor> extends Persistable<ID> {
+public interface Auditable<U, ID, T extends TemporalAccessor> extends Persistable<ID> {
 
 	/**
 	 * Returns the user who created this entity.

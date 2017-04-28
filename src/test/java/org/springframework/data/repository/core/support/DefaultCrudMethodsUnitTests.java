@@ -47,7 +47,7 @@ public class DefaultCrudMethodsUnitTests {
 		Class<DomainCrudRepository> type = DomainCrudRepository.class;
 
 		assertFindAllMethodOn(type, type.getMethod("findAll"));
-		assertDeleteMethodOn(type, type.getMethod("delete", Serializable.class));
+		assertDeleteMethodOn(type, type.getMethod("delete", Object.class));
 		assertSaveMethodPresent(type, true);
 	}
 
@@ -57,7 +57,7 @@ public class DefaultCrudMethodsUnitTests {
 		Class<DomainPagingAndSortingRepository> type = DomainPagingAndSortingRepository.class;
 
 		assertFindAllMethodOn(type, type.getMethod("findAll", Pageable.class));
-		assertDeleteMethodOn(type, type.getMethod("delete", Serializable.class));
+		assertDeleteMethodOn(type, type.getMethod("delete", Object.class));
 		assertSaveMethodPresent(type, true);
 	}
 
@@ -100,8 +100,8 @@ public class DefaultCrudMethodsUnitTests {
 	public void detectsOverloadedMethodsCorrectly() throws Exception {
 
 		Class<RepositoryWithAllCrudMethodOverloaded> type = RepositoryWithAllCrudMethodOverloaded.class;
-		assertFindOneMethodOn(type, type.getDeclaredMethod("findOne", Long.class));
-		assertDeleteMethodOn(type, type.getDeclaredMethod("delete", Long.class));
+		assertFindOneMethodOn(type, type.getDeclaredMethod("findById", Long.class));
+		assertDeleteMethodOn(type, type.getDeclaredMethod("deleteById", Long.class));
 		assertSaveMethodOn(type, type.getDeclaredMethod("save", Domain.class));
 		assertFindAllMethodOn(type, type.getDeclaredMethod("findAll"));
 	}
@@ -110,8 +110,8 @@ public class DefaultCrudMethodsUnitTests {
 	public void ignoresWrongOverloadedMethods() throws Exception {
 
 		Class<RepositoryWithAllCrudMethodOverloadedWrong> type = RepositoryWithAllCrudMethodOverloadedWrong.class;
-		assertFindOneMethodOn(type, CrudRepository.class.getDeclaredMethod("findOne", Serializable.class));
-		assertDeleteMethodOn(type, CrudRepository.class.getDeclaredMethod("delete", Serializable.class));
+		assertFindOneMethodOn(type, CrudRepository.class.getDeclaredMethod("findById", Object.class));
+		assertDeleteMethodOn(type, CrudRepository.class.getDeclaredMethod("delete", Object.class));
 		assertSaveMethodOn(type, CrudRepository.class.getDeclaredMethod("save", Object.class));
 		assertFindAllMethodOn(type, CrudRepository.class.getDeclaredMethod("findAll"));
 	}
@@ -241,9 +241,9 @@ public class DefaultCrudMethodsUnitTests {
 
 		<S extends Domain> S save(S entity);
 
-		void delete(Long id);
+		void deleteById(Long id);
 
-		Optional<Domain> findOne(Long id);
+		Optional<Domain> findById(Long id);
 	}
 
 	// DATACMNS-393
@@ -251,11 +251,11 @@ public class DefaultCrudMethodsUnitTests {
 
 		List<Domain> findAll(String s);
 
-		Domain save(Serializable entity);
+		Domain save(Long entity);
 
 		void delete(String o);
 
-		Domain findOne(Domain o);
+		Domain findById(Domain o);
 	}
 
 	// DATACMNS-539

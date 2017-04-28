@@ -59,9 +59,9 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 
 		// Mockito.reset(productRepository);
 		Product product = new Product();
-		when(productRepository.findOne(4711L)).thenReturn(product);
+		when(productRepository.findById(4711L)).thenReturn(product);
 
-		Optional<Object> invokeFindOne = factory.getInvokerFor(Product.class).invokeFindOne(4711L);
+		Optional<Object> invokeFindOne = factory.getInvokerFor(Product.class).invokeFindById(4711L);
 
 		assertThat(invokeFindOne).isEqualTo(Optional.of(product));
 	}

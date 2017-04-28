@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
 import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -30,7 +29,7 @@ import org.springframework.data.repository.core.EntityInformation;
  * @author Christoph Strobl
  */
 @SuppressWarnings("unchecked")
-public class PersistentEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID> {
+public class PersistentEntityInformation<T, ID> extends AbstractEntityInformation<T, ID> {
 
 	private final PersistentEntity<T, ? extends PersistentProperty<?>> persistentEntity;
 

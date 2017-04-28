@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository;
 
-import java.io.Serializable;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,7 +29,7 @@ import org.springframework.data.domain.Sort;
  * @see Page
  */
 @NoRepositoryBean
-public interface PagingAndSortingRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
+public interface PagingAndSortingRepository<T, ID> extends CrudRepository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.

@@ -15,11 +15,12 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Optional;
 
 import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.util.Assert;
 
 /**
  * Useful base class to implement custom {@link EntityInformation}s and delegate execution of standard methods from
@@ -27,21 +28,10 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public class DelegatingEntityInformation<T, ID extends Serializable> implements EntityInformation<T, ID> {
+@RequiredArgsConstructor
+public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, ID> {
 
-	private final EntityInformation<T, ID> delegate;
-
-	/**
-	 * Creates a new {@link DelegatingEntityInformation} delegating method invocations to the given
-	 * {@link EntityInformation}.
-	 * 
-	 * @param delegate
-	 */
-	public DelegatingEntityInformation(EntityInformation<T, ID> delegate) {
-
-		Assert.notNull(delegate, "Delegate EnittyInformation must not be null!");
-		this.delegate = delegate;
-	}
+	private final @NonNull EntityInformation<T, ID> delegate;
 
 	/* 
 	 * (non-Javadoc)

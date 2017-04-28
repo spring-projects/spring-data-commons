@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository;
 
-import java.io.Serializable;
-
 import org.springframework.stereotype.Indexed;
 
 /**
@@ -33,6 +31,6 @@ import org.springframework.stereotype.Indexed;
  * @author Oliver Gierke
  */
 @Indexed
-public interface Repository<T, ID extends Serializable> {
+public interface Repository<T, ID> {
 
 }

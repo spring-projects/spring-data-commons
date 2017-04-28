@@ -15,7 +15,6 @@
  */
 package org.springframework.data.querydsl;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -112,22 +111,22 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 		return delegate.hasSaveMethod();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeDelete(java.io.Serializable)
+	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeDeleteById(java.lang.Object)
 	 */
 	@Override
-	public void invokeDelete(Serializable id) {
-		delegate.invokeDelete(id);
+	public void invokeDeleteById(Object id) {
+		delegate.invokeDeleteById(id);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindOne(java.io.Serializable)
+	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindById(java.lang.Object)
 	 */
 	@Override
-	public <T> Optional<T> invokeFindOne(Serializable id) {
-		return delegate.invokeFindOne(id);
+	public <T> Optional<T> invokeFindById(Object id) {
+		return delegate.invokeFindById(id);
 	}
 
 	/*

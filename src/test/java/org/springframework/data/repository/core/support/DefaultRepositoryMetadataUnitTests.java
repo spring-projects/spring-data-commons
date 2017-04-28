@@ -168,7 +168,7 @@ public class DefaultRepositoryMetadataUnitTests {
 
 	static abstract class DummyGenericRepositorySupport<T, ID extends Serializable> implements CrudRepository<T, ID> {
 
-		public java.util.Optional<T> findOne(ID id) {
+		public java.util.Optional<T> findById(ID id) {
 			return java.util.Optional.empty();
 		}
 	}

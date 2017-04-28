@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -50,7 +49,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	private final Object repository;
 	private final CrudMethods methods;
-	private final Class<? extends Serializable> idType;
+	private final Class<?> idType;
 	private final ConversionService conversionService;
 
 	/**
@@ -131,12 +130,12 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return methods.hasFindOneMethod();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
+	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindById(java.lang.Object)
 	 */
 	@Override
-	public <T> Optional<T> invokeFindOne(Serializable id) {
+	public <T> Optional<T> invokeFindById(Object id) {
 
 		Method method = methods.getFindOneMethod()//
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-one-method declared!"));
@@ -153,24 +152,24 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return methods.hasDelete();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeDelete(java.io.Serializable)
+	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeDeleteById(java.lang.Object)
 	 */
 	@Override
-	public void invokeDelete(Serializable id) {
+	public void invokeDeleteById(Object id) {
 
 		Assert.notNull(id, "Identifier must not be null!");
 
 		Method method = methods.getDeleteMethod()
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a delete-method declared!"));
 		Class<?> parameterType = method.getParameterTypes()[0];
-		List<Class<? extends Serializable>> idTypes = Arrays.asList(idType, Serializable.class);
+		List<Class<?>> idTypes = Arrays.asList(idType, Object.class);
 
 		if (idTypes.contains(parameterType)) {
 			invoke(method, convertId(id));
 		} else {
-			invoke(method, this.<Object> invokeFindOne(id).orElse(null));
+			invoke(method, this.<Object> invokeFindById(id).orElse(null));
 		}
 	}
 
@@ -263,7 +262,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @param id must not be {@literal null}.
 	 * @return
 	 */
-	protected Serializable convertId(Serializable id) {
+	protected Object convertId(Object id) {
 
 		Assert.notNull(id, "Id must not be null!");
 		return conversionService.convert(id, idType);

@@ -20,8 +20,6 @@ import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 
-import java.io.Serializable;
-
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 
@@ -37,7 +35,7 @@ import org.springframework.data.repository.Repository;
  * @see Completable
  */
 @NoRepositoryBean
-public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repository<T, ID> {
+public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Saves a given entity. Use the returned instance for further operations as the save operation might have changed the
@@ -55,7 +53,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return the saved entities.
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
 	 */
-	<S extends T> Flowable<S> save(Iterable<S> entities);
+	<S extends T> Flowable<S> saveAll(Iterable<S> entities);
 
 	/**
 	 * Saves all given entities.
@@ -64,7 +62,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return the saved entities.
 	 * @throws IllegalArgumentException in case the given {@code Publisher} is {@literal null}.
 	 */
-	<S extends T> Flowable<S> save(Flowable<S> entityStream);
+	<S extends T> Flowable<S> saveAll(Flowable<S> entityStream);
 
 	/**
 	 * Retrieves an entity by its id.
@@ -73,7 +71,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return the entity with the given id or {@link Maybe#empty()} if none found.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
-	Maybe<T> findOne(ID id);
+	Maybe<T> findById(ID id);
 
 	/**
 	 * Retrieves an entity by its id supplied by a {@link Single}.
@@ -82,7 +80,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return the entity with the given id or {@link Maybe#empty()} if none found.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
-	Maybe<T> findOne(Single<ID> id);
+	Maybe<T> findById(Single<ID> id);
 
 	/**
 	 * Returns whether an entity with the given id exists.
@@ -91,7 +89,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
-	Single<Boolean> exists(ID id);
+	Single<Boolean> existsById(ID id);
 
 	/**
 	 * Returns whether an entity with the given id, supplied by a {@link Single}, exists.
@@ -100,7 +98,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}
 	 */
-	Single<Boolean> exists(Single<ID> id);
+	Single<Boolean> existsById(Single<ID> id);
 
 	/**
 	 * Returns all instances of the type.
@@ -115,7 +113,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param ids must not be {@literal null}.
 	 * @return the found entities.
 	 */
-	Flowable<T> findAll(Iterable<ID> ids);
+	Flowable<T> findAllById(Iterable<ID> ids);
 
 	/**
 	 * Returns all instances of the type with the given IDs.
@@ -123,7 +121,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param idStream must not be {@literal null}.
 	 * @return the found entities.
 	 */
-	Flowable<T> findAll(Flowable<ID> idStream);
+	Flowable<T> findAllById(Flowable<ID> idStream);
 
 	/**
 	 * Returns the number of entities available.
@@ -138,7 +136,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param id must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@code id} is {@literal null}.
 	 */
-	Completable delete(ID id);
+	Completable deleteById(ID id);
 
 	/**
 	 * Deletes a given entity.
@@ -154,7 +152,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param entities must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@link Iterable} is {@literal null}.
 	 */
-	Completable delete(Iterable<? extends T> entities);
+	Completable deleteAll(Iterable<? extends T> entities);
 
 	/**
 	 * Deletes the given entities.
@@ -162,7 +160,7 @@ public interface RxJava2CrudRepository<T, ID extends Serializable> extends Repos
 	 * @param entityStream must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@link Flowable} is {@literal null}.
 	 */
-	Completable delete(Flowable<? extends T> entityStream);
+	Completable deleteAll(Flowable<? extends T> entityStream);
 
 	/**
 	 * Deletes all entities managed by the repository.

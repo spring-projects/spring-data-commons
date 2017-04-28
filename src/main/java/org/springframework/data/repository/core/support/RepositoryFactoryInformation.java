@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -31,7 +30,7 @@ import org.springframework.data.repository.query.QueryMethod;
  * 
  * @author Oliver Gierke
  */
-public interface RepositoryFactoryInformation<T, ID extends Serializable> {
+public interface RepositoryFactoryInformation<T, ID> {
 
 	/**
 	 * Returns {@link EntityInformation} the repository factory is using.

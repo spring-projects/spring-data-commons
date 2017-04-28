@@ -17,8 +17,6 @@ package org.springframework.data.repository.reactive;
 
 import io.reactivex.Flowable;
 
-import java.io.Serializable;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
 
@@ -33,7 +31,7 @@ import org.springframework.data.repository.NoRepositoryBean;
  * @see RxJava2CrudRepository
  */
 @NoRepositoryBean
-public interface RxJava2SortingRepository<T, ID extends Serializable> extends RxJava2CrudRepository<T, ID> {
+public interface RxJava2SortingRepository<T, ID> extends RxJava2CrudRepository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.

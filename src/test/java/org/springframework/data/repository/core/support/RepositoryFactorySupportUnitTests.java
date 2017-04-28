@@ -22,9 +22,9 @@ import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -77,7 +77,7 @@ public class RepositoryFactorySupportUnitTests {
 
 	DummyRepositoryFactory factory;
 
-	@Mock PagingAndSortingRepository<Object, Serializable> backingRepo;
+	@Mock PagingAndSortingRepository<Object, Object> backingRepo;
 	@Mock ObjectRepositoryCustom customImplementation;
 
 	@Mock MyQueryCreationListener listener;
@@ -119,10 +119,10 @@ public class RepositoryFactorySupportUnitTests {
 	public void invokesCustomMethodIfItRedeclaresACRUDOne() {
 
 		ObjectRepository repository = factory.getRepository(ObjectRepository.class, customImplementation);
-		repository.findOne(1);
+		repository.findById(1);
 
-		verify(customImplementation, times(1)).findOne(1);
-		verify(backingRepo, times(0)).findOne(1);
+		verify(customImplementation, times(1)).findById(1);
+		verify(backingRepo, times(0)).findById(1);
 	}
 
 	@Test
@@ -316,7 +316,7 @@ public class RepositoryFactorySupportUnitTests {
 
 	interface SimpleRepository extends Repository<Object, Serializable> {}
 
-	interface ObjectRepository extends Repository<Object, Serializable>, ObjectRepositoryCustom {
+	interface ObjectRepository extends Repository<Object, Object>, ObjectRepositoryCustom {
 
 		Object findByClass(Class<?> clazz);
 
@@ -335,7 +335,7 @@ public class RepositoryFactorySupportUnitTests {
 
 	interface ObjectRepositoryCustom {
 
-		Object findOne(Serializable id);
+		Object findById(Object id);
 	}
 
 	interface PlainQueryCreationListener extends QueryCreationListener<RepositoryQuery> {
@@ -352,7 +352,7 @@ public class RepositoryFactorySupportUnitTests {
 
 	interface ReadOnlyRepository<T, ID extends Serializable> extends Repository<T, ID> {
 
-		T findOne(ID id);
+		Optional<T> findById(ID id);
 
 		Iterable<T> findAll();
 
@@ -360,7 +360,7 @@ public class RepositoryFactorySupportUnitTests {
 
 		List<T> findAll(Sort sort);
 
-		boolean exists(ID id);
+		boolean existsById(ID id);
 
 		long count();
 	}

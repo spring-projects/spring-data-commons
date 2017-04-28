@@ -15,13 +15,11 @@
  */
 package org.springframework.data.repository.reactive;
 
-import java.io.Serializable;
+import rx.Observable;
+import rx.Single;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
-
-import rx.Observable;
-import rx.Single;
 
 /**
  * Extension of {@link RxJava1CrudRepository} to provide additional methods to retrieve entities using the sorting
@@ -35,7 +33,7 @@ import rx.Single;
  * @see RxJava1CrudRepository
  */
 @NoRepositoryBean
-public interface RxJava1SortingRepository<T, ID extends Serializable> extends RxJava1CrudRepository<T, ID> {
+public interface RxJava1SortingRepository<T, ID> extends RxJava1CrudRepository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.

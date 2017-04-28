@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.history;
 
-import java.io.Serializable;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -33,8 +32,7 @@ import org.springframework.data.repository.Repository;
  * @author Philipp Huegelmeyer
  */
 @NoRepositoryBean
-public interface RevisionRepository<T, ID extends Serializable, N extends Number & Comparable<N>>
-		extends Repository<T, ID> {
+public interface RevisionRepository<T, ID, N extends Number & Comparable<N>> extends Repository<T, ID> {
 
 	/**
 	 * Returns the revision of the entity it was last changed in.

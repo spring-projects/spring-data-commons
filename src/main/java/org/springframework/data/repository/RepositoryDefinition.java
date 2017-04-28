@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository;
 
-import java.io.Serializable;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -53,5 +52,5 @@ public @interface RepositoryDefinition {
 	 * @see Repository
 	 * @return
 	 */
-	Class<? extends Serializable> idClass();
+	Class<?> idClass();
 }

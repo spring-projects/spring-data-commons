@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core;
 
-import java.io.Serializable;
 import java.util.Optional;
 
 import org.springframework.util.Assert;
@@ -25,7 +24,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public interface EntityInformation<T, ID extends Serializable> extends EntityMetadata<T> {
+public interface EntityInformation<T, ID> extends EntityMetadata<T> {
 
 	/**
 	 * Returns whether the given entity is considered to be new.
@@ -49,6 +48,7 @@ public interface EntityInformation<T, ID extends Serializable> extends EntityMet
 	 * @param entity must not be {@literal null}.
 	 * @return the identifier of the given entity
 	 * @throws IllegalArgumentException in case no id could be obtained from the given entity
+	 * @since 2.0
 	 */
 	default ID getRequiredId(T entity) throws IllegalArgumentException {
 

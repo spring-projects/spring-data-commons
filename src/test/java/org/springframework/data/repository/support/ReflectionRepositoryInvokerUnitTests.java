@@ -82,22 +82,22 @@ public class ReflectionRepositoryInvokerUnitTests {
 	public void invokesFindOneCorrectly() throws Exception {
 
 		ManualCrudRepository repository = mock(ManualCrudRepository.class);
-		Method method = ManualCrudRepository.class.getMethod("findOne", Long.class);
+		Method method = ManualCrudRepository.class.getMethod("findById", Long.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindOne("1");
-		getInvokerFor(repository, expectInvocationOf(method)).invokeFindOne(1L);
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindById("1");
+		getInvokerFor(repository, expectInvocationOf(method)).invokeFindById(1L);
 	}
 
 	@Test // DATACMNS-589
 	public void invokesDeleteWithDomainCorrectly() throws Exception {
 
 		RepoWithDomainDeleteAndFindOne repository = mock(RepoWithDomainDeleteAndFindOne.class);
-		when(repository.findOne(1L)).thenReturn(new Domain());
+		when(repository.findById(1L)).thenReturn(new Domain());
 
-		Method findOneMethod = RepoWithDomainDeleteAndFindOne.class.getMethod("findOne", Long.class);
+		Method findOneMethod = RepoWithDomainDeleteAndFindOne.class.getMethod("findById", Long.class);
 		Method deleteMethod = RepoWithDomainDeleteAndFindOne.class.getMethod("delete", Domain.class);
 
-		getInvokerFor(repository, expectInvocationOf(findOneMethod, deleteMethod)).invokeDelete(1L);
+		getInvokerFor(repository, expectInvocationOf(findOneMethod, deleteMethod)).invokeDeleteById(1L);
 	}
 
 	@Test // DATACMNS-589
@@ -164,9 +164,9 @@ public class ReflectionRepositoryInvokerUnitTests {
 	public void invokesOverriddenDeleteMethodCorrectly() throws Exception {
 
 		MyRepo repository = mock(MyRepo.class);
-		Method method = CustomRepo.class.getMethod("delete", Long.class);
+		Method method = CustomRepo.class.getMethod("deleteById", Long.class);
 
-		getInvokerFor(repository, expectInvocationOf(method)).invokeDelete("1");
+		getInvokerFor(repository, expectInvocationOf(method)).invokeDeleteById("1");
 	}
 
 	@Test(expected = IllegalStateException.class) // DATACMNS-589
@@ -175,7 +175,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
 		assertThat(invoker.hasDeleteMethod()).isFalse();
-		invoker.invokeDelete(1L);
+		invoker.invokeDeleteById(1L);
 	}
 
 	@Test(expected = IllegalStateException.class) // DATACMNS-589
@@ -184,7 +184,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
 		assertThat(invoker.hasFindOneMethod()).isFalse();
-		invoker.invokeFindOne(1L);
+		invoker.invokeFindById(1L);
 	}
 
 	@Test(expected = IllegalStateException.class) // DATACMNS-589
@@ -245,11 +245,11 @@ public class ReflectionRepositoryInvokerUnitTests {
 	public void convertsWrapperTypeToJdkOptional() {
 
 		GuavaRepository mock = mock(GuavaRepository.class);
-		when(mock.findOne(any())).thenReturn(com.google.common.base.Optional.of(new Domain()));
+		when(mock.findById(any())).thenReturn(com.google.common.base.Optional.of(new Domain()));
 
 		RepositoryInvoker invoker = getInvokerFor(mock);
 
-		Optional<Object> invokeFindOne = invoker.invokeFindOne(1L);
+		Optional<Object> invokeFindOne = invoker.invokeFindById(1L);
 
 		assertThat(invokeFindOne).isPresent();
 	}
@@ -262,8 +262,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		Method method = ManualCrudRepository.class.getMethod("findAll");
 
-		Optional<Object> result = getInvokerFor(mock).invokeQueryMethod(method, new LinkedMultiValueMap<>(), Pageable.unpaged(),
-				Sort.unsorted());
+		Optional<Object> result = getInvokerFor(mock).invokeQueryMethod(method, new LinkedMultiValueMap<>(),
+				Pageable.unpaged(), Sort.unsorted());
 
 		assertThat(result).hasValueSatisfying(it -> {
 			assertThat(it).isInstanceOf(Collection.class);
@@ -287,20 +287,20 @@ public class ReflectionRepositoryInvokerUnitTests {
 	class Domain {}
 
 	interface CustomRepo {
-		void delete(Long id);
+		void deleteById(Long id);
 	}
 
 	interface EmptyRepository extends Repository<Domain, Long> {}
 
 	interface ManualCrudRepository extends Repository<Domain, Long> {
 
-		Domain findOne(Long id);
+		Domain findById(Long id);
 
 		Iterable<Domain> findAll();
 
 		<T extends Domain> T save(T entity);
 
-		void delete(Long id);
+		void deleteById(Long id);
 	}
 
 	interface RepoWithFindAllWithoutParameters extends Repository<Domain, Long> {
@@ -320,7 +320,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 	interface RepoWithDomainDeleteAndFindOne extends Repository<Domain, Long> {
 
-		Domain findOne(Long id);
+		Domain findById(Long id);
 
 		void delete(Domain entity);
 	}
@@ -332,6 +332,6 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 	interface GuavaRepository extends Repository<Domain, Long> {
 
-		com.google.common.base.Optional<Domain> findOne(Long id);
+		com.google.common.base.Optional<Domain> findById(Long id);
 	}
 }

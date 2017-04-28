@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import lombok.experimental.Delegate;
 
-import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -63,19 +62,19 @@ public class DefaultRepositoryInformationUnitTests {
 	@Test
 	public void discoversRepositoryBaseClassMethod() throws Exception {
 
-		Method method = FooRepository.class.getMethod("findOne", Integer.class);
+		Method method = FooRepository.class.getMethod("findById", Integer.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY, Optional.empty());
 
 		Method reference = information.getTargetClassMethod(method);
 		assertThat(reference.getDeclaringClass()).isEqualTo(REPOSITORY);
-		assertThat(reference.getName()).isEqualTo("findOne");
+		assertThat(reference.getName()).isEqualTo("findById");
 	}
 
 	@Test
 	public void discoveresNonRepositoryBaseClassMethod() throws Exception {
 
-		Method method = FooRepository.class.getMethod("findOne", Long.class);
+		Method method = FooRepository.class.getMethod("findById", Long.class);
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -117,7 +116,7 @@ public class DefaultRepositoryInformationUnitTests {
 		Method method = CustomRepository.class.getMethod("findAll", Pageable.class);
 		assertThat(information.isBaseClassMethod(method)).isTrue();
 
-		method = getMethodFrom(CustomRepository.class, "exists");
+		method = getMethodFrom(CustomRepository.class, "existsById");
 
 		assertThat(information.isBaseClassMethod(method)).isTrue();
 		assertThat(information.getQueryMethods()).isEmpty();
@@ -184,7 +183,7 @@ public class DefaultRepositoryInformationUnitTests {
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
 				Optional.empty());
 
-		Method method = BaseRepository.class.getMethod("findOne", Serializable.class);
+		Method method = BaseRepository.class.getMethod("findById", Object.class);
 
 		assertThat(information.getQueryMethods()).contains(method);
 	}
@@ -196,8 +195,8 @@ public class DefaultRepositoryInformationUnitTests {
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
 				Optional.empty());
 
-		Method method = BossRepository.class.getMethod("save", Iterable.class);
-		Method reference = CrudRepository.class.getMethod("save", Iterable.class);
+		Method method = BossRepository.class.getMethod("saveAll", Iterable.class);
+		Method reference = CrudRepository.class.getMethod("saveAll", Iterable.class);
 
 		assertThat(information.getTargetClassMethod(method)).isEqualTo(reference);
 	}
@@ -268,10 +267,10 @@ public class DefaultRepositoryInformationUnitTests {
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, DummyRepositoryImpl.class,
 				Optional.empty());
 
-		Method method = DummyRepository.class.getMethod("save", Iterable.class);
+		Method method = DummyRepository.class.getMethod("saveAll", Iterable.class);
 
 		assertThat(information.getTargetClassMethod(method))
-				.isEqualTo(DummyRepositoryImpl.class.getMethod("save", Iterable.class));
+				.isEqualTo(DummyRepositoryImpl.class.getMethod("saveAll", Iterable.class));
 	}
 
 	@Test // DATACMNS-1008, DATACMNS-912, DATACMNS-854
@@ -291,7 +290,7 @@ public class DefaultRepositoryInformationUnitTests {
 		return Arrays.stream(type.getMethods())//
 				.filter(method -> method.getName().equals(name))//
 				.findFirst()//
-				.orElseThrow(() -> new IllegalStateException("No method found wwith name ".concat(name).concat("!")));
+				.orElseThrow(() -> new IllegalStateException("No method found with name ".concat(name).concat("!")));
 	}
 
 	@Target(ElementType.METHOD)
@@ -303,10 +302,10 @@ public class DefaultRepositoryInformationUnitTests {
 	interface FooRepository extends CrudRepository<User, Integer>, FooRepositoryCustom {
 
 		// Redeclared method
-		Optional<User> findOne(Integer primaryKey);
+		Optional<User> findById(Integer primaryKey);
 
 		// Not a redeclared method
-		User findOne(Long primaryKey);
+		User findById(Long primaryKey);
 
 		static void staticMethod() {}
 
@@ -340,7 +339,7 @@ public class DefaultRepositoryInformationUnitTests {
 		}
 	}
 
-	interface BaseRepository<S, ID extends Serializable> extends CrudRepository<S, ID> {
+	interface BaseRepository<S, ID> extends CrudRepository<S, ID> {
 
 		S findBySomething(String something);
 
@@ -351,7 +350,7 @@ public class DefaultRepositoryInformationUnitTests {
 		void delete(S entity);
 
 		@MyQuery
-		Optional<S> findOne(ID id);
+		Optional<S> findById(ID id);
 	}
 
 	interface ConcreteRepository extends BaseRepository<User, Integer> {
@@ -361,9 +360,9 @@ public class DefaultRepositoryInformationUnitTests {
 		User genericMethodToOverride(String something);
 	}
 
-	interface ReadOnlyRepository<T, ID extends Serializable> extends Repository<T, ID> {
+	interface ReadOnlyRepository<T, ID> extends Repository<T, ID> {
 
-		T findOne(ID id);
+		T findById(ID id);
 
 		Iterable<T> findAll();
 
@@ -371,7 +370,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		List<T> findAll(Sort sort);
 
-		boolean exists(ID id);
+		boolean existsById(ID id);
 
 		long count();
 	}
@@ -405,10 +404,10 @@ public class DefaultRepositoryInformationUnitTests {
 	interface DummyRepository extends CrudRepository<User, Integer> {
 
 		@Override
-		<S extends User> List<S> save(Iterable<S> entites);
+		<S extends User> List<S> saveAll(Iterable<S> entites);
 	}
 
-	static class DummyRepositoryImpl<T, ID extends Serializable> implements CrudRepository<T, ID> {
+	static class DummyRepositoryImpl<T, ID> implements CrudRepository<T, ID> {
 
 		private @Delegate CrudRepository<T, ID> delegate;
 	}

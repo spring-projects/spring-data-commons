@@ -15,13 +15,11 @@
  */
 package org.springframework.data.repository.reactive;
 
-import java.io.Serializable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Extension of {@link ReactiveCrudRepository} to provide additional methods to retrieve entities using the sorting
@@ -34,7 +32,7 @@ import reactor.core.publisher.Mono;
  * @see Flux
  */
 @NoRepositoryBean
-public interface ReactiveSortingRepository<T, ID extends Serializable> extends ReactiveCrudRepository<T, ID> {
+public interface ReactiveSortingRepository<T, ID> extends ReactiveCrudRepository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.
