@@ -18,6 +18,8 @@ package org.springframework.data.repository.core;
 import java.io.Serializable;
 import java.util.Optional;
 
+import org.springframework.util.Assert;
+
 /**
  * Extension of {@link EntityMetadata} to add functionality to query information of entity instances.
  * 
@@ -34,12 +36,27 @@ public interface EntityInformation<T, ID extends Serializable> extends EntityMet
 	boolean isNew(T entity);
 
 	/**
-	 * Returns the id of the given entity.
+	 * Returns the id of the given entity or {@link Optional#empty()} if none can be obtained.
 	 * 
 	 * @param entity must never be {@literal null}
 	 * @return
 	 */
 	Optional<ID> getId(T entity);
+
+	/**
+	 * Returns the identifier of the given entity.
+	 * 
+	 * @param entity must not be {@literal null}.
+	 * @return the identifier of the given entity
+	 * @throws IllegalArgumentException in case no id could be obtained from the given entity
+	 */
+	default ID getRequiredId(T entity) throws IllegalArgumentException {
+
+		Assert.notNull(entity, "Entity must not be null!");
+
+		return getId(entity).orElseThrow(() -> new IllegalArgumentException(
+				String.format("Could not obtain required identifier from entity %s!", entity)));
+	}
 
 	/**
 	 * Returns the type of the id of the entity.
