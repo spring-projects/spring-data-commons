@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
@@ -34,6 +33,7 @@ import org.springframework.util.ClassUtils;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jens Schauder
  */
 @SuppressWarnings("deprecation")
 public abstract class JodaTimeConverters {
@@ -55,12 +55,10 @@ public abstract class JodaTimeConverters {
 		converters.add(LocalDateToDateConverter.INSTANCE);
 		converters.add(LocalDateTimeToDateConverter.INSTANCE);
 		converters.add(DateTimeToDateConverter.INSTANCE);
-		converters.add(DateMidnightToDateConverter.INSTANCE);
 
 		converters.add(DateToLocalDateConverter.INSTANCE);
 		converters.add(DateToLocalDateTimeConverter.INSTANCE);
 		converters.add(DateToDateTimeConverter.INSTANCE);
-		converters.add(DateToDateMidnightConverter.INSTANCE);
 
 		converters.add(LocalDateTimeToJodaLocalDateTime.INSTANCE);
 		converters.add(LocalDateTimeToJodaDateTime.INSTANCE);
@@ -95,15 +93,6 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
-	public static enum DateMidnightToDateConverter implements Converter<DateMidnight, Date> {
-
-		INSTANCE;
-
-		public Date convert(DateMidnight source) {
-			return source == null ? null : source.toDate();
-		}
-	}
-
 	public static enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
 
 		INSTANCE;
@@ -128,15 +117,6 @@ public abstract class JodaTimeConverters {
 
 		public DateTime convert(Date source) {
 			return source == null ? null : new DateTime(source.getTime());
-		}
-	}
-
-	public static enum DateToDateMidnightConverter implements Converter<Date, DateMidnight> {
-
-		INSTANCE;
-
-		public DateMidnight convert(Date source) {
-			return source == null ? null : new DateMidnight(source.getTime());
 		}
 	}
 
