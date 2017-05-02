@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -36,7 +37,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Mark Paluch
  */
-public class Sort implements Iterable<org.springframework.data.domain.Sort.Order>, Serializable {
+public class Sort implements Streamable<org.springframework.data.domain.Sort.Order>, Serializable {
 
 	private static final long serialVersionUID = 5737186511678863905L;
 
