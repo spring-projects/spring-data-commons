@@ -30,7 +30,7 @@ import org.springframework.util.ClassUtils;
 /**
  * Helper class to register JodaTime specific {@link Converter} implementations in case the library is present on the
  * classpath.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
@@ -42,7 +42,7 @@ public abstract class JodaTimeConverters {
 
 	/**
 	 * Returns the converters to be registered. Will only return converters in case JodaTime is present on the class.
-	 * 
+	 *
 	 * @return
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
@@ -66,7 +66,7 @@ public abstract class JodaTimeConverters {
 		return converters;
 	}
 
-	public static enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
+	public enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
 
 		INSTANCE;
 
@@ -75,7 +75,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
-	public static enum LocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
+	public enum LocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
 
 		INSTANCE;
 
@@ -84,7 +84,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
-	public static enum DateTimeToDateConverter implements Converter<DateTime, Date> {
+	public enum DateTimeToDateConverter implements Converter<DateTime, Date> {
 
 		INSTANCE;
 
@@ -93,7 +93,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
-	public static enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
+	public enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
 
 		INSTANCE;
 
@@ -102,7 +102,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
-	public static enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
+	public enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
 
 		INSTANCE;
 
@@ -111,7 +111,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
-	public static enum DateToDateTimeConverter implements Converter<Date, DateTime> {
+	public enum DateToDateTimeConverter implements Converter<Date, DateTime> {
 
 		INSTANCE;
 
@@ -120,11 +120,11 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
-	public static enum LocalDateTimeToJodaLocalDateTime implements Converter<java.time.LocalDateTime, LocalDateTime> {
+	public enum LocalDateTimeToJodaLocalDateTime implements Converter<java.time.LocalDateTime, LocalDateTime> {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -136,11 +136,11 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
-	public static enum LocalDateTimeToJodaDateTime implements Converter<java.time.LocalDateTime, DateTime> {
+	public enum LocalDateTimeToJodaDateTime implements Converter<java.time.LocalDateTime, DateTime> {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
