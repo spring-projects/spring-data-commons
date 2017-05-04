@@ -43,8 +43,7 @@ public class QuerydslBindingsUnitTests {
 	QuerydslPredicateBuilder builder;
 	QuerydslBindings bindings;
 
-	static final SingleValueBinding<StringPath, String> CONTAINS_BINDING = (path, value) -> Optional
-			.of(path.contains(value));
+	static final SingleValueBinding<StringPath, String> CONTAINS_BINDING = (path, value) -> path.contains(value);
 
 	@Before
 	public void setUp() {
@@ -266,13 +265,13 @@ public class QuerydslBindingsUnitTests {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.querydsl.binding.SingleValueBinding#bind(com.querydsl.core.types.Path, java.lang.Object)
 		 */
 		@Override
-		public Optional<Predicate> bind(StringPath path, String value) {
-			return Optional.of(path.contains(value));
+		public Predicate bind(StringPath path, String value) {
+			return path.contains(value);
 		}
 	}
 }

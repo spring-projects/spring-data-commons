@@ -97,8 +97,8 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("firstname", "rand");
 
-		Predicate predicate = resolver.resolveArgument(
-				getMethodParameterFor("simpleFind", Predicate.class), null, new ServletWebRequest(request), null);
+		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("rand"));
 	}
@@ -157,8 +157,8 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("inceptionYear", "978");
 
-		Predicate predicate = resolver.resolveArgument(
-				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
+		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo((Predicate) QUser.user.inceptionYear.eq(978L));
 	}
@@ -168,8 +168,8 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("inceptionYear", new String[] { "978", "998" });
 
-		Predicate predicate = resolver.resolveArgument(
-				getMethodParameterFor("specificFind", Predicate.class), null, new ServletWebRequest(request), null);
+		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo((Predicate) QUser.user.inceptionYear.in(978L, 998L));
 	}
@@ -222,7 +222,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		public void customize(QuerydslBindings bindings, QUser user) {
 
 			bindings.bind(user.firstname).firstOptional((path, value) -> value.map(it -> path.eq(it.toUpperCase())));
-			bindings.bind(user.lastname).first((path, value) -> Optional.of(path.toLowerCase().eq(value)));
+			bindings.bind(user.lastname).first((path, value) -> path.toLowerCase().eq(value));
 
 			bindings.excluding(user.address);
 		}
@@ -253,7 +253,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		@Override
 		public void customize(QuerydslBindings bindings, QUser user) {
-			bindings.bind(QUser.user.firstname).first((path, value) -> Optional.of(path.contains(value)));
+			bindings.bind(QUser.user.firstname).first((path, value) -> path.contains(value));
 		}
 	}
 }
