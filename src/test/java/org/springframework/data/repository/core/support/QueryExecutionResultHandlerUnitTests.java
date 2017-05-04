@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
+import javaslang.control.Option;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Completable;
@@ -334,6 +335,17 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Flux<Entity> flux = (Flux<Entity>) result;
 		assertThat(flux.next().block()).isEqualTo(entity.block());
+	}
+
+	@Test // DATACMNS-1056
+	public void convertsOptionalToThirdPartyOption() throws Exception {
+
+		Entity value = new Entity();
+		Optional<Entity> entity = Optional.of(value);
+
+		Object result = handler.postProcessInvocationResult(entity, TypeDescriptor.valueOf(Option.class));
+
+		assertThat(result).isInstanceOfSatisfying(Option.class, it -> assertThat(it.get()).isEqualTo(value));
 	}
 
 	private static TypeDescriptor getTypeDescriptorFor(String methodName) throws Exception {

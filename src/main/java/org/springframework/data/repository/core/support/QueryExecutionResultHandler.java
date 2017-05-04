@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
@@ -67,6 +68,8 @@ class QueryExecutionResultHandler {
 			return result;
 		}
 
+		result = unwrapOptional(result);
+
 		if (QueryExecutionConverters.supports(expectedReturnType)) {
 
 			TypeDescriptor targetType = TypeDescriptor.valueOf(expectedReturnType);
@@ -102,4 +105,19 @@ class QueryExecutionResultHandler {
 		return null;
 	}
 
+	/**
+	 * Unwraps the given value if it's a JDK 8 {@link Optional}.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private static Object unwrapOptional(Object source) {
+
+		if (source == null) {
+			return null;
+		}
+
+		return Optional.class.isInstance(source) ? Optional.class.cast(source).orElse(null) : source;
+	}
 }
