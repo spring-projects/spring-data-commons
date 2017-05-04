@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -60,6 +59,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @since 1.9
  */
 public class ExtensionAwareEvaluationContextProvider implements EvaluationContextProvider, ApplicationContextAware {
@@ -316,10 +316,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 */
 		private Optional<MethodExecutor> getMethodExecutor(EvaluationContextExtensionAdapter adapter, String name,
 				List<TypeDescriptor> argumentTypes) {
-
-			return adapter.getFunctions().entrySet().stream()//
-					.filter(entry -> entry.getKey().equals(name))//
-					.findFirst().map(Entry::getValue).map(FunctionMethodExecutor::new);
+			return adapter.getFunctions().get(name, argumentTypes).map(FunctionMethodExecutor::new);
 		}
 
 		/**
@@ -388,7 +385,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		private final EvaluationContextExtension extension;
 
-		private final Map<String, Function> functions;
+		private final Functions functions = new Functions();
 		private final Map<String, Object> properties;
 
 		/**
@@ -401,17 +398,16 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		public EvaluationContextExtensionAdapter(EvaluationContextExtension extension,
 				EvaluationContextExtensionInformation information) {
 
-			Assert.notNull(extension, "Extenstion must not be null!");
+			Assert.notNull(extension, "Extension must not be null!");
 			Assert.notNull(information, "Extension information must not be null!");
 
 			Optional<Object> target = Optional.ofNullable(extension.getRootObject());
 			ExtensionTypeInformation extensionTypeInformation = information.getExtensionTypeInformation();
 			RootObjectInformation rootObjectInformation = information.getRootObjectInformation(target);
 
-			this.functions = new HashMap<>();
-			this.functions.putAll(extensionTypeInformation.getFunctions());
-			this.functions.putAll(rootObjectInformation.getFunctions(target));
-			this.functions.putAll(extension.getFunctions());
+			functions.addAll(extension.getFunctions());
+			functions.addAll(rootObjectInformation.getFunctions(target));
+			functions.addAll(extensionTypeInformation.getFunctions());
 
 			this.properties = new HashMap<>();
 			this.properties.putAll(extensionTypeInformation.getProperties());
@@ -435,7 +431,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * 
 		 * @return
 		 */
-		public Map<String, Function> getFunctions() {
+		Functions getFunctions() {
 			return this.functions;
 		}
 

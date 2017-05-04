@@ -23,11 +23,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.springframework.util.Assert;
+import org.springframework.util.MultiValueMap;
 
 /**
  * Spring Data specific Java {@link Stream} utility methods and classes.
@@ -76,5 +78,16 @@ public interface StreamUtils {
 	 */
 	public static <T> Collector<T, ?, Set<T>> toUnmodifiableSet() {
 		return collectingAndThen(toSet(), Collections::unmodifiableSet);
+	}
+
+	/**
+	 * Returns a {@link Collector} to create a {@link MultiValueMap}.
+	 *
+	 * @param keyFunction {@link Function} to create a key from an element of the {@link java.util.stream.Stream}
+	 * @param valueFunction {@link Function} to create a value from an element of the {@link java.util.stream.Stream}
+	 */
+	public static <T, K, V> Collector<T, MultiValueMap<K, V>, MultiValueMap<K, V>> toMultiMap(Function<T, K> keyFunction,
+			Function<T, V> valueFunction) {
+		return new MultiValueMapCollector<T, K, V>(keyFunction, valueFunction);
 	}
 }
