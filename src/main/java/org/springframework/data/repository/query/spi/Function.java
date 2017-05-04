@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.repository.query.spi;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.convert.TypeDescriptor;
@@ -29,6 +30,7 @@ import org.springframework.util.TypeUtils;
  * 
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Jens Schauder
  * @since 1.9
  */
 public class Function {
@@ -114,5 +116,50 @@ public class Function {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns the number of parameters required by the underlying method.
+	 *
+	 * @return
+	 */
+	public int getParameterCount() {
+		return method.getParameterCount();
+	}
+
+	/**
+	 * Checks if the encapsulated method has exactly the argument types as those passed as an argument.
+	 *
+	 * @param argumentTypes a list of {@link TypeDescriptor}s to compare with the argument types of the method
+	 * @return {@code true} if the types are equal, {@code false} otherwise.
+	 */
+	public boolean supportsExact(List<TypeDescriptor> argumentTypes) {
+
+		if (method.getParameterCount() != argumentTypes.size()) {
+			return false;
+		}
+
+		Class<?>[] parameterTypes = method.getParameterTypes();
+
+		for (int i = 0; i < parameterTypes.length; i++) {
+			if (parameterTypes[i] != argumentTypes.get(i).getType()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Checks wither this {@code Function} has the same signature as another {@code Function}.
+	 *
+	 * @param other the {@code Function} to compare {@code this} with.
+	 *
+	 * @return {@code true} iff name and argument list are the same.
+	 */
+	public boolean isSignatureEqual(Function other) {
+
+		return getName().equals(other.getName()) //
+				&& Arrays.equals(method.getParameterTypes(), other.method.getParameterTypes());
 	}
 }

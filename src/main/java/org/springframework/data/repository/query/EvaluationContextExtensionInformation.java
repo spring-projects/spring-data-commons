@@ -29,14 +29,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.repository.query.EvaluationContextExtensionInformation.ExtensionTypeInformation.PublicMethodAndFieldFilter;
+import org.springframework.data.repository.query.FunctionsMap.NameAndArgumentCount;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.Function;
+import org.springframework.data.util.MultiValueMapCollector;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldFilter;
 import org.springframework.util.ReflectionUtils.MethodFilter;
@@ -126,7 +129,7 @@ class EvaluationContextExtensionInformation {
 		 * 
 		 * @return the functions will never be {@literal null}.
 		 */
-		private final Map<String, Function> functions;
+		private final MultiValueMap<NameAndArgumentCount, Function> functions;
 
 		/**
 		 * Creates a new {@link ExtensionTypeInformation} fir the given type.
@@ -141,15 +144,15 @@ class EvaluationContextExtensionInformation {
 			this.properties = discoverDeclaredProperties(type);
 		}
 
-		private static Map<String, Function> discoverDeclaredFunctions(Class<?> type) {
+		private static MultiValueMap<NameAndArgumentCount, Function> discoverDeclaredFunctions(Class<?> type) {
 
-			Map<String, Function> map = new HashMap<>();
+			MultiValueMap<NameAndArgumentCount, Function> map = CollectionUtils.toMultiValueMap(new HashMap<>());
 
 			ReflectionUtils.doWithMethods(type, //
-					method -> map.put(method.getName(), new Function(method, null)), //
+					method -> map.add(NameAndArgumentCount.of(method), new Function(method, null)), //
 					PublicMethodAndFieldFilter.STATIC);
 
-			return map.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(map);
+			return CollectionUtils.unmodifiableMultiValueMap(map);
 		}
 
 		@RequiredArgsConstructor
@@ -235,8 +238,7 @@ class EvaluationContextExtensionInformation {
 
 			}, PublicMethodAndFieldFilter.NON_STATIC);
 
-			ReflectionUtils.doWithFields(type, RootObjectInformation.this.fields::add,
-					PublicMethodAndFieldFilter.NON_STATIC);
+			ReflectionUtils.doWithFields(type, RootObjectInformation.this.fields::add, PublicMethodAndFieldFilter.NON_STATIC);
 		}
 
 		/**
@@ -245,14 +247,15 @@ class EvaluationContextExtensionInformation {
 		 * @param target can be {@literal null}.
 		 * @return the methods
 		 */
-		public Map<String, Function> getFunctions(Optional<Object> target) {
+		public MultiValueMap<NameAndArgumentCount, Function> getFunctions(Optional<Object> target) {
 
-			return target.map(it -> methods.stream()//
-					.collect(Collectors.toMap(//
-							Method::getName, //
-							method -> new Function(method, it), //
-							(left, right) -> right)))
-					.orElseGet(Collections::emptyMap);
+			return target.map( //
+					it -> methods.stream().collect( //
+							new MultiValueMapCollector<>( //
+									m -> NameAndArgumentCount.of(m), //
+									m -> new Function(m, it) //
+							))) //
+					.orElseGet(() -> CollectionUtils.toMultiValueMap(Collections.emptyMap()));
 		}
 
 		/**

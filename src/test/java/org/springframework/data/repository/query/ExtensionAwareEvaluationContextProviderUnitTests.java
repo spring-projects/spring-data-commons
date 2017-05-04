@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import lombok.RequiredArgsConstructor;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +46,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * Unit tests {@link ExtensionAwareEvaluationContextProvider}.
  * 
  * @author Oliver Gierke
- * @author Thomas Darimont.
+ * @author Thomas Darimont
+ * @author Jens Schauder
  */
 public class ExtensionAwareEvaluationContextProviderUnitTests {
 
@@ -219,6 +222,87 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(counter.get()).isEqualTo(2);
 	}
 
+	@Test // DATACMNS-1026
+	public void overloadedMethodsGetResolved() throws Exception {
+
+		provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(new DummyExtension("_first", "first") {
+					@Override
+					public Object getRootObject() {
+						return new RootWithOverloads();
+					}
+				}));
+
+		// from the root object
+		assertThat(evaluateExpression("method()")).isEqualTo("zero");
+		assertThat(evaluateExpression("method(23)")).isEqualTo("single-int");
+		assertThat(evaluateExpression("method('hello')")).isEqualTo("single-string");
+		assertThat(evaluateExpression("method('one', 'two')")).isEqualTo("two");
+
+		// from the extension
+		assertThat(evaluateExpression("method(1, 2)")).isEqualTo("two-ints");
+		assertThat(evaluateExpression("method(1, 'two')")).isEqualTo("int-and-string");
+	}
+
+	@Test // DATACMNS-1026
+	public void methodFromRootObjectOverwritesMethodFromExtension() throws Exception {
+
+		provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(new DummyExtension("_first", "first") {
+					@Override
+					public Object getRootObject() {
+						return new RootWithOverloads();
+					}
+				}));
+
+		assertThat(evaluateExpression("ambiguous()")).isEqualTo("from-root");
+	}
+
+	@Test // DATACMNS-1026
+	public void aliasedMethodOverwritesMethodFromRootObject() throws Exception {
+
+		provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(new DummyExtension("_first", "first") {
+					@Override
+					public Object getRootObject() {
+						return new RootWithOverloads();
+					}
+				}));
+
+		assertThat(evaluateExpression("aliasedMethod()")).isEqualTo("methodResult");
+	}
+
+	@Test // DATACMNS-1026
+	public void exactMatchIsPreferred() throws Exception {
+
+		provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(new DummyExtension("_first", "first") {
+					@Override
+					public Object getRootObject() {
+						return new RootWithOverloads();
+					}
+				}));
+
+		assertThat(evaluateExpression("ambiguousOverloaded('aString')")).isEqualTo("string");
+	}
+
+
+	@Test(expected = IllegalStateException.class) // DATACMNS-1026
+	public void throwsExceptionWhenStillAmbiguous() throws Exception {
+
+		provider = new ExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(new DummyExtension("_first", "first") {
+					@Override
+					public Object getRootObject() {
+						return new RootWithOverloads();
+					}
+				}));
+
+		evaluateExpression("ambiguousOverloaded(23)");
+	}
+
+
+
 	@RequiredArgsConstructor
 	public static class DummyExtension extends EvaluationContextExtensionSupport {
 
@@ -269,6 +353,22 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		public static String extensionMethod() {
 			return "methodResult";
 		}
+
+		public static String method(int i1, int i2) {
+			return "two-ints";
+		}
+
+		public static String method(int i, String s) {
+			return "int-and-string";
+		}
+
+		public static String ambiguous() {
+			return "from-extension-type";
+		}
+
+		public static String ambiguousToo() {
+			return "from-extension-type";
+		}
 	}
 
 	private Object evaluateExpression(String expression) {
@@ -310,6 +410,45 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 
 		public String rootObjectInstanceMethod2() {
 			return "rootObjectInstanceMethod2";
+		}
+	}
+
+	public static class RootWithOverloads {
+
+		public String method() {
+			return "zero";
+		}
+
+		public String method(String s) {
+			return "single-string";
+		}
+
+		public String method(int i) {
+			return "single-int";
+		}
+
+		public String method(String s1, String s2) {
+			return "two";
+		}
+
+		public String ambiguous() {
+			return "from-root";
+		}
+
+		public String aliasedMethod() {
+			return "from-root";
+		}
+
+		public String ambiguousOverloaded(String s) {
+			return "string";
+		}
+
+		public String ambiguousOverloaded(Object o) {
+			return "object";
+		}
+
+		public String ambiguousOverloaded(Serializable o) {
+			return "serializable";
 		}
 	}
 }
