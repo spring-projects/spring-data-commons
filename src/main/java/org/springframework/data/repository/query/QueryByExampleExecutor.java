@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.query;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,7 @@ import org.springframework.data.domain.Sort;
  *
  * @param <T>
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 1.12
  */
 public interface QueryByExampleExecutor<T> {
@@ -33,10 +36,10 @@ public interface QueryByExampleExecutor<T> {
 	 * Returns a single entity matching the given {@link Example} or {@literal null} if none was found.
 	 *
 	 * @param example can be {@literal null}.
-	 * @return a single entity matching the given {@link Example} or {@literal null} if none was found.
+	 * @return a single entity matching the given {@link Example} or {@link Optional#empty()} if none was found.
 	 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if the Example yields more than one result.
 	 */
-	<S extends T> S findOne(Example<S> example);
+	<S extends T> Optional<S> findOne(Example<S> example);
 
 	/**
 	 * Returns all entities matching the given {@link Example}. In case no match could be found an empty {@link Iterable}
