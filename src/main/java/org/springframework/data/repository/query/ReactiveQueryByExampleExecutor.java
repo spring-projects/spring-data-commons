@@ -26,32 +26,35 @@ import org.springframework.data.domain.Sort;
  *
  * @param <T>
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.0
  */
 public interface ReactiveQueryByExampleExecutor<T> {
 
 	/**
-	 * Returns a single entity matching the given {@link Example} or {@literal null} if none was found.
+	 * Returns a single entity matching the given {@link Example} or {@link Mono#empty()} if none was found.
 	 *
-	 * @param example can be {@literal null}.
-	 * @return a single entity matching the given {@link Example} or {@literal null} if none was found.
+	 * @param example must not be {@literal null}.
+	 * @return a single entity matching the given {@link Example} or {@link Mono#empty()} if none was found.
+	 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException via {@link Mono#error(Throwable)} if the
+	 *           example yields more than one result.
 	 */
 	<S extends T> Mono<S> findOne(Example<S> example);
 
 	/**
-	 * Returns all entities matching the given {@link Example}. In case no match could be found an empty {@link Iterable}
-	 * is returned.
+	 * Returns all entities matching the given {@link Example}. In case no match could be found {@link Flux#empty()} is
+	 * returned.
 	 *
-	 * @param example can be {@literal null}.
+	 * @param example must not be {@literal null}.
 	 * @return all entities matching the given {@link Example}.
 	 */
 	<S extends T> Flux<S> findAll(Example<S> example);
 
 	/**
 	 * Returns all entities matching the given {@link Example} applying the given {@link Sort}. In case no match could be
-	 * found an empty {@link Iterable} is returned.
+	 * found {@link Flux#empty()} is returned.
 	 *
-	 * @param example can be {@literal null}.
+	 * @param example must not be {@literal null}.
 	 * @param sort the {@link Sort} specification to sort the results by, must not be {@literal null}.
 	 * @return all entities matching the given {@link Example}.
 	 */
@@ -60,7 +63,7 @@ public interface ReactiveQueryByExampleExecutor<T> {
 	/**
 	 * Returns the number of instances matching the given {@link Example}.
 	 *
-	 * @param example the {@link Example} to count instances for, can be {@literal null}.
+	 * @param example the {@link Example} to count instances for. Must not be {@literal null}.
 	 * @return the number of instances matching the {@link Example}.
 	 */
 	<S extends T> Mono<Long> count(Example<S> example);
@@ -68,7 +71,7 @@ public interface ReactiveQueryByExampleExecutor<T> {
 	/**
 	 * Checks whether the data store contains elements that match the given {@link Example}.
 	 *
-	 * @param example the {@link Example} to use for the existence check, can be {@literal null}.
+	 * @param example the {@link Example} to use for the existence check. Must not be {@literal null}.
 	 * @return {@literal true} if the data store contains elements that match the given {@link Example}.
 	 */
 	<S extends T> Mono<Boolean> exists(Example<S> example);
