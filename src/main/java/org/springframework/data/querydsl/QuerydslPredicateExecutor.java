@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.querydsl;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -27,18 +29,19 @@ import com.querydsl.core.types.Predicate;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Christoph Strobl
  */
 public interface QuerydslPredicateExecutor<T> {
 
 	/**
-	 * Returns a single entity matching the given {@link Predicate} or {@literal null} if none was found.
-	 * 
+	 * Returns a single entity matching the given {@link Predicate} or {@link Optional#empty()} if none was found.
+	 *
 	 * @param predicate can be {@literal null}.
-	 * @return a single entity matching the given {@link Predicate} or {@literal null} if none was found.
+	 * @return a single entity matching the given {@link Predicate} or {@link Optional#empty()} if none was found.
 	 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if the predicate yields more than one
 	 *           result.
 	 */
-	T findOne(Predicate predicate);
+	Optional<T> findOne(Predicate predicate);
 
 	/**
 	 * Returns all entities matching the given {@link Predicate}. In case no match could be found an empty
