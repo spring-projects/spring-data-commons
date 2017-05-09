@@ -1,6 +1,24 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.0.M3 (2017-05-09)
+----------------------------------------
+* DATACMNS-1057 - Remove Optionals from Querydsl SingleValueBinding.
+* DATACMNS-1056 - QueryExecutionResultHandler erroneously re-wraps Optional result sources.
+* DATACMNS-1053 - EntityInformation should expose getRequiredId(…).
+* DATACMNS-1052 - Sort should implement Streamable.
+* DATACMNS-1050 - Introduce Bound value object for Range.
+* DATACMNS-1043 - Slice/Page should expose Pageable.
+* DATACMNS-1042 - Self Link created by PagedResourcesAssembler should have pagination request parameters.
+* DATACMNS-1040 - Remove exclusion for Commons Logging.
+* DATACMNS-1037 - Release 2.0 M3 (Kay).
+* DATACMNS-1035 - Extract CustomConversions from MongoDB, Couchbase and Cassandra.
+* DATACMNS-1021 - Add Order.asc(…) and Order.desc(…) factory methods.
+* DATACMNS-1014 - Remove support for JodaTime's deprecated DateMidnight.
+* DATACMNS-993 - Clean up class loader hacking in tests.
+* DATACMNS-944 - Move to better naming scheme of methods in repository interfaces.
+
+
 Changes in version 1.12.10.RELEASE (2017-04-19)
 -----------------------------------------------
 * DATACMNS-1045 - Release 1.12.10 (Hopper SR10).
