@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -90,7 +89,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 			Object result = invocation.proceed();
 
-			if (!Stream.of("save", "saveAll").anyMatch(it -> invocation.getMethod().getName().equals(it))) {
+			if (!invocation.getMethod().getName().startsWith("save")) {
 				return result;
 			}
 

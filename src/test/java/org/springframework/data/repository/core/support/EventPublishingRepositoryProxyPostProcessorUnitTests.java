@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 import lombok.Getter;
 import lombok.Value;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -187,6 +188,23 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		}
 	}
 
+	@Test // DATACMNS-1113
+	public void invokesEventsForMethodsThatStartsWithSave() throws Throwable {
+
+		Method method = SampleRepository.class.getMethod("saveAndFlush", MultipleEvents.class);
+		doReturn(method).when(invocation).getMethod();
+
+		SomeEvent event = new SomeEvent();
+		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		doReturn(new Object[] { sample }).when(invocation).getArguments();
+
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
+				.invoke(invocation);
+
+		verify(publisher).publishEvent(event);
+	}
+
 	@Value(staticConstructor = "of")
 	static class MultipleEvents {
 		@Getter(onMethod = @__(@DomainEvents)) Collection<? extends Object> events;
@@ -202,5 +220,8 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		UUID id = UUID.randomUUID();
 	}
 
-	interface SampleRepository extends CrudRepository<MultipleEvents, Long> {}
+	interface SampleRepository extends CrudRepository<MultipleEvents, Long> {
+
+		MultipleEvents saveAndFlush(MultipleEvents events);
+	}
 }
