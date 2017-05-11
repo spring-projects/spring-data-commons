@@ -16,7 +16,6 @@
 package org.springframework.data.repository.util;
 
 import javaslang.collection.Seq;
-import javaslang.collection.Traversable;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -62,6 +61,7 @@ import com.google.common.base.Optional;
  * <li>{@code javaslang.control.Option} - as of 1.13</li>
  * <li>{@code javaslang.collection.Seq}, {@code javaslang.collection.Map}, {@code javaslang.collection.Set} - as of
  * 1.13</li>
+ * <li>{@code io.vavr.collection.Seq}, {@code io.vavr.collection.Map}, {@code io.vavr.collection.Set} - as of 2.0</li>
  * </ul>
  * 
  * @author Oliver Gierke
@@ -78,6 +78,8 @@ public abstract class QueryExecutionConverters {
 	private static final boolean SCALA_PRESENT = ClassUtils.isPresent("scala.Option",
 			QueryExecutionConverters.class.getClassLoader());
 	private static final boolean JAVASLANG_PRESENT = ClassUtils.isPresent("javaslang.control.Option",
+			QueryExecutionConverters.class.getClassLoader());
+	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Option",
 			QueryExecutionConverters.class.getClassLoader());
 
 	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<WrapperType>();
@@ -120,6 +122,16 @@ public abstract class QueryExecutionConverters {
 			UNWRAPPERS.add(JavaslangOptionUnwrapper.INSTANCE);
 
 			ALLOWED_PAGEABLE_TYPES.add(Seq.class);
+		}
+
+		if (VAVR_PRESENT) {
+
+			WRAPPER_TYPES.add(NullableWrapperToVavrOptionConverter.getWrapperType());
+			WRAPPER_TYPES.add(VavrCollections.ToJavaConverter.INSTANCE.getWrapperType());
+
+			UNWRAPPERS.add(VavrOptionUnwrapper.INSTANCE);
+
+			ALLOWED_PAGEABLE_TYPES.add(io.vavr.collection.Seq.class);
 		}
 	}
 
@@ -192,6 +204,11 @@ public abstract class QueryExecutionConverters {
 		if (JAVASLANG_PRESENT) {
 			conversionService.addConverter(new NullableWrapperToJavaslangOptionConverter(conversionService));
 			conversionService.addConverter(JavaslangCollections.FromJavaConverter.INSTANCE);
+		}
+
+		if (VAVR_PRESENT) {
+			conversionService.addConverter(new NullableWrapperToVavrOptionConverter(conversionService));
+			conversionService.addConverter(VavrCollections.FromJavaConverter.INSTANCE);
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
@@ -468,12 +485,56 @@ public abstract class QueryExecutionConverters {
 		@Override
 		@SuppressWarnings("unchecked")
 		protected Object wrap(Object source) {
-			return (javaslang.control.Option<Object>) ReflectionUtils.invokeMethod(OF_METHOD, null, source);
+			return ReflectionUtils.invokeMethod(OF_METHOD, null, source);
 		}
 
 		@SuppressWarnings("unchecked")
 		private static javaslang.control.Option<Object> createEmptyOption() {
 			return (javaslang.control.Option<Object>) ReflectionUtils.invokeMethod(NONE_METHOD, null);
+		}
+	}
+
+	/**
+	 * Converter to convert from {@link NullableWrapper} into JavaSlang's {@link io.vavr.control.Option}.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.0
+	 */
+	private static class NullableWrapperToVavrOptionConverter extends AbstractWrapperTypeConverter {
+
+		private static final Method OF_METHOD;
+		private static final Method NONE_METHOD;
+
+		static {
+			OF_METHOD = ReflectionUtils.findMethod(io.vavr.control.Option.class, "of", Object.class);
+			NONE_METHOD = ReflectionUtils.findMethod(io.vavr.control.Option.class, "none");
+		}
+
+		/**
+		 * Creates a new {@link NullableWrapperToJavaslangOptionConverter} using the given {@link ConversionService}.
+		 * 
+		 * @param conversionService must not be {@literal null}.
+		 */
+		public NullableWrapperToVavrOptionConverter(ConversionService conversionService) {
+			super(conversionService, createEmptyOption(), io.vavr.control.Option.class);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
+		 */
+		@Override
+		protected Object wrap(Object source) {
+			return ReflectionUtils.invokeMethod(OF_METHOD, source);
+		}
+
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(io.vavr.control.Option.class);
+		}
+
+		@SuppressWarnings("unchecked")
+		private static io.vavr.control.Option<Object> createEmptyOption() {
+			return (io.vavr.control.Option<Object>) ReflectionUtils.invokeMethod(NONE_METHOD, null);
 		}
 	}
 
@@ -583,8 +644,49 @@ public abstract class QueryExecutionConverters {
 				return ((javaslang.control.Option<Object>) source).getOrElse(NULL_SUPPLIER);
 			}
 
-			if (source instanceof Traversable) {
+			if (source instanceof javaslang.collection.Traversable) {
 				return JavaslangCollections.ToJavaConverter.INSTANCE.convert(source);
+			}
+
+			return source;
+		}
+	}
+
+	/**
+	 * Converter to unwrap Vavr {@link io.vavr.control.Option} instances.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.0
+	 */
+	private static enum VavrOptionUnwrapper implements Converter<Object, Object> {
+
+		INSTANCE;
+
+		private static final Supplier<Object> NULL_SUPPLIER = new Supplier<Object>() {
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.function.Supplier#get()
+			 */
+			public Object get() {
+				return null;
+			}
+		};
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		@SuppressWarnings("unchecked")
+		public Object convert(Object source) {
+
+			if (source instanceof io.vavr.control.Option) {
+				return ((io.vavr.control.Option<Object>) source).getOrElse(NULL_SUPPLIER);
+			}
+
+			if (source instanceof io.vavr.collection.Traversable) {
+				return VavrCollections.ToJavaConverter.INSTANCE.convert(source);
 			}
 
 			return source;

@@ -231,6 +231,116 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(allowedPageableTypes, Matchers.<Class<?>> hasItems(Page.class, Slice.class, List.class, Seq.class));
 	}
 
+	@Test // DATACMNS-1065
+	public void unwrapsEmptyVavrOption() {
+		assertThat(QueryExecutionConverters.unwrap(vavrOptionNone()), is(nullValue()));
+	}
+
+	@Test // DATACMNS-1065
+	public void unwrapsVavrOption() {
+		assertThat(QueryExecutionConverters.unwrap(vavrOption("string")), is((Object) "string"));
+	}
+
+	@Test // DATACMNS-1065
+	public void conversListToVavr() {
+
+		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Traversable.class), is(true));
+		assertThat(conversionService.canConvert(List.class, io.vavr.collection.List.class), is(true));
+		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Set.class), is(true));
+		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Map.class), is(false));
+
+		List<Integer> integers = Arrays.asList(1, 2, 3);
+
+		io.vavr.collection.Traversable<?> result = conversionService.convert(integers,
+				io.vavr.collection.Traversable.class);
+
+		assertThat(result, is(instanceOf(io.vavr.collection.List.class)));
+	}
+
+	@Test // DATACMNS-1065
+	public void convertsSetToVavr() {
+
+		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Traversable.class), is(true));
+		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Set.class), is(true));
+		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.List.class), is(true));
+		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Map.class), is(false));
+
+		Set<Integer> integers = Collections.singleton(1);
+
+		io.vavr.collection.Traversable<?> result = conversionService.convert(integers,
+				io.vavr.collection.Traversable.class);
+
+		assertThat(result, is(instanceOf(io.vavr.collection.Set.class)));
+	}
+
+	@Test // DATACMNS-1065
+	public void convertsMapToVavr() {
+
+		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.Traversable.class), is(true));
+		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.Map.class), is(true));
+		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.Set.class), is(false));
+		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.List.class), is(false));
+
+		Map<String, String> map = Collections.singletonMap("key", "value");
+
+		io.vavr.collection.Traversable<?> result = conversionService.convert(map, io.vavr.collection.Traversable.class);
+
+		assertThat(result, is(instanceOf(io.vavr.collection.Map.class)));
+	}
+
+	@Test // DATACMNS-1065
+	public void unwrapsVavrCollectionsToJavaOnes() {
+
+		assertThat(unwrap(vavrList(1, 2, 3)), is(instanceOf(List.class)));
+		assertThat(unwrap(vavrSet(1, 2, 3)), is(instanceOf(Set.class)));
+		assertThat(unwrap(vavrMap("key", "value")), is(instanceOf(Map.class)));
+	}
+
+	@Test // DATACMNS-1065
+	public void vavrSeqIsASupportedPageableType() {
+
+		Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
+		assertThat(allowedPageableTypes, hasItem(io.vavr.collection.Seq.class));
+	}
+
+	// Vavr
+
+	@SuppressWarnings("unchecked")
+	private static io.vavr.control.Option<Object> vavrOptionNone() {
+
+		Method method = ReflectionUtils.findMethod(io.vavr.control.Option.class, "none");
+		return (io.vavr.control.Option<Object>) ReflectionUtils.invokeMethod(method, null);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> io.vavr.control.Option<T> vavrOption(T source) {
+
+		Method method = ReflectionUtils.findMethod(io.vavr.control.Option.class, "of", Object.class);
+		return (io.vavr.control.Option<T>) ReflectionUtils.invokeMethod(method, null, source);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> io.vavr.collection.List<T> vavrList(T... values) {
+
+		Method method = ReflectionUtils.findMethod(io.vavr.collection.List.class, "ofAll", Iterable.class);
+		return (io.vavr.collection.List<T>) ReflectionUtils.invokeMethod(method, null, Arrays.asList(values));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> io.vavr.collection.Set<T> vavrSet(T... values) {
+
+		Method method = ReflectionUtils.findMethod(io.vavr.collection.HashSet.class, "ofAll", Iterable.class);
+		return (io.vavr.collection.Set<T>) ReflectionUtils.invokeMethod(method, null, Arrays.asList(values));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <K, V> io.vavr.collection.Map<K, V> vavrMap(K key, V value) {
+
+		Method method = ReflectionUtils.findMethod(io.vavr.collection.HashMap.class, "ofAll", Map.class);
+		return (io.vavr.collection.Map<K, V>) ReflectionUtils.invokeMethod(method, null,
+				Collections.singletonMap(key, value));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static javaslang.control.Option<Object> optionNone() {
 
