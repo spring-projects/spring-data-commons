@@ -13,6 +13,7 @@ Import-Template:
  com.google.common.*;version="${guava:[=.=.=,+1.0.0)}";resolution:=optional,
  com.jayway.jsonpath.*;version="${jsonpath:[=.=.=,+1.0.0]}";resolution:=optional,
  com.querydsl.*;version="${querydsl:[=.=.=,+1.0.0)}";resolution:=optional,
+ io.vavr.*;version="${vavr:[=.=.=,+1.0.0)}";resolution:=optional,
  javaslang.*;version="${javaslang:[=.=.=,+1.0.0)}";resolution:=optional,
  javax.enterprise.*;version="${cdi:[=.=.=,+1.0.0)}";resolution:=optional,
  javax.inject.*;version="[1.0.0,2.0.0)";resolution:=optional,

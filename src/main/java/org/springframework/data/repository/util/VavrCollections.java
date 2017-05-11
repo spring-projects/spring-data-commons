@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.util;
 
-import javaslang.collection.Traversable;
+import io.vavr.collection.Traversable;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -32,19 +32,20 @@ import org.springframework.data.repository.util.QueryExecutionConverters.Wrapper
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Converter implementations to map from and to Javaslang collections.
+ * Converter implementations to map from and to Vavr collections.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.13
  */
-class JavaslangCollections {
+class VavrCollections {
 
 	public enum ToJavaConverter implements Converter<Object, Object> {
 
 		INSTANCE;
 
 		public WrapperType getWrapperType() {
-			return WrapperType.multiValue(javaslang.collection.Traversable.class);
+			return WrapperType.multiValue(io.vavr.collection.Traversable.class);
 		}
 
 		/* 
@@ -54,16 +55,16 @@ class JavaslangCollections {
 		@Override
 		public Object convert(Object source) {
 
-			if (source instanceof javaslang.collection.Seq) {
-				return ((javaslang.collection.Seq<?>) source).toJavaList();
+			if (source instanceof io.vavr.collection.Seq) {
+				return ((io.vavr.collection.Seq<?>) source).toJavaList();
 			}
 
-			if (source instanceof javaslang.collection.Map) {
-				return ((javaslang.collection.Map<?, ?>) source).toJavaMap();
+			if (source instanceof io.vavr.collection.Map) {
+				return ((io.vavr.collection.Map<?, ?>) source).toJavaMap();
 			}
 
-			if (source instanceof javaslang.collection.Set) {
-				return ((javaslang.collection.Set<?>) source).toJavaSet();
+			if (source instanceof io.vavr.collection.Set) {
+				return ((io.vavr.collection.Set<?>) source).toJavaSet();
 			}
 
 			throw new IllegalArgumentException("Unsupported Javaslang collection " + source.getClass());
@@ -91,12 +92,12 @@ class JavaslangCollections {
 			public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 				// Prevent collections to be mapped to maps
-				if (sourceType.isCollection() && javaslang.collection.Map.class.isAssignableFrom(targetType.getType())) {
+				if (sourceType.isCollection() && io.vavr.collection.Map.class.isAssignableFrom(targetType.getType())) {
 					return false;
 				}
 
 				// Prevent maps to be mapped to collections
-				if (sourceType.isMap() && !(javaslang.collection.Map.class.isAssignableFrom(targetType.getType())
+				if (sourceType.isMap() && !(io.vavr.collection.Map.class.isAssignableFrom(targetType.getType())
 						|| targetType.getType().equals(Traversable.class))) {
 					return false;
 				}
@@ -135,15 +136,14 @@ class JavaslangCollections {
 		static {
 
 			Set<ConvertiblePair> pairs = new HashSet<ConvertiblePair>();
-			pairs.add(new ConvertiblePair(Collection.class, javaslang.collection.Traversable.class));
-			pairs.add(new ConvertiblePair(Map.class, javaslang.collection.Traversable.class));
+			pairs.add(new ConvertiblePair(Collection.class, io.vavr.collection.Traversable.class));
+			pairs.add(new ConvertiblePair(Map.class, io.vavr.collection.Traversable.class));
 
 			CONVERTIBLE_PAIRS = Collections.unmodifiableSet(pairs);
 
-			MAP_FACTORY_METHOD = ReflectionUtils.findMethod(javaslang.collection.LinkedHashMap.class, "ofAll", Map.class);
-			LIST_FACTORY_METHOD = ReflectionUtils.findMethod(javaslang.collection.List.class, "ofAll", Iterable.class);
-			SET_FACTORY_METHOD = ReflectionUtils.findMethod(javaslang.collection.LinkedHashSet.class, "ofAll",
-					Iterable.class);
+			MAP_FACTORY_METHOD = ReflectionUtils.findMethod(io.vavr.collection.LinkedHashMap.class, "ofAll", Map.class);
+			LIST_FACTORY_METHOD = ReflectionUtils.findMethod(io.vavr.collection.List.class, "ofAll", Iterable.class);
+			SET_FACTORY_METHOD = ReflectionUtils.findMethod(io.vavr.collection.LinkedHashSet.class, "ofAll", Iterable.class);
 		}
 	}
 }
