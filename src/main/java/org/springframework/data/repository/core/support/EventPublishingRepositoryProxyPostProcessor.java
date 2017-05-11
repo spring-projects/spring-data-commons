@@ -89,7 +89,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 			Object result = invocation.proceed();
 
-			if (!invocation.getMethod().getName().equals("save")) {
+			if (!invocation.getMethod().getName().startsWith("save")) {
 				return result;
 			}
 
