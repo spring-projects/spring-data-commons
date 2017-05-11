@@ -64,6 +64,7 @@ import com.google.common.base.Optional;
  * <li>{@code javaslang.control.Option} - as of 1.13</li>
  * <li>{@code javaslang.collection.Seq}, {@code javaslang.collection.Map}, {@code javaslang.collection.Set} - as of
  * 1.13</li>
+ * <li>{@code io.vavr.collection.Seq}, {@code io.vavr.collection.Map}, {@code io.vavr.collection.Set} - as of 2.0</li>
  * <li>Reactive wrappers supported by {@link ReactiveWrappers} - as of 2.0</li>
  * </ul>
  * 
@@ -83,6 +84,8 @@ public abstract class QueryExecutionConverters {
 	private static final boolean SCALA_PRESENT = ClassUtils.isPresent("scala.Option",
 			QueryExecutionConverters.class.getClassLoader());
 	private static final boolean JAVASLANG_PRESENT = ClassUtils.isPresent("javaslang.control.Option",
+			QueryExecutionConverters.class.getClassLoader());
+	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Option",
 			QueryExecutionConverters.class.getClassLoader());
 
 	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<WrapperType>();
@@ -132,6 +135,16 @@ public abstract class QueryExecutionConverters {
 			UNWRAPPERS.add(JavaslangOptionUnwrapper.INSTANCE);
 
 			ALLOWED_PAGEABLE_TYPES.add(Seq.class);
+		}
+
+		if (VAVR_PRESENT) {
+
+			WRAPPER_TYPES.add(NullableWrapperToVavrOptionConverter.getWrapperType());
+			WRAPPER_TYPES.add(VavrCollections.ToJavaConverter.INSTANCE.getWrapperType());
+
+			UNWRAPPERS.add(VavrOptionUnwrapper.INSTANCE);
+
+			ALLOWED_PAGEABLE_TYPES.add(io.vavr.collection.Seq.class);
 		}
 
 		if (ReactiveWrappers.isAvailable()) {
@@ -232,6 +245,11 @@ public abstract class QueryExecutionConverters {
 		if (JAVASLANG_PRESENT) {
 			conversionService.addConverter(new NullableWrapperToJavaslangOptionConverter(conversionService));
 			conversionService.addConverter(JavaslangCollections.FromJavaConverter.INSTANCE);
+		}
+
+		if (VAVR_PRESENT) {
+			conversionService.addConverter(new NullableWrapperToVavrOptionConverter(conversionService));
+			conversionService.addConverter(VavrCollections.FromJavaConverter.INSTANCE);
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
@@ -499,6 +517,37 @@ public abstract class QueryExecutionConverters {
 	}
 
 	/**
+	 * Converter to convert from {@link NullableWrapper} into JavaSlang's {@link io.vavr.control.Option}.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.0
+	 */
+	private static class NullableWrapperToVavrOptionConverter extends AbstractWrapperTypeConverter {
+
+		/**
+		 * Creates a new {@link NullableWrapperToJavaslangOptionConverter} using the given {@link ConversionService}.
+		 * 
+		 * @param conversionService must not be {@literal null}.
+		 */
+		public NullableWrapperToVavrOptionConverter(ConversionService conversionService) {
+			super(conversionService, io.vavr.control.Option.none(), Collections.singleton(io.vavr.control.Option.class));
+		}
+
+		public static WrapperType getWrapperType() {
+			return WrapperType.singleValue(io.vavr.control.Option.class);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
+		 */
+		@Override
+		protected Object wrap(Object source) {
+			return io.vavr.control.Option.of(source);
+		}
+	}
+
+	/**
 	 * A {@link Converter} to unwrap Guava {@link Optional} instances.
 	 *
 	 * @author Oliver Gierke
@@ -595,6 +644,36 @@ public abstract class QueryExecutionConverters {
 
 			if (source instanceof Traversable) {
 				return JavaslangCollections.ToJavaConverter.INSTANCE.convert(source);
+			}
+
+			return source;
+		}
+	}
+
+	/**
+	 * Converter to unwrap Vavr {@link io.vavr.control.Option} instances.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.0
+	 */
+	private static enum VavrOptionUnwrapper implements Converter<Object, Object> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		@SuppressWarnings("unchecked")
+		public Object convert(Object source) {
+
+			if (source instanceof io.vavr.control.Option) {
+				return ((io.vavr.control.Option<Object>) source).getOrElse(() -> null);
+			}
+
+			if (source instanceof io.vavr.collection.Traversable) {
+				return VavrCollections.ToJavaConverter.INSTANCE.convert(source);
 			}
 
 			return source;

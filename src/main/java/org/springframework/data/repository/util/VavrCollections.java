@@ -15,9 +15,9 @@
  */
 package org.springframework.data.repository.util;
 
-import javaslang.collection.LinkedHashMap;
-import javaslang.collection.LinkedHashSet;
-import javaslang.collection.Traversable;
+import io.vavr.collection.LinkedHashMap;
+import io.vavr.collection.LinkedHashSet;
+import io.vavr.collection.Traversable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -32,20 +32,20 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.util.QueryExecutionConverters.WrapperType;
 
 /**
- * Converter implementations to map from and to Javaslang collections.
+ * Converter implementations to map from and to Vavr collections.
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
- * @since 1.13
+ * @since 2.0
  */
-class JavaslangCollections {
+class VavrCollections {
 
 	public enum ToJavaConverter implements Converter<Object, Object> {
 
 		INSTANCE;
 
 		public WrapperType getWrapperType() {
-			return WrapperType.multiValue(javaslang.collection.Traversable.class);
+			return WrapperType.multiValue(io.vavr.collection.Traversable.class);
 		}
 
 		/* 
@@ -55,16 +55,16 @@ class JavaslangCollections {
 		@Override
 		public Object convert(Object source) {
 
-			if (source instanceof javaslang.collection.Seq) {
-				return ((javaslang.collection.Seq<?>) source).toJavaList();
+			if (source instanceof io.vavr.collection.Seq) {
+				return ((io.vavr.collection.Seq<?>) source).toJavaList();
 			}
 
-			if (source instanceof javaslang.collection.Map) {
-				return ((javaslang.collection.Map<?, ?>) source).toJavaMap();
+			if (source instanceof io.vavr.collection.Map) {
+				return ((io.vavr.collection.Map<?, ?>) source).toJavaMap();
 			}
 
-			if (source instanceof javaslang.collection.Set) {
-				return ((javaslang.collection.Set<?>) source).toJavaSet();
+			if (source instanceof io.vavr.collection.Set) {
+				return ((io.vavr.collection.Set<?>) source).toJavaSet();
 			}
 
 			throw new IllegalArgumentException("Unsupported Javaslang collection " + source.getClass());
@@ -92,12 +92,12 @@ class JavaslangCollections {
 			public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 				// Prevent collections to be mapped to maps
-				if (sourceType.isCollection() && javaslang.collection.Map.class.isAssignableFrom(targetType.getType())) {
+				if (sourceType.isCollection() && io.vavr.collection.Map.class.isAssignableFrom(targetType.getType())) {
 					return false;
 				}
 
 				// Prevent maps to be mapped to collections
-				if (sourceType.isMap() && !(javaslang.collection.Map.class.isAssignableFrom(targetType.getType())
+				if (sourceType.isMap() && !(io.vavr.collection.Map.class.isAssignableFrom(targetType.getType())
 						|| targetType.getType().equals(Traversable.class))) {
 					return false;
 				}
@@ -113,7 +113,7 @@ class JavaslangCollections {
 			public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 				if (source instanceof List) {
-					return javaslang.collection.List.ofAll((Iterable<?>) source);
+					return io.vavr.collection.List.ofAll((Iterable<?>) source);
 				}
 
 				if (source instanceof java.util.Set) {
@@ -133,8 +133,8 @@ class JavaslangCollections {
 		static {
 
 			Set<ConvertiblePair> pairs = new HashSet<>();
-			pairs.add(new ConvertiblePair(Collection.class, javaslang.collection.Traversable.class));
-			pairs.add(new ConvertiblePair(Map.class, javaslang.collection.Traversable.class));
+			pairs.add(new ConvertiblePair(Collection.class, io.vavr.collection.Traversable.class));
+			pairs.add(new ConvertiblePair(Map.class, io.vavr.collection.Traversable.class));
 
 			CONVERTIBLE_PAIRS = Collections.unmodifiableSet(pairs);
 		}

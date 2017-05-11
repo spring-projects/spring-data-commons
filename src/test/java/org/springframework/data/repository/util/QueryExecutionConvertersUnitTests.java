@@ -266,4 +266,76 @@ public class QueryExecutionConvertersUnitTests {
 		Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
 		assertThat(allowedPageableTypes).contains(Page.class, Slice.class, List.class, Seq.class);
 	}
+
+	@Test // DATACMNS-1065
+	public void unwrapsEmptyVavrOption() {
+		assertThat(QueryExecutionConverters.unwrap(io.vavr.control.Option.none())).isNull();
+	}
+
+	@Test // DATACMNS-1065
+	public void unwrapsVavrOption() {
+		assertThat(QueryExecutionConverters.unwrap(io.vavr.control.Option.of("string"))).isEqualTo("string");
+	}
+
+	@Test // DATACMNS-1065
+	public void conversListToVavr() {
+
+		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Traversable.class)).isTrue();
+		assertThat(conversionService.canConvert(List.class, io.vavr.collection.List.class)).isTrue();
+		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Set.class)).isTrue();
+		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Map.class)).isFalse();
+
+		List<Integer> integers = Arrays.asList(1, 2, 3);
+
+		io.vavr.collection.Traversable<?> result = conversionService.convert(integers,
+				io.vavr.collection.Traversable.class);
+
+		assertThat(result).isInstanceOf(io.vavr.collection.List.class);
+	}
+
+	@Test // DATACMNS-1065
+	public void convertsSetToVavr() {
+
+		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Traversable.class)).isTrue();
+		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Set.class)).isTrue();
+		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.List.class)).isTrue();
+		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Map.class)).isFalse();
+
+		Set<Integer> integers = Collections.singleton(1);
+
+		io.vavr.collection.Traversable<?> result = conversionService.convert(integers,
+				io.vavr.collection.Traversable.class);
+
+		assertThat(result).isInstanceOf(io.vavr.collection.Set.class);
+	}
+
+	@Test // DATACMNS-1065
+	public void convertsMapToVavr() {
+
+		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.Traversable.class)).isTrue();
+		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.Map.class)).isTrue();
+		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.Set.class)).isFalse();
+		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.List.class)).isFalse();
+
+		Map<String, String> map = Collections.singletonMap("key", "value");
+
+		io.vavr.collection.Traversable<?> result = conversionService.convert(map, io.vavr.collection.Traversable.class);
+
+		assertThat(result).isInstanceOf(io.vavr.collection.Map.class);
+	}
+
+	@Test // DATACMNS-1065
+	public void unwrapsVavrCollectionsToJavaOnes() {
+
+		assertThat(unwrap(io.vavr.collection.List.of(1, 2, 3))).isInstanceOf(List.class);
+		assertThat(unwrap(io.vavr.collection.LinkedHashSet.of(1, 2, 3))).isInstanceOf(Set.class);
+		assertThat(unwrap(io.vavr.collection.LinkedHashMap.of("key", "value"))).isInstanceOf(Map.class);
+	}
+
+	@Test // DATACMNS-1065
+	public void vavrSeqIsASupportedPageableType() {
+
+		Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
+		assertThat(allowedPageableTypes).contains(io.vavr.collection.Seq.class);
+	}
 }
