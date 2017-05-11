@@ -24,7 +24,7 @@ sudo: false
 
 install: true
 
-script: "mvn clean dependency:list test -P${PROFILE} -Dsort"
+script: "mvn clean dependency:list test -P${PROFILE} -Dsort -U"
 
 notifications:
   slack:
