@@ -22,14 +22,15 @@ import org.springframework.data.web.SortHandlerMethodArgumentResolver;
  * {@link SortHandlerMethodArgumentResolver} configuration.
  *
  * @author Vedran Pavic
+ * @author Oliver Gierke
+ * @since 2.0
  */
 public interface SortHandlerMethodArgumentResolverCustomizer {
 
 	/**
-	 * Customize the sort resolver
+	 * Customize the given {@link SortHandlerMethodArgumentResolver}.
 	 *
-	 * @param sortResolver the {@link SortHandlerMethodArgumentResolver} to customize
+	 * @param sortResolver the {@link SortHandlerMethodArgumentResolver} to customize, will never be {@literal null}.
 	 */
 	void customize(SortHandlerMethodArgumentResolver sortResolver);
-
 }

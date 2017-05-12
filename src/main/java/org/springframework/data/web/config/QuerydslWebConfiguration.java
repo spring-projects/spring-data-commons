@@ -29,7 +29,7 @@ import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.querydsl.core.types.Predicate;
 
@@ -42,7 +42,7 @@ import com.querydsl.core.types.Predicate;
  * @soundtrack Anika Nilles - Alter Ego
  */
 @Configuration
-public class QuerydslWebConfiguration extends WebMvcConfigurerAdapter {
+public class QuerydslWebConfiguration implements WebMvcConfigurer {
 
 	@Autowired @Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService;
 

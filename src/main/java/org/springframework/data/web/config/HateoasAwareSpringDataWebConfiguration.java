@@ -58,8 +58,8 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	@Override
 	public HateoasPageableHandlerMethodArgumentResolver pageableResolver() {
 
-		HateoasPageableHandlerMethodArgumentResolver pageableResolver = //
-				new HateoasPageableHandlerMethodArgumentResolver(sortResolver());
+		HateoasPageableHandlerMethodArgumentResolver pageableResolver = new HateoasPageableHandlerMethodArgumentResolver(
+				sortResolver());
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
 	}

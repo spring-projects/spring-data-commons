@@ -22,14 +22,17 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
  * {@link PageableHandlerMethodArgumentResolver} configuration.
  *
  * @author Vedran Pavic
+ * @author Oliver Gierke
+ * @since 2.0
  */
+@FunctionalInterface
 public interface PageableHandlerMethodArgumentResolverCustomizer {
 
 	/**
-	 * Customize the pageable resolver
+	 * Customize the given {@link PageableHandlerMethodArgumentResolver}.
 	 *
-	 * @param pageableResolver the {@link PageableHandlerMethodArgumentResolver} to customize
+	 * @param pageableResolver the {@link PageableHandlerMethodArgumentResolver} to customize, will never be
+	 *          {@literal null}.
 	 */
 	void customize(PageableHandlerMethodArgumentResolver pageableResolver);
-
 }

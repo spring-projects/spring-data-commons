@@ -36,9 +36,10 @@ import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -52,18 +53,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Jens Schauder
  */
 @Configuration
-public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
+public class SpringDataWebConfiguration implements WebMvcConfigurer {
 
 	private final ApplicationContext context;
 	private final ObjectFactory<ConversionService> conversionService;
 
-	@Autowired private Optional<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
-	@Autowired private Optional<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
+	private @Autowired Optional<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
+	private @Autowired Optional<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
 
-	public SpringDataWebConfiguration( //
-			ApplicationContext context, //
-			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService //
-	) {
+	public SpringDataWebConfiguration(ApplicationContext context,
+			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
+
+		Assert.notNull(context, "ApplicationContext must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null!");
 
 		this.context = context;
 		this.conversionService = conversionService;
@@ -161,5 +163,4 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	protected void customizeSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
 		sortResolverCustomizer.ifPresent(c -> c.customize(sortResolver));
 	}
-
 }
