@@ -22,6 +22,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -39,6 +40,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.AfterDomainEventPublication;
 import org.springframework.data.domain.DomainEvents;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -49,6 +51,8 @@ import org.springframework.data.repository.core.support.EventPublishingRepositor
  * Unit tests for {@link EventPublishingRepositoryProxyPostProcessor} and contained classes.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
+ * @author Yuki Yoshida
  * @soundtrack Henrik Freischlader Trio - Nobody Else To Blame (Openness)
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -99,6 +103,40 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(entity, publisher);
 
 		verify(publisher, times(0)).publishEvent(any());
+	}
+
+	@Test // DATACMNS-1067
+	public void clearEventsDoesNotExposedByEntity() {
+
+		EventsWithClearing entity = spy(EventsWithClearing.of(Collections.emptyList()));
+
+		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
+
+		verify(entity, times(0)).clearDomainEvents();
+	}
+
+	@Test // DATACMNS-1067
+	public void clearEventsExposedByEntity() {
+
+		EventsWithClearing entity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
+
+		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
+
+		verify(entity, times(1)).clearDomainEvents();
+	}
+
+	@Test // DATACMNS-1067
+	public void clearEventsExposedByEntities() {
+
+		EventsWithClearing firstEntity = spy(EventsWithClearing.of(Collections.emptyList()));
+		EventsWithClearing secondEntity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
+
+		Collection<EventsWithClearing> entities = Arrays.asList(firstEntity, secondEntity);
+
+		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entities, publisher);
+
+		verify(firstEntity, times(0)).clearDomainEvents();
+		verify(secondEntity, times(1)).clearDomainEvents();
 	}
 
 	@Test // DATACMNS-928
@@ -213,6 +251,14 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Value(staticConstructor = "of")
 	static class MultipleEvents {
 		@Getter(onMethod = @__(@DomainEvents)) Collection<? extends Object> events;
+	}
+
+	@RequiredArgsConstructor(staticName = "of")
+	static class EventsWithClearing {
+		@Getter(onMethod = @__(@DomainEvents)) final Collection<? extends Object> events;
+
+		@AfterDomainEventPublication
+		void clearDomainEvents() {}
 	}
 
 	@Value(staticConstructor = "of")

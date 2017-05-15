@@ -44,6 +44,8 @@ import org.springframework.util.ReflectionUtils;
  * will be invoked after all events have been published.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
+ * @author Yuki Yoshida
  * @since 1.13
  * @soundtrack Henrik Freischlader Trio - Master Plan (Openness)
  */
@@ -164,13 +166,14 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			}
 
 			for (Object aggregateRoot : asCollection(object)) {
-				for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
+				Collection<Object> events = asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot));
+				for (Object event : events) {
 					publisher.publishEvent(event);
 				}
-			}
 
-			if (clearingMethod != null) {
-				ReflectionUtils.invokeMethod(clearingMethod, object);
+				if (clearingMethod != null && !events.isEmpty()) {
+					ReflectionUtils.invokeMethod(clearingMethod, aggregateRoot);
+				}
 			}
 		}
 
