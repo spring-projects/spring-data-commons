@@ -94,9 +94,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return result;
 			}
 
-			for (Object argument : invocation.getArguments()) {
-				eventMethod.publishEventsFrom(argument, publisher);
-			}
+			eventMethod.publishEventsFrom(result, publisher);
 
 			return result;
 		}
@@ -165,12 +163,12 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			}
 
 			for (Object aggregateRoot : asCollection(object)) {
-				Collection<Object> events = asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot));
-				for (Object event : events) {
+
+				for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
 					publisher.publishEvent(event);
 				}
 
-				if (clearingMethod != null && !events.isEmpty()) {
+				if (clearingMethod != null) {
 					ReflectionUtils.invokeMethod(clearingMethod, aggregateRoot);
 				}
 			}
