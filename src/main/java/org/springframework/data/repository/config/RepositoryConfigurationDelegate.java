@@ -156,7 +156,7 @@ public class RepositoryConfigurationDelegate {
 	 * 
 	 * @return
 	 */
-	private boolean multipleStoresDetected() {
+	protected boolean multipleStoresDetected() {
 
 		boolean multipleModulesFound = SpringFactoriesLoader
 				.loadFactoryNames(RepositoryFactorySupport.class, resourceLoader.getClassLoader()).size() > 1;
