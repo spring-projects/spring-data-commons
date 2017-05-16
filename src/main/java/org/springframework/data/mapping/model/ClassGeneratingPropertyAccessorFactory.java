@@ -355,10 +355,12 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			for (PersistentProperty<?> property : persistentProperties) {
 
-				property.getSetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, setterName(property),
-						referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE), null, null).visitEnd());
-				property.getGetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, getterName(property),
-						referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE), null, null).visitEnd());
+				property.getSetter().filter(it -> generateMethodHandle(entity, it))
+						.ifPresent(it -> cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, setterName(property),
+								referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE), null, null).visitEnd());
+				property.getGetter().filter(it -> generateMethodHandle(entity, it))
+						.ifPresent(it -> cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, getterName(property),
+								referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE), null, null).visitEnd());
 
 				property.getField().filter(it -> generateSetterMethodHandle(entity, it)).ifPresent(it -> {
 
@@ -487,12 +489,15 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 				if (property.usePropertyAccess()) {
 
-					property.getGetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> visitPropertyGetterInitializer(property, mv, entityClasses, internalClassName));
+					property.getGetter().filter(it -> generateMethodHandle(entity, it))
+							.ifPresent(it -> visitPropertyGetterInitializer(property, mv, entityClasses, internalClassName));
 
-					property.getSetter().filter(it -> generateMethodHandle(entity, it)).ifPresent(it -> visitPropertySetterInitializer(property, mv, entityClasses, internalClassName));
+					property.getSetter().filter(it -> generateMethodHandle(entity, it))
+							.ifPresent(it -> visitPropertySetterInitializer(property, mv, entityClasses, internalClassName));
 				}
 
-				property.getField().filter(it -> generateSetterMethodHandle(entity, it)).ifPresent(it -> visitFieldGetterSetterInitializer(property, mv, entityClasses, internalClassName));
+				property.getField().filter(it -> generateSetterMethodHandle(entity, it))
+						.ifPresent(it -> visitFieldGetterSetterInitializer(property, mv, entityClasses, internalClassName));
 			}
 
 			mv.visitLabel(l1);
