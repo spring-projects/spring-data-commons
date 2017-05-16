@@ -91,8 +91,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * Checks whether an accessor class can be generated.
 	 *
 	 * @param entity
-	 * @return {@literal true} if the runtime is equal or greater to Java 1.7, property name hash codes are unique and the
-	 *         type has a class loader we can use to re-inject types.
+	 * @return {@literal true} if the runtime is equal or greater to Java 1.7, we can access the ClassLoader, the property
+	 *         name hash codes are unique and the type has a class loader we can use to re-inject types.
 	 * @see PersistentPropertyAccessorFactory#isSupported(PersistentEntity)
 	 */
 	@Override
@@ -101,6 +101,12 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 
 		if (!IS_JAVA_7_OR_BETTER) {
+			return false;
+		}
+
+		try {
+			Evil.getClassLoaderMethod(entity);
+		} catch (Exception o_O) {
 			return false;
 		}
 
@@ -1446,6 +1452,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * accessed from a class in the same class loader.
 	 *
 	 * @author Mark Paluch
+	 * @author Oliver Gierke
 	 */
 	@UtilityClass
 	private static class Evil {
@@ -1460,25 +1467,30 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * @param persistentEntity
 		 * @return
 		 */
-		@SuppressWarnings("rawtypes")
 		Class<?> defineClass(String name, byte[] bytes, int offset, int len, PersistentEntity<?, ?> persistentEntity) {
 
 			ClassLoader classLoader = persistentEntity.getType().getClassLoader();
-			Class<?> classLoaderClass = classLoader.getClass();
 
 			try {
 
-				Class<? extends PersistentEntity> persistentEntityClass = persistentEntity.getClass();
-				Method defineClass = ReflectionUtils.findMethod(classLoaderClass, "defineClass", String.class, byte[].class,
-						Integer.TYPE, Integer.TYPE, ProtectionDomain.class);
+				Method defineClass = getClassLoaderMethod(persistentEntity);
 				defineClass.setAccessible(true);
 
 				return (Class<?>) defineClass.invoke(classLoader, name, bytes, offset, len,
-						persistentEntityClass.getProtectionDomain());
+						persistentEntity.getClass().getProtectionDomain());
 
 			} catch (ReflectiveOperationException e) {
 				throw new IllegalStateException(e);
 			}
+		}
+
+		static Method getClassLoaderMethod(PersistentEntity<?, ?> entity) {
+
+			ClassLoader classLoader = entity.getType().getClassLoader();
+			Class<?> classLoaderClass = classLoader.getClass();
+
+			return ReflectionUtils.findMethod(classLoaderClass, "defineClass", String.class, byte[].class, Integer.TYPE,
+					Integer.TYPE, ProtectionDomain.class);
 		}
 	}
 }
