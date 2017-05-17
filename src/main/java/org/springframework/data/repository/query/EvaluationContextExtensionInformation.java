@@ -32,7 +32,7 @@ import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.repository.query.EvaluationContextExtensionInformation.ExtensionTypeInformation.PublicMethodAndFieldFilter;
-import org.springframework.data.repository.query.FunctionsMap.NameAndArgumentCount;
+import org.springframework.data.repository.query.Functions.NameAndArgumentCount;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.Function;
 import org.springframework.data.util.MultiValueMapCollector;

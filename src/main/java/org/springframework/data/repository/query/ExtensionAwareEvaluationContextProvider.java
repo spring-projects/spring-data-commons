@@ -316,11 +316,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 */
 		private Optional<MethodExecutor> getMethodExecutor(EvaluationContextExtensionAdapter adapter, String name,
 				List<TypeDescriptor> argumentTypes) {
-
-			FunctionsMap functions = adapter.getFunctions();
-
-			Optional<Function> function = functions.get(name, argumentTypes);
-			return function.map(FunctionMethodExecutor::new);
+			return adapter.getFunctions().get(name, argumentTypes).map(FunctionMethodExecutor::new);
 		}
 
 		/**
@@ -389,7 +385,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		private final EvaluationContextExtension extension;
 
-		private final FunctionsMap functions = new FunctionsMap();
+		private final Functions functions = new Functions();
 		private final Map<String, Object> properties;
 
 		/**
@@ -435,7 +431,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * 
 		 * @return all exposed functions.
 		 */
-		FunctionsMap getFunctions() {
+		Functions getFunctions() {
 			return this.functions;
 		}
 

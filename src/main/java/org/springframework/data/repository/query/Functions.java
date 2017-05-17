@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.query;
 
+import lombok.AllArgsConstructor;
+import lombok.Value;
+
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,8 +32,6 @@ import org.springframework.data.repository.query.spi.Function;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 
-import lombok.Data;
-
 /**
  * {@link MultiValueMap} like data structure to keep lists of
  * {@link org.springframework.data.repository.query.spi.Function}s indexed by name and argument list length, where the
@@ -39,9 +40,10 @@ import lombok.Data;
  * @author Jens Schauder
  * @since 2.0
  */
-class FunctionsMap {
+class Functions {
 
-	private final MultiValueMap<NameAndArgumentCount, Function> functions = CollectionUtils.toMultiValueMap(new HashMap<>());
+	private final MultiValueMap<NameAndArgumentCount, Function> functions = CollectionUtils
+			.toMultiValueMap(new HashMap<>());
 
 	void addAll(Map<String, Function> newFunctions) {
 
@@ -58,11 +60,9 @@ class FunctionsMap {
 
 		newFunctions.forEach((k, list) -> {
 			List<Function> currentElements = get(k);
-			list.forEach(f -> {
-				if (!contains(currentElements, f)) {
-					functions.add(k, f);
-				}
-			});
+			list.stream() //
+					.filter(f -> !contains(currentElements, f)) //
+					.forEach(f -> functions.add(k, f));
 		});
 	}
 
@@ -71,20 +71,18 @@ class FunctionsMap {
 	}
 
 	/**
-	 * Gets the function that best matches the parameters given.
-	 *
-	 * The {@code name} must match, and the {@code argumentTypes} must be compatible with parameter list of the function.
-	 * In order to resolve ambiguity it checks for a method with exactly matching parameter list.
+	 * Gets the function that best matches the parameters given. The {@code name} must match, and the
+	 * {@code argumentTypes} must be compatible with parameter list of the function. In order to resolve ambiguity it
+	 * checks for a method with exactly matching parameter list.
 	 *
 	 * @param name the name of the method
 	 * @param argumentTypes types of arguments that the method must be able to accept
-	 * @return a {@code Function} if a unique on gets found. {@code Optional.empty} if none matches.
-	 *    Throws {@link IllegalStateException} if multiple functions match the parameters.
+	 * @return a {@code Function} if a unique on gets found. {@code Optional.empty} if none matches. Throws
+	 *         {@link IllegalStateException} if multiple functions match the parameters.
 	 */
 	Optional<Function> get(String name, List<TypeDescriptor> argumentTypes) {
 
-		Stream<Function> candidates = get(new NameAndArgumentCount(name, argumentTypes.size()))
-				.stream() //
+		Stream<Function> candidates = get(new NameAndArgumentCount(name, argumentTypes.size())).stream() //
 				.filter(f -> f.supports(argumentTypes));
 		return bestMatch(candidates.collect(Collectors.toList()), argumentTypes);
 	}
@@ -105,15 +103,16 @@ class FunctionsMap {
 		Optional<Function> exactMatch = candidates.stream().filter(f -> f.supportsExact(argumentTypes)).findFirst();
 		if (exactMatch.isPresent()) {
 			return exactMatch;
-		} else {
-			throw new IllegalStateException("There are multiple matching methods.");
 		}
+
+		throw new IllegalStateException("There are multiple matching methods.");
 	}
 
-	@Data
+	@Value
+	@AllArgsConstructor
 	static class NameAndArgumentCount {
-		private final String name;
-		private final int count;
+		String name;
+		int count;
 
 		static NameAndArgumentCount of(Method m) {
 			return new NameAndArgumentCount(m.getName(), m.getParameterCount());

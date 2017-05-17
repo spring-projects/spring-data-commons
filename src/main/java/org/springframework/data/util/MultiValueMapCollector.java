@@ -15,6 +15,9 @@
  */
 package org.springframework.data.util;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Set;
@@ -33,21 +36,11 @@ import org.springframework.util.MultiValueMap;
  * @author Jens Schauder
  * @since 2.0
  */
+@RequiredArgsConstructor
 public class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueMap<K, V>, MultiValueMap<K, V>> {
 
-	private final Function<T, K> keyFunction;
-	private final Function<T, V> valueFunction;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param keyFunction {@link Function} to create a key from an element of the {@link java.util.stream.Stream}
-	 * @param valueFunction {@link Function} to create a value from an element of the {@link java.util.stream.Stream}
-	 */
-	public MultiValueMapCollector(Function<T, K> keyFunction, Function<T, V> valueFunction) {
-		this.keyFunction = keyFunction;
-		this.valueFunction = valueFunction;
-	}
+	@NonNull private final Function<T, K> keyFunction;
+	@NonNull private final Function<T, V> valueFunction;
 
 	/*
 	 * (non-Javadoc)
@@ -58,7 +51,6 @@ public class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueM
 		return () -> CollectionUtils.toMultiValueMap(new HashMap<>());
 	}
 
-
 	/*
 	 * (non-Javadoc)
 	 * @see java.util.stream.Collector#accumulator()
@@ -68,7 +60,6 @@ public class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueM
 		return (map, t) -> map.add(keyFunction.apply(t), valueFunction.apply(t));
 	}
 
-
 	/*
 	 * (non-Javadoc)
 	 * @see java.util.stream.Collector#combiner()
@@ -76,15 +67,15 @@ public class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueM
 	@Override
 	public BinaryOperator<MultiValueMap<K, V>> combiner() {
 
-		return (map1,map2) -> {
+		return (map1, map2) -> {
 
 			for (K key : map2.keySet()) {
 				map1.addAll(key, map2.get(key));
 			}
+
 			return map1;
 		};
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -92,9 +83,8 @@ public class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueM
 	 */
 	@Override
 	public Function<MultiValueMap<K, V>, MultiValueMap<K, V>> finisher() {
-		return it -> it;
+		return Function.identity();
 	}
-
 
 	/*
 	 * (non-Javadoc)

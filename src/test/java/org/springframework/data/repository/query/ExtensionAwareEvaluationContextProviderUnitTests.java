@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -225,13 +224,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1026
 	public void overloadedMethodsGetResolved() throws Exception {
 
-		provider = new ExtensionAwareEvaluationContextProvider(
-				Collections.singletonList(new DummyExtension("_first", "first") {
-					@Override
-					public Object getRootObject() {
-						return new RootWithOverloads();
-					}
-				}));
+		provider = createContextProviderWithOverloads();
 
 		// from the root object
 		assertThat(evaluateExpression("method()")).isEqualTo("zero");
@@ -247,13 +240,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1026
 	public void methodFromRootObjectOverwritesMethodFromExtension() throws Exception {
 
-		provider = new ExtensionAwareEvaluationContextProvider(
-				Collections.singletonList(new DummyExtension("_first", "first") {
-					@Override
-					public Object getRootObject() {
-						return new RootWithOverloads();
-					}
-				}));
+		provider = createContextProviderWithOverloads();
 
 		assertThat(evaluateExpression("ambiguous()")).isEqualTo("from-root");
 	}
@@ -261,13 +248,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1026
 	public void aliasedMethodOverwritesMethodFromRootObject() throws Exception {
 
-		provider = new ExtensionAwareEvaluationContextProvider(
-				Collections.singletonList(new DummyExtension("_first", "first") {
-					@Override
-					public Object getRootObject() {
-						return new RootWithOverloads();
-					}
-				}));
+		provider = createContextProviderWithOverloads();
 
 		assertThat(evaluateExpression("aliasedMethod()")).isEqualTo("methodResult");
 	}
@@ -275,33 +256,29 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1026
 	public void exactMatchIsPreferred() throws Exception {
 
-		provider = new ExtensionAwareEvaluationContextProvider(
-				Collections.singletonList(new DummyExtension("_first", "first") {
-					@Override
-					public Object getRootObject() {
-						return new RootWithOverloads();
-					}
-				}));
+		provider = createContextProviderWithOverloads();
 
 		assertThat(evaluateExpression("ambiguousOverloaded('aString')")).isEqualTo("string");
 	}
 
-
 	@Test(expected = IllegalStateException.class) // DATACMNS-1026
 	public void throwsExceptionWhenStillAmbiguous() throws Exception {
 
-		provider = new ExtensionAwareEvaluationContextProvider(
-				Collections.singletonList(new DummyExtension("_first", "first") {
+		provider = createContextProviderWithOverloads();
+
+		evaluateExpression("ambiguousOverloaded(23)");
+	}
+
+	private ExtensionAwareEvaluationContextProvider createContextProviderWithOverloads() {
+
+		return new ExtensionAwareEvaluationContextProvider(Collections.singletonList( //
+				new DummyExtension("_first", "first") {
 					@Override
 					public Object getRootObject() {
 						return new RootWithOverloads();
 					}
 				}));
-
-		evaluateExpression("ambiguousOverloaded(23)");
 	}
-
-
 
 	@RequiredArgsConstructor
 	public static class DummyExtension extends EvaluationContextExtensionSupport {

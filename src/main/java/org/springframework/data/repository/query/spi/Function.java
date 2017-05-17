@@ -151,7 +151,7 @@ public class Function {
 	}
 
 	/**
-	 * Checks wither this {@code Function} has the same signature as another {@code Function}.
+	 * Checks wether this {@code Function} has the same signature as another {@code Function}.
 	 *
 	 * @param other the {@code Function} to compare {@code this} with.
 	 *
