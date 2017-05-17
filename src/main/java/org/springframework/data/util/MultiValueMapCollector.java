@@ -15,6 +15,7 @@
  */
 package org.springframework.data.util;
 
+import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -36,11 +37,11 @@ import org.springframework.util.MultiValueMap;
  * @author Jens Schauder
  * @since 2.0
  */
-@RequiredArgsConstructor
-public class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueMap<K, V>, MultiValueMap<K, V>> {
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE, staticName = "of")
+class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueMap<K, V>, MultiValueMap<K, V>> {
 
-	@NonNull private final Function<T, K> keyFunction;
-	@NonNull private final Function<T, V> valueFunction;
+	private final @NonNull Function<T, K> keyFunction;
+	private final @NonNull Function<T, V> valueFunction;
 
 	/*
 	 * (non-Javadoc)

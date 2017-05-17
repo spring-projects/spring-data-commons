@@ -15,12 +15,12 @@
  */
 package org.springframework.data.repository.query;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.repository.query.spi.Function;
-import org.springframework.util.CollectionUtils;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 /**
@@ -38,18 +38,23 @@ import org.springframework.util.MultiValueMap;
  * value lists are actually unique with respect to the signature.
  *
  * @author Jens Schauder
+ * @author Oliver Gierke
  * @since 2.0
  */
 class Functions {
 
-	private final MultiValueMap<NameAndArgumentCount, Function> functions = CollectionUtils
-			.toMultiValueMap(new HashMap<>());
+	private static final String MESSAGE_TEMPLATE = "There are multiple matching methods of name '%s' for parameter types (%s), but no "
+			+ "exact match. Make sure to provide only one matching overload or one with exactly those types.";
+
+	private final MultiValueMap<NameAndArgumentCount, Function> functions = new LinkedMultiValueMap<>();
 
 	void addAll(Map<String, Function> newFunctions) {
 
 		newFunctions.forEach((n, f) -> {
-			NameAndArgumentCount k = new NameAndArgumentCount(n, f.getParameterCount());
+
+			NameAndArgumentCount k = NameAndArgumentCount.of(n, f.getParameterCount());
 			List<Function> currentElements = get(k);
+
 			if (!contains(currentElements, f)) {
 				functions.add(k, f);
 			}
@@ -59,7 +64,9 @@ class Functions {
 	void addAll(MultiValueMap<NameAndArgumentCount, Function> newFunctions) {
 
 		newFunctions.forEach((k, list) -> {
+
 			List<Function> currentElements = get(k);
+
 			list.stream() //
 					.filter(f -> !contains(currentElements, f)) //
 					.forEach(f -> functions.add(k, f));
@@ -82,7 +89,7 @@ class Functions {
 	 */
 	Optional<Function> get(String name, List<TypeDescriptor> argumentTypes) {
 
-		Stream<Function> candidates = get(new NameAndArgumentCount(name, argumentTypes.size())).stream() //
+		Stream<Function> candidates = get(NameAndArgumentCount.of(name, argumentTypes.size())).stream() //
 				.filter(f -> f.supports(argumentTypes));
 		return bestMatch(candidates.collect(Collectors.toList()), argumentTypes);
 	}
@@ -96,11 +103,13 @@ class Functions {
 		if (candidates.isEmpty()) {
 			return Optional.empty();
 		}
+
 		if (candidates.size() == 1) {
 			return Optional.of(candidates.get(0));
 		}
 
 		Optional<Function> exactMatch = candidates.stream().filter(f -> f.supportsExact(argumentTypes)).findFirst();
+
 		if (!exactMatch.isPresent()) {
 			throw new IllegalStateException(createErrorMessage(candidates, argumentTypes));
 		}
@@ -110,24 +119,22 @@ class Functions {
 
 	private static String createErrorMessage(List<Function> candidates, List<TypeDescriptor> argumentTypes) {
 
-		String argumentTypeString = String.join( //
-				",", //
-				argumentTypes.stream().map(TypeDescriptor::getName).collect(Collectors.toList()));
+		String argumentTypeString = argumentTypes.stream()//
+				.map(TypeDescriptor::getName)//
+				.collect(Collectors.joining(","));
 
-		String messageTemplate = "There are multiple matching methods of name '%s' for parameter types (%s), but no "
-				+ "exact match. Make sure to provide only one matching overload or one with exactly those types.";
-
-		return String.format(messageTemplate, candidates.get(0).getName(), argumentTypeString);
+		return String.format(MESSAGE_TEMPLATE, candidates.get(0).getName(), argumentTypeString);
 	}
 
 	@Value
-	@AllArgsConstructor
+	@AllArgsConstructor(access = AccessLevel.PRIVATE, staticName = "of")
 	static class NameAndArgumentCount {
+
 		String name;
 		int count;
 
 		static NameAndArgumentCount of(Method m) {
-			return new NameAndArgumentCount(m.getName(), m.getParameterCount());
+			return NameAndArgumentCount.of(m.getName(), m.getParameterCount());
 		}
 	}
 }

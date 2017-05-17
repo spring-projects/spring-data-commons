@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.query;
 
+import static org.springframework.data.util.StreamUtils.*;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -35,10 +37,10 @@ import org.springframework.data.repository.query.EvaluationContextExtensionInfor
 import org.springframework.data.repository.query.Functions.NameAndArgumentCount;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.Function;
-import org.springframework.data.util.MultiValueMapCollector;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldFilter;
@@ -55,6 +57,7 @@ import org.springframework.util.ReflectionUtils.MethodFilter;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @since 1.9
  */
 class EvaluationContextExtensionInformation {
@@ -248,14 +251,11 @@ class EvaluationContextExtensionInformation {
 		 * @return the methods
 		 */
 		public MultiValueMap<NameAndArgumentCount, Function> getFunctions(Optional<Object> target) {
+			return target.map(this::getFunctions).orElseGet(() -> new LinkedMultiValueMap<>());
+		}
 
-			return target.map( //
-					it -> methods.stream().collect( //
-							new MultiValueMapCollector<>( //
-									m -> NameAndArgumentCount.of(m), //
-									m -> new Function(m, it) //
-							))) //
-					.orElseGet(() -> CollectionUtils.toMultiValueMap(Collections.emptyMap()));
+		private MultiValueMap<NameAndArgumentCount, Function> getFunctions(Object target) {
+			return methods.stream().collect(toMultiMap(NameAndArgumentCount::of, m -> new Function(m, target)));
 		}
 
 		/**

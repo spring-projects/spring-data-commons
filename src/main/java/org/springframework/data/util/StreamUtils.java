@@ -88,6 +88,6 @@ public interface StreamUtils {
 	 */
 	public static <T, K, V> Collector<T, MultiValueMap<K, V>, MultiValueMap<K, V>> toMultiMap(Function<T, K> keyFunction,
 			Function<T, V> valueFunction) {
-		return new MultiValueMapCollector<T, K, V>(keyFunction, valueFunction);
+		return MultiValueMapCollector.of(keyFunction, valueFunction);
 	}
 }

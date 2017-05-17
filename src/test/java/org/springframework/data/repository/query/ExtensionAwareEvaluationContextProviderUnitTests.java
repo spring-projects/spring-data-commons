@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
@@ -273,7 +272,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 				.withMessageContaining("(java.lang.Integer)");
 	}
 
-	private ExtensionAwareEvaluationContextProvider createContextProviderWithOverloads() {
+	private static ExtensionAwareEvaluationContextProvider createContextProviderWithOverloads() {
 
 		return new ExtensionAwareEvaluationContextProvider(Collections.singletonList( //
 				new DummyExtension("_first", "first") {
