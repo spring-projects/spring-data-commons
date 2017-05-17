@@ -101,11 +101,23 @@ class Functions {
 		}
 
 		Optional<Function> exactMatch = candidates.stream().filter(f -> f.supportsExact(argumentTypes)).findFirst();
-		if (exactMatch.isPresent()) {
-			return exactMatch;
+		if (!exactMatch.isPresent()) {
+			throw new IllegalStateException(createErrorMessage(candidates, argumentTypes));
 		}
 
-		throw new IllegalStateException("There are multiple matching methods.");
+		return exactMatch;
+	}
+
+	private static String createErrorMessage(List<Function> candidates, List<TypeDescriptor> argumentTypes) {
+
+		String argumentTypeString = String.join( //
+				",", //
+				argumentTypes.stream().map(TypeDescriptor::getName).collect(Collectors.toList()));
+
+		String messageTemplate = "There are multiple matching methods of name '%s' for parameter types (%s), but no "
+				+ "exact match. Make sure to provide only one matching overload or one with exactly those types.";
+
+		return String.format(messageTemplate, candidates.get(0).getName(), argumentTypeString);
 	}
 
 	@Value

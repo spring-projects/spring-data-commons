@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
@@ -261,12 +262,15 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		assertThat(evaluateExpression("ambiguousOverloaded('aString')")).isEqualTo("string");
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACMNS-1026
+	@Test // DATACMNS-1026
 	public void throwsExceptionWhenStillAmbiguous() throws Exception {
 
 		provider = createContextProviderWithOverloads();
 
-		evaluateExpression("ambiguousOverloaded(23)");
+		assertThatExceptionOfType(IllegalStateException.class) //
+				.isThrownBy(() -> evaluateExpression("ambiguousOverloaded(23)")) //
+				.withMessageContaining("ambiguousOverloaded") //
+				.withMessageContaining("(java.lang.Integer)");
 	}
 
 	private ExtensionAwareEvaluationContextProvider createContextProviderWithOverloads() {
