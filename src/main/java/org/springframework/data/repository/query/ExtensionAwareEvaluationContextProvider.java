@@ -80,7 +80,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	/**
 	 * Creates a new {@link ExtensionAwareEvaluationContextProvider} for the given {@link EvaluationContextExtension}s.
 	 * 
-	 * @param adapters must not be {@literal null}.
+	 * @param extensions must not be {@literal null}.
 	 */
 	public ExtensionAwareEvaluationContextProvider(List<? extends EvaluationContextExtension> extensions) {
 
@@ -210,7 +210,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		/**
 		 * Creates a new {@link ExtensionAwarePropertyAccessor} for the given {@link EvaluationContextExtension}s.
 		 * 
-		 * @param adapters must not be {@literal null}.
+		 * @param extensions must not be {@literal null}.
 		 */
 		public ExtensionAwarePropertyAccessor(List<? extends EvaluationContextExtension> extensions) {
 
@@ -307,12 +307,12 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		}
 
 		/**
-		 * Returns a {@link MethodExecutor}
+		 * Returns a {@link MethodExecutor} wrapping a function from the adapter passed in as an argument.
 		 * 
-		 * @param adapter
-		 * @param name
-		 * @param argumentTypes
-		 * @return
+		 * @param adapter the source of functions to consider.
+		 * @param name the name of the function
+		 * @param argumentTypes the types of the arguments that the function must accept.
+		 * @return a matching {@link MethodExecutor}
 		 */
 		private Optional<MethodExecutor> getMethodExecutor(EvaluationContextExtensionAdapter adapter, String name,
 				List<TypeDescriptor> argumentTypes) {
@@ -329,7 +329,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * 
 		 * @param extension must not be {@literal null}.
 		 * @param name must not be {@literal null} or empty.
-		 * @return
+		 * @return a {@link TypedValue} matching the given parameters.
 		 */
 		private TypedValue lookupPropertyFrom(EvaluationContextExtensionAdapter extension, String name) {
 
@@ -424,25 +424,25 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		/**
 		 * Returns the extension identifier.
 		 * 
-		 * @return
+		 * @return the id of the extension
 		 */
-		public String getExtensionId() {
+		String getExtensionId() {
 			return extension.getExtensionId();
 		}
 
 		/**
 		 * Returns all functions exposed.
 		 * 
-		 * @return
+		 * @return all exposed functions.
 		 */
-		public FunctionsMap getFunctions() {
+		FunctionsMap getFunctions() {
 			return this.functions;
 		}
 
 		/**
 		 * Returns all properties exposed. Note, the value of a property can be a {@link Function} in turn
 		 * 
-		 * @return
+		 * @return a map from property name to property value.
 		 */
 		public Map<String, Object> getProperties() {
 			return this.properties;
