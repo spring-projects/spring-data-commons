@@ -33,7 +33,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 
 /**
- * {@link MultiValueMap} like datastructure to keep lists of
+ * {@link MultiValueMap} like data structure to keep lists of
  * {@link org.springframework.data.repository.query.spi.Function}s indexed by name and argument list length, where the
  * value lists are actually unique with respect to the signature.
  *
