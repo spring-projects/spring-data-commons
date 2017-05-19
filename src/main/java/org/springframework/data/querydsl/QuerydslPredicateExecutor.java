@@ -26,7 +26,7 @@ import com.querydsl.core.types.Predicate;
 
 /**
  * Interface to allow execution of QueryDsl {@link Predicate} instances.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
@@ -46,7 +46,7 @@ public interface QuerydslPredicateExecutor<T> {
 	/**
 	 * Returns all entities matching the given {@link Predicate}. In case no match could be found an empty
 	 * {@link Iterable} is returned.
-	 * 
+	 *
 	 * @param predicate can be {@literal null}.
 	 * @return all entities matching the given {@link Predicate}.
 	 */
@@ -55,7 +55,7 @@ public interface QuerydslPredicateExecutor<T> {
 	/**
 	 * Returns all entities matching the given {@link Predicate} applying the given {@link Sort}. In case no match could
 	 * be found an empty {@link Iterable} is returned.
-	 * 
+	 *
 	 * @param predicate can be {@literal null}.
 	 * @param sort the {@link Sort} specification to sort the results by, must not be {@literal null}.
 	 * @return all entities matching the given {@link Predicate}.
@@ -66,16 +66,16 @@ public interface QuerydslPredicateExecutor<T> {
 	/**
 	 * Returns all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s. In case no
 	 * match could be found an empty {@link Iterable} is returned.
-	 * 
+	 *
 	 * @param predicate can be {@literal null}.
-	 * @param orders the {@link OrderSpecifier}s to sort the results by
+	 * @param orders the {@link OrderSpecifier}s to sort the results by.
 	 * @return all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s.
 	 */
 	Iterable<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
 
 	/**
 	 * Returns all entities ordered by the given {@link OrderSpecifier}s.
-	 * 
+	 *
 	 * @param orders the {@link OrderSpecifier}s to sort the results by.
 	 * @return all entities ordered by the given {@link OrderSpecifier}s.
 	 */
@@ -84,7 +84,7 @@ public interface QuerydslPredicateExecutor<T> {
 	/**
 	 * Returns a {@link Page} of entities matching the given {@link Predicate}. In case no match could be found, an empty
 	 * {@link Page} is returned.
-	 * 
+	 *
 	 * @param predicate can be {@literal null}.
 	 * @param pageable must not be {@literal null}.
 	 * @return a {@link Page} of entities matching the given {@link Predicate}.
@@ -93,7 +93,7 @@ public interface QuerydslPredicateExecutor<T> {
 
 	/**
 	 * Returns the number of instances matching the given {@link Predicate}.
-	 * 
+	 *
 	 * @param predicate the {@link Predicate} to count instances for, can be {@literal null}.
 	 * @return the number of instances matching the {@link Predicate}.
 	 */
