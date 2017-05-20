@@ -78,7 +78,7 @@ public class PageableHandlerMethodArgumentResolver implements HandlerMethodArgum
 
 	/**
 	 * Configures the {@link Pageable} to be used as fallback in case no {@link PageableDefault} or
-	 * {@link PageableDefaults} (the latter only supported in legacy mode) can be found at the method parameter to be
+	 * {@link PageableDefault} (the latter only supported in legacy mode) can be found at the method parameter to be
 	 * resolved.
 	 * <p>
 	 * If you set this to {@literal null}, be aware that you controller methods will get {@literal null} handed into them
