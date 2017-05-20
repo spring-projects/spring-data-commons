@@ -1113,7 +1113,7 @@ String showUsers(Model model,
 
 you have to populate `foo_page` and `bar_page` etc.
 
-The default `Pageable` handed into the method is equivalent to a `new PageRequest(0, 20)` but can be customized using the `@PageableDefaults` annotation on the `Pageable` parameter.
+The default `Pageable` handed into the method is equivalent to a `new PageRequest(0, 20)` but can be customized using the `@PageableDefault` annotation on the `Pageable` parameter.
 
 [[core.web.pageables]]
 ==== Hypermedia support for Pageables
