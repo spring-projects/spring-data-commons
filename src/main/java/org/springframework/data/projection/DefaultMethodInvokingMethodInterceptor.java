@@ -21,11 +21,14 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Optional;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.ProxyMethodInvocation;
+import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -38,6 +41,7 @@ import org.springframework.util.ReflectionUtils;
 public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor {
 
 	private final MethodHandleLookup methodHandleLookup = MethodHandleLookup.getMethodHandleLookup();
+	private final Map<Method, MethodHandle> methodHandleCache = new ConcurrentReferenceHashMap<>(10, ReferenceType.WEAK);
 
 	/*
 	 * (non-Javadoc)
@@ -55,7 +59,20 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 		Object[] arguments = invocation.getArguments();
 		Object proxy = ((ProxyMethodInvocation) invocation).getProxy();
 
-		return methodHandleLookup.lookup(method).bindTo(proxy).invokeWithArguments(arguments);
+		return getMethodHandle(method).bindTo(proxy).invokeWithArguments(arguments);
+	}
+
+	private MethodHandle getMethodHandle(Method method) throws Exception {
+
+		MethodHandle handle = methodHandleCache.get(method);
+
+		if (handle == null) {
+
+			handle = methodHandleLookup.lookup(method);
+			methodHandleCache.put(method, handle);
+		}
+
+		return handle;
 	}
 
 	/**
