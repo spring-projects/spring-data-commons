@@ -15,20 +15,34 @@
  */
 package org.springframework.data.repository.config;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.config.ParsingUtils;
+import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.repository.core.support.RepositoryFragmentsFactoryBean;
 import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Builder to create {@link BeanDefinitionBuilder} instance to eventually create Spring Data repository instances.
@@ -36,6 +50,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Peter Rietzler
+ * @author Mark Paluch
  */
 class RepositoryBeanDefinitionBuilder {
 
@@ -106,6 +121,19 @@ class RepositoryBeanDefinitionBuilder {
 			builder.addDependsOn(it);
 		});
 
+		BeanDefinitionBuilder fragmentsBuilder = BeanDefinitionBuilder
+				.rootBeanDefinition(RepositoryFragmentsFactoryBean.class);
+
+		List<String> fragmentBeanNames = registerRepositoryFragmentsImplementation(configuration) //
+				.stream() //
+				.map(RepositoryFragmentConfiguration::getFragmentBeanName) //
+				.collect(Collectors.toList());
+
+		fragmentsBuilder.addConstructorArgValue(fragmentBeanNames);
+
+		builder.addPropertyValue("repositoryFragments",
+				ParsingUtils.getSourceBeanDefinition(fragmentsBuilder, configuration.getSource()));
+
 		RootBeanDefinition evaluationContextProviderDefinition = new RootBeanDefinition(
 				ExtensionAwareEvaluationContextProvider.class);
 		evaluationContextProviderDefinition.setSource(configuration.getSource());
@@ -139,5 +167,100 @@ class RepositoryBeanDefinitionBuilder {
 
 			return beanName;
 		});
+	}
+
+	private List<RepositoryFragmentConfiguration> registerRepositoryFragmentsImplementation(
+			RepositoryConfiguration<?> configuration) {
+
+		ClassMetadata classMetadata = getClassMetadata(configuration.getRepositoryInterface());
+
+		return Arrays.stream(classMetadata.getInterfaceNames())
+				.map(it -> detectRepositoryFragmentConfiguration(configuration, it)) //
+				.filter(Optional::isPresent) //
+				.map(Optional::get) //
+				.peek(it -> potentiallyRegisterFragmentImplementation(configuration, it)) //
+				.peek(it -> potentiallyRegisterRepositoryFragment(configuration, it)) //
+				.collect(Collectors.toList());
+	}
+
+	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(
+			RepositoryConfiguration<?> configuration, String fragmentInterfaceName) {
+
+		List<TypeFilter> exclusions = getExclusions(configuration);
+
+		String className = ClassUtils.getShortName(fragmentInterfaceName)
+				.concat(configuration.getConfigurationSource().getRepositoryImplementationPostfix().orElse("Impl"));
+
+		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(className, null,
+				configuration.getBasePackages(), exclusions, bd -> configuration.getConfigurationSource().generateBeanName(bd));
+
+		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterfaceName, bd));
+	}
+
+	private void potentiallyRegisterFragmentImplementation(RepositoryConfiguration<?> repositoryConfiguration,
+			RepositoryFragmentConfiguration fragmentConfiguration) {
+
+		String beanName = fragmentConfiguration.getImplementationBeanName();
+
+		// Already a bean configured?
+		if (registry.containsBeanDefinition(beanName)) {
+			return;
+		}
+
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(String.format("Registering repository fragment implementation: %s %s", beanName,
+					fragmentConfiguration.getClassName()));
+		}
+
+		fragmentConfiguration.getBeanDefinition().ifPresent(bd -> {
+
+			bd.setSource(repositoryConfiguration.getSource());
+
+			registry.registerBeanDefinition(beanName, bd);
+		});
+	}
+
+	private void potentiallyRegisterRepositoryFragment(RepositoryConfiguration<?> configuration,
+			RepositoryFragmentConfiguration fragmentConfiguration) {
+
+		String beanName = fragmentConfiguration.getFragmentBeanName();
+
+		// Already a bean configured?
+		if (registry.containsBeanDefinition(beanName)) {
+			return;
+		}
+
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Registering repository fragment: " + beanName);
+		}
+
+		BeanDefinitionBuilder fragmentBuilder = BeanDefinitionBuilder.rootBeanDefinition(RepositoryFragment.class,
+				"implemented");
+
+		fragmentBuilder.addConstructorArgValue(fragmentConfiguration.getInterfaceName());
+		fragmentBuilder.addConstructorArgReference(fragmentConfiguration.getImplementationBeanName());
+
+		registry.registerBeanDefinition(beanName,
+				ParsingUtils.getSourceBeanDefinition(fragmentBuilder, configuration.getSource()));
+	}
+
+	private ClassMetadata getClassMetadata(String className) {
+		try {
+			return metadataReaderFactory.getMetadataReader(className).getClassMetadata();
+		} catch (IOException e) {
+			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
+		}
+	}
+
+	private static List<TypeFilter> getExclusions(RepositoryConfiguration<?> configuration) {
+
+		List<TypeFilter> exclusions = new ArrayList<>();
+
+		for (TypeFilter typeFilter : configuration.getExcludeFilters()) {
+			exclusions.add(typeFilter);
+		}
+
+		exclusions.add(new AnnotationTypeFilter(NoRepositoryBean.class));
+		return exclusions;
 	}
 }

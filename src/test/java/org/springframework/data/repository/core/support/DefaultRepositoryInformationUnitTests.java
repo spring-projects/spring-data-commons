@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,8 @@ public class DefaultRepositoryInformationUnitTests {
 
 		Method method = FooRepository.class.getMethod("findById", Integer.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
-		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY, Optional.empty());
+		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, REPOSITORY,
+				RepositoryComposition.empty().withMethodLookup(MethodLookups.forRepositoryTypes(metadata)));
 
 		Method reference = information.getTargetClassMethod(method);
 		assertThat(reference.getDeclaringClass()).isEqualTo(REPOSITORY);
@@ -78,7 +79,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.empty());
+				RepositoryComposition.empty().withMethodLookup(MethodLookups.forRepositoryTypes(metadata)));
 
 		assertThat(information.getTargetClassMethod(method)).isEqualTo(method);
 	}
@@ -88,7 +89,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.of(customImplementation.getClass()));
+				RepositoryComposition.just(customImplementation));
 
 		Method source = FooRepositoryCustom.class.getMethod("save", User.class);
 		Method expected = customImplementation.getClass().getMethod("save", User.class);
@@ -101,7 +102,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.empty());
+				RepositoryComposition.empty());
 
 		assertThat(information.hasCustomMethod()).isFalse();
 	}
@@ -111,7 +112,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		DefaultRepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
 		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata,
-				PagingAndSortingRepository.class, Optional.empty());
+				PagingAndSortingRepository.class, RepositoryComposition.empty());
 
 		Method method = CustomRepository.class.getMethod("findAll", Pageable.class);
 		assertThat(information.isBaseClassMethod(method)).isTrue();
@@ -127,7 +128,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, PagingAndSortingRepository.class,
-				Optional.empty());
+				RepositoryComposition.empty());
 
 		assertThat(information.getQueryMethods()).isEmpty();
 	}
@@ -137,7 +138,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.empty());
+				RepositoryComposition.empty());
 
 		Method saveMethod = BaseRepository.class.getMethod("save", Object.class);
 		Method deleteMethod = BaseRepository.class.getMethod("delete", Object.class);
@@ -152,7 +153,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.empty());
+				RepositoryComposition.empty());
 
 		Method intermediateMethod = BaseRepository.class.getMethod("genericMethodToOverride", String.class);
 		Method concreteMethod = ConcreteRepository.class.getMethod("genericMethodToOverride", String.class);
@@ -168,7 +169,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.empty());
+				RepositoryComposition.empty());
 
 		Method queryMethod = getMethodFrom(ConcreteRepository.class, "findBySomethingDifferent");
 
@@ -181,7 +182,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.empty());
+				RepositoryComposition.empty());
 
 		Method method = BaseRepository.class.getMethod("findById", Object.class);
 
@@ -193,7 +194,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(BossRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.empty());
+				RepositoryComposition.empty());
 
 		Method method = BossRepository.class.getMethod("saveAll", Iterable.class);
 		Method reference = CrudRepository.class.getMethod("saveAll", Iterable.class);
@@ -206,7 +207,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomDefaultRepositoryMethodsRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.empty());
+				RepositoryComposition.empty());
 
 		assertThat(information.getQueryMethods()).allMatch(method -> !method.isBridge());
 	}
@@ -216,7 +217,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.of(customImplementation.getClass()));
+				RepositoryComposition.just(customImplementation));
 
 		Method source = FooRepositoryCustom.class.getMethod("exists", Object.class);
 		Method expected = customImplementation.getClass().getMethod("exists", Object.class);
@@ -230,7 +231,7 @@ public class DefaultRepositoryInformationUnitTests {
 		GenericsSaveRepositoryImpl customImplementation = new GenericsSaveRepositoryImpl();
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericsSaveRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, RepositoryFactorySupport.class,
-				Optional.of(customImplementation.getClass()));
+				RepositoryComposition.just(customImplementation).withMethodLookup(MethodLookups.forRepositoryTypes(metadata)));
 
 		Method customBaseRepositoryMethod = GenericsSaveRepository.class.getMethod("save", Object.class);
 		assertThat(information.isCustomMethod(customBaseRepositoryMethod)).isTrue();
@@ -241,7 +242,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.of(customImplementation.getClass()));
+				RepositoryComposition.just(customImplementation));
 
 		Method method = FooRepository.class.getMethod("staticMethod");
 
@@ -253,7 +254,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
-				Optional.of(customImplementation.getClass()));
+				RepositoryComposition.just(customImplementation));
 
 		Method method = FooRepository.class.getMethod("defaultMethod");
 
@@ -265,7 +266,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(DummyRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, DummyRepositoryImpl.class,
-				Optional.empty());
+				RepositoryComposition.empty());
 
 		Method method = DummyRepository.class.getMethod("saveAll", Iterable.class);
 
@@ -279,7 +280,7 @@ public class DefaultRepositoryInformationUnitTests {
 		SimpleSaveRepositoryImpl customImplementation = new SimpleSaveRepositoryImpl();
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(SimpleSaveRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, RepositoryFactorySupport.class,
-				Optional.of(customImplementation.getClass()));
+				RepositoryComposition.just(customImplementation).withMethodLookup(MethodLookups.forRepositoryTypes(metadata)));
 
 		Method customBaseRepositoryMethod = SimpleSaveRepository.class.getMethod("save", Object.class);
 		assertThat(information.isCustomMethod(customBaseRepositoryMethod)).isTrue();

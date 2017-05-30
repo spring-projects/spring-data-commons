@@ -15,7 +15,8 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
@@ -37,6 +38,7 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
  * Integration test for {@link RepositoryBeanDefinitionRegistrarSupport}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
@@ -63,6 +65,9 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		registrar.registerBeanDefinitions(metadata, registry);
 
 		assertBeanDefinitionRegisteredFor("myRepository");
+		assertBeanDefinitionRegisteredFor("composedRepository");
+		assertBeanDefinitionRegisteredFor("mixinImpl");
+		assertBeanDefinitionRegisteredFor("mixinImplFragment");
 		assertNoBeanDefinitionRegisteredFor("profileRepository");
 	}
 
@@ -100,7 +105,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 			setResourceLoader(new DefaultResourceLoader());
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getAnnotation()
 		 */
@@ -109,7 +114,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 			return EnableRepositories.class;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getExtension()
 		 */

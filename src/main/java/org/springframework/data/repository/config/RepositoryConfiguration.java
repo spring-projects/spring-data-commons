@@ -24,6 +24,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
  * Configuration information for a single repository instance.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public interface RepositoryConfiguration<T extends RepositoryConfigurationSource> {
 
@@ -60,14 +61,18 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 * Returns the class name of the custom implementation.
 	 *
 	 * @return
+	 * @deprecated since 2.0. Use repository compositions by creating mixins.
 	 */
+	@Deprecated
 	String getImplementationClassName();
 
 	/**
 	 * Returns the bean name of the custom implementation.
 	 *
 	 * @return
+	 * @deprecated since 2.0. Use repository compositions by creating mixins.
 	 */
+	@Deprecated
 	String getImplementationBeanName();
 
 	/**

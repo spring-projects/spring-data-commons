@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2016 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -48,6 +49,7 @@ import org.springframework.util.Assert;
  * @param <T> the type of the repository
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID>
 		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware,
@@ -59,6 +61,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private Key queryLookupStrategyKey;
 	private Optional<Class<?>> repositoryBaseClass = Optional.empty();
 	private Optional<Object> customImplementation = Optional.empty();
+	private Optional<RepositoryFragments> repositoryFragments = Optional.empty();
 	private NamedQueries namedQueries;
 	private Optional<MappingContext<?, ?>> mappingContext;
 	private ClassLoader classLoader;
@@ -108,6 +111,15 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public void setCustomImplementation(Object customImplementation) {
 		this.customImplementation = Optional.ofNullable(customImplementation);
+	}
+
+	/**
+	 * Setter to inject repository fragments.
+	 *
+	 * @param repositoryFragments
+	 */
+	public void setRepositoryFragments(RepositoryFragments repositoryFragments) {
+		this.repositoryFragments = Optional.ofNullable(repositoryFragments);
 	}
 
 	/**
@@ -190,7 +202,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getRepositoryInformation()
 	 */
 	public RepositoryInformation getRepositoryInformation() {
-		return this.factory.getRepositoryInformation(repositoryMetadata, customImplementation.map(Object::getClass));
+		return this.factory.getRepositoryInformation(repositoryMetadata,
+				customImplementation.map(RepositoryComposition::just).orElse(RepositoryComposition.empty()));
 	}
 
 	/*
@@ -251,10 +264,18 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 			this.factory.addRepositoryProxyPostProcessor(new EventPublishingRepositoryProxyPostProcessor(publisher));
 		}
 
-		repositoryBaseClass.ifPresent(it -> this.factory.setRepositoryBaseClass(it));
+		repositoryBaseClass.ifPresent(this.factory::setRepositoryBaseClass);
+
+		RepositoryFragments customImplementationFragment = customImplementation //
+				.map(RepositoryFragments::just) //
+				.orElseGet(RepositoryFragments::empty);
+
+		RepositoryFragments repositoryFragmentsToUse = this.repositoryFragments //
+				.orElseGet(RepositoryFragments::empty) //
+				.append(customImplementationFragment);
 
 		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
-		this.repository = Lazy.of(() -> this.factory.getRepository(repositoryInterface, customImplementation));
+		this.repository = Lazy.of(() -> this.factory.getRepository(repositoryInterface, repositoryFragmentsToUse));
 
 		if (!lazyInit) {
 			this.repository.get();
