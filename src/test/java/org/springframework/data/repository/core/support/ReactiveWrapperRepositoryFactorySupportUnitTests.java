@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.reactivex.Completable;
@@ -37,7 +37,7 @@ import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport} using reactive wrapper types.
- * 
+ *
  * @author Mark Paluch
  * @author Christoph Strobl
  */
