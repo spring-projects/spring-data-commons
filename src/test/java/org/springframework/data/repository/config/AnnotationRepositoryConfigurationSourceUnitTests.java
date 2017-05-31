@@ -38,6 +38,7 @@ import org.springframework.data.util.Streamable;
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 public class AnnotationRepositoryConfigurationSourceUnitTests {
 
@@ -62,14 +63,13 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 				.contains(AnnotationRepositoryConfigurationSourceUnitTests.class.getPackage().getName());
 	}
 
-	@Test // DATACMNS-47
+	@Test // DATACMNS-47, DATACMNS-102
 	public void evaluatesExcludeFiltersCorrectly() {
 
 		Streamable<BeanDefinition> candidates = source.getCandidates(new DefaultResourceLoader());
-		assertThat(candidates).hasSize(1);
 
-		BeanDefinition candidate = candidates.iterator().next();
-		assertThat(candidate.getBeanClassName()).isEqualTo(MyRepository.class.getName());
+		assertThat(candidates).hasSize(2).extracting("beanClassName").containsOnly(MyRepository.class.getName(),
+				ComposedRepository.class.getName());
 	}
 
 	@Test // DATACMNS-47

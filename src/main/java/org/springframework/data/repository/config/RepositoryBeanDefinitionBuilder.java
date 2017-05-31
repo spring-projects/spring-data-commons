@@ -15,20 +15,33 @@
  */
 package org.springframework.data.repository.config;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.data.repository.core.support.RepositoryCompositionFactoryBean;
+import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Builder to create {@link BeanDefinitionBuilder} instance to eventually create Spring Data repository instances.
@@ -36,6 +49,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Peter Rietzler
+ * @author Mark Paluch
  */
 class RepositoryBeanDefinitionBuilder {
 
@@ -106,6 +120,34 @@ class RepositoryBeanDefinitionBuilder {
 			builder.addDependsOn(it);
 		});
 
+		BeanDefinitionBuilder repositoryCompositionBuilder = BeanDefinitionBuilder
+				.rootBeanDefinition(RepositoryCompositionFactoryBean.class);
+		List<String> fragmentBeanNames = new ArrayList<>();
+
+		registerRepositoryFragmentsImplementation((RepositoryConfiguration<RepositoryConfigurationSource>) configuration)
+				.stream().peek(it -> {
+					fragmentBeanNames.add(it.getFragmentBeanName());
+					repositoryCompositionBuilder.addDependsOn(it.getFragmentBeanName());
+
+				}).forEach(it -> {
+
+					builder.addDependsOn(it.getFragmentBeanName());
+
+					if (registry.containsBeanDefinition(it.getFragmentBeanName())) {
+						return;
+					}
+
+					AbstractBeanDefinition fragmentDefinition = buildRepositoryFragmentBean(configuration, it);
+
+					registry.registerBeanDefinition(it.getFragmentBeanName(), fragmentDefinition);
+				});
+
+		repositoryCompositionBuilder.addConstructorArgValue(fragmentBeanNames);
+		AbstractBeanDefinition compositionBeanDefinition = repositoryCompositionBuilder.getBeanDefinition();
+		compositionBeanDefinition.setSource(configuration.getSource());
+
+		builder.addPropertyValue("repositoryComposition", compositionBeanDefinition);
+
 		RootBeanDefinition evaluationContextProviderDefinition = new RootBeanDefinition(
 				ExtensionAwareEvaluationContextProvider.class);
 		evaluationContextProviderDefinition.setSource(configuration.getSource());
@@ -113,6 +155,19 @@ class RepositoryBeanDefinitionBuilder {
 		builder.addPropertyValue("evaluationContextProvider", evaluationContextProviderDefinition);
 
 		return builder;
+	}
+
+	public AbstractBeanDefinition buildRepositoryFragmentBean(RepositoryConfiguration<?> configuration,
+			RepositoryFragmentConfiguration it) {
+		BeanDefinitionBuilder fragmentBuilder = BeanDefinitionBuilder.rootBeanDefinition(RepositoryFragment.class,
+				"implemented");
+
+		fragmentBuilder.addConstructorArgValue(it.getInterfaceName());
+		fragmentBuilder.addConstructorArgReference(it.getImplementationBeanName());
+
+		AbstractBeanDefinition fragmentFactoryBeanDefinition = fragmentBuilder.getBeanDefinition();
+		fragmentFactoryBeanDefinition.setSource(configuration.getSource());
+		return fragmentFactoryBeanDefinition;
 	}
 
 	private Optional<String> registerCustomImplementation(RepositoryConfiguration<?> configuration) {
@@ -139,5 +194,60 @@ class RepositoryBeanDefinitionBuilder {
 
 			return beanName;
 		});
+	}
+
+	private List<RepositoryFragmentConfiguration> registerRepositoryFragmentsImplementation(
+			RepositoryConfiguration<RepositoryConfigurationSource> configuration) {
+
+		List<TypeFilter> exclusions = new ArrayList<>();
+
+		for (TypeFilter typeFilter : configuration.getExcludeFilters()) {
+			exclusions.add(typeFilter);
+		}
+
+		exclusions.add(new AnnotationTypeFilter(NoRepositoryBean.class));
+
+		ClassMetadata classMetadata = getClassMetadata(configuration.getRepositoryInterface());
+
+		return Arrays.stream(classMetadata.getInterfaceNames()).map(it -> {
+
+			String className = ClassUtils.getShortName(it)
+					.concat(configuration.getConfigurationSource().getRepositoryImplementationPostfix().orElse("Impl"));
+
+			Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(className,
+					null, configuration.getBasePackages(), exclusions,
+					bd -> configuration.getConfigurationSource().generateBeanName(bd));
+
+			return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(it, bd));
+		}).filter(Optional::isPresent).map(Optional::get).peek(it -> {
+
+			String beanName = it.getImplementationBeanName();
+
+			// Already a bean configured?
+			if (registry.containsBeanDefinition(beanName)) {
+				return;
+			}
+
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Registering custom repository implementation: " + it.getImplementationBeanName() + " "
+						+ it.getClassName());
+			}
+
+			it.getBeanDefinition().ifPresent(bd -> {
+
+				bd.setSource(configuration.getSource());
+
+				registry.registerBeanDefinition(beanName, bd);
+			});
+
+		}).collect(Collectors.toList());
+	}
+
+	private ClassMetadata getClassMetadata(String className) {
+		try {
+			return metadataReaderFactory.getMetadataReader(className).getClassMetadata();
+		} catch (IOException e) {
+			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
+		}
 	}
 }

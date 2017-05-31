@@ -264,10 +264,18 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		}
 
 		repositoryBaseClass.ifPresent(this.factory::setRepositoryBaseClass);
-		repositoryComposition.ifPresent(this.factory::setRepositoryComposition);
+
+		RepositoryComposition repositoryComposition = customImplementation.map(RepositoryComposition::just) //
+				.orElse(RepositoryComposition.empty()); //
+
+		repositoryComposition = this.repositoryComposition.map(RepositoryComposition::getFragments) //
+				.map(repositoryComposition::append) //
+				.orElse(repositoryComposition);
+
+		this.factory.setRepositoryComposition(repositoryComposition);
 
 		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
-		this.repository = Lazy.of(() -> this.factory.getRepository(repositoryInterface, customImplementation));
+		this.repository = Lazy.of(() -> this.factory.getRepository(repositoryInterface));
 
 		if (!lazyInit) {
 			this.repository.get();

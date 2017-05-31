@@ -29,9 +29,10 @@ import org.springframework.data.repository.config.RepositoryBeanDefinitionRegist
 
 /**
  * Integration tests for {@link RepositoryBeanDefinitionRegistrarSupport}.
- * 
+ *
  * @author Oliver Gierke
  * @author Peter Rietzler
+ * @author Mark Paluch
  */
 public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 
@@ -84,5 +85,10 @@ public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 	@Test // DATACMNS-544
 	public void registersExtensionAsBeanDefinition() {
 		assertThat(context.getBean(DummyConfigurationExtension.class)).isNotNull();
+	}
+
+	@Test // DATACMNS-102
+	public void composedRepositoriesShouldBeAssembledCorrectly() {
+		assertThat(context.getBean(ComposedRepository.class).getOne()).isEqualTo("one");
 	}
 }
