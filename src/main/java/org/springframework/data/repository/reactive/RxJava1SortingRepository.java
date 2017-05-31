@@ -27,11 +27,13 @@ import org.springframework.data.repository.NoRepositoryBean;
  *
  * @author Mark Paluch
  * @since 2.0
+ * @deprecated interface to be removed in 2.0 RC1.
  * @see Sort
  * @see Single
  * @see Observable
  * @see RxJava1CrudRepository
  */
+@Deprecated
 @NoRepositoryBean
 public interface RxJava1SortingRepository<T, ID> extends RxJava1CrudRepository<T, ID> {
 

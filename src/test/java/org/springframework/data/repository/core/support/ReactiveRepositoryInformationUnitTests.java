@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import reactor.core.publisher.Flux;
 import rx.Observable;
@@ -29,10 +30,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.reactivestreams.Publisher;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
-import org.springframework.data.repository.reactive.RxJava1CrudRepository;
 import org.springframework.data.repository.reactive.RxJava2CrudRepository;
 
 /**
@@ -133,7 +134,12 @@ public class ReactiveRepositoryInformationUnitTests {
 		return information.getTargetClassMethod(repositoryType.getMethod(methodName, args));
 	}
 
-	interface RxJava1InterfaceWithGenerics extends RxJava1CrudRepository<User, String> {}
+	interface RxJava1InterfaceWithGenerics extends Repository<User, String> {
+
+		Observable<User> saveAll(Observable<User> entities);
+
+		Completable deleteAll();
+	}
 
 	interface RxJava2InterfaceWithGenerics extends RxJava2CrudRepository<User, String> {}
 

@@ -28,9 +28,11 @@ import org.springframework.data.repository.Repository;
  *
  * @author Mark Paluch
  * @since 2.0
+ * @deprecated interface to be removed in 2.0 RC1.
  * @see Single
  * @see Observable
  */
+@Deprecated
 @NoRepositoryBean
 public interface RxJava1CrudRepository<T, ID> extends Repository<T, ID> {
 
