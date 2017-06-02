@@ -1463,7 +1463,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			try {
 
 				Method defineClass = getClassLoaderMethod(persistentEntity);
-				defineClass.setAccessible(true);
 
 				return (Class<?>) defineClass.invoke(classLoader, name, bytes, offset, len,
 						persistentEntity.getClass().getProtectionDomain());
@@ -1478,8 +1477,19 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			ClassLoader classLoader = entity.getType().getClassLoader();
 			Class<?> classLoaderClass = classLoader.getClass();
 
-			return ReflectionUtils.findMethod(classLoaderClass, "defineClass", String.class, byte[].class, Integer.TYPE,
-					Integer.TYPE, ProtectionDomain.class);
+			Method defineClass = ReflectionUtils.findMethod( //
+					classLoaderClass, //
+					"defineClass", //
+					String.class, //
+					byte[].class, //
+					Integer.TYPE, //
+					Integer.TYPE, //
+					ProtectionDomain.class //
+			);
+
+			defineClass.setAccessible(true);
+
+			return defineClass;
 		}
 	}
 }
