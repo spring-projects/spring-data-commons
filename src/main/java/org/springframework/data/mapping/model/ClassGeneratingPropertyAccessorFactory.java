@@ -101,15 +101,12 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 
-		try {
-			Evil.getClassLoaderMethod(entity);
-		} catch (Exception o_O) {
-			return false;
-		}
+		return isClassLoaderDefineClassAccessible(entity) //
+				&& isTypeInjectable(entity) //
+				&& arePropertyHashCodesUnique(entity);
+	}
 
-		if (entity.getType().getClassLoader() == null || entity.getType().getPackage().getName().startsWith("java")) {
-			return false;
-		}
+	private boolean arePropertyHashCodesUnique(PersistentEntity<?, ?> entity) {
 
 		final Set<Integer> hashCodes = new HashSet<>();
 		final AtomicInteger propertyCount = new AtomicInteger();
@@ -130,6 +127,20 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		});
 
 		return hashCodes.size() == propertyCount.get();
+	}
+
+	private static boolean isTypeInjectable(PersistentEntity<?, ?> entity) {
+		return entity.getType().getClassLoader() != null && !entity.getType().getPackage().getName().startsWith("java");
+	}
+
+	private static boolean isClassLoaderDefineClassAccessible(PersistentEntity<?, ?> entity) {
+
+		try {
+			Evil.getClassLoaderMethod(entity);
+		} catch (Exception o_O) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
