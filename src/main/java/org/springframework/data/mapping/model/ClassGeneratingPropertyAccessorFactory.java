@@ -61,6 +61,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Mark Paluch
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @since 1.13
  */
 public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
@@ -91,7 +92,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	/**
 	 * Checks whether an accessor class can be generated.
 	 *
-	 * @param entity
+	 * @param entity must not be {@literal null}.
 	 * @return {@literal true} if the runtime is equal or greater to Java 1.7, we can access the ClassLoader, the property
 	 *         name hash codes are unique and the type has a class loader we can use to re-inject types.
 	 * @see PersistentPropertyAccessorFactory#isSupported(PersistentEntity)
@@ -101,15 +102,27 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 
-		return isClassLoaderDefineClassAccessible(entity) //
-				&& isTypeInjectable(entity) //
-				&& arePropertyHashCodesUnique(entity);
+		return isClassLoaderDefineClassAccessible(entity) && isTypeInjectable(entity) && hasUniquePropertyHashCodes(entity);
 	}
 
-	private boolean arePropertyHashCodesUnique(PersistentEntity<?, ?> entity) {
+	private static boolean isClassLoaderDefineClassAccessible(PersistentEntity<?, ?> entity) {
 
-		final Set<Integer> hashCodes = new HashSet<>();
-		final AtomicInteger propertyCount = new AtomicInteger();
+		try {
+			Evil.getClassLoaderMethod(entity);
+		} catch (Exception o_O) {
+			return false;
+		}
+		return true;
+	}
+
+	private static boolean isTypeInjectable(PersistentEntity<?, ?> entity) {
+		return entity.getType().getClassLoader() != null && !entity.getType().getPackage().getName().startsWith("java");
+	}
+
+	private boolean hasUniquePropertyHashCodes(PersistentEntity<?, ?> entity) {
+
+		Set<Integer> hashCodes = new HashSet<>();
+		AtomicInteger propertyCount = new AtomicInteger();
 
 		entity.doWithProperties((SimplePropertyHandler) property -> {
 
@@ -129,23 +142,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		return hashCodes.size() == propertyCount.get();
 	}
 
-	private static boolean isTypeInjectable(PersistentEntity<?, ?> entity) {
-		return entity.getType().getClassLoader() != null && !entity.getType().getPackage().getName().startsWith("java");
-	}
-
-	private static boolean isClassLoaderDefineClassAccessible(PersistentEntity<?, ?> entity) {
-
-		try {
-			Evil.getClassLoaderMethod(entity);
-		} catch (Exception o_O) {
-			return false;
-		}
-		return true;
-	}
-
 	/**
 	 * @param entity must not be {@literal null}.
-	 * @return
 	 */
 	private synchronized Class<PersistentPropertyAccessor> potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
 			PersistentEntity<?, ?> entity) {
@@ -277,28 +275,19 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		/**
 		 * Generate a new class for the given {@link PersistentEntity}.
-		 *
-		 * @param entity
-		 * @return
 		 */
-		public static Class<?> generateCustomAccessorClass(PersistentEntity<?, ?> entity) {
+		static Class<?> generateCustomAccessorClass(PersistentEntity<?, ?> entity) {
 
 			String className = generateClassName(entity);
 			byte[] bytecode = generateBytecode(className.replace('.', '/'), entity);
 
-			Class<?> accessorClass = Evil.defineClass(className, bytecode, 0, bytecode.length, entity);
-
-			return accessorClass;
+			return Evil.defineClass(className, bytecode, 0, bytecode.length, entity);
 		}
 
 		/**
 		 * Generate a new class for the given {@link PersistentEntity}.
-		 *
-		 * @param internalClassName
-		 * @param entity
-		 * @return
 		 */
-		public static byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity) {
+		static byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity) {
 
 			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 			cw.visit(Opcodes.V1_6, ACC_PUBLIC + ACC_SUPER, internalClassName, null, JAVA_LANG_OBJECT, IMPLEMENTED_INTERFACES);
@@ -344,10 +333,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * 	// ...
 		 * }
 		 * </pre>
-		 *
-		 * @param entity
-		 * @param persistentProperties
-		 * @param cw
 		 */
 		private static void visitFields(PersistentEntity<?, ?> entity, List<PersistentProperty<?>> persistentProperties,
 				ClassWriter cw) {
@@ -394,10 +379,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 *      }
 		 * }
 		 * </pre>
-		 *
-		 * @param entity
-		 * @param internalClassName
-		 * @param cw
 		 */
 		private static void visitDefaultConstructor(PersistentEntity<?, ?> entity, String internalClassName,
 				ClassWriter cw) {
@@ -466,11 +447,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 *  		// ...
 		 *        }
 		 * </pre>
-		 *
-		 * @param entity
-		 * @param persistentProperties
-		 * @param internalClassName
-		 * @param cw
 		 */
 		private static void visitStaticInitializer(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, ClassWriter cw) {
@@ -532,9 +508,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		/**
 		 * Retrieve all classes which are involved in property/getter/setter declarations as these elements may be
 		 * distributed across the type hierarchy.
-		 *
-		 * @param persistentProperties
-		 * @return
 		 */
 		private static List<Class<?>> getPropertyDeclaratingClasses(List<PersistentProperty<?>> persistentProperties) {
 
@@ -549,11 +522,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		/**
 		 * Generate property getter initializer.
-		 *
-		 * @param property
-		 * @param mv
-		 * @param entityClasses
-		 * @param internalClassName
 		 */
 		private static void visitPropertyGetterInitializer(PersistentProperty<?> property, MethodVisitor mv,
 				List<Class<?>> entityClasses, String internalClassName) {
@@ -594,11 +562,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		/**
 		 * Generate property setter initializer.
-		 *
-		 * @param property
-		 * @param mv
-		 * @param entityClasses
-		 * @param internalClassName
 		 */
 		private static void visitPropertySetterInitializer(PersistentProperty<?> property, MethodVisitor mv,
 				List<Class<?>> entityClasses, String internalClassName) {
@@ -653,11 +616,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		/**
 		 * Generate field getter and setter initializers.
-		 *
-		 * @param property
-		 * @param mv
-		 * @param entityClasses
-		 * @param internalClassName
 		 */
 		private static void visitFieldGetterSetterInitializer(PersistentProperty<?> property, MethodVisitor mv,
 				List<Class<?>> entityClasses, String internalClassName) {
@@ -744,11 +702,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 *        }
 		 * }
 		 * </pre>
-		 *
-		 * @param entity
-		 * @param persistentProperties
-		 * @param internalClassName
-		 * @param cw
 		 */
 		private static void visitGetProperty(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, ClassWriter cw) {
@@ -795,11 +748,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		/**
 		 * Generate the {@code switch(hashcode) {label: }} block.
-		 *
-		 * @param entity
-		 * @param persistentProperties
-		 * @param internalClassName
-		 * @param mv
 		 */
 		private static void visitGetPropertySwitch(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, MethodVisitor mv) {
@@ -846,11 +794,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * Generate property read access using a {@link java.lang.invoke.MethodHandle}.
 		 * {@link java.lang.invoke.MethodHandle#invoke(Object...)} have a {@code @PolymorphicSignature} so {@code invoke} is
 		 * called as if the method had the expected signature and not array/varargs.
-		 *
-		 * @param entity
-		 * @param property
-		 * @param mv
-		 * @param internalClassName
 		 */
 		private static void visitGetProperty0(PersistentEntity<?, ?> entity, PersistentProperty<?> property,
 				MethodVisitor mv, String internalClassName) {
@@ -912,7 +855,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		}
 
 		/**
-		 * Generate the {@link PersistentPropertyAccessor#setProperty(PersistentProperty, Object)} method. *
+		 * Generate the {@link PersistentPropertyAccessor#setProperty(PersistentProperty, Optional)} method. *
 		 *
 		 * <pre>
 		 * {
@@ -930,11 +873,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 *        }
 		 *    }
 		 * </pre>
-		 *
-		 * @param entity
-		 * @param persistentProperties
-		 * @param internalClassName
-		 * @param cw
 		 */
 		private static void visitSetProperty(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, ClassWriter cw) {
@@ -996,11 +934,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		/**
 		 * Generate the {@code switch(hashcode) {label: }} block.
-		 *
-		 * @param entity
-		 * @param persistentProperties
-		 * @param internalClassName
-		 * @param mv
 		 */
 		private static void visitSetPropertySwitch(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, MethodVisitor mv) {
@@ -1045,11 +978,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * Generate property write access using a {@link java.lang.invoke.MethodHandle}. NOTE:
 		 * {@link java.lang.invoke.MethodHandle#invoke(Object...)} have a {@code @PolymorphicSignature} so {@code invoke} is
 		 * called as if the method had the expected signature and not array/varargs.
-		 *
-		 * @param entity
-		 * @param property
-		 * @param mv
-		 * @param internalClassName
 		 */
 		private static void visitSetProperty0(PersistentEntity<?, ?> entity, PersistentProperty<?> property,
 				MethodVisitor mv, String internalClassName) {
@@ -1178,11 +1106,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		private static boolean isDefault(int modifiers) {
 
-			if (Modifier.isPrivate(modifiers) || Modifier.isProtected(modifiers) || Modifier.isPublic(modifiers)) {
-				return false;
-			}
-
-			return true;
+			return !(Modifier.isPrivate(modifiers) || Modifier.isProtected(modifiers) || Modifier.isPublic(modifiers));
 		}
 
 		private static boolean generateSetterMethodHandle(PersistentEntity<?, ?> entity, Field field) {
@@ -1193,10 +1117,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * Check whether to generate {@link java.lang.invoke.MethodHandle} access. Checks visibility rules of the member and
 		 * its declaring class. Use also {@link java.lang.invoke.MethodHandle} if visibility is protected/package-default
 		 * and packages of the declaring types are different.
-		 *
-		 * @param entity
-		 * @param member
-		 * @return
 		 */
 		private static boolean generateMethodHandle(PersistentEntity<?, ?> entity, Member member) {
 
@@ -1217,19 +1137,11 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		/**
 		 * Retrieves the class variable index with an offset of {@code 4}.
-		 *
-		 * @param list
-		 * @param item
-		 * @return
 		 */
 		private static int classVariableIndex4(List<Class<?>> list, Class<?> item) {
 			return 4 + list.indexOf(item);
 		}
 
-		/**
-		 * @param entity
-		 * @return
-		 */
 		private static String generateClassName(PersistentEntity<?, ?> entity) {
 			return entity.getType().getName() + TAG + Integer.toString(entity.hashCode(), 36);
 		}
@@ -1259,9 +1171,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 	/**
 	 * Returns the appropriate autoboxing type.
-	 *
-	 * @param unboxed
-	 * @return
 	 */
 	private static Class<?> autoboxType(Class<?> unboxed) {
 
@@ -1380,9 +1289,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 	/**
 	 * Returns the signature type for a {@link Class} including primitives.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @return
 	 */
 	private static String signatureTypeName(Class<?> type) {
 
@@ -1459,13 +1365,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		/**
 		 * Define a Class in the {@link ClassLoader} of the {@link PersistentEntity} type.
-		 *
-		 * @param name
-		 * @param bytes
-		 * @param offset
-		 * @param len
-		 * @param persistentEntity
-		 * @return
 		 */
 		Class<?> defineClass(String name, byte[] bytes, int offset, int len, PersistentEntity<?, ?> persistentEntity) {
 
@@ -1488,15 +1387,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			ClassLoader classLoader = entity.getType().getClassLoader();
 			Class<?> classLoaderClass = classLoader.getClass();
 
-			Method defineClass = ReflectionUtils.findMethod( //
-					classLoaderClass, //
-					"defineClass", //
-					String.class, //
-					byte[].class, //
-					Integer.TYPE, //
-					Integer.TYPE, //
-					ProtectionDomain.class //
-			);
+			Method defineClass = ReflectionUtils.findMethod(classLoaderClass, "defineClass", String.class, byte[].class,
+					Integer.TYPE, Integer.TYPE, ProtectionDomain.class);
 
 			defineClass.setAccessible(true);
 
