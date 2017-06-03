@@ -45,5 +45,5 @@ public interface PagingAndSortingRepository<T, ID> extends CrudRepository<T, ID>
 	 * @param pageable
 	 * @return a page of entities
 	 */
-	<S extends Sort> Page<T> findAll(Pageable pageable);
+	Page<T> findAll(Pageable pageable);
 }
