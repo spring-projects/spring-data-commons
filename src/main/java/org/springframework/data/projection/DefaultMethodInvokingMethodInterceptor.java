@@ -52,7 +52,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 
 		Method method = invocation.getMethod();
 
-		if (!method.isDefault()) {
+		if (!org.springframework.data.util.ReflectionUtils.isDefaultMethod(method)) {
 			return invocation.proceed();
 		}
 
