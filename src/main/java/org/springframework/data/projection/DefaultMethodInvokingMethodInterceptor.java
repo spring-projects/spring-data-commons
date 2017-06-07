@@ -21,6 +21,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -163,13 +164,10 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 		 */
 		public static MethodHandleLookup getMethodHandleLookup() {
 
-			for (MethodHandleLookup lookup : MethodHandleLookup.values()) {
-				if (lookup.isAvailable()) {
-					return lookup;
-				}
-			}
-
-			throw new IllegalStateException("No MethodHandleLookup available!");
+			return Arrays.stream(MethodHandleLookup.values()) //
+					.filter(it -> it.isAvailable()) //
+					.findFirst() //
+					.orElseThrow(() -> new IllegalStateException("No MethodHandleLookup available!"));
 		}
 
 		private static Optional<Constructor<Lookup>> getLookupConstructor() {
