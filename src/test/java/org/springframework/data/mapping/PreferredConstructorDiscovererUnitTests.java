@@ -29,8 +29,9 @@ import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link PreferredConstructorDiscoverer}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Roman Rodov
  */
 public class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
@@ -104,6 +105,34 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 			Parameter<?, P> parameter = constructor.getParameters().iterator().next();
 			assertThat(constructor.isEnclosingClassParameter(parameter)).isTrue();
 		});
+	}
+
+	@Test // DATACMNS-1082
+	public void skipsSyntheticConstructor() {
+
+		PersistentEntity<SyntheticConstructor, P> entity = new BasicPersistentEntity<>(ClassTypeInformation.from(SyntheticConstructor.class));
+		PreferredConstructorDiscoverer<SyntheticConstructor, P> discoverer = new PreferredConstructorDiscoverer<>(entity);
+
+		assertThat(discoverer.getConstructor()).hasValueSatisfying(constructor -> {
+
+			PersistenceConstructor annotation = constructor.getConstructor().getAnnotation(PersistenceConstructor.class);
+			assertThat(annotation).isNotNull();
+			assertThat(constructor.getConstructor().isSynthetic()).isFalse();
+		});
+	}
+
+	static class SyntheticConstructor {
+		@PersistenceConstructor
+		private SyntheticConstructor(String x) {
+		}
+
+		class InnerSynthetic {
+			// Compiler will generate a synthetic constructor since
+			// SyntheticConstructor() is private.
+			InnerSynthetic() {
+				new SyntheticConstructor("");
+			}
+		}
 	}
 
 	static class EntityWithoutConstructor {
