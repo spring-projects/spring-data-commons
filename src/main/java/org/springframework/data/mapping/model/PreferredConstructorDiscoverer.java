@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.data.util.TypeInformation;
  * Helper class to find a {@link PreferredConstructor}.
  * 
  * @author Oliver Gierke
+ * @author Roman Rodov
  */
 public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
 
@@ -72,6 +73,11 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 		for (Constructor<?> candidate : rawOwningType.getDeclaredConstructors()) {
 
 			PreferredConstructor<T, P> preferredConstructor = buildPreferredConstructor(candidate, type, entity);
+
+			// Synthetic constructors should not be considered
+			if (preferredConstructor.getConstructor().isSynthetic()) {
+				continue;
+			}
 
 			// Explicitly defined constructor trumps all
 			if (preferredConstructor.isExplicitlyAnnotated()) {
