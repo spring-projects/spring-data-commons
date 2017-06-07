@@ -29,7 +29,7 @@ import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link PreferredConstructorDiscoverer}.
- * 
+ *
  * @author Oliver Gierke
  * @author Roman Rodov
  */
