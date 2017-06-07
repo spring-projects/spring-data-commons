@@ -34,6 +34,7 @@ import org.springframework.data.util.TypeInformation;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Roman Rodov
  */
 public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
 
@@ -74,6 +75,11 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 		for (Constructor<?> candidate : rawOwningType.getDeclaredConstructors()) {
 
 			PreferredConstructor<T, P> preferredConstructor = buildPreferredConstructor(candidate, type, entity);
+
+			// Synthetic constructors should not be considered
+			if (preferredConstructor.getConstructor().isSynthetic()) {
+				continue;
+			}
 
 			// Explicitly defined constructor trumps all
 			if (preferredConstructor.isExplicitlyAnnotated()) {
