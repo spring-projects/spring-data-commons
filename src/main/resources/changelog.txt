@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.12.11.RELEASE (2017-06-07)
+-----------------------------------------------
+* DATACMNS-1082 - Synthetic constructors should not be considered persistence constructors.
+* DATACMNS-1074 - Avoid hidden exceptions from Lookup.unreflectSpecial(…) in default method invocations.
+* DATACMNS-1062 - Make sure Travis builds always use fresh dependencies.
+* DATACMNS-1046 - Release 1.12.11 (Hopper SR11).
+
+
 Changes in version 2.0.0.M3 (2017-05-09)
 ----------------------------------------
 * DATACMNS-1057 - Remove Optionals from Querydsl SingleValueBinding.
