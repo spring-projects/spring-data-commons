@@ -86,7 +86,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 		 * Open (via reflection construction of {@link MethodHandles.Lookup}) method handle lookup. Works with Java 8 and
 		 * with Java 9 permitting illegal access.
 		 */
-		Open {
+		OPEN {
 
 			private final Optional<Constructor<Lookup>> constructor = getLookupConstructor();
 
@@ -116,7 +116,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 		/**
 		 * Encapsulated {@link MethodHandle} lookup working on Java 9.
 		 */
-		Encapsulated {
+		ENCAPSULATED {
 
 			/*
 			 * (non-Javadoc)
@@ -180,6 +180,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 				ReflectionUtils.makeAccessible(constructor);
 
 				return Optional.of(constructor);
+
 			} catch (Exception ex) {
 
 				// this is the signal that we are on Java 9 (encapsulated) and can't use the accessible constructor approach.
