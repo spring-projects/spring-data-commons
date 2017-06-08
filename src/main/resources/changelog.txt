@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.4.RELEASE (2017-06-08)
+----------------------------------------------
+* DATACMNS-1082 - Synthetic constructors should not be considered persistence constructors.
+* DATACMNS-1074 - Avoid hidden exceptions from Lookup.unreflectSpecial(…) in default method invocations.
+* DATACMNS-1067 - EventPublishingRepositoryProxyPostProcessor tries to call clearing method on plain method argument.
+* DATACMNS-1066 - AccessControlException from ClassGeneratingPropertyAccessorFactory.
+* DATACMNS-1065 - Add support for Vavr (successor of Javaslang).
+* DATACMNS-1062 - Make sure Travis builds always use fresh dependencies.
+* DATACMNS-1047 - Release 1.13.4 (Ingalls SR4).
+
+
 Changes in version 1.12.11.RELEASE (2017-06-07)
 -----------------------------------------------
 * DATACMNS-1082 - Synthetic constructors should not be considered persistence constructors.
