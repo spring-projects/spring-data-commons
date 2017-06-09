@@ -51,6 +51,7 @@ import com.google.common.base.Optional;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Maciek Opała
+ * @author Jacek Jackowiak
  */
 public class QueryExecutionConvertersUnitTests {
 
@@ -240,6 +241,22 @@ public class QueryExecutionConvertersUnitTests {
 	public void unwrapsVavrOption() {
 		assertThat(QueryExecutionConverters.unwrap(vavrOption("string")), is((Object) "string"));
 	}
+
+	@Test // DATACMNS-1087
+	public void wrapsValueIntoVavrOption() {
+
+		io.vavr.control.Option<?> result = conversionService.convert(new NullableWrapper("string"),
+				io.vavr.control.Option.class);
+
+		assertThat(result.isEmpty(), is(false));
+		assertThat(result.get(), is((Object) "string"));
+	}
+
+    @Test // DATACMNS-1087
+    public void turnsNullIntoVavrOption() {
+        assertThat(conversionService.convert(new NullableWrapper(null), io.vavr.control.Option.class),
+                is((Object) vavrOptionNone()));
+    }
 
 	@Test // DATACMNS-1065
 	public void conversListToVavr() {
