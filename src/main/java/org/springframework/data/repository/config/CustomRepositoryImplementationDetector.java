@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.repository.config;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -37,6 +33,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 /**
@@ -52,6 +49,7 @@ import org.springframework.util.Assert;
 public class CustomRepositoryImplementationDetector {
 
 	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
+	private static final String AMBIGUOUS_CUSTOM_IMPLEMENTATIONS = "Ambiguous custom implementations detected! Found %s but expected a single implementation!";
 
 	private final @NonNull MetadataReaderFactory metadataReaderFactory;
 	private final @NonNull Environment environment;
@@ -94,12 +92,10 @@ public class CustomRepositoryImplementationDetector {
 
 		Set<BeanDefinition> definitions = findCandidateBeanDefinitions(className, basePackages, excludeFilters);
 
-		SelectionSet<BeanDefinition> selection = new SelectionSet<>( //
-				definitions, //
-				c -> c.isEmpty() ? null : throwAmbiguousCustomImplementationException(c) //
-		).filterIfNecessary(bd -> beanName != null && beanName.equals(beanNameGenerator.apply(bd)));
-
-		return Optional.ofNullable((AbstractBeanDefinition) selection.uniqueResult());
+		return SelectionSet //
+				.of(definitions, c -> c.isEmpty() ? Optional.empty() : throwAmbiguousCustomImplementationException(c)) //
+				.filterIfNecessary(bd -> beanName != null && beanName.equals(beanNameGenerator.apply(bd)))//
+				.uniqueResult().map(it -> AbstractBeanDefinition.class.cast(it));
 	}
 
 	Set<BeanDefinition> findCandidateBeanDefinitions(String className, Iterable<String> basePackages,
@@ -116,31 +112,20 @@ public class CustomRepositoryImplementationDetector {
 		provider.setMetadataReaderFactory(metadataReaderFactory);
 		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
 
-		for (TypeFilter excludeFilter : excludeFilters) {
-			provider.addExcludeFilter(excludeFilter);
-		}
+		excludeFilters.forEach(it -> provider.addExcludeFilter(it));
 
-		Set<BeanDefinition> definitions = new HashSet<>();
-
-		for (String basePackage : basePackages) {
-			definitions.addAll(provider.findCandidateComponents(basePackage));
-		}
-
-		return definitions;
+		return Streamable.of(basePackages).stream()//
+				.flatMap(it -> provider.findCandidateComponents(it).stream())//
+				.collect(Collectors.toSet());
 	}
 
-	private static AbstractBeanDefinition throwAmbiguousCustomImplementationException(
+	private static Optional<BeanDefinition> throwAmbiguousCustomImplementationException(
 			Collection<BeanDefinition> definitions) {
 
-		List<String> implementationClassNames = new ArrayList<String>();
-		for (BeanDefinition bean : definitions) {
-			implementationClassNames.add(bean.getBeanClassName());
-		}
+		String implementationNames = definitions.stream()//
+				.map(BeanDefinition::getBeanClassName)//
+				.collect(Collectors.joining(", "));
 
-		throw new IllegalStateException(
-				String.format("Ambiguous custom implementations detected! Found %s but expected a single implementation!", //
-						definitions.stream()//
-								.map(BeanDefinition::getBeanClassName)//
-								.collect(Collectors.joining(", "))));
+		throw new IllegalStateException(String.format(AMBIGUOUS_CUSTOM_IMPLEMENTATIONS, implementationNames));
 	}
 }

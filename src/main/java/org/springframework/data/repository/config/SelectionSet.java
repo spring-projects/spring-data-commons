@@ -15,8 +15,10 @@
  */
 package org.springframework.data.repository.config;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -26,41 +28,35 @@ import java.util.stream.Collectors;
  * filters are ignored.
  *
  * @author Jens Schauder
+ * @author Oliver Gierke
+ * @since 2.0
  */
+@RequiredArgsConstructor(staticName = "of")
 class SelectionSet<T> {
 
 	private final Collection<T> collection;
-	private final Function<Collection<T>, T> fallback;
+	private final Function<Collection<T>, Optional<T>> fallback;
 
 	/**
 	 * creates a {@link SelectionSet} with a default fallback of {@literal null}, when no element is found and an
 	 * {@link IllegalStateException} when no element is found.
 	 */
-	SelectionSet(Collection<T> collection) {
-		this(collection, defaultFallback());
+	static <T> SelectionSet<T> of(Collection<T> collection) {
+		return new SelectionSet<>(collection, defaultFallback());
 	}
 
 	/**
-	 * @param collection The collection from which a unique element will get picked.
-	 * @param fallback Will get called once {@literal #uniqueResult} gets called if no unique result can be determined.
-	 */
-	SelectionSet(Collection<T> collection, Function<Collection<T>, T> fallback) {
-
-		this.collection = collection;
-		this.fallback = fallback;
-	}
-
-	/**
-	 * If this <code>SelectionSet</code> contains exactly one element it gets returned. If no unique result can
-	 * be identified the fallback function passed in at the constructor gets called and its return value becomes
-	 * the return value of this method.
+	 * If this {@code SelectionSet} contains exactly one element it gets returned. If no unique result can be identified
+	 * the fallback function passed in at the constructor gets called and its return value becomes the return value of
+	 * this method.
 	 *
 	 * @return a unique result, or the result of the callback provided in the constructor.
 	 */
-	T uniqueResult() {
-		T uniqueResult = findUniqueResult();
+	Optional<T> uniqueResult() {
 
-		return uniqueResult != null ? uniqueResult : fallback.apply(collection);
+		Optional<T> uniqueResult = findUniqueResult();
+
+		return uniqueResult.isPresent() ? uniqueResult : fallback.apply(collection);
 	}
 
 	/**
@@ -70,26 +66,22 @@ class SelectionSet<T> {
 	 */
 	SelectionSet<T> filterIfNecessary(Predicate<T> predicate) {
 
-		if (findUniqueResult() != null) {
-			return this;
-		}
-
-		List<T> fillteredList = collection.stream().filter(predicate).collect(Collectors.toList());
-		return new SelectionSet<T>(fillteredList, fallback);
+		return findUniqueResult().map(it -> this).orElseGet(
+				() -> new SelectionSet<T>(collection.stream().filter(predicate).collect(Collectors.toList()), fallback));
 	}
 
-	private static <S> Function<Collection<S>, S> defaultFallback() {
+	private static <S> Function<Collection<S>, Optional<S>> defaultFallback() {
 
 		return c -> {
 			if (c.isEmpty()) {
-				return null;
+				return Optional.empty();
 			} else {
 				throw new IllegalStateException("More then one element in collection.");
 			}
 		};
 	}
 
-	private T findUniqueResult() {
-		return collection.size() == 1 ? collection.iterator().next() : null;
+	private Optional<T> findUniqueResult() {
+		return Optional.ofNullable(collection.size() == 1 ? collection.iterator().next() : null);
 	}
 }

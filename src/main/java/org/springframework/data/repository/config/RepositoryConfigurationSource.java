@@ -15,13 +15,13 @@
  */
 package org.springframework.data.repository.config;
 
-import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.util.Streamable;
 
 /**
  * Interface containing the configurable options for the Spring Data repository subsystem.
@@ -46,7 +46,7 @@ public interface RepositoryConfigurationSource {
 	 * 
 	 * @return must not be {@literal null}.
 	 */
-	Iterable<String> getBasePackages();
+	Streamable<String> getBasePackages();
 
 	/**
 	 * Returns the {@link QueryLookupStrategy.Key} to define how query methods shall be resolved.
@@ -89,7 +89,7 @@ public interface RepositoryConfigurationSource {
 	 * @param loader
 	 * @return
 	 */
-	Collection<BeanDefinition> getCandidates(ResourceLoader loader);
+	Streamable<BeanDefinition> getCandidates(ResourceLoader loader);
 
 	/**
 	 * Returns the value for the {@link String} attribute with the given name. The name is expected to be handed in
@@ -115,12 +115,12 @@ public interface RepositoryConfigurationSource {
 	 *
 	 * @return must not be {@literal null}.
 	 */
-	Iterable<TypeFilter> getExcludeFilters();
+	Streamable<TypeFilter> getExcludeFilters();
 
 	/**
 	 * Returns a name for the beanDefinition.
 	 *
-	 * @param beanDefinition Must not be {@literal null}.
+	 * @param beanDefinition must not be {@literal null}.
 	 * @return
 	 * @since 2.0
 	 */

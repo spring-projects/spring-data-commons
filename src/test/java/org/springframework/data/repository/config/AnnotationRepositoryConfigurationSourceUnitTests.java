@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +31,7 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link AnnotationRepositoryConfigurationSource}.
@@ -65,7 +65,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-47
 	public void evaluatesExcludeFiltersCorrectly() {
 
-		Collection<BeanDefinition> candidates = source.getCandidates(new DefaultResourceLoader());
+		Streamable<BeanDefinition> candidates = source.getCandidates(new DefaultResourceLoader());
 		assertThat(candidates).hasSize(1);
 
 		BeanDefinition candidate = candidates.iterator().next();

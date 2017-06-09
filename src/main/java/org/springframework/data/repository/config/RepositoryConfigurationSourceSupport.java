@@ -15,15 +15,13 @@
  */
 package org.springframework.data.repository.config;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 /**
@@ -58,27 +56,20 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getCandidates(org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getCandidates(org.springframework.core.io.ResourceLoader)
 	 */
-	public Collection<BeanDefinition> getCandidates(ResourceLoader loader) {
+	@Override
+	public Streamable<BeanDefinition> getCandidates(ResourceLoader loader) {
 
 		RepositoryComponentProvider scanner = new RepositoryComponentProvider(getIncludeFilters());
 		scanner.setConsiderNestedRepositoryInterfaces(shouldConsiderNestedRepositories());
 		scanner.setResourceLoader(loader);
 		scanner.setEnvironment(environment);
 
-		for (TypeFilter filter : getExcludeFilters()) {
-			scanner.addExcludeFilter(filter);
-		}
+		getExcludeFilters().forEach(it -> scanner.addExcludeFilter(it));
 
-		Set<BeanDefinition> result = new HashSet<>();
-
-		for (String basePackage : getBasePackages()) {
-			Set<BeanDefinition> candidate = scanner.findCandidateComponents(basePackage);
-			result.addAll(candidate);
-		}
-
-		return result;
+		return Streamable.of(() -> getBasePackages().stream()//
+				.flatMap(it -> scanner.findCandidateComponents(it).stream()));
 	}
 
 	/**
@@ -87,8 +78,18 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 *
 	 * @return must not be {@literal null}.
 	 */
-	public Iterable<TypeFilter> getExcludeFilters() {
-		return Collections.emptySet();
+	@Override
+	public Streamable<TypeFilter> getExcludeFilters() {
+		return Streamable.empty();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBeanNameGenerator()
+	 */
+	@Override
+	public String generateBeanName(BeanDefinition beanDefinition) {
+		return beanNameGenerator.generateBeanName(beanDefinition);
 	}
 
 	/**
@@ -109,14 +110,5 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 */
 	public boolean shouldConsiderNestedRepositories() {
 		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBeanNameGenerator()
-	 */
-	@Override
-	public String generateBeanName(BeanDefinition beanDefinition) {
-		return beanNameGenerator.generateBeanName(beanDefinition);
 	}
 }

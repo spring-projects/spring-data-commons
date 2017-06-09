@@ -18,7 +18,6 @@ package org.springframework.data.repository.config;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +36,7 @@ import org.springframework.core.type.filter.AspectJTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -113,7 +113,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBasePackages()
 	 */
-	public Iterable<String> getBasePackages() {
+	public Streamable<String> getBasePackages() {
 
 		String[] value = attributes.getStringArray("value");
 		String[] basePackages = attributes.getStringArray(BASE_PACKAGES);
@@ -121,19 +121,20 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 		// Default configuration - return package of annotated class
 		if (value.length == 0 && basePackages.length == 0 && basePackageClasses.length == 0) {
+
 			String className = configMetadata.getClassName();
-			return Collections.singleton(ClassUtils.getPackageName(className));
+			return Streamable.of(ClassUtils.getPackageName(className));
 		}
 
 		Set<String> packages = new HashSet<>();
 		packages.addAll(Arrays.asList(value));
 		packages.addAll(Arrays.asList(basePackages));
 
-		for (Class<?> typeName : basePackageClasses) {
-			packages.add(ClassUtils.getPackageName(typeName));
-		}
+		Arrays.stream(basePackageClasses)//
+				.map(ClassUtils::getPackageName)//
+				.forEach(it -> packages.add(it));
 
-		return packages;
+		return Streamable.of(packages);
 	}
 
 	/*
@@ -182,20 +183,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getExcludeFilters()
 	 */
 	@Override
-	public Iterable<TypeFilter> getExcludeFilters() {
+	public Streamable<TypeFilter> getExcludeFilters() {
 		return parseFilters("excludeFilters");
 	}
 
-	private Set<TypeFilter> parseFilters(String attributeName) {
+	private Streamable<TypeFilter> parseFilters(String attributeName) {
 
-		Set<TypeFilter> result = new HashSet<>();
 		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);
 
-		for (AnnotationAttributes filter : filters) {
-			result.addAll(typeFiltersFor(filter));
-		}
-
-		return result;
+		return Streamable.of(() -> Arrays.stream(filters).flatMap(it -> typeFiltersFor(it).stream()));
 	}
 
 	/**

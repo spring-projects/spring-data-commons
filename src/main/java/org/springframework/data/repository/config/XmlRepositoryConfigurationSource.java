@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -26,6 +25,7 @@ import org.springframework.data.config.TypeFilterParser;
 import org.springframework.data.config.TypeFilterParser.Type;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.util.ParsingUtils;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -89,10 +89,11 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBasePackages()
 	 */
-	public Iterable<String> getBasePackages() {
+	public Streamable<String> getBasePackages() {
 
 		String attribute = element.getAttribute(BASE_PACKAGE);
-		return Arrays.asList(StringUtils.delimitedListToStringArray(attribute, ",", " "));
+
+		return Streamable.of(StringUtils.delimitedListToStringArray(attribute, ",", " "));
 	}
 
 	/* 
@@ -125,8 +126,8 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getExcludeFilters()
 	 */
 	@Override
-	public Iterable<TypeFilter> getExcludeFilters() {
-		return excludeFilters;
+	public Streamable<TypeFilter> getExcludeFilters() {
+		return Streamable.of(excludeFilters);
 	}
 
 	/*

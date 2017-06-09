@@ -15,10 +15,11 @@
  */
 package org.springframework.data.repository.config;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
@@ -32,15 +33,12 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Jens Schauder
  */
+@RequiredArgsConstructor
 public class RepositoryBeanNameGenerator {
 
 	private static final BeanNameGenerator DELEGATE = new AnnotationBeanNameGenerator();
 
 	private final ClassLoader beanClassLoader;
-
-	public RepositoryBeanNameGenerator(ClassLoader beanClassLoader) {
-		this.beanClassLoader = beanClassLoader;
-	}
 
 	/**
 	 * Generate a bean name for the given bean definition.
@@ -66,11 +64,13 @@ public class RepositoryBeanNameGenerator {
 	private Class<?> getRepositoryInterfaceFrom(BeanDefinition beanDefinition) {
 
 		if (beanDefinition instanceof ScannedGenericBeanDefinition) {
+
 			try {
 				return ((ScannedGenericBeanDefinition) beanDefinition).resolveBeanClass(beanClassLoader);
 			} catch (ClassNotFoundException e) {
 				throw new IllegalStateException("Could not resolve bean class.", e);
 			}
+
 		} else {
 			return getRepositoryInterfaceFromFactory(beanDefinition);
 		}
@@ -81,8 +81,11 @@ public class RepositoryBeanNameGenerator {
 		Object value = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, Class.class).getValue();
 
 		if (value instanceof Class<?>) {
+
 			return (Class<?>) value;
+
 		} else {
+
 			try {
 				return ClassUtils.forName(value.toString(), beanClassLoader);
 			} catch (Exception o_O) {
