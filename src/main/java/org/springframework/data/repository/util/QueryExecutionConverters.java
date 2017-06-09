@@ -67,6 +67,7 @@ import com.google.common.base.Optional;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Maciek Opała
+ * @author Jacek Jackowiak
  * @since 1.8
  */
 public abstract class QueryExecutionConverters {
@@ -483,7 +484,6 @@ public abstract class QueryExecutionConverters {
 		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
 		 */
 		@Override
-		@SuppressWarnings("unchecked")
 		protected Object wrap(Object source) {
 			return ReflectionUtils.invokeMethod(OF_METHOD, null, source);
 		}
@@ -495,7 +495,7 @@ public abstract class QueryExecutionConverters {
 	}
 
 	/**
-	 * Converter to convert from {@link NullableWrapper} into JavaSlang's {@link io.vavr.control.Option}.
+	 * Converter to convert from {@link NullableWrapper} into Vavr's {@link io.vavr.control.Option}.
 	 *
 	 * @author Oliver Gierke
 	 * @since 2.0
@@ -511,7 +511,7 @@ public abstract class QueryExecutionConverters {
 		}
 
 		/**
-		 * Creates a new {@link NullableWrapperToJavaslangOptionConverter} using the given {@link ConversionService}.
+		 * Creates a new {@link NullableWrapperToVavrOptionConverter} using the given {@link ConversionService}.
 		 * 
 		 * @param conversionService must not be {@literal null}.
 		 */
