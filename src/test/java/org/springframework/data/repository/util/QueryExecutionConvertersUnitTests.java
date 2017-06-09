@@ -303,6 +303,16 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(allowedPageableTypes, hasItem(io.vavr.collection.Seq.class));
 	}
 
+	@Test
+	public void convertsValueToVavrOption() {
+
+		io.vavr.control.Option<String> result = conversionService.convert(new NullableWrapper("foo"),
+				io.vavr.control.Option.class);
+
+		assertThat(result, is(vavrOption("foo")));
+
+	}
+
 	// Vavr
 
 	@SuppressWarnings("unchecked")

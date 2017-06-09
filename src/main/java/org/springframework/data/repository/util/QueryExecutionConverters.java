@@ -525,7 +525,7 @@ public abstract class QueryExecutionConverters {
 		 */
 		@Override
 		protected Object wrap(Object source) {
-			return ReflectionUtils.invokeMethod(OF_METHOD, source);
+			return ReflectionUtils.invokeMethod(OF_METHOD, null, source);
 		}
 
 		public static WrapperType getWrapperType() {
