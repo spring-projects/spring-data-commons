@@ -73,11 +73,11 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	/**
 	 * Retrieves an entity by its id supplied by a {@link Mono}.
 	 *
-	 * @param id must not be {@literal null}.
+	 * @param id must not be {@literal null}. Uses the first emitted element to perform the find-query.
 	 * @return the entity with the given id or {@link Mono#empty()} if none found.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
-	Mono<T> findById(Mono<ID> id);
+	Mono<T> findById(Publisher<ID> id);
 
 	/**
 	 * Returns whether an entity with the given id exists.
@@ -89,13 +89,14 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	Mono<Boolean> existsById(ID id);
 
 	/**
-	 * Returns whether an entity with the given id, supplied by a {@link Mono}, exists.
+	 * Returns whether an entity with the given id, supplied by a {@link Mono}, exists. Uses the first emitted element to
+	 * perform the exists-query.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}
 	 */
-	Mono<Boolean> existsById(Mono<ID> id);
+	Mono<Boolean> existsById(Publisher<ID> id);
 
 	/**
 	 * Returns all instances of the type.
