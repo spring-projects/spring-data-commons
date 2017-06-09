@@ -20,6 +20,7 @@ import static org.mockito.Mockito.*;
 
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import rx.Single;
 
@@ -37,7 +38,7 @@ import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport} using reactive wrapper types.
- * 
+ *
  * @author Mark Paluch
  * @author Christoph Strobl
  */
@@ -77,7 +78,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		verify(backingRepo, times(2)).existsById(id);
 	}
 
-	@Test // DATACMNS-836
+	@Test // DATACMNS-836, DATACMNS-1063
 	@SuppressWarnings("unchecked")
 	public void callsRxJava1MethodOnBaseImplementationWithTypeConversion() {
 
@@ -86,7 +87,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		RxJava1ConvertingRepository repository = factory.getRepository(RxJava1ConvertingRepository.class);
 		repository.existsById(ids);
 
-		verify(backingRepo, times(1)).existsById(any(Mono.class));
+		verify(backingRepo, times(1)).existsById(any(Publisher.class));
 	}
 
 	@Test // DATACMNS-988
