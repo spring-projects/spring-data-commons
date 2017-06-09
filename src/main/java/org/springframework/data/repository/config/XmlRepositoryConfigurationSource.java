@@ -64,7 +64,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 */
 	public XmlRepositoryConfigurationSource(Element element, ParserContext context, Environment environment) {
 
-		super(environment, context.getReaderContext().getBeanClassLoader());
+		super(environment, context.getReaderContext().getResourceLoader().getClassLoader());
 
 		Assert.notNull(element, "Element must not be null!");
 		Assert.notNull(context, "Context must not be null!");
