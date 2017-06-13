@@ -33,9 +33,9 @@ import org.springframework.util.StringUtils;
 @Value
 public class RepositoryFragmentConfiguration {
 
-	private final String interfaceName;
-	private final String className;
-	private final Optional<AbstractBeanDefinition> beanDefinition;
+	String interfaceName;
+	String className;
+	Optional<AbstractBeanDefinition> beanDefinition;
 
 	/**
 	 * Creates a {@link RepositoryFragmentConfiguration} given {@code interfaceName} and {@code className} of the

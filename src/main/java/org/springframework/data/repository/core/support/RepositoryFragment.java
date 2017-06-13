@@ -25,21 +25,27 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Value object representing a repository fragment. A fragment can be purely structural or implemented.
+ * Value object representing a repository fragment.
+ * <p />
+ * Repository fragments are individual parts that contribute method signatures. They are used to form a
+ * {@link RepositoryComposition}. Fragments can be purely structural or backed with an implementation.
  * <p/>
- * Structural fragments are not backed by an implementation and are primarily used to discover the structure of a
- * repository composition and to perform validations.
+ * {@link #structural(Class) Structural} fragments are not backed by an implementation and are primarily used to
+ * discover the structure of a repository composition and to perform validations.
  * <p/>
- * Implemented repository fragments consist of a signature contributor and the implementing object. A signature
- * contributor may be an interface or just the implementing object providing the available signatures for a repository.
+ * {@link #implemented(Object) Implemented} repository fragments consist of a signature contributor and the implementing
+ * object. A signature contributor may be {@link #implemented(Class, Object) an interface} or
+ * {@link #implemented(Object) just the implementing object} providing the available signatures for a repository.
  * <p/>
- * Fragment objects are immutable and thread-safe.
+ * Fragments are immutable.
  *
  * @author Mark Paluch
  * @since 2.0
+ * @see RepositoryComposition
  */
 public abstract class RepositoryFragment<T> {
 
@@ -50,7 +56,7 @@ public abstract class RepositoryFragment<T> {
 	 * @return
 	 */
 	public static <T> RepositoryFragment<T> implemented(T implementation) {
-		return new ImplementedRepositoryFragment<T>(Optional.empty(), implementation);
+		return new ImplementedRepositoryFragment<>(Optional.empty(), implementation);
 	}
 
 	/**
@@ -122,8 +128,7 @@ public abstract class RepositoryFragment<T> {
 
 		private final @NonNull Class<T> interfaceOrImplementation;
 
-		/*
-		 * (non-Javadoc)
+		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#getSignatureContributor()
 		 */
 		@Override
@@ -131,13 +136,21 @@ public abstract class RepositoryFragment<T> {
 			return interfaceOrImplementation;
 		}
 
-		/*
-		 * (non-Javadoc)
+		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#withImplementation(java.lang.Object)
 		 */
 		@Override
 		public RepositoryFragment<T> withImplementation(T implementation) {
 			return new ImplementedRepositoryFragment<>(Optional.of(interfaceOrImplementation), implementation);
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+
+			return String.format("StructuralRepositoryFragment %s", ClassUtils.getShortName(interfaceOrImplementation));
 		}
 	}
 
@@ -148,8 +161,7 @@ public abstract class RepositoryFragment<T> {
 		private final @NonNull Optional<Class<T>> interfaceClass;
 		private final @NonNull T implementation;
 
-		/*
-		 * (non-Javadoc)
+		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#getSignatureContributor()
 		 */
 		@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -157,8 +169,7 @@ public abstract class RepositoryFragment<T> {
 			return interfaceClass.orElse((Class) implementation.getClass());
 		}
 
-		/*
-		 * (non-Javadoc)
+		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#getImplementation()
 		 */
 		@Override
@@ -166,13 +177,23 @@ public abstract class RepositoryFragment<T> {
 			return Optional.of(implementation);
 		}
 
-		/*
-		 * (non-Javadoc)
+		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#withImplementation(java.lang.Object)
 		 */
 		@Override
 		public RepositoryFragment<T> withImplementation(T implementation) {
 			return new ImplementedRepositoryFragment<>(interfaceClass, implementation);
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+
+			return String.format("ImplementedRepositoryFragment %s%s",
+					interfaceClass.map(ClassUtils::getShortName).map(it -> it + ":").orElse(""),
+					ClassUtils.getShortName(implementation.getClass()));
 		}
 	}
 }

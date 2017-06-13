@@ -33,6 +33,7 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -60,7 +61,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private Key queryLookupStrategyKey;
 	private Optional<Class<?>> repositoryBaseClass = Optional.empty();
 	private Optional<Object> customImplementation = Optional.empty();
-	private Optional<RepositoryComposition> repositoryComposition = Optional.empty();
+	private Optional<RepositoryFragments> repositoryFragments = Optional.empty();
 	private NamedQueries namedQueries;
 	private Optional<MappingContext<?, ?>> mappingContext;
 	private ClassLoader classLoader;
@@ -113,12 +114,12 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	}
 
 	/**
-	 * Setter to inject a repository composition.
+	 * Setter to inject repository fragments.
 	 *
-	 * @param repositoryComposition
+	 * @param repositoryFragments
 	 */
-	public void setRepositoryComposition(RepositoryComposition repositoryComposition) {
-		this.repositoryComposition = Optional.ofNullable(repositoryComposition);
+	public void setRepositoryFragments(RepositoryFragments repositoryFragments) {
+		this.repositoryFragments = Optional.ofNullable(repositoryFragments);
 	}
 
 	/**
@@ -265,17 +266,16 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		repositoryBaseClass.ifPresent(this.factory::setRepositoryBaseClass);
 
-		RepositoryComposition repositoryComposition = customImplementation.map(RepositoryComposition::just) //
-				.orElse(RepositoryComposition.empty()); //
+		RepositoryFragments customImplementationFragment = customImplementation //
+				.map(RepositoryFragments::just) //
+				.orElseGet(RepositoryFragments::empty);
 
-		repositoryComposition = this.repositoryComposition.map(RepositoryComposition::getFragments) //
-				.map(repositoryComposition::append) //
-				.orElse(repositoryComposition);
-
-		this.factory.setRepositoryComposition(repositoryComposition);
+		RepositoryFragments repositoryFragmentsToUse = this.repositoryFragments //
+				.orElseGet(RepositoryFragments::empty) //
+				.prepend(customImplementationFragment);
 
 		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
-		this.repository = Lazy.of(() -> this.factory.getRepository(repositoryInterface));
+		this.repository = Lazy.of(() -> this.factory.getRepository(repositoryInterface, repositoryFragmentsToUse));
 
 		if (!lazyInit) {
 			this.repository.get();

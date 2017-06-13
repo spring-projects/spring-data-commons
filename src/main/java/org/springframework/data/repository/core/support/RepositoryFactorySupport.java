@@ -119,7 +119,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private ClassLoader classLoader;
 	private EvaluationContextProvider evaluationContextProvider;
 	private BeanFactory beanFactory;
-	private Optional<RepositoryComposition> composition;
 
 	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
@@ -129,7 +128,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.postProcessors = new ArrayList<>();
 
 		this.repositoryBaseClass = Optional.empty();
-		this.composition = Optional.empty();
 		this.namedQueries = PropertiesBasedNamedQueries.EMPTY;
 		this.classLoader = org.springframework.util.ClassUtils.getDefaultClassLoader();
 		this.evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
@@ -220,15 +218,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.postProcessors.add(processor);
 	}
 
-	public void setRepositoryComposition(RepositoryComposition composition) {
+	protected RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata) {
 
-		Assert.notNull(composition, "RepositoryComposition must not be null!");
-		this.composition = Optional.of(composition);
-	}
-
-	protected RepositoryComposition getRepositoryCompositition(RepositoryMetadata metadata) {
-
-		RepositoryComposition composition = this.composition.orElseGet(RepositoryComposition::empty);
+		RepositoryComposition composition = RepositoryComposition.empty();
 
 		if (metadata.isReactiveRepository()) {
 			return composition.withMethodLookup(MethodLookups.forReactiveTypes(metadata))
@@ -241,26 +233,24 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	/**
 	 * Returns a repository instance for the given interface.
 	 *
-
-	 * @param repositoryInterfacemust not be {@literal null}.
+	 * @param repositoryInterface must not be {@literal null}.
 	 * @return
 	 */
 	public <T> T getRepository(Class<T> repositoryInterface) {
-		return getRepository(repositoryInterface, Optional.empty(), Optional.empty());
+		return getRepository(repositoryInterface, Optional.empty(), RepositoryFragments.empty());
 	}
 
 	/**
 	 * Returns a repository instance for the given interface backed by an instance providing implementation logic for
 	 * custom logic.
 	 *
-
-	 * @param repositoryInterfacemust not be {@literal null}.
+	 * @param repositoryInterface must not be {@literal null}.
 	 * @param fragments must not be {@literal null}.
 	 * @return
 	 * @since 2.0
 	 */
 	public <T> T getRepository(Class<T> repositoryInterface, RepositoryFragments fragments) {
-		return getRepository(repositoryInterface, Optional.empty(), Optional.of(fragments));
+		return getRepository(repositoryInterface, Optional.empty(), fragments);
 	}
 
 	/**
@@ -275,25 +265,28 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	@Deprecated
 	public <T> T getRepository(Class<T> repositoryInterface, Object customImplementation) {
-		return getRepository(repositoryInterface, Optional.of(customImplementation), Optional.empty());
+		return getRepository(repositoryInterface, Optional.of(customImplementation), RepositoryFragments.empty());
 	}
 
 	/**
 	 * Returns a repository instance for the given interface backed by an instance providing implementation logic for
 	 * custom logic.
 	 *
-
-	 * @param repositoryInterfacemust not be {@literal null}.
-	 * @param customImplementationmust not be {@literal null}.
+	 * @param repositoryInterface must not be {@literal null}.
+	 * @param customImplementation must not be {@literal null}.
+	 * @param fragments must not be {@literal null}.
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked" })
 	protected <T> T getRepository(Class<T> repositoryInterface, Optional<Object> customImplementation,
-			Optional<RepositoryFragments> fragments) {
+			RepositoryFragments fragments) {
+
+		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
+		Assert.notNull(customImplementation, "Custom implementation must not be null!");
+		Assert.notNull(fragments, "RepositoryFragments must not be null!");
 
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
-		RepositoryComposition composition = fragments.map(it -> getRepositoryCompositition(metadata).prepend(it))
-				.orElseGet(() -> getRepositoryCompositition(metadata));
+		RepositoryComposition composition = getRepositoryComposition(metadata).prepend(fragments);
 
 		composition = customImplementation.map(RepositoryFragment::implemented) //
 				.map(composition::append) //

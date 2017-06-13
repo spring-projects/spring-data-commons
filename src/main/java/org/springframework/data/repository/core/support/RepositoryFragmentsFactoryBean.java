@@ -23,30 +23,31 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.util.Assert;
 
 /**
- * Factory bean for creation of {@link RepositoryComposition}. This {@link FactoryBean} uses named
- * {@link #RepositoryCompositionFactoryBean(List) bean references} to look up {@link RepositoryFragment} beans and
- * construct a {@link RepositoryComposition}.
+ * Factory bean for creation of {@link RepositoryFragments}. This {@link FactoryBean} uses named
+ * {@link #RepositoryFragmentsFactoryBean(List) bean references} to look up {@link RepositoryFragment} beans and
+ * construct {@link RepositoryFragments}.
  *
  * @author Mark Paluch
  * @since 2.0
  */
-public class RepositoryCompositionFactoryBean<T>
-		implements FactoryBean<RepositoryComposition>, BeanFactoryAware, InitializingBean {
+public class RepositoryFragmentsFactoryBean<T>
+		implements FactoryBean<RepositoryFragments>, BeanFactoryAware, InitializingBean {
 
 	private final List<String> fragmentBeanNames;
 
 	private BeanFactory beanFactory;
-	private RepositoryComposition repositoryComposition = RepositoryComposition.empty();
+	private RepositoryFragments repositoryFragments = RepositoryFragments.empty();
 
 	/**
-	 * Creates a new {@link RepositoryCompositionFactoryBean} given {@code fragmentBeanNames}.
+	 * Creates a new {@link RepositoryFragmentsFactoryBean} given {@code fragmentBeanNames}.
 	 *
 	 * @param fragmentBeanNames must not be {@literal null}.
 	 */
-	public RepositoryCompositionFactoryBean(List<String> fragmentBeanNames) {
+	public RepositoryFragmentsFactoryBean(List<String> fragmentBeanNames) {
 
 		Assert.notNull(fragmentBeanNames, "Fragment bean names must not be null!");
 		this.fragmentBeanNames = fragmentBeanNames;
@@ -59,17 +60,18 @@ public class RepositoryCompositionFactoryBean<T>
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void afterPropertiesSet() {
 
-		List<RepositoryFragment<?>> collect = (List) fragmentBeanNames.stream()
+		List<RepositoryFragment<?>> fragments = (List) fragmentBeanNames.stream()
 				.map(it -> beanFactory.getBean(it, RepositoryFragment.class)).collect(Collectors.toList());
-		this.repositoryComposition = RepositoryComposition.of(collect);
+
+		this.repositoryFragments = RepositoryFragments.from(fragments);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
 	@Override
-	public RepositoryComposition getObject() throws Exception {
-		return this.repositoryComposition;
+	public RepositoryFragments getObject() throws Exception {
+		return this.repositoryFragments;
 	}
 
 	/* (non-Javadoc)

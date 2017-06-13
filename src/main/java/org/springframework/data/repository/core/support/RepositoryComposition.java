@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,20 +35,24 @@ import java.util.stream.Stream;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.MethodLookup.InvokedMethod;
 import org.springframework.data.repository.core.support.MethodLookup.MethodPredicate;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Collection of {@link RepositoryFragment fragments} that form a repository implementation.
- * <p/>
- * Fragments contribute method signatures to forming a composite component that routes method execution into the
- * according {@link RepositoryFragment}. Fragments are ordered and the order of fragments controls routing if a method
- * is implemented by more than one fragment.
+ * Composite implementation to back repository method implementations.
  * <p />
- * A {@link RepositoryComposition} allows configuration of {@link #withMethodLookup(BiFunction)} method lookup and
- * {@link #withArgumentConverter(BiFunction)} runtime argument conversion.
+ * A {@link RepositoryComposition} represents an ordered collection of {@link RepositoryFragment fragments}. Each
+ * fragment contributes executable method signatures that are used by this composition to route method calls into the
+ * according {@link RepositoryFragment}.
+ * <p />
+ * Fragments are allowed to contribute multiple implementations for a single method signature exposed through the
+ * repository interface. {@link #withMethodLookup(MethodLookup) MethodLookup} selects the first matching method for
+ * invocation. A composition also supports argument conversion between the repository method signature and fragment
+ * implementation method through {@link #withArgumentConverter(BiFunction)}. Use argument conversion with a single
+ * implementation method that can be exposed accepting convertible types.
  * <p />
  * Composition objects are immutable and thread-safe.
  *
@@ -110,7 +115,8 @@ public class RepositoryComposition {
 	 * @return the {@link RepositoryComposition} from {@link RepositoryFragment fragments}.
 	 */
 	public static RepositoryComposition of(List<RepositoryFragment<?>> fragments) {
-		return new RepositoryComposition(RepositoryFragments.of(fragments), MethodLookups.direct(), PASSTHRU_ARG_CONVERTER);
+		return new RepositoryComposition(RepositoryFragments.from(fragments), MethodLookups.direct(),
+				PASSTHRU_ARG_CONVERTER);
 	}
 
 	/**
@@ -145,7 +151,7 @@ public class RepositoryComposition {
 	 * @return the new {@link RepositoryComposition}.
 	 */
 	public RepositoryComposition prepend(RepositoryFragments fragments) {
-		return new RepositoryComposition(fragments.prepend(fragments), methodLookup, argumentConverter);
+		return new RepositoryComposition(this.fragments.prepend(fragments), methodLookup, argumentConverter);
 	}
 
 	/**
@@ -164,11 +170,11 @@ public class RepositoryComposition {
 	 * to the new composition. The resulting composition contains the appended {@link RepositoryFragments} as last
 	 * element.
 	 *
-	 * @param repositoryFragments must not be {@literal null}.
+	 * @param fragments must not be {@literal null}.
 	 * @return the new {@link RepositoryComposition}.
 	 */
-	public RepositoryComposition append(RepositoryFragments repositoryFragments) {
-		return new RepositoryComposition(fragments.append(repositoryFragments), methodLookup, argumentConverter);
+	public RepositoryComposition append(RepositoryFragments fragments) {
+		return new RepositoryComposition(this.fragments.append(fragments), methodLookup, argumentConverter);
 	}
 
 	/**
@@ -260,11 +266,11 @@ public class RepositoryComposition {
 	 */
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	@EqualsAndHashCode
-	public static class RepositoryFragments {
+	public static class RepositoryFragments implements Streamable<RepositoryFragment<?>> {
 
 		public static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
 
-		private final Map<Method, RepositoryFragment> fragmentCache = new ConcurrentReferenceHashMap<>();
+		private final Map<Method, RepositoryFragment<?>> fragmentCache = new ConcurrentReferenceHashMap<>();
 		private final List<RepositoryFragment<?>> fragments;
 
 		/**
@@ -292,7 +298,7 @@ public class RepositoryComposition {
 		}
 
 		/**
-		 * Create {@link RepositoryFragments} from of {@link RepositoryFragments fragments}.
+		 * Create {@link RepositoryFragments} from {@link RepositoryFragments fragments}.
 		 *
 		 * @param fragments must not be {@literal null}.
 		 * @return the {@link RepositoryFragments} for {@code implementations}.
@@ -305,7 +311,16 @@ public class RepositoryComposition {
 			return new RepositoryFragments(Arrays.asList(fragments));
 		}
 
-		private static RepositoryFragments of(List<RepositoryFragment<?>> fragments) {
+		/**
+		 * Create {@link RepositoryFragments} from a {@link List} of {@link RepositoryFragment fragments}.
+		 *
+		 * @param fragments must not be {@literal null}.
+		 * @return the {@link RepositoryFragments} for {@code implementations}.
+		 */
+		public static RepositoryFragments from(List<RepositoryFragment<?>> fragments) {
+
+			Assert.notNull(fragments, "RepositoryFragments must not be null!");
+
 			return new RepositoryFragments(new ArrayList<>(fragments));
 		}
 
@@ -366,7 +381,7 @@ public class RepositoryComposition {
 		}
 
 		private static RepositoryFragments concat(Stream<RepositoryFragment<?>> left, Stream<RepositoryFragment<?>> right) {
-			return of(Stream.concat(left, right).collect(Collectors.toList()));
+			return from(Stream.concat(left, right).collect(Collectors.toList()));
 		}
 
 		/**
@@ -376,6 +391,11 @@ public class RepositoryComposition {
 		 */
 		public boolean isEmpty() {
 			return fragments.isEmpty();
+		}
+
+		@Override
+		public Iterator<RepositoryFragment<?>> iterator() {
+			return fragments.iterator();
 		}
 
 		/**
@@ -433,5 +453,12 @@ public class RepositoryComposition {
 			return method.invoke(target, args);
 		}
 
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return fragments.toString();
+		}
 	}
 }
