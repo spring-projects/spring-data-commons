@@ -47,7 +47,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 
 /**
  * Unit tests for {@link DefaultRepositoryInformation}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch

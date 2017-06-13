@@ -35,7 +35,7 @@ import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link AnnotationRepositoryConfigurationSource}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
