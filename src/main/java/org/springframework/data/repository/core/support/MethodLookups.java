@@ -46,10 +46,10 @@ import org.springframework.util.Assert;
  * Implementations of method lookup functions.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
+ * @since 2.0
  */
-public abstract class MethodLookups {
-
-	private MethodLookups() {}
+interface MethodLookups {
 
 	/**
 	 * Direct method lookup filtering on exact method name, parameter count and parameter types.
@@ -102,23 +102,34 @@ public abstract class MethodLookups {
 	 *
 	 * @author Mark Paluch
 	 */
-	private static class RepositoryAwareMethodLookup implements MethodLookup {
+	static class RepositoryAwareMethodLookup implements MethodLookup {
 
-		private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class.getTypeParameters();
+		@SuppressWarnings("rawtypes") private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class
+				.getTypeParameters();
 		private static final String DOMAIN_TYPE_NAME = PARAMETERS[0].getName();
 		private static final String ID_TYPE_NAME = PARAMETERS[1].getName();
 
-		private final ResolvableType entityType;
-		private final ResolvableType idType;
+		private final ResolvableType entityType, idType;
 		private final Class<?> repositoryInterface;
 
+		/**
+		 * Creates a new {@link RepositoryAwareMethodLookup} for the given {@link RepositoryMetadata}.
+		 * 
+		 * @param repositoryMetadata must not be {@literal null}.
+		 */
 		public RepositoryAwareMethodLookup(RepositoryMetadata repositoryMetadata) {
+
+			Assert.notNull(repositoryMetadata, "Repository metadata must not be null!");
 
 			this.entityType = ResolvableType.forClass(repositoryMetadata.getDomainType());
 			this.idType = ResolvableType.forClass(repositoryMetadata.getIdType());
 			this.repositoryInterface = repositoryMetadata.getRepositoryInterface();
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.MethodLookup#getLookups()
+		 */
 		@Override
 		public List<MethodPredicate> getLookups() {
 
@@ -214,15 +225,20 @@ public abstract class MethodLookups {
 	 *
 	 * @author Mark Paluch
 	 */
-	private static class ReactiveTypeInteropMethodLookup extends RepositoryAwareMethodLookup {
+	static class ReactiveTypeInteropMethodLookup extends RepositoryAwareMethodLookup {
 
 		private final RepositoryMetadata repositoryMetadata;
 
 		public ReactiveTypeInteropMethodLookup(RepositoryMetadata repositoryMetadata) {
+
 			super(repositoryMetadata);
 			this.repositoryMetadata = repositoryMetadata;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.core.support.MethodLookups.RepositoryAwareMethodLookup#getLookups()
+		 */
 		@Override
 		public List<MethodPredicate> getLookups() {
 
@@ -408,5 +424,4 @@ public abstract class MethodLookups {
 			}
 		}
 	}
-
 }

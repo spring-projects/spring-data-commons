@@ -47,7 +47,7 @@ import org.springframework.util.ReflectionUtils;
  * @since 2.0
  * @see RepositoryComposition
  */
-public abstract class RepositoryFragment<T> {
+public interface RepositoryFragment<T> {
 
 	/**
 	 * Create an implemented {@link RepositoryFragment} backed by the {@code implementation} object.
@@ -56,7 +56,7 @@ public abstract class RepositoryFragment<T> {
 	 * @return
 	 */
 	public static <T> RepositoryFragment<T> implemented(T implementation) {
-		return new ImplementedRepositoryFragment<>(Optional.empty(), implementation);
+		return new ImplementedRepositoryFragment<T>(Optional.empty(), implementation);
 	}
 
 	/**
@@ -87,24 +87,31 @@ public abstract class RepositoryFragment<T> {
 	 * @param method must not be {@literal null}.
 	 * @return {@literal true} if the method was found or {@literal false} otherwise
 	 */
-	public boolean hasMethod(Method method) {
+	default boolean hasMethod(Method method) {
 
 		Assert.notNull(method, "Method must not be null!");
 		return ReflectionUtils.findMethod(getSignatureContributor(), method.getName(), method.getParameterTypes()) != null;
 	}
 
 	/**
-	 * @return the class/interface providing signatures for this {@link RepositoryFragment}.
-	 */
-	protected abstract Class<?> getSignatureContributor();
-
-	/**
 	 * @return the optional implementation. Only available for implemented fragments. Structural fragments return always
 	 *         {@link Optional#empty()}.
 	 */
-	public Optional<T> getImplementation() {
+	default Optional<T> getImplementation() {
 		return Optional.empty();
 	}
+
+	/**
+	 * @return a {@link Stream} of methods exposed by this {@link RepositoryFragment}.
+	 */
+	default Stream<Method> methods() {
+		return Arrays.stream(getSignatureContributor().getMethods());
+	}
+
+	/**
+	 * @return the class/interface providing signatures for this {@link RepositoryFragment}.
+	 */
+	Class<?> getSignatureContributor();
 
 	/**
 	 * Implement a structural {@link RepositoryFragment} given its {@code implementation} object. Returns an implemented
@@ -113,22 +120,16 @@ public abstract class RepositoryFragment<T> {
 	 * @param implementation must not be {@literal null}.
 	 * @return a new implemented {@link RepositoryFragment} for {@code implementation}.
 	 */
-	public abstract RepositoryFragment<T> withImplementation(T implementation);
-
-	/**
-	 * @return a {@link Stream} of methods exposed by this {@link RepositoryFragment}.
-	 */
-	public Stream<Method> methods() {
-		return Arrays.stream(getSignatureContributor().getMethods());
-	}
+	RepositoryFragment<T> withImplementation(T implementation);
 
 	@RequiredArgsConstructor
 	@EqualsAndHashCode(callSuper = false)
-	static class StructuralRepositoryFragment<T> extends RepositoryFragment<T> {
+	static class StructuralRepositoryFragment<T> implements RepositoryFragment<T> {
 
 		private final @NonNull Class<T> interfaceOrImplementation;
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#getSignatureContributor()
 		 */
 		@Override
@@ -136,7 +137,8 @@ public abstract class RepositoryFragment<T> {
 			return interfaceOrImplementation;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#withImplementation(java.lang.Object)
 		 */
 		@Override
@@ -149,19 +151,19 @@ public abstract class RepositoryFragment<T> {
 		 */
 		@Override
 		public String toString() {
-
 			return String.format("StructuralRepositoryFragment %s", ClassUtils.getShortName(interfaceOrImplementation));
 		}
 	}
 
 	@RequiredArgsConstructor
 	@EqualsAndHashCode(callSuper = false)
-	static class ImplementedRepositoryFragment<T> extends RepositoryFragment<T> {
+	static class ImplementedRepositoryFragment<T> implements RepositoryFragment<T> {
 
 		private final @NonNull Optional<Class<T>> interfaceClass;
 		private final @NonNull T implementation;
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#getSignatureContributor()
 		 */
 		@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -169,7 +171,8 @@ public abstract class RepositoryFragment<T> {
 			return interfaceClass.orElse((Class) implementation.getClass());
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#getImplementation()
 		 */
 		@Override
@@ -177,7 +180,8 @@ public abstract class RepositoryFragment<T> {
 			return Optional.of(implementation);
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.RepositoryFragment#withImplementation(java.lang.Object)
 		 */
 		@Override
@@ -185,7 +189,8 @@ public abstract class RepositoryFragment<T> {
 			return new ImplementedRepositoryFragment<>(interfaceClass, implementation);
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
