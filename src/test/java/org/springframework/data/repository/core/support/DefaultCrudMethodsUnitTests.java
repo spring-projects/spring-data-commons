@@ -35,7 +35,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 
 /**
  * Unit tests dor {@link DefaultCrudMethods}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  */

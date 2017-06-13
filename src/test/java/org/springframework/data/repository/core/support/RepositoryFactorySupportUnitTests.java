@@ -63,7 +63,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport}.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  */

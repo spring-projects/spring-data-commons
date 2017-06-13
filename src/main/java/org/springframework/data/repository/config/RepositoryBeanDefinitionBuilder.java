@@ -32,7 +32,7 @@ import org.springframework.util.Assert;
 
 /**
  * Builder to create {@link BeanDefinitionBuilder} instance to eventually create Spring Data repository instances.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Peter Rietzler
@@ -51,7 +51,7 @@ class RepositoryBeanDefinitionBuilder {
 	/**
 	 * Creates a new {@link RepositoryBeanDefinitionBuilder} from the given {@link BeanDefinitionRegistry},
 	 * {@link RepositoryConfigurationExtension} and {@link ResourceLoader}.
-	 * 
+	 *
 	 * @param registry must not be {@literal null}.
 	 * @param extension must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
@@ -75,7 +75,7 @@ class RepositoryBeanDefinitionBuilder {
 	/**
 	 * Builds a new {@link BeanDefinitionBuilder} from the given {@link BeanDefinitionRegistry} and {@link ResourceLoader}
 	 * .
-	 * 
+	 *
 	 * @param configuration must not be {@literal null}.
 	 * @return
 	 */
