@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
@@ -66,14 +67,13 @@ import org.springframework.util.ReflectionUtils;
 public class RepositoryComposition {
 
 	private static final BiFunction<Method, Object[], Object[]> PASSTHRU_ARG_CONVERTER = (methodParameter, o) -> o;
-
 	private static final RepositoryComposition EMPTY = new RepositoryComposition(RepositoryFragments.empty(),
 			MethodLookups.direct(), PASSTHRU_ARG_CONVERTER);
 
 	private final Map<Method, Optional<Method>> methodCache = new ConcurrentReferenceHashMap<>();
-	private final RepositoryFragments fragments;
-	private final MethodLookup methodLookup;
-	private final BiFunction<Method, Object[], Object[]> argumentConverter;
+	private final @Getter RepositoryFragments fragments;
+	private final @Getter MethodLookup methodLookup;
+	private final @Getter BiFunction<Method, Object[], Object[]> argumentConverter;
 
 	/**
 	 * Create an empty {@link RepositoryComposition}.
@@ -86,7 +86,7 @@ public class RepositoryComposition {
 
 	/**
 	 * Create a {@link RepositoryComposition} for just a single {@code implementation} with {@link MethodLookups#direct())
-	 * method lokup.
+	 * method lookup.
 	 *
 	 * @param implementation must not be {@literal null}.
 	 * @return the {@link RepositoryComposition} for a single {@code implementation}.
@@ -98,7 +98,7 @@ public class RepositoryComposition {
 
 	/**
 	 * Create a {@link RepositoryComposition} from {@link RepositoryFragment fragments} with
-	 * {@link MethodLookups#direct()) method lokup.
+	 * {@link MethodLookups#direct()) method lookup.
 	 *
 	 * @param fragments must not be {@literal null}.
 	 * @return the {@link RepositoryComposition} from {@link RepositoryFragment fragments}.
@@ -109,7 +109,7 @@ public class RepositoryComposition {
 
 	/**
 	 * Create a {@link RepositoryComposition} from {@link RepositoryFragment fragments} with
-	 * {@link MethodLookups#direct()) method lokup.
+	 * {@link MethodLookups#direct()) method lookup.
 	 *
 	 * @param fragments must not be {@literal null}.
 	 * @return the {@link RepositoryComposition} from {@link RepositoryFragment fragments}.
@@ -121,7 +121,7 @@ public class RepositoryComposition {
 
 	/**
 	 * Create a {@link RepositoryComposition} from {@link RepositoryFragments} and {@link RepositoryMetadata} with
-	 * {@link MethodLookups#direct()) method lokup.
+	 * {@link MethodLookups#direct()) method lookup.
 	 *
 	 * @param fragments must not be {@literal null}.
 	 * @return the {@link RepositoryComposition} from {@link RepositoryFragments fragments}.
@@ -195,18 +195,6 @@ public class RepositoryComposition {
 	 */
 	public RepositoryComposition withMethodLookup(MethodLookup methodLookup) {
 		return new RepositoryComposition(fragments, methodLookup, argumentConverter);
-	}
-
-	public MethodLookup getMethodLookup() {
-		return methodLookup;
-	}
-
-	public RepositoryFragments getFragments() {
-		return fragments;
-	}
-
-	public BiFunction<Method, Object[], Object[]> getArgumentConverter() {
-		return argumentConverter;
 	}
 
 	/**
@@ -393,6 +381,10 @@ public class RepositoryComposition {
 			return fragments.isEmpty();
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Iterable#iterator()
+		 */
 		@Override
 		public Iterator<RepositoryFragment<?>> iterator() {
 			return fragments.iterator();
@@ -401,6 +393,7 @@ public class RepositoryComposition {
 		/**
 		 * @return {@link Stream} of {@link RepositoryFragment fragments}.
 		 */
+		@Override
 		public Stream<RepositoryFragment<?>> stream() {
 			return fragments.stream();
 		}
@@ -410,23 +403,6 @@ public class RepositoryComposition {
 		 */
 		public Stream<Method> methods() {
 			return stream().flatMap(RepositoryFragment::methods);
-		}
-
-		static Optional<Method> findMethod(InvokedMethod invokedMethod, MethodLookup lookup,
-				Supplier<Stream<Method>> methodStreamSupplier) {
-
-			for (MethodPredicate methodPredicate : lookup.getLookups()) {
-
-				Optional<Method> resolvedMethod = methodStreamSupplier.get()
-						.filter(it -> methodPredicate.test(invokedMethod, it)) //
-						.findFirst();
-
-				if (resolvedMethod.isPresent()) {
-					return resolvedMethod;
-				}
-			}
-
-			return Optional.empty();
 		}
 
 		/**
@@ -453,7 +429,25 @@ public class RepositoryComposition {
 			return method.invoke(target, args);
 		}
 
-		/* (non-Javadoc)
+		private static Optional<Method> findMethod(InvokedMethod invokedMethod, MethodLookup lookup,
+				Supplier<Stream<Method>> methodStreamSupplier) {
+
+			for (MethodPredicate methodPredicate : lookup.getLookups()) {
+
+				Optional<Method> resolvedMethod = methodStreamSupplier.get()
+						.filter(it -> methodPredicate.test(invokedMethod, it)) //
+						.findFirst();
+
+				if (resolvedMethod.isPresent()) {
+					return resolvedMethod;
+				}
+			}
+
+			return Optional.empty();
+		}
+
+		/*
+		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		@Override

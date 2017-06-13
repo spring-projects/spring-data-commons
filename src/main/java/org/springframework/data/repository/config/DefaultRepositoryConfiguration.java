@@ -23,6 +23,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -64,7 +65,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getBasePackages()
 	 */
-	public Iterable<String> getBasePackages() {
+	public Streamable<String> getBasePackages() {
 		return configurationSource.getBasePackages();
 	}
 
@@ -161,7 +162,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getExcludeFilters()
 	 */
 	@Override
-	public Iterable<TypeFilter> getExcludeFilters() {
+	public Streamable<TypeFilter> getExcludeFilters() {
 		return configurationSource.getExcludeFilters();
 	}
 }

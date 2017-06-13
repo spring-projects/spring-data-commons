@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.util.Streamable;
 
 /**
  * Configuration information for a single repository instance.
@@ -33,7 +34,7 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 *
 	 * @return
 	 */
-	Iterable<String> getBasePackages();
+	Streamable<String> getBasePackages();
 
 	/**
 	 * Returns the interface name of the repository.
@@ -117,5 +118,5 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 *
 	 * @return
 	 */
-	Iterable<TypeFilter> getExcludeFilters();
+	Streamable<TypeFilter> getExcludeFilters();
 }

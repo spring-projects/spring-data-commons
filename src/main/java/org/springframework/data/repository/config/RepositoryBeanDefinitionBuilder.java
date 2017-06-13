@@ -16,11 +16,11 @@
 package org.springframework.data.repository.config;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +41,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.core.support.RepositoryFragmentsFactoryBean;
 import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -143,6 +144,7 @@ class RepositoryBeanDefinitionBuilder {
 		return builder;
 	}
 
+	@SuppressWarnings("deprecation")
 	private Optional<String> registerCustomImplementation(RepositoryConfiguration<?> configuration) {
 
 		String beanName = configuration.getImplementationBeanName();
@@ -162,7 +164,6 @@ class RepositoryBeanDefinitionBuilder {
 			}
 
 			it.setSource(configuration.getSource());
-
 			registry.registerBeanDefinition(beanName, it);
 
 			return beanName;
@@ -215,7 +216,6 @@ class RepositoryBeanDefinitionBuilder {
 		fragmentConfiguration.getBeanDefinition().ifPresent(bd -> {
 
 			bd.setSource(repositoryConfiguration.getSource());
-
 			registry.registerBeanDefinition(beanName, bd);
 		});
 	}
@@ -245,6 +245,7 @@ class RepositoryBeanDefinitionBuilder {
 	}
 
 	private ClassMetadata getClassMetadata(String className) {
+
 		try {
 			return metadataReaderFactory.getMetadataReader(className).getClassMetadata();
 		} catch (IOException e) {
@@ -254,13 +255,8 @@ class RepositoryBeanDefinitionBuilder {
 
 	private static List<TypeFilter> getExclusions(RepositoryConfiguration<?> configuration) {
 
-		List<TypeFilter> exclusions = new ArrayList<>();
-
-		for (TypeFilter typeFilter : configuration.getExcludeFilters()) {
-			exclusions.add(typeFilter);
-		}
-
-		exclusions.add(new AnnotationTypeFilter(NoRepositoryBean.class));
-		return exclusions;
+		return Stream
+				.concat(configuration.getExcludeFilters().stream(), Stream.of(new AnnotationTypeFilter(NoRepositoryBean.class)))//
+				.collect(StreamUtils.toUnmodifiableList());
 	}
 }

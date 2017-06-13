@@ -28,13 +28,13 @@ import org.springframework.util.StringUtils;
  * Fragment configuration consisting of an interface name and the implementation class name.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @since 2.0
  */
 @Value
 public class RepositoryFragmentConfiguration {
 
-	String interfaceName;
-	String className;
+	String interfaceName, className;
 	Optional<AbstractBeanDefinition> beanDefinition;
 
 	/**
@@ -67,8 +67,8 @@ public class RepositoryFragmentConfiguration {
 		Assert.notNull(beanDefinition, "Bean definition must not be null!");
 
 		this.interfaceName = interfaceName;
-		this.beanDefinition = Optional.of(beanDefinition);
 		this.className = beanDefinition.getBeanClassName();
+		this.beanDefinition = Optional.of(beanDefinition);
 	}
 
 	/**

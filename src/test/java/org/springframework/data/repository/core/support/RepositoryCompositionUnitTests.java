@@ -39,17 +39,18 @@ import org.springframework.util.ReflectionUtils;
  * Unit tests for {@link RepositoryComposition}.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryCompositionUnitTests {
 
 	@Mock QueryByExampleExecutor<Person> queryByExampleExecutor;
-
 	@Mock PersonRepository backingRepo;
 
 	RepositoryComposition repositoryComposition;
 
 	@Before
+	@SuppressWarnings("rawtypes")
 	public void before() {
 
 		RepositoryInformation repositoryInformation = new DefaultRepositoryInformation(
@@ -155,6 +156,7 @@ public class RepositoryCompositionUnitTests {
 	}
 
 	@Test // DATACMNS-102
+	@SuppressWarnings("rawtypes")
 	public void shouldPrependCorrectly() {
 
 		RepositoryFragment<PersonRepository> initial = RepositoryFragment.implemented(backingRepo);
@@ -167,6 +169,7 @@ public class RepositoryCompositionUnitTests {
 	}
 
 	@Test // DATACMNS-102
+	@SuppressWarnings("rawtypes")
 	public void shouldAppendCorrectly() {
 
 		RepositoryFragment<PersonRepository> initial = RepositoryFragment.implemented(backingRepo);
