@@ -26,6 +26,7 @@ import org.springframework.data.repository.NoRepositoryBean;
  * abstraction.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.0
  * @see Sort
  * @see Mono
@@ -39,6 +40,7 @@ public interface ReactiveSortingRepository<T, ID> extends ReactiveCrudRepository
 	 *
 	 * @param sort must not be {@literal null}.
 	 * @return all entities sorted by the given options.
+	 * @throws IllegalArgumentException in case the given {@link Sort} is {@literal null}.
 	 */
 	Flux<T> findAll(Sort sort);
 }
