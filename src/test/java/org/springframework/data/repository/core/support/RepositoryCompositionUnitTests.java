@@ -157,19 +157,6 @@ public class RepositoryCompositionUnitTests {
 
 	@Test // DATACMNS-102
 	@SuppressWarnings("rawtypes")
-	public void shouldPrependCorrectly() {
-
-		RepositoryFragment<PersonRepository> initial = RepositoryFragment.implemented(backingRepo);
-		RepositoryFragment<QueryByExampleExecutor> structural = RepositoryFragment.structural(QueryByExampleExecutor.class);
-
-		assertThat(RepositoryComposition.of(initial).prepend(structural).getFragments()).containsSequence(structural,
-				initial);
-		assertThat(RepositoryComposition.of(initial).prepend(RepositoryFragments.of(structural)).getFragments())
-				.containsSequence(structural, initial);
-	}
-
-	@Test // DATACMNS-102
-	@SuppressWarnings("rawtypes")
 	public void shouldAppendCorrectly() {
 
 		RepositoryFragment<PersonRepository> initial = RepositoryFragment.implemented(backingRepo);

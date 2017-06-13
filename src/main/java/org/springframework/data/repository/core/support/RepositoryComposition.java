@@ -131,30 +131,6 @@ public class RepositoryComposition {
 	}
 
 	/**
-	 * Create a new {@link RepositoryComposition} retaining current configuration and prepend {@link RepositoryFragment}
-	 * to the new composition. The resulting composition contains the prepended {@link RepositoryFragment} as first
-	 * element.
-	 *
-	 * @param fragment must not be {@literal null}.
-	 * @return the new {@link RepositoryComposition}.
-	 */
-	public RepositoryComposition prepend(RepositoryFragment<?> fragment) {
-		return new RepositoryComposition(fragments.prepend(fragment), methodLookup, argumentConverter);
-	}
-
-	/**
-	 * Create a new {@link RepositoryComposition} retaining current configuration and prepend {@link RepositoryFragment}
-	 * to the new composition. The resulting composition contains the prepended {@link RepositoryFragment} as first
-	 * element.
-	 *
-	 * @param fragments must not be {@literal null}.
-	 * @return the new {@link RepositoryComposition}.
-	 */
-	public RepositoryComposition prepend(RepositoryFragments fragments) {
-		return new RepositoryComposition(this.fragments.prepend(fragments), methodLookup, argumentConverter);
-	}
-
-	/**
 	 * Create a new {@link RepositoryComposition} retaining current configuration and append {@link RepositoryFragment} to
 	 * the new composition. The resulting composition contains the appended {@link RepositoryFragment} as last element.
 	 *
@@ -256,7 +232,7 @@ public class RepositoryComposition {
 	@EqualsAndHashCode
 	public static class RepositoryFragments implements Streamable<RepositoryFragment<?>> {
 
-		public static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
+		static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
 
 		private final Map<Method, RepositoryFragment<?>> fragmentCache = new ConcurrentReferenceHashMap<>();
 		private final List<RepositoryFragment<?>> fragments;
@@ -310,34 +286,6 @@ public class RepositoryComposition {
 			Assert.notNull(fragments, "RepositoryFragments must not be null!");
 
 			return new RepositoryFragments(new ArrayList<>(fragments));
-		}
-
-		/**
-		 * Create new {@link RepositoryFragments} from the current content prepending {@link RepositoryFragment}.
-		 *
-		 * @param fragment must not be {@literal null}
-		 * @return the new {@link RepositoryFragments} containing all existing fragments and the given
-		 *         {@link RepositoryFragment} as first element.
-		 */
-		public RepositoryFragments prepend(RepositoryFragment<?> fragment) {
-
-			Assert.notNull(fragment, "RepositoryFragment must not be null!");
-
-			return concat(Stream.of(fragment), stream());
-		}
-
-		/**
-		 * Create new {@link RepositoryFragments} from the current content prepending {@link RepositoryFragments}.
-		 *
-		 * @param fragments must not be {@literal null}
-		 * @return the new {@link RepositoryFragments} containing all existing fragments and the given
-		 *         {@link RepositoryFragments} as first elements.
-		 */
-		public RepositoryFragments prepend(RepositoryFragments fragments) {
-
-			Assert.notNull(fragments, "RepositoryFragments must not be null!");
-
-			return concat(fragments.stream(), stream());
 		}
 
 		/**

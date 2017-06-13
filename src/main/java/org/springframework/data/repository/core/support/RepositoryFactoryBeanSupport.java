@@ -272,7 +272,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		RepositoryFragments repositoryFragmentsToUse = this.repositoryFragments //
 				.orElseGet(RepositoryFragments::empty) //
-				.prepend(customImplementationFragment);
+				.append(customImplementationFragment);
 
 		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
 		this.repository = Lazy.of(() -> this.factory.getRepository(repositoryInterface, repositoryFragmentsToUse));

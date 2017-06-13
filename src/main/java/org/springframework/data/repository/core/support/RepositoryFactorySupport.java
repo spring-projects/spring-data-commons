@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -218,6 +219,22 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.postProcessors.add(processor);
 	}
 
+	/**
+	 * Creates {@link RepositoryFragments} based on {@link RepositoryMetadata} to add repository-specific extensions.
+	 *
+	 * @param metadata
+	 * @return
+	 */
+	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
+		return RepositoryFragments.empty();
+	}
+
+	/**
+	 * Creates {@link RepositoryComposition} based on {@link RepositoryMetadata} for repository-specific method handling.
+	 *
+	 * @param metadata
+	 * @return
+	 */
 	protected RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata) {
 
 		RepositoryComposition composition = RepositoryComposition.empty();
@@ -237,20 +254,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @return
 	 */
 	public <T> T getRepository(Class<T> repositoryInterface) {
-		return getRepository(repositoryInterface, Optional.empty(), RepositoryFragments.empty());
-	}
-
-	/**
-	 * Returns a repository instance for the given interface backed by an instance providing implementation logic for
-	 * custom logic.
-	 *
-	 * @param repositoryInterface must not be {@literal null}.
-	 * @param fragments must not be {@literal null}.
-	 * @return
-	 * @since 2.0
-	 */
-	public <T> T getRepository(Class<T> repositoryInterface, RepositoryFragments fragments) {
-		return getRepository(repositoryInterface, Optional.empty(), fragments);
+		return getRepository(repositoryInterface, RepositoryFragments.empty());
 	}
 
 	/**
@@ -265,7 +269,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	@Deprecated
 	public <T> T getRepository(Class<T> repositoryInterface, Object customImplementation) {
-		return getRepository(repositoryInterface, Optional.of(customImplementation), RepositoryFragments.empty());
+		return getRepository(repositoryInterface, RepositoryFragments.just(customImplementation));
 	}
 
 	/**
@@ -273,28 +277,24 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * custom logic.
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
-	 * @param customImplementation must not be {@literal null}.
 	 * @param fragments must not be {@literal null}.
 	 * @return
+	 * @since 2.0
 	 */
 	@SuppressWarnings({ "unchecked" })
-	protected <T> T getRepository(Class<T> repositoryInterface, Optional<Object> customImplementation,
-			RepositoryFragments fragments) {
+	public <T> T getRepository(Class<T> repositoryInterface, RepositoryFragments fragments) {
 
 		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
-		Assert.notNull(customImplementation, "Custom implementation must not be null!");
 		Assert.notNull(fragments, "RepositoryFragments must not be null!");
 
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
-		RepositoryComposition composition = getRepositoryComposition(metadata).prepend(fragments);
+		RepositoryComposition composition = getRepositoryComposition(metadata);
+		RepositoryFragments repositoryAspects = getRepositoryFragments(metadata);
 
-		composition = customImplementation.map(RepositoryFragment::implemented) //
-				.map(composition::append) //
-				.orElse(composition);
+		RepositoryComposition compositionToUse = composition.append(fragments).append(repositoryAspects);
+		RepositoryInformation information = getRepositoryInformation(metadata, compositionToUse);
 
-		RepositoryInformation information = getRepositoryInformation(metadata, composition);
-
-		validate(information, composition);
+		validate(information, compositionToUse);
 
 		Object target = getTargetRepository(information);
 
@@ -311,7 +311,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		result.addAdvice(new QueryExecutorMethodInterceptor(information));
 
-		RepositoryComposition compositionToUse = composition.append(RepositoryFragment.implemented(target));
+		compositionToUse = compositionToUse.append(RepositoryFragment.implemented(target));
 		result.addAdvice(new ImplementationMethodExecutionInterceptor(compositionToUse));
 
 		return (T) result.getProxy(classLoader);
@@ -606,16 +606,17 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @author Mark Paluch
 	 */
 	@EqualsAndHashCode
+	@Value
 	private static class RepositoryInformationCacheKey {
 
-		private final String repositoryInterfaceName;
-		private final long compositionHash;
+		String repositoryInterfaceName;
+		final long compositionHash;
 
 		/**
 		 * Creates a new {@link RepositoryInformationCacheKey} for the given {@link RepositoryMetadata} and composition.
 		 *
-		 * @param repositoryInterfaceName must not be {@literal null}.
-		 * @param composition
+		 * @param metadata must not be {@literal null}.
+		 * @param composition must not be {@literal null}.
 		 */
 		public RepositoryInformationCacheKey(RepositoryMetadata metadata, RepositoryComposition composition) {
 
