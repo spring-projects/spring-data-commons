@@ -1,6 +1,31 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.0.M4 (2017-06-14)
+----------------------------------------
+* DATACMNS-1089 - Prepare upgrade to AssertJ 3.8.
+* DATACMNS-1082 - Synthetic constructors should not be considered persistence constructors.
+* DATACMNS-1079 - ClassGeneratingPropertyAccessorFactory fails on Java 9.
+* DATACMNS-1076 - Deprecate RxJava1CrudRepository and RxJava1SortingRepository interfaces.
+* DATACMNS-1074 - Avoid hidden exceptions from Lookup.unreflectSpecial(…) in default method invocations.
+* DATACMNS-1071 - Redundant <S extends Sort> on findAll().
+* DATACMNS-1067 - EventPublishingRepositoryProxyPostProcessor tries to call clearing method on plain method argument.
+* DATACMNS-1066 - AccessControlException from ClassGeneratingPropertyAccessorFactory.
+* DATACMNS-1065 - Add support for Vavr (successor of Javaslang).
+* DATACMNS-1064 - Remove obsolete Travis build profiles.
+* DATACMNS-1063 - Accept Publisher instead of Mono in findById(…), existsById(…) and deleteById(…).
+* DATACMNS-1062 - Make sure Travis builds always use fresh dependencies.
+* DATACMNS-1060 - Release 2.0 M4 (Kay).
+* DATACMNS-1059 - QuerydslPredicateExecutor.findOne should return Optional<T>.
+* DATACMNS-1058 - QueryByExampleExecutor.find one should return Optional<S>.
+* DATACMNS-1026 - ExtensionAwareEvaluationContextProvider should return all overloaded methods as functions.
+* DATACMNS-995 - Create ReactiveQueryByExampleExecutor allowing reactive query by example.
+* DATACMNS-991 - Update DefaultMethodInvokingMethodInterceptor to Java 9 compatible method handle invocation.
+* DATACMNS-822 - Provide a simple way to customize configuration of default pageable and sort resolvers.
+* DATACMNS-764 - Disambiguate custom repository implementation for implementations with same name in different packages.
+* DATACMNS-102 - Allow Repositories to be composed of an arbitrary number of implementation classes.
+
+
 Changes in version 1.13.4.RELEASE (2017-06-08)
 ----------------------------------------------
 * DATACMNS-1082 - Synthetic constructors should not be considered persistence constructors.
