@@ -16,7 +16,7 @@
 package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.util.ClassTypeInformation.*;
+import static org.springframework.data.util.ClassTypeInformation.from;
 
 import javaslang.collection.Traversable;
 
@@ -294,7 +294,7 @@ public class ClassTypeInformationUnitTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
 	public void rejectsNullClass() {
-		from(null);
+		ClassTypeInformation.from(null);
 	}
 
 	@Test // DATACMNS-422
