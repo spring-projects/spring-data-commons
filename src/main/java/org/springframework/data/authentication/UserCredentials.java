@@ -80,7 +80,7 @@ public class UserCredentials {
 	}
 
 	/**
-	 * Returns the password in obfuscated fashion which means everthing except the first and last character replaced by
+	 * Returns the password in obfuscated fashion which means everything except the first and last character replaced by
 	 * stars. If the password is one or two characters long we'll obfuscate it entirely.
 	 * 
 	 * @return the obfuscated password

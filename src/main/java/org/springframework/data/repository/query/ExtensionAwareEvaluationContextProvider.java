@@ -401,7 +401,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		public EvaluationContextExtensionAdapter(EvaluationContextExtension extension,
 				EvaluationContextExtensionInformation information) {
 
-			Assert.notNull(extension, "Extenstion must not be null!");
+			Assert.notNull(extension, "Extension must not be null!");
 			Assert.notNull(information, "Extension information must not be null!");
 
 			Optional<Object> target = Optional.ofNullable(extension.getRootObject());

@@ -35,7 +35,7 @@ public interface CrudMethods {
 	 * Returns the method to be used for saving entities. Usually siganture compatible to
 	 * {@link CrudRepository#save(Object)}.
 	 * 
-	 * @return the method to save entities or {@literal null} if noen exposed.
+	 * @return the method to save entities or {@literal null} if none exposed.
 	 * @see #hasSaveMethod()
 	 */
 	Optional<Method> getSaveMethod();

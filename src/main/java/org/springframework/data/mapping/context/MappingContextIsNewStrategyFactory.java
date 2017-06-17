@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
 /**
  * An {@link IsNewStrategyFactory} using a {@link MappingContext} to determine the {@link IsNewStrategy} to be returned
  * for a particular type. It will look for a version and id property on the {@link PersistentEntity} and return a
- * strategy instance that will refelctively inspect the property for {@literal null} values or {@literal null} or a
+ * strategy instance that will reflectively inspect the property for {@literal null} values or {@literal null} or a
  * value of 0 in case of a version property.
  * 
  * @author Oliver Gierke
