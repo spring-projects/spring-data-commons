@@ -55,8 +55,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	private final ObjectInstantiatorClassGenerator generator;
 
-	private volatile Map<TypeInformation<?>, EntityInstantiator> entityInstantiators = new HashMap<>(
-			32);
+	private volatile Map<TypeInformation<?>, EntityInstantiator> entityInstantiators = new HashMap<>(32);
 
 	/**
 	 * Creates a new {@link ClassGeneratingEntityInstantiator}.
@@ -219,6 +218,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 				return it.getParameters().stream()//
 						.map(provider::getParameterValue)//
+						.map(value -> value.orElse(null))//
 						.toArray();
 
 			}).orElse(EMPTY_ARRAY);
@@ -226,10 +226,12 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	}
 
 	/**
+	 * Needs to be public as otherwise the implementation class generated does not see the interface from the classloader.
+	 * 
 	 * @author Thomas Darimont
+	 * @author Oliver Gierke
 	 */
-	private static interface ObjectInstantiator {
-
+	public interface ObjectInstantiator {
 		Object newInstance(Object... args);
 	}
 
