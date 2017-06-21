@@ -229,10 +229,12 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	}
 
 	/**
+	 * Needs to be public as otherwise the implementation class generated does not see the interface from the classloader.
+	 * 
 	 * @author Thomas Darimont
+	 * @author Oliver Gierke
 	 */
-	private static interface ObjectInstantiator {
-
+	public interface ObjectInstantiator {
 		Object newInstance(Object... args);
 	}
 
