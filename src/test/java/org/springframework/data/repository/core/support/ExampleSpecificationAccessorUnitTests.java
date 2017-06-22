@@ -218,7 +218,7 @@ public class ExampleSpecificationAccessorUnitTests {
 	@Test // DATACMNS-810
 	public void getValueTransformerForPathReturnsConfigurtedTransformerForPath() {
 
-		PropertyValueTransformer transformer = source -> source.toString();
+		PropertyValueTransformer transformer = source -> source.map(Object::toString);
 
 		specification = ExampleMatcher.matching().//
 				withTransformer("firstname", transformer);

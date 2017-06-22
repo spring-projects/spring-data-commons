@@ -28,9 +28,10 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 
 /**
@@ -661,24 +662,40 @@ public class ExampleMatcher {
 		 * Treats strings as regular expression patterns
 		 */
 		REGEX;
-
 	}
 
 	/**
 	 * Allows to transform the property value before it is used in the query.
 	 */
-	public static interface PropertyValueTransformer extends Converter<Object, Object> {}
+	public static interface PropertyValueTransformer extends Function<Optional<Object>, Optional<Object>> {
+
+		/**
+		 * For backwards compatibility of clients used to invoke Spring's Converter interface.
+		 * 
+		 * @param source
+		 * @return
+		 */
+		@Deprecated
+		default Object convert(Object source) {
+			return apply(Optional.ofNullable(source)).orElse(null);
+		}
+	}
 
 	/**
 	 * @author Christoph Strobl
+	 * @author Oliver Gierke
 	 * @since 1.12
 	 */
 	public static enum NoOpPropertyValueTransformer implements ExampleMatcher.PropertyValueTransformer {
 
 		INSTANCE;
 
+		/* 
+		 * (non-Javadoc)
+		 * @see java.util.function.Function#apply(java.lang.Object)
+		 */
 		@Override
-		public Object convert(Object source) {
+		public Optional<Object> apply(Optional<Object> source) {
 			return source;
 		}
 	}
@@ -791,9 +808,21 @@ public class ExampleMatcher {
 		 *
 		 * @param source
 		 * @return
+		 * @deprecated since 2.0, use {@link #transformValue(Optional)} instead.
 		 */
+		@Deprecated
 		public Object transformValue(Object source) {
-			return getPropertyValueTransformer().convert(source);
+			return transformValue(Optional.ofNullable(source)).orElse(null);
+		}
+
+		/**
+		 * Transforms a given source using the {@link PropertyValueTransformer}.
+		 *
+		 * @param source
+		 * @return
+		 */
+		public Optional<Object> transformValue(Optional<Object> source) {
+			return getPropertyValueTransformer().apply(source);
 		}
 	}
 

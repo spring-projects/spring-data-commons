@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 
 /**
@@ -155,14 +154,14 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	}
 
 	/**
-	 * Applies the given {@link Converter} to the content of the {@link Chunk}.
+	 * Applies the given {@link Function} to the content of the {@link Chunk}.
 	 * 
 	 * @param converter must not be {@literal null}.
 	 * @return
 	 */
 	protected <U> List<U> getConvertedContent(Function<? super T, ? extends U> converter) {
 
-		Assert.notNull(converter, "Converter must not be null!");
+		Assert.notNull(converter, "Function must not be null!");
 
 		return this.stream().map(converter::apply).collect(Collectors.toList());
 	}
