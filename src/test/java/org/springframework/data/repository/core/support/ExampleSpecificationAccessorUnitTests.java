@@ -26,6 +26,7 @@ import org.springframework.data.domain.ExampleMatcher.NoOpPropertyValueTransform
 import org.springframework.data.domain.ExampleMatcher.NullHandler;
 import org.springframework.data.domain.ExampleMatcher.PropertyValueTransformer;
 import org.springframework.data.domain.ExampleMatcher.StringMatcher;
+import org.springframework.data.support.ExampleMatcherAccessor;
 
 /**
  * Unit tests for {@link ExampleMatcherAccessor}.

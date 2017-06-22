@@ -261,6 +261,12 @@
 			<optional>true</optional>
 		</dependency>
 
+		<dependency>
+			<groupId>de.schauderhaft.degraph</groupId>
+			<artifactId>degraph-check</artifactId>
+			<version>0.1.4</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

@@ -46,6 +46,7 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Jens Schauder
  * @param <T>
  * @since 1.12
  */
@@ -635,8 +636,9 @@ public class ExampleMatcher {
 	 * Match modes for treatment of {@link String} values.
 	 *
 	 * @author Christoph Strobl
+	 * @author Jens Schauder
 	 */
-	public static enum StringMatcher {
+	public enum StringMatcher {
 
 		/**
 		 * Store specific default.

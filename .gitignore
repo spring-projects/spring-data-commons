@@ -12,3 +12,4 @@ src/ant/.ant-targets-upload-dist.xml
 *.ipr
 *.iws
 /.idea/
+*.graphml
