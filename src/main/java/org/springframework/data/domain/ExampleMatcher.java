@@ -41,10 +41,18 @@ import org.springframework.util.Assert;
  * {@link NullHandler#IGNORE} and case-sensitive {@link StringMatcher#DEFAULT} string matching.
  * <p>
  * This class is immutable.
+ * <p>
+ * Note that this class contains methods returning instances of the deprecated
+ * {@link StringMatcher}. They will change in an upcomming version to return the new
+ * {@link org.springframework.data.util.StringMatcher}. Users should use the new
+ * {@link org.springframework.data.util.StringMatcher} class in all their code and convert to/from the old and
+ * deprecated version using {@link StringMatcher#toNewStringMatcher()} and
+ * {@link StringMatcher#fromNewStringMatcher(org.springframework.data.util.StringMatcher)}
  *
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Jens Schauder
  * @param <T>
  * @since 1.12
  */
@@ -125,13 +133,30 @@ public class ExampleMatcher {
 	 *
 	 * @param defaultStringMatcher must not be {@literal null}.
 	 * @return
+	 * @deprecated Use {@link #withStringMatcher(org.springframework.data.util.StringMatcher)} instead.
 	 */
+	@Deprecated
 	public ExampleMatcher withStringMatcher(StringMatcher defaultStringMatcher) {
 
 		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty!");
 
 		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
 				mode);
+	}
+
+	/**
+	 * Returns a copy of this {@link ExampleMatcher} with the specified string matching of {@code defaultStringMatcher}.
+	 * This instance is immutable and unaffected by this method call.
+	 *
+	 * @param defaultStringMatcher must not be {@literal null}.
+	 * @return
+	 */
+	public ExampleMatcher withStringMatcher(org.springframework.data.util.StringMatcher defaultStringMatcher) {
+
+		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty!");
+
+		return new ExampleMatcher(nullHandler, StringMatcher.fromNewStringMatcher(defaultStringMatcher), propertySpecifiers,
+				ignoredPaths, defaultIgnoreCase, mode);
 	}
 
 	/**
@@ -407,7 +432,9 @@ public class ExampleMatcher {
 		 * @param stringMatcher must not be {@literal null}.
 		 * @param ignoreCase
 		 * @return
+		 * @deprecated Use {@link #of(org.springframework.data.util.StringMatcher, boolean)} instead.
 		 */
+		@Deprecated
 		public static GenericPropertyMatcher of(StringMatcher stringMatcher, boolean ignoreCase) {
 			return new GenericPropertyMatcher().stringMatcher(stringMatcher).ignoreCase(ignoreCase);
 		}
@@ -416,10 +443,35 @@ public class ExampleMatcher {
 		 * Creates a new {@link GenericPropertyMatcher} with a {@link StringMatcher} and {@code ignoreCase}.
 		 *
 		 * @param stringMatcher must not be {@literal null}.
+		 * @param ignoreCase
 		 * @return
 		 */
+		public static GenericPropertyMatcher of(org.springframework.data.util.StringMatcher stringMatcher,
+				boolean ignoreCase) {
+			return new GenericPropertyMatcher().stringMatcher(StringMatcher.fromNewStringMatcher(stringMatcher))
+					.ignoreCase(ignoreCase);
+		}
+
+		/**
+		 * Creates a new {@link GenericPropertyMatcher} with a {@link StringMatcher} and {@code ignoreCase}.
+		 *
+		 * @param stringMatcher must not be {@literal null}.
+		 * @return
+		 * @deprecated Use {@link #of(org.springframework.data.util.StringMatcher)} instead.
+		 */
+		@Deprecated
 		public static GenericPropertyMatcher of(StringMatcher stringMatcher) {
 			return new GenericPropertyMatcher().stringMatcher(stringMatcher);
+		}
+
+		/**
+		 * Creates a new {@link GenericPropertyMatcher} with a {@link StringMatcher} and {@code ignoreCase}.
+		 *
+		 * @param stringMatcher must not be {@literal null}.
+		 * @return
+		 */
+		public static GenericPropertyMatcher of(org.springframework.data.util.StringMatcher stringMatcher) {
+			return new GenericPropertyMatcher().stringMatcher(StringMatcher.fromNewStringMatcher(stringMatcher));
 		}
 
 		/**
@@ -527,11 +579,26 @@ public class ExampleMatcher {
 		 *
 		 * @param stringMatcher must not be {@literal null}.
 		 * @return
+		 * @deprecated Use {@link #stringMatcher(org.springframework.data.util.StringMatcher)} instead.
 		 */
+		@Deprecated
 		public GenericPropertyMatcher stringMatcher(StringMatcher stringMatcher) {
 
 			Assert.notNull(stringMatcher, "StringMatcher must not be null!");
 			this.stringMatcher = stringMatcher;
+			return this;
+		}
+
+		/**
+		 * Sets string matcher to {@code stringMatcher}.
+		 *
+		 * @param stringMatcher must not be {@literal null}.
+		 * @return
+		 */
+		public GenericPropertyMatcher stringMatcher(org.springframework.data.util.StringMatcher stringMatcher) {
+
+			Assert.notNull(stringMatcher, "StringMatcher must not be null!");
+			this.stringMatcher = StringMatcher.fromNewStringMatcher(stringMatcher);
 			return this;
 		}
 
@@ -634,8 +701,11 @@ public class ExampleMatcher {
 	 * Match modes for treatment of {@link String} values.
 	 *
 	 * @author Christoph Strobl
+	 * @author Jens Schauder
+	 * @deprecated use {@link org.springframework.data.util.StringMatcher} instead.
 	 */
-	public static enum StringMatcher {
+	@Deprecated
+	public enum StringMatcher {
 
 		/**
 		 * Store specific default.
@@ -662,6 +732,18 @@ public class ExampleMatcher {
 		 */
 		REGEX;
 
+		public org.springframework.data.util.StringMatcher toNewStringMatcher() {
+			return org.springframework.data.util.StringMatcher.valueOf(name());
+		}
+
+		public static StringMatcher fromNewStringMatcher(org.springframework.data.util.StringMatcher stringMatcher) {
+
+			try {
+				return StringMatcher.valueOf(stringMatcher.name());
+			} catch (IllegalArgumentException iae) {
+				return StringMatcher.DEFAULT;
+			}
+		}
 	}
 
 	/**
