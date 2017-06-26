@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
@@ -74,9 +75,9 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @param environment
 	 */
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
-			ResourceLoader resourceLoader, Environment environment) {
+			ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry) {
 
-		super(environment);
+		super(environment, registry);
 
 		Assert.notNull(metadata, "Metadata must not be null!");
 		Assert.notNull(annotation, "Annotation must not be null!");
