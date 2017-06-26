@@ -73,11 +73,11 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
-
 		DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
 		StandardEnvironment environment = new StandardEnvironment();
+
 		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(
-				annotationMetadata, EnableRepositories.class, resourceLoader, environment);
+				annotationMetadata, EnableRepositories.class, resourceLoader, environment, beanFactory);
 
 		extension.registerBeansForRoot(beanFactory, configurationSource);
 		extension.registerBeansForRoot(beanFactory, configurationSource);
