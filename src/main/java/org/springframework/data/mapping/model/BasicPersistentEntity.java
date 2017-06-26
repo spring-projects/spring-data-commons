@@ -324,7 +324,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(handler, "PropertyHandler must not be null!");
 
-		getPersistentProperties().forEach(handler::doWithPersistentProperty);
+		for (P property : properties) {
+			if (!property.isTransient() && !property.isAssociation()) {
+				handler.doWithPersistentProperty(property);
+			}
+		}
 	}
 
 	/*
@@ -336,7 +340,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(handler, "Handler must not be null!");
 
-		getPersistentProperties().forEach(handler::doWithPersistentProperty);
+		for (PersistentProperty<?> property : properties) {
+			if (!property.isTransient() && !property.isAssociation()) {
+				handler.doWithPersistentProperty(property);
+			}
+		}
 	}
 
 	/*
