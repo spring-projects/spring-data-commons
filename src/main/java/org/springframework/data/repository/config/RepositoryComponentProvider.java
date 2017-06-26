@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.classreading.MetadataReader;
@@ -47,6 +48,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	private static final String METHOD_NOT_PUBLIC = "AnnotationConfigUtils.processCommonDefinitionAnnotations(…) is not public! Make sure you're using Spring 3.2.5 or better. The class was loaded from %s.";
 
 	private boolean considerNestedRepositoryInterfaces;
+	private BeanDefinitionRegistry registry;
 
 	/**
 	 * Creates a new {@link RepositoryComponentProvider} using the given {@link TypeFilter} to include components to be
@@ -55,13 +57,16 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	 * @param includeFilters the {@link TypeFilter}s to select repository interfaces to consider, must not be
 	 *          {@literal null}.
 	 */
-	public RepositoryComponentProvider(Iterable<? extends TypeFilter> includeFilters) {
+	public RepositoryComponentProvider(Iterable<? extends TypeFilter> includeFilters, BeanDefinitionRegistry registry) {
 
 		super(false);
 
 		assertRequiredSpringVersionPresent();
 
 		Assert.notNull(includeFilters, "Include filters must not be null!");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
+
+		this.registry = registry;
 
 		if (includeFilters.iterator().hasNext()) {
 			for (TypeFilter filter : includeFilters) {
@@ -127,6 +132,15 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		}
 
 		return candidates;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider#getRegistry()
+	 */
+	@Override
+	protected BeanDefinitionRegistry getRegistry() {
+		return registry;
 	}
 
 	/**

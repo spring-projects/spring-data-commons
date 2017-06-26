@@ -45,8 +45,10 @@ public class RepositoryConfigurationDelegateUnitTests {
 
 		StandardEnvironment environment = new StandardEnvironment();
 		GenericApplicationContext context = new GenericApplicationContext();
+
 		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
-				new StandardAnnotationMetadata(TestConfig.class, true), EnableRepositories.class, context, environment);
+				new StandardAnnotationMetadata(TestConfig.class, true), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory());
 
 		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
 

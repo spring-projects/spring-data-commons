@@ -16,8 +16,8 @@
 package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +26,7 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.Repository;
@@ -40,10 +41,12 @@ import org.springframework.data.repository.sample.SampleAnnotatedRepository;
  */
 public class RepositoryComponentProviderUnitTests {
 
+	BeanDefinitionRegistry registry = mock(BeanDefinitionRegistry.class);
+
 	@Test
 	public void findsAnnotatedRepositoryInterface() {
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList());
+		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.sample");
 
 		assertThat(components).hasSize(3);
@@ -56,7 +59,7 @@ public class RepositoryComponentProviderUnitTests {
 
 		List<? extends TypeFilter> filters = Collections.singletonList(new AssignableTypeFilter(MyOtherRepository.class));
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(filters);
+		RepositoryComponentProvider provider = new RepositoryComponentProvider(filters, registry);
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository");
 
 		assertThat(components).hasSize(1);
@@ -66,7 +69,7 @@ public class RepositoryComponentProviderUnitTests {
 	@Test // DATACMNS-90
 	public void shouldConsiderNestedRepositoryInterfacesIfEnabled() {
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList());
+		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
 		provider.setConsiderNestedRepositoryInterfaces(true);
 
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.config");
@@ -74,6 +77,19 @@ public class RepositoryComponentProviderUnitTests {
 
 		assertThat(components.size()).isGreaterThanOrEqualTo(1);
 		assertThat(components).extracting(BeanDefinition::getBeanClassName).contains(nestedRepositoryClassName);
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-1098
+	public void rejectsNullBeanDefinitionRegistry() {
+		new RepositoryComponentProvider(Collections.emptyList(), null);
+	}
+
+	@Test // DATACMNS-1098
+	public void exposesBeanDefinitionRegistry() {
+
+		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
+
+		assertThat(provider.getRegistry()).isEqualTo(registry);
 	}
 
 	static class BeanDefinitionOfTypeMatcher extends BaseMatcher<BeanDefinition> {

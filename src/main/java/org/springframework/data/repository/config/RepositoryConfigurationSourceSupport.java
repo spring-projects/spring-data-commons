@@ -18,6 +18,7 @@ package org.springframework.data.repository.config;
 import java.util.Collections;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
@@ -38,6 +39,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 
 	private final Environment environment;
 	private final RepositoryBeanNameGenerator beanNameGenerator;
+	private final BeanDefinitionRegistry registry;
 
 	/**
 	 * Creates a new {@link RepositoryConfigurationSourceSupport} with the given environment.
@@ -45,13 +47,16 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 * @param environment must not be {@literal null}.
 	 * @param classLoader must not be {@literal null}.
 	 */
-	public RepositoryConfigurationSourceSupport(Environment environment, ClassLoader classLoader) {
+	public RepositoryConfigurationSourceSupport(Environment environment, ClassLoader classLoader,
+			BeanDefinitionRegistry registry) {
 
 		Assert.notNull(environment, "Environment must not be null!");
 		Assert.notNull(classLoader, "ClassLoader must not be null!");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
 		this.environment = environment;
 		this.beanNameGenerator = new RepositoryBeanNameGenerator(classLoader);
+		this.registry = registry;
 	}
 
 	/* 
@@ -61,10 +66,10 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	@Override
 	public Streamable<BeanDefinition> getCandidates(ResourceLoader loader) {
 
-		RepositoryComponentProvider scanner = new RepositoryComponentProvider(getIncludeFilters());
+		RepositoryComponentProvider scanner = new RepositoryComponentProvider(getIncludeFilters(), registry);
 		scanner.setConsiderNestedRepositoryInterfaces(shouldConsiderNestedRepositories());
-		scanner.setResourceLoader(loader);
 		scanner.setEnvironment(environment);
+		scanner.setResourceLoader(loader);
 
 		getExcludeFilters().forEach(it -> scanner.addExcludeFilter(it));
 
