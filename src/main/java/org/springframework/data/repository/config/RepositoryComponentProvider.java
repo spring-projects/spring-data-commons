@@ -45,8 +45,6 @@ import org.springframework.util.Assert;
  */
 class RepositoryComponentProvider extends ClassPathScanningCandidateComponentProvider {
 
-	private static final String METHOD_NOT_PUBLIC = "AnnotationConfigUtils.processCommonDefinitionAnnotations(…) is not public! Make sure you're using Spring 3.2.5 or better. The class was loaded from %s.";
-
 	private boolean considerNestedRepositoryInterfaces;
 	private BeanDefinitionRegistry registry;
 
@@ -60,8 +58,6 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	public RepositoryComponentProvider(Iterable<? extends TypeFilter> includeFilters, BeanDefinitionRegistry registry) {
 
 		super(false);
-
-		assertRequiredSpringVersionPresent();
 
 		Assert.notNull(includeFilters, "Include filters must not be null!");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
@@ -161,20 +157,6 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	}
 
 	/**
-	 * Makes sure {@link AnnotationConfigUtils#processCommonDefinitionAnnotations(AnnotatedBeanDefinition) is public and
-	 * indicates the offending JAR if not.
-	 */
-	private static void assertRequiredSpringVersionPresent() {
-
-		try {
-			AnnotationConfigUtils.class.getMethod("processCommonDefinitionAnnotations", AnnotatedBeanDefinition.class);
-		} catch (NoSuchMethodException o_O) {
-			throw new IllegalStateException(String.format(METHOD_NOT_PUBLIC, AnnotationConfigUtils.class
-					.getProtectionDomain().getCodeSource().getLocation()), o_O);
-		}
-	}
-
-	/**
 	 * {@link org.springframework.core.type.filter.TypeFilter} that only matches interfaces. Thus setting this up makes
 	 * only sense providing an interface type as {@code targetType}.
 	 * 
@@ -196,7 +178,8 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		 * @see org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilter#match(org.springframework.core.type.classreading.MetadataReader, org.springframework.core.type.classreading.MetadataReaderFactory)
 		 */
 		@Override
-		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
+		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
+				throws IOException {
 
 			return metadataReader.getClassMetadata().isInterface() && super.match(metadataReader, metadataReaderFactory);
 		}
@@ -226,7 +209,8 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		 * (non-Javadoc)
 		 * @see org.springframework.core.type.filter.TypeFilter#match(org.springframework.core.type.classreading.MetadataReader, org.springframework.core.type.classreading.MetadataReaderFactory)
 		 */
-		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
+		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
+				throws IOException {
 
 			for (TypeFilter filter : delegates) {
 				if (!filter.match(metadataReader, metadataReaderFactory)) {
