@@ -17,6 +17,7 @@ package org.springframework.data.repository.config;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -25,6 +26,7 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
@@ -45,6 +47,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	RepositoryConfigurationSource source;
 	Environment environment;
 	ResourceLoader resourceLoader;
+	BeanDefinitionRegistry registry;
 
 	@Before
 	public void setUp() {
@@ -52,8 +55,10 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 		environment = new StandardEnvironment();
 		resourceLoader = new DefaultResourceLoader();
+		registry = mock(BeanDefinitionRegistry.class);
+
 		source = new AnnotationRepositoryConfigurationSource(annotationMetadata, EnableRepositories.class, resourceLoader,
-				environment);
+				environment, registry);
 	}
 
 	@Test // DATACMNS-47
@@ -109,10 +114,10 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-502
 	public void returnsEmptyStringForBasePackage() throws Exception {
 
-		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(getClass().getClassLoader().loadClass(
-				"TypeInDefaultPackage"), true);
+		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(
+				getClass().getClassLoader().loadClass("TypeInDefaultPackage"), true);
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
-				EnableRepositories.class, resourceLoader, environment);
+				EnableRepositories.class, resourceLoader, environment, registry);
 
 		assertThat(configurationSource.getBasePackages(), hasItem(""));
 	}
@@ -129,7 +134,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(ConfigWithSampleAnnotation.class, true);
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
-				SampleAnnotation.class, resourceLoader, environment);
+				SampleAnnotation.class, resourceLoader, environment, registry);
 
 		assertThat(configurationSource.getRepositoryBaseClassName(), is(nullValue()));
 	}
@@ -137,7 +142,8 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(type, true);
-		return new AnnotationRepositoryConfigurationSource(metadata, EnableRepositories.class, resourceLoader, environment);
+		return new AnnotationRepositoryConfigurationSource(metadata, EnableRepositories.class, resourceLoader, environment,
+				registry);
 	}
 
 	public static class Person {}

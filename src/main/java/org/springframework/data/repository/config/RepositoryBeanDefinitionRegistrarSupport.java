@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public abstract class RepositoryBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar,
-		ResourceLoaderAware, EnvironmentAware {
+public abstract class RepositoryBeanDefinitionRegistrarSupport
+		implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
 	private ResourceLoader resourceLoader;
 	private Environment environment;
@@ -72,7 +72,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport implements Import
 		}
 
 		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(
-				annotationMetadata, getAnnotation(), resourceLoader, environment);
+				annotationMetadata, getAnnotation(), resourceLoader, environment, registry);
 
 		RepositoryConfigurationExtension extension = getExtension();
 		RepositoryConfigurationUtils.exposeRegistration(extension, registry, configurationSource);
