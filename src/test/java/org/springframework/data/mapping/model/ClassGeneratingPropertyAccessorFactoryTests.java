@@ -16,8 +16,7 @@
 
 package org.springframework.data.mapping.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -29,7 +28,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.mapping.PersistentProperty;
@@ -103,8 +101,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 			PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
 
-			persistentPropertyAccessor.setProperty(property, Optional.of("value"));
-			assertThat(persistentPropertyAccessor.getProperty(property)).isEqualTo(Optional.of("value"));
+			persistentPropertyAccessor.setProperty(property, "value");
+			assertThat(persistentPropertyAccessor.getProperty(property)).isEqualTo("value");
 		});
 	}
 

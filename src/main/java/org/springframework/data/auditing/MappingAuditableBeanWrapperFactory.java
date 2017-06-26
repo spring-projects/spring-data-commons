@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
  * {@link AuditableBeanWrapperFactory} that will create am {@link AuditableBeanWrapper} using mapping information
  * obtained from a {@link MappingContext} to detect auditing configuration and eventually invoking setting the auditing
  * values.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.8
@@ -50,7 +50,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 	/**
 	 * Creates a new {@link MappingAuditableBeanWrapperFactory} using the given {@link PersistentEntities}.
-	 * 
+	 *
 	 * @param entities must not be {@literal null}.
 	 */
 	public MappingAuditableBeanWrapperFactory(PersistentEntities entities) {
@@ -61,7 +61,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		this.metadataCache = new HashMap<>();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.auditing.AuditableBeanWrapperFactory#getBeanWrapperFor(java.lang.Object)
 	 */
@@ -90,7 +90,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 	/**
 	 * Captures {@link PersistentProperty} instances equipped with auditing annotations.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @since 1.8
 	 */
@@ -101,7 +101,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 		/**
 		 * Creates a new {@link MappingAuditingMetadata} instance from the given {@link PersistentEntity}.
-		 * 
+		 *
 		 * @param entity must not be {@literal null}.
 		 */
 		public MappingAuditingMetadata(PersistentEntity<?, ? extends PersistentProperty<?>> entity) {
@@ -117,7 +117,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		/**
 		 * Returns whether the {@link PersistentEntity} is auditable at all (read: any of the auditing annotations is
 		 * present).
-		 * 
+		 *
 		 * @return
 		 */
 		public boolean isAuditable() {
@@ -129,7 +129,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 	/**
 	 * {@link AuditableBeanWrapper} using {@link MappingAuditingMetadata} and a {@link PersistentPropertyAccessor} to set
 	 * values on auditing properties.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @since 1.8
 	 */
@@ -141,32 +141,32 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		/**
 		 * Creates a new {@link MappingMetadataAuditableBeanWrapper} for the given target and
 		 * {@link MappingAuditingMetadata}.
-		 * 
-		 * @param target must not be {@literal null}.
+		 *
+		 * @param accessor must not be {@literal null}.
 		 * @param metadata must not be {@literal null}.
 		 */
 		public MappingMetadataAuditableBeanWrapper(PersistentPropertyAccessor accessor, MappingAuditingMetadata metadata) {
 
-			Assert.notNull(accessor, "Target object must not be null!");
+			Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
 			Assert.notNull(metadata, "Auditing metadata must not be null!");
 
 			this.accessor = accessor;
 			this.metadata = metadata;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
 		 */
 		@Override
 		public Object setCreatedBy(Object value) {
 
-			metadata.createdByProperty.ifPresent(it -> this.accessor.setProperty(it, Optional.of(value)));
+			metadata.createdByProperty.ifPresent(it -> this.accessor.setProperty(it, value));
 
 			return value;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Optional)
 		 */
@@ -175,7 +175,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return setDateProperty(metadata.createdDateProperty, value);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedBy(java.util.Optional)
 		 */
@@ -184,17 +184,17 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return setProperty(metadata.lastModifiedByProperty, value);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getLastModifiedDate()
 		 */
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
-			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.flatMap(accessor::getProperty),
+			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.map(accessor::getProperty),
 					LocalDateTime.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Optional)
 		 */
@@ -214,7 +214,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 				TemporalAccessor value) {
 
 			property.ifPresent(
-					it -> this.accessor.setProperty(it, Optional.of(getDateValueToSet(value, it.getType(), accessor.getBean()))));
+					it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), accessor.getBean())));
 
 			return value;
 		}

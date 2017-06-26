@@ -18,7 +18,7 @@ package org.springframework.data.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.convert.ReflectionEntityInstantiator.*;
-import static org.springframework.data.util.ClassTypeInformation.*;
+import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -43,9 +43,10 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Unit tests for {@link ReflectionEntityInstantiator}.
- * 
+ *
  * @author Oliver Gierke
  * @author Johannes Mockenhaupt
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
@@ -81,7 +82,6 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 				.getConstructor();
 
 		doReturn(constructor).when(entity).getPersistenceConstructor();
-		doReturn(Optional.empty()).when(provider).getParameterValue(any());
 
 		Object instance = INSTANCE.createInstance(entity, provider);
 
@@ -109,7 +109,7 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 
 			Object outer = new Outer();
 
-			when(provider.getParameterValue(parameter)).thenReturn(Optional.of(outer));
+			when(provider.getParameterValue(parameter)).thenReturn(outer);
 			Inner instance = INSTANCE.createInstance(entity, provider);
 
 			assertThat(instance).isNotNull();
@@ -130,7 +130,7 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 
 		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<>(from(Sample.class));
 
-		doReturn(Optional.of("FOO")).when(provider).getParameterValue(any(Parameter.class));
+		doReturn("FOO").when(provider).getParameterValue(any(Parameter.class));
 
 		Constructor constructor = Sample.class.getConstructor(Long.class, String.class);
 		List<Object> parameters = Arrays.asList("FOO", "FOO");

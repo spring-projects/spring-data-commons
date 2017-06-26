@@ -18,7 +18,6 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
-import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
@@ -28,9 +27,10 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Unit tests for {@link AbstractEntityInformation}.
- * 
+ *
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Mark Paluch
  */
 public class AbstractEntityInformationUnitTests {
 
@@ -111,8 +111,8 @@ public class AbstractEntityInformationUnitTests {
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public Optional<ID> getId(T entity) {
-			return Optional.ofNullable((ID) ReflectionTestUtils.getField(entity, "id"));
+		public ID getId(T entity) {
+			return (ID) ReflectionTestUtils.getField(entity, "id");
 		}
 
 		@Override

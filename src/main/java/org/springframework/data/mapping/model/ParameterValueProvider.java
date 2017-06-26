@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2012 by the original author(s).
+ * Copyright (c) 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,21 @@
  */
 package org.springframework.data.mapping.model;
 
-import java.util.Optional;
-
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 
 /**
  * Callback interface to lookup values for a given {@link Parameter}.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface ParameterValueProvider<P extends PersistentProperty<P>> {
 
 	/**
 	 * Returns the value to be used for the given {@link Parameter} (usually when entity instances are created).
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */
-	<T> Optional<T> getParameterValue(Parameter<T, P> parameter);
+	<T> T getParameterValue(Parameter<T, P> parameter);
 }

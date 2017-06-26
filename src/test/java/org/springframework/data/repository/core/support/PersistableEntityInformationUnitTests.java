@@ -25,8 +25,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Persistable;
 
 /**
- * Unit tests for {@link PersistableEntityMetadata}.
- * 
+ * Unit tests for {@link Persistable}.
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -44,9 +44,9 @@ public class PersistableEntityInformationUnitTests {
 
 		when(persistable.getId()).thenReturn(2L, 1L, 3L);
 
-		assertThat(metadata.getId(persistable)).hasValue(2L);
-		assertThat(metadata.getId(persistable)).hasValue(1L);
-		assertThat(metadata.getId(persistable)).hasValue(3L);
+		assertThat(metadata.getId(persistable)).isEqualTo(2L);
+		assertThat(metadata.getId(persistable)).isEqualTo(1L);
+		assertThat(metadata.getId(persistable)).isEqualTo(3L);
 	}
 
 	@Test

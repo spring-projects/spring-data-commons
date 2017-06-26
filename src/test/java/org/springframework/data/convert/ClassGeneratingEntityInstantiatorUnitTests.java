@@ -17,7 +17,7 @@ package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.util.ClassTypeInformation.*;
+import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -46,6 +46,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
@@ -112,7 +113,7 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 
 			Object outer = new Outer();
 
-			doReturn(Optional.of(outer)).when(provider).getParameterValue(parameter);
+			doReturn(outer).when(provider).getParameterValue(parameter);
 			Inner instance = this.instance.createInstance(entity, provider);
 
 			assertThat(instance).isNotNull();
@@ -133,7 +134,7 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 
 		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<>(from(Sample.class));
 
-		doReturn(Optional.of("FOO")).when(provider).getParameterValue(any(Parameter.class));
+		doReturn("FOO").when(provider).getParameterValue(any(Parameter.class));
 
 		Constructor constructor = Sample.class.getConstructor(Long.class, String.class);
 		List<Object> parameters = Arrays.asList("FOO", "FOO");
@@ -191,7 +192,7 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		doReturn(ObjCtor1ParamString.class).when(entity).getType();
 		doReturn(new PreferredConstructorDiscoverer<>(ObjCtor1ParamString.class).getConstructor())//
 				.when(entity).getPersistenceConstructor();
-		doReturn(Optional.of("FOO")).when(provider).getParameterValue(any());
+		doReturn("FOO").when(provider).getParameterValue(any());
 
 		IntStream.range(0, 2).forEach(i -> {
 
@@ -213,7 +214,7 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 
 		IntStream.range(0, 2).forEach(i -> {
 
-			when(provider.getParameterValue(any())).thenReturn(Optional.of("FOO"), Optional.of("BAR"));
+			when(provider.getParameterValue(any())).thenReturn("FOO", "BAR");
 
 			Object instance = this.instance.createInstance(entity, provider);
 
@@ -234,7 +235,7 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 
 		IntStream.range(0, 2).forEach(i -> {
 
-			doReturn(Optional.of(42)).when(provider).getParameterValue(any());
+			doReturn(42).when(provider).getParameterValue(any());
 
 			Object instance = this.instance.createInstance(entity, provider);
 
@@ -253,8 +254,7 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 
 		IntStream.range(0, 2).forEach(i -> {
 
-			when(provider.getParameterValue(any(Parameter.class))).thenReturn(Optional.of("A"), Optional.of(1),
-					Optional.of(2), Optional.of(3), Optional.of(4), Optional.of(5), Optional.of("B"));
+			when(provider.getParameterValue(any(Parameter.class))).thenReturn("A", 1, 2, 3, 4, 5, "B");
 
 			Object instance = this.instance.createInstance(entity, provider);
 

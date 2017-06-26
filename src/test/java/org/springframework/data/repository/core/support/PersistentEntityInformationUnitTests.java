@@ -28,7 +28,7 @@ import org.springframework.data.repository.core.EntityInformation;
 
 /**
  * Unit tests for {@link PersistentEntityInformation}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PersistentEntityInformationUnitTests {
@@ -45,7 +45,7 @@ public class PersistentEntityInformationUnitTests {
 		Sample sample = new Sample();
 		sample.id = 5L;
 
-		assertThat(information.getId(sample)).hasValue(5L);
+		assertThat(information.getId(sample)).isEqualTo(5L);
 	}
 
 	@Test // DATACMNS-596
@@ -57,7 +57,7 @@ public class PersistentEntityInformationUnitTests {
 
 		PersistentEntityInformation<Object, Serializable> information = new PersistentEntityInformation<>(
 				entity);
-		assertThat(information.getId(new EntityWithoutId())).isNotPresent();
+		assertThat(information.getId(new EntityWithoutId())).isNull();
 	}
 
 	static class Sample {

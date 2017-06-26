@@ -15,8 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import java.util.Optional;
-
 import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -26,7 +24,7 @@ import org.springframework.util.Assert;
 
 /**
  * Default implementation of {@link IdentifierAccessor}.
- * 
+ *
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @since 1.10
@@ -39,7 +37,7 @@ public class IdPropertyIdentifierAccessor extends TargetAwareIdentifierAccessor 
 	/**
 	 * Creates a new {@link IdPropertyIdentifierAccessor} for the given {@link PersistentEntity} and
 	 * {@link ConvertingPropertyAccessor}.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 */
@@ -59,7 +57,7 @@ public class IdPropertyIdentifierAccessor extends TargetAwareIdentifierAccessor 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.keyvalue.core.IdentifierAccessor#getIdentifier()
 	 */
-	public Optional<Object> getIdentifier() {
+	public Object getIdentifier() {
 		return accessor.getProperty(idProperty);
 	}
 }

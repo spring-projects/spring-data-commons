@@ -51,14 +51,14 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 
 	private final Object bean;
 	private final String propertyName;
-	private final Optional<Object> value;
+	private final Object value;
 
 	public ClassGeneratingPropertyAccessorFactoryDatatypeTests(Object bean, String propertyName, Object value,
 			String displayName) {
 
 		this.bean = bean;
 		this.propertyName = propertyName;
-		this.value = Optional.of(value);
+		this.value = value;
 	}
 
 	@Parameters(name = "{3}")

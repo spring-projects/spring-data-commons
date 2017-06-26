@@ -29,8 +29,9 @@ import org.springframework.format.support.DefaultFormattingConversionService;
 
 /**
  * Unit tests for {@link ConvertingPropertyAccessor}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class ConvertingPropertyAccessorUnitTests {
 
@@ -60,7 +61,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		entity.id = 1L;
 
 		assertThat(getIdProperty()).hasValueSatisfying(
-				it -> assertThat(getAccessor(entity, CONVERSION_SERVICE).getProperty(it, String.class)).hasValue("1"));
+				it -> assertThat(getAccessor(entity, CONVERSION_SERVICE).getProperty(it, String.class)).isEqualTo("1"));
 	}
 
 	@Test // DATACMNS-596
@@ -69,7 +70,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		ConversionService conversionService = mock(ConversionService.class);
 
 		assertThat(getIdProperty()).hasValueSatisfying(it -> {
-			assertThat(getAccessor(new Entity(), conversionService).getProperty(it, Number.class)).isNotPresent();
+			assertThat(getAccessor(new Entity(), conversionService).getProperty(it, Number.class)).isNull();
 			verify(conversionService, times(0)).convert(1L, Number.class);
 		});
 	}
@@ -83,7 +84,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		ConversionService conversionService = mock(ConversionService.class);
 
 		assertThat(getIdProperty()).hasValueSatisfying(it -> {
-			assertThat(getAccessor(entity, conversionService).getProperty(it, Number.class)).hasValue(1L);
+			assertThat(getAccessor(entity, conversionService).getProperty(it, Number.class)).isEqualTo(1L);
 			verify(conversionService, times(0)).convert(1L, Number.class);
 		});
 	}
@@ -94,7 +95,7 @@ public class ConvertingPropertyAccessorUnitTests {
 		Entity entity = new Entity();
 
 		assertThat(getIdProperty()).hasValueSatisfying(property -> {
-			getAccessor(entity, CONVERSION_SERVICE).setProperty(property, Optional.of("1"));
+			getAccessor(entity, CONVERSION_SERVICE).setProperty(property, "1");
 			assertThat(entity.id).isEqualTo(1L);
 		});
 	}
@@ -103,7 +104,7 @@ public class ConvertingPropertyAccessorUnitTests {
 	public void doesNotInvokeConversionIfTypeAlreadyMatchesOnSet() {
 
 		assertThat(getIdProperty()).hasValueSatisfying(it -> {
-			getAccessor(new Entity(), mock(ConversionService.class)).setProperty(it, Optional.of(1L));
+			getAccessor(new Entity(), mock(ConversionService.class)).setProperty(it, 1L);
 			verify(mock(ConversionService.class), times(0)).convert(1L, Long.class);
 		});
 	}

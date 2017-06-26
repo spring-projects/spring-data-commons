@@ -17,14 +17,13 @@ package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Optional;
-
 import org.junit.Test;
 
 /**
  * Unit tests for {@link TargetAwareIdentifierAccessor}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Anika Nilles - Greenfield (Pikalar)
  */
 public class TargetAwareIdentifierAccessorUnitTests {
@@ -37,13 +36,13 @@ public class TargetAwareIdentifierAccessorUnitTests {
 		IdentifierAccessor accessor = new TargetAwareIdentifierAccessor(() -> sample) {
 
 			@Override
-			public Optional<Object> getIdentifier() {
-				return Optional.empty();
+			public Object getIdentifier() {
+				return null;
 			}
 		};
 
 		assertThatExceptionOfType(IllegalStateException.class)//
-				.isThrownBy(() -> accessor.getRequiredIdentifier())//
+				.isThrownBy(accessor::getRequiredIdentifier)//
 				.withMessageContaining(sample.toString());
 	}
 }

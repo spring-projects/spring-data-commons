@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import java.util.Optional;
-
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -27,8 +25,9 @@ import org.springframework.util.Assert;
  * {@link #setProperty(PersistentProperty, Object)} to the type of the {@link PersistentProperty} using a
  * {@link ConversionService}. Exposes {@link #getProperty(PersistentProperty, Class)} to allow obtaining the value of a
  * property in a type the {@link ConversionService} can convert the raw type to.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 
@@ -38,7 +37,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	/**
 	 * Creates a new {@link ConvertingPropertyAccessor} for the given delegate {@link PersistentPropertyAccessor} and
 	 * {@link ConversionService}.
-	 * 
+	 *
 	 * @param accessor must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
 	 */
@@ -51,32 +50,32 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 		this.conversionService = conversionService;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentProperty, java.lang.Object)
 	 */
 	@Override
-	public void setProperty(PersistentProperty<?> property, Optional<? extends Object> value) {
+	public void setProperty(PersistentProperty<?> property, Object value) {
 		accessor.setProperty(property, convertIfNecessary(value, property.getType()));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Override
-	public Optional<Object> getProperty(PersistentProperty<?> property) {
+	public Object getProperty(PersistentProperty<?> property) {
 		return accessor.getProperty(property);
 	}
 
 	/**
 	 * Returns the value of the given {@link PersistentProperty} converted to the given type.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
 	 * @return
 	 */
-	public <T> Optional<T> getProperty(PersistentProperty<?> property, Class<T> targetType) {
+	public <T> T getProperty(PersistentProperty<?> property, Class<T> targetType) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 		Assert.notNull(targetType, "Target type must not be null!");
@@ -84,7 +83,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 		return convertIfNecessary(getProperty(property), targetType);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getBean()
 	 */
@@ -96,13 +95,14 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	/**
 	 * Triggers the conversion of the source value into the target type unless the value already is a value of given
 	 * target type.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> Optional<T> convertIfNecessary(Optional<? extends Object> source, Class<T> type) {
-		return source.map(it -> type.isAssignableFrom(it.getClass()) ? (T) it : conversionService.convert(it, type));
+	private <T> T convertIfNecessary(Object source, Class<T> type) {
+		return (T) (source == null ? null
+				: type.isAssignableFrom(source.getClass()) ? source : conversionService.convert(source, type));
 	}
 }

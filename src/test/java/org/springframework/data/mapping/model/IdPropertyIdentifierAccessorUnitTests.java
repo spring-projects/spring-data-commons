@@ -24,6 +24,7 @@ import org.springframework.data.mapping.context.SampleMappingContext;
 
 /**
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class IdPropertyIdentifierAccessorUnitTests {
 
@@ -50,7 +51,7 @@ public class IdPropertyIdentifierAccessorUnitTests {
 		IdentifierAccessor accessor = new IdPropertyIdentifierAccessor(
 				mappingContext.getRequiredPersistentEntity(SampleWithId.class), sample);
 
-		assertThat(accessor.getIdentifier()).hasValue(sample.id);
+		assertThat(accessor.getIdentifier()).isEqualTo(sample.id);
 	}
 
 	static class Sample {}

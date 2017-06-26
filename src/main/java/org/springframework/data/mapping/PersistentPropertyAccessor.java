@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,13 @@
  */
 package org.springframework.data.mapping;
 
-import java.util.Optional;
-
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 
 /**
  * Domain service to allow accessing and setting {@link PersistentProperty}s of an entity. Usually obtained through
  * {@link PersistentEntity#getPropertyAccessor(Object)}. In case type conversion shall be applied on property access,
  * use a {@link ConvertingPropertyAccessor}.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.10
  * @see PersistentEntity#getPropertyAccessor(Object)
@@ -34,26 +32,25 @@ public interface PersistentPropertyAccessor {
 	/**
 	 * Sets the given {@link PersistentProperty} to the given value. Will do type conversion if a
 	 * {@link org.springframework.core.convert.ConversionService} is configured.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @param value can be {@literal null}.
 	 * @throws org.springframework.data.mapping.model.MappingException in case an exception occurred when setting the
 	 *           property value.
 	 */
-	void setProperty(PersistentProperty<?> property, Optional<? extends Object> value);
+	void setProperty(PersistentProperty<?> property, Object value);
 
 	/**
 	 * Returns the value of the given {@link PersistentProperty} of the underlying bean instance.
-	 * 
-	 * @param <S>
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
-	Optional<Object> getProperty(PersistentProperty<?> property);
+	Object getProperty(PersistentProperty<?> property);
 
 	/**
 	 * Returns the underlying bean.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	Object getBean();

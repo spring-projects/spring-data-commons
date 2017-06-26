@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,39 @@
  */
 package org.springframework.data.mapping;
 
-import java.util.Optional;
-
 /**
  * Interface for a component allowing the access of identifier values.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @see TargetAwareIdentifierAccessor
  */
 public interface IdentifierAccessor {
 
 	/**
 	 * Returns the value of the identifier.
-	 * 
+	 *
 	 * @return the identifier of the underlying instance.
 	 */
-	Optional<Object> getIdentifier();
+	Object getIdentifier();
 
 	/**
 	 * Returns the identifier of the underlying instance. Implementations are strongly recommended to extends either
 	 * {@link TargetAwareIdentifierAccessor} or override this method to add more context to the exception being thrown in
 	 * case of the absence of an identifier.
-	 * 
+	 *
 	 * @return the identifier of the underlying instance
 	 * @throws IllegalStateException in case no identifier could be retrieved.
 	 * @since 2.0
 	 */
 	default Object getRequiredIdentifier() {
-		return getIdentifier().orElseThrow(() -> new IllegalStateException(String.format("Could not obtain identifier!")));
+
+		Object identifier = getIdentifier();
+
+		if (identifier != null) {
+			return identifier;
+		}
+
+		throw new IllegalStateException("Could not obtain identifier!");
 	}
 }

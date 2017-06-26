@@ -17,7 +17,6 @@ package org.springframework.data.repository.core.support;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.Optional;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.EntityInformation;
@@ -27,7 +26,7 @@ import org.springframework.util.ReflectionUtils;
 /**
  * {@link EntityInformation} implementation that inspects fields for an annotation and looks up this field's value to
  * retrieve the id.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -40,7 +39,7 @@ public class ReflectionEntityInformation<T, ID> extends AbstractEntityInformatio
 	/**
 	 * Creates a new {@link ReflectionEntityInformation} inspecting the given domain class for a field carrying the
 	 * {@link Id} annotation.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 */
 	public ReflectionEntityInformation(Class<T> domainClass) {
@@ -50,7 +49,7 @@ public class ReflectionEntityInformation<T, ID> extends AbstractEntityInformatio
 	/**
 	 * Creates a new {@link ReflectionEntityInformation} inspecting the given domain class for a field carrying the given
 	 * annotation.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @param annotation must not be {@literal null}.
 	 */
@@ -70,16 +69,16 @@ public class ReflectionEntityInformation<T, ID> extends AbstractEntityInformatio
 		ReflectionUtils.makeAccessible(field);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
-	public Optional<ID> getId(Object entity) {
-		return entity == null ? null : Optional.ofNullable((ID) ReflectionUtils.getField(field, entity));
+	public ID getId(Object entity) {
+		return entity == null ? null : (ID) ReflectionUtils.getField(field, entity);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
 	 */

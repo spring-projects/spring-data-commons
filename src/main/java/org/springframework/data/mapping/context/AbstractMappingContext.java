@@ -67,8 +67,8 @@ import org.springframework.util.StringUtils;
  * The implementation uses a {@link ReentrantReadWriteLock} to make sure {@link PersistentEntity} are completely
  * populated before accessing them from outside.
  *
- * @param E the concrete {@link PersistentEntity} type the {@link MappingContext} implementation creates
- * @param P the concrete {@link PersistentProperty} type the {@link MappingContext} implementation creates
+ * @param <E> the concrete {@link PersistentEntity} type the {@link MappingContext} implementation creates
+ * @param <P> the concrete {@link PersistentProperty} type the {@link MappingContext} implementation creates
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Michael Hunger
@@ -164,7 +164,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		return getPersistentEntity(ClassTypeInformation.from(type));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getRequiredPersistentEntity(java.lang.Class)
 	 */
@@ -228,7 +228,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		return addPersistentEntity(type);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getRequiredPersistentEntity(org.springframework.data.util.TypeInformation)
 	 */
@@ -251,7 +251,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		return getPersistentEntity(typeInfo.getActualType());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#getRequiredPersistentEntity(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -457,8 +457,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	/**
 	 * Creates the concrete instance of {@link PersistentProperty}.
 	 *
-	 * @param field
-	 * @param descriptor
+	 * @param property
 	 * @param owner
 	 * @param simpleTypeHolder
 	 * @return
@@ -606,7 +605,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		/**
 		 * Returns whether the given {@link PropertyDescriptor} is one to create a {@link PersistentProperty} for.
 		 *
-		 * @param descriptor must not be {@literal null}.
+		 * @param property must not be {@literal null}.
 		 * @return
 		 */
 		public boolean matches(Property property) {
@@ -650,7 +649,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			/**
 			 * Returns whether the given {@link Field} matches the defined {@link PropertyMatch}.
 			 *
-			 * @param field must not be {@literal null}.
+			 * @param name must not be {@literal null}.
 			 * @return
 			 */
 			public boolean matches(String name, Class<?> type) {

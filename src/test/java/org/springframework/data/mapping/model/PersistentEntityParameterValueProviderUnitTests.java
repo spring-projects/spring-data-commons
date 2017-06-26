@@ -16,7 +16,6 @@
 package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -33,8 +32,9 @@ import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link PersistentEntityParameterValueProvider}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PersistentEntityParameterValueProviderUnitTests<P extends PersistentProperty<P>> {
@@ -55,16 +55,14 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 			}
 		};
 
-		doReturn(Optional.empty()).when(propertyValueProvider).getPropertyValue(any());
-
 		assertThat(entity.getPersistenceConstructor()).hasValueSatisfying(constructor -> {
 
 			Iterator<Parameter<Object, P>> iterator = constructor.getParameters().iterator();
 			ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider,
-					Optional.of(outer));
+					outer);
 
-			assertThat(provider.getParameterValue(iterator.next())).hasValue(outer);
-			assertThat(provider.getParameterValue(iterator.next())).isNotPresent();
+			assertThat(provider.getParameterValue(iterator.next())).isEqualTo(outer);
+			assertThat(provider.getParameterValue(iterator.next())).isNull();
 			assertThat(iterator.hasNext()).isFalse();
 		});
 	}
@@ -76,10 +74,11 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 		ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider,
 				Optional.of(property));
 
-		assertThat(entity.getPersistenceConstructor()).hasValueSatisfying(constructor -> assertThatExceptionOfType(MappingException.class)//
-				.isThrownBy(() -> provider.getParameterValue(constructor.getParameters().iterator().next()))//
-				.withMessageContaining("bar")//
-				.withMessageContaining(Entity.class.getName()));
+		assertThat(entity.getPersistenceConstructor())
+				.hasValueSatisfying(constructor -> assertThatExceptionOfType(MappingException.class)//
+						.isThrownBy(() -> provider.getParameterValue(constructor.getParameters().iterator().next()))//
+						.withMessageContaining("bar")//
+						.withMessageContaining(Entity.class.getName()));
 	}
 
 	static class Outer {

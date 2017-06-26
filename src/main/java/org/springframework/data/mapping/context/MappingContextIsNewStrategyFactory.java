@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,11 @@ import org.springframework.util.Assert;
 /**
  * An {@link IsNewStrategyFactory} using a {@link MappingContext} to determine the {@link IsNewStrategy} to be returned
  * for a particular type. It will look for a version and id property on the {@link PersistentEntity} and return a
- * strategy instance that will refelctively inspect the property for {@literal null} values or {@literal null} or a
+ * strategy instance that will reflectively inspect the property for {@literal null} values or {@literal null} or a
  * value of 0 in case of a version property.
- * 
+ *
  * @author Oliver Gierke
- * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupport {
 
@@ -45,7 +45,7 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 
 	/**
 	 * Creates a new {@link MappingContextIsNewStrategyFactory} using the given {@link MappingContext}.
-	 * 
+	 *
 	 * @param context must not be {@literal null}.
 	 * @deprecated use {@link MappingContextIsNewStrategyFactory(PersistentEntities)} instead.
 	 */
@@ -56,8 +56,8 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 
 	/**
 	 * Creates a new {@link MappingContextIsNewStrategyFactory} using the given {@link PersistentEntities}.
-	 * 
-	 * @param context must not be {@literal null}.
+	 *
+	 * @param entities must not be {@literal null}.
 	 * @since 1.10
 	 */
 	public MappingContextIsNewStrategyFactory(PersistentEntities entities) {
@@ -74,11 +74,11 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	protected IsNewStrategy doGetIsNewStrategy(Class<?> type) {
 
 		return context.getPersistentEntity(type)//
-				.flatMap(MappingContextIsNewStrategyFactory::foo)//
+				.flatMap(MappingContextIsNewStrategyFactory::getIsNewStrategy)//
 				.orElseThrow(() -> new MappingException(String.format("Cannot determine IsNewStrategy for type %s!", type)));
 	}
 
-	private static Optional<IsNewStrategy> foo(PersistentEntity<?, ?> entity) {
+	private static Optional<IsNewStrategy> getIsNewStrategy(PersistentEntity<?, ?> entity) {
 
 		if (entity.hasVersionProperty()) {
 
@@ -96,15 +96,15 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 
 	/**
 	 * {@link IsNewStrategy} implementation that will inspect a given {@link PersistentProperty} and call
-	 * {@link #decideIsNew(Object)} with the value retrieved by reflection.
-	 * 
+	 * {@link #isNew(Object)} with the value retrieved by reflection.
+	 *
 	 * @author Oliver Gierke
 	 */
 	@RequiredArgsConstructor(staticName = "of")
 	static class PersistentPropertyInspectingIsNewStrategy implements IsNewStrategy {
 
 		private final @NonNull PersistentProperty<?> property;
-		private final @NonNull Function<Optional<Object>, Boolean> isNew;
+		private final @NonNull Function<Object, Boolean> isNew;
 
 		/*
 		 * (non-Javadoc)
@@ -119,20 +119,11 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		}
 	}
 
-	private static boolean propertyIsNull(Optional<Object> it) {
-		return !it.isPresent();
+	private static boolean propertyIsNull(Object it) {
+		return it == null;
 	}
 
-	private static boolean propertyIsNullOrZeroNumber(Optional<Object> it) {
-
-		return it.map(value -> {
-
-			if (!(value instanceof Number)) {
-				return false;
-			}
-
-			return ((Number) value).longValue() == 0;
-
-		}).orElse(true);
+	private static boolean propertyIsNullOrZeroNumber(Object value) {
+		return propertyIsNull(value) || value instanceof Number && ((Number) value).longValue() == 0;
 	}
 }

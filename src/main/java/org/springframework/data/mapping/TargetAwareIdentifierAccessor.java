@@ -22,8 +22,9 @@ import java.util.function.Supplier;
 /**
  * {@link IdentifierAccessor} that is aware of the target bean to obtain the identifier from so that it can generate a
  * more meaningful exception in case of an absent identifier and a call to {@link #getRequiredIdentifier()}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 2.0
  * @soundtrack Anika Nilles - Greenfield (Pikalar)
  */
@@ -32,13 +33,19 @@ public abstract class TargetAwareIdentifierAccessor implements IdentifierAccesso
 
 	private final Supplier<Object> target;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.IdentifierAccessor#getRequiredIdentifier()
 	 */
 	@Override
 	public Object getRequiredIdentifier() {
-		return getIdentifier().orElseThrow(
-				() -> new IllegalStateException(String.format("Could not obtain identifier from %s!", target.get())));
+
+		Object identifier = getIdentifier();
+
+		if (identifier != null) {
+			return identifier;
+		}
+
+		throw new IllegalStateException(String.format("Could not obtain identifier from %s!", target.get()));
 	}
 }

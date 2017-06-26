@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@ package org.springframework.data.repository.core.support;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Optional;
-
 import org.springframework.data.repository.core.EntityInformation;
 
 /**
  * Useful base class to implement custom {@link EntityInformation}s and delegate execution of standard methods from
  * {@link EntityInformation} to a special implementation.
- * 
+ *
  * @author Oliver Gierke
  */
 @RequiredArgsConstructor
@@ -33,7 +31,7 @@ public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, 
 
 	private final @NonNull EntityInformation<T, ID> delegate;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
 	 */
@@ -41,7 +39,7 @@ public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, 
 		return delegate.getJavaType();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#isNew(java.lang.Object)
 	 */
@@ -49,15 +47,15 @@ public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, 
 		return delegate.isNew(entity);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
-	public Optional<ID> getId(T entity) {
+	public ID getId(T entity) {
 		return delegate.getId(entity);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
 	 */

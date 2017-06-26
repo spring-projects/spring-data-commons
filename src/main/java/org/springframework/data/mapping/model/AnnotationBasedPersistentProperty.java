@@ -17,7 +17,6 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -99,7 +98,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
 
 				annotationCache.put(annotationType,
-						Optional.of(AnnotatedElementUtils.findMergedAnnotation(it, annotationType)));
+						Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(it, annotationType)));
 			}
 		});
 
@@ -114,7 +113,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 						annotationType.getSimpleName(), it.getName(), getOwner().getType().getSimpleName());
 
 				annotationCache.put(annotationType,
-						Optional.of(AnnotatedElementUtils.findMergedAnnotation(it, annotationType)));
+						Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(it, annotationType)));
 			}
 		});
 	}
@@ -156,7 +155,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * Considers plain transient fields, fields annotated with {@link Transient}, {@link Value} or {@link Autowired} as
 	 * transient.
 	 *
-	 * @see org.springframework.data.mapping.BasicPersistentProperty#isTransient()
+	 * @see org.springframework.data.mapping.PersistentProperty#isTransient()
 	 */
 	@Override
 	public boolean isTransient() {
@@ -239,10 +238,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	private <A extends Annotation> Optional<A> cacheAndReturn(Class<? extends A> type, Optional<A> annotation) {
 
-		if (annotationCache != null) {
-			annotationCache.put(type, annotation);
-		}
-
+		annotationCache.put(type, annotation);
 		return annotation;
 	}
 
@@ -277,7 +273,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		}
 
 		String builder = annotationCache.values().stream() //
-				.flatMap(it -> Optionals.toStream(it)) //
+				.flatMap(Optionals::toStream) //
 				.map(Object::toString) //
 				.collect(Collectors.joining(" "));
 
@@ -285,6 +281,6 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	}
 
 	private Stream<Optional<? extends AnnotatedElement>> getAccessors() {
-		return Arrays.<Optional<? extends AnnotatedElement>> asList(getGetter(), getSetter(), getField()).stream();
+		return Stream.of(getGetter(), getSetter(), getField());
 	}
 }

@@ -36,11 +36,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Simple impementation of {@link PersistentProperty}.
- * 
+ * Simple implementation of {@link PersistentProperty}.
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>> implements PersistentProperty<P> {
 
@@ -121,7 +122,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return information;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getPersistentEntityType()
 	 */
@@ -133,11 +134,11 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		}
 
 		return entityTypeInformation.get()//
-				.map(it -> Collections.singleton(it))//
-				.orElseGet(() -> Collections.emptySet());
+				.map(Collections::singleton)//
+				.orElseGet(Collections::emptySet);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getGetter()
 	 */
@@ -146,7 +147,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return property.getGetter();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getSetter()
 	 */
@@ -268,7 +269,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return isMap() ? information.getMapValueType().map(TypeInformation::getType) : Optional.empty();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getActualType()
 	 */
@@ -277,7 +278,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return information.getActualType().getType();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mongodb.core.mapping.MongoPersistentProperty#usePropertyAccess()
 	 */
@@ -285,7 +286,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return usePropertyAccess.get();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -305,7 +306,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return this.property.equals(that.property);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -314,7 +315,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return this.hashCode.get();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

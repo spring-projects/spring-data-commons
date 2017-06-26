@@ -49,6 +49,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Phillip Webb
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.11
  */
 public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
@@ -64,7 +65,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		this.generator = new ObjectInstantiatorClassGenerator();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
 	 */
@@ -196,7 +197,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			try {
 				return (T) instantiator.newInstance(params);
 			} catch (Exception e) {
-				throw new MappingInstantiationException(Optional.of(entity), Arrays.asList(params), e);
+				throw new MappingInstantiationException(entity, Arrays.asList(params), e);
 			}
 		}
 
@@ -218,7 +219,6 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 				return it.getParameters().stream()//
 						.map(provider::getParameterValue)//
-						.map(value -> value.orElse(null))//
 						.toArray();
 
 			}).orElse(EMPTY_ARRAY);
@@ -227,7 +227,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	/**
 	 * Needs to be public as otherwise the implementation class generated does not see the interface from the classloader.
-	 * 
+	 *
 	 * @author Thomas Darimont
 	 * @author Oliver Gierke
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-201 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.util.Optional;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.core.EntityMetadata;
@@ -24,7 +22,7 @@ import org.springframework.data.repository.core.EntityMetadata;
 /**
  * Implementation of {@link EntityMetadata} that assumes the entity handled implements {@link Persistable} and uses
  * {@link Persistable#isNew()} for the {@link #isNew(Object)} check.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PersistableEntityInformation<T extends Persistable<ID>, ID> extends AbstractEntityInformation<T, ID> {
@@ -33,7 +31,7 @@ public class PersistableEntityInformation<T extends Persistable<ID>, ID> extends
 
 	/**
 	 * Creates a new {@link PersistableEntityInformation}.
-	 * 
+	 *
 	 * @param domainClass
 	 */
 	@SuppressWarnings("unchecked")
@@ -57,8 +55,8 @@ public class PersistableEntityInformation<T extends Persistable<ID>, ID> extends
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
 	@Override
-	public Optional<ID> getId(T entity) {
-		return Optional.ofNullable(entity.getId());
+	public ID getId(T entity) {
+		return entity.getId();
 	}
 
 	/*

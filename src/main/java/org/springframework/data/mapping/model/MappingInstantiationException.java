@@ -16,20 +16,21 @@
 package org.springframework.data.mapping.model;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Exception being thrown in case an entity could not be instantiated in the process of a to-object-mapping.
- * 
+ *
  * @author Oliver Gierke
  * @author Jon Brisbin
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class MappingInstantiationException extends RuntimeException {
 
@@ -43,43 +44,58 @@ public class MappingInstantiationException extends RuntimeException {
 	/**
 	 * Creates a new {@link MappingInstantiationException} for the given {@link PersistentEntity}, constructor arguments
 	 * and the causing exception.
-	 * 
+	 *
 	 * @param entity
 	 * @param arguments
 	 * @param cause
 	 */
-	public MappingInstantiationException(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments,
-			Exception cause) {
-		this(entity, arguments, null, cause);
+	public MappingInstantiationException(PersistentEntity<?, ?> entity, List<Object> arguments, Exception cause) {
+		this(Optional.ofNullable(entity), arguments, null, cause);
+	}
+
+	/**
+	 * Creates a new {@link MappingInstantiationException} for the given constructor arguments and the causing exception.
+	 *
+	 * @param arguments
+	 * @param cause
+	 */
+	public MappingInstantiationException(List<Object> arguments, Exception cause) {
+		this(Optional.empty(), arguments, null, cause);
 	}
 
 	private MappingInstantiationException(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments, String message,
 			Exception cause) {
 
-		super(buildExceptionMessage(entity, arguments.stream(), message), cause);
+		super(buildExceptionMessage(entity, arguments, message), cause);
 
 		this.entityType = entity.map(PersistentEntity::getType).orElse(null);
-		this.constructor = entity.flatMap(PersistentEntity::getPersistenceConstructor).map(PreferredConstructor::getConstructor).orElse(null);
+		this.constructor = entity.flatMap(PersistentEntity::getPersistenceConstructor)
+				.map(PreferredConstructor::getConstructor).orElse(null);
 		this.constructorArguments = arguments;
 	}
 
-	private static String buildExceptionMessage(Optional<PersistentEntity<?, ?>> entity, Stream<Object> arguments,
-												String defaultMessage) {
+	private static String buildExceptionMessage(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments,
+			String defaultMessage) {
 
 		return entity.map(it -> {
 
 			Optional<? extends PreferredConstructor<?, ?>> constructor = it.getPersistenceConstructor();
 
+			List<String> toStringArgs = new ArrayList<>(arguments.size());
+			for (Object o : arguments) {
+				toStringArgs.add(ObjectUtils.nullSafeToString(o));
+			}
+
 			return String.format(TEXT_TEMPLATE, it.getType().getName(),
-					constructor.map(c -> c.getConstructor().toString()).orElse("NO_CONSTRUCTOR"),
-					String.join(",", arguments.map(Object::toString).collect(Collectors.toList())));
+					constructor.map(c -> c.getConstructor().toString()).orElse("NO_CONSTRUCTOR"), //
+					String.join(",", toStringArgs));
 
 		}).orElse(defaultMessage);
 	}
 
 	/**
 	 * Returns the type of the entity that was attempted to instantiate.
-	 * 
+	 *
 	 * @return the entityType
 	 */
 	public Optional<Class<?>> getEntityType() {
@@ -88,7 +104,7 @@ public class MappingInstantiationException extends RuntimeException {
 
 	/**
 	 * The constructor used during the instantiation attempt.
-	 * 
+	 *
 	 * @return the constructor
 	 */
 	public Optional<Constructor<?>> getConstructor() {
@@ -97,7 +113,7 @@ public class MappingInstantiationException extends RuntimeException {
 
 	/**
 	 * The constructor arguments used to invoke the constructor.
-	 * 
+	 *
 	 * @return the constructorArguments
 	 */
 	public List<Object> getConstructorArguments() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,15 @@ package org.springframework.data.repository.core.support;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Optional;
-
 import org.springframework.data.repository.core.EntityInformation;
 
 /**
  * Base class for implementations of {@link EntityInformation}. Considers an entity to be new whenever
  * {@link #getId(Object)} returns {@literal null}.
- * 
+ *
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Mark Paluch
  */
 @RequiredArgsConstructor
 public abstract class AbstractEntityInformation<T, ID> implements EntityInformation<T, ID> {
@@ -40,22 +39,18 @@ public abstract class AbstractEntityInformation<T, ID> implements EntityInformat
 	 */
 	public boolean isNew(T entity) {
 
-		Optional<ID> id = getId(entity);
+		ID id = getId(entity);
 		Class<ID> idType = getIdType();
 
 		if (!idType.isPrimitive()) {
-			return !id.isPresent();
+			return id == null;
 		}
 
-		return id.map(it -> {
+		if (id instanceof Number) {
+			return ((Number) id).longValue() == 0L;
+		}
 
-			if (it instanceof Number) {
-				return ((Number) it).longValue() == 0L;
-			}
-
-			return null;
-
-		}).orElseThrow(() -> new IllegalArgumentException(String.format("Unsupported primitive id type %s!", idType)));
+		throw new IllegalArgumentException(String.format("Unsupported primitive id type %s!", idType));
 	}
 
 	/*

@@ -35,18 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mapping.Alias;
-import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.AssociationHandler;
-import org.springframework.data.mapping.IdentifierAccessor;
-import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.mapping.SimpleAssociationHandler;
-import org.springframework.data.mapping.SimplePropertyHandler;
-import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
+import org.springframework.data.mapping.*;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -74,7 +63,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private final Optional<Comparator<P>> comparator;
 	private final Set<Association<P>> associations;
 
-	private final Map<String, P> propertyCache;
+	private final Map<String, Optional<P>> propertyCache;
 	private final Map<Class<? extends Annotation>, Optional<Annotation>> annotationCache;
 
 	private Optional<P> idProperty = Optional.empty();
@@ -208,7 +197,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		properties.add(property);
 
 		if (!propertyCache.containsKey(property.getName())) {
-			propertyCache.put(property.getName(), property);
+			propertyCache.put(property.getName(), Optional.of(property));
 		}
 
 		P candidate = returnPropertyIfBetterIdPropertyCandidateOrNull(property);
@@ -268,7 +257,14 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperty(java.lang.String)
 	 */
 	public Optional<P> getPersistentProperty(String name) {
-		return Optional.ofNullable(propertyCache.get(name));
+
+		Optional<P> property = propertyCache.get(name);
+
+		if (property != null) {
+			return property;
+		}
+
+		return Optional.empty();
 	}
 
 	/*
@@ -467,8 +463,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		 * @see org.springframework.data.mapping.IdentifierAccessor#getIdentifier()
 		 */
 		@Override
-		public Optional<Object> getIdentifier() {
-			return Optional.empty();
+		public Object getIdentifier() {
+			return null;
 		}
 	}
 

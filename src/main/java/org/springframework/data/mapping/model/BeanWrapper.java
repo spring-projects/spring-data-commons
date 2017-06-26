@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 by the original author(s).
+ * Copyright 2011-2017 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,9 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Domain service to allow accessing the values of {@link PersistentProperty}s on a given bean.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 class BeanWrapper<T> implements PersistentPropertyAccessor {
 
@@ -35,7 +36,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 	/**
 	 * Creates a new {@link BeanWrapper} for the given bean.
-	 * 
+	 *
 	 * @param bean must not be {@literal null}.
 	 */
 	protected BeanWrapper(T bean) {
@@ -48,7 +49,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentProperty, java.util.Optional)
 	 */
-	public void setProperty(PersistentProperty<?> property, Optional<? extends Object> value) {
+	public void setProperty(PersistentProperty<?> property, Object value) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
@@ -59,7 +60,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 				Field field = property.getField().get();
 
 				ReflectionUtils.makeAccessible(field);
-				ReflectionUtils.setField(field, bean, value.orElse(null));
+				ReflectionUtils.setField(field, bean, value);
 				return;
 			}
 
@@ -68,7 +69,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 			setter.ifPresent(it -> {
 
 				ReflectionUtils.makeAccessible(it);
-				ReflectionUtils.invokeMethod(it, bean, value.orElse(null));
+				ReflectionUtils.invokeMethod(it, bean, value);
 			});
 
 		} catch (IllegalStateException e) {
@@ -80,13 +81,13 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
-	public Optional<Object> getProperty(PersistentProperty<?> property) {
+	public Object getProperty(PersistentProperty<?> property) {
 		return getProperty(property, property.getType());
 	}
 
 	/**
 	 * Returns the value of the given {@link PersistentProperty} potentially converted to the given type.
-	 * 
+	 *
 	 * @param <S>
 	 * @param property must not be {@literal null}.
 	 * @param type can be {@literal null}.
@@ -94,7 +95,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 * @throws MappingException in case an exception occured when accessing the property.
 	 */
 	@SuppressWarnings("unchecked")
-	public <S> Optional<S> getProperty(PersistentProperty<?> property, Class<? extends S> type) {
+	public <S> Object getProperty(PersistentProperty<?> property, Class<? extends S> type) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
@@ -104,7 +105,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 				Field field = property.getField().get();
 				ReflectionUtils.makeAccessible(field);
-				return Optional.ofNullable((S) ReflectionUtils.getField(field, bean));
+				return ReflectionUtils.getField(field, bean);
 			}
 
 			Optional<Method> getter = property.getGetter();
@@ -113,7 +114,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 				ReflectionUtils.makeAccessible(it);
 				return (S) ReflectionUtils.invokeMethod(it, bean);
-			});
+			}).orElse(null);
 
 		} catch (IllegalStateException e) {
 			throw new MappingException(

@@ -42,7 +42,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
 		Algorithm quickSort = new QuickSort();
 
-		assertThat(getEntityInformation(Algorithm.class).getId(quickSort)).hasValue(quickSort.getName());
+		assertThat(getEntityInformation(Algorithm.class).getId(quickSort)).isEqualTo(quickSort.getName());
 	}
 
 	@Test // DATACMNS-853
@@ -50,7 +50,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
 		Person jonDoe = new Person("JonDoe");
 
-		assertThat(getEntityInformation(Person.class).getId(jonDoe)).hasValue(jonDoe.name);
+		assertThat(getEntityInformation(Person.class).getId(jonDoe)).isEqualTo(jonDoe.name);
 	}
 
 	private EntityInformation<Object, Serializable> getEntityInformation(Class<?> type) {

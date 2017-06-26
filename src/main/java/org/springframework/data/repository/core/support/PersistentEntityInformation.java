@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.util.Optional;
-
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.EntityInformation;
@@ -24,7 +22,7 @@ import org.springframework.data.repository.core.EntityInformation;
 /**
  * {@link EntityInformation} implementation that uses a {@link PersistentEntity} to obtain id type information and uses
  * a {@link org.springframework.data.mapping.IdentifierAccessor} to access the property value if requested.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -35,7 +33,7 @@ public class PersistentEntityInformation<T, ID> extends AbstractEntityInformatio
 
 	/**
 	 * Creates a new {@link PersistableEntityInformation} for the given {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 */
 	public PersistentEntityInformation(PersistentEntity<T, ?> entity) {
@@ -44,16 +42,16 @@ public class PersistentEntityInformation<T, ID> extends AbstractEntityInformatio
 		this.persistentEntity = entity;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
 	@Override
-	public Optional<ID> getId(T entity) {
-		return persistentEntity.getIdentifierAccessor(entity).getIdentifier().map(it -> (ID) it);
+	public ID getId(T entity) {
+		return (ID) persistentEntity.getIdentifierAccessor(entity).getIdentifier();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
 	 */

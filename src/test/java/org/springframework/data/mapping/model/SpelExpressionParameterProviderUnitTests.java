@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,10 @@ import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTests.SamplePersistentProperty;
 
 /**
+ * Unit tests for {@link SpELExpressionParameterValueProvider}.
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class SpelExpressionParameterProviderUnitTests {
@@ -49,7 +52,7 @@ public class SpelExpressionParameterProviderUnitTests {
 		provider = new SpELExpressionParameterValueProvider<>(evaluator, conversionService, delegate);
 
 		parameter = mock(Parameter.class);
-		when(parameter.getSpelExpression()).thenReturn(Optional.empty());
+		when(parameter.hasSpelExpression()).thenReturn(true);
 		when(parameter.getRawType()).thenReturn(Object.class);
 	}
 
@@ -58,6 +61,7 @@ public class SpelExpressionParameterProviderUnitTests {
 	public void delegatesIfParameterDoesNotHaveASpELExpression() {
 
 		Parameter<Object, SamplePersistentProperty> parameter = mock(Parameter.class);
+		when(parameter.hasSpelExpression()).thenReturn(false);
 
 		provider.getParameterValue(parameter);
 		verify(delegate, times(1)).getParameterValue(parameter);
@@ -114,7 +118,7 @@ public class SpelExpressionParameterProviderUnitTests {
 		doReturn(Optional.of("source")).when(parameter).getSpelExpression();
 		doReturn("value").when(evaluator).evaluate(any());
 
-		assertThat(provider.getParameterValue(parameter)).hasValue("FOO");
+		assertThat(provider.getParameterValue(parameter)).isEqualTo("FOO");
 
 		verify(delegate, times(0)).getParameterValue(parameter);
 	}
