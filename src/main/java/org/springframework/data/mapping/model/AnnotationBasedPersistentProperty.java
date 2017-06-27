@@ -52,7 +52,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	private static final String SPRING_DATA_PACKAGE = "org.springframework.data";
 
-	private final Value value;
+	private final String value;
 	private final Map<Class<? extends Annotation>, Optional<? extends Annotation>> annotationCache = new HashMap<>();
 
 	private final Lazy<Boolean> usePropertyAccess = Lazy.of(() -> {
@@ -78,7 +78,13 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 		populateAnnotationCache(property);
 
-		this.value = findAnnotation(Value.class);
+		Value value = findAnnotation(Value.class);
+
+		if (value != null) {
+			this.value = value.value();
+		} else {
+			this.value = null;
+		}
 	}
 
 	/**
@@ -152,12 +158,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	@Override
 	public String getSpelExpression() {
-
-		if (value != null) {
-			return value.value();
-		}
-
-		return null;
+		return value;
 	}
 
 	/**
