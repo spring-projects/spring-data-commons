@@ -19,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -41,6 +42,7 @@ public class Alias {
 	/**
 	 * Common instance for {@code empty()}.
 	 */
+	@SuppressWarnings("null") //
 	public static final Alias NONE = new Alias(null);
 
 	private final Object value;
@@ -65,7 +67,7 @@ public class Alias {
 	 * @param alias may be {@literal null}.
 	 * @return the {@link Alias} for {@code alias} or {@link #empty()} if the given alias was {@literal null}.
 	 */
-	public static Alias ofNullable(Object alias) {
+	public static Alias ofNullable(@Nullable Object alias) {
 		return alias == null ? NONE : new Alias(alias);
 	}
 
@@ -124,6 +126,7 @@ public class Alias {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
 	public <T> T mapTyped(Class<T> type) {
 
@@ -132,7 +135,8 @@ public class Alias {
 		return isPresent() && type.isInstance(value) ? (T) value : null;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

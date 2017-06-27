@@ -18,6 +18,8 @@ package org.springframework.data.web;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpInputMessage;
@@ -61,7 +63,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 	@Override
 	protected boolean supports(Class<?> type) {
 
-		Class<?> rawType = ResolvableType.forType(type).getRawClass();
+		Class<?> rawType = ResolvableType.forType(type).resolve(Object.class);
 		Boolean result = supportedTypesCache.get(rawType);
 
 		if (result != null) {
@@ -80,7 +82,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 	 * @see org.springframework.http.converter.HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
 	 */
 	@Override
-	public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+	public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
 		return false;
 	}
 

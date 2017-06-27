@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -211,6 +212,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getProperty(java.lang.String)
 	 */
+	@Nullable
 	public TypeInformation<?> getProperty(String fieldname) {
 
 		int separatorIndex = fieldname.indexOf('.');
@@ -237,6 +239,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param fieldname
 	 * @return
 	 */
+	@SuppressWarnings("null")
 	private Optional<TypeInformation<?>> getPropertyInformation(String fieldname) {
 
 		Class<?> rawType = getType();
@@ -280,6 +283,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param descriptor must not be {@literal null}
 	 * @return
 	 */
+	@Nullable
 	private static Type getGenericType(PropertyDescriptor descriptor) {
 
 		Method method = descriptor.getReadMethod();
@@ -319,6 +323,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getActualType()
 	 */
+	@Nullable
 	public TypeInformation<?> getActualType() {
 
 		if (isMap()) {
@@ -353,10 +358,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getMapValueType()
 	 */
+	@Nullable
 	public TypeInformation<?> getMapValueType() {
-		return valueType.get();
+		return valueType.getNullable();
 	}
 
+	@Nullable
 	protected TypeInformation<?> doGetMapValueType() {
 		return isMap() ? getTypeArgument(getBaseType(MAP_TYPES), 1)
 				: getTypeArguments().stream().skip(1).findFirst().orElse(null);
@@ -377,10 +384,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getComponentType()
 	 */
+	@Nullable
 	public final TypeInformation<?> getComponentType() {
-		return componentType.get();
+		return componentType.getNullable();
 	}
 
+	@Nullable
 	protected TypeInformation<?> doGetComponentType() {
 
 		Class<S> rawType = getType();
@@ -429,6 +438,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getSuperTypeInformation(java.lang.Class)
 	 */
+	@Nullable
 	public TypeInformation<?> getSuperTypeInformation(Class<?> superType) {
 
 		Class<?> rawType = getType();
@@ -478,7 +488,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#isAssignableFrom(org.springframework.data.util.TypeInformation)
 	 */
 	public boolean isAssignableFrom(TypeInformation<?> target) {
-		return target.getSuperTypeInformation(getType()).equals(this);
+
+		TypeInformation<?> superTypeInformation = target.getSuperTypeInformation(getType());
+
+		return superTypeInformation == null ? false : superTypeInformation.equals(this);
 	}
 
 	/*
@@ -498,6 +511,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 				: createInfo(new SyntheticParamterizedType(type, arguments)));
 	}
 
+	@Nullable
 	private TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
 
 		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
@@ -527,7 +541,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (obj == this) {
 			return true;
@@ -582,6 +596,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		 * @see java.lang.reflect.ParameterizedType#getOwnerType()
 		 */
 		@Override
+		@Nullable
 		public Type getOwnerType() {
 			return null;
 		}

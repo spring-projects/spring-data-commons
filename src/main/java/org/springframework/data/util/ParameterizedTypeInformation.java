@@ -20,12 +20,14 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -39,7 +41,7 @@ import org.springframework.util.StringUtils;
 class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
 	private final ParameterizedType type;
-	private Boolean resolved;
+	private @javax.annotation.Nullable Boolean resolved;
 
 	/**
 	 * Creates a new {@link ParameterizedTypeInformation} for the given {@link Type} and parent {@link TypeDiscoverer}.
@@ -59,6 +61,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetMapValueType()
 	 */
 	@Override
+	@Nullable
 	protected TypeInformation<?> doGetMapValueType() {
 
 		if (Map.class.isAssignableFrom(getType())) {
@@ -127,7 +130,8 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 				: target.getSuperTypeInformation(rawType);
 
 		List<TypeInformation<?>> myParameters = getTypeArguments();
-		List<TypeInformation<?>> typeParameters = otherTypeInformation.getTypeArguments();
+		List<TypeInformation<?>> typeParameters = otherTypeInformation == null ? Collections.emptyList()
+				: otherTypeInformation.getTypeArguments();
 
 		if (myParameters.size() != typeParameters.size()) {
 			return false;
@@ -147,6 +151,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
 	 */
 	@Override
+	@Nullable
 	protected TypeInformation<?> doGetComponentType() {
 		return createInfo(type.getActualTypeArguments()[0]);
 	}
@@ -156,7 +161,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (obj == this) {
 			return true;

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Locale;
 
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -102,7 +103,7 @@ public class Point implements Serializable {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

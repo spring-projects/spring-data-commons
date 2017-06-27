@@ -24,6 +24,7 @@ import java.beans.PropertyDescriptor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.QuerydslUtils;
+import org.springframework.lang.Nullable;
 
 import com.querydsl.core.types.Path;
 
@@ -55,7 +56,14 @@ class QuerydslPathInformation implements PathInformation {
 	 */
 	@Override
 	public Class<?> getLeafParentType() {
-		return path.getMetadata().getParent().getType();
+
+		Path<?> parent = path.getMetadata().getParent();
+
+		if (parent == null) {
+			throw new IllegalStateException(String.format("Could not obtain metadata for parent node of %s!", path));
+		}
+
+		return parent.getType();
 	}
 
 	/* 
@@ -71,6 +79,7 @@ class QuerydslPathInformation implements PathInformation {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.querydsl.binding.MappedPath#getLeafPropertyDescriptor()
 	 */
+	@Nullable
 	@Override
 	public PropertyDescriptor getLeafPropertyDescriptor() {
 		return BeanUtils.getPropertyDescriptor(getLeafParentType(), getLeafProperty());

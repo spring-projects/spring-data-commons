@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -47,6 +49,7 @@ public class RepositoryFragmentsFactoryBean<T>
 	 *
 	 * @param fragmentBeanNames must not be {@literal null}.
 	 */
+	@SuppressWarnings("null")
 	public RepositoryFragmentsFactoryBean(List<String> fragmentBeanNames) {
 
 		Assert.notNull(fragmentBeanNames, "Fragment bean names must not be null!");
@@ -81,14 +84,17 @@ public class RepositoryFragmentsFactoryBean<T>
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
+	@Nonnull
 	@Override
 	public RepositoryFragments getObject() throws Exception {
 		return this.repositoryFragments;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
+	@Nonnull
 	@Override
 	public Class<?> getObjectType() {
 		return RepositoryComposition.class;

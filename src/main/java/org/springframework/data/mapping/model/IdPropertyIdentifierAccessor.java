@@ -20,6 +20,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -57,6 +58,7 @@ public class IdPropertyIdentifierAccessor extends TargetAwareIdentifierAccessor 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.keyvalue.core.IdentifierAccessor#getIdentifier()
 	 */
+	@Nullable
 	public Object getIdentifier() {
 		return accessor.getProperty(idProperty);
 	}

@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -44,6 +45,10 @@ abstract class SpringDataAnnotationUtils {
 	public static void assertPageableUniqueness(MethodParameter parameter) {
 
 		Method method = parameter.getMethod();
+
+		if (method == null) {
+			throw new IllegalArgumentException(String.format("Method parameter %s is not backed by a method.", parameter));
+		}
 
 		if (containsMoreThanOnePageableParameter(method)) {
 			Annotation[][] annotations = method.getParameterAnnotations();
@@ -89,8 +94,15 @@ abstract class SpringDataAnnotationUtils {
 		Object propertyDefaultValue = AnnotationUtils.getDefaultValue(annotation, property);
 		Object propertyValue = AnnotationUtils.getValue(annotation, property);
 
-		return (T) (ObjectUtils.nullSafeEquals(propertyDefaultValue, propertyValue) ? AnnotationUtils.getValue(annotation)
-				: propertyValue);
+		Object result = ObjectUtils.nullSafeEquals(propertyDefaultValue, propertyValue) //
+				? AnnotationUtils.getValue(annotation) //
+				: propertyValue;
+
+		if (result == null) {
+			throw new IllegalStateException("Exepected to be able to look up an annotation property value but failed!");
+		}
+
+		return (T) result;
 	}
 
 	/**
@@ -131,7 +143,8 @@ abstract class SpringDataAnnotationUtils {
 	 * @param annotations must not be {@literal null}.
 	 * @return
 	 */
-	public static Qualifier findAnnotation(Annotation[] annotations) {
+	@Nullable
+	private static Qualifier findAnnotation(Annotation[] annotations) {
 
 		for (Annotation annotation : annotations) {
 			if (annotation instanceof Qualifier) {

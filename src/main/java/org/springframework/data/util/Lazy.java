@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -37,7 +38,8 @@ import org.springframework.util.Assert;
 public class Lazy<T> implements Supplier<T> {
 
 	private final Supplier<T> supplier;
-	private T value;
+	private @Nullable T value = null;
+	private boolean resolved = false;
 
 	/**
 	 * Creates a new {@link Lazy} to produce an object lazily.
@@ -56,11 +58,36 @@ public class Lazy<T> implements Supplier<T> {
 	 *
 	 * @return
 	 */
+
 	public T get() {
 
+		T value = getNullable();
+
 		if (value == null) {
-			this.value = supplier.get();
+			throw new IllegalStateException("Expected lazy evaluation to yield a non-null value but got null!");
 		}
+
+		return value;
+	}
+
+	/**
+	 * Returns the value of the lazy evaluation.
+	 * 
+	 * @return
+	 */
+	@Nullable
+	public T getNullable() {
+
+		T value = this.value;
+
+		if (this.resolved) {
+			return value;
+		}
+
+		value = supplier.get();
+
+		this.value = value;
+		this.resolved = true;
 
 		return value;
 	}

@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
@@ -28,6 +30,7 @@ import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -45,8 +48,8 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 	private final T conversionService;
 	private Repositories repositories = Repositories.NONE;
-	private ToEntityConverter toEntityConverter;
-	private ToIdConverter toIdConverter;
+	private Optional<ToEntityConverter> toEntityConverter = Optional.empty();
+	private Optional<ToIdConverter> toIdConverter = Optional.empty();
 
 	/**
 	 * Creates a new {@link DomainClassConverter} for the given {@link ConversionService}.
@@ -64,6 +67,8 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 	 */
+	@Nonnull
+	@Override
 	public Set<ConvertiblePair> getConvertibleTypes() {
 		return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
 	}
@@ -72,11 +77,10 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 	 */
-	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
-
-		return repositories.hasRepositoryFor(targetType.getType())
-				? toEntityConverter.convert(source, sourceType, targetType)
-				: toIdConverter.convert(source, sourceType, targetType);
+	@Nullable
+	@Override
+	public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		return getConverter(targetType).map(it -> it.convert(source, sourceType, targetType)).orElse(source);
 	}
 
 	/* 
@@ -85,9 +89,15 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 */
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+		return getConverter(targetType).map(it -> it.matches(sourceType, targetType)).orElse(false);
+	}
 
-		return repositories.hasRepositoryFor(targetType.getType()) ? toEntityConverter.matches(sourceType, targetType)
-				: toIdConverter.matches(sourceType, targetType);
+	/**
+	 * @param targetType
+	 * @return
+	 */
+	private Optional<? extends ConditionalGenericConverter> getConverter(TypeDescriptor targetType) {
+		return repositories.hasRepositoryFor(targetType.getType()) ? toEntityConverter : toIdConverter;
 	}
 
 	/*
@@ -98,12 +108,11 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 		this.repositories = new Repositories(context);
 
-		this.toEntityConverter = new ToEntityConverter(this.repositories, this.conversionService);
-		this.conversionService.addConverter(this.toEntityConverter);
+		this.toEntityConverter = Optional.of(new ToEntityConverter(this.repositories, this.conversionService));
+		this.toEntityConverter.ifPresent(it -> this.conversionService.addConverter(it));
 
-		this.toIdConverter = new ToIdConverter();
-		this.conversionService.addConverter(this.toIdConverter);
-
+		this.toIdConverter = Optional.of(new ToIdConverter());
+		this.toIdConverter.ifPresent(it -> this.conversionService.addConverter(it));
 	}
 
 	/**
@@ -130,6 +139,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
+		@Nonnull
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
@@ -139,8 +149,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 		 */
+		@Nullable
 		@Override
-		public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 			if (source == null || !StringUtils.hasText(source.toString())) {
 				return null;
@@ -154,7 +165,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(domainType);
 			RepositoryInformation information = repositories.getRequiredRepositoryInformation(domainType);
 
-			return invoker.invokeFindById(conversionService.convert(source, information.getIdType())).orElse(null);
+			Object id = conversionService.convert(source, information.getIdType());
+
+			return id == null ? null : invoker.invokeFindById(id).orElse(null);
 		}
 
 		/*
@@ -199,6 +212,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
+		@Nonnull
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
@@ -208,8 +222,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 		 */
+		@Nullable
 		@Override
-		public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 			if (source == null || !StringUtils.hasText(source.toString())) {
 				return null;

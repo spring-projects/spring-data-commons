@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils.FieldFilter;
@@ -117,7 +118,8 @@ public class ReflectionUtils {
 	 * @param filter must not be {@literal null}.
 	 * @return the field matching the filter or {@literal null} in case no field could be found.
 	 */
-	public static Field findField(Class<?> type, final FieldFilter filter) {
+	@Nullable
+	public static Field findField(Class<?> type, FieldFilter filter) {
 
 		return findField(type, new DescribedFieldFilter() {
 
@@ -141,6 +143,7 @@ public class ReflectionUtils {
 	 * @return the field matching the given {@link DescribedFieldFilter} or {@literal null} if none found.
 	 * @throws IllegalStateException in case more than one matching field is found
 	 */
+	@Nullable
 	public static Field findField(Class<?> type, DescribedFieldFilter filter) {
 		return findField(type, filter, true);
 	}
@@ -155,6 +158,7 @@ public class ReflectionUtils {
 	 * @return the field matching the given {@link DescribedFieldFilter} or {@literal null} if none found.
 	 * @throws IllegalStateException if enforceUniqueness is true and more than one matching field is found
 	 */
+	@Nullable
 	public static Field findField(Class<?> type, DescribedFieldFilter filter, boolean enforceUniqueness) {
 
 		Assert.notNull(type, "Type must not be null!");
@@ -189,13 +193,32 @@ public class ReflectionUtils {
 	}
 
 	/**
+	 * Finds the field of the given name on the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param name must not be {@literal null} or empty.
+	 * @return
+	 * @throws IllegalArgumentException in case the field can't be found.
+	 */
+	public static Field findRequiredField(Class<?> type, String name) {
+
+		Field result = org.springframework.util.ReflectionUtils.findField(type, name);
+
+		if (result == null) {
+			throw new IllegalArgumentException(String.format("Unable to find field %s on %s!", name, type));
+		}
+
+		return result;
+	}
+
+	/**
 	 * Sets the given field on the given object to the given value. Will make sure the given field is accessible.
 	 * 
 	 * @param field must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param value
 	 */
-	public static void setField(Field field, Object target, Object value) {
+	public static void setField(Field field, Object target, @Nullable Object value) {
 
 		org.springframework.util.ReflectionUtils.makeAccessible(field);
 		org.springframework.util.ReflectionUtils.setField(field, target, value);
@@ -216,6 +239,32 @@ public class ReflectionUtils {
 		return Arrays.stream(type.getDeclaredConstructors())//
 				.filter(constructor -> argumentsMatch(constructor.getParameterTypes(), constructorArguments))//
 				.findFirst();
+	}
+
+	/**
+	 * Returns the method with the given name of the given class and parameter types.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param name must not be {@literal null}.
+	 * @param parameterTypes must not be {@literal null}.
+	 * @return
+	 * @throws IllegalArgumentException in case the method cannot be resolved.
+	 */
+	public static Method findRequiredMethod(Class<?> type, String name, Class<?>... parameterTypes) {
+
+		Method result = org.springframework.util.ReflectionUtils.findMethod(type, name, parameterTypes);
+
+		if (result == null) {
+
+			String parameterTypeNames = Arrays.stream(parameterTypes) //
+					.map(Object::toString) //
+					.collect(Collectors.joining(", "));
+
+			throw new IllegalArgumentException(
+					String.format("Unable to find method %s(%s)on %s!", name, parameterTypeNames, type));
+		}
+
+		return result;
 	}
 
 	/**

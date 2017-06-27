@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.core.convert.ConversionService;
+import org.springframework.lang.Nullable;
 
 /**
  * Simple ChangeSet implementation backed by a HashMap.
@@ -52,12 +53,21 @@ public class HashMapChangeSet implements ChangeSet {
 		return Collections.unmodifiableMap(values);
 	}
 
+	@Nullable
 	public Object removeProperty(String k) {
 		return this.values.remove(k);
 	}
 
+	@Nullable
 	public <T> T get(String key, Class<T> requiredClass, ConversionService conversionService) {
-		return conversionService.convert(values.get(key), requiredClass);
+
+		Object value = values.get(key);
+
+		if (value == null) {
+			return null;
+		}
+
+		return conversionService.convert(value, requiredClass);
 	}
 
 }

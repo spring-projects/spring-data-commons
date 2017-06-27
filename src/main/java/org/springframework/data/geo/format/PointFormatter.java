@@ -18,11 +18,12 @@ package org.springframework.data.geo.format;
 import java.text.ParseException;
 import java.util.Locale;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.data.geo.Point;
 import org.springframework.format.Formatter;
-import org.springframework.util.StringUtils;
 
 /**
  * Converter to parse two comma-separated doubles into a {@link Point}.
@@ -41,6 +42,7 @@ public enum PointFormatter implements Converter<String, Point>, Formatter<Point>
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 	 */
+	@Nonnull
 	@Override
 	public Point convert(String source) {
 
@@ -77,6 +79,6 @@ public enum PointFormatter implements Converter<String, Point>, Formatter<Point>
 	 */
 	@Override
 	public Point parse(String text, Locale locale) throws ParseException {
-		return !StringUtils.hasText(text) ? null : convert(text);
+		return convert(text);
 	}
 }

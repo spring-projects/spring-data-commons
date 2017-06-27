@@ -17,6 +17,7 @@ package org.springframework.data.mapping.model;
 
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.lang.Nullable;
 
 /**
  * Callback interface to lookup values for a given {@link Parameter}.
@@ -31,5 +32,6 @@ public interface ParameterValueProvider<P extends PersistentProperty<P>> {
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	<T> T getParameterValue(Parameter<T, P> parameter);
 }

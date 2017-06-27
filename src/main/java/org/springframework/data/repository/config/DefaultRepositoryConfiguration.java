@@ -22,8 +22,10 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -74,7 +76,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryInterface()
 	 */
 	public String getRepositoryInterface() {
-		return definition.getBeanClassName();
+		return ConfigurationUtils.getRequiredBeanClassName(definition);
 	}
 
 	/* 
@@ -85,7 +87,8 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return configurationSource;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getNamedQueryLocation()
 	 */
 	public Optional<String> getNamedQueriesLocation() {
@@ -114,6 +117,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getSource()
 	 */
+	@Nullable
 	@Override
 	public Object getSource() {
 		return configurationSource.getSource();

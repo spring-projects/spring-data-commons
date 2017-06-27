@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -39,6 +40,7 @@ public interface EntityInformation<T, ID> extends EntityMetadata<T> {
 	 * @param entity must never be {@literal null}
 	 * @return
 	 */
+	@Nullable
 	ID getId(T entity);
 
 	/**

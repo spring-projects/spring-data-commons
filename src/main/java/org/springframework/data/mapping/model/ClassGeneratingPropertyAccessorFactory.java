@@ -50,8 +50,8 @@ import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * A factory that can generate byte code to speed-up dynamic property access. Uses the {@link PersistentEntity}'s
@@ -530,6 +530,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * Retrieve all classes which are involved in property/getter/setter declarations as these elements may be
 		 * distributed across the type hierarchy.
 		 */
+		@SuppressWarnings("null")
 		private static List<Class<?>> getPropertyDeclaratingClasses(List<PersistentProperty<?>> persistentProperties) {
 
 			return persistentProperties.stream().flatMap(property -> {
@@ -854,7 +855,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				}
 			} else {
 
-				Field field = property.getField();
+				Field field = property.getRequiredField();
+
 				if (generateMethodHandle(entity, field)) {
 					// $fieldGetter.invoke(bean)
 					mv.visitFieldInsn(GETSTATIC, internalClassName, fieldGetterName(property),
@@ -1111,7 +1113,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			return !(Modifier.isPrivate(modifiers) || Modifier.isProtected(modifiers) || Modifier.isPublic(modifiers));
 		}
 
-		private static boolean generateSetterMethodHandle(PersistentEntity<?, ?> entity, Field field) {
+		private static boolean generateSetterMethodHandle(PersistentEntity<?, ?> entity, @Nullable Field field) {
 
 			if (field == null) {
 				return false;
@@ -1125,7 +1127,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * its declaring class. Use also {@link java.lang.invoke.MethodHandle} if visibility is protected/package-default
 		 * and packages of the declaring types are different.
 		 */
-		private static boolean generateMethodHandle(PersistentEntity<?, ?> entity, Member member) {
+		private static boolean generateMethodHandle(PersistentEntity<?, ?> entity, @Nullable Member member) {
 
 			if (member == null) {
 				return false;
@@ -1143,6 +1145,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					return false;
 				}
 			}
+
 			return true;
 		}
 
@@ -1358,8 +1361,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * @see java.lang.Comparable#compareTo(java.lang.Object)
 		 */
 		@Override
-		public int compareTo(PropertyStackAddress o) {
-			return (hash < o.hash) ? -1 : ((hash == o.hash) ? 0 : 1);
+		public int compareTo(@Nullable PropertyStackAddress o) {
+			return o == null ? 1 : (hash < o.hash) ? -1 : ((hash == o.hash) ? 0 : 1);
 		}
 	}
 
@@ -1398,8 +1401,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			ClassLoader classLoader = entity.getType().getClassLoader();
 			Class<?> classLoaderClass = classLoader.getClass();
 
-			Method defineClass = ReflectionUtils.findMethod(classLoaderClass, "defineClass", String.class, byte[].class,
-					Integer.TYPE, Integer.TYPE, ProtectionDomain.class);
+			Method defineClass = org.springframework.data.util.ReflectionUtils.findRequiredMethod(classLoaderClass,
+					"defineClass", String.class, byte[].class, Integer.TYPE, Integer.TYPE, ProtectionDomain.class);
 
 			defineClass.setAccessible(true);
 

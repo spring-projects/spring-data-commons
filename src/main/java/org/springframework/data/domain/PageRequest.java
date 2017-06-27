@@ -16,6 +16,7 @@
 package org.springframework.data.domain;
 
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.lang.Nullable;
 
 /**
  * Basic Java Bean implementation of {@code Pageable}.
@@ -145,7 +146,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(final Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

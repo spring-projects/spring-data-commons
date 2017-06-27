@@ -17,6 +17,8 @@ package org.springframework.data.web;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,6 +28,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MethodLinkBuilderFactory;
 import org.springframework.hateoas.core.MethodParameters;
 import org.springframework.hateoas.mvc.ControllerLinkBuilderFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -60,7 +63,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	 * @param linkBuilderFactory can be {@literal null}, will be defaulted to a {@link ControllerLinkBuilderFactory}.
 	 */
 	public PagedResourcesAssemblerArgumentResolver(HateoasPageableHandlerMethodArgumentResolver resolver,
-			MethodLinkBuilderFactory<?> linkBuilderFactory) {
+			@Nullable MethodLinkBuilderFactory<?> linkBuilderFactory) {
 
 		this.resolver = resolver;
 		this.linkBuilderFactory = linkBuilderFactory == null ? new ControllerLinkBuilderFactory() : linkBuilderFactory;
@@ -79,9 +82,10 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
+	@Nonnull
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
 		UriComponents fromUriString = resolveBaseUri(parameter);
 		MethodParameter pageableParameter = findMatchingPageableParameter(parameter);
@@ -99,6 +103,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	 * @param parameter must not be {@literal null}.
 	 * @return the {@link UriComponents} representing the base URI, or {@literal null} if it can't be resolved eagerly.
 	 */
+	@Nullable
 	private UriComponents resolveBaseUri(MethodParameter parameter) {
 
 		try {
@@ -116,6 +121,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	private static MethodParameter findMatchingPageableParameter(MethodParameter parameter) {
 
 		MethodParameters parameters = new MethodParameters(parameter.getMethod());
@@ -154,7 +160,9 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 		throw new IllegalStateException(PARAMETER_AMBIGUITY);
 	}
 
-	private static MethodParameter returnIfQualifiersMatch(MethodParameter pageableParameter, Qualifier assemblerQualifier) {
+	@Nullable
+	private static MethodParameter returnIfQualifiersMatch(MethodParameter pageableParameter,
+			@Nullable Qualifier assemblerQualifier) {
 
 		if (assemblerQualifier == null) {
 			return pageableParameter;

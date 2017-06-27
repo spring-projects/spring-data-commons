@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.core.EntityMetadata;
+import org.springframework.lang.Nullable;
 
 /**
  * Implementation of {@link EntityMetadata} that assumes the entity handled implements {@link Persistable} and uses
@@ -38,7 +39,14 @@ public class PersistableEntityInformation<T extends Persistable<ID>, ID> extends
 	public PersistableEntityInformation(Class<T> domainClass) {
 
 		super(domainClass);
-		this.idClass = (Class<ID>) ResolvableType.forClass(Persistable.class, domainClass).resolveGeneric(0);
+
+		Class<?> idClass = ResolvableType.forClass(Persistable.class, domainClass).resolveGeneric(0);
+
+		if (idClass == null) {
+			throw new IllegalArgumentException(String.format("Could not resolve identifier type for %s!", domainClass));
+		}
+
+		this.idClass = (Class<ID>) idClass;
 	}
 
 	/*
@@ -54,6 +62,7 @@ public class PersistableEntityInformation<T extends Persistable<ID>, ID> extends
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
+	@Nullable
 	@Override
 	public ID getId(T entity) {
 		return entity.getId();

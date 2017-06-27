@@ -30,6 +30,7 @@ import org.springframework.core.type.filter.AspectJTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -55,7 +56,7 @@ public class TypeFilterParser {
 	 * @param readerContext must not be {@literal null}.
 	 */
 	public TypeFilterParser(XmlReaderContext readerContext) {
-		this(readerContext, readerContext.getResourceLoader().getClassLoader());
+		this(readerContext, ConfigurationUtils.getRequiredClassLoader(readerContext));
 	}
 
 	/**
@@ -92,13 +93,14 @@ public class TypeFilterParser {
 			Node node = nodeList.item(i);
 			Element childElement = type.getElement(node);
 
-			if (childElement != null) {
+			if (childElement == null) {
+				continue;
+			}
 
-				try {
-					filters.add(createTypeFilter(childElement, classLoader));
-				} catch (RuntimeException e) {
-					readerContext.error(e.getMessage(), readerContext.extractSource(element), e.getCause());
-				}
+			try {
+				filters.add(createTypeFilter(childElement, classLoader));
+			} catch (RuntimeException e) {
+				readerContext.error(e.getMessage(), readerContext.extractSource(element), e.getCause());
 			}
 		}
 
@@ -224,6 +226,7 @@ public class TypeFilterParser {
 		 * @param node
 		 * @return
 		 */
+		@Nullable
 		Element getElement(Node node) {
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {

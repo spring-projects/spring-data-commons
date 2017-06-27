@@ -36,8 +36,9 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Thomas Darimont
  * @author Nick Williams
  */
-public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolver implements
-		UriComponentsContributor {
+@SuppressWarnings("null")
+public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolver
+		implements UriComponentsContributor {
 
 	/**
 	 * Returns the template variables for the sort parameter.

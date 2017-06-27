@@ -18,6 +18,7 @@ package org.springframework.data.web.config;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,6 +37,7 @@ import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -53,10 +55,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Jens Schauder
  */
 @Configuration
-public class SpringDataWebConfiguration implements WebMvcConfigurer {
+public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLoaderAware {
 
 	private final ApplicationContext context;
 	private final ObjectFactory<ConversionService> conversionService;
+	private @Nullable ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
 	private @Autowired Optional<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
 	private @Autowired Optional<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
@@ -69,6 +72,15 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer {
 
 		this.context = context;
 		this.conversionService = conversionService;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
 	}
 
 	/*
@@ -127,9 +139,9 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer {
 		argumentResolvers.add(pageableResolver());
 
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
-				conversionService.getObject());
+				getRequiredConversionService());
 		resolver.setBeanFactory(context);
-		resolver.setBeanClassLoader(context.getClassLoader());
+		forwardBeanClassLoader(resolver);
 
 		argumentResolvers.add(resolver);
 	}
@@ -145,8 +157,8 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer {
 				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
 			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(new ObjectMapper());
-			converter.setBeanClassLoader(context.getClassLoader());
 			converter.setBeanFactory(context);
+			forwardBeanClassLoader(converter);
 
 			converters.add(0, converter);
 		}
@@ -162,5 +174,23 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer {
 
 	protected void customizeSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
 		sortResolverCustomizer.ifPresent(c -> c.customize(sortResolver));
+	}
+
+	private ConversionService getRequiredConversionService() {
+
+		ConversionService conversionService = this.conversionService.getObject();
+
+		if (conversionService == null) {
+			throw new IllegalStateException("No ConversionService configured!");
+		}
+
+		return conversionService;
+	}
+
+	private void forwardBeanClassLoader(BeanClassLoaderAware target) {
+
+		if (beanClassLoader != null) {
+			target.setBeanClassLoader(beanClassLoader);
+		}
 	}
 }

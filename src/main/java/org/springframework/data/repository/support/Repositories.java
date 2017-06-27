@@ -269,17 +269,17 @@ public class Repositories implements Iterable<Class<?>> {
 
 		@Override
 		public EntityInformation<Object, Object> getEntityInformation() {
-			return null;
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public RepositoryInformation getRepositoryInformation() {
-			return null;
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public PersistentEntity<?, ?> getPersistentEntity() {
-			return null;
+			throw new UnsupportedOperationException();
 		}
 
 		@Override

@@ -17,6 +17,8 @@ package org.springframework.data.domain;
 
 import java.io.Serializable;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Abstract Java Bean implementation of {@code Pageable}.
  * 
@@ -131,7 +133,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

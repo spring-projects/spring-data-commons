@@ -28,6 +28,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -77,7 +78,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 * @param additionalMappers must not be {@literal null}.
 	 */
 	public DefaultTypeMapper(TypeAliasAccessor<S> accessor,
-			MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext,
+			@Nullable MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext,
 			List<? extends TypeInformationMapper> additionalMappers) {
 
 		Assert.notNull(accessor, "Accessor must not be null!");
@@ -109,6 +110,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.TypeMapper#readType(java.lang.Object)
 	 */
+	@Nullable
 	public TypeInformation<?> readType(S source) {
 
 		Assert.notNull(source, "Source object must not be null!");
@@ -123,6 +125,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 * @param alias
 	 * @return
 	 */
+	@Nullable
 	private TypeInformation<?> getFromCacheOrCreate(Alias alias) {
 		return typeCache.computeIfAbsent(alias, getAlias).orElse(null);
 	}
@@ -153,7 +156,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		ClassTypeInformation<?> targetType = ClassTypeInformation.from(documentsTargetType);
 
-		return (TypeInformation<? extends T>) (basicType != null ? basicType.specialize(targetType) : targetType);
+		return (TypeInformation<? extends T>) basicType.specialize(targetType);
 	}
 
 	/**
@@ -163,6 +166,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 * @param source
 	 * @return
 	 */
+	@Nullable
 	private Class<?> getDefaultedTypeToBeUsed(S source) {
 
 		TypeInformation<?> documentsTargetTypeInformation = readType(source);
@@ -177,6 +181,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 * @param source will never be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	protected TypeInformation<?> getFallbackTypeFor(S source) {
 		return null;
 	}

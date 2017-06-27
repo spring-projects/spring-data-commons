@@ -17,6 +17,7 @@ package org.springframework.data.projection;
 
 import org.springframework.aop.RawTargetAccess;
 import org.springframework.core.DecoratingProxy;
+import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -30,8 +31,9 @@ public interface TargetAware extends org.springframework.aop.TargetClassAware, R
 	/**
 	 * Returns the type of the proxy target.
 	 * 
-	 * @return will never be {@literal null}.
+	 * @return can be {@literal null}.
 	 */
+	@Nullable
 	@JsonIgnore
 	Class<?> getTargetClass();
 

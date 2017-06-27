@@ -25,6 +25,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -85,7 +86,7 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 	 * @param sortResolver the sort resolver to use
 	 * @since 1.13
 	 */
-	public PageableHandlerMethodArgumentResolver(SortArgumentResolver sortResolver) {
+	public PageableHandlerMethodArgumentResolver(@Nullable SortArgumentResolver sortResolver) {
 		this.sortResolver = sortResolver == null ? DEFAULT_SORT_RESOLVER : sortResolver;
 	}
 
@@ -235,8 +236,8 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public Pageable resolveArgument(MethodParameter methodParameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+	public Pageable resolveArgument(MethodParameter methodParameter, @Nullable ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
 		assertPageableUniqueness(methodParameter);
 
@@ -249,7 +250,7 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 		Optional<Integer> pageSize = parseAndApplyBoundaries(pageSizeString, maxPageSize, false);
 
 		if (!(page.isPresent() && pageSize.isPresent()) && !defaultOrFallback.isPresent()) {
-			return null;
+			return Pageable.unpaged();
 		}
 
 		int p = page
@@ -276,12 +277,14 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 	 * @param parameter the {@link MethodParameter} potentially qualified.
 	 * @return the name of the request parameter.
 	 */
-	protected String getParameterNameToUse(String source, MethodParameter parameter) {
+	protected String getParameterNameToUse(String source, @Nullable MethodParameter parameter) {
 
 		StringBuilder builder = new StringBuilder(prefix);
 
-		if (parameter != null && parameter.hasParameterAnnotation(Qualifier.class)) {
-			builder.append(parameter.getParameterAnnotation(Qualifier.class).value());
+		Qualifier qualifier = parameter == null ? null : parameter.getParameterAnnotation(Qualifier.class);
+
+		if (qualifier != null) {
+			builder.append(qualifier.value());
 			builder.append(qualifierDelimiter);
 		}
 
@@ -290,16 +293,16 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 
 	private Pageable getDefaultFromAnnotationOrFallback(MethodParameter methodParameter) {
 
-		if (methodParameter.hasParameterAnnotation(PageableDefault.class)) {
-			return getDefaultPageRequestFrom(methodParameter);
+		PageableDefault defaults = methodParameter.getParameterAnnotation(PageableDefault.class);
+
+		if (defaults != null) {
+			return getDefaultPageRequestFrom(methodParameter, defaults);
 		}
 
 		return fallbackPageable;
 	}
 
-	private static Pageable getDefaultPageRequestFrom(MethodParameter parameter) {
-
-		PageableDefault defaults = parameter.getParameterAnnotation(PageableDefault.class);
+	private static Pageable getDefaultPageRequestFrom(MethodParameter parameter, PageableDefault defaults) {
 
 		Integer defaultPageNumber = defaults.page();
 		Integer defaultPageSize = getSpecificPropertyOrDefaultFromValue(defaults, "size");
@@ -325,7 +328,7 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 	 * @param shiftIndex whether to shift the index if {@link #oneIndexedParameters} is set to true.
 	 * @return
 	 */
-	private Optional<Integer> parseAndApplyBoundaries(String parameter, int upper, boolean shiftIndex) {
+	private Optional<Integer> parseAndApplyBoundaries(@Nullable String parameter, int upper, boolean shiftIndex) {
 
 		if (!StringUtils.hasText(parameter)) {
 			return Optional.empty();

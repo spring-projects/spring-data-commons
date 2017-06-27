@@ -16,13 +16,13 @@
 package org.springframework.data.mapping.context;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -32,25 +32,19 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements PersistentPropertyPath<T> {
+class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements PersistentPropertyPath<P> {
 
-	private enum PropertyNameConverter implements Converter<PersistentProperty<?>, String> {
+	private static final Converter<PersistentProperty<?>, String> DEFAULT_CONVERTER = (source) -> source.getName();
+	private static final String DEFAULT_DELIMITER = ".";
 
-		INSTANCE;
-
-		public String convert(PersistentProperty<?> source) {
-			return source.getName();
-		}
-	}
-
-	private final List<T> properties;
+	private final List<P> properties;
 
 	/**
 	 * Creates a new {@link DefaultPersistentPropertyPath} for the given {@link PersistentProperty}s.
 	 * 
 	 * @param properties must not be {@literal null}.
 	 */
-	public DefaultPersistentPropertyPath(List<T> properties) {
+	public DefaultPersistentPropertyPath(List<P> properties) {
 
 		Assert.notNull(properties, "Properties must not be null!");
 
@@ -63,7 +57,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * @return
 	 */
 	public static <T extends PersistentProperty<T>> DefaultPersistentPropertyPath<T> empty() {
-		return new DefaultPersistentPropertyPath<>(Collections.<T> emptyList());
+		return new DefaultPersistentPropertyPath<T>(Collections.emptyList());
 	}
 
 	/**
@@ -73,7 +67,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * @return a new {@link DefaultPersistentPropertyPath} with the given property appended to the current one.
 	 * @throws IllegalArgumentException in case the property is not a property of the type of the current leaf property.
 	 */
-	public DefaultPersistentPropertyPath<T> append(T property) {
+	public DefaultPersistentPropertyPath<P> append(P property) {
 
 		Assert.notNull(property, "Property must not be null!");
 
@@ -81,11 +75,13 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 			return new DefaultPersistentPropertyPath<>(Collections.singletonList(property));
 		}
 
+		@SuppressWarnings("null")
 		Class<?> leafPropertyType = getLeafProperty().getActualType();
+
 		Assert.isTrue(property.getOwner().getType().equals(leafPropertyType),
 				String.format("Cannot append property %s to type %s!", property.getName(), leafPropertyType.getName()));
 
-		List<T> properties = new ArrayList<>(this.properties);
+		List<P> properties = new ArrayList<>(this.properties);
 		properties.add(property);
 
 		return new DefaultPersistentPropertyPath<>(properties);
@@ -95,56 +91,59 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toDotPath()
 	 */
+	@Nullable
 	public String toDotPath() {
-		return toPath(null, null);
+		return toPath(DEFAULT_DELIMITER, DEFAULT_CONVERTER);
 	}
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toDotPath(org.springframework.core.convert.converter.Converter)
 	 */
-	public String toDotPath(Converter<? super T, String> converter) {
-		return toPath(null, converter);
+	@Nullable
+	public String toDotPath(Converter<? super P, String> converter) {
+		return toPath(DEFAULT_DELIMITER, converter);
 	}
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toPath(java.lang.String)
 	 */
+	@Nullable
 	public String toPath(String delimiter) {
-		return toPath(delimiter, null);
+		return toPath(delimiter, DEFAULT_CONVERTER);
 	}
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toPath(java.lang.String, org.springframework.core.convert.converter.Converter)
 	 */
-	public String toPath(String delimiter, Converter<? super T, String> converter) {
+	@Nullable
+	public String toPath(String delimiter, Converter<? super P, String> converter) {
 
-		@SuppressWarnings("unchecked")
-		Converter<? super T, String> converterToUse = converter == null
-				? PropertyNameConverter.INSTANCE : converter;
-		String delimiterToUse = delimiter == null ? "." : delimiter;
+		Assert.hasText(delimiter, "Delimiter must not be null or empty!");
+		Assert.notNull(converter, "Converter must not be null!");
 
 		List<String> result = new ArrayList<>();
 
-		for (T property : properties) {
+		for (P property : properties) {
 
-			String convert = converterToUse.convert(property);
+			String convert = converter.convert(property);
 
 			if (StringUtils.hasText(convert)) {
 				result.add(convert);
 			}
 		}
 
-		return result.isEmpty() ? null : StringUtils.collectionToDelimitedString(result, delimiterToUse);
+		return result.isEmpty() ? null : StringUtils.collectionToDelimitedString(result, delimiter);
 	}
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getLeafProperty()
 	 */
-	public T getLeafProperty() {
+	@Nullable
+	public P getLeafProperty() {
 		return properties.get(properties.size() - 1);
 	}
 
@@ -152,7 +151,8 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getBaseProperty()
 	 */
-	public T getBaseProperty() {
+	@Nullable
+	public P getBaseProperty() {
 		return properties.get(0);
 	}
 
@@ -160,21 +160,19 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#isBasePathOf(org.springframework.data.mapping.context.PersistentPropertyPath)
 	 */
-	public boolean isBasePathOf(PersistentPropertyPath<T> path) {
+	public boolean isBasePathOf(PersistentPropertyPath<P> path) {
 
-		if (path == null) {
-			return false;
-		}
+		Assert.notNull(path, "PersistentPropertyPath must not be null!");
 
-		Iterator<T> iterator = path.iterator();
+		Iterator<P> iterator = path.iterator();
 
-		for (T property : this) {
+		for (P property : this) {
 
 			if (!iterator.hasNext()) {
 				return false;
 			}
 
-			T reference = iterator.next();
+			P reference = iterator.next();
 
 			if (!property.equals(reference)) {
 				return false;
@@ -188,14 +186,14 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getExtensionForBaseOf(org.springframework.data.mapping.context.PersistentPropertyPath)
 	 */
-	public PersistentPropertyPath<T> getExtensionForBaseOf(PersistentPropertyPath<T> base) {
+	public PersistentPropertyPath<P> getExtensionForBaseOf(PersistentPropertyPath<P> base) {
 
 		if (!base.isBasePathOf(this)) {
 			return this;
 		}
 
-		List<T> result = new ArrayList<>();
-		Iterator<T> iterator = iterator();
+		List<P> result = new ArrayList<>();
+		Iterator<P> iterator = iterator();
 
 		for (int i = 0; i < base.getLength(); i++) {
 			iterator.next();
@@ -212,11 +210,14 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getParentPath()
 	 */
-	public PersistentPropertyPath<T> getParentPath() {
+	public PersistentPropertyPath<P> getParentPath() {
+
 		int size = properties.size();
+
 		if (size <= 1) {
 			return this;
 		}
+
 		return new DefaultPersistentPropertyPath<>(properties.subList(0, size - 1));
 	}
 
@@ -232,7 +233,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
-	public Iterator<T> iterator() {
+	public Iterator<P> iterator() {
 		return properties.iterator();
 	}
 
@@ -249,7 +250,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;
@@ -278,6 +279,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
+	@Nullable
 	public String toString() {
 		return toDotPath();
 	}

@@ -35,6 +35,7 @@ import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
@@ -60,10 +61,11 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * base URI. If the former is {@literal null}, a default one will be created. If the latter is {@literal null}, calls
 	 * to {@link #toResource(Page)} will use the current request's URI to build the relevant previous and next links.
 	 * 
-	 * @param resolver
-	 * @param baseUri
+	 * @param resolver can be {@literal null}.
+	 * @param baseUri can be {@literal null}.
 	 */
-	public PagedResourcesAssembler(HateoasPageableHandlerMethodArgumentResolver resolver, UriComponents baseUri) {
+	public PagedResourcesAssembler(@Nullable HateoasPageableHandlerMethodArgumentResolver resolver,
+			@Nullable UriComponents baseUri) {
 
 		this.pageableResolver = resolver == null ? new HateoasPageableHandlerMethodArgumentResolver() : resolver;
 		this.baseUri = Optional.ofNullable(baseUri);
@@ -87,6 +89,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @see org.springframework.hateoas.ResourceAssembler#toResource(java.lang.Object)
 	 */
 	@Override
+	@SuppressWarnings("null")
 	public PagedResources<Resource<T>> toResource(Page<T> entity) {
 		return toResource(entity, it -> new Resource<>(it));
 	}
@@ -276,6 +279,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @return
 	 * @since 1.7
 	 */
+	@Nullable
 	protected MethodParameter getMethodParameter() {
 		return null;
 	}

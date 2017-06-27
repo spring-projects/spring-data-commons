@@ -20,6 +20,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.util.TxUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.util.Assert;
 
@@ -34,8 +35,8 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 		extends RepositoryFactoryBeanSupport<T, S, ID> implements BeanFactoryAware {
 
 	private String transactionManagerName = TxUtils.DEFAULT_TRANSACTION_MANAGER;
-	private RepositoryProxyPostProcessor txPostProcessor;
-	private RepositoryProxyPostProcessor exceptionPostProcessor;
+	private @Nullable RepositoryProxyPostProcessor txPostProcessor;
+	private @Nullable RepositoryProxyPostProcessor exceptionPostProcessor;
 	private boolean enableDefaultTransactions = true;
 
 	/**
@@ -77,8 +78,18 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	protected final RepositoryFactorySupport createRepositoryFactory() {
 
 		RepositoryFactorySupport factory = doCreateRepositoryFactory();
-		factory.addRepositoryProxyPostProcessor(exceptionPostProcessor);
-		factory.addRepositoryProxyPostProcessor(txPostProcessor);
+
+		RepositoryProxyPostProcessor exceptionPostProcessor = this.exceptionPostProcessor;
+
+		if (exceptionPostProcessor != null) {
+			factory.addRepositoryProxyPostProcessor(exceptionPostProcessor);
+		}
+
+		RepositoryProxyPostProcessor txPostProcessor = this.txPostProcessor;
+
+		if (txPostProcessor != null) {
+			factory.addRepositoryProxyPostProcessor(txPostProcessor);
+		}
 
 		return factory;
 	}

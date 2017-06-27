@@ -47,6 +47,7 @@ public class SortUnitTests {
 	 * 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("null")
 	@Test(expected = IllegalArgumentException.class)
 	public void preventsNullProperties() throws Exception {
 
@@ -90,14 +91,15 @@ public class SortUnitTests {
 	public void allowsCombiningSorts() {
 
 		Sort sort = Sort.by("foo").and(Sort.by("bar"));
-		assertThat(sort).containsExactly(new Sort.Order("foo"), new Sort.Order("bar"));
+		assertThat(sort).containsExactly(Order.by("foo"), Order.by("bar"));
 	}
 
 	@Test
 	public void handlesAdditionalNullSort() {
 
-		Sort sort = Sort.by("foo").and(null);
-		assertThat(sort).containsExactly(new Sort.Order("foo"));
+		Sort sort = Sort.by("foo").and(Sort.unsorted());
+
+		assertThat(sort).containsExactly(Order.by("foo"));
 	}
 
 	@Test // DATACMNS-281, DATACMNS-1021
@@ -108,7 +110,7 @@ public class SortUnitTests {
 	@Test // DATACMNS-281, DATACMNS-1021
 	public void orderDoesNotIgnoreCaseByDefault() {
 
-		assertThat(new Order(Direction.ASC, "foo").isIgnoreCase()).isFalse();
+		assertThat(Order.by("foo").isIgnoreCase()).isFalse();
 		assertThat(Order.asc("foo").isIgnoreCase()).isFalse();
 		assertThat(Order.desc("foo").isIgnoreCase()).isFalse();
 	}
@@ -123,8 +125,8 @@ public class SortUnitTests {
 	@Test // DATACMNS-436
 	public void ordersWithDifferentIgnoreCaseDoNotEqual() {
 
-		Order foo = new Order("foo");
-		Order fooIgnoreCase = new Order("foo").ignoreCase();
+		Order foo = Order.by("foo");
+		Order fooIgnoreCase = Order.by("foo").ignoreCase();
 
 		assertThat(foo).isNotEqualTo(fooIgnoreCase);
 		assertThat(foo.hashCode()).isNotEqualTo(fooIgnoreCase.hashCode());
@@ -132,28 +134,28 @@ public class SortUnitTests {
 
 	@Test // DATACMNS-491
 	public void orderWithNullHandlingHintNullsFirst() {
-		assertThat(new Order("foo").nullsFirst().getNullHandling()).isEqualTo(NULLS_FIRST);
+		assertThat(Order.by("foo").nullsFirst().getNullHandling()).isEqualTo(NULLS_FIRST);
 	}
 
 	@Test // DATACMNS-491
 	public void orderWithNullHandlingHintNullsLast() {
-		assertThat(new Order("foo").nullsLast().getNullHandling()).isEqualTo(NULLS_LAST);
+		assertThat(Order.by("foo").nullsLast().getNullHandling()).isEqualTo(NULLS_LAST);
 	}
 
 	@Test // DATACMNS-491
 	public void orderWithNullHandlingHintNullsNative() {
-		assertThat(new Order("foo").nullsNative().getNullHandling()).isEqualTo(NATIVE);
+		assertThat(Order.by("foo").nullsNative().getNullHandling()).isEqualTo(NATIVE);
 	}
 
 	@Test // DATACMNS-491
 	public void orderWithDefaultNullHandlingHint() {
-		assertThat(new Order("foo").getNullHandling()).isEqualTo(NATIVE);
+		assertThat(Order.by("foo").getNullHandling()).isEqualTo(NATIVE);
 	}
 
 	@Test // DATACMNS-908
 	public void createsNewOrderForDifferentProperty() {
 
-		Order source = new Order(Direction.DESC, "foo").nullsFirst().ignoreCase();
+		Order source = Order.desc("foo").nullsFirst().ignoreCase();
 		Order result = source.withProperty("bar");
 
 		assertThat(result.getProperty()).isEqualTo("bar");
@@ -163,6 +165,7 @@ public class SortUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("null")
 	public void preventsNullDirection() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)//

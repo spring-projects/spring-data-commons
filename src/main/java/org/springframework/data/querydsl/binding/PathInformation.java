@@ -19,6 +19,7 @@ import java.beans.PropertyDescriptor;
 
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.EntityPathResolver;
+import org.springframework.lang.Nullable;
 
 import com.querydsl.core.types.Path;
 
@@ -56,6 +57,7 @@ interface PathInformation {
 	 * 
 	 * @return
 	 */
+	@Nullable
 	PropertyDescriptor getLeafPropertyDescriptor();
 
 	/**

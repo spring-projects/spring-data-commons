@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 
 /**
  * Configuration information for a single repository instance.
@@ -97,6 +98,7 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 *
 	 * @return
 	 */
+	@Nullable
 	Object getSource();
 
 	/**

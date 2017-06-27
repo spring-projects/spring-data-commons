@@ -26,6 +26,7 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.util.Lazy;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -156,9 +157,10 @@ class MethodParameters {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.MethodParameter#getParameterName()
 		 */
+		@Nullable
 		@Override
 		public String getParameterName() {
-			return name.get();
+			return name.getNullable();
 		}
 	}
 }

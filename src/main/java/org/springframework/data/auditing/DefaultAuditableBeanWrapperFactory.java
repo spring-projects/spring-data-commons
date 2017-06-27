@@ -34,6 +34,7 @@ import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -88,7 +89,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 			this.auditable = auditable;
 			this.type = (Class<? extends TemporalAccessor>) ResolvableType.forClass(Auditable.class, auditable.getClass())
-					.getGeneric(2).getRawClass();
+					.getGeneric(2).resolve(TemporalAccessor.class);
 		}
 
 		/* 
@@ -183,6 +184,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param source must not be {@literal null}.
 		 * @return
 		 */
+		@Nullable
 		protected Object getDateValueToSet(TemporalAccessor value, Class<?> targetType, Object source) {
 
 			if (TemporalAccessor.class.equals(targetType)) {
@@ -213,6 +215,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * Returns the given object as {@link Calendar}.
 		 * 
 		 * @param source can be {@literal null}.
+		 * @param target must not be {@literal null}.
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
@@ -299,7 +302,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return getAsTemporalAccessor(metadata.getLastModifiedDateField().map(field -> {
 
 				Object value = org.springframework.util.ReflectionUtils.getField(field, target);
-				return Optional.class.isInstance(value) ? ((Optional<?>) value).orElse(null) : value;
+				return value instanceof Optional ? ((Optional<?>) value).orElse(null) : value;
 
 			}), TemporalAccessor.class);
 		}

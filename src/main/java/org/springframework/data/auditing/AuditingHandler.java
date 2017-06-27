@@ -226,7 +226,7 @@ public class AuditingHandler implements InitializingBean {
 	 */
 	public void afterPropertiesSet() {
 
-		if (auditorAware == null) {
+		if (!auditorAware.isPresent()) {
 			LOGGER.debug("No AuditorAware set! Auditing will not be applied!");
 		}
 	}

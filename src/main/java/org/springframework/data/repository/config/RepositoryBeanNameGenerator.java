@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.util.ClassUtils;
@@ -35,7 +36,7 @@ import org.springframework.util.ClassUtils;
 @RequiredArgsConstructor
 public class RepositoryBeanNameGenerator {
 
-	private static final BeanNameGenerator DELEGATE = new AnnotationBeanNameGenerator();
+	private static final SpringDataAnnotationBeanNameGenerator DELEGATE = new SpringDataAnnotationBeanNameGenerator();
 
 	private final ClassLoader beanClassLoader;
 
@@ -48,10 +49,11 @@ public class RepositoryBeanNameGenerator {
 	 */
 	public String generateBeanName(BeanDefinition definition) {
 
-		AnnotatedBeanDefinition beanDefinition = definition instanceof AnnotatedBeanDefinition
-				? (AnnotatedBeanDefinition) definition
+		AnnotatedBeanDefinition beanDefinition = definition instanceof AnnotatedBeanDefinition //
+				? (AnnotatedBeanDefinition) definition //
 				: new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
-		return DELEGATE.generateBeanName(beanDefinition, null);
+
+		return DELEGATE.generateBeanName(beanDefinition);
 	}
 
 	/**
@@ -63,14 +65,22 @@ public class RepositoryBeanNameGenerator {
 	 * @return
 	 */
 	private Class<?> getRepositoryInterfaceFrom(BeanDefinition beanDefinition) {
-		return getRepositoryInterfaceFromFactory(beanDefinition);
-	}
 
-	private Class<?> getRepositoryInterfaceFromFactory(BeanDefinition beanDefinition) {
+		ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, Class.class);
 
-		Object value = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, Class.class).getValue();
+		if (argumentValue == null) {
+			throw new IllegalStateException(
+					String.format("Failed to obtain first constructor parameter value of BeanDefinition %s!", beanDefinition));
+		}
 
-		if (value instanceof Class<?>) {
+		Object value = argumentValue.getValue();
+
+		if (value == null) {
+
+			throw new IllegalStateException(
+					String.format("Value of first constructor parameter value of BeanDefinition %s is null!", beanDefinition));
+
+		} else if (value instanceof Class<?>) {
 
 			return (Class<?>) value;
 

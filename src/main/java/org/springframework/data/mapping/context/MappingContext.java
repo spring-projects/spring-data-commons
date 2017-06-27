@@ -22,6 +22,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 
 /**
  * This interface defines the overall context including all known PersistentEntity instances and methods to obtain
@@ -51,6 +52,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @param type must not be {@literal null}.
 	 * @return {@literal null} if no {@link PersistentEntity} found for {@literal type}.
 	 */
+	@Nullable
 	E getPersistentEntity(Class<?> type);
 
 	/**
@@ -91,6 +93,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @param type must not be {@literal null}.
 	 * @return {@literal null} if no {@link PersistentEntity} found for {@link TypeInformation}.
 	 */
+	@Nullable
 	E getPersistentEntity(TypeInformation<?> type);
 
 	/**
@@ -117,11 +120,12 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * Returns the {@link PersistentEntity} mapped by the given {@link PersistentProperty}.
 	 *
 	 * @param persistentProperty must not be {@literal null}.
-	 * @return the {@link PersistentEntity} mapped by the given {@link PersistentProperty} or null if no
+	 * @return the {@link PersistentEntity} mapped by the given {@link PersistentProperty} or {@literal null} if no
 	 *         {@link PersistentEntity} exists for it or the {@link PersistentProperty} does not refer to an entity (the
 	 *         type of the property is considered simple see
 	 *         {@link org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)}).
 	 */
+	@Nullable
 	E getPersistentEntity(P persistentProperty);
 
 	/**

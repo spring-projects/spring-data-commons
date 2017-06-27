@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.PageDto;
 import org.springframework.hateoas.Link;
+import org.springframework.lang.Nullable;
 
 /**
  * {@link XmlAdapter} to convert {@link Page} instances into {@link PageDto} instances and vice versa.
@@ -35,8 +36,9 @@ public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 	 * (non-Javadoc)
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */
+	@Nullable
 	@Override
-	public PageDto marshal(Page<Object> source) {
+	public PageDto marshal(@Nullable Page<Object> source) {
 
 		if (source == null) {
 			return null;
@@ -53,8 +55,9 @@ public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 	 * (non-Javadoc)
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */
+	@Nullable
 	@Override
-	public Page<Object> unmarshal(PageDto v) {
+	public Page<Object> unmarshal(@Nullable PageDto v) {
 		return null;
 	}
 

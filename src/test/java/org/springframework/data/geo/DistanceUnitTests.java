@@ -39,9 +39,7 @@ public class DistanceUnitTests {
 
 	@Test // DATACMNS-437
 	public void defaultsMetricToNeutralOne() {
-
 		assertThat(new Distance(2.5).getMetric()).isEqualTo((Metric) Metrics.NEUTRAL);
-		assertThat(new Distance(2.5, null).getMetric()).isEqualTo((Metric) Metrics.NEUTRAL);
 	}
 
 	@Test // DATACMNS-437

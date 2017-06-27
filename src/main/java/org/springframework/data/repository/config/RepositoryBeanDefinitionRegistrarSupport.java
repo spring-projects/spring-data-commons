@@ -17,6 +17,8 @@ package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
@@ -35,8 +37,8 @@ import org.springframework.util.Assert;
 public abstract class RepositoryBeanDefinitionRegistrarSupport
 		implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
-	private ResourceLoader resourceLoader;
-	private Environment environment;
+	private @SuppressWarnings("null") @Nonnull ResourceLoader resourceLoader;
+	private @SuppressWarnings("null") @Nonnull Environment environment;
 
 	/* 
 	 * (non-Javadoc)
@@ -62,9 +64,9 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 	 */
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
 
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null!");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
 		// Guard against calls for sub-classes
 		if (annotationMetadata.getAnnotationAttributes(getAnnotation().getName()) == null) {

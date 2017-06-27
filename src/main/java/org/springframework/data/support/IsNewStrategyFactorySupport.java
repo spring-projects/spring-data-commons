@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 package org.springframework.data.support;
 
 import org.springframework.data.domain.Persistable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * {@link IsNewStrategyFactory} that handles {@link Persistable} implementations directly by retuning a
+ * {@link IsNewStrategyFactory} that handles {@link Persistable} implementations directly by returning a
  * {@link PersistableIsNewStrategy} and delegating to {@link #doGetIsNewStrategy(Class)} for all other types.
  * 
  * @author Oliver Gierke
@@ -45,8 +46,8 @@ public abstract class IsNewStrategyFactorySupport implements IsNewStrategyFactor
 			return strategy;
 		}
 
-		throw new IllegalArgumentException(String.format("Unsupported entity %s! Could not determine IsNewStrategy.",
-				type.getName()));
+		throw new IllegalArgumentException(
+				String.format("Unsupported entity %s! Could not determine IsNewStrategy.", type.getName()));
 	}
 
 	/**
@@ -55,5 +56,6 @@ public abstract class IsNewStrategyFactorySupport implements IsNewStrategyFactor
 	 * @param type will never be {@literal null}.
 	 * @return the {@link IsNewStrategy} to be used for the given type or {@literal null} in case none can be resolved.
 	 */
+	@Nullable
 	protected abstract IsNewStrategy doGetIsNewStrategy(Class<?> type);
 }

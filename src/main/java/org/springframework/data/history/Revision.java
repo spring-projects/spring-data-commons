@@ -25,6 +25,8 @@ import lombok.Value;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Wrapper to contain {@link RevisionMetadata} as well as the revisioned entity.
  * 
@@ -97,7 +99,12 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	 * (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Revision<N, ?> that) {
+	public int compareTo(@Nullable Revision<N, ?> that) {
+
+		if (that == null) {
+			return 1;
+		}
+
 		return mapIfAllPresent(getRevisionNumber(), that.getRevisionNumber(), //
 				(left, right) -> left.compareTo(right)).orElse(-1);
 	}

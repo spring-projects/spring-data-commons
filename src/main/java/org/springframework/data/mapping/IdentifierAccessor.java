@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Interface for a component allowing the access of identifier values.
  *
@@ -29,6 +31,7 @@ public interface IdentifierAccessor {
 	 *
 	 * @return the identifier of the underlying instance.
 	 */
+	@Nullable
 	Object getIdentifier();
 
 	/**

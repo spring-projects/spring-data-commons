@@ -27,6 +27,7 @@ import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.mvc.UriComponentsContributor;
+import org.springframework.lang.Nullable;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -39,8 +40,9 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Oliver Gierke
  * @author Nick Williams
  */
-public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandlerMethodArgumentResolver implements
-		UriComponentsContributor {
+@SuppressWarnings("null")
+public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandlerMethodArgumentResolver
+		implements UriComponentsContributor {
 
 	private static final HateoasSortHandlerMethodArgumentResolver DEFAULT_SORT_RESOLVER = new HateoasSortHandlerMethodArgumentResolver();
 
@@ -59,7 +61,7 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 	 * 
 	 * @param sortResolver
 	 */
-	public HateoasPageableHandlerMethodArgumentResolver(HateoasSortHandlerMethodArgumentResolver sortResolver) {
+	public HateoasPageableHandlerMethodArgumentResolver(@Nullable HateoasSortHandlerMethodArgumentResolver sortResolver) {
 
 		super(getDefaultedSortResolver(sortResolver));
 		this.sortResolver = getDefaultedSortResolver(sortResolver);
@@ -100,7 +102,7 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 	 * @see org.springframework.hateoas.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
 	 */
 	@Override
-	public void enhance(UriComponentsBuilder builder, MethodParameter parameter, Object value) {
+	public void enhance(UriComponentsBuilder builder, @Nullable MethodParameter parameter, Object value) {
 
 		if (!(value instanceof Pageable)) {
 			return;
@@ -114,14 +116,14 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 		int pageNumber = pageable.getPageNumber();
 
 		builder.replaceQueryParam(pagePropertyName, isOneIndexedParameters() ? pageNumber + 1 : pageNumber);
-		builder.replaceQueryParam(sizePropertyName, pageable.getPageSize() <= getMaxPageSize() ? pageable.getPageSize()
-				: getMaxPageSize());
+		builder.replaceQueryParam(sizePropertyName,
+				pageable.getPageSize() <= getMaxPageSize() ? pageable.getPageSize() : getMaxPageSize());
 
 		this.sortResolver.enhance(builder, parameter, pageable.getSort());
 	}
 
 	private static HateoasSortHandlerMethodArgumentResolver getDefaultedSortResolver(
-			HateoasSortHandlerMethodArgumentResolver sortResolver) {
+			@Nullable HateoasSortHandlerMethodArgumentResolver sortResolver) {
 		return sortResolver == null ? DEFAULT_SORT_RESOLVER : sortResolver;
 	}
 }

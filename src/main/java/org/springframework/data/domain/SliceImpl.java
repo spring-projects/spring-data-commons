@@ -18,6 +18,8 @@ package org.springframework.data.domain;
 import java.util.List;
 import java.util.function.Function;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Default implementation of {@link Slice}.
  * 
@@ -95,7 +97,7 @@ public class SliceImpl<T> extends Chunk<T> {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

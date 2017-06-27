@@ -17,6 +17,8 @@ package org.springframework.data.auditing.config;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.LazyInitTargetSource;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -51,6 +53,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	 * 
 	 * @param mappingContextBeanName must not be {@literal null} or empty.
 	 */
+	@SuppressWarnings("null")
 	public AuditingHandlerBeanDefinitionParser(String mappingContextBeanName) {
 
 		Assert.hasText(mappingContextBeanName, "MappingContext bean name must not be null!");
@@ -70,6 +73,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)
 	 */
+	@Nonnull
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return AuditingHandler.class;

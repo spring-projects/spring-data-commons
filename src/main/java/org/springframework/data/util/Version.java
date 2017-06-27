@@ -18,6 +18,7 @@ package org.springframework.data.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -43,7 +44,8 @@ public class Version implements Comparable<Version> {
 	public Version(int... parts) {
 
 		Assert.notNull(parts, "Parts must not be null!");
-		Assert.isTrue(parts.length > 0 && parts.length < 5, String.format("Invalid parts length. 0 < %s < 5", parts.length));
+		Assert.isTrue(parts.length > 0 && parts.length < 5,
+				String.format("Invalid parts length. 0 < %s < 5", parts.length));
 
 		this.major = parts[0];
 		this.minor = parts.length > 1 ? parts[1] : 0;
@@ -139,7 +141,7 @@ public class Version implements Comparable<Version> {
 	 * (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Version that) {
+	public int compareTo(@Nullable Version that) {
 
 		if (that == null) {
 			return 1;
@@ -169,7 +171,7 @@ public class Version implements Comparable<Version> {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

@@ -89,6 +89,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		transactionAttributeSource.setRepositoryInformation(repositoryInformation);
 		transactionAttributeSource.setEnableDefaultTransactions(enableDefaultTransactions);
 
+		@SuppressWarnings("null") // TODO: Remove
 		TransactionInterceptor transactionInterceptor = new TransactionInterceptor(null, transactionAttributeSource);
 		transactionInterceptor.setTransactionManagerBeanName(transactionManagerName);
 		transactionInterceptor.setBeanFactory(beanFactory);
@@ -126,7 +127,8 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 * @see org.springframework.transaction.interceptor.TransactionInterceptor#setTransactionAttributeSource
 	 * @see org.springframework.transaction.interceptor.TransactionProxyFactoryBean#setTransactionAttributeSource
 	 */
-	@SuppressWarnings("serial")
+
+	@SuppressWarnings({ "serial", "null" })
 	static class CustomAnnotationTransactionAttributeSource extends AbstractFallbackTransactionAttributeSource
 			implements Serializable {
 
@@ -187,8 +189,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		public CustomAnnotationTransactionAttributeSource(TransactionAnnotationParser... annotationParsers) {
 			this.publicMethodsOnly = true;
 			Assert.notEmpty(annotationParsers, "At least one TransactionAnnotationParser needs to be specified");
-			Set<TransactionAnnotationParser> parsers = new LinkedHashSet<>(
-					annotationParsers.length);
+			Set<TransactionAnnotationParser> parsers = new LinkedHashSet<>(annotationParsers.length);
 			Collections.addAll(parsers, annotationParsers);
 			this.annotationParsers = parsers;
 		}
@@ -279,6 +280,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 * @author Juergen Hoeller
 	 * @since 1.1
 	 */
+	@SuppressWarnings({ "null", "unused" })
 	abstract static class AbstractFallbackTransactionAttributeSource implements TransactionAttributeSource {
 
 		/**

@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import lombok.RequiredArgsConstructor;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,9 +32,12 @@ import org.springframework.data.domain.DomainEvents;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.AnnotationDetectionMethodCallback;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
+
+import com.google.common.base.Supplier;
 
 /**
  * {@link RepositoryProxyPostProcessor} to register a {@link MethodInterceptor} to intercept the
@@ -86,7 +90,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
 		@Override
-		public Object invoke(MethodInvocation invocation) throws Throwable {
+		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 			Object result = invocation.proceed();
 
@@ -110,10 +114,10 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	static class EventPublishingMethod {
 
 		private static Map<Class<?>, EventPublishingMethod> CACHE = new ConcurrentReferenceHashMap<>();
-		private static EventPublishingMethod NONE = new EventPublishingMethod(null, null);
+		private static @SuppressWarnings("null") EventPublishingMethod NONE = new EventPublishingMethod(null, null);
 
 		private final Method publishingMethod;
-		private final Method clearingMethod;
+		private final @Nullable Method clearingMethod;
 
 		/**
 		 * Creates an {@link EventPublishingMethod} for the given type.
@@ -122,6 +126,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @return an {@link EventPublishingMethod} for the given type or {@literal null} in case the given type does not
 		 *         expose an event publishing method.
 		 */
+		@Nullable
 		public static EventPublishingMethod of(Class<?> type) {
 
 			Assert.notNull(type, "Type must not be null!");
@@ -132,18 +137,8 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return eventPublishingMethod.orNull();
 			}
 
-			AnnotationDetectionMethodCallback<DomainEvents> publishing = new AnnotationDetectionMethodCallback<>(
-					DomainEvents.class);
-			ReflectionUtils.doWithMethods(type, publishing);
-
-			// TODO: Lazify this as the inspection might not be needed if the publishing callback didn't find an annotation in
-			// the first place
-
-			AnnotationDetectionMethodCallback<AfterDomainEventPublication> clearing = new AnnotationDetectionMethodCallback<>(
-					AfterDomainEventPublication.class);
-			ReflectionUtils.doWithMethods(type, clearing);
-
-			EventPublishingMethod result = from(publishing, clearing);
+			EventPublishingMethod result = from(getDetector(type, DomainEvents.class),
+					() -> getDetector(type, AfterDomainEventPublication.class));
 
 			CACHE.put(type, result);
 
@@ -156,7 +151,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @param object can be {@literal null}.
 		 * @param publisher must not be {@literal null}.
 		 */
-		public void publishEventsFrom(Object object, ApplicationEventPublisher publisher) {
+		public void publishEventsFrom(@Nullable Object object, ApplicationEventPublisher publisher) {
 
 			if (object == null) {
 				return;
@@ -179,8 +174,18 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * 
 		 * @return
 		 */
+		@Nullable
 		private EventPublishingMethod orNull() {
 			return this == EventPublishingMethod.NONE ? null : this;
+		}
+
+		private static <T extends Annotation> AnnotationDetectionMethodCallback<T> getDetector(Class<?> type,
+				Class<T> annotation) {
+
+			AnnotationDetectionMethodCallback<T> callback = new AnnotationDetectionMethodCallback<>(annotation);
+			ReflectionUtils.doWithMethods(type, callback);
+
+			return callback;
 		}
 
 		/**
@@ -192,16 +197,16 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @return
 		 */
 		private static EventPublishingMethod from(AnnotationDetectionMethodCallback<?> publishing,
-				AnnotationDetectionMethodCallback<?> clearing) {
+				Supplier<AnnotationDetectionMethodCallback<?>> clearing) {
 
 			if (!publishing.hasFoundAnnotation()) {
 				return EventPublishingMethod.NONE;
 			}
 
-			Method eventMethod = publishing.getMethod();
+			Method eventMethod = publishing.getRequiredMethod();
 			ReflectionUtils.makeAccessible(eventMethod);
 
-			return new EventPublishingMethod(eventMethod, getClearingMethod(clearing));
+			return new EventPublishingMethod(eventMethod, getClearingMethod(clearing.get()));
 		}
 
 		/**
@@ -210,13 +215,14 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @param clearing must not be {@literal null}.
 		 * @return
 		 */
+		@Nullable
 		private static Method getClearingMethod(AnnotationDetectionMethodCallback<?> clearing) {
 
 			if (!clearing.hasFoundAnnotation()) {
 				return null;
 			}
 
-			Method method = clearing.getMethod();
+			Method method = clearing.getRequiredMethod();
 			ReflectionUtils.makeAccessible(method);
 
 			return method;
@@ -230,7 +236,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
-		private static Collection<Object> asCollection(Object source) {
+		private static Collection<Object> asCollection(@Nullable Object source) {
 
 			if (source == null) {
 				return Collections.emptyList();

@@ -15,9 +15,13 @@
  */
 package org.springframework.data.geo;
 
+import lombok.Value;
+
 import java.io.Serializable;
 
 import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Range.Bound;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -27,11 +31,19 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
+@Value
 public class Distance implements Serializable, Comparable<Distance> {
 
 	private static final long serialVersionUID = 2460886201934027744L;
 
+	/**
+	 * The distance value in the current {@link Metric}.
+	 */
 	private final double value;
+
+	/**
+	 * The {@link Metric} of the {@link Distance}.
+	 */
 	private final Metric metric;
 
 	/**
@@ -47,12 +59,14 @@ public class Distance implements Serializable, Comparable<Distance> {
 	 * Creates a new {@link Distance} with the given {@link Metric}.
 	 * 
 	 * @param value
-	 * @param metric can be {@literal null}.
+	 * @param metric must not be {@literal null}.
 	 */
 	public Distance(double value, Metric metric) {
 
+		Assert.notNull(metric, "Metric must not be null!");
+
 		this.value = value;
-		this.metric = metric == null ? Metrics.NEUTRAL : metric;
+		this.metric = metric;
 	}
 
 	/**
@@ -63,7 +77,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 	 * @return will never be {@literal null}.
 	 */
 	public static Range<Distance> between(Distance min, Distance max) {
-		return new Range<>(min, max);
+		return Range.from(Bound.inclusive(min)).to(Bound.inclusive(max));
 	}
 
 	/**
@@ -80,30 +94,12 @@ public class Distance implements Serializable, Comparable<Distance> {
 	}
 
 	/**
-	 * Returns the distance value in the current {@link Metric}.
-	 * 
-	 * @return the value
-	 */
-	public double getValue() {
-		return value;
-	}
-
-	/**
 	 * Returns the normalized value regarding the underlying {@link Metric}.
 	 * 
 	 * @return
 	 */
 	public double getNormalizedValue() {
 		return value / metric.getMultiplier();
-	}
-
-	/**
-	 * Returns the {@link Metric} of the {@link Distance}.
-	 * 
-	 * @return the metric
-	 */
-	public Metric getMetric() {
-		return metric;
 	}
 
 	/**
@@ -160,6 +156,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 	public Distance in(Metric metric) {
 
 		Assert.notNull(metric, "Metric must not be null!");
+
 		return this.metric.equals(metric) ? this : new Distance(getNormalizedValue() * metric.getMultiplier(), metric);
 	}
 
@@ -168,49 +165,19 @@ public class Distance implements Serializable, Comparable<Distance> {
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	@Override
-	public int compareTo(Distance o) {
+	public int compareTo(@Nullable Distance that) {
 
-		double difference = this.getNormalizedValue() - o.getNormalizedValue();
+		if (that == null) {
+			return 1;
+		}
+
+		double difference = this.getNormalizedValue() - that.getNormalizedValue();
 
 		return difference == 0 ? 0 : difference > 0 ? 1 : -1;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof Distance)) {
-			return false;
-		}
-
-		Distance that = (Distance) obj;
-
-		return this.value == that.value && this.metric.equals(that.metric);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-
-		int result = 17;
-
-		result += 31 * Double.doubleToLongBits(value);
-		result += 31 * metric.hashCode();
-
-		return result;
-	}
-
-	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

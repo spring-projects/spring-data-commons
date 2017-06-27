@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,10 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public abstract class RepositoryConfigurationUtils {
-
-	private RepositoryConfigurationUtils() {}
+public interface RepositoryConfigurationUtils {
 
 	/**
-	 * Registeres the given {@link RepositoryConfigurationExtension} to indicate the repository configuration for a
+	 * Registers the given {@link RepositoryConfigurationExtension} to indicate the repository configuration for a
 	 * particular store (expressed through the extension's concrete type) has appened. Useful for downstream components
 	 * that need to detect exactly that case. The bean definition is marked as lazy-init so that it doesn't get
 	 * instantiated if no one really cares.

@@ -38,6 +38,7 @@ import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -213,7 +214,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @return
 		 */
 		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
+				@Nullable PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
 
 			if (provider == null || constructor == null || !constructor.hasParameters()) {
 				return EMPTY_ARRAY;
@@ -484,7 +485,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 */
 		private class ByteArrayClassLoader extends ClassLoader {
 
-			public ByteArrayClassLoader(ClassLoader parent) {
+			public ByteArrayClassLoader(@Nullable ClassLoader parent) {
 				super(parent);
 			}
 

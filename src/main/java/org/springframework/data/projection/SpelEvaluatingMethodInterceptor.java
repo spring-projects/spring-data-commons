@@ -32,6 +32,7 @@ import org.springframework.expression.ParserContext;
 import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -63,7 +64,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	 * @param parser must not be {@literal null}.
 	 * @param targetInterface must not be {@literal null}.
 	 */
-	public SpelEvaluatingMethodInterceptor(MethodInterceptor delegate, Object target, BeanFactory beanFactory,
+	public SpelEvaluatingMethodInterceptor(MethodInterceptor delegate, Object target, @Nullable BeanFactory beanFactory,
 			SpelExpressionParser parser, Class<?> targetInterface) {
 
 		Assert.notNull(delegate, "Delegate MethodInterceptor must not be null!");
@@ -123,8 +124,9 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	 * (non-Javadoc)
 	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 	 */
+	@Nullable
 	@Override
-	public Object invoke(MethodInvocation invocation) throws Throwable {
+	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		Expression expression = expressions.get(invocation.getMethod().hashCode());
 

@@ -17,13 +17,14 @@ package org.springframework.data.domain.jaxb;
 
 import java.util.Collections;
 
+import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.jaxb.SpringDataJaxb.OrderDto;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.PageRequestDto;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.SortDto;
+import org.springframework.lang.Nullable;
 
 /**
  * {@link XmlAdapter} to convert {@link Pageable} instances int a {@link PageRequestDto} and vice versa.
@@ -37,12 +38,17 @@ class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 	 * (non-Javadoc)
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */
+	@Nullable
 	@Override
-	public PageRequestDto marshal(Pageable request) {
+	public PageRequestDto marshal(@Nullable Pageable request) {
 
-		SortDto sortDto = SortAdapter.INSTANCE.marshal(request.getSort());
+		if (request == null) {
+			return null;
+		}
 
 		PageRequestDto dto = new PageRequestDto();
+
+		SortDto sortDto = SortAdapter.INSTANCE.marshal(request.getSort());
 		dto.orders = sortDto == null ? Collections.emptyList() : sortDto.orders;
 		dto.page = request.getPageNumber();
 		dto.size = request.getPageSize();
@@ -54,8 +60,13 @@ class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 	 * (non-Javadoc)
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */
+	@Nonnull
 	@Override
-	public Pageable unmarshal(PageRequestDto v) {
+	public Pageable unmarshal(@Nullable PageRequestDto v) {
+
+		if (v == null) {
+			return Pageable.unpaged();
+		}
 
 		if (v.orders.isEmpty()) {
 			return PageRequest.of(v.page, v.size);

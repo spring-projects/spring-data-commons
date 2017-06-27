@@ -194,6 +194,10 @@ public class Parameter {
 
 		Method method = parameter.getMethod();
 
+		if (method == null) {
+			throw new IllegalStateException(String.format("Method parameter %s is not backed by a method!", parameter));
+		}
+
 		ClassTypeInformation<?> ownerType = ClassTypeInformation.from(parameter.getDeclaringClass());
 		TypeInformation<?> parameterTypes = ownerType.getParameterTypes(method).get(parameter.getParameterIndex());
 
@@ -240,7 +244,7 @@ public class Parameter {
 		Class<?> originalType = parameter.getParameterType();
 
 		if (isWrapped(parameter) && shouldUnwrap(parameter)) {
-			return ResolvableType.forMethodParameter(parameter).getGeneric(0).getRawClass();
+			return ResolvableType.forMethodParameter(parameter).getGeneric(0).resolve(Object.class);
 		}
 
 		return originalType;

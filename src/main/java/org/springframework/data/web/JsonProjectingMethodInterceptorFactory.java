@@ -34,6 +34,7 @@ import org.springframework.data.projection.Accessor;
 import org.springframework.data.projection.MethodInterceptorFactory;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -127,15 +128,16 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
+		@Nullable
 		@Override
-		public Object invoke(MethodInvocation invocation) throws Throwable {
+		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
 			TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 			ResolvableType type = ResolvableType.forMethodReturnType(method);
 			String jsonPath = getJsonPath(method);
 
-			if (returnType.getActualType().getType().isInterface()) {
+			if (returnType.getRequiredActualType().getType().isInterface()) {
 
 				List<?> result = context.read(jsonPath);
 				return result.isEmpty() ? null : result.get(0);
@@ -144,7 +146,8 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 			boolean isCollectionResult = Collection.class.isAssignableFrom(type.getRawClass());
 			type = isCollectionResult ? type : ResolvableType.forClassWithGenerics(List.class, type);
 			type = isCollectionResult && JsonPath.isPathDefinite(jsonPath)
-					? ResolvableType.forClassWithGenerics(List.class, type) : type;
+					? ResolvableType.forClassWithGenerics(List.class, type)
+					: type;
 
 			List<?> result = (List<?>) context.read(jsonPath, new ResolvableTypeRef(type));
 

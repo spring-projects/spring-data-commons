@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.AdditionalAnswers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -56,6 +58,9 @@ public class CrudRepositoryInvokerUnitTests {
 
 	@Test // DATACMNS-589, DATAREST-216
 	public void invokesRedeclaredSave() {
+
+		when(orderRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
+
 		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeSave(new Order());
 	}
 

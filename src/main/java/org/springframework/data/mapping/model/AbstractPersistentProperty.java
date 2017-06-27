@@ -31,9 +31,10 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Simple implementation of {@link PersistentProperty}.
@@ -48,7 +49,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private static final Field CAUSE_FIELD;
 
 	static {
-		CAUSE_FIELD = ReflectionUtils.findField(Throwable.class, "cause");
+		CAUSE_FIELD = ReflectionUtils.findRequiredField(Throwable.class, "cause");
 	}
 
 	private final String name;
@@ -56,14 +57,15 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final Class<?> rawType;
 	private final Lazy<Association<P>> association;
 	private final @Getter PersistentEntity<?, P> owner;
-	private final @Getter(AccessLevel.PROTECTED) Property property;
+
+	private final @Getter(value = AccessLevel.PROTECTED, onMethod = @__(@SuppressWarnings("null"))) Property property;
 	private final Lazy<Integer> hashCode;
 	private final Lazy<Boolean> usePropertyAccess;
 	private final Lazy<Optional<? extends TypeInformation<?>>> entityTypeInformation;
 
-	private final Method getter;
-	private final Method setter;
-	private final Field field;
+	private final @Getter(onMethod = @__(@Nullable)) Method getter;
+	private final @Getter(onMethod = @__(@Nullable)) Method setter;
+	private final @Getter(onMethod = @__(@Nullable)) Field field;
 
 	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,
 			SimpleTypeHolder simpleTypeHolder) {
@@ -81,6 +83,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 		this.hashCode = Lazy.of(property::hashCode);
 		this.usePropertyAccess = Lazy.of(() -> owner.getType().isInterface() || CAUSE_FIELD.equals(getField()));
+
 		this.entityTypeInformation = Lazy.of(() -> Optional.ofNullable(information.getActualType())//
 				.filter(it -> !simpleTypeHolder.isSimpleType(it.getType()))//
 				.filter(it -> !it.isCollectionLike())//
@@ -147,36 +150,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#getGetter()
-	 */
-	@Override
-	public Method getGetter() {
-		return getter;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#getSetter()
-	 */
-	@Override
-	public Method getSetter() {
-		return setter;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#getField()
-	 */
-	@Override
-	public Field getField() {
-		return field;
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getSpelExpression()
 	 */
 	@Override
+	@Nullable
 	public String getSpelExpression() {
 		return null;
 	}
@@ -212,9 +189,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getAssociation()
 	 */
+	@Nullable
 	@Override
 	public Association<P> getAssociation() {
-		return association.get();
+		return association.getNullable();
 	}
 
 	/*
@@ -257,6 +235,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getComponentType()
 	 */
+	@Nullable
 	@Override
 	public Class<?> getComponentType() {
 		return isMap() || isCollectionLike() ? information.getRequiredComponentType().getType() : null;
@@ -266,6 +245,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getMapValueType()
 	 */
+	@Nullable
 	@Override
 	public Class<?> getMapValueType() {
 
@@ -286,7 +266,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Class<?> getActualType() {
-		return information.getActualType().getType();
+		return information.getRequiredActualType().getType();
 	}
 
 	/*
@@ -302,7 +282,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

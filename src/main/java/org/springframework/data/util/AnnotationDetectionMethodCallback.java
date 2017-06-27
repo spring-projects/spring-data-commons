@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
@@ -35,8 +36,8 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 	private final boolean enforceUniqueness;
 	private final Class<A> annotationType;
 
-	private Method foundMethod;
-	private A annotation;
+	private @Nullable Method foundMethod;
+	private @Nullable A annotation;
 
 	/**
 	 * Creates a new {@link AnnotationDetectionMethodCallback} for the given annotation type.
@@ -64,13 +65,32 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 	/**
 	 * @return the method
 	 */
+	@Nullable
 	public Method getMethod() {
 		return foundMethod;
 	}
 
 	/**
+	 * Returns the method with the configured annotation.
+	 * 
+	 * @return
+	 * @throws IllegalStateException in case no method with the configured annotation was found.
+	 */
+	public Method getRequiredMethod() {
+
+		Method method = this.foundMethod;
+
+		if (method == null) {
+			throw new IllegalStateException(String.format("No method with annotation %s found!", annotationType));
+		}
+
+		return method;
+	}
+
+	/**
 	 * @return the annotation
 	 */
+	@Nullable
 	public A getAnnotation() {
 		return annotation;
 	}
@@ -100,8 +120,8 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 		if (foundAnnotation != null) {
 
 			if (foundMethod != null && enforceUniqueness) {
-				throw new IllegalStateException(String.format(MULTIPLE_FOUND, foundAnnotation.getClass().getName(), foundMethod,
-						method));
+				throw new IllegalStateException(
+						String.format(MULTIPLE_FOUND, foundAnnotation.getClass().getName(), foundMethod, method));
 			}
 
 			this.annotation = foundAnnotation;

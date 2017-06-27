@@ -18,6 +18,8 @@ package org.springframework.data.repository.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
@@ -88,7 +90,8 @@ public class RepositoryConfigurationDelegate {
 	 * @param resourceLoader can be {@literal null}.
 	 * @return
 	 */
-	private static Environment defaultEnvironment(Environment environment, ResourceLoader resourceLoader) {
+	private static Environment defaultEnvironment(@Nullable Environment environment,
+			@Nullable ResourceLoader resourceLoader) {
 
 		if (environment != null) {
 			return environment;

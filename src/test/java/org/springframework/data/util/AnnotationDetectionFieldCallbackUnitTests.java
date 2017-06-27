@@ -41,8 +41,8 @@ public class AnnotationDetectionFieldCallbackUnitTests {
 		AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(Autowired.class);
 		ReflectionUtils.doWithFields(Sample.class, callback);
 
-		assertThat(callback.getType()).hasValue(String.class);
-		assertThat(callback.getValue(new Sample("foo"))).hasValue("foo");
+		assertThat(callback.getType()).isEqualTo(String.class);
+		assertThat(callback.<Object> getValue(new Sample("foo"))).isEqualTo("foo");
 	}
 
 	@Test // DATACMNS-616
@@ -51,8 +51,8 @@ public class AnnotationDetectionFieldCallbackUnitTests {
 		AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(Autowired.class);
 		ReflectionUtils.doWithFields(Empty.class, callback);
 
-		assertThat(callback.getType()).isNotPresent();
-		assertThat(callback.getValue(new Empty())).isNotPresent();
+		assertThat(callback.getType()).isNull();
+		assertThat(callback.<Object> getValue(new Empty())).isNull();
 	}
 
 	@Value

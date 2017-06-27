@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.GenericConverter;
@@ -35,6 +37,7 @@ import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.convert.ConverterBuilder.ReadingConverterBuilder;
 import org.springframework.data.convert.ConverterBuilder.WritingConverterBuilder;
 import org.springframework.data.util.Optionals;
+import org.springframework.lang.Nullable;
 
 /**
  * Builder to easily set up (bi-directional) {@link Converter} instances for Spring Data type mapping using Lambdas. Use
@@ -128,9 +131,10 @@ class DefaultConverterBuilder<S, T>
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 		 */
+		@Nullable
 		@Override
 		@SuppressWarnings("unchecked")
-		public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 			return function.apply((S) source);
 		}
 
@@ -138,6 +142,7 @@ class DefaultConverterBuilder<S, T>
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
+		@Nonnull
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(convertiblePair);

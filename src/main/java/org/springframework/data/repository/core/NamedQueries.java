@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.core;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Abstraction of a map of {@link NamedQueries} that can be looked up by their names.
  * 
@@ -37,5 +39,6 @@ public interface NamedQueries {
 	 * @param queryName
 	 * @return
 	 */
+	@Nullable
 	String getQuery(String queryName);
 }

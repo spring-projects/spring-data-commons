@@ -15,6 +15,7 @@
  */
 package org.springframework.data.domain;
 
+import java.util.Collections;
 import java.util.function.Function;
 
 /**
@@ -25,6 +26,27 @@ import java.util.function.Function;
  * @author Oliver Gierke
  */
 public interface Page<T> extends Slice<T> {
+
+	/**
+	 * Creates a new empty {@link Page}.
+	 * 
+	 * @return
+	 * @since 2.0
+	 */
+	static <T> Page<T> empty() {
+		return empty(Pageable.unpaged());
+	}
+
+	/**
+	 * Creates a new empty {@link Page} for the given {@link Pageable}.
+	 * 
+	 * @param pageable must not be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
+	static <T> Page<T> empty(Pageable pageable) {
+		return new PageImpl<>(Collections.emptyList(), pageable, 0);
+	}
 
 	/**
 	 * Returns the number of total pages.

@@ -16,6 +16,7 @@
 package org.springframework.data.history;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.util.Assert;
 
 /**
  * A dedicated {@link Sort} implementation that allows the definition of the ordering of revisions independently of the
@@ -66,14 +67,12 @@ public class RevisionSort extends Sort {
 	 * Returns in which direction to sort revisions for the given {@link Sort} instance. Defaults to
 	 * {@link Direction#ASC}.
 	 * 
-	 * @param sort can be {@literal null}.
+	 * @param sort must not be {@literal null}.
 	 * @return
 	 */
 	public static Direction getRevisionDirection(Sort sort) {
 
-		if (sort == null) {
-			return Direction.ASC;
-		}
+		Assert.notNull(sort, "Sort must not be null!");
 
 		Order order = sort.getOrderFor(PROPERTY);
 		return order == null ? Direction.ASC : order.getDirection();

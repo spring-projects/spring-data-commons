@@ -143,12 +143,12 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
 
-		assertSupportedAndResult(supportedMethodParameter, null, new ServletWebRequest(new MockHttpServletRequest()),
-				resolver);
+		assertSupportedAndResult(supportedMethodParameter, Pageable.unpaged(),
+				new ServletWebRequest(new MockHttpServletRequest()), resolver);
 	}
 
 	@Test // DATACMNS-477
-	public void returnsNullIfFallbackIsUnpagedAndOnlyPageIsGiven() throws Exception {
+	public void returnsFallbackIfOnlyPageIsGiven() throws Exception {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -156,11 +156,12 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("page", "20");
 
-		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null)).isNull();
+		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null))
+				.isEqualTo(Pageable.unpaged());
 	}
 
 	@Test // DATACMNS-477
-	public void returnsNullIfFallbackIsUnpagedAndOnlySizeIsGiven() throws Exception {
+	public void returnsFallbackIfFallbackIsUnpagedAndOnlySizeIsGiven() throws Exception {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -168,7 +169,8 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("size", "10");
 
-		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null)).isNull();
+		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null))
+				.isEqualTo(Pageable.unpaged());
 	}
 
 	@Test // DATACMNS-563

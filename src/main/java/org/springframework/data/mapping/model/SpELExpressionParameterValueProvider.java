@@ -15,50 +15,34 @@
  */
 package org.springframework.data.mapping.model;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
-import org.springframework.util.Assert;
+import org.springframework.lang.Nullable;
 
 /**
- * {@link ParameterValueProvider} that can be used to front a {@link ParameterValueProvider} delegate to prefer a Spel
+ * {@link ParameterValueProvider} that can be used to front a {@link ParameterValueProvider} delegate to prefer a SpEL
  * expression evaluation over directly resolving the parameter value with the delegate.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
  */
+@RequiredArgsConstructor
 public class SpELExpressionParameterValueProvider<P extends PersistentProperty<P>>
 		implements ParameterValueProvider<P> {
 
-	private final SpELExpressionEvaluator evaluator;
-	private final ParameterValueProvider<P> delegate;
-	private final ConversionService conversionService;
-
-	/**
-	 * Creates a new {@link SpELExpressionParameterValueProvider} using the given {@link SpELExpressionEvaluator},
-	 * {@link ConversionService} and {@link ParameterValueProvider} delegate to forward calls to, that resolve parameters
-	 * that do not have a Spel expression configured with them.
-	 *
-	 * @param evaluator must not be {@literal null}.
-	 * @param conversionService must not be {@literal null}.
-	 * @param delegate must not be {@literal null}.
-	 */
-	public SpELExpressionParameterValueProvider(SpELExpressionEvaluator evaluator, ConversionService conversionService,
-			ParameterValueProvider<P> delegate) {
-
-		Assert.notNull(evaluator, "SpELExpressionEvaluator must not be null!");
-		Assert.notNull(conversionService, "ConversionService must not be null!");
-		Assert.notNull(delegate, "ParameterValueProvider delegate must not be null!");
-
-		this.evaluator = evaluator;
-		this.conversionService = conversionService;
-		this.delegate = delegate;
-	}
+	private final @NonNull SpELExpressionEvaluator evaluator;
+	private final @NonNull ConversionService conversionService;
+	private final @NonNull ParameterValueProvider<P> delegate;
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.PreferredConstructor.Parameter)
 	 */
+	@Nullable
 	public <T> T getParameterValue(Parameter<T, P> parameter) {
 
 		if (!parameter.hasSpelExpression()) {
@@ -77,6 +61,7 @@ public class SpELExpressionParameterValueProvider<P extends PersistentProperty<P
 	 * @param parameter the {@link Parameter} we create the value for
 	 * @return
 	 */
+	@Nullable
 	protected <T> T potentiallyConvertSpelValue(Object object, Parameter<T, P> parameter) {
 		return conversionService.convert(object, parameter.getRawType());
 	}

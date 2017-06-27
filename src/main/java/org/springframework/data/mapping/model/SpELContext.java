@@ -22,6 +22,7 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.PropertyAccessor;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
 
 /**
  * Simple factory to create {@link SpelExpressionParser} and {@link EvaluationContext} instances.
@@ -32,7 +33,7 @@ public class SpELContext {
 
 	private final SpelExpressionParser parser;
 	private final PropertyAccessor accessor;
-	private final BeanFactory factory;
+	private final @Nullable BeanFactory factory;
 
 	/**
 	 * Creates a new {@link SpELContext} with the given {@link PropertyAccessor}. Defaults the
@@ -75,7 +76,7 @@ public class SpELContext {
 	 * @param parser
 	 * @param factory
 	 */
-	private SpELContext(PropertyAccessor accessor, SpelExpressionParser parser, BeanFactory factory) {
+	private SpELContext(PropertyAccessor accessor, @Nullable SpelExpressionParser parser, @Nullable BeanFactory factory) {
 
 		this.parser = parser == null ? new SpelExpressionParser() : parser;
 		this.accessor = accessor;

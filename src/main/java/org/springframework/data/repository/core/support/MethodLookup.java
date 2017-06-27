@@ -70,6 +70,7 @@ public interface MethodLookup {
 	interface MethodPredicate extends BiPredicate<InvokedMethod, Method> {
 
 		@Override
+		@SuppressWarnings("null")
 		boolean test(InvokedMethod invokedMethod, Method candidate);
 	}
 

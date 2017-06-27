@@ -15,6 +15,8 @@
  */
 package org.springframework.data.geo;
 
+import lombok.EqualsAndHashCode;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @since 1.8
  */
+@EqualsAndHashCode
 public class Polygon implements Iterable<Point>, Shape {
 
 	private static final long serialVersionUID = -2705040068154648988L;
@@ -96,35 +99,6 @@ public class Polygon implements Iterable<Point>, Shape {
 	 */
 	public Iterator<Point> iterator() {
 		return this.points.iterator();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof Polygon)) {
-			return false;
-		}
-
-		Polygon that = (Polygon) obj;
-
-		return this.points.equals(that.points);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return points.hashCode();
 	}
 
 	/*

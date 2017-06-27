@@ -23,7 +23,6 @@ import static org.springframework.data.repository.support.RepositoryInvocationTe
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -31,12 +30,12 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.AdditionalAnswers;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -45,7 +44,6 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.Person;
 import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.PersonRepository;
 import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -60,8 +58,6 @@ import org.springframework.util.MultiValueMap;
 @RunWith(MockitoJUnitRunner.class)
 public class ReflectionRepositoryInvokerUnitTests {
 
-	static final Page<Person> EMPTY_PAGE = new PageImpl<>(Collections.emptyList());
-
 	ConversionService conversionService;
 
 	@Before
@@ -74,6 +70,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		ManualCrudRepository repository = mock(ManualCrudRepository.class);
 		Method method = ManualCrudRepository.class.getMethod("save", Domain.class);
+
+		when(repository.save(any())).then(AdditionalAnswers.returnsFirstArg());
 
 		getInvokerFor(repository, expectInvocationOf(method)).invokeSave(new Domain());
 	}
@@ -118,6 +116,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 		Method method = RepoWithFindAllWithSort.class.getMethod("findAll", Sort.class);
 		RepoWithFindAllWithSort repository = mock(RepoWithFindAllWithSort.class);
 
+		when(repository.findAll(any())).thenReturn(Page.empty());
+
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.unpaged());
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Sort.unsorted());
@@ -129,6 +129,8 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		Method method = RepoWithFindAllWithPageable.class.getMethod("findAll", Pageable.class);
 		RepoWithFindAllWithPageable repository = mock(RepoWithFindAllWithPageable.class);
+
+		when(repository.findAll(any())).thenReturn(Page.empty());
 
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.unpaged());
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));

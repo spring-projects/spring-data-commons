@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.init;
 
+import javax.annotation.Nullable;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.repository.support.Repositories;
@@ -72,7 +74,7 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

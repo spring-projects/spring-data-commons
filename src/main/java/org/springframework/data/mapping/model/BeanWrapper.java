@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -49,7 +50,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentProperty, java.util.Optional)
 	 */
-	public void setProperty(PersistentProperty<?> property, Object value) {
+	public void setProperty(PersistentProperty<?> property, @Nullable Object value) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
@@ -57,20 +58,17 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 			if (!property.usePropertyAccess()) {
 
-				Field field = property.getField();
+				Field field = property.getRequiredField();
 
 				ReflectionUtils.makeAccessible(field);
 				ReflectionUtils.setField(field, bean, value);
 				return;
 			}
 
-			Method setter = property.getSetter();
+			Method setter = property.getRequiredSetter();
 
-			if (setter != null) {
-
-				ReflectionUtils.makeAccessible(setter);
-				ReflectionUtils.invokeMethod(setter, bean, value);
-			}
+			ReflectionUtils.makeAccessible(setter);
+			ReflectionUtils.invokeMethod(setter, bean, value);
 
 		} catch (IllegalStateException e) {
 			throw new MappingException("Could not set object property!", e);
@@ -81,6 +79,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
+	@Nullable
 	public Object getProperty(PersistentProperty<?> property) {
 		return getProperty(property, property.getType());
 	}
@@ -94,7 +93,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 * @return
 	 * @throws MappingException in case an exception occured when accessing the property.
 	 */
-	@SuppressWarnings("unchecked")
+	@Nullable
 	public <S> Object getProperty(PersistentProperty<?> property, Class<? extends S> type) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
@@ -103,20 +102,16 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 			if (!property.usePropertyAccess()) {
 
-				Field field = property.getField();
+				Field field = property.getRequiredField();
+
 				ReflectionUtils.makeAccessible(field);
 				return ReflectionUtils.getField(field, bean);
 			}
 
-			Method getter = property.getGetter();
+			Method getter = property.getRequiredGetter();
 
-			if (getter != null) {
-
-				ReflectionUtils.makeAccessible(getter);
-				return ReflectionUtils.invokeMethod(getter, bean);
-			}
-
-			return null;
+			ReflectionUtils.makeAccessible(getter);
+			return ReflectionUtils.invokeMethod(getter, bean);
 
 		} catch (IllegalStateException e) {
 			throw new MappingException(

@@ -39,6 +39,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -53,7 +54,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	private static final String SPRING_DATA_PACKAGE = "org.springframework.data";
 
-	private final String value;
+	private final @Nullable String value;
 	private final Map<Class<? extends Annotation>, Optional<? extends Annotation>> annotationCache = new HashMap<>();
 
 	private final Lazy<Boolean> usePropertyAccess = Lazy.of(() -> {
@@ -159,6 +160,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 *
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getSpelExpression()
 	 */
+	@Nullable
 	@Override
 	public String getSpelExpression() {
 		return value;
@@ -216,6 +218,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param annotationType must not be {@literal null}.
 	 * @return {@literal null} if annotation type not found on property.
 	 */
+	@Nullable
 	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 
 		Assert.notNull(annotationType, "Annotation type must not be null!");
@@ -248,6 +251,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#findPropertyOrOwnerAnnotation(java.lang.Class)
 	 */
+	@Nullable
 	@Override
 	public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 

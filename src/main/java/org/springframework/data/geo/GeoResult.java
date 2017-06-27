@@ -15,9 +15,10 @@
  */
 package org.springframework.data.geo;
 
-import java.io.Serializable;
+import lombok.NonNull;
+import lombok.Value;
 
-import org.springframework.util.Assert;
+import java.io.Serializable;
 
 /**
  * Value object capturing some arbitrary object plus a distance.
@@ -26,80 +27,13 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
+@Value
 public class GeoResult<T> implements Serializable {
 
 	private static final long serialVersionUID = 1637452570977581370L;
 
-	private final T content;
-	private final Distance distance;
-
-	/**
-	 * Creates a new {@link GeoResult} for the given content and distance.
-	 * 
-	 * @param content must not be {@literal null}.
-	 * @param distance must not be {@literal null}.
-	 */
-	public GeoResult(T content, Distance distance) {
-
-		Assert.notNull(content, "Content must not be null!");
-		Assert.notNull(distance, "Distance must not be null!");
-
-		this.content = content;
-		this.distance = distance;
-	}
-
-	/**
-	 * Returns the actual content object.
-	 * 
-	 * @return the content
-	 */
-	public T getContent() {
-		return content;
-	}
-
-	/**
-	 * Returns the distance the actual content object has from the origin.
-	 * 
-	 * @return the distance
-	 */
-	public Distance getDistance() {
-		return distance;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof GeoResult)) {
-			return false;
-		}
-
-		GeoResult<?> that = (GeoResult<?>) obj;
-
-		return this.content.equals(that.content) && this.distance.equals(that.distance);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-
-		int result = 17;
-
-		result += 31 * distance.hashCode();
-		result += 31 * content.hashCode();
-
-		return result;
-	}
+	@NonNull T content;
+	@NonNull Distance distance;
 
 	/*
 	 * (non-Javadoc)

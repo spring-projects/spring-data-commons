@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.springframework.lang.Nullable;
+
 /**
  * SPI for components that can evaluate Spring EL expressions.
  * 
@@ -28,5 +30,6 @@ public interface SpELExpressionEvaluator {
 	 * @param expression
 	 * @return
 	 */
+	@Nullable
 	<T> T evaluate(String expression);
 }

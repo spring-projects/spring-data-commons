@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 
 /**
  * @author Graeme Rocher
@@ -75,7 +76,19 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 *
 	 * @return the getter method to access the property value if available, otherwise {@literal null}.
 	 */
+	@Nullable
 	Method getGetter();
+
+	default Method getRequiredGetter() {
+
+		Method getter = getGetter();
+
+		if (getter == null) {
+			throw new IllegalArgumentException("No getter available for this persistent property!");
+		}
+
+		return getter;
+	}
 
 	/**
 	 * Returns the setter method to set a property value. Might return {@literal null} in case there is no setter
@@ -83,18 +96,44 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 *
 	 * @return the setter method to set a property value if available, otherwise {@literal null}.
 	 */
+	@Nullable
 	Method getSetter();
 
+	default Method getRequiredSetter() {
+
+		Method setter = getSetter();
+
+		if (setter == null) {
+			throw new IllegalArgumentException("No setter available for this persistent property!");
+		}
+
+		return setter;
+	}
+
+	@Nullable
 	Field getField();
+
+	default Field getRequiredField() {
+
+		Field field = getField();
+
+		if (field == null) {
+			throw new IllegalArgumentException("No field backing this persistent property!");
+		}
+
+		return field;
+	}
 
 	/**
 	 * @return {@literal null} if no expression defined.
 	 */
+	@Nullable
 	String getSpelExpression();
 
 	/**
 	 * @return {@literal null} if property is not part of an {@link Association}.
 	 */
+	@Nullable
 	Association<P> getAssociation();
 
 	/**
@@ -193,6 +232,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return the component type, the map's key type or {@literal null} if neither {@link java.util.Collection} nor
 	 *         {@link java.util.Map}.
 	 */
+	@Nullable
 	Class<?> getComponentType();
 
 	/**
@@ -207,6 +247,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 *
 	 * @return the map's value type or {@literal null} if no {@link java.util.Map}
 	 */
+	@Nullable
 	Class<?> getMapValueType();
 
 	/**
@@ -225,15 +266,17 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return the annotation of the given type. Can be {@literal null}.
 	 * @see AnnotationUtils#findAnnotation(Method, Class)
 	 */
+	@Nullable
 	<A extends Annotation> A findAnnotation(Class<A> annotationType);
 
 	/**
 	 * Looks up the annotation of the given type on the property and the owning type if no annotation can be found on it.
-	 * Usefull to lookup annotations that can be configured on the type but overridden on an individual property.
+	 * Useful to lookup annotations that can be configured on the type but overridden on an individual property.
 	 *
 	 * @param annotationType must not be {@literal null}.
 	 * @return the annotation of the given type. Can be {@literal null}.
 	 */
+	@Nullable
 	<A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType);
 
 	/**

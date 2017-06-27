@@ -18,6 +18,8 @@ package org.springframework.data.domain;
 import java.util.List;
 import java.util.function.Function;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Basic {@code Page} implementation.
  * 
@@ -127,7 +129,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

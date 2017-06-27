@@ -16,9 +16,11 @@
 package org.springframework.data.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -177,13 +179,13 @@ public class DomainClassConverterUnitTests {
 		converter.setApplicationContext(initContextWithRepo());
 
 		@SuppressWarnings("rawtypes")
-		DomainClassConverter.ToIdConverter toIdConverter = (ToIdConverter) ReflectionTestUtils.getField(converter,
+		Optional<ToIdConverter> toIdConverter = (Optional<ToIdConverter>) ReflectionTestUtils.getField(converter,
 				"toIdConverter");
 
 		Method method = Wrapper.class.getMethod("foo", User.class);
 		TypeDescriptor target = TypeDescriptor.nested(new MethodParameter(method, 0), 0);
 
-		assertThat(toIdConverter.matches(SUB_USER_TYPE, target)).isFalse();
+		assertThat(toIdConverter).map(it -> it.matches(SUB_USER_TYPE, target)).hasValue(false);
 	}
 
 	private ApplicationContext initContextWithRepo() {

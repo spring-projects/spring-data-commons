@@ -16,6 +16,7 @@
 package org.springframework.data.convert;
 
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 
 /**
  * Interface to define strategies how to store type information in a store specific sink or source.
@@ -30,13 +31,14 @@ public interface TypeMapper<S> {
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	TypeInformation<?> readType(S source);
 
 	/**
 	 * Returns the {@link TypeInformation} from the given source if it is a more concrete type than the given default one.
 	 *
 	 * @param source must not be {@literal null}.
-	 * @param defaultType
+	 * @param defaultType must not be {@literal null}.
 	 * @return
 	 */
 	<T> TypeInformation<? extends T> readType(S source, TypeInformation<T> defaultType);

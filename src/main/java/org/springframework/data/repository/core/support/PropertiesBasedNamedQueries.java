@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import java.util.Properties;
 
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -34,23 +35,28 @@ public class PropertiesBasedNamedQueries implements NamedQueries {
 	/**
 	 * Creates a new {@link PropertiesBasedNamedQueries} for the given {@link Properties} instance.
 	 * 
-	 * @param properties
+	 * @param properties must not be {@literal null}.
 	 */
 	public PropertiesBasedNamedQueries(Properties properties) {
+
 		Assert.notNull(properties, "Properties must not be null!");
+
 		this.properties = properties;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.NamedQueries#hasNamedQuery(java.lang.String)
 	 */
 	public boolean hasQuery(String queryName) {
 		return properties.containsKey(queryName);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.NamedQueries#getNamedQuery(java.lang.String)
 	 */
+	@Nullable
 	public String getQuery(String queryName) {
 		return properties.getProperty(queryName);
 	}

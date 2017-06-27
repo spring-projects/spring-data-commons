@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -394,8 +395,8 @@ public class ExampleMatcher {
 	@EqualsAndHashCode
 	public static class GenericPropertyMatcher {
 
-		StringMatcher stringMatcher = null;
-		Boolean ignoreCase = null;
+		@Nullable StringMatcher stringMatcher = null;
+		@Nullable Boolean ignoreCase = null;
 		PropertyValueTransformer valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
 
 		/**
@@ -697,6 +698,7 @@ public class ExampleMatcher {
 		 * @see java.util.function.Function#apply(java.lang.Object)
 		 */
 		@Override
+		@SuppressWarnings("null")
 		public Optional<Object> apply(Optional<Object> source) {
 			return source;
 		}
@@ -715,8 +717,8 @@ public class ExampleMatcher {
 	public static class PropertySpecifier {
 
 		String path;
-		StringMatcher stringMatcher;
-		Boolean ignoreCase;
+		@Nullable StringMatcher stringMatcher;
+		@Nullable Boolean ignoreCase;
 		PropertyValueTransformer valueTransformer;
 
 		/**
@@ -785,6 +787,7 @@ public class ExampleMatcher {
 		 *
 		 * @return can be {@literal null}.
 		 */
+		@Nullable
 		public StringMatcher getStringMatcher() {
 			return stringMatcher;
 		}
@@ -792,6 +795,7 @@ public class ExampleMatcher {
 		/**
 		 * @return {@literal null} if not set.
 		 */
+		@Nullable
 		public Boolean getIgnoreCase() {
 			return ignoreCase;
 		}

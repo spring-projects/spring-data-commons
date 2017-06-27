@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
+import javax.annotation.Nullable;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -49,8 +51,9 @@ public enum SurroundingTransactionDetectorMethodInterceptor implements MethodInt
 	 * (non-Javadoc)
 	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 	 */
+	@Nullable
 	@Override
-	public Object invoke(MethodInvocation invocation) throws Throwable {
+	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		SURROUNDING_TX_ACTIVE.set(TransactionSynchronizationManager.isActualTransactionActive());
 

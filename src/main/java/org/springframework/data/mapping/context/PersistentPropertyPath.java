@@ -17,6 +17,7 @@ package org.springframework.data.mapping.context;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.lang.Nullable;
 
 /**
  * Abstraction of a path of {@link PersistentProperty}s.
@@ -30,33 +31,37 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * 
 	 * @return
 	 */
+	@Nullable
 	String toDotPath();
 
 	/**
 	 * Returns the dot based path notation using the given {@link Converter} to translate individual
 	 * {@link PersistentProperty}s to path segments.
 	 * 
-	 * @param converter
+	 * @param converter must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	String toDotPath(Converter<? super T, String> converter);
 
 	/**
 	 * Returns a {@link String} path with the given delimiter based on the {@link PersistentProperty#getName()}.
 	 * 
-	 * @param delimiter will default to {@code .} if {@literal null} is given.
+	 * @param delimiter must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	String toPath(String delimiter);
 
 	/**
 	 * Returns a {@link String} path with the given delimiter using the given {@link Converter} for
 	 * {@link PersistentProperty} to String conversion.
 	 * 
-	 * @param delimiter will default to {@code .} if {@literal null} is given.
-	 * @param converter will default to use {@link PersistentProperty#getName()}.
+	 * @param delimiter must not be {@literal null}.
+	 * @param converter must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	String toPath(String delimiter, Converter<? super T, String> converter);
 
 	/**
@@ -66,6 +71,7 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * 
 	 * @return
 	 */
+	@Nullable
 	T getLeafProperty();
 
 	/**
@@ -75,13 +81,14 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * 
 	 * @return
 	 */
+	@Nullable
 	T getBaseProperty();
 
 	/**
 	 * Returns whether the given {@link PersistentPropertyPath} is a base path of the current one. This means that the
 	 * current {@link PersistentPropertyPath} is basically an extension of the given one.
 	 * 
-	 * @param path
+	 * @param path must not be {@literal null}.
 	 * @return
 	 */
 	boolean isBasePathOf(PersistentPropertyPath<T> path);
@@ -91,7 +98,7 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * {@code foo.bar} and a given base {@code foo} it would return {@code bar}. If the given path is not a base of the
 	 * the current one the current {@link PersistentPropertyPath} will be returned as is.
 	 * 
-	 * @param base
+	 * @param base must not be {@literal null}.
 	 * @return
 	 */
 	PersistentPropertyPath<T> getExtensionForBaseOf(PersistentPropertyPath<T> base);

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.convert;
 
+import javax.annotation.Nullable;
+
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.TypeInformation;
 
@@ -28,15 +30,16 @@ public interface TypeInformationMapper {
 	/**
 	 * Returns the actual {@link TypeInformation} to be used for the given alias.
 	 *
-	 * @param alias can be {@literal null}.
+	 * @param alias must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	TypeInformation<?> resolveTypeFrom(Alias alias);
 
 	/**
 	 * Returns the alias to be used for the given {@link TypeInformation}.
 	 *
-	 * @param type
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	Alias createAliasFor(TypeInformation<?> type);
