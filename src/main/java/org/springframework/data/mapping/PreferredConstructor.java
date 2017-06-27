@@ -29,7 +29,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -85,8 +84,8 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 *
 	 * @return
 	 */
-	public Streamable<Parameter<Object, P>> getParameters() {
-		return Streamable.of(parameters);
+	public List<Parameter<Object, P>> getParameters() {
+		return parameters;
 	}
 
 	/**

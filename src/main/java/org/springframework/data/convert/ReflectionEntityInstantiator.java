@@ -16,9 +16,8 @@
 package org.springframework.data.convert;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
@@ -66,17 +65,16 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 			}
 		}
 
-		List<Object> params = new ArrayList<>();
-		if (null != provider && constructor.hasParameters()) {
-			for (Parameter<?, P> parameter : constructor.getParameters()) {
-				params.add(provider.getParameterValue(parameter));
-			}
+		Object[] params = new Object[constructor.getConstructor().getParameterCount()];
+		int i = 0;
+		for (Parameter<?, P> parameter : constructor.getParameters()) {
+			params[i++] = provider.getParameterValue(parameter);
 		}
 
 		try {
-			return BeanUtils.instantiateClass(constructor.getConstructor(), params.toArray());
+			return BeanUtils.instantiateClass(constructor.getConstructor(), params);
 		} catch (BeanInstantiationException e) {
-			throw new MappingInstantiationException(entity, params, e);
+			throw new MappingInstantiationException(entity, Arrays.asList(params), e);
 		}
 	}
 }
