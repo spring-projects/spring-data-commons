@@ -69,8 +69,8 @@ public class MappingInstantiationException extends RuntimeException {
 		super(buildExceptionMessage(entity, arguments, message), cause);
 
 		this.entityType = entity.map(PersistentEntity::getType).orElse(null);
-		this.constructor = entity.flatMap(PersistentEntity::getPersistenceConstructor)
-				.map(PreferredConstructor::getConstructor).orElse(null);
+		this.constructor = entity.map(PersistentEntity::getPersistenceConstructor).map(PreferredConstructor::getConstructor)
+				.orElse(null);
 		this.constructorArguments = arguments;
 	}
 
@@ -79,7 +79,7 @@ public class MappingInstantiationException extends RuntimeException {
 
 		return entity.map(it -> {
 
-			Optional<? extends PreferredConstructor<?, ?>> constructor = it.getPersistenceConstructor();
+			Optional<? extends PreferredConstructor<?, ?>> constructor = Optional.ofNullable(it.getPersistenceConstructor());
 
 			List<String> toStringArgs = new ArrayList<>(arguments.size());
 			for (Object o : arguments) {

@@ -42,7 +42,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Unit test for {@link AbstractMappingContext}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
@@ -111,7 +111,7 @@ public class AbstractMappingContextUnitTests {
 	public void returnsNullPersistentEntityForSimpleTypes() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		assertThat(context.getPersistentEntity(String.class)).isEmpty();
+		assertThat(context.getPersistentEntity(String.class)).isNull();
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-214
@@ -132,7 +132,7 @@ public class AbstractMappingContextUnitTests {
 
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
 				.getRequiredPersistentEntity(Sample.class);
-		assertThat(entity.getPersistentProperty("metaClass")).isNotPresent();
+		assertThat(entity.getPersistentProperty("metaClass")).isNull();
 	}
 
 	@Test // DATACMNS-332
@@ -142,7 +142,7 @@ public class AbstractMappingContextUnitTests {
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
 				.getRequiredPersistentEntity(Extension.class);
 
-		assertThat(entity.getPersistentProperty("foo")).hasValueSatisfying(it -> assertThat(it.isIdProperty()).isTrue());
+		assertThat(entity.getPersistentProperty("foo")).satisfies(it -> assertThat(it.isIdProperty()).isTrue());
 	}
 
 	@Test // DATACMNS-345
@@ -154,8 +154,8 @@ public class AbstractMappingContextUnitTests {
 				.getRequiredPersistentEntity(Sample.class);
 
 		assertThat(entity.getPersistentProperty("persons"))
-				.hasValueSatisfying(it -> assertThat(mappingContext.getPersistentEntity(it))
-						.hasValueSatisfying(inner -> assertThat(inner.getType()).isEqualTo(Person.class)));
+				.satisfies(it -> assertThat(mappingContext.getPersistentEntity(it))
+						.satisfies(inner -> assertThat(inner.getType()).isEqualTo(Person.class)));
 	}
 
 	@Test // DATACMNS-380
@@ -193,7 +193,7 @@ public class AbstractMappingContextUnitTests {
 	public void shouldReturnNullForSimpleTypesIfInStrictIsEnabled() {
 
 		context.setStrict(true);
-		assertThat(context.getPersistentEntity(Integer.class)).isEmpty();
+		assertThat(context.getPersistentEntity(Integer.class)).isNull();
 	}
 
 	@Test // DATACMNS-462

@@ -17,7 +17,6 @@ package org.springframework.data.mapping.model;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -57,20 +56,20 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 			if (!property.usePropertyAccess()) {
 
-				Field field = property.getField().get();
+				Field field = property.getField();
 
 				ReflectionUtils.makeAccessible(field);
 				ReflectionUtils.setField(field, bean, value);
 				return;
 			}
 
-			Optional<Method> setter = property.getSetter();
+			Method setter = property.getSetter();
 
-			setter.ifPresent(it -> {
+			if (setter != null) {
 
-				ReflectionUtils.makeAccessible(it);
-				ReflectionUtils.invokeMethod(it, bean, value);
-			});
+				ReflectionUtils.makeAccessible(setter);
+				ReflectionUtils.invokeMethod(setter, bean, value);
+			}
 
 		} catch (IllegalStateException e) {
 			throw new MappingException("Could not set object property!", e);
@@ -103,18 +102,20 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 			if (!property.usePropertyAccess()) {
 
-				Field field = property.getField().get();
+				Field field = property.getField();
 				ReflectionUtils.makeAccessible(field);
 				return ReflectionUtils.getField(field, bean);
 			}
 
-			Optional<Method> getter = property.getGetter();
+			Method getter = property.getGetter();
 
-			return getter.map(it -> {
+			if (getter != null) {
 
-				ReflectionUtils.makeAccessible(it);
-				return (S) ReflectionUtils.invokeMethod(it, bean);
-			}).orElse(null);
+				ReflectionUtils.makeAccessible(getter);
+				return ReflectionUtils.invokeMethod(getter, bean);
+			}
+
+			return null;
 
 		} catch (IllegalStateException e) {
 			throw new MappingException(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,42 +16,41 @@
 package org.springframework.data.mapping;
 
 import java.lang.annotation.Annotation;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.util.TypeInformation;
 
 /**
  * Represents a persistent entity.
- * 
+ *
  * @author Oliver Gierke
  * @author Graeme Rocher
  * @author Jon Brisbin
  * @author Patryk Wasik
+ * @author Mark Paluch
  */
 public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
 	/**
 	 * The entity name including any package prefix.
-	 * 
+	 *
 	 * @return must never return {@literal null}
 	 */
 	String getName();
 
 	/**
 	 * Returns the {@link PreferredConstructor} to be used to instantiate objects of this {@link PersistentEntity}.
-	 * 
-	 * @return An empty {@link Optional} in case no suitable constructor for automatic construction can be found. This
-	 *         usually indicates that the instantiation of the object of that persistent entity is done through either a
-	 *         customer {@link EntityInstantiator} or handled by custom conversion mechanisms entirely.
+	 *
+	 * @return {@literal null} in case no suitable constructor for automatic construction can be found. This usually
+	 *         indicates that the instantiation of the object of that persistent entity is done through either a customer
+	 *         {@link EntityInstantiator} or handled by custom conversion mechanisms entirely.
 	 */
-	Optional<PreferredConstructor<T, P>> getPersistenceConstructor();
+	PreferredConstructor<T, P> getPersistenceConstructor();
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referred to by a constructor argument of the
 	 * {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param property
 	 * @return true if the given {@link PersistentProperty} is referred to by a constructor argument or {@literal false}
 	 *         if not or {@literal null}.
@@ -60,7 +59,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is the id property of the entity.
-	 * 
+	 *
 	 * @param property
 	 * @return
 	 */
@@ -68,7 +67,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is the version property of the entity.
-	 * 
+	 *
 	 * @param property
 	 * @return
 	 */
@@ -77,59 +76,80 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	/**
 	 * Returns the id property of the {@link PersistentEntity}. Can be {@literal null} in case this is an entity
 	 * completely handled by a custom conversion.
-	 * 
+	 *
 	 * @return the id property of the {@link PersistentEntity}.
 	 */
-	Optional<P> getIdProperty();
+	P getIdProperty();
 
 	default P getRequiredIdProperty() {
 
-		return getIdProperty().orElseThrow(
-				() -> new IllegalStateException(String.format("Required identifier property not found for %s!", getType())));
+		P property = getIdProperty();
+
+		if (property != null) {
+			return property;
+		}
+
+		throw new IllegalStateException(String.format("Required identifier property not found for %s!", getType()));
 	}
 
 	/**
 	 * Returns the version property of the {@link PersistentEntity}. Can be {@literal null} in case no version property is
 	 * available on the entity.
-	 * 
+	 *
 	 * @return the version property of the {@link PersistentEntity}.
 	 */
-	Optional<P> getVersionProperty();
+	P getVersionProperty();
+
+	default P getRequiredVersionProperty() {
+
+		P property = getVersionProperty();
+
+		if (property != null) {
+			return property;
+		}
+
+		throw new IllegalStateException(String.format("Required version property not found for %s!", getType()));
+	}
 
 	/**
 	 * Obtains a {@link PersistentProperty} instance by name.
-	 * 
+	 *
 	 * @param name The name of the property
-	 * @return the {@link PersistentProperty} or {@literal Optional#empty()} if it doesn't exist.
+	 * @return the {@link PersistentProperty} or {@literal null} if it doesn't exist.
 	 */
-	Optional<P> getPersistentProperty(String name);
+	P getPersistentProperty(String name);
 
 	/**
 	 * Returns the {@link PersistentProperty} with the given name.
-	 * 
+	 *
 	 * @param name the name of the property, must not be {@literal null} or empty.
 	 * @return the {@link PersistentProperty} with the given name.
 	 * @throws IllegalArgumentException in case no property with the given name exists.
 	 */
 	default P getRequiredPersistentProperty(String name) {
 
-		return getPersistentProperty(name).orElseThrow(
-				() -> new IllegalArgumentException(String.format("No property %s found for type %s!", name, getType())));
+		P property = getPersistentProperty(name);
+
+		if (property != null) {
+			return property;
+		}
+
+		throw new IllegalStateException(String.format("Required identifier property not found for %s!", getType()));
 	}
 
 	/**
 	 * Returns the property equipped with an annotation of the given type.
-	 * 
+	 *
 	 * @param annotationType must not be {@literal null}.
 	 * @return
 	 * @since 1.8
 	 */
-	Optional<P> getPersistentProperty(Class<? extends Annotation> annotationType);
+	P getPersistentProperty(Class<? extends Annotation> annotationType);
 
 	/**
 	 * Returns whether the {@link PersistentEntity} has an id property. If this call returns {@literal true},
 	 * {@link #getIdProperty()} will return a non-{@literal null} value.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean hasIdProperty();
@@ -137,14 +157,14 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	/**
 	 * Returns whether the {@link PersistentEntity} has a version property. If this call returns {@literal true},
 	 * {@link #getVersionProperty()} will return a non-{@literal null} value.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean hasVersionProperty();
 
 	/**
 	 * Returns the resolved Java type of this entity.
-	 * 
+	 *
 	 * @return The underlying Java class for this entity
 	 */
 	Class<T> getType();
@@ -152,14 +172,14 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	/**
 	 * Returns the alias to be used when storing type information. Might be {@literal null} to indicate that there was no
 	 * alias defined through the mapping metadata.
-	 * 
+	 *
 	 * @return
 	 */
 	Alias getTypeAlias();
 
 	/**
 	 * Returns the {@link TypeInformation} backing this {@link PersistentEntity}.
-	 * 
+	 *
 	 * @return
 	 */
 	TypeInformation<T> getTypeInformation();
@@ -167,38 +187,47 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	/**
 	 * Applies the given {@link PropertyHandler} to all {@link PersistentProperty}s contained in this
 	 * {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param handler must not be {@literal null}.
 	 */
 	void doWithProperties(PropertyHandler<P> handler);
 
 	void doWithProperties(SimplePropertyHandler handler);
 
-	Stream<P> getPersistentProperties();
+	Iterable<P> getPersistentProperties();
 
 	/**
 	 * Applies the given {@link AssociationHandler} to all {@link Association} contained in this {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param handler must not be {@literal null}.
 	 */
 	void doWithAssociations(AssociationHandler<P> handler);
 
 	void doWithAssociations(SimpleAssociationHandler handler);
 
-	Stream<Association<P>> getAssociations();
+	Iterable<Association<P>> getAssociations();
 
 	/**
 	 * Looks up the annotation of the given type on the {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param annotationType must not be {@literal null}.
 	 * @return
 	 * @since 1.8
 	 */
-	<A extends Annotation> Optional<A> findAnnotation(Class<A> annotationType);
+	<A extends Annotation> A findAnnotation(Class<A> annotationType);
+
+	/**
+	 * Checks whether the annotation of the given type is present on the {@link PersistentEntity}.
+	 *
+	 * @param annotationType must not be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
+	<A extends Annotation> boolean isAnnotationPresent(Class<A> annotationType);
 
 	/**
 	 * Returns a {@link PersistentPropertyAccessor} to access property values of the given bean.
-	 * 
+	 *
 	 * @param bean must not be {@literal null}.
 	 * @return
 	 * @since 1.10
@@ -207,7 +236,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 
 	/**
 	 * Returns the {@link IdentifierAccessor} for the given bean.
-	 * 
+	 *
 	 * @param bean must not be {@literal null}.
 	 * @return
 	 * @since 1.10

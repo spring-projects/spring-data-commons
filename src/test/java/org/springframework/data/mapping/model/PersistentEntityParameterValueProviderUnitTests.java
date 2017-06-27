@@ -50,12 +50,12 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class)) {
 
 			@Override
-			public Optional<P> getPersistentProperty(String name) {
-				return Optional.ofNullable(property);
+			public P getPersistentProperty(String name) {
+				return property;
 			}
 		};
 
-		assertThat(entity.getPersistenceConstructor()).hasValueSatisfying(constructor -> {
+		assertThat(entity.getPersistenceConstructor()).satisfies(constructor -> {
 
 			Iterator<Parameter<Object, P>> iterator = constructor.getParameters().iterator();
 			ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider,
@@ -75,7 +75,7 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 				Optional.of(property));
 
 		assertThat(entity.getPersistenceConstructor())
-				.hasValueSatisfying(constructor -> assertThatExceptionOfType(MappingException.class)//
+				.satisfies(constructor -> assertThatExceptionOfType(MappingException.class)//
 						.isThrownBy(() -> provider.getParameterValue(constructor.getParameters().iterator().next()))//
 						.withMessageContaining("bar")//
 						.withMessageContaining(Entity.class.getName()));

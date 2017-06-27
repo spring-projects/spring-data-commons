@@ -18,7 +18,6 @@ package org.springframework.data.mapping;
 import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.Annotation;
-import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +29,7 @@ import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link Parameter}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -45,8 +44,8 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithIdenticalSetupEqual() {
 
-		Parameter<Object, P> left = new Parameter<>(Optional.of("name"), type, annotations, Optional.of(entity));
-		Parameter<Object, P> right = new Parameter<>(Optional.of("name"), type, annotations, Optional.of(entity));
+		Parameter<Object, P> left = new Parameter<>("name", type, annotations, entity);
+		Parameter<Object, P> right = new Parameter<>("name", type, annotations, entity);
 
 		assertThat(left).isEqualTo(right);
 		assertThat(left.hashCode()).isEqualTo(right.hashCode());
@@ -55,8 +54,8 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithIdenticalSetupAndNullNameEqual() {
 
-		Parameter<Object, P> left = new Parameter<>(Optional.empty(), type, annotations, Optional.of(entity));
-		Parameter<Object, P> right = new Parameter<>(Optional.empty(), type, annotations, Optional.of(entity));
+		Parameter<Object, P> left = new Parameter<>(null, type, annotations, entity);
+		Parameter<Object, P> right = new Parameter<>(null, type, annotations, entity);
 
 		assertThat(left).isEqualTo(right);
 		assertThat(left.hashCode()).isEqualTo(right.hashCode());
@@ -65,8 +64,8 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithIdenticalAndNullEntitySetupEqual() {
 
-		Parameter<Object, P> left = new Parameter<>(Optional.of("name"), type, annotations, Optional.empty());
-		Parameter<Object, P> right = new Parameter<>(Optional.of("name"), type, annotations, Optional.empty());
+		Parameter<Object, P> left = new Parameter<>("name", type, annotations, null);
+		Parameter<Object, P> right = new Parameter<>("name", type, annotations, null);
 
 		assertThat(left).isEqualTo(right);
 		assertThat(left.hashCode()).isEqualTo(right.hashCode());
@@ -75,9 +74,8 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithDifferentNameAreNotEqual() {
 
-		Parameter<Object, P> left = new Parameter<>(Optional.of("first"), type, annotations, Optional.of(entity));
-		Parameter<Object, P> right = new Parameter<>(Optional.of("second"), type, annotations,
-				Optional.of(entity));
+		Parameter<Object, P> left = new Parameter<>("first", type, annotations, entity);
+		Parameter<Object, P> right = new Parameter<>("second", type, annotations, entity);
 
 		assertThat(left).isNotEqualTo(right);
 	}
@@ -85,9 +83,9 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	public void twoParametersWithDifferenTypeAreNotEqual() {
 
-		Parameter<Object, P> left = new Parameter<>(Optional.of("name"), type, annotations, Optional.of(entity));
-		Parameter<String, P> right = new Parameter<>(Optional.of("name"), ClassTypeInformation.from(String.class),
-				annotations, Optional.of(stringEntity));
+		Parameter<Object, P> left = new Parameter<>("name", type, annotations, entity);
+		Parameter<String, P> right = new Parameter<>("name", ClassTypeInformation.from(String.class), annotations,
+				stringEntity);
 
 		assertThat(left).isNotEqualTo(right);
 	}

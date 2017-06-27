@@ -26,18 +26,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
-import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
  * A representation of the type returned by a {@link QueryMethod}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.12
@@ -49,7 +48,7 @@ public abstract class ReturnedType {
 
 	/**
 	 * Creates a new {@link ReturnedType} for the given returned type, domain type and {@link ProjectionFactory}.
-	 * 
+	 *
 	 * @param returnedType must not be {@literal null}.
 	 * @param domainType must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
@@ -68,7 +67,7 @@ public abstract class ReturnedType {
 
 	/**
 	 * Returns the entity type.
-	 * 
+	 *
 	 * @return
 	 */
 	public final Class<?> getDomainType() {
@@ -77,7 +76,7 @@ public abstract class ReturnedType {
 
 	/**
 	 * Returns whether the given source object is an instance of the returned type.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
@@ -87,21 +86,21 @@ public abstract class ReturnedType {
 
 	/**
 	 * Returns whether the type is projecting, i.e. not of the domain type.
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract boolean isProjecting();
 
 	/**
 	 * Returns the type of the individual objects to return.
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract Class<?> getReturnedType();
 
 	/**
 	 * Returns whether the returned type will require custom construction.
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract boolean needsCustomConstruction();
@@ -109,14 +108,14 @@ public abstract class ReturnedType {
 	/**
 	 * Returns the type that the query execution is supposed to pass to the underlying infrastructure. {@literal null} is
 	 * returned to indicate a generic type (a map or tuple-like type) shall be used.
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract Class<?> getTypeToRead();
 
 	/**
 	 * Returns the properties required to be used to populate the result.
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract List<String> getInputProperties();
@@ -134,7 +133,7 @@ public abstract class ReturnedType {
 
 		/**
 		 * Creates a new {@link ReturnedInterface} from the given {@link ProjectionInformation} and domain type.
-		 * 
+		 *
 		 * @param information must not be {@literal null}.
 		 * @param domainType must not be {@literal null}.
 		 */
@@ -148,7 +147,7 @@ public abstract class ReturnedType {
 			this.domainType = domainType;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedTypeInformation#getReturnedType()
 		 */
@@ -165,7 +164,7 @@ public abstract class ReturnedType {
 			return isProjecting() && information.isClosed();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedType#isProjecting()
 		 */
@@ -174,7 +173,7 @@ public abstract class ReturnedType {
 			return !information.getType().isAssignableFrom(domainType);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedTypeInformation#getTypeToRead()
 		 */
@@ -183,7 +182,7 @@ public abstract class ReturnedType {
 			return isProjecting() && information.isClosed() ? null : domainType;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedTypeInformation#getInputProperties()
 		 */
@@ -217,10 +216,9 @@ public abstract class ReturnedType {
 
 		/**
 		 * Creates a new {@link ReturnedClass} instance for the given returned type and domain type.
-		 * 
+		 *
 		 * @param returnedType must not be {@literal null}.
 		 * @param domainType must not be {@literal null}.
-		 * @param projectionInformation
 		 */
 		public ReturnedClass(Class<?> returnedType, Class<?> domainType) {
 
@@ -234,7 +232,7 @@ public abstract class ReturnedType {
 			this.inputProperties = detectConstructorParameterNames(returnedType);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedTypeInformation#getReturnedType()
 		 */
@@ -251,7 +249,7 @@ public abstract class ReturnedType {
 			return type;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedType#isProjecting()
 		 */
@@ -268,7 +266,7 @@ public abstract class ReturnedType {
 			return isDto() && !inputProperties.isEmpty();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedTypeInformation#getInputProperties()
 		 */
@@ -285,10 +283,19 @@ public abstract class ReturnedType {
 			}
 
 			PreferredConstructorDiscoverer<?, ?> discoverer = new PreferredConstructorDiscoverer(type);
+			PreferredConstructor<?, ?> constructor = discoverer.getConstructor();
 
-			return discoverer.getConstructor().map(it -> it.getParameters().stream()//
-					.flatMap(parameter -> Optionals.toStream(parameter.getName()))//
-					.collect(Collectors.toList())).orElseGet(Collections::emptyList);
+			if (constructor == null) {
+				return Collections.emptyList();
+			}
+
+			List<String> properties = new ArrayList<>(constructor.getConstructor().getParameterCount());
+
+			for (PreferredConstructor.Parameter<Object, ?> parameter : constructor.getParameters()) {
+				properties.add(parameter.getName());
+			}
+
+			return properties;
 		}
 
 		private boolean isDto() {

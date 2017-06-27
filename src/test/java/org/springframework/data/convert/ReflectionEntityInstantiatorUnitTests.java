@@ -23,9 +23,7 @@ import static org.springframework.data.util.ClassTypeInformation.from;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -56,11 +54,6 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 	@Mock PreferredConstructor<?, P> constructor;
 	@Mock Parameter<?, P> parameter;
 
-	@Before
-	public void setUp() {
-		doReturn(Optional.empty()).when(entity).getPersistenceConstructor();
-	}
-
 	@Test
 	public void instantiatesSimpleObjectCorrectly() {
 
@@ -78,22 +71,21 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 	@Test
 	public void instantiatesTypeWithPreferredConstructorUsingParameterValueProvider() {
 
-		Optional<? extends PreferredConstructor<Foo, P>> constructor = new PreferredConstructorDiscoverer<Foo, P>(Foo.class)
-				.getConstructor();
+		PreferredConstructor<Foo, P> constructor = new PreferredConstructorDiscoverer<Foo, P>(Foo.class).getConstructor();
 
 		doReturn(constructor).when(entity).getPersistenceConstructor();
 
 		Object instance = INSTANCE.createInstance(entity, provider);
 
 		assertThat(instance).isInstanceOf(Foo.class);
-		assertThat(constructor).hasValueSatisfying(it -> verify(provider, times(1)).getParameterValue(it.getParameters().iterator().next()));
+		assertThat(constructor)
+				.satisfies(it -> verify(provider, times(1)).getParameterValue(it.getParameters().iterator().next()));
 	}
 
 	@Test(expected = MappingInstantiationException.class) // DATACMNS-300
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void throwsExceptionOnBeanInstantiationException() {
 
-		doReturn(Optional.empty()).when(entity).getPersistenceConstructor();
 		doReturn(PersistentEntity.class).when(entity).getType();
 
 		INSTANCE.createInstance(entity, provider);
@@ -103,7 +95,7 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 	public void createsInnerClassInstanceCorrectly() {
 
 		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(from(Inner.class));
-		assertThat(entity.getPersistenceConstructor()).hasValueSatisfying(it -> {
+		assertThat(entity.getPersistenceConstructor()).satisfies(it -> {
 
 			Parameter<Object, P> parameter = it.getParameters().iterator().next();
 

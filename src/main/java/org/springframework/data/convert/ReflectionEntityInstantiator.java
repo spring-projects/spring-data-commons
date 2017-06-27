@@ -44,7 +44,7 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		PreferredConstructor<? extends T, P> constructor = entity.getPersistenceConstructor().orElse(null);
+		PreferredConstructor<? extends T, P> constructor = entity.getPersistenceConstructor();
 
 		if (constructor == null) {
 

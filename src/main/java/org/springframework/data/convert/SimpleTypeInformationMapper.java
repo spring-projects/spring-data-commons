@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,9 @@ import org.springframework.util.ClassUtils;
  * Basic {@link TypeInformationMapper} implementation that interprets the alias handles as fully qualified class name
  * and tries to load a class with the given name to build {@link TypeInformation}. Returns the fully qualified class
  * name for alias creation.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class SimpleTypeInformationMapper implements TypeInformationMapper {
 
@@ -39,23 +40,23 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 	 * Returns the {@link TypeInformation} that shall be used when the given {@link String} value is found as type hint.
 	 * The implementation will simply interpret the given value as fully-qualified class name and try to load the class.
 	 * Will return {@literal null} in case the given {@link String} is empty.
-	 * 
-	 * @param value the type to load, must not be {@literal null}.
+	 *
+	 * @param alias the type to load, must not be {@literal null}.
 	 * @return the type to be used for the given {@link String} representation or {@literal null} if nothing found or the
 	 *         class cannot be loaded.
 	 */
 	@Override
-	public Optional<TypeInformation<?>> resolveTypeFrom(Alias alias) {
+	public TypeInformation<?> resolveTypeFrom(Alias alias) {
 
 		return alias.mapTyped(String.class)//
-				.flatMap(it -> CACHE.computeIfAbsent(it, SimpleTypeInformationMapper::loadClass).map(type -> type));
+				.flatMap(it -> CACHE.computeIfAbsent(it, SimpleTypeInformationMapper::loadClass)).orElse(null);
 	}
 
 	/**
 	 * Turn the given type information into the String representation that shall be stored. Default implementation simply
 	 * returns the fully-qualified class name.
-	 * 
-	 * @param typeInformation must not be {@literal null}.
+	 *
+	 * @param type must not be {@literal null}.
 	 * @return the String representation to be stored or {@literal null} if no type information shall be stored.
 	 */
 	public Alias createAliasFor(TypeInformation<?> type) {

@@ -18,8 +18,6 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Optional;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,7 +69,7 @@ public class SpelExpressionParameterProviderUnitTests {
 	@Test
 	public void evaluatesSpELExpression() {
 
-		when(parameter.getSpelExpression()).thenReturn(Optional.of("expression"));
+		when(parameter.getSpelExpression()).thenReturn("expression");
 
 		provider.getParameterValue(parameter);
 		verify(delegate, times(0)).getParameterValue(parameter);
@@ -81,7 +79,7 @@ public class SpelExpressionParameterProviderUnitTests {
 	@Test
 	public void handsSpELValueToConversionService() {
 
-		doReturn(Optional.of("source")).when(parameter).getSpelExpression();
+		doReturn("source").when(parameter).getSpelExpression();
 		doReturn("value").when(evaluator).evaluate(any());
 
 		provider.getParameterValue(parameter);
@@ -93,7 +91,7 @@ public class SpelExpressionParameterProviderUnitTests {
 	@Test
 	public void doesNotConvertNullValue() {
 
-		doReturn(Optional.of("source")).when(parameter).getSpelExpression();
+		doReturn("source").when(parameter).getSpelExpression();
 		doReturn(null).when(evaluator).evaluate(any());
 
 		provider.getParameterValue(parameter);
@@ -115,7 +113,7 @@ public class SpelExpressionParameterProviderUnitTests {
 			}
 		};
 
-		doReturn(Optional.of("source")).when(parameter).getSpelExpression();
+		doReturn("source").when(parameter).getSpelExpression();
 		doReturn("value").when(evaluator).evaluate(any());
 
 		assertThat(provider.getParameterValue(parameter)).isEqualTo("FOO");

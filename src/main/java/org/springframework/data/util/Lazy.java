@@ -18,7 +18,6 @@ package org.springframework.data.util;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -28,8 +27,9 @@ import org.springframework.util.Assert;
  * Simple value type to delay the creation of an object using a {@link Supplier} returning the produced object for
  * subsequent lookups. Note, that no concurrency control is applied during the lookup of {@link #get()}, which means in
  * concurrent access scenarios, the provided {@link Supplier} can be called multiple times.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 2.0
  */
 @RequiredArgsConstructor
@@ -37,11 +37,11 @@ import org.springframework.util.Assert;
 public class Lazy<T> implements Supplier<T> {
 
 	private final Supplier<T> supplier;
-	private Optional<T> value;
+	private T value;
 
 	/**
 	 * Creates a new {@link Lazy} to produce an object lazily.
-	 * 
+	 *
 	 * @param <T> the type of which to produce an object of eventually.
 	 * @param supplier the {@link Supplier} to create the object lazily.
 	 * @return
@@ -53,21 +53,21 @@ public class Lazy<T> implements Supplier<T> {
 	/**
 	 * Returns the value created by the configured {@link Supplier}. Will return the calculated instance for subsequent
 	 * lookups.
-	 * 
+	 *
 	 * @return
 	 */
 	public T get() {
 
 		if (value == null) {
-			this.value = Optional.ofNullable(supplier.get());
+			this.value = supplier.get();
 		}
 
-		return value.orElse(null);
+		return value;
 	}
 
 	/**
 	 * Creates a new {@link Lazy} with the given {@link Function} lazily applied to the current one.
-	 * 
+	 *
 	 * @param function must not be {@literal null}.
 	 * @return
 	 */
@@ -80,7 +80,7 @@ public class Lazy<T> implements Supplier<T> {
 
 	/**
 	 * Creates a new {@link Lazy} with the given {@link Function} lazily applied to the current one.
-	 * 
+	 *
 	 * @param function must not be {@literal null}.
 	 * @return
 	 */

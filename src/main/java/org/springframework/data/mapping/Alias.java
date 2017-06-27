@@ -50,7 +50,7 @@ public class Alias {
 	}
 
 	public boolean hasSamePresentValueAs(Alias other) {
-		return isPresent() && hasValue(other.value);
+		return isPresent() && value.equals(other.value);
 	}
 
 	public boolean isPresent() {
@@ -64,4 +64,5 @@ public class Alias {
 	public String toString() {
 		return value.map(Object::toString).orElse("NONE");
 	}
+
 }

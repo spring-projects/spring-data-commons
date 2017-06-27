@@ -65,7 +65,7 @@ public class SpELExpressionParameterValueProvider<P extends PersistentProperty<P
 			return delegate == null ? null : delegate.getParameterValue(parameter);
 		}
 
-		Object object = evaluator.evaluate(parameter.getSpelExpression().orElse(null));
+		Object object = evaluator.evaluate(parameter.getSpelExpression());
 		return object == null ? null : potentiallyConvertSpelValue(object, parameter);
 	}
 

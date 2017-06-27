@@ -108,10 +108,10 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 			Assert.notNull(entity, "PersistentEntity must not be null!");
 
-			this.createdByProperty = entity.getPersistentProperty(CreatedBy.class);
-			this.createdDateProperty = entity.getPersistentProperty(CreatedDate.class);
-			this.lastModifiedByProperty = entity.getPersistentProperty(LastModifiedBy.class);
-			this.lastModifiedDateProperty = entity.getPersistentProperty(LastModifiedDate.class);
+			this.createdByProperty = Optional.ofNullable(entity.getPersistentProperty(CreatedBy.class));
+			this.createdDateProperty = Optional.ofNullable(entity.getPersistentProperty(CreatedDate.class));
+			this.lastModifiedByProperty = Optional.ofNullable(entity.getPersistentProperty(LastModifiedBy.class));
+			this.lastModifiedDateProperty = Optional.ofNullable(entity.getPersistentProperty(LastModifiedDate.class));
 		}
 
 		/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
 import org.springframework.data.support.IsNewStrategyFactorySupport;
@@ -72,26 +70,25 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	 */
 	@Override
 	protected IsNewStrategy doGetIsNewStrategy(Class<?> type) {
-
-		return context.getPersistentEntity(type)//
-				.flatMap(MappingContextIsNewStrategyFactory::getIsNewStrategy)//
-				.orElseThrow(() -> new MappingException(String.format("Cannot determine IsNewStrategy for type %s!", type)));
+		return MappingContextIsNewStrategyFactory.getIsNewStrategy(context.getRequiredPersistentEntity(type));
 	}
 
-	private static Optional<IsNewStrategy> getIsNewStrategy(PersistentEntity<?, ?> entity) {
+	private static IsNewStrategy getIsNewStrategy(PersistentEntity<?, ?> entity) {
 
 		if (entity.hasVersionProperty()) {
 
-			return entity.getVersionProperty().map(it -> PersistentPropertyInspectingIsNewStrategy.of(it,
-					MappingContextIsNewStrategyFactory::propertyIsNullOrZeroNumber));
+			return PersistentPropertyInspectingIsNewStrategy.of(entity.getRequiredVersionProperty(),
+					MappingContextIsNewStrategyFactory::propertyIsNullOrZeroNumber);
 
-		} else if (entity.hasIdProperty()) {
-
-			return entity.getIdProperty().map(
-					it -> PersistentPropertyInspectingIsNewStrategy.of(it, MappingContextIsNewStrategyFactory::propertyIsNull));
 		}
 
-		return Optional.empty();
+		if (entity.hasIdProperty()) {
+
+			return PersistentPropertyInspectingIsNewStrategy.of(entity.getRequiredIdProperty(),
+					MappingContextIsNewStrategyFactory::propertyIsNull);
+		}
+
+		return null;
 	}
 
 	/**

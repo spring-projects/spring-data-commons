@@ -16,7 +16,7 @@
 package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.util.ClassTypeInformation.*;
+import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.util.Collections;
 
@@ -32,7 +32,7 @@ import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link MappingContextTypeInformationMapper}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class MappingContextTypeInformationMapperUnitTests {
@@ -89,12 +89,12 @@ public class MappingContextTypeInformationMapperUnitTests {
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
-		assertThat(mapper.resolveTypeFrom(Alias.of("foo"))).isEmpty();
+		assertThat(mapper.resolveTypeFrom(Alias.of("foo"))).isNull();
 
 		PersistentEntity<?, SamplePersistentProperty> entity = mappingContext.getRequiredPersistentEntity(Entity.class);
 
 		assertThat(entity).isNotNull();
-		assertThat(mapper.resolveTypeFrom(Alias.of("foo"))).hasValue(from(Entity.class));
+		assertThat(mapper.resolveTypeFrom(Alias.of("foo"))).isEqualTo(from(Entity.class));
 	}
 
 	@Test // DATACMNS-485

@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +32,7 @@ import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link DefaultTypeMapper}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -55,14 +54,14 @@ public class DefaultTypeMapperUnitTests {
 		this.source = Collections.singletonMap("key", ALIAS.toString());
 
 		doReturn(ALIAS).when(accessor).readAliasFrom(source);
-		doReturn(Optional.of(STRING_TYPE_INFO)).when(mapper).resolveTypeFrom(ALIAS);
+		doReturn(STRING_TYPE_INFO).when(mapper).resolveTypeFrom(ALIAS);
 	}
 
 	@Test
 	public void cachesResolvedTypeInformation() {
 
-		Optional<TypeInformation<?>> information = typeMapper.readType(source);
-		assertThat(information).hasValue(STRING_TYPE_INFO);
+		TypeInformation<?> information = typeMapper.readType(source);
+		assertThat(information).isEqualTo(STRING_TYPE_INFO);
 		verify(mapper, times(1)).resolveTypeFrom(ALIAS);
 
 		typeMapper.readType(source);
@@ -87,7 +86,7 @@ public class DefaultTypeMapperUnitTests {
 		TypeInformation<?> barType = ClassTypeInformation.from(Bar.class);
 
 		doReturn(Alias.of(barType)).when(accessor).readAliasFrom(source);
-		doReturn(Optional.of(barType)).when(mapper).resolveTypeFrom(Alias.of(barType));
+		doReturn(barType).when(mapper).resolveTypeFrom(Alias.of(barType));
 
 		TypeInformation<?> result = typeMapper.readType(source, propertyType);
 

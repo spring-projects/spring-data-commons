@@ -97,7 +97,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	@Test // DATACMNS-809
 	public void shouldSetAndGetProperty() throws Exception {
 
-		assertThat(getProperty(bean, propertyName)).hasValueSatisfying(property -> {
+		assertThat(getProperty(bean, propertyName)).satisfies(property -> {
 
 			PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
 
@@ -126,14 +126,16 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	@Test // DATACMNS-809
 	public void getPropertyShouldFailOnUnhandledProperty() {
 
-		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
+		assertThat(getProperty(new Dummy(), "dummy"))
+				.satisfies(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
 				.isThrownBy(() -> getPersistentPropertyAccessor(bean).getProperty(property)));
 	}
 
 	@Test // DATACMNS-809
 	public void setPropertyShouldFailOnUnhandledProperty() {
 
-		assertThat(getProperty(new Dummy(), "dummy")).hasValueSatisfying(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
+		assertThat(getProperty(new Dummy(), "dummy"))
+				.satisfies(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
 				.isThrownBy(() -> getPersistentPropertyAccessor(bean).setProperty(property, Optional.empty())));
 	}
 
@@ -151,7 +153,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		return factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), bean);
 	}
 
-	private Optional<? extends PersistentProperty<?>> getProperty(Object bean, String name) {
+	private PersistentProperty<?> getProperty(Object bean, String name) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(bean.getClass());

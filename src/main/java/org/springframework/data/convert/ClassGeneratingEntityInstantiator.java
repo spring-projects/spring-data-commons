@@ -21,10 +21,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.MethodVisitor;
@@ -33,6 +34,7 @@ import org.springframework.asm.Type;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.util.TypeInformation;
@@ -139,15 +141,17 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return true;
 		}
 
-		return entity.getPersistenceConstructor()//
-				.map(PreferredConstructor::getConstructor)//
-				.map(Constructor::getModifiers)//
-				.map(modifier -> !Modifier.isPublic(modifier)).orElse(false);
+		PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
+		if (persistenceConstructor == null || !Modifier.isPublic(persistenceConstructor.getConstructor().getModifiers())) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
-	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link InstantiatorKey}. There will always
-	 * be exactly one {@link ObjectInstantiator} instance per {@link PersistentEntity}.
+	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link PersistentEntity}. There will
+	 * always be exactly one {@link ObjectInstantiator} instance per {@link PersistentEntity}.
 	 * <p>
 	 *
 	 * @param entity
@@ -202,26 +206,26 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 
 		/**
-		 * Extracts the arguments required to invoce the given constructor from the given {@link ParameterValueProvider}.
+		 * Extracts the arguments required to invoke the given constructor from the given {@link ParameterValueProvider}.
 		 *
 		 * @param constructor can be {@literal null}.
 		 * @param provider can be {@literal null}.
 		 * @return
 		 */
 		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				Optional<? extends PreferredConstructor<? extends T, P>> constructor, ParameterValueProvider<P> provider) {
+				PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
 
-			return constructor.map(it -> {
+			if (provider == null || constructor == null || !constructor.hasParameters()) {
+				return EMPTY_ARRAY;
+			}
 
-				if (provider == null || !it.hasParameters()) {
-					return EMPTY_ARRAY;
-				}
+			List<Object> params = new ArrayList<>(constructor.getConstructor().getParameterCount());
 
-				return it.getParameters().stream()//
-						.map(provider::getParameterValue)//
-						.toArray();
+			for (Parameter<?, P> parameter : constructor.getParameters()) {
+				params.add(provider.getParameterValue(parameter));
+			}
 
-			}).orElse(EMPTY_ARRAY);
+			return params.toArray();
 		}
 	}
 
@@ -292,9 +296,9 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 
 		/**
-		 * Generate a new class for the given {@link InstantiatorKey}.
+		 * Generate a new class for the given {@link PersistentEntity}.
 		 *
-		 * @param key
+		 * @param entity
 		 * @return
 		 */
 		public Class<?> generateCustomInstantiatorClass(PersistentEntity<?, ?> entity) {
@@ -306,7 +310,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 
 		/**
-		 * @param key
+		 * @param entity
 		 * @return
 		 */
 		private String generateClassName(PersistentEntity<?, ?> entity) {
@@ -314,9 +318,10 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 
 		/**
-		 * Generate a new class for the given {@link InstantiatorKey}.
+		 * Generate a new class for the given {@link PersistentEntity}.
 		 *
-		 * @param key
+		 * @param internalClassName
+		 * @param entity
 		 * @return
 		 */
 		public byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity) {
@@ -362,7 +367,9 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			mv.visitTypeInsn(NEW, entityTypeResourcePath);
 			mv.visitInsn(DUP);
 
-			entity.getPersistenceConstructor().ifPresent(constructor -> {
+			PreferredConstructor<?, ?> constructor = entity.getPersistenceConstructor();
+
+			if (constructor != null) {
 
 				Constructor<?> ctor = constructor.getConstructor();
 				Class<?>[] parameterTypes = ctor.getParameterTypes();
@@ -386,7 +393,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 				mv.visitInsn(ARETURN);
 				mv.visitMaxs(0, 0); // (0, 0) = computed via ClassWriter.COMPUTE_MAXS
 				mv.visitEnd();
-			});
+			}
 		}
 
 		/**

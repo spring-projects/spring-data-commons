@@ -43,7 +43,7 @@ public class IdPropertyIdentifierAccessor extends TargetAwareIdentifierAccessor 
 	 */
 	public IdPropertyIdentifierAccessor(PersistentEntity<?, ?> entity, Object target) {
 
-		super(() -> target);
+		super(target);
 
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 		Assert.isTrue(entity.hasIdProperty(), "PersistentEntity must have an identifier property!");

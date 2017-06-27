@@ -17,7 +17,6 @@ package org.springframework.data.convert;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.mapping.Alias;
@@ -31,7 +30,7 @@ import org.springframework.util.Assert;
  * {@link TypeInformationMapper} implementation that can be either set up using a {@link MappingContext} or manually set
  * up {@link Map} of {@link String} aliases to types. If a {@link MappingContext} is used the {@link Map} will be build
  * inspecting the {@link PersistentEntity} instances for type alias information.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -43,7 +42,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	/**
 	 * Creates a {@link MappingContextTypeInformationMapper} from the given {@link MappingContext}. Inspects all
 	 * {@link PersistentEntity} instances for alias information and builds a {@link Map} of aliases to types from it.
-	 * 
+	 *
 	 * @param mappingContext must not be {@literal null}.
 	 */
 	public MappingContextTypeInformationMapper(MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext) {
@@ -58,18 +57,27 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.TypeInformationMapper#createAliasFor(org.springframework.data.util.TypeInformation)
 	 */
 	public Alias createAliasFor(TypeInformation<?> type) {
 
-		return typeMap.computeIfAbsent(type.getRawTypeInformation(), key -> verify(key, mappingContext.getPersistentEntity(key).map(PersistentEntity::getTypeAlias).orElse(Alias.NONE)));
+		return typeMap.computeIfAbsent(type.getRawTypeInformation(), key -> {
+
+			PersistentEntity<?, ?> entity = mappingContext.getPersistentEntity(key);
+
+			if (entity == null || entity.getTypeAlias() == null) {
+				return Alias.NONE;
+			}
+
+			return verify(key, entity.getTypeAlias());
+		});
 	}
 
 	/**
 	 * Adds the given alias to the cache in a {@literal null}-safe manner.
-	 * 
+	 *
 	 * @param key must not be {@literal null}.
 	 * @param alias can be {@literal null}.
 	 */
@@ -103,29 +111,26 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 		return alias;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.TypeInformationMapper#resolveTypeFrom(java.util.Optional)
 	 */
 	@Override
-	public Optional<TypeInformation<?>> resolveTypeFrom(Alias alias) {
+	public TypeInformation<?> resolveTypeFrom(Alias alias) {
 
-		return alias.getValue().map(it -> {
-
-			for (Entry<ClassTypeInformation<?>, Alias> entry : typeMap.entrySet()) {
-				if (entry.getValue().hasValue(it)) {
-					return entry.getKey();
-				}
+		for (Entry<ClassTypeInformation<?>, Alias> entry : typeMap.entrySet()) {
+			if (entry.getValue().hasSamePresentValueAs(alias)) {
+				return entry.getKey();
 			}
+		}
 
-			for (PersistentEntity<?, ?> entity : mappingContext.getPersistentEntities()) {
+		for (PersistentEntity<?, ?> entity : mappingContext.getPersistentEntities()) {
 
-				if (entity.getTypeAlias().hasValue(it)) {
-					return entity.getTypeInformation().getRawTypeInformation();
-				}
+			if (entity.getTypeAlias().hasSamePresentValueAs(alias)) {
+				return entity.getTypeInformation().getRawTypeInformation();
 			}
+		}
 
-			return null;
-		});
+		return null;
 	}
 }

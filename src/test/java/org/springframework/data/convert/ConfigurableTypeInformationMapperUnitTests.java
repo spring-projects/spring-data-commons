@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,10 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
- * Unit tests for {@link ConfigurableTypeMapper}.
- * 
+ * Unit tests for {@link ConfigurableTypeInformationMapper}.
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProperty<T>> {
@@ -69,7 +70,7 @@ public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProp
 	@Test
 	public void readsTypeForMapKey() {
 
-		assertThat(mapper.resolveTypeFrom(Alias.of("1"))).hasValue(ClassTypeInformation.from(String.class));
-		assertThat(mapper.resolveTypeFrom(Alias.of("unmapped"))).isEmpty();
+		assertThat(mapper.resolveTypeFrom(Alias.of("1"))).isEqualTo(ClassTypeInformation.from(String.class));
+		assertThat(mapper.resolveTypeFrom(Alias.of("unmapped"))).isNull();
 	}
 }

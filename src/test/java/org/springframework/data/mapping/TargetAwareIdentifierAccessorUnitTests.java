@@ -33,7 +33,7 @@ public class TargetAwareIdentifierAccessorUnitTests {
 
 		Object sample = new Object();
 
-		IdentifierAccessor accessor = new TargetAwareIdentifierAccessor(() -> sample) {
+		IdentifierAccessor accessor = new TargetAwareIdentifierAccessor(sample) {
 
 			@Override
 			public Object getIdentifier() {

@@ -24,7 +24,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
@@ -119,20 +118,20 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(properties).hasSize(3);
 		Iterator<T> iterator = properties.iterator();
 
-		assertThat(entity.getPersistentProperty("firstName")).hasValue(iterator.next());
-		assertThat(entity.getPersistentProperty("lastName")).hasValue(iterator.next());
-		assertThat(entity.getPersistentProperty("ssn")).hasValue(iterator.next());
+		assertThat(entity.getPersistentProperty("firstName")).isEqualTo(iterator.next());
+		assertThat(entity.getPersistentProperty("lastName")).isEqualTo(iterator.next());
+		assertThat(entity.getPersistentProperty("ssn")).isEqualTo(iterator.next());
 	}
 
 	@Test // DATACMNS-186
 	public void addingAndIdPropertySetsIdPropertyInternally() {
 
 		MutablePersistentEntity<Person, T> entity = createEntity(Person.class);
-		assertThat(entity.getIdProperty()).isNotPresent();
+		assertThat(entity.getIdProperty()).isNull();
 
 		when(property.isIdProperty()).thenReturn(true);
 		entity.addPersistentProperty(property);
-		assertThat(entity.getIdProperty()).hasValue(property);
+		assertThat(entity.getIdProperty()).isEqualTo(property);
 	}
 
 	@Test // DATACMNS-186
@@ -154,15 +153,15 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		SampleMappingContext context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
-		Optional<SamplePersistentProperty> property = entity.getPersistentProperty(LastModifiedBy.class);
+		SamplePersistentProperty property = entity.getPersistentProperty(LastModifiedBy.class);
 
-		assertThat(property).hasValueSatisfying(it -> assertThat(it.getName()).isEqualTo("field"));
+		assertThat(property.getName()).isEqualTo("field");
 
 		property = entity.getPersistentProperty(CreatedBy.class);
 
-		assertThat(property).hasValueSatisfying(it -> assertThat(it.getName()).isEqualTo("property"));
+		assertThat(property.getName()).isEqualTo("property");
 
-		assertThat(entity.getPersistentProperty(CreatedDate.class)).isNotPresent();
+		assertThat(entity.getPersistentProperty(CreatedDate.class)).isNull();
 	}
 
 	@Test // DATACMNS-596
@@ -253,7 +252,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type, Comparator<T> comparator) {
-		return new BasicPersistentEntity<>(ClassTypeInformation.from(type), Optional.ofNullable(comparator));
+		return new BasicPersistentEntity<>(ClassTypeInformation.from(type), comparator);
 	}
 
 	@TypeAlias("foo")

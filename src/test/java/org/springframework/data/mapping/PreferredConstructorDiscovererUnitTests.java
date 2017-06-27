@@ -29,9 +29,10 @@ import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link PreferredConstructorDiscoverer}.
- * 
+ *
  * @author Oliver Gierke
  * @author Roman Rodov
+ * @author Mark Paluch
  */
 public class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
@@ -41,7 +42,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		PreferredConstructorDiscoverer<EntityWithoutConstructor, P> discoverer = new PreferredConstructorDiscoverer<>(
 				EntityWithoutConstructor.class);
 
-		assertThat(discoverer.getConstructor()).hasValueSatisfying(constructor -> {
+		assertThat(discoverer.getConstructor()).satisfies(constructor -> {
 
 			assertThat(constructor).isNotNull();
 			assertThat(constructor.isNoArgConstructor()).isTrue();
@@ -55,7 +56,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		PreferredConstructorDiscoverer<ClassWithEmptyConstructor, P> discoverer = new PreferredConstructorDiscoverer<>(
 				ClassWithEmptyConstructor.class);
 
-		assertThat(discoverer.getConstructor()).hasValueSatisfying(constructor -> {
+		assertThat(discoverer.getConstructor()).satisfies(constructor -> {
 
 			assertThat(constructor).isNotNull();
 			assertThat(constructor.isNoArgConstructor()).isTrue();
@@ -69,7 +70,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		PreferredConstructorDiscoverer<ClassWithMultipleConstructorsWithoutEmptyOne, P> discoverer = new PreferredConstructorDiscoverer<>(
 				ClassWithMultipleConstructorsWithoutEmptyOne.class);
 
-		assertThat(discoverer.getConstructor()).isNotPresent();
+		assertThat(discoverer.getConstructor()).isNull();
 	}
 
 	@Test
@@ -78,7 +79,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		PreferredConstructorDiscoverer<ClassWithMultipleConstructorsAndAnnotation, P> discoverer = new PreferredConstructorDiscoverer<>(
 				ClassWithMultipleConstructorsAndAnnotation.class);
 
-		assertThat(discoverer.getConstructor()).hasValueSatisfying(constructor -> {
+		assertThat(discoverer.getConstructor()).satisfies(constructor -> {
 
 			assertThat(constructor).isNotNull();
 			assertThat(constructor.isNoArgConstructor()).isFalse();
@@ -100,7 +101,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(ClassTypeInformation.from(Inner.class));
 		PreferredConstructorDiscoverer<Inner, P> discoverer = new PreferredConstructorDiscoverer<>(entity);
 
-		assertThat(discoverer.getConstructor()).hasValueSatisfying(constructor -> {
+		assertThat(discoverer.getConstructor()).satisfies(constructor -> {
 
 			Parameter<?, P> parameter = constructor.getParameters().iterator().next();
 			assertThat(constructor.isEnclosingClassParameter(parameter)).isTrue();
@@ -113,7 +114,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		PersistentEntity<SyntheticConstructor, P> entity = new BasicPersistentEntity<>(ClassTypeInformation.from(SyntheticConstructor.class));
 		PreferredConstructorDiscoverer<SyntheticConstructor, P> discoverer = new PreferredConstructorDiscoverer<>(entity);
 
-		assertThat(discoverer.getConstructor()).hasValueSatisfying(constructor -> {
+		assertThat(discoverer.getConstructor()).satisfies(constructor -> {
 
 			PersistenceConstructor annotation = constructor.getConstructor().getAnnotation(PersistenceConstructor.class);
 			assertThat(annotation).isNotNull();

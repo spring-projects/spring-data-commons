@@ -22,16 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.GenericTypeResolver;
@@ -52,7 +43,7 @@ import org.springframework.util.Assert;
  * around them. The converters build up two sets of types which store-specific basic types can be converted into and
  * from. These types will be considered simple ones (which means they neither need deeper inspection nor nested
  * conversion. Thus the {@link CustomConversions} also act as factory for {@link SimpleTypeHolder} .
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
@@ -91,7 +82,7 @@ public class CustomConversions {
 
 	/**
 	 * Creates a new {@link CustomConversions} instance registering the given converters.
-	 * 
+	 *
 	 * @param storeConversions must not be {@literal null}.
 	 * @param converters must not be {@literal null}.
 	 */
@@ -126,7 +117,7 @@ public class CustomConversions {
 
 	/**
 	 * Returns the underlying {@link SimpleTypeHolder}.
-	 * 
+	 *
 	 * @return
 	 */
 	public SimpleTypeHolder getSimpleTypeHolder() {
@@ -136,7 +127,7 @@ public class CustomConversions {
 	/**
 	 * Returns whether the given type is considered to be simple. That means it's either a general simple type or we have
 	 * a writing {@link Converter} registered for a particular type.
-	 * 
+	 *
 	 * @see SimpleTypeHolder#isSimpleType(Class)
 	 * @param type
 	 * @return
@@ -150,7 +141,7 @@ public class CustomConversions {
 
 	/**
 	 * Populates the given {@link GenericConversionService} with the converters registered.
-	 * 
+	 *
 	 * @param conversionService
 	 */
 	public void registerConvertersIn(ConverterRegistry conversionService) {
@@ -162,7 +153,7 @@ public class CustomConversions {
 
 	/**
 	 * Registers the given converter in the given {@link GenericConversionService}.
-	 * 
+	 *
 	 * @param candidate must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
 	 */
@@ -198,8 +189,8 @@ public class CustomConversions {
 	/**
 	 * Registers the given {@link ConvertiblePair} as reading or writing pair depending on the type sides being basic
 	 * Mongo types.
-	 * 
-	 * @param pair
+	 *
+	 * @param converterRegistration
 	 */
 	private void register(ConverterRegistration converterRegistration) {
 
@@ -230,7 +221,7 @@ public class CustomConversions {
 	/**
 	 * Returns the target type to convert to in case we have a custom conversion registered to convert the given source
 	 * type into a Mongo native one.
-	 * 
+	 *
 	 * @param sourceType must not be {@literal null}
 	 * @return
 	 */
@@ -246,7 +237,7 @@ public class CustomConversions {
 	 * Returns the target type we can readTargetWriteLocl an inject of the given source type to. The returned type might
 	 * be a subclass of the given expected type though. If {@code expectedTargetType} is {@literal null} we will simply
 	 * return the first target type matching or {@literal null} if no conversion can be found.
-	 * 
+	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param requestedTargetType must not be {@literal null}.
 	 * @return
@@ -263,7 +254,7 @@ public class CustomConversions {
 	/**
 	 * Returns whether we have a custom conversion registered to readTargetWriteLocl into a Mongo native type. The
 	 * returned type might be a subclass of the given expected type though.
-	 * 
+	 *
 	 * @param sourceType must not be {@literal null}
 	 * @return
 	 */
@@ -277,7 +268,7 @@ public class CustomConversions {
 	/**
 	 * Returns whether we have a custom conversion registered to readTargetWriteLocl an object of the given source type
 	 * into an object of the given Mongo native target type.
-	 * 
+	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
 	 * @return
@@ -293,7 +284,7 @@ public class CustomConversions {
 	/**
 	 * Returns whether we have a custom conversion registered to readTargetReadLock the given source into the given target
 	 * type.
-	 * 
+	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param targetType must not be {@literal null}
 	 * @return
@@ -309,7 +300,7 @@ public class CustomConversions {
 	/**
 	 * Returns the actual target type for the given {@code sourceType} and {@code requestedTargetType}. Note that the
 	 * returned {@link Class} could be an assignable type to the given {@code requestedTargetType}.
-	 * 
+	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
 	 * @return
@@ -323,7 +314,7 @@ public class CustomConversions {
 	/**
 	 * Inspects the given {@link ConvertiblePair}s for ones that have a source compatible type as source. Additionally
 	 * checks assignability of the target type if one is given.
-	 * 
+	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType can be {@literal null}.
 	 * @param pairs must not be {@literal null}.
@@ -357,7 +348,7 @@ public class CustomConversions {
 
 	/**
 	 * Conversion registration information.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @author Mark Paluch
 	 */
@@ -371,7 +362,7 @@ public class CustomConversions {
 
 		/**
 		 * Returns whether the converter shall be used for writing.
-		 * 
+		 *
 		 * @return
 		 */
 		public boolean isWriting() {
@@ -380,7 +371,7 @@ public class CustomConversions {
 
 		/**
 		 * Returns whether the converter shall be used for reading.
-		 * 
+		 *
 		 * @return
 		 */
 		public boolean isReading() {
@@ -389,7 +380,7 @@ public class CustomConversions {
 
 		/**
 		 * Returns the actual conversion pair.
-		 * 
+		 *
 		 * @return
 		 */
 		public ConvertiblePair getConvertiblePair() {
@@ -398,7 +389,7 @@ public class CustomConversions {
 
 		/**
 		 * Returns whether the source type is a Mongo simple one.
-		 * 
+		 *
 		 * @return
 		 */
 		public boolean isSimpleSourceType() {
@@ -407,7 +398,7 @@ public class CustomConversions {
 
 		/**
 		 * Returns whether the target type is a Mongo simple one.
-		 * 
+		 *
 		 * @return
 		 */
 		public boolean isSimpleTargetType() {
@@ -434,7 +425,7 @@ public class CustomConversions {
 		/**
 		 * Creates a new {@link StoreConversions} for the given store-specific {@link SimpleTypeHolder} and the given
 		 * converters.
-		 * 
+		 *
 		 * @param storeTypeHolder must not be {@literal null}.
 		 * @param converters must not be {@literal null}.
 		 * @return
@@ -450,7 +441,7 @@ public class CustomConversions {
 		/**
 		 * Creates a new {@link StoreConversions} for the given store-specific {@link SimpleTypeHolder} and the given
 		 * converters.
-		 * 
+		 *
 		 * @param storeTypeHolder must not be {@literal null}.
 		 * @param converters must not be {@literal null}.
 		 * @return
@@ -465,7 +456,7 @@ public class CustomConversions {
 
 		/**
 		 * Returns {@link ConverterRegistration}s for the given converter.
-		 * 
+		 *
 		 * @param converter must not be {@literal null}.
 		 * @return
 		 */

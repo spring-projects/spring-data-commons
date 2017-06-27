@@ -17,8 +17,6 @@ package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Optional;
-
 import org.junit.Test;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.ClassTypeInformation;
@@ -26,7 +24,7 @@ import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link SimpleTypeInformationMapper}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class SimpleTypeInformationMapperUnitTests {
@@ -36,27 +34,27 @@ public class SimpleTypeInformationMapperUnitTests {
 	@Test
 	public void resolvesTypeByLoadingClass() {
 
-		Optional<TypeInformation<?>> type = mapper.resolveTypeFrom(Alias.of("java.lang.String"));
+		TypeInformation<?> type = mapper.resolveTypeFrom(Alias.of("java.lang.String"));
 
 		TypeInformation<?> expected = ClassTypeInformation.from(String.class);
 
-		assertThat(type).hasValue(expected);
+		assertThat(type).isEqualTo(expected);
 	}
 
 	@Test
 	public void returnsNullForNonStringKey() {
-		assertThat(mapper.resolveTypeFrom(Alias.of(new Object()))).isEmpty();
+		assertThat(mapper.resolveTypeFrom(Alias.of(new Object()))).isNull();
 	}
 
 	@Test
 	public void returnsNullForEmptyTypeKey() {
-		assertThat(mapper.resolveTypeFrom(Alias.of(""))).isEmpty();
+		assertThat(mapper.resolveTypeFrom(Alias.of(""))).isNull();
 	}
 
 	@Test
 	public void returnsNullForUnloadableClass() {
 
-		assertThat(mapper.resolveTypeFrom(Alias.of("Foo"))).isEmpty();
+		assertThat(mapper.resolveTypeFrom(Alias.of("Foo"))).isNull();
 	}
 
 	@Test

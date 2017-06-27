@@ -16,7 +16,6 @@
 package org.springframework.data.mapping.context;
 
 import java.util.Collection;
-import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -43,14 +42,14 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	Collection<E> getPersistentEntities();
 
 	/**
-	 * Returns a {@link PersistentEntity} for the given {@link Class}. Will return {@link Optional#empty()} for types that
-	 * are considered simple ones.
+	 * Returns a {@link PersistentEntity} for the given {@link Class}. Will return {@code null} for types that are
+	 * considered simple ones.
 	 *
 	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	Optional<E> getPersistentEntity(Class<?> type);
+	E getPersistentEntity(Class<?> type);
 
 	/**
 	 * Returns a required {@link PersistentEntity} for the given {@link Class}. Will throw
@@ -60,7 +59,16 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	E getRequiredPersistentEntity(Class<?> type);
+	default E getRequiredPersistentEntity(Class<?> type) {
+
+		E entity = getPersistentEntity(type);
+
+		if (entity != null) {
+			return entity;
+		}
+
+		throw new IllegalArgumentException(String.format("Couldn't find PersistentEntity for type %s!", type));
+	}
 
 	/**
 	 * Returns whether the {@link MappingContext} currently contains a {@link PersistentEntity} for the type.
@@ -72,14 +80,14 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	boolean hasPersistentEntityFor(Class<?> type);
 
 	/**
-	 * Returns a {@link PersistentEntity} for the given {@link TypeInformation}. Will return {@link Optional#empty()} for
-	 * types that are considered simple ones.
+	 * Returns a {@link PersistentEntity} for the given {@link TypeInformation}. Will return {@code null} for types that
+	 * are considered simple ones.
 	 *
 	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	Optional<E> getPersistentEntity(TypeInformation<?> type);
+	E getPersistentEntity(TypeInformation<?> type);
 
 	/**
 	 * Returns a {@link PersistentEntity} for the given {@link TypeInformation}. Will throw
@@ -89,7 +97,16 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	E getRequiredPersistentEntity(TypeInformation<?> type);
+	default E getRequiredPersistentEntity(TypeInformation<?> type) {
+
+		E entity = getPersistentEntity(type);
+
+		if (entity != null) {
+			return entity;
+		}
+
+		throw new IllegalArgumentException(String.format("Couldn't find PersistentEntity for type %s!", type));
+	}
 
 	/**
 	 * Returns the {@link PersistentEntity} mapped by the given {@link PersistentProperty}.
@@ -100,7 +117,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 *         type of the property is considered simple see
 	 *         {@link org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)}).
 	 */
-	Optional<E> getPersistentEntity(P persistentProperty);
+	E getPersistentEntity(P persistentProperty);
 
 	/**
 	 * Returns the {@link PersistentEntity} mapped by the given {@link PersistentProperty}.
@@ -111,7 +128,17 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 *         type of the property is considered simple see
 	 *         {@link org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)}).
 	 */
-	E getRequiredPersistentEntity(P persistentProperty);
+	default E getRequiredPersistentEntity(P persistentProperty) {
+
+		E entity = getPersistentEntity(persistentProperty);
+
+		if (entity != null) {
+			return entity;
+		}
+
+		throw new IllegalArgumentException(
+				String.format("Couldn't find PersistentEntity for property %s!", persistentProperty));
+	}
 
 	/**
 	 * Returns all {@link PersistentProperty}s for the given path expression based on the given {@link PropertyPath}.

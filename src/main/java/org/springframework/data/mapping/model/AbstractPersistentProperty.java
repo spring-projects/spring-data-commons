@@ -54,12 +54,16 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final String name;
 	private final TypeInformation<?> information;
 	private final Class<?> rawType;
-	private final Lazy<Optional<Association<P>>> association;
+	private final Lazy<Association<P>> association;
 	private final @Getter PersistentEntity<?, P> owner;
 	private final @Getter(AccessLevel.PROTECTED) Property property;
 	private final Lazy<Integer> hashCode;
 	private final Lazy<Boolean> usePropertyAccess;
 	private final Lazy<Optional<? extends TypeInformation<?>>> entityTypeInformation;
+
+	private final Method getter;
+	private final Method setter;
+	private final Field field;
 
 	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,
 			SimpleTypeHolder simpleTypeHolder) {
@@ -72,16 +76,19 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.information = PropertyPath.from(Pattern.quote(property.getName()), owner.getTypeInformation())
 				.getTypeInformation();
 		this.property = property;
-		this.association = Lazy.of(() -> isAssociation() ? Optional.of(createAssociation()) : Optional.empty());
+		this.association = Lazy.of(() -> isAssociation() ? createAssociation() : null);
 		this.owner = owner;
 
 		this.hashCode = Lazy.of(property::hashCode);
-		this.usePropertyAccess = Lazy
-				.of(() -> owner.getType().isInterface() || getField().map(it -> it.equals(CAUSE_FIELD)).orElse(false));
+		this.usePropertyAccess = Lazy.of(() -> owner.getType().isInterface() || CAUSE_FIELD.equals(getField()));
 		this.entityTypeInformation = Lazy.of(() -> Optional.ofNullable(information.getActualType())//
 				.filter(it -> !simpleTypeHolder.isSimpleType(it.getType()))//
 				.filter(it -> !it.isCollectionLike())//
 				.filter(it -> !it.isMap()));
+
+		this.getter = property.getGetter().orElse(null);
+		this.setter = property.getSetter().orElse(null);
+		this.field = property.getField().orElse(null);
 	}
 
 	protected abstract Association<P> createAssociation();
@@ -143,8 +150,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#getGetter()
 	 */
 	@Override
-	public Optional<Method> getGetter() {
-		return property.getGetter();
+	public Method getGetter() {
+		return getter;
 	}
 
 	/*
@@ -152,8 +159,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#getSetter()
 	 */
 	@Override
-	public Optional<Method> getSetter() {
-		return property.getSetter();
+	public Method getSetter() {
+		return setter;
 	}
 
 	/*
@@ -161,8 +168,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#getField()
 	 */
 	@Override
-	public Optional<Field> getField() {
-		return property.getField();
+	public Field getField() {
+		return field;
 	}
 
 	/*
@@ -170,8 +177,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#getSpelExpression()
 	 */
 	@Override
-	public Optional<String> getSpelExpression() {
-		return Optional.empty();
+	public String getSpelExpression() {
+		return null;
 	}
 
 	/*
@@ -206,7 +213,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#getAssociation()
 	 */
 	@Override
-	public Optional<Association<P>> getAssociation() {
+	public Association<P> getAssociation() {
 		return association.get();
 	}
 

@@ -17,8 +17,6 @@ package org.springframework.data.mapping;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.function.Supplier;
-
 /**
  * {@link IdentifierAccessor} that is aware of the target bean to obtain the identifier from so that it can generate a
  * more meaningful exception in case of an absent identifier and a call to {@link #getRequiredIdentifier()}.
@@ -31,7 +29,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public abstract class TargetAwareIdentifierAccessor implements IdentifierAccessor {
 
-	private final Supplier<Object> target;
+	private final Object target;
 
 	/*
 	 * (non-Javadoc)
@@ -46,6 +44,6 @@ public abstract class TargetAwareIdentifierAccessor implements IdentifierAccesso
 			return identifier;
 		}
 
-		throw new IllegalStateException(String.format("Could not obtain identifier from %s!", target.get()));
+		throw new IllegalStateException(String.format("Could not obtain identifier from %s!", target));
 	}
 }

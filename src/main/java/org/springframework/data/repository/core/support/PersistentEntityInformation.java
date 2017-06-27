@@ -57,6 +57,6 @@ public class PersistentEntityInformation<T, ID> extends AbstractEntityInformatio
 	 */
 	@Override
 	public Class<ID> getIdType() {
-		return (Class<ID>) persistentEntity.getIdProperty().map(PersistentProperty::getType).orElse(null);
+		return (Class<ID>) persistentEntity.getRequiredIdProperty().getType();
 	}
 }

@@ -23,7 +23,6 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -124,7 +123,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 	@Test // DATACMNS-809
 	public void shouldSetAndGetProperty() throws Exception {
 
-		assertThat(getProperty(bean, propertyName)).hasValueSatisfying(property -> {
+		assertThat(getProperty(bean, propertyName)).satisfies(property -> {
 
 			PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
 
@@ -147,7 +146,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		return factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), bean);
 	}
 
-	private Optional<? extends PersistentProperty<?>> getProperty(Object bean, String name) {
+	private PersistentProperty<?> getProperty(Object bean, String name) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(bean.getClass());

@@ -41,7 +41,7 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Unit tests for {@link AbstractPersistentProperty}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -99,8 +99,8 @@ public class AbstractPersistentPropertyUnitTests {
 
 		SamplePersistentProperty property = getProperty(AccessorTestClass.class, "id");
 
-		assertThat(property.getGetter()).isPresent();
-		assertThat(property.getSetter()).isPresent();
+		assertThat(property.getGetter()).isNotNull();
+		assertThat(property.getSetter()).isNotNull();
 	}
 
 	@Test // DATACMNS-206
@@ -108,8 +108,8 @@ public class AbstractPersistentPropertyUnitTests {
 
 		SamplePersistentProperty property = getProperty(AccessorTestClass.class, "anotherId");
 
-		assertThat(property.getGetter()).isNotPresent();
-		assertThat(property.getSetter()).isNotPresent();
+		assertThat(property.getGetter()).isNull();
+		assertThat(property.getSetter()).isNull();
 	}
 
 	@Test // DATACMNS-206
@@ -117,8 +117,8 @@ public class AbstractPersistentPropertyUnitTests {
 
 		SamplePersistentProperty property = getProperty(AccessorTestClass.class, "yetAnotherId");
 
-		assertThat(property.getGetter()).isPresent();
-		assertThat(property.getSetter()).isNotPresent();
+		assertThat(property.getGetter()).isNotNull();
+		assertThat(property.getSetter()).isNull();
 	}
 
 	@Test // DATACMNS-206
@@ -126,8 +126,8 @@ public class AbstractPersistentPropertyUnitTests {
 
 		SamplePersistentProperty property = getProperty(AccessorTestClass.class, "yetYetAnotherId");
 
-		assertThat(property.getGetter()).isNotPresent();
-		assertThat(property.getSetter()).isPresent();
+		assertThat(property.getGetter()).isNull();
+		assertThat(property.getSetter()).isNotNull();
 	}
 
 	@Test // DATACMNS-206
@@ -137,8 +137,8 @@ public class AbstractPersistentPropertyUnitTests {
 		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(Property.of(field),
 				getEntity(AccessorTestClass.class), typeHolder);
 
-		assertThat(property.getGetter()).isNotPresent();
-		assertThat(property.getSetter()).isNotPresent();
+		assertThat(property.getGetter()).isNull();
+		assertThat(property.getSetter()).isNull();
 	}
 
 	@Test // DATACMNS-337
@@ -325,8 +325,8 @@ public class AbstractPersistentPropertyUnitTests {
 		}
 
 		@Override
-		public <A extends Annotation> Optional<A> findAnnotation(Class<A> annotationType) {
-			return Optional.empty();
+		public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
+			return null;
 		}
 
 		@Override
@@ -335,8 +335,8 @@ public class AbstractPersistentPropertyUnitTests {
 		}
 
 		@Override
-		public <A extends Annotation> Optional<A> findPropertyOrOwnerAnnotation(Class<A> annotationType) {
-			return Optional.empty();
+		public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
+			return null;
 		}
 	}
 

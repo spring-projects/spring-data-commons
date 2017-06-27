@@ -24,7 +24,7 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
 
 /**
  * Integration tests for Mapping metadata.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -42,7 +42,7 @@ public class MappingMetadataTests {
 
 		PersistentEntity<?, SamplePersistentProperty> person = ctx.getRequiredPersistentEntity(PersonWithId.class);
 
-		assertThat(person.getIdProperty()).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertThat(person.getIdProperty()).satisfies(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test
