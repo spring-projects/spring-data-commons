@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -42,6 +42,8 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	private final TypeAliasAccessor<S> accessor;
 	private final List<? extends TypeInformationMapper> mappers;
 	private final Map<Alias, Optional<TypeInformation<?>>> typeCache;
+
+	private final Function<Alias, Optional<TypeInformation<?>>> getAlias;
 
 	/**
 	 * Creates a new {@link DefaultTypeMapper} using the given {@link TypeAliasAccessor}. It will use a
@@ -89,6 +91,17 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 		this.mappers = Collections.unmodifiableList(mappers);
 		this.accessor = accessor;
 		this.typeCache = new ConcurrentHashMap<>();
+		this.getAlias = key -> {
+
+			for (TypeInformationMapper mapper : mappers) {
+				TypeInformation<?> typeInformation = mapper.resolveTypeFrom(key);
+
+				if (typeInformation != null) {
+					return Optional.of(typeInformation);
+				}
+			}
+			return Optional.empty();
+		};
 	}
 
 	/*
@@ -110,18 +123,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 * @return
 	 */
 	private TypeInformation<?> getFromCacheOrCreate(Alias alias) {
-		return typeCache.computeIfAbsent(alias, key -> {
-
-			for (TypeInformationMapper mapper : mappers) {
-				TypeInformation<?> typeInformation = mapper.resolveTypeFrom(alias);
-
-				if (typeInformation != null) {
-					return Optional.of(typeInformation);
-				}
-			}
-			return Optional.empty();
-
-		}).orElse(null);
+		return typeCache.computeIfAbsent(alias, getAlias).orElse(null);
 	}
 
 	/*
@@ -194,7 +196,10 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		Assert.notNull(info, "TypeInformation must not be null!");
 
-		getAliasFor(info).getValue().ifPresent(it -> accessor.writeTypeTo(sink, it));
+		Alias alias = getAliasFor(info);
+		if (alias.isPresent()) {
+			accessor.writeTypeTo(sink, alias.getValue().get());
+		}
 	}
 
 	/**
@@ -208,6 +213,14 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		Assert.notNull(info, "TypeInformation must not be null!");
 
-		return Optionals.firstNonEmpty(mappers, it -> it.createAliasFor(info), Alias.NONE);
+		for (TypeInformationMapper mapper : mappers) {
+
+			Alias alias = mapper.createAliasFor(info);
+			if (alias.isPresent()) {
+				return alias;
+			}
+		}
+
+		return Alias.NONE;
 	}
 }

@@ -40,8 +40,8 @@ import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.threeten.bp.LocalDateTime;
 
 /**
- * Unit tests for {@link MongoCustomConversions}.
- * 
+ * Unit tests for {@link CustomConversions}.
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 2.0

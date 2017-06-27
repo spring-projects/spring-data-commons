@@ -30,8 +30,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.*;
@@ -52,9 +50,7 @@ import org.springframework.util.StringUtils;
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(BasicPersistentEntity.class);
 	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)!";
-	private static final String NULL_ASSOCIATION = "%s.addAssociation(…) was called with a null association! Usually indicates a problem in a Spring Data MappingContext implementation. Be sure to file a bug at https://jira.spring.io!";
 
 	private final PreferredConstructor<T, P> constructor;
 	private final TypeInformation<T> information;
@@ -438,8 +434,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public PersistentPropertyAccessor getPropertyAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
-		Assert.isTrue(getType().isInstance(bean),
-				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
+
+		if (!getType().isInstance(bean)) { // prevent capturing lambda
+			throw new IllegalArgumentException(String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
+		}
 
 		return propertyAccessorFactory.getPropertyAccessor(this, bean);
 	}
@@ -452,8 +450,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public IdentifierAccessor getIdentifierAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
-		Assert.isTrue(getType().isInstance(bean),
-				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
+
+		if (!getType().isInstance(bean)) { // prevent capturing lambda
+			throw new IllegalArgumentException(String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
+		}
 
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : new AbsentIdentifierAccessor(bean);
 	}

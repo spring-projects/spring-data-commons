@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.convert.converter.Converter;
@@ -69,8 +70,8 @@ public class CustomConversions {
 		DEFAULT_CONVERTERS = Collections.unmodifiableList(defaults);
 	}
 
-	private final Set<ConvertiblePair> readingPairs;
-	private final Set<ConvertiblePair> writingPairs;
+	private final Set<ConvertiblePair> readingPairs = new LinkedHashSet<>();
+	private final Set<ConvertiblePair> writingPairs = new LinkedHashSet<>();
 	private final Set<Class<?>> customSimpleTypes;
 	private final SimpleTypeHolder simpleTypeHolder;
 
@@ -79,6 +80,15 @@ public class CustomConversions {
 	private final Map<ConvertiblePair, Optional<Class<?>>> customReadTargetTypes;
 	private final Map<ConvertiblePair, Optional<Class<?>>> customWriteTargetTypes;
 	private final Map<Class<?>, Optional<Class<?>>> rawWriteTargetTypes;
+
+	private final Function<ConvertiblePair, Optional<Class<?>>> getCustomReadTarget = it -> getCustomTarget(
+			it.getSourceType(), Optional.of(it.getTargetType()), readingPairs);
+
+	private final Function<Class<?>, Optional<Class<?>>> getCustomWriteTargetForSource = it -> getCustomTarget(it,
+			Optional.empty(), writingPairs);
+
+	private final Function<ConvertiblePair, Optional<Class<?>>> getCustomWriteTarget = it -> getCustomTarget(
+			it.getSourceType(), Optional.of(it.getTargetType()), writingPairs);
 
 	/**
 	 * Creates a new {@link CustomConversions} instance registering the given converters.
@@ -91,8 +101,6 @@ public class CustomConversions {
 		Assert.notNull(storeConversions, "StoreConversions must not be null!");
 		Assert.notNull(converters, "List of converters must not be null!");
 
-		this.readingPairs = new LinkedHashSet<>();
-		this.writingPairs = new LinkedHashSet<>();
 		this.customSimpleTypes = new HashSet<>();
 		this.customReadTargetTypes = new ConcurrentHashMap<>();
 		this.customWriteTargetTypes = new ConcurrentHashMap<>();
@@ -229,8 +237,7 @@ public class CustomConversions {
 
 		Assert.notNull(sourceType, "Source type must not be null!");
 
-		return rawWriteTargetTypes.computeIfAbsent(sourceType,
-				it -> getCustomTarget(sourceType, Optional.empty(), writingPairs));
+		return rawWriteTargetTypes.computeIfAbsent(sourceType, getCustomWriteTargetForSource);
 	}
 
 	/**
@@ -248,7 +255,7 @@ public class CustomConversions {
 		Assert.notNull(requestedTargetType, "Target type must not be null!");
 
 		return customWriteTargetTypes.computeIfAbsent(new ConvertiblePair(sourceType, requestedTargetType),
-				it -> getCustomTarget(sourceType, Optional.of(requestedTargetType), writingPairs));
+				getCustomWriteTarget);
 	}
 
 	/**
@@ -307,8 +314,7 @@ public class CustomConversions {
 	 */
 	private Optional<Class<?>> getCustomReadTarget(Class<?> sourceType, Class<?> targetType) {
 
-		return customReadTargetTypes.computeIfAbsent(new ConvertiblePair(sourceType, targetType),
-				it -> getCustomTarget(sourceType, Optional.of(targetType), readingPairs));
+		return customReadTargetTypes.computeIfAbsent(new ConvertiblePair(sourceType, targetType), getCustomReadTarget);
 	}
 
 	/**
@@ -320,7 +326,7 @@ public class CustomConversions {
 	 * @param pairs must not be {@literal null}.
 	 * @return
 	 */
-	private static Optional<Class<?>> getCustomTarget(Class<?> sourceType, Optional<Class<?>> targetType,
+	private Optional<Class<?>> getCustomTarget(Class<?> sourceType, Optional<Class<?>> targetType,
 			Collection<ConvertiblePair> pairs) {
 
 		Assert.notNull(sourceType, "Source Class must not be null!");
