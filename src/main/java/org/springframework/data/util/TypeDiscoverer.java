@@ -28,16 +28,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -49,13 +40,13 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Basic {@link TypeDiscoverer} that contains basic functionality to discover property types.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
-	private static final Iterable<Class<?>> MAP_TYPES;
+	private static final Class<?>[] MAP_TYPES;
 
 	static {
 
@@ -68,7 +59,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			mapTypes.add(ClassUtils.forName("javaslang.collection.Map", classLoader));
 		} catch (ClassNotFoundException o_O) {}
 
-		MAP_TYPES = Collections.unmodifiableSet(mapTypes);
+		MAP_TYPES = mapTypes.toArray(new Class[0]);
 	}
 
 	private final Type type;
@@ -82,7 +73,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	/**
 	 * Creates a new {@link TypeDiscoverer} for the given type, type variable map and parent.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param typeVariableMap must not be {@literal null}.
 	 */
@@ -101,7 +92,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	/**
 	 * Returns the type variable map.
-	 * 
+	 *
 	 * @return
 	 */
 	protected Map<TypeVariable<?>, Type> getTypeVariableMap() {
@@ -114,7 +105,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	/**
 	 * Creates {@link TypeInformation} for the given {@link Type}.
-	 * 
+	 *
 	 * @param fieldType
 	 * @return
 	 */
@@ -177,7 +168,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	/**
 	 * Resolves the given type into a plain {@link Class}.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -229,7 +220,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	/**
 	 * Returns the {@link TypeInformation} for the given atomic field. Will inspect fields first and return the type of a
 	 * field if available. Otherwise it will fall back to a {@link PropertyDescriptor}.
-	 * 
+	 *
 	 * @see #getGenericType(PropertyDescriptor)
 	 * @param fieldname
 	 * @return
@@ -249,7 +240,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	/**
 	 * Finds the {@link PropertyDescriptor} for the property with the given name on the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param fieldname must not be {@literal null} or empty.
 	 * @return
@@ -274,7 +265,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	/**
 	 * Returns the generic type for the given {@link PropertyDescriptor}. Will inspect its read method followed by the
 	 * first parameter of the write method.
-	 * 
+	 *
 	 * @param descriptor must not be {@literal null}
 	 * @return
 	 */
@@ -304,7 +295,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return resolvedType.get();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getRawTypeInformation()
 	 */
@@ -313,7 +304,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return ClassTypeInformation.from(getType()).getRawTypeInformation();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getActualType()
 	 */
@@ -336,8 +327,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public boolean isMap() {
 
+		Class<S> type = getType();
+
 		for (Class<?> mapType : MAP_TYPES) {
-			if (mapType.isAssignableFrom(getType())) {
+			if (mapType.isAssignableFrom(type)) {
 				return true;
 			}
 		}
@@ -397,7 +390,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return arguments.size() > 0 ? Optional.of(arguments.get(0)) : Optional.empty();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getReturnType(java.lang.reflect.Method)
 	 */
@@ -407,7 +400,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return createInfo(method.getGenericReturnType());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getMethodParameterTypes(java.lang.reflect.Method)
 	 */
@@ -420,7 +413,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 				.collect(Collectors.toList());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getSuperTypeInformation(java.lang.Class)
 	 */
@@ -461,7 +454,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getTypeParameters()
 	 */
@@ -484,7 +477,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@SuppressWarnings("unchecked")
 	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
 
-		Assert.isTrue(getType().isAssignableFrom(type.getType()), String.format("%s must be assignable from %s", getType(), type.getType()));
+		Assert.isTrue(getType().isAssignableFrom(type.getType()),
+				String.format("%s must be assignable from %s", getType(), type.getType()));
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
 
@@ -504,15 +498,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return Optional.of(createInfo(arguments[index]));
 	}
 
-	private Class<?> getBaseType(Iterable<Class<?>> candidates) {
+	private Class<?> getBaseType(Class<?>[] candidates) {
 
+		Class<S> type = getType();
 		for (Class<?> candidate : candidates) {
-			if (candidate.isAssignableFrom(getType())) {
+			if (candidate.isAssignableFrom(type)) {
 				return candidate;
 			}
 		}
 
-		throw new IllegalArgumentException(String.format("Type %s not contained in candidates %s!", getType(), candidates));
+		throw new IllegalArgumentException(String.format("Type %s not contained in candidates %s!", type, candidates));
 	}
 
 	/*
