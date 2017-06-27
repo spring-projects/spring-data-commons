@@ -50,6 +50,7 @@ import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -69,19 +70,19 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)!";
 
-	private final PreferredConstructor<T, P> constructor;
+	private final @Nullable PreferredConstructor<T, P> constructor;
 	private final TypeInformation<T> information;
 	private final List<P> properties;
 	private final List<P> persistentPropertiesCache;
-	private final Comparator<P> comparator;
+	private final @Nullable Comparator<P> comparator;
 	private final Set<Association<P>> associations;
 
 	private final Map<String, P> propertyCache;
 	private final Map<Class<? extends Annotation>, Optional<Annotation>> annotationCache;
 	private final MultiValueMap<Class<? extends Annotation>, P> propertyAnnotationCache;
 
-	private P idProperty;
-	private P versionProperty;
+	private @Nullable P idProperty;
+	private @Nullable P versionProperty;
 	private PersistentPropertyAccessorFactory propertyAccessorFactory;
 
 	private final Lazy<Alias> typeAlias;
@@ -103,7 +104,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @param information must not be {@literal null}.
 	 * @param comparator can be {@literal null}.
 	 */
-	public BasicPersistentEntity(TypeInformation<T> information, Comparator<P> comparator) {
+	public BasicPersistentEntity(TypeInformation<T> information, @Nullable Comparator<P> comparator) {
 
 		Assert.notNull(information, "Information must not be null!");
 
@@ -125,6 +126,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistenceConstructor()
 	 */
+	@Nullable
 	public PreferredConstructor<T, P> getPersistenceConstructor() {
 		return constructor;
 	}
@@ -165,6 +167,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getIdProperty()
 	 */
+	@Nullable
 	public P getIdProperty() {
 		return idProperty;
 	}
@@ -173,6 +176,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getVersionProperty()
 	 */
+	@Nullable
 	public P getVersionProperty() {
 		return versionProperty;
 	}
@@ -223,12 +227,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		if (property.isVersionProperty()) {
 
-			if (this.versionProperty != null) {
+			P versionProperty = this.versionProperty;
 
-				throw new MappingException(String.format(
-						"Attempt to add version property %s but already have property %s registered "
-								+ "as version. Check your mapping configuration!",
-						property.getField(), this.versionProperty.getField()));
+			if (versionProperty != null) {
+
+				throw new MappingException(
+						String.format(
+								"Attempt to add version property %s but already have property %s registered "
+										+ "as version. Check your mapping configuration!",
+								property.getField(), versionProperty.getField()));
 			}
 
 			this.versionProperty = property;
@@ -241,15 +248,18 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @param property the new id property candidate, will never be {@literal null}.
 	 * @return the given id property or {@literal null} if the given property is not an id property.
 	 */
+	@Nullable
 	protected P returnPropertyIfBetterIdPropertyCandidateOrNull(P property) {
 
 		if (!property.isIdProperty()) {
 			return null;
 		}
 
-		if (this.idProperty != null) {
+		P idProperty = this.idProperty;
+
+		if (idProperty != null) {
 			throw new MappingException(String.format("Attempt to add id property %s but already have property %s registered "
-					+ "as id. Check your mapping configuration!", property.getField(), this.idProperty.getField()));
+					+ "as id. Check your mapping configuration!", property.getField(), idProperty.getField()));
 		}
 
 		return property;
@@ -273,6 +283,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperty(java.lang.String)
 	 */
 	@Override
+	@Nullable
 	public P getPersistentProperty(String name) {
 		return propertyCache.get(name);
 	}
@@ -384,8 +395,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#findAnnotation(java.lang.Class)
 	 */
+	@Nullable
 	@Override
-	@SuppressWarnings("unchecked")
 	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 		return doFindAnnotation(annotationType).orElse(null);
 	}
@@ -399,6 +410,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return doFindAnnotation(annotationType).isPresent();
 	}
 
+	@SuppressWarnings("unchecked")
 	private <A extends Annotation> Optional<A> doFindAnnotation(Class<A> annotationType) {
 
 		return (Optional<A>) annotationCache.computeIfAbsent(annotationType,
@@ -492,6 +504,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		 * @see org.springframework.data.mapping.IdentifierAccessor#getIdentifier()
 		 */
 		@Override
+		@Nullable
 		public Object getIdentifier() {
 			return null;
 		}
@@ -513,7 +526,16 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		 * (non-Javadoc)
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
-		public int compare(Association<P> left, Association<P> right) {
+		public int compare(@Nullable Association<P> left, @Nullable Association<P> right) {
+
+			if (left == null) {
+				throw new IllegalArgumentException("Left argument must not be null!");
+			}
+
+			if (right == null) {
+				throw new IllegalArgumentException("Right argument must not be null!");
+			}
+
 			return delegate.compare(left.getInverse(), right.getInverse());
 		}
 	}

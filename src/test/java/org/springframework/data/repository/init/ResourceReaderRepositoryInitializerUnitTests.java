@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.init;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collection;
@@ -23,6 +24,7 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.AdditionalAnswers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -92,6 +94,7 @@ public class ResourceReaderRepositoryInitializerUnitTests {
 			throws Exception {
 
 		when(reader.readFrom(any(), any())).thenReturn(reference);
+		when(productRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
 
 		ResourceReaderRepositoryPopulator populator = new ResourceReaderRepositoryPopulator(reader);
 		populator.setResources(resource);

@@ -17,9 +17,9 @@ package org.springframework.data.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -34,7 +34,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 public class AnnotationDetectionFieldCallback implements FieldCallback {
 
 	private final Class<? extends Annotation> annotationType;
-	private Optional<Field> field = Optional.empty();
+	private @Nullable Field field;
 
 	/**
 	 * Creates a new {@link AnnotationDetectionFieldCallback} scanning for an annotation of the given type.
@@ -54,15 +54,42 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 	 */
 	public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 
-		if (this.field.isPresent()) {
+		if (this.field != null) {
 			return;
 		}
 
 		if (AnnotatedElementUtils.findMergedAnnotation(field, annotationType) != null) {
 
 			ReflectionUtils.makeAccessible(field);
-			this.field = Optional.of(field);
+			this.field = field;
 		}
+	}
+
+	/**
+	 * Returns the detected field.
+	 * 
+	 * @return the field
+	 */
+	@Nullable
+	public Field getField() {
+		return field;
+	}
+
+	/**
+	 * Returns the field that was detected.
+	 * 
+	 * @return
+	 * @throws IllegalStateException in case no field with the configured annotation was found.
+	 */
+	public Field getRequiredField() {
+
+		Field field = this.field;
+
+		if (field == null) {
+			throw new IllegalStateException(String.format("No field found for annotation %s!", annotationType));
+		}
+
+		return field;
 	}
 
 	/**
@@ -70,20 +97,22 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 	 * 
 	 * @return
 	 */
-	public Optional<Class<?>> getType() {
-		return field.map(Field::getType);
+	@Nullable
+	public Class<?> getType() {
+
+		Field field = this.field;
+
+		return field == null ? null : field.getType();
 	}
 
 	/**
 	 * Returns the type of the field or throws an {@link IllegalArgumentException} if no field could be found.
 	 * 
 	 * @return
-	 * @throws IllegalStateException
+	 * @throws IllegalStateException in case no field with the configured annotation was found.
 	 */
 	public Class<?> getRequiredType() {
-
-		return getType().orElseThrow(() -> new IllegalStateException(
-				String.format("Unable to obtain type! Didn't find field with annotation %s!", annotationType)));
+		return getRequiredField().getType();
 	}
 
 	/**
@@ -92,11 +121,18 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
-	public <T> Optional<T> getValue(Object source) {
+	public <T> T getValue(Object source) {
 
 		Assert.notNull(source, "Source object must not be null!");
 
-		return field.map(it -> (T) ReflectionUtils.getField(it, source));
+		Field field = this.field;
+
+		if (field == null) {
+			return null;
+		}
+
+		return (T) ReflectionUtils.getField(field, source);
 	}
 }

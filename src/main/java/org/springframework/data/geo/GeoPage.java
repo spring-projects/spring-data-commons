@@ -15,9 +15,12 @@
  */
 package org.springframework.data.geo;
 
+import lombok.Getter;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -31,7 +34,11 @@ import org.springframework.util.ObjectUtils;
 public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 
 	private static final long serialVersionUID = -5655267379242128600L;
-	private final Distance averageDistance;
+
+	/**
+	 * The average distance of the underlying results.
+	 */
+	private final @Getter Distance averageDistance;
 
 	/**
 	 * Creates a new {@link GeoPage} from the given {@link GeoResults}.
@@ -59,21 +66,12 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 		this.averageDistance = results.getAverageDistance();
 	}
 
-	/**
-	 * Returns the average distance of the underlying results.
-	 * 
-	 * @return the averageDistance
-	 */
-	public Distance getAverageDistance() {
-		return averageDistance;
-	}
-
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.PageImpl#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

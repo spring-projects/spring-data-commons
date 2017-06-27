@@ -24,6 +24,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -115,6 +116,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.TypeInformationMapper#resolveTypeFrom(java.util.Optional)
 	 */
+	@Nullable
 	@Override
 	public TypeInformation<?> resolveTypeFrom(Alias alias) {
 

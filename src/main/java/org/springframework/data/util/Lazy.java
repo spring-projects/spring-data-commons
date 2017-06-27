@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -37,7 +38,8 @@ import org.springframework.util.Assert;
 public class Lazy<T> implements Supplier<T> {
 
 	private final Supplier<T> supplier;
-	private T value;
+	private @Nullable T value = null;
+	private boolean resolved = false;
 
 	/**
 	 * Creates a new {@link Lazy} to produce an object lazily.
@@ -58,11 +60,42 @@ public class Lazy<T> implements Supplier<T> {
 	 */
 	public T get() {
 
+		T value = getNullable();
+
 		if (value == null) {
-			this.value = supplier.get();
+			throw new IllegalStateException("Expected lazy evaluation to yield a non-null value but got null!");
 		}
 
 		return value;
+	}
+
+	/**
+	 * Returns the value of the lazy computation or the given default value in case the computation yields
+	 * {@literal null}.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	@Nullable
+	public T orElse(@Nullable T value) {
+		return orElseGet(() -> value);
+	}
+
+	/**
+	 * Returns the value of the lazy computation or the value produced by the given {@link Supplier} in case the original
+	 * value is {@literal null}.
+	 * 
+	 * @param supplier must not be {@literal null}.
+	 * @return
+	 */
+	@Nullable
+	public T orElseGet(Supplier<T> supplier) {
+
+		Assert.notNull(supplier, "Default value supplier must not be null!");
+
+		T nullable = getNullable();
+
+		return nullable == null ? supplier.get() : nullable;
 	}
 
 	/**
@@ -89,5 +122,27 @@ public class Lazy<T> implements Supplier<T> {
 		Assert.notNull(function, "Function must not be null!");
 
 		return Lazy.of(() -> function.apply(get()).get());
+	}
+
+	/**
+	 * Returns the value of the lazy evaluation.
+	 * 
+	 * @return
+	 */
+	@Nullable
+	private T getNullable() {
+
+		T value = this.value;
+
+		if (this.resolved) {
+			return value;
+		}
+
+		value = supplier.get();
+
+		this.value = value;
+		this.resolved = true;
+
+		return value;
 	}
 }

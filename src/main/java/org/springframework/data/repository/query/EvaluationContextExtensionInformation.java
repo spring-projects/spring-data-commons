@@ -73,7 +73,9 @@ class EvaluationContextExtensionInformation {
 	public EvaluationContextExtensionInformation(Class<? extends EvaluationContextExtension> type) {
 
 		Assert.notNull(type, "Extension type must not be null!");
-		Class<?> rootObjectType = getRootObjectMethod(type).getReturnType();
+
+		Class<?> rootObjectType = org.springframework.data.util.ReflectionUtils.findRequiredMethod(type, "getRootObject")
+				.getReturnType();
 
 		this.rootObjectInformation = Optional
 				.ofNullable(Object.class.equals(rootObjectType) ? null : new RootObjectInformation(rootObjectType));
@@ -100,15 +102,6 @@ class EvaluationContextExtensionInformation {
 
 		return target.map(it -> rootObjectInformation.orElseGet(() -> new RootObjectInformation(it.getClass())))
 				.orElse(RootObjectInformation.NONE);
-	}
-
-	private static Method getRootObjectMethod(Class<?> type) {
-
-		try {
-			return type.getMethod("getRootObject");
-		} catch (Exception e) {
-			return null;
-		}
 	}
 
 	/**

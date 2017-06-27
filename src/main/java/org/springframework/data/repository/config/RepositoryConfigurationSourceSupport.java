@@ -46,6 +46,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 *
 	 * @param environment must not be {@literal null}.
 	 * @param classLoader must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
 	 */
 	public RepositoryConfigurationSourceSupport(Environment environment, ClassLoader classLoader,
 			BeanDefinitionRegistry registry) {

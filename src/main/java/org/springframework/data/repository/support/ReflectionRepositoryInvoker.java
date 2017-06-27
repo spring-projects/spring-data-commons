@@ -30,6 +30,7 @@ import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
@@ -109,7 +110,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return methods.hasSaveMethod();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeSave(java.lang.Object)
 	 */
 	@Override
@@ -118,7 +120,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		Method method = methods.getSaveMethod()//
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a save-method declared!"));
 
-		return invoke(method, object);
+		return invokeForNonNullResult(method, object);
 	}
 
 	/* 
@@ -229,7 +231,12 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return result;
 	}
 
-	private Object convert(Object value, MethodParameter parameter) {
+	@Nullable
+	private Object convert(@Nullable Object value, MethodParameter parameter) {
+
+		if (value == null) {
+			return value;
+		}
 
 		try {
 			return conversionService.convert(value, TypeDescriptor.forObject(value), new TypeDescriptor(parameter));
@@ -245,14 +252,29 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @param arguments
 	 * @return
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
 	private <T> T invoke(Method method, Object... arguments) {
 		return (T) ReflectionUtils.invokeMethod(method, repository, arguments);
 	}
 
+	private <T> T invokeForNonNullResult(Method method, Object... arguments) {
+
+		T result = invoke(method, arguments);
+
+		if (result == null) {
+			throw new IllegalStateException(String.format("Invocation of method %s(%s) on %s unexpectedly returned null!",
+					method, Arrays.toString(arguments), repository));
+		}
+
+		return result;
+	}
+
 	@SuppressWarnings("unchecked")
-	private <T> Optional<T> returnAsOptional(Object source) {
-		return (Optional<T>) (Optional.class.isInstance(source) ? source
+	private <T> Optional<T> returnAsOptional(@Nullable Object source) {
+
+		return (Optional<T>) (source instanceof Optional //
+				? source //
 				: Optional.ofNullable(QueryExecutionConverters.unwrap(source)));
 	}
 
@@ -265,7 +287,15 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	protected Object convertId(Object id) {
 
 		Assert.notNull(id, "Id must not be null!");
-		return conversionService.convert(id, idType);
+
+		Object result = conversionService.convert(id, idType);
+
+		if (result == null) {
+			throw new IllegalStateException(
+					String.format("Identifier conversion of %s to %s unexpectedly returned null!", id, idType));
+		}
+
+		return result;
 	}
 
 	protected Iterable<Object> invokeFindAllReflectively(Pageable pageable) {
@@ -275,11 +305,11 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		Class<?>[] types = method.getParameterTypes();
 
 		if (types.length == 0) {
-			return invoke(method);
+			return invokeForNonNullResult(method);
 		}
 
 		if (Pageable.class.isAssignableFrom(types[0])) {
-			return invoke(method, pageable);
+			return invokeForNonNullResult(method, pageable);
 		}
 
 		return invokeFindAll(pageable.getSort());
@@ -291,10 +321,10 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
 
 		if (method.getParameterCount() == 0) {
-			return invoke(method);
+			return invokeForNonNullResult(method);
 		}
 
-		return invoke(method, sort);
+		return invokeForNonNullResult(method, sort);
 	}
 
 	/**
@@ -303,7 +333,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	private static Object unwrapSingleElement(List<? extends Object> source) {
+	@Nullable
+	private static Object unwrapSingleElement(@Nullable List<? extends Object> source) {
 		return source == null ? null : source.size() == 1 ? source.get(0) : source;
 	}
 }

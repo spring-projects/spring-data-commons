@@ -15,6 +15,7 @@
  */
 package org.springframework.data.authentication;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -28,8 +29,7 @@ public class UserCredentials {
 
 	public static final UserCredentials NO_CREDENTIALS = new UserCredentials(null, null);
 
-	private final String username;
-	private final String password;
+	private final @Nullable String username, password;
 
 	/**
 	 * Creates a new {@link UserCredentials} instance from the given username and password. Empty {@link String}s provided
@@ -38,7 +38,7 @@ public class UserCredentials {
 	 * @param username
 	 * @param password
 	 */
-	public UserCredentials(String username, String password) {
+	public UserCredentials(@Nullable String username, @Nullable String password) {
 		this.username = StringUtils.hasText(username) ? username : null;
 		this.password = StringUtils.hasText(password) ? password : null;
 	}
@@ -48,6 +48,7 @@ public class UserCredentials {
 	 * 
 	 * @return the username
 	 */
+	@Nullable
 	public String getUsername() {
 		return username;
 	}
@@ -57,6 +58,7 @@ public class UserCredentials {
 	 * 
 	 * @return the password
 	 */
+	@Nullable
 	public String getPassword() {
 		return password;
 	}
@@ -85,9 +87,12 @@ public class UserCredentials {
 	 * 
 	 * @return the obfuscated password
 	 */
+	@Nullable
 	public String getObfuscatedPassword() {
 
-		if (!hasPassword()) {
+		String password = this.password;
+
+		if (password == null) {
 			return null;
 		}
 
@@ -125,7 +130,7 @@ public class UserCredentials {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (obj == this) {
 			return true;

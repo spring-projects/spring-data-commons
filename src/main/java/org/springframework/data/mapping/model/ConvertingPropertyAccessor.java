@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -55,7 +56,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentProperty, java.lang.Object)
 	 */
 	@Override
-	public void setProperty(PersistentProperty<?> property, Object value) {
+	public void setProperty(PersistentProperty<?> property, @Nullable Object value) {
 		accessor.setProperty(property, convertIfNecessary(value, property.getType()));
 	}
 
@@ -63,6 +64,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
 	 */
+	@Nullable
 	@Override
 	public Object getProperty(PersistentProperty<?> property) {
 		return accessor.getProperty(property);
@@ -75,6 +77,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @param targetType must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	public <T> T getProperty(PersistentProperty<?> property, Class<T> targetType) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
@@ -100,8 +103,9 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
-	private <T> T convertIfNecessary(Object source, Class<T> type) {
+	private <T> T convertIfNecessary(@Nullable Object source, Class<T> type) {
 		return (T) (source == null ? null
 				: type.isAssignableFrom(source.getClass()) ? source : conversionService.convert(source, type));
 	}

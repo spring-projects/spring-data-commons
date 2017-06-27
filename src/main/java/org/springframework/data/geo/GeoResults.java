@@ -15,6 +15,8 @@
  */
 package org.springframework.data.geo;
 
+import lombok.EqualsAndHashCode;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
@@ -31,6 +33,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @since 1.8
  */
+@EqualsAndHashCode
 public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	private static final long serialVersionUID = 8347363491300219485L;
@@ -45,7 +48,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	 * @param results must not be {@literal null}.
 	 */
 	public GeoResults(List<? extends GeoResult<T>> results) {
-		this(results, (Metric) null);
+		this(results, Metrics.NEUTRAL);
 	}
 
 	/**
@@ -63,12 +66,13 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	 * Creates a new {@link GeoResults} instance from the given {@link GeoResult}s and average distance.
 	 * 
 	 * @param results must not be {@literal null}.
-	 * @param averageDistance can be {@literal null}.
+	 * @param averageDistance must not be {@literal null}.
 	 */
 	@PersistenceConstructor
 	public GeoResults(List<? extends GeoResult<T>> results, Distance averageDistance) {
 
 		Assert.notNull(results, "Results must not be null!");
+		Assert.notNull(averageDistance, "Average Distance must not be null!");
 
 		this.results = results;
 		this.averageDistance = averageDistance;
@@ -103,41 +107,6 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	/*
 	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof GeoResults)) {
-			return false;
-		}
-
-		GeoResults<?> that = (GeoResults<?>) obj;
-
-		return this.results.equals(that.results) && this.averageDistance.equals(that.averageDistance);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-
-		int result = 17;
-
-		result += 31 * results.hashCode();
-		result += 31 * averageDistance.hashCode();
-
-		return result;
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -148,16 +117,17 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	private static Distance calculateAverageDistance(List<? extends GeoResult<?>> results, Metric metric) {
 
+		Assert.notNull(results, "Results must not be null!");
+		Assert.notNull(metric, "Metric must not be null!");
+
 		if (results.isEmpty()) {
 			return new Distance(0, metric);
 		}
 
-		double averageDistance = 0;
+		double averageDistance = results.stream()//
+				.mapToDouble(it -> it.getDistance().getValue())//
+				.average().orElse(0);
 
-		for (GeoResult<?> result : results) {
-			averageDistance += result.getDistance().getValue();
-		}
-
-		return new Distance(averageDistance / results.size(), metric);
+		return new Distance(averageDistance, metric);
 	}
 }

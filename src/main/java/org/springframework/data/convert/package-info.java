@@ -3,4 +3,5 @@
  * 
  * @see org.springframework.data.convert.EntityConverter
  */
+@org.springframework.lang.NonNullApi
 package org.springframework.data.convert;

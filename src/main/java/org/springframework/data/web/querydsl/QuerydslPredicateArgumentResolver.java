@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web.querydsl;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -100,7 +101,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 
 		Optional<QuerydslPredicate> annotation = Optional
 				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
-		TypeInformation<?> domainType = extractTypeInfo(parameter).getActualType();
+		TypeInformation<?> domainType = extractTypeInfo(parameter).getRequiredActualType();
 
 		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindings = annotation//
 				.map(QuerydslPredicate::bindings)//
@@ -125,7 +126,18 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 
 		return annotation.filter(it -> !Object.class.equals(it.root()))//
 				.<TypeInformation<?>> map(it -> ClassTypeInformation.from(it.root()))//
-				.orElseGet(() -> detectDomainType(ClassTypeInformation.fromReturnTypeOf(parameter.getMethod())));
+				.orElseGet(() -> detectDomainType(parameter));
+	}
+
+	private static TypeInformation<?> detectDomainType(MethodParameter parameter) {
+
+		Method method = parameter.getMethod();
+
+		if (method == null) {
+			throw new IllegalArgumentException("Method parameter is not backed by a method!");
+		}
+
+		return detectDomainType(ClassTypeInformation.fromReturnTypeOf(method));
 	}
 
 	private static TypeInformation<?> detectDomainType(TypeInformation<?> source) {

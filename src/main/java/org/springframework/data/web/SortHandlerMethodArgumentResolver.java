@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
@@ -106,8 +108,8 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public Sort resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+	public Sort resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
 		String[] directionParameter = webRequest.getParameterValues(getSortParameter(parameter));
 
@@ -184,15 +186,17 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 	/**
 	 * Returns the sort parameter to be looked up from the request. Potentially applies qualifiers to it.
 	 * 
-	 * @param parameter will never be {@literal null}.
+	 * @param parameter can be {@literal null}.
 	 * @return
 	 */
-	protected String getSortParameter(MethodParameter parameter) {
+	protected String getSortParameter(@Nullable MethodParameter parameter) {
 
 		StringBuilder builder = new StringBuilder();
 
-		if (parameter != null && parameter.hasParameterAnnotation(Qualifier.class)) {
-			builder.append(parameter.getParameterAnnotation(Qualifier.class).value()).append(qualifierDelimiter);
+		Qualifier qualifier = parameter != null ? parameter.getParameterAnnotation(Qualifier.class) : null;
+
+		if (qualifier != null) {
+			builder.append(qualifier.value()).append(qualifierDelimiter);
 		}
 
 		return builder.append(sortParameter).toString();

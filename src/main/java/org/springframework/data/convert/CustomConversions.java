@@ -561,8 +561,11 @@ public class CustomConversions {
 
 			} else if (converter instanceof GenericConverter) {
 
-				return Streamable.of(GenericConverter.class.cast(converter).getConvertibleTypes())//
-						.map(it -> register(it, isReading, isWriting));
+				Set<ConvertiblePair> convertibleTypes = GenericConverter.class.cast(converter).getConvertibleTypes();
+
+				return convertibleTypes == null //
+						? Streamable.empty() //
+						: Streamable.of(convertibleTypes).map(it -> register(it, isReading, isWriting));
 
 			} else if (converter instanceof ConverterFactory) {
 
@@ -580,7 +583,13 @@ public class CustomConversions {
 		private Streamable<ConverterRegistration> getRegistrationFor(Object converter, Class<?> type, boolean isReading,
 				boolean isWriting) {
 
-			Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(converter.getClass(), type);
+			Class<? extends Object> converterType = converter.getClass();
+			Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(converterType, type);
+
+			if (arguments == null) {
+				throw new IllegalStateException(String.format("Couldn't resolve type arguments for %s!", converterType));
+			}
+
 			return Streamable.of(register(arguments[0], arguments[1], isReading, isWriting));
 		}
 

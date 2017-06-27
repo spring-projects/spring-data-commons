@@ -22,8 +22,11 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.Optionals;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -43,20 +46,28 @@ public class Property {
 	private final Optional<Method> getter;
 	private final Optional<Method> setter;
 
+	private final Lazy<String> name;
+	private final Lazy<String> toString;
+
 	private Property(Optional<Field> field, Optional<PropertyDescriptor> descriptor) {
+
+		Assert.isTrue(Optionals.isAnyPresent(field, descriptor), "Either field or descriptor has to be given!");
 
 		this.field = field;
 		this.descriptor = descriptor;
-		this.hashCode = Lazy.of(this::computeHashCode);
-		this.rawType = field.<Class<?>> map(Field::getType)
-				.orElseGet(() -> descriptor.map(PropertyDescriptor::getPropertyType)//
-						.orElse(null));
+
+		this.rawType = withFieldOrDescriptor(Field::getType, PropertyDescriptor::getPropertyType);
+		this.hashCode = Lazy.of(() -> withFieldOrDescriptor(Object::hashCode));
+		this.name = Lazy.of(() -> withFieldOrDescriptor(Field::getName, FeatureDescriptor::getName));
+		this.toString = Lazy.of(() -> withFieldOrDescriptor(Object::toString));
 
 		this.getter = descriptor.map(PropertyDescriptor::getReadMethod)//
-				.filter(it -> getType() != null).filter(it -> getType().isAssignableFrom(it.getReturnType()));
+				.filter(it -> getType() != null)//
+				.filter(it -> getType().isAssignableFrom(it.getReturnType()));
 
 		this.setter = descriptor.map(PropertyDescriptor::getWriteMethod)//
-				.filter(it -> getType() != null).filter(it -> it.getParameterTypes()[0].isAssignableFrom(getType()));
+				.filter(it -> getType() != null)//
+				.filter(it -> it.getParameterTypes()[0].isAssignableFrom(getType()));
 	}
 
 	/**
@@ -88,16 +99,32 @@ public class Property {
 	}
 
 	/**
-	 * Creates a new {@link Property} for the given {@link PropertyDescriptor}.
+	 * Creates a new {@link Property} for the given {@link PropertyDescriptor}. The creation might fail if the given
+	 * property is not representing a proper property.
 	 *
 	 * @param descriptor must not be {@literal null}.
 	 * @return
+	 * @see #supportsStandalone(PropertyDescriptor)
 	 */
 	public static Property of(PropertyDescriptor descriptor) {
 
 		Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
 
 		return new Property(Optional.empty(), Optional.of(descriptor));
+	}
+
+	/**
+	 * Returns whether the given {@link PropertyDescriptor} is supported in for standalone creation of a {@link Property}
+	 * instance.
+	 * 
+	 * @param descriptor
+	 * @return
+	 */
+	public static boolean supportsStandalone(PropertyDescriptor descriptor) {
+
+		Assert.notNull(descriptor, "PropertDescriptor must not be null!");
+
+		return descriptor.getPropertyType() != null;
 	}
 
 	/**
@@ -142,10 +169,7 @@ public class Property {
 	 * @return will never be {@literal null}.
 	 */
 	public String getName() {
-
-		return field.map(Field::getName)//
-				.orElseGet(() -> descriptor.map(FeatureDescriptor::getName)//
-						.orElseThrow(IllegalStateException::new));
+		return this.name.get();
 	}
 
 	/**
@@ -157,27 +181,12 @@ public class Property {
 		return rawType;
 	}
 
-	private int computeHashCode() {
-
-		return this.field.map(Field::hashCode)
-				.orElseGet(() -> this.descriptor.map(PropertyDescriptor::hashCode).orElseThrow(IllegalStateException::new));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return hashCode.get();
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;
@@ -194,11 +203,45 @@ public class Property {
 
 	/*
 	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return hashCode.get();
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return field.map(Object::toString)
-				.orElseGet(() -> descriptor.map(Object::toString).orElseThrow(IllegalStateException::new));
+		return toString.get();
+	}
+
+	/**
+	 * Maps the backing {@link Field} or {@link PropertyDescriptor} using the given {@link Function}.
+	 * 
+	 * @param function must not be {@literal null}.
+	 * @return
+	 */
+	private <T> T withFieldOrDescriptor(Function<Object, T> function) {
+		return withFieldOrDescriptor(function, function);
+	}
+
+	/**
+	 * Maps the backing {@link Field} or {@link PropertyDescriptor} using the given functions.
+	 * 
+	 * @param field must not be {@literal null}.
+	 * @param descriptor must not be {@literal null}.
+	 * @return
+	 */
+	private <T> T withFieldOrDescriptor(Function<? super Field, T> field,
+			Function<? super PropertyDescriptor, T> descriptor) {
+
+		return Optionals.firstNonEmpty(//
+				() -> this.field.map(field), //
+				() -> this.descriptor.map(descriptor))//
+				.orElseThrow(() -> new IllegalStateException("Should not occur! Either field or descriptor has to be given"));
 	}
 }

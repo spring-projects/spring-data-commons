@@ -25,6 +25,7 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.repository.util.NullableWrapper;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import org.springframework.lang.Nullable;
 
 /**
  * Simple domain service to convert query results into a dedicated type.
@@ -56,7 +57,8 @@ class QueryExecutionResultHandler {
 	 * @param returnTypeDescriptor can be {@literal null}, if so, no conversion is performed.
 	 * @return
 	 */
-	public Object postProcessInvocationResult(Object result, TypeDescriptor returnTypeDescriptor) {
+	@Nullable
+	public Object postProcessInvocationResult(@Nullable Object result, @Nullable TypeDescriptor returnTypeDescriptor) {
 
 		if (returnTypeDescriptor == null) {
 			return result;
@@ -95,14 +97,13 @@ class QueryExecutionResultHandler {
 			}
 
 			return conversionService.canConvert(result.getClass(), expectedReturnType)
-					? conversionService.convert(result, expectedReturnType) : result;
+					? conversionService.convert(result, expectedReturnType)
+					: result;
 		}
 
-		if (Map.class.equals(expectedReturnType)) {
-			return CollectionFactory.createMap(expectedReturnType, 0);
-		}
-
-		return null;
+		return Map.class.equals(expectedReturnType) //
+				? CollectionFactory.createMap(expectedReturnType, 0) //
+				: null;
 	}
 
 	/**
@@ -111,8 +112,9 @@ class QueryExecutionResultHandler {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
-	private static Object unwrapOptional(Object source) {
+	private static Object unwrapOptional(@Nullable Object source) {
 
 		if (source == null) {
 			return null;

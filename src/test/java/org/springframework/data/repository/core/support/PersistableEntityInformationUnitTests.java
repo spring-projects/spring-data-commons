@@ -32,9 +32,8 @@ import org.springframework.data.domain.Persistable;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistableEntityInformationUnitTests {
 
-	@SuppressWarnings({ "rawtypes",
-			"unchecked" }) static final PersistableEntityInformation metadata = new PersistableEntityInformation(
-					Persistable.class);
+	@SuppressWarnings({ "rawtypes", "unchecked" }) //
+	static final PersistableEntityInformation metadata = new PersistableEntityInformation(PersistableEntity.class);
 
 	@Mock Persistable<Long> persistable;
 
@@ -68,16 +67,13 @@ public class PersistableEntityInformationUnitTests {
 		assertThat(info.getJavaType()).isEqualTo(PersistableEntity.class);
 	}
 
-	@SuppressWarnings("serial")
 	static class PersistableEntity implements Persistable<Long> {
 
 		public Long getId() {
-
 			return null;
 		}
 
 		public boolean isNew() {
-
 			return false;
 		}
 	}

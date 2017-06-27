@@ -21,11 +21,13 @@ import java.util.Optional;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.data.config.TypeFilterParser;
 import org.springframework.data.config.TypeFilterParser.Type;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.util.ParsingUtils;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -64,7 +66,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 */
 	public XmlRepositoryConfigurationSource(Element element, ParserContext context, Environment environment) {
 
-		super(environment, context.getReaderContext().getResourceLoader().getClassLoader(), context.getRegistry());
+		super(environment, ConfigurationUtils.getRequiredClassLoader(context.getReaderContext()), context.getRegistry());
 
 		Assert.notNull(element, "Element must not be null!");
 		Assert.notNull(context, "Context must not be null!");
@@ -81,6 +83,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getSource()
 	 */
+	@Nullable
 	public Object getSource() {
 		return context.extractSource(element);
 	}

@@ -39,11 +39,13 @@ public class ProxyProjectionFactoryUnitTests {
 
 	ProjectionFactory factory = new ProxyProjectionFactory();
 
+	@SuppressWarnings("null")
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
 	public void rejectsNullProjectionType() {
 		factory.createProjection(null);
 	}
 
+	@SuppressWarnings("null")
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
 	public void rejectsNullProjectionTypeWithSource() {
 		factory.createProjection(null, new Object());
@@ -51,7 +53,7 @@ public class ProxyProjectionFactoryUnitTests {
 
 	@Test // DATACMNS-630
 	public void returnsNullForNullSource() {
-		assertThat(factory.createProjection(CustomerExcerpt.class, null)).isNull();
+		assertThat(factory.createNullableProjection(CustomerExcerpt.class, null)).isNull();
 	}
 
 	@Test // DATAREST-221, DATACMNS-630

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 
@@ -64,6 +65,8 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 
 		RepositoryWithRedeclaredFindAllWithPageable repository = mock(RepositoryWithRedeclaredFindAllWithPageable.class);
 		Method method = RepositoryWithRedeclaredFindAllWithPageable.class.getMethod("findAll", Pageable.class);
+
+		when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(PageRequest.of(0, 10));
 		getInvokerFor(repository, expectInvocationOf(method)).invokeFindAll(Pageable.unpaged());

@@ -21,6 +21,7 @@ import java.util.Locale;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -40,6 +41,7 @@ public interface QueryLookupStrategy {
 		 * @param xml
 		 * @return a strategy key from the given XML value
 		 */
+		@Nullable
 		public static Key create(String xml) {
 
 			if (!StringUtils.hasText(xml)) {

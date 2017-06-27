@@ -32,6 +32,7 @@ import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -239,6 +240,7 @@ public class QuerydslBindings {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	PathInformation getPropertyPath(String path, TypeInformation<?> type) {
 
 		Assert.notNull(path, "Path must not be null!");
@@ -316,8 +318,18 @@ public class QuerydslBindings {
 	 * @return
 	 */
 	private static String toDotPath(Optional<Path<?>> path) {
-		return path.map(it -> it.toString().substring(it.getMetadata().getRootPath().getMetadata().getName().length() + 1))
-				.orElse("");
+		return path.map(QuerydslBindings::fromRootPath).orElse("");
+	}
+
+	private static String fromRootPath(Path<?> path) {
+
+		Path<?> rootPath = path.getMetadata().getRootPath();
+
+		if (rootPath == null) {
+			throw new IllegalStateException(String.format("Couldn't find root path on path %s!", path));
+		}
+
+		return path.toString().substring(rootPath.getMetadata().getName().length() + 1);
 	}
 
 	/**
@@ -386,7 +398,7 @@ public class QuerydslBindings {
 	 */
 	public class AliasingPathBinder<P extends Path<? extends T>, T> extends PathBinder<P, T> {
 
-		private final String alias;
+		private final @Nullable String alias;
 		private final P path;
 
 		/**
@@ -404,7 +416,7 @@ public class QuerydslBindings {
 		 * @param alias can be {@literal null}.
 		 * @param path must not be {@literal null}.
 		 */
-		private AliasingPathBinder(String alias, P path) {
+		private AliasingPathBinder(@Nullable String alias, P path) {
 
 			super(path);
 

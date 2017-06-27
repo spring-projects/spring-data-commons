@@ -17,6 +17,8 @@ package org.springframework.data.repository.config;
 
 import java.util.Properties;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -54,6 +56,7 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.BeanDefinitionParser#parse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)
 	 */
+	@Nonnull
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
 
 		BeanDefinitionBuilder properties = BeanDefinitionBuilder.rootBeanDefinition(PropertiesFactoryBean.class);

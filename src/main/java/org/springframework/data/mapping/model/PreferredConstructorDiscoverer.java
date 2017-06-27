@@ -27,6 +27,7 @@ import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 
 /**
  * Helper class to find a {@link PreferredConstructor}.
@@ -40,7 +41,7 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 
 	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
 
-	private PreferredConstructor<T, P> constructor;
+	private @Nullable PreferredConstructor<T, P> constructor;
 
 	/**
 	 * Creates a new {@link PreferredConstructorDiscoverer} for the given type.
@@ -66,7 +67,7 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 	 * @param type must not be {@literal null}.
 	 * @param entity
 	 */
-	protected PreferredConstructorDiscoverer(TypeInformation<T> type, PersistentEntity<T, P> entity) {
+	protected PreferredConstructorDiscoverer(TypeInformation<T> type, @Nullable PersistentEntity<T, P> entity) {
 
 		boolean noArgConstructorFound = false;
 		int numberOfArgConstructors = 0;
@@ -106,7 +107,7 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private PreferredConstructor<T, P> buildPreferredConstructor(Constructor<?> constructor,
-			TypeInformation<T> typeInformation, PersistentEntity<T, P> entity) {
+			TypeInformation<T> typeInformation, @Nullable PersistentEntity<T, P> entity) {
 
 		List<TypeInformation<?>> parameterTypes = typeInformation.getParameterTypes(constructor);
 
@@ -136,6 +137,7 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 	 *
 	 * @return
 	 */
+	@Nullable
 	public PreferredConstructor<T, P> getConstructor() {
 		return constructor;
 	}

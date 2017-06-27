@@ -27,6 +27,7 @@ import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Metric;
 import org.springframework.data.geo.Metrics;
 import org.springframework.format.Formatter;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -60,6 +61,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 	 */
+	@Nullable
 	@Override
 	public final Distance convert(String source) {
 		return source == null ? null : doConvert(source.trim().toLowerCase(Locale.US));
@@ -80,7 +82,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 	 */
 	@Override
 	public Distance parse(String text, Locale locale) throws ParseException {
-		return !StringUtils.hasText(text) ? null : doConvert(text.trim().toLowerCase(locale));
+		return doConvert(text.trim().toLowerCase(locale));
 	}
 
 	/**

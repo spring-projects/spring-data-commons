@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -63,8 +64,8 @@ public class MappingInstantiationException extends RuntimeException {
 		this(Optional.empty(), arguments, null, cause);
 	}
 
-	private MappingInstantiationException(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments, String message,
-			Exception cause) {
+	private MappingInstantiationException(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments,
+			@Nullable String message, Exception cause) {
 
 		super(buildExceptionMessage(entity, arguments, message), cause);
 
@@ -75,13 +76,13 @@ public class MappingInstantiationException extends RuntimeException {
 	}
 
 	private static String buildExceptionMessage(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments,
-			String defaultMessage) {
+			@Nullable String defaultMessage) {
 
 		return entity.map(it -> {
 
 			Optional<? extends PreferredConstructor<?, ?>> constructor = Optional.ofNullable(it.getPersistenceConstructor());
-
 			List<String> toStringArgs = new ArrayList<>(arguments.size());
+
 			for (Object o : arguments) {
 				toStringArgs.add(ObjectUtils.nullSafeToString(o));
 			}

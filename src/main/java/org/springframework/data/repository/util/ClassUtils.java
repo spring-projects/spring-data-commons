@@ -23,6 +23,7 @@ import java.util.Collection;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -72,8 +73,7 @@ public abstract class ClassUtils {
 	 * @param interfaceName
 	 * @return
 	 */
-	public static boolean isGenericRepositoryInterface(String interfaceName) {
-
+	public static boolean isGenericRepositoryInterface(@Nullable String interfaceName) {
 		return Repository.class.getName().equals(interfaceName);
 	}
 
@@ -123,9 +123,9 @@ public abstract class ClassUtils {
 	 * @param types
 	 * @return
 	 */
-	public static boolean isOfType(Object object, Collection<Class<?>> types) {
+	public static boolean isOfType(@Nullable Object object, Collection<Class<?>> types) {
 
-		if (null == object) {
+		if (object == null) {
 			return false;
 		}
 

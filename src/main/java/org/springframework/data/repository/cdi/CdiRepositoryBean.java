@@ -40,10 +40,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.data.repository.config.DefaultRepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryBeanNameGenerator;
+import org.springframework.data.repository.config.SpringDataAnnotationBeanNameGenerator;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -69,11 +70,11 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	private final BeanManager beanManager;
 	private final String passivationId;
 
-	private transient T repoInstance;
+	private transient @Nullable T repoInstance;
 
-	private final AnnotationBeanNameGenerator annotationBeanNameGenerator = new AnnotationBeanNameGenerator();
-	private final RepositoryBeanNameGenerator beanNameGenerator =
-			new RepositoryBeanNameGenerator(getClass().getClassLoader());
+	private final SpringDataAnnotationBeanNameGenerator annotationBeanNameGenerator = new SpringDataAnnotationBeanNameGenerator();
+	private final RepositoryBeanNameGenerator beanNameGenerator = new RepositoryBeanNameGenerator(
+			getClass().getClassLoader());
 
 	/**
 	 * Creates a new {@link CdiRepositoryBean}.
@@ -183,15 +184,19 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * (non-Javadoc)
 	 * @see javax.enterprise.context.spi.Contextual#create(javax.enterprise.context.spi.CreationalContext)
 	 */
-	public final T create(CreationalContext<T> creationalContext) {
+	public final T create(@SuppressWarnings("null") CreationalContext<T> creationalContext) {
 
-		if (this.repoInstance != null) {
+		T repoInstance = this.repoInstance;
+
+		if (repoInstance != null) {
 			LOGGER.debug("Returning eagerly created CDI repository instance for {}.", repositoryType.getName());
-			return this.repoInstance;
+			return repoInstance;
 		}
 
 		LOGGER.debug("Creating CDI repository bean instance for {}.", repositoryType.getName());
-		this.repoInstance = create(creationalContext, repositoryType);
+		repoInstance = create(creationalContext, repositoryType);
+		this.repoInstance = repoInstance;
+
 		return repoInstance;
 	}
 
@@ -199,7 +204,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * (non-Javadoc)
 	 * @see javax.enterprise.context.spi.Contextual#destroy(java.lang.Object, javax.enterprise.context.spi.CreationalContext)
 	 */
-	public void destroy(T instance, CreationalContext<T> creationalContext) {
+	public void destroy(@SuppressWarnings("null") T instance,
+			@SuppressWarnings("null") CreationalContext<T> creationalContext) {
 
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug(String.format("Destroying bean instance %s for repository type '%s'.", instance.toString(),
@@ -255,7 +261,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 			CdiRepositoryConfiguration cdiRepositoryConfiguration, CustomRepositoryImplementationDetector detector) {
 
 		String className = getCustomImplementationClassName(repositoryType, cdiRepositoryConfiguration);
-		Optional<AbstractBeanDefinition>  beanDefinition = detector.detectCustomImplementation( //
+		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation( //
 				className, //
 				getCustomImplementationBeanName(repositoryType), //
 				Collections.singleton(repositoryType.getPackage().getName()), //
@@ -275,7 +281,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	}
 
 	private String getCustomImplementationBeanName(Class<?> repositoryType) {
-		return annotationBeanNameGenerator.generateBeanName(new AnnotatedGenericBeanDefinition(repositoryType), null)
+		return annotationBeanNameGenerator.generateBeanName(new AnnotatedGenericBeanDefinition(repositoryType))
 				+ DEFAULT_CONFIGURATION.getRepositoryImplementationPostfix();
 	}
 
@@ -374,7 +380,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * @param creationalContext will never be {@literal null}.
 	 * @param repositoryType will never be {@literal null}.
 	 * @return
-	 * @deprecated overide {@link #create(CreationalContext, Class, Object)} instead.
+	 * @deprecated override {@link #create(CreationalContext, Class, Object)} instead.
 	 */
 	@Deprecated
 	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {

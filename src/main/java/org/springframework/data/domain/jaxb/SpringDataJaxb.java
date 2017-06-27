@@ -36,6 +36,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -84,8 +85,8 @@ public abstract class SpringDataJaxb {
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class OrderDto {
 
-		@XmlAttribute String property;
-		@XmlAttribute Direction direction;
+		@Nullable @XmlAttribute String property;
+		@Nullable @XmlAttribute Direction direction;
 	}
 
 	/**
@@ -97,7 +98,7 @@ public abstract class SpringDataJaxb {
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class PageDto extends ResourceSupport {
 
-		@XmlAnyElement @XmlElementWrapper(name = "content") List<Object> content;
+		@Nullable @XmlAnyElement @XmlElementWrapper(name = "content") List<Object> content;
 	}
 
 	/**
@@ -136,7 +137,7 @@ public abstract class SpringDataJaxb {
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T, S> List<S> marshal(Iterable<T> source, XmlAdapter<S, T> adapter) {
+	public static <T, S> List<S> marshal(@Nullable Iterable<T> source, XmlAdapter<S, T> adapter) {
 
 		Assert.notNull(adapter, "Adapter must not be null!");
 

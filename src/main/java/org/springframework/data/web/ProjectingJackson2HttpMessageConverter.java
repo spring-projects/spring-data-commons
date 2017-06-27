@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
@@ -112,7 +113,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canRead(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
 	 */
 	@Override
-	public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
+	public boolean canRead(Type type, @Nullable Class<?> contextClass, @Nullable MediaType mediaType) {
 
 		if (!canRead(mediaType)) {
 			return false;
@@ -137,7 +138,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
 	 */
 	@Override
-	public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+	public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
 		return false;
 	}
 
@@ -146,8 +147,9 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#read(java.lang.reflect.Type, java.lang.Class, org.springframework.http.HttpInputMessage)
 	 */
 	@Override
-	public Object read(Type type, Class<?> contextClass, HttpInputMessage inputMessage)
+	public Object read(Type type, @Nullable Class<?> contextClass, HttpInputMessage inputMessage)
 			throws IOException, HttpMessageNotReadableException {
-		return projectionFactory.createProjection(ResolvableType.forType(type).getRawClass(), inputMessage.getBody());
+		return projectionFactory.createProjection(ResolvableType.forType(type).resolve(Object.class),
+				inputMessage.getBody());
 	}
 }

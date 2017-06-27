@@ -17,6 +17,8 @@ package org.springframework.data.crossstore;
 
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.springframework.core.convert.ConversionService;
 
 /**
@@ -27,12 +29,14 @@ import org.springframework.core.convert.ConversionService;
  */
 public interface ChangeSet {
 
+	@Nullable
 	<T> T get(String key, Class<T> requiredClass, ConversionService cs);
 
 	void set(String key, Object o);
 
 	Map<String, Object> getValues();
 
+	@Nullable
 	Object removeProperty(String k);
 
 }

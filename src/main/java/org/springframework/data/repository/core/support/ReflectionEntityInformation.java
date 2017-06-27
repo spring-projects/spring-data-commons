@@ -20,6 +20,8 @@ import java.lang.reflect.Field;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.util.AnnotationDetectionFieldCallback;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -56,26 +58,32 @@ public class ReflectionEntityInformation<T, ID> extends AbstractEntityInformatio
 	public ReflectionEntityInformation(Class<T> domainClass, final Class<? extends Annotation> annotation) {
 
 		super(domainClass);
+
 		Assert.notNull(annotation, "Annotation must not be null!");
 
-		ReflectionUtils.doWithFields(domainClass, field -> {
-			if (field.getAnnotation(annotation) != null) {
-				ReflectionEntityInformation.this.field = field;
-				return;
-			}
-		});
+		AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(annotation);
+		ReflectionUtils.doWithFields(domainClass, callback);
 
-		Assert.notNull(this.field, () -> String.format("No field annotated with %s found!", annotation.toString()));
-		ReflectionUtils.makeAccessible(field);
+		try {
+			this.field = callback.getRequiredField();
+		} catch (IllegalStateException o_O) {
+			throw new IllegalArgumentException(String.format("Couldn't find field with annotation %s!", annotation), o_O);
+		}
+
+		ReflectionUtils.makeAccessible(this.field);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
 	public ID getId(Object entity) {
-		return entity == null ? null : (ID) ReflectionUtils.getField(field, entity);
+
+		Assert.notNull(entity, "Entity must not be null!");
+
+		return (ID) ReflectionUtils.getField(field, entity);
 	}
 
 	/*

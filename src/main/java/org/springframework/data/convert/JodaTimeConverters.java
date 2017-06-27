@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
@@ -72,9 +74,10 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
+		@Nonnull
 		@Override
 		public java.time.LocalDateTime convert(LocalDateTime source) {
-			return source == null ? null : java.time.LocalDateTime.ofInstant(source.toDate().toInstant(), ZoneId.of("UTC"));
+			return java.time.LocalDateTime.ofInstant(source.toDate().toInstant(), ZoneId.of("UTC"));
 		}
 	}
 
@@ -82,8 +85,10 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
+		@Nonnull
+		@Override
 		public Date convert(LocalDate source) {
-			return source == null ? null : source.toDate();
+			return source.toDate();
 		}
 	}
 
@@ -91,8 +96,10 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
+		@Nonnull
+		@Override
 		public Date convert(LocalDateTime source) {
-			return source == null ? null : source.toDate();
+			return source.toDate();
 		}
 	}
 
@@ -100,8 +107,10 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
+		@Nonnull
+		@Override
 		public Date convert(DateTime source) {
-			return source == null ? null : source.toDate();
+			return source.toDate();
 		}
 	}
 
@@ -109,8 +118,10 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
+		@Nonnull
+		@Override
 		public LocalDate convert(Date source) {
-			return source == null ? null : new LocalDate(source.getTime());
+			return new LocalDate(source.getTime());
 		}
 	}
 
@@ -118,8 +129,10 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
+		@Nonnull
+		@Override
 		public LocalDateTime convert(Date source) {
-			return source == null ? null : new LocalDateTime(source.getTime());
+			return new LocalDateTime(source.getTime());
 		}
 	}
 
@@ -127,8 +140,10 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
+		@Nonnull
+		@Override
 		public DateTime convert(Date source) {
-			return source == null ? null : new DateTime(source.getTime());
+			return new DateTime(source.getTime());
 		}
 	}
 
@@ -136,15 +151,10 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
+		@Nonnull
 		@Override
 		public LocalDateTime convert(java.time.LocalDateTime source) {
-			return source == null ? null
-					: LocalDateTime.fromDateFields(
-							org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter.INSTANCE.convert(source));
+			return LocalDateTime.fromDateFields(Jsr310Converters.LocalDateTimeToDateConverter.INSTANCE.convert(source));
 		}
 	}
 
@@ -152,15 +162,10 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
+		@Nonnull
 		@Override
 		public DateTime convert(java.time.LocalDateTime source) {
-			return source == null ? null
-					: new DateTime(
-							org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter.INSTANCE.convert(source));
+			return new DateTime(Jsr310Converters.LocalDateTimeToDateConverter.INSTANCE.convert(source));
 		}
 	}
 }

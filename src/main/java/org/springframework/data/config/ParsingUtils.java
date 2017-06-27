@@ -21,6 +21,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -120,7 +121,7 @@ public abstract class ParsingUtils {
 	 * @param source
 	 * @return
 	 */
-	public static AbstractBeanDefinition getSourceBeanDefinition(BeanDefinitionBuilder builder, Object source) {
+	public static AbstractBeanDefinition getSourceBeanDefinition(BeanDefinitionBuilder builder, @Nullable Object source) {
 
 		Assert.notNull(builder, "Builder must not be null!");
 

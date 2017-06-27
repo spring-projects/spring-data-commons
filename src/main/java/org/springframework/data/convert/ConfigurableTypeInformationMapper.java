@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.Nullable;
+
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
@@ -77,6 +79,7 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.TypeInformationMapper#resolveTypeFrom(org.springframework.data.mapping.Alias)
 	 */
+	@Nullable
 	@Override
 	public TypeInformation<?> resolveTypeFrom(Alias alias) {
 		return aliasToType.get(alias);

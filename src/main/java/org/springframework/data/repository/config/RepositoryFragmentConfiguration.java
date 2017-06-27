@@ -20,6 +20,7 @@ import lombok.Value;
 import java.util.Optional;
 
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -67,7 +68,7 @@ public class RepositoryFragmentConfiguration {
 		Assert.notNull(beanDefinition, "Bean definition must not be null!");
 
 		this.interfaceName = interfaceName;
-		this.className = beanDefinition.getBeanClassName();
+		this.className = ConfigurationUtils.getRequiredBeanClassName(beanDefinition);
 		this.beanDefinition = Optional.of(beanDefinition);
 	}
 

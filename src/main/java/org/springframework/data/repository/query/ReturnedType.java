@@ -29,10 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -88,7 +91,7 @@ public abstract class ReturnedType {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	public final boolean isInstance(Object source) {
+	public final boolean isInstance(@Nullable Object source) {
 		return getReturnedType().isInstance(source);
 	}
 
@@ -119,6 +122,7 @@ public abstract class ReturnedType {
 	 *
 	 * @return
 	 */
+	@Nullable
 	public abstract Class<?> getTypeToRead();
 
 	/**
@@ -157,7 +161,7 @@ public abstract class ReturnedType {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedTypeInformation#getReturnedType()
+		 * @see org.springframework.data.repository.query.ReturnedType#getReturnedType()
 		 */
 		@Override
 		public Class<?> getReturnedType() {
@@ -174,7 +178,7 @@ public abstract class ReturnedType {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedType#isProjecting()
+		 * @see org.springframework.data.repository.query.ReturnedType#isProjecting()
 		 */
 		@Override
 		public boolean isProjecting() {
@@ -183,8 +187,9 @@ public abstract class ReturnedType {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedTypeInformation#getTypeToRead()
+		 * @see org.springframework.data.repository.query.ReturnedType#getTypeToRead()
 		 */
+		@Nullable
 		@Override
 		public Class<?> getTypeToRead() {
 			return isProjecting() && information.isClosed() ? null : domainType;
@@ -192,7 +197,7 @@ public abstract class ReturnedType {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedTypeInformation#getInputProperties()
+		 * @see org.springframework.data.repository.query.ReturnedType#getInputProperties()
 		 */
 		@Override
 		public List<String> getInputProperties() {
@@ -253,6 +258,7 @@ public abstract class ReturnedType {
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedType#getTypeToRead()
 		 */
+		@Nonnull
 		public Class<?> getTypeToRead() {
 			return type;
 		}

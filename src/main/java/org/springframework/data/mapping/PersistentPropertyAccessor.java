@@ -16,6 +16,7 @@
 package org.springframework.data.mapping;
 
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
+import org.springframework.lang.Nullable;
 
 /**
  * Domain service to allow accessing and setting {@link PersistentProperty}s of an entity. Usually obtained through
@@ -35,10 +36,9 @@ public interface PersistentPropertyAccessor {
 	 *
 	 * @param property must not be {@literal null}.
 	 * @param value can be {@literal null}.
-	 * @throws MappingException in case an exception occurred when setting the
-	 *           property value.
+	 * @throws MappingException in case an exception occurred when setting the property value.
 	 */
-	void setProperty(PersistentProperty<?> property, Object value);
+	void setProperty(PersistentProperty<?> property, @Nullable Object value);
 
 	/**
 	 * Returns the value of the given {@link PersistentProperty} of the underlying bean instance.
@@ -46,6 +46,7 @@ public interface PersistentPropertyAccessor {
 	 * @param property must not be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
+	@Nullable
 	Object getProperty(PersistentProperty<?> property);
 
 	/**

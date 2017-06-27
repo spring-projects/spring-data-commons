@@ -20,6 +20,8 @@ import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Base class for {@link TypeInformation} implementations that need parent type awareness.
  * 
@@ -78,9 +80,13 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 	 * @see org.springframework.data.util.TypeDiscoverer#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (!super.equals(obj)) {
+			return false;
+		}
+
+		if (obj == null) {
 			return false;
 		}
 

@@ -26,10 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.util.QueryExecutionConverters.WrapperType;
+import org.springframework.lang.Nullable;
 
 /**
  * Converter implementations to map from and to Vavr collections.
@@ -52,6 +55,7 @@ class VavrCollections {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
+		@Nonnull
 		@Override
 		public Object convert(Object source) {
 
@@ -79,6 +83,7 @@ class VavrCollections {
 			 * (non-Javadoc)
 			 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 			 */
+			@Nonnull
 			@Override
 			public java.util.Set<ConvertiblePair> getConvertibleTypes() {
 				return CONVERTIBLE_PAIRS;
@@ -109,8 +114,9 @@ class VavrCollections {
 			* (non-Javadoc)
 			* @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 			*/
+			@Nullable
 			@Override
-			public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+			public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 				if (source instanceof List) {
 					return io.vavr.collection.List.ofAll((Iterable<?>) source);

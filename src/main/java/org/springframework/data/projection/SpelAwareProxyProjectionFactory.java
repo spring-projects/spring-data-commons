@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.util.AnnotationDetectionMethodCallback;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -45,7 +46,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 	private final Map<Class<?>, Boolean> typeCache = new HashMap<>();
 	private final SpelExpressionParser parser = new SpelExpressionParser();
 
-	private BeanFactory beanFactory;
+	private @Nullable BeanFactory beanFactory;
 
 	/* 
 	 * (non-Javadoc)

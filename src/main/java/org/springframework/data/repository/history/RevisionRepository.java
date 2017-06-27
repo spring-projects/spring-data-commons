@@ -66,7 +66,7 @@ public interface RevisionRepository<T, ID, N extends Number & Comparable<N>> ext
 	 * 
 	 * @param id must not be {@literal null}.
 	 * @param revisionNumber must not be {@literal null}.
-	 * @return the entity with the given ID in the given revision number.
+	 * @return the {@link Revision} of the entity with the given ID in the given revision number.
 	 * @since 1.12
 	 */
 	Optional<Revision<N, T>> findRevision(ID id, N revisionNumber);

@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.springframework.beans.PropertyMatches;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -118,6 +119,7 @@ public class PropertyReferenceException extends RuntimeException {
 	 * 
 	 * @return
 	 */
+	@Nullable
 	public PropertyPath getBaseProperty() {
 		return alreadyResolvedPath.isEmpty() ? null : alreadyResolvedPath.get(alreadyResolvedPath.size() - 1);
 	}

@@ -28,6 +28,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -48,7 +49,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	private final List<MethodInterceptorFactory> factories;
 	private final ConversionService conversionService;
 	private final Map<Class<?>, ProjectionInformation> projectionInformationCache = new ConcurrentReferenceHashMap<>();
-	private ClassLoader classLoader;
+	private @Nullable ClassLoader classLoader;
 
 	/**
 	 * Creates a new {@link ProxyProjectionFactory}.
@@ -94,9 +95,10 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	public <T> T createProjection(Class<T> projectionType, Object source) {
 
 		Assert.notNull(projectionType, "Projection type must not be null!");
+		Assert.notNull(source, "Source must not be null!");
 		Assert.isTrue(projectionType.isInterface(), "Projection type must be an interface!");
 
-		if (source == null || projectionType.isInstance(source)) {
+		if (projectionType.isInstance(source)) {
 			return (T) source;
 		}
 
@@ -229,8 +231,9 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
+		@Nullable
 		@Override
-		public Object invoke(MethodInvocation invocation) throws Throwable {
+		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 			if (invocation.getMethod().equals(GET_TARGET_CLASS_METHOD)) {
 				return targetType;

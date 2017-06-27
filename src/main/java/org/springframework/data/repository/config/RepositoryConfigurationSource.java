@@ -22,6 +22,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 
 /**
  * Interface containing the configurable options for the Spring Data repository subsystem.
@@ -35,10 +36,9 @@ public interface RepositoryConfigurationSource {
 
 	/**
 	 * Returns the actual source object that the configuration originated from. Will be used by the tooling to give visual
-	 * feedback on where the repository instances actually come from.
-	 * 
-	 * @return must not be {@literal null}.
+	 * feedback on where the repository instances actually come from. @return.
 	 */
+	@Nullable
 	Object getSource();
 
 	/**

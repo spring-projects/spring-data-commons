@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.PropertyAccessor;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * Simple factory to create {@link SpelExpressionParser} and {@link EvaluationContext} instances.
@@ -32,7 +34,7 @@ public class SpELContext {
 
 	private final SpelExpressionParser parser;
 	private final PropertyAccessor accessor;
-	private final BeanFactory factory;
+	private final @Nullable BeanFactory factory;
 
 	/**
 	 * Creates a new {@link SpELContext} with the given {@link PropertyAccessor}. Defaults the
@@ -75,7 +77,9 @@ public class SpELContext {
 	 * @param parser
 	 * @param factory
 	 */
-	private SpELContext(PropertyAccessor accessor, SpelExpressionParser parser, BeanFactory factory) {
+	private SpELContext(PropertyAccessor accessor, @Nullable SpelExpressionParser parser, @Nullable BeanFactory factory) {
+
+		Assert.notNull(accessor, "PropertyAccessor must not be null!");
 
 		this.parser = parser == null ? new SpelExpressionParser() : parser;
 		this.accessor = accessor;
@@ -97,10 +101,7 @@ public class SpELContext {
 	public EvaluationContext getEvaluationContext(Object source) {
 
 		StandardEvaluationContext evaluationContext = new StandardEvaluationContext(source);
-
-		if (accessor != null) {
-			evaluationContext.addPropertyAccessor(accessor);
-		}
+		evaluationContext.addPropertyAccessor(accessor);
 
 		if (factory != null) {
 			evaluationContext.setBeanResolver(new BeanFactoryResolver(factory));
@@ -108,5 +109,4 @@ public class SpELContext {
 
 		return evaluationContext;
 	}
-
 }

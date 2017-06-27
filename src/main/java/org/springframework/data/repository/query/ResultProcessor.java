@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
@@ -34,6 +36,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -111,7 +114,8 @@ public class ResultProcessor {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	public <T> T processResult(Object source) {
+	@Nullable
+	public <T> T processResult(@Nullable Object source) {
 		return processResult(source, NoOpConverter.INSTANCE);
 	}
 
@@ -123,8 +127,9 @@ public class ResultProcessor {
 	 * @param preparingConverter must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
-	public <T> T processResult(Object source, Converter<Object, Object> preparingConverter) {
+	public <T> T processResult(@Nullable Object source, Converter<Object, Object> preparingConverter) {
 
 		if (source == null || type.isInstance(source) || !type.isProjecting()) {
 			return (T) source;
@@ -203,7 +208,9 @@ public class ResultProcessor {
 			return new ChainingConverter(targetType, source -> {
 
 				Object intermediate = ChainingConverter.this.convert(source);
-				return targetType.isInstance(intermediate) ? intermediate : converter.convert(intermediate);
+
+				return intermediate == null || targetType.isInstance(intermediate) ? intermediate
+						: converter.convert(intermediate);
 			});
 		}
 
@@ -211,6 +218,7 @@ public class ResultProcessor {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
+		@Nullable
 		@Override
 		public Object convert(Object source) {
 			return delegate.convert(source);
@@ -231,6 +239,7 @@ public class ResultProcessor {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
+		@Nonnull
 		@Override
 		public Object convert(Object source) {
 			return source;
@@ -271,6 +280,7 @@ public class ResultProcessor {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
+		@Nullable
 		@Override
 		public Object convert(Object source) {
 

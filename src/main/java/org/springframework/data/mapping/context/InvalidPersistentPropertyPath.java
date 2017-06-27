@@ -17,6 +17,7 @@ package org.springframework.data.mapping.context;
 
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -40,8 +41,8 @@ public class InvalidPersistentPropertyPath extends MappingException {
 	 * @param resolvedPath
 	 * @param message must not be {@literal null} or empty.
 	 */
-	InvalidPersistentPropertyPath(String source, TypeInformation<?> type, String unresolvableSegment, String resolvedPath,
-			String message) {
+	InvalidPersistentPropertyPath(String source, TypeInformation<?> type, String unresolvableSegment,
+			@Nullable String resolvedPath, String message) {
 
 		super(message);
 

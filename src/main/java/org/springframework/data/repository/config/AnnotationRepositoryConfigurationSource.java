@@ -20,9 +20,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nonnull;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -37,6 +40,7 @@ import org.springframework.core.type.filter.AspectJTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -74,18 +78,25 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @param metadata must not be {@literal null}.
 	 * @param annotation must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
-	 * @param environment
+	 * @param environment must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
 	 */
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
 			ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry) {
 
-		super(environment, resourceLoader.getClassLoader(), registry);
+		super(environment, ConfigurationUtils.getRequiredClassLoader(resourceLoader), registry);
 
 		Assert.notNull(metadata, "Metadata must not be null!");
 		Assert.notNull(annotation, "Annotation must not be null!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
-		this.attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(annotation.getName()));
+		Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(annotation.getName());
+
+		if (annotationAttributes == null) {
+			throw new IllegalStateException(String.format("Unable to obtain annotation attributes for %s!", annotation));
+		}
+
+		this.attributes = new AnnotationAttributes(annotationAttributes);
 		this.enableAnnotationMetadata = new StandardAnnotationMetadata(annotation);
 		this.configMetadata = metadata;
 		this.resourceLoader = resourceLoader;
@@ -166,6 +177,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getSource()
 	 */
+	@Nonnull
 	public Object getSource() {
 		return configMetadata;
 	}

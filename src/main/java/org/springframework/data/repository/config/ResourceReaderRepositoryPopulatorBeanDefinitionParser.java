@@ -17,6 +17,8 @@ package org.springframework.data.repository.config;
 
 import java.util.Arrays;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
@@ -36,6 +38,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClassName(org.w3c.dom.Element)
 	 */
+	@Nonnull
 	@Override
 	protected String getBeanClassName(Element element) {
 

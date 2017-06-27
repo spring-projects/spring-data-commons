@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.springframework.data.repository.query.EvaluationContextExtensionInfor
 import org.springframework.data.repository.query.EvaluationContextExtensionInformation.RootObjectInformation;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.Function;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
@@ -49,6 +51,7 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelMessage;
 import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -66,7 +69,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new HashMap<>();
 
-	private List<? extends EvaluationContextExtension> extensions;
+	private final Lazy<List<? extends EvaluationContextExtension>> extensions;
 	private Optional<ListableBeanFactory> beanFactory = Optional.empty();
 
 	/**
@@ -74,7 +77,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * {@link BeanFactory} configured.
 	 */
 	public ExtensionAwareEvaluationContextProvider() {
-		this.extensions = null;
+		this.extensions = Lazy.of(() -> getExtensionsFrom(beanFactory));
 	}
 
 	/**
@@ -85,7 +88,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	public ExtensionAwareEvaluationContextProvider(List<? extends EvaluationContextExtension> extensions) {
 
 		Assert.notNull(extensions, "List of EvaluationContextExtensions must not be null!");
-		this.extensions = extensions;
+		this.extensions = Lazy.of(() -> extensions);
 	}
 
 	/* 
@@ -108,7 +111,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		beanFactory.ifPresent(it -> ec.setBeanResolver(new BeanFactoryResolver(it)));
 
-		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(getExtensions());
+		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(extensions.get());
 
 		ec.addPropertyAccessor(accessor);
 		ec.addPropertyAccessor(new ReflectivePropertyAccessor());
@@ -149,23 +152,19 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	}
 
 	/**
-	 * Returns the {@link EvaluationContextExtension} to be used. Either from the current configuration or the configured
-	 * {@link BeanFactory}.
+	 * Looks up all {@link EvaluationContextExtension} instances from the given {@link ListableBeanFactory}.
 	 * 
+	 * @param beanFactory must not be {@literal null}.
 	 * @return
 	 */
-	private List<? extends EvaluationContextExtension> getExtensions() {
+	private static List<? extends EvaluationContextExtension> getExtensionsFrom(
+			Optional<ListableBeanFactory> beanFactory) {
 
-		if (this.extensions != null) {
-			return this.extensions;
-		}
+		Collection<? extends EvaluationContextExtension> extensions = beanFactory//
+				.map(it -> it.getBeansOfType(EvaluationContextExtension.class, true, false).values())//
+				.orElseGet(() -> Collections.emptyList());
 
-		this.extensions = Collections.emptyList();
-
-		beanFactory.ifPresent(it -> this.extensions = new ArrayList<>(
-				it.getBeansOfType(EvaluationContextExtension.class, true, false).values()));
-
-		return extensions;
+		return new ArrayList<>(extensions);
 	}
 
 	/**
@@ -228,7 +227,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * @see org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider.ReadOnlyPropertyAccessor#canRead(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 		 */
 		@Override
-		public boolean canRead(EvaluationContext context, Object target, String name) throws AccessException {
+		public boolean canRead(EvaluationContext context, @Nullable Object target, String name) {
 
 			if (target instanceof EvaluationContextExtension) {
 				return true;
@@ -246,7 +245,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * @see org.springframework.expression.PropertyAccessor#read(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 		 */
 		@Override
-		public TypedValue read(EvaluationContext context, Object target, String name) throws AccessException {
+		public TypedValue read(EvaluationContext context, @Nullable Object target, String name) {
 
 			if (target instanceof EvaluationContextExtensionAdapter) {
 				return lookupPropertyFrom(((EvaluationContextExtensionAdapter) target), name);
@@ -259,16 +258,17 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			return adapters.stream()//
 					.filter(it -> it.getProperties().containsKey(name))//
 					.map(it -> lookupPropertyFrom(it, name))//
-					.findFirst().orElse(null);
+					.findFirst().orElse(TypedValue.NULL);
 		}
 
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.expression.MethodResolver#resolve(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String, java.util.List)
 		 */
+		@Nullable
 		@Override
-		public MethodExecutor resolve(EvaluationContext context, Object target, final String name,
-				List<TypeDescriptor> argumentTypes) throws AccessException {
+		public MethodExecutor resolve(EvaluationContext context, @Nullable Object target, final String name,
+				List<TypeDescriptor> argumentTypes) {
 
 			if (target instanceof EvaluationContextExtensionAdapter) {
 				return getMethodExecutor((EvaluationContextExtensionAdapter) target, name, argumentTypes).orElse(null);
@@ -284,7 +284,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * @see org.springframework.expression.PropertyAccessor#canWrite(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 		 */
 		@Override
-		public boolean canWrite(EvaluationContext context, Object target, String name) throws AccessException {
+		public boolean canWrite(EvaluationContext context, @Nullable Object target, String name) {
 			return false;
 		}
 
@@ -293,7 +293,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * @see org.springframework.expression.PropertyAccessor#write(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String, java.lang.Object)
 		 */
 		@Override
-		public void write(EvaluationContext context, Object target, String name, Object newValue) throws AccessException {
+		public void write(EvaluationContext context, @Nullable Object target, String name, @Nullable Object newValue) {
 			// noop
 		}
 
@@ -301,6 +301,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * (non-Javadoc)
 		 * @see org.springframework.expression.PropertyAccessor#getSpecificTargetClasses()
 		 */
+		@Nullable
 		@Override
 		public Class<?>[] getSpecificTargetClasses() {
 			return null;

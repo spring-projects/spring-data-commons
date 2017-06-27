@@ -21,6 +21,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -39,6 +40,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 	 * 
 	 * @param defaultLocation must not be {@literal null} or empty.
 	 */
+	@SuppressWarnings("null")
 	public NamedQueriesBeanDefinitionBuilder(String defaultLocation) {
 
 		Assert.hasText(defaultLocation, "DefaultLocation must not be null nor empty!");
@@ -53,6 +55,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 	public void setLocations(String locations) {
 
 		Assert.hasText(locations, "Locations must not be null nor empty!");
+
 		this.locations = locations;
 	}
 
@@ -62,7 +65,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 	 * @param source
 	 * @return
 	 */
-	public BeanDefinition build(Object source) {
+	public BeanDefinition build(@Nullable Object source) {
 
 		BeanDefinitionBuilder properties = BeanDefinitionBuilder.rootBeanDefinition(PropertiesFactoryBean.class);
 

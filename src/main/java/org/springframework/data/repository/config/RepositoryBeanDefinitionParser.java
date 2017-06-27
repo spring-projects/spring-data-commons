@@ -26,6 +26,8 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.config.ConfigurationUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.w3c.dom.Element;
 
@@ -55,14 +57,15 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.BeanDefinitionParser#parse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)
 	 */
+	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parser) {
 
 		XmlReaderContext readerContext = parser.getReaderContext();
 
 		try {
 
+			ResourceLoader resourceLoader = ConfigurationUtils.getRequiredResourceLoader(readerContext);
 			Environment environment = readerContext.getEnvironment();
-			ResourceLoader resourceLoader = readerContext.getResourceLoader();
 			BeanDefinitionRegistry registry = parser.getRegistry();
 
 			XmlRepositoryConfigurationSource configSource = new XmlRepositoryConfigurationSource(element, parser,

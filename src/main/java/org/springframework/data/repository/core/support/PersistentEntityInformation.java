@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.lang.Nullable;
 
 /**
  * {@link EntityInformation} implementation that uses a {@link PersistentEntity} to obtain id type information and uses
@@ -46,6 +47,7 @@ public class PersistentEntityInformation<T, ID> extends AbstractEntityInformatio
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
+	@Nullable
 	@Override
 	public ID getId(T entity) {
 		return (ID) persistentEntity.getIdentifierAccessor(entity).getIdentifier();

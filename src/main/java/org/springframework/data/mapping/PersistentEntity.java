@@ -20,6 +20,7 @@ import java.util.Iterator;
 
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 
 /**
  * Represents a persistent entity.
@@ -47,6 +48,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 *         indicates that the instantiation of the object of that persistent entity is done through either a customer
 	 *         {@link EntityInstantiator} or handled by custom conversion mechanisms entirely.
 	 */
+	@Nullable
 	PreferredConstructor<T, P> getPersistenceConstructor();
 
 	/**
@@ -81,6 +83,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 *
 	 * @return the id property of the {@link PersistentEntity}.
 	 */
+	@Nullable
 	P getIdProperty();
 
 	/**
@@ -107,6 +110,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 *
 	 * @return the version property of the {@link PersistentEntity}.
 	 */
+	@Nullable
 	P getVersionProperty();
 
 	/**
@@ -134,6 +138,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @param name The name of the property. Can be {@literal null}.
 	 * @return the {@link PersistentProperty} or {@literal null} if it doesn't exist.
 	 */
+	@Nullable
 	P getPersistentProperty(String name);
 
 	/**
@@ -161,6 +166,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @return {@literal null} if no property found with given annotation type.
 	 * @since 1.8
 	 */
+	@Nullable
 	default P getPersistentProperty(Class<? extends Annotation> annotationType) {
 
 		Iterator<P> it = getPersistentProperties(annotationType).iterator();
@@ -240,6 +246,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @return {@literal null} if not found.
 	 * @since 1.8
 	 */
+	@Nullable
 	<A extends Annotation> A findAnnotation(Class<A> annotationType);
 
 	/**

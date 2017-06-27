@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.lang.Nullable;
 
 /**
  * Useful base class to implement custom {@link EntityInformation}s and delegate execution of standard methods from
@@ -35,6 +36,7 @@ public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
 	 */
+	@Override
 	public Class<T> getJavaType() {
 		return delegate.getJavaType();
 	}
@@ -43,6 +45,7 @@ public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#isNew(java.lang.Object)
 	 */
+	@Override
 	public boolean isNew(T entity) {
 		return delegate.isNew(entity);
 	}
@@ -51,6 +54,8 @@ public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
 	 */
+	@Nullable
+	@Override
 	public ID getId(T entity) {
 		return delegate.getId(entity);
 	}
@@ -59,6 +64,7 @@ public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
 	 */
+	@Override
 	public Class<ID> getIdType() {
 		return delegate.getIdType();
 	}

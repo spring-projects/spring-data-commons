@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -188,17 +189,17 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	@EqualsAndHashCode(exclude = { "enclosingClassCache", "hasSpelExpression" })
 	public static class Parameter<T, P extends PersistentProperty<P>> {
 
-		private final String name;
+		private final @Nullable String name;
 		private final TypeInformation<T> type;
 		private final String key;
-		private final PersistentEntity<T, P> entity;
+		private final @Nullable PersistentEntity<T, P> entity;
 
 		private final Lazy<Boolean> enclosingClassCache;
 		private final Lazy<Boolean> hasSpelExpression;
 
 		/**
 		 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
-		 * {@link Annotation}s. Will insprect the annotations for an {@link Value} annotation to lookup a key or an SpEL
+		 * {@link Annotation}s. Will inspect the annotations for an {@link Value} annotation to lookup a key or an SpEL
 		 * expression to be evaluated.
 		 *
 		 * @param name the name of the parameter, can be {@literal null}
@@ -206,7 +207,8 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 * @param annotations must not be {@literal null} but can be empty
 		 * @param entity must not be {@literal null}.
 		 */
-		public Parameter(String name, TypeInformation<T> type, Annotation[] annotations, PersistentEntity<T, P> entity) {
+		public Parameter(@Nullable String name, TypeInformation<T> type, Annotation[] annotations,
+				@Nullable PersistentEntity<T, P> entity) {
 
 			Assert.notNull(type, "Type must not be null!");
 			Assert.notNull(annotations, "Annotations must not be null!");
@@ -242,6 +244,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 *
 		 * @return
 		 */
+		@Nullable
 		public String getName() {
 			return name;
 		}
@@ -290,7 +293,11 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 */
 		boolean maps(PersistentProperty<?> property) {
 
-			P referencedProperty = entity == null ? null : entity.getPersistentProperty(name);
+			PersistentEntity<T, P> entity = this.entity;
+			String name = this.name;
+
+			P referencedProperty = entity == null ? null : name == null ? null : entity.getPersistentProperty(name);
+
 			return property != null && property.equals(referencedProperty);
 		}
 

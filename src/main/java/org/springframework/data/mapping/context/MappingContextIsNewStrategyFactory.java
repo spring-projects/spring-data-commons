@@ -26,6 +26,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
 import org.springframework.data.support.IsNewStrategyFactorySupport;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -68,12 +69,11 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	 * (non-Javadoc)
 	 * @see org.springframework.data.support.IsNewStrategyFactorySupport#getFallBackStrategy(java.lang.Class)
 	 */
+	@Nullable
 	@Override
 	protected IsNewStrategy doGetIsNewStrategy(Class<?> type) {
-		return MappingContextIsNewStrategyFactory.getIsNewStrategy(context.getRequiredPersistentEntity(type));
-	}
 
-	private static IsNewStrategy getIsNewStrategy(PersistentEntity<?, ?> entity) {
+		PersistentEntity<?, ? extends PersistentProperty<?>> entity = context.getRequiredPersistentEntity(type);
 
 		if (entity.hasVersionProperty()) {
 

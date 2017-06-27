@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.beans.AbstractPropertyAccessor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -45,6 +47,7 @@ import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.expression.spel.support.StandardTypeConverter;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.WebDataBinder;
 
@@ -77,10 +80,18 @@ class MapDataBinder extends WebDataBinder {
 	 * (non-Javadoc)
 	 * @see org.springframework.validation.DataBinder#getTarget()
 	 */
+	@Nonnull
 	@Override
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getTarget() {
-		return (Map<String, Object>) super.getTarget();
+
+		Object target = super.getTarget();
+
+		if (target == null) {
+			throw new IllegalStateException("Target bean should never be null!");
+		}
+
+		return (Map<String, Object>) target;
 	}
 
 	/* 
@@ -136,6 +147,7 @@ class MapDataBinder extends WebDataBinder {
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.PropertyAccessor#getPropertyTypeDescriptor(java.lang.String)
 		 */
+		@Nullable
 		@Override
 		public TypeDescriptor getPropertyTypeDescriptor(String propertyName) throws BeansException {
 			throw new UnsupportedOperationException();
@@ -145,6 +157,7 @@ class MapDataBinder extends WebDataBinder {
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.AbstractPropertyAccessor#getPropertyValue(java.lang.String)
 		 */
+		@Nullable
 		@Override
 		public Object getPropertyValue(String propertyName) throws BeansException {
 			throw new UnsupportedOperationException();
@@ -155,7 +168,7 @@ class MapDataBinder extends WebDataBinder {
 		 * @see org.springframework.beans.AbstractPropertyAccessor#setPropertyValue(java.lang.String, java.lang.Object)
 		 */
 		@Override
-		public void setPropertyValue(String propertyName, Object value) throws BeansException {
+		public void setPropertyValue(String propertyName, @Nullable Object value) throws BeansException {
 
 			if (!isWritableProperty(propertyName)) {
 				throw new NotWritablePropertyException(type, propertyName);
@@ -174,12 +187,23 @@ class MapDataBinder extends WebDataBinder {
 
 			propertyType = propertyName.endsWith("]") ? propertyType.getActualType() : propertyType;
 
-			if (conversionRequired(value, propertyType.getType())) {
+			if (propertyType != null && conversionRequired(value, propertyType.getType())) {
 
 				PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(owningType.getType(),
 						leafProperty.getSegment());
+
+				if (descriptor == null) {
+					throw new IllegalStateException(String.format("Couldn't find PropertyDescriptor for %s on %s!",
+							leafProperty.getSegment(), owningType.getType()));
+				}
+
 				MethodParameter methodParameter = new MethodParameter(descriptor.getReadMethod(), -1);
 				TypeDescriptor typeDescriptor = TypeDescriptor.nested(methodParameter, 0);
+
+				if (typeDescriptor == null) {
+					throw new IllegalStateException(
+							String.format("Couldn't obtain type descriptor for method parameter %s!", methodParameter));
+				}
 
 				value = conversionService.convert(value, TypeDescriptor.forObject(value), typeDescriptor);
 			}
@@ -187,9 +211,9 @@ class MapDataBinder extends WebDataBinder {
 			expression.setValue(context, value);
 		}
 
-		private boolean conversionRequired(Object source, Class<?> targetType) {
+		private boolean conversionRequired(@Nullable Object source, Class<?> targetType) {
 
-			if (targetType.isInstance(source)) {
+			if (source == null || targetType.isInstance(source)) {
 				return false;
 			}
 
@@ -234,7 +258,7 @@ class MapDataBinder extends WebDataBinder {
 			 * @see org.springframework.context.expression.MapAccessor#canRead(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 			 */
 			@Override
-			public boolean canRead(EvaluationContext context, Object target, String name) throws AccessException {
+			public boolean canRead(EvaluationContext context, @Nullable Object target, String name) throws AccessException {
 				return true;
 			}
 
@@ -244,7 +268,11 @@ class MapDataBinder extends WebDataBinder {
 			 */
 			@Override
 			@SuppressWarnings("unchecked")
-			public TypedValue read(EvaluationContext context, Object target, String name) throws AccessException {
+			public TypedValue read(EvaluationContext context, @Nullable Object target, String name) throws AccessException {
+
+				if (target == null) {
+					return TypedValue.NULL;
+				}
 
 				PropertyPath path = PropertyPath.from(name, type);
 

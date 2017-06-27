@@ -36,6 +36,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
@@ -43,7 +45,9 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -261,7 +265,8 @@ public abstract class QueryExecutionConverters {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	public static Object unwrap(Object source) {
+	@Nullable
+	public static Object unwrap(@Nullable Object source) {
 
 		if (source == null || !supports(source.getClass())) {
 			return source;
@@ -312,20 +317,26 @@ public abstract class QueryExecutionConverters {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
+		@Nonnull
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 
 			return Streamable.of(wrapperTypes)//
 					.map(it -> new ConvertiblePair(NullableWrapper.class, it))//
-					.stream().collect(Collectors.toSet());
+					.stream().collect(StreamUtils.toUnmodifiableSet());
 		}
 
 		/* 
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 		 */
+		@Nullable
 		@Override
-		public final Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		public final Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+			if (source == null) {
+				return null;
+			}
 
 			NullableWrapper wrapper = (NullableWrapper) source;
 			Object value = wrapper.getValue();
@@ -561,6 +572,7 @@ public abstract class QueryExecutionConverters {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
+		@Nullable
 		@Override
 		public Object convert(Object source) {
 			return source instanceof Optional ? ((Optional<?>) source).orNull() : source;
@@ -581,6 +593,7 @@ public abstract class QueryExecutionConverters {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
+		@Nullable
 		@Override
 		public Object convert(Object source) {
 			return source instanceof java.util.Optional ? ((java.util.Optional<?>) source).orElse(null) : source;
@@ -604,6 +617,7 @@ public abstract class QueryExecutionConverters {
 			 * (non-Javadoc)
 			 * @see scala.Function0#apply()
 			 */
+			@Nullable
 			@Override
 			public Option<Object> apply() {
 				return null;
@@ -614,6 +628,7 @@ public abstract class QueryExecutionConverters {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
+		@Nullable
 		@Override
 		public Object convert(Object source) {
 			return source instanceof Option ? ((Option<?>) source).getOrElse(alternative) : source;
@@ -634,6 +649,7 @@ public abstract class QueryExecutionConverters {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
+		@Nullable
 		@Override
 		@SuppressWarnings("unchecked")
 		public Object convert(Object source) {
@@ -664,6 +680,7 @@ public abstract class QueryExecutionConverters {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
+		@Nullable
 		@Override
 		@SuppressWarnings("unchecked")
 		public Object convert(Object source) {

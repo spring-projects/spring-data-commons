@@ -28,6 +28,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -41,8 +42,8 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 	private final Iterable<Class<? extends Annotation>> annotationTypess;
 	private final boolean considerInterfaces;
 
-	private ResourceLoader resourceLoader;
-	private Environment environment;
+	private @Nullable ResourceLoader resourceLoader;
+	private @Nullable Environment environment;
 
 	/**
 	 * Creates a new {@link AnnotatedTypeScanner} for the given annotation types.
@@ -107,12 +108,22 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 
 		Set<Class<?>> types = new HashSet<>();
 
+		ResourceLoader loader = resourceLoader;
+		ClassLoader classLoader = loader == null ? null : loader.getClassLoader();
+
 		for (String basePackage : basePackages) {
 
 			for (BeanDefinition definition : provider.findCandidateComponents(basePackage)) {
+
+				String beanClassName = definition.getBeanClassName();
+
+				if (beanClassName == null) {
+					throw new IllegalStateException(
+							String.format("Unable to obtain bean class name from bean definition %s!", definition));
+				}
+
 				try {
-					types.add(ClassUtils.forName(definition.getBeanClassName(),
-							resourceLoader == null ? null : resourceLoader.getClassLoader()));
+					types.add(ClassUtils.forName(beanClassName, classLoader));
 				} catch (ClassNotFoundException o_O) {
 					throw new IllegalStateException(o_O);
 				}

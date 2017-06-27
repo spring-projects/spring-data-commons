@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
@@ -57,7 +58,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	private final TypeInformation<?> actualTypeInformation;
 	private final boolean isCollection;
 
-	private PropertyPath next;
+	private @Nullable PropertyPath next;
 
 	/**
 	 * Creates a leaf {@link PropertyPath} (no nested ones) with the given name inside the given owning type.
@@ -92,8 +93,9 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		this.owningType = owningType;
 		this.typeInformation = propertyType;
 		this.isCollection = propertyType.isCollectionLike();
-		this.actualTypeInformation = propertyType.getActualType();
 		this.name = propertyName;
+		this.actualTypeInformation = propertyType.getActualType() == null ? propertyType
+				: propertyType.getRequiredActualType();
 	}
 
 	/**
@@ -124,7 +126,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		PropertyPath result = this;
 
 		while (result.hasNext()) {
-			result = result.next();
+			result = result.requiredNext();
 		}
 
 		return result;
@@ -146,6 +148,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @return the next nested {@link PropertyPath} or {@literal null} if no nested {@link PropertyPath} available.
 	 * @see #hasNext()
 	 */
+	@Nullable
 	public PropertyPath next() {
 		return next;
 	}
@@ -168,7 +171,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	public String toDotPath() {
 
 		if (hasNext()) {
-			return getSegment() + "." + next().toDotPath();
+			return getSegment() + "." + requiredNext().toDotPath();
 		}
 
 		return getSegment();
@@ -188,17 +191,25 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @see java.lang.Iterable#iterator()
 	 */
 	public Iterator<PropertyPath> iterator() {
+
 		return new Iterator<PropertyPath>() {
 
-			private PropertyPath current = PropertyPath.this;
+			private @Nullable PropertyPath current = PropertyPath.this;
 
 			public boolean hasNext() {
 				return current != null;
 			}
 
+			@Nullable
 			public PropertyPath next() {
+
 				PropertyPath result = current;
-				this.current = current.next();
+
+				if (result == null) {
+					return null;
+				}
+
+				this.current = result.next();
 				return result;
 			}
 
@@ -206,6 +217,24 @@ public class PropertyPath implements Streamable<PropertyPath> {
 				throw new UnsupportedOperationException();
 			}
 		};
+	}
+
+	/**
+	 * Returns the next {@link PropertyPath}.
+	 * 
+	 * @return
+	 * @throws IllegalStateException it there's no next one.
+	 */
+	private PropertyPath requiredNext() {
+
+		PropertyPath result = next;
+
+		if (result == null) {
+			throw new IllegalStateException(
+					"No next path available! Clients should call hasNext() before invoking this method!");
+		}
+
+		return result;
 	}
 
 	/**
@@ -258,6 +287,11 @@ public class PropertyPath implements Streamable<PropertyPath> {
 				}
 			}
 
+			if (result == null) {
+				throw new IllegalStateException(
+						String.format("Expected parsing to yield a PropertyPath from %s but got null!", source));
+			}
+
 			return result;
 		});
 	}
@@ -277,7 +311,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 		PropertyPath previous = base.peek();
 
-		PropertyPath propertyPath = create(source, previous.typeInformation.getActualType(), base);
+		PropertyPath propertyPath = create(source, previous.typeInformation.getRequiredActualType(), base);
 		previous.next = propertyPath;
 		return propertyPath;
 	}
@@ -297,7 +331,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Tries to look up a chain of {@link PropertyPath}s by trying the givne source first. If that fails it will split the
+	 * Tries to look up a chain of {@link PropertyPath}s by trying the given source first. If that fails it will split the
 	 * source apart at camel case borders (starting from the right side) and try to look up a {@link PropertyPath} from
 	 * the calculated head and recombined new tail and additional tail.
 	 *

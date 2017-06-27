@@ -63,6 +63,7 @@ import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.Pair;
 import org.springframework.data.util.ReflectionUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionalProxy;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -114,7 +115,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private final List<RepositoryProxyPostProcessor> postProcessors;
 
 	private Optional<Class<?>> repositoryBaseClass;
-	private QueryLookupStrategy.Key queryLookupStrategyKey;
+	private @Nullable QueryLookupStrategy.Key queryLookupStrategyKey;
 	private List<QueryCreationListener<?>> queryPostProcessors;
 	private NamedQueries namedQueries;
 	private ClassLoader classLoader;
@@ -123,6 +124,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
+	@SuppressWarnings("null")
 	public RepositoryFactorySupport() {
 
 		this.repositoryInformationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
@@ -414,7 +416,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
 	 * @since 1.9
 	 */
-	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
 			EvaluationContextProvider evaluationContextProvider) {
 		return Optional.empty();
 	}
@@ -541,7 +543,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
-		public Object invoke(MethodInvocation invocation) throws Throwable {
+		@Nullable
+		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 			Object result = doInvoke(invocation);
 
@@ -586,11 +589,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		private final @NonNull RepositoryComposition composition;
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
+		@Nullable
 		@Override
-		public Object invoke(MethodInvocation invocation) throws Throwable {
+		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
 			Object[] arguments = invocation.getArguments();

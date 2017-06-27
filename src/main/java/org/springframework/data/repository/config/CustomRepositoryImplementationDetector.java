@@ -25,6 +25,8 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -61,6 +63,7 @@ public class CustomRepositoryImplementationDetector {
 	 * @param configuration the {@link RepositoryConfiguration} to consider.
 	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found.
 	 */
+	@SuppressWarnings("deprecation")
 	public Optional<AbstractBeanDefinition> detectCustomImplementation(RepositoryConfiguration<?> configuration) {
 
 		// TODO 2.0: Extract into dedicated interface for custom implementation lookup configuration.
@@ -83,7 +86,7 @@ public class CustomRepositoryImplementationDetector {
 	 * @param beanNameGenerator must not be {@literal null}.
 	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found.
 	 */
-	public Optional<AbstractBeanDefinition> detectCustomImplementation(String className, String beanName,
+	public Optional<AbstractBeanDefinition> detectCustomImplementation(String className, @Nullable String beanName,
 			Iterable<String> basePackages, Iterable<TypeFilter> excludeFilters,
 			Function<BeanDefinition, String> beanNameGenerator) {
 

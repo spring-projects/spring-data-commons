@@ -17,6 +17,7 @@ package org.springframework.data.querydsl;
 
 import lombok.experimental.UtilityClass;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Path;
@@ -52,7 +53,7 @@ public class QuerydslUtils {
 	 * @param tail must not be {@literal null}.
 	 * @return
 	 */
-	private static String toDotPath(Path<?> path, String tail) {
+	private static String toDotPath(@Nullable Path<?> path, String tail) {
 
 		if (path == null) {
 			return tail;

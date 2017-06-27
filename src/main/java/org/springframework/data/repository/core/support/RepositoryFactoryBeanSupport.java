@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -79,6 +81,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
+	@SuppressWarnings("null")
 	protected RepositoryFactoryBeanSupport(Class<? extends T> repositoryInterface) {
 
 		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
@@ -231,6 +234,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
+	@Nonnull
 	public T getObject() {
 		return this.repository.get();
 	}
@@ -239,6 +243,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
+	@Nonnull
 	public Class<? extends T> getObjectType() {
 		return repositoryInterface;
 	}

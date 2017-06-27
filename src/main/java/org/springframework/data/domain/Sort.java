@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -212,9 +213,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	public Sort and(Sort sort) {
 
-		if (sort == null) {
-			return this;
-		}
+		Assert.notNull(sort, "Sort must not be null!");
 
 		ArrayList<Order> these = new ArrayList<>(this.orders);
 
@@ -231,6 +230,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @param property
 	 * @return
 	 */
+	@Nullable
 	public Order getOrderFor(String property) {
 
 		for (Order order : this) {
@@ -255,7 +255,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;
@@ -400,6 +400,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		private static final long serialVersionUID = 1522511010900108987L;
 		private static final boolean DEFAULT_IGNORE_CASE = false;
+		private static final NullHandling DEFAULT_NULL_HANDLING = NullHandling.NATIVE;
 
 		private final Direction direction;
 		private final String property;
@@ -414,7 +415,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @param property must not be {@literal null} or empty.
 		 */
 		public Order(Direction direction, String property) {
-			this(direction, property, DEFAULT_IGNORE_CASE, null);
+			this(direction, property, DEFAULT_IGNORE_CASE, DEFAULT_NULL_HANDLING);
 		}
 
 		/**
@@ -423,7 +424,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * 
 		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
 		 * @param property must not be {@literal null} or empty.
-		 * @param nullHandling can be {@literal null}, will default to {@link NullHandling#NATIVE}.
+		 * @param nullHandling must not be {@literal null}.
 		 */
 		public Order(Direction direction, String property, NullHandling nullHandlingHint) {
 			this(direction, property, DEFAULT_IGNORE_CASE, nullHandlingHint);
@@ -460,7 +461,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @since 2.0
 		 */
 		public static Order asc(String property) {
-			return new Order(Direction.ASC, property, null);
+			return new Order(Direction.ASC, property, DEFAULT_NULL_HANDLING);
 		}
 
 		/**
@@ -471,7 +472,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @since 2.0
 		 */
 		public static Order desc(String property) {
-			return new Order(Direction.DESC, property, null);
+			return new Order(Direction.DESC, property, DEFAULT_NULL_HANDLING);
 		}
 
 		/**
@@ -481,7 +482,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
 		 * @param property must not be {@literal null} or empty.
 		 * @param ignoreCase true if sorting should be case insensitive. false if sorting should be case sensitive.
-		 * @param nullHandling can be {@literal null}, will default to {@link NullHandling#NATIVE}.
+		 * @param nullHandling must not be {@literal null}.
 		 * @since 1.7
 		 */
 		private Order(Direction direction, String property, boolean ignoreCase, NullHandling nullHandling) {
@@ -493,7 +494,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 			this.direction = direction == null ? DEFAULT_DIRECTION : direction;
 			this.property = property;
 			this.ignoreCase = ignoreCase;
-			this.nullHandling = nullHandling == null ? NullHandling.NATIVE : nullHandling;
+			this.nullHandling = nullHandling;
 		}
 
 		/**
@@ -655,7 +656,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @see java.lang.Object#equals(java.lang.Object)
 		 */
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(@Nullable Object obj) {
 
 			if (this == obj) {
 				return true;
