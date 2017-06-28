@@ -36,6 +36,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
@@ -198,7 +199,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 
 		Alias alias = getAliasFor(info);
 		if (alias.isPresent()) {
-			accessor.writeTypeTo(sink, alias.getValue().get());
+			accessor.writeTypeTo(sink, alias.getValue());
 		}
 	}
 

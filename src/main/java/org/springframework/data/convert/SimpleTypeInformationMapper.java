@@ -48,8 +48,13 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 	@Override
 	public TypeInformation<?> resolveTypeFrom(Alias alias) {
 
-		return alias.mapTyped(String.class)//
-				.flatMap(it -> CACHE.computeIfAbsent(it, SimpleTypeInformationMapper::loadClass)).orElse(null);
+		String stringAlias = alias.mapTyped(String.class);
+
+		if (stringAlias != null) {
+			return CACHE.computeIfAbsent(stringAlias, SimpleTypeInformationMapper::loadClass).orElse(null);
+		}
+
+		return null;
 	}
 
 	/**

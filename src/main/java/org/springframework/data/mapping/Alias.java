@@ -21,48 +21,138 @@ import lombok.Value;
 
 import java.util.Optional;
 
+import org.springframework.util.Assert;
+
 /**
+ * A container object which may or may not contain a type alias value. If a value is present, {@code isPresent()} will
+ * return {@code true} and {@link #getValue()} will return the value.
+ * <p/>
+ * Additional methods that depend on the presence or absence of a contained value are provided, such as
+ * {@link #hasValue(Object)} or {@link #isPresent()}
+ * <p/>
+ * Aliases are immutable once created.
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Alias {
 
-	public static Alias NONE = new Alias(Optional.empty());
+	/**
+	 * Common instance for {@code empty()}.
+	 */
+	public static final Alias NONE = new Alias(null);
 
-	Optional<? extends Object> value;
+	private final Object value;
 
+	/**
+	 * Create an {@link Alias} given the {@code alias} object.
+	 *
+	 * @param alias must not be {@literal null}.
+	 * @return the {@link Alias} for {@code alias}.
+	 */
 	public static Alias of(Object alias) {
-		return ofOptional(Optional.of(alias));
+
+		Assert.notNull(alias, "Alias must not be null!");
+
+		return new Alias(alias);
 	}
 
+	/**
+	 * Create an {@link Alias} from a possibly present {@code alias} object. Using a {@literal null} alias will return
+	 * {@link #empty()}.
+	 *
+	 * @param alias may be {@literal null}.
+	 * @return the {@link Alias} for {@code alias} or {@link #empty()} if the given alias was {@literal null}.
+	 */
+	public static Alias ofNullable(Object alias) {
+		return alias == null ? NONE : new Alias(alias);
+	}
+
+	/**
+	 * Create an {@link Alias} from an {@link Optional}. Returns an {@link Alias} object of the optional value is present,
+	 * otherwise {@link #empty()}.
+	 *
+	 * @param optional must not be {@literal null}.
+	 * @return the {@link Alias} for {@code alias} or {@link #empty()} if the given alias was {@literal null}.
+	 */
 	public static Alias ofOptional(Optional<? extends Object> optional) {
-		return optional.isPresent() ? new Alias(optional) : NONE;
+
+		Assert.notNull(optional, "Optional must not be null!");
+
+		return optional.map(Alias::new).orElse(NONE);
 	}
 
+	/**
+	 * Returns an empty {@code Alias} instance. No value is present for this Alias.
+	 *
+	 * @return an empty {@link Alias}.
+	 */
+	public static Alias empty() {
+		return NONE;
+	}
+
+	/**
+	 * Checks whether this {@link Alias} has a value but is different from the {@code other} value.
+	 *
+	 * @param other must not be {@literal null}.
+	 * @return {@literal true} if this value is present but different from the {@code other} value.
+	 */
 	public boolean isPresentButDifferent(Alias other) {
-		return isPresent() && !hasValue(other.value);
+
+		Assert.notNull(other, "Other alias must not be null!");
+
+		return isPresent() && !this.value.equals(other.value);
 	}
 
+	/**
+	 * Checks whether this {@link Alias} contains the value {@code that}.
+	 *
+	 * @param that the other value, may be {@literal null}.
+	 * @return {@literal true} if this alias has a value and it equals to {@code that}.
+	 */
 	public boolean hasValue(Object that) {
-		return value.filter(it -> it.equals(that)).isPresent();
+		return value != null && value.equals(that);
 	}
 
+	/**
+	 * Returns whether the the current alias is present and has the same value as the given {@link Alias}.
+	 * 
+	 * @param other the other {@link Alias}
+	 * @return {@literal true} if there's an alias value present and its equal to the one in the given {@link Alias}.
+	 */
 	public boolean hasSamePresentValueAs(Alias other) {
 		return isPresent() && value.equals(other.value);
 	}
 
+	/**
+	 * @return {@literal true} if this {@link Alias} contains a value.
+	 */
 	public boolean isPresent() {
-		return value.isPresent();
+		return value != null;
 	}
 
-	public <T> Optional<T> mapTyped(Class<T> type) {
-		return value.filter(type::isInstance).map(type::cast);
+	/**
+	 * Return the value typed to {@code type} if the value is present and assignable to {@code type}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T mapTyped(Class<T> type) {
+
+		Assert.notNull(type, "Type must not be null");
+
+		return isPresent() && type.isInstance(value) ? (T) value : null;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
 	public String toString() {
-		return value.map(Object::toString).orElse("NONE");
+		return isPresent() ? value.toString() : "NONE";
 	}
-
 }
