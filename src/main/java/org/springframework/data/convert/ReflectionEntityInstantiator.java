@@ -16,6 +16,7 @@
 package org.springframework.data.convert;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -38,6 +39,19 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
 public enum ReflectionEntityInstantiator implements EntityInstantiator {
 
 	INSTANCE;
+
+	private final int ARG_CACHE_SIZE = 100;
+
+	private final ThreadLocal<Object[][]> objectPool = ThreadLocal.withInitial(() -> {
+
+		Object[][] cached = new Object[ARG_CACHE_SIZE][];
+
+		for (int i = 0; i < ARG_CACHE_SIZE; i++) {
+			cached[i] = new Object[i];
+		}
+
+		return cached;
+	});
 
 	@SuppressWarnings("unchecked")
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
@@ -64,8 +78,9 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 				throw new MappingInstantiationException(entity, Collections.emptyList(), e);
 			}
 		}
+		int parameterCount = constructor.getConstructor().getParameterCount();
 
-		Object[] params = new Object[constructor.getConstructor().getParameterCount()];
+		Object[] params = parameterCount < ARG_CACHE_SIZE ? objectPool.get()[parameterCount] : new Object[parameterCount];
 		int i = 0;
 		for (Parameter<?, P> parameter : constructor.getParameters()) {
 			params[i++] = provider.getParameterValue(parameter);
@@ -74,7 +89,9 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 		try {
 			return BeanUtils.instantiateClass(constructor.getConstructor(), params);
 		} catch (BeanInstantiationException e) {
-			throw new MappingInstantiationException(entity, Arrays.asList(params), e);
+			throw new MappingInstantiationException(entity, new ArrayList<>(Arrays.asList(params)), e);
+		} finally {
+			Arrays.fill(params, null);
 		}
 	}
 }

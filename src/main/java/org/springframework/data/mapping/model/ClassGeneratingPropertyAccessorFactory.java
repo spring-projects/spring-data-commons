@@ -66,9 +66,12 @@ import org.springframework.util.ReflectionUtils;
  */
 public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
+	// Pooling of parameter arrays to prevent excessive object allocation.
+	private final ThreadLocal<Object[]> argumentCache = ThreadLocal.withInitial(() -> new Object[1]);
+
+	private volatile Map<PersistentEntity<?, ?>, Constructor<?>> constructorMap = new HashMap<>(32);
 	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor>> propertyAccessorClasses = new HashMap<>(
 			32);
-	private volatile Map<Class<PersistentPropertyAccessor>, Constructor<?>> constructorMap = new HashMap<>(32);
 
 	/*
 	 * (non-Javadoc)
@@ -77,15 +80,28 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	@Override
 	public PersistentPropertyAccessor getPropertyAccessor(PersistentEntity<?, ?> entity, Object bean) {
 
-		final Class<PersistentPropertyAccessor> propertyAccessorClass = propertyAccessorClasses.computeIfAbsent(
-				entity.getTypeInformation(), k -> potentiallyCreateAndRegisterPersistentPropertyAccessorClass(entity));
+		Constructor<?> constructor = constructorMap.get(entity);
+
+		if (constructor == null) {
+
+			Class<PersistentPropertyAccessor> accessorClass = potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
+					entity);
+			constructor = accessorClass.getConstructors()[0];
+
+			Map<PersistentEntity<?, ?>, Constructor<?>> constructorMap = new HashMap<>(this.constructorMap);
+			constructorMap.put(entity, constructor);
+			this.constructorMap = constructorMap;
+		}
+
+		Object[] args = argumentCache.get();
+		args[0] = bean;
 
 		try {
-
-			return (PersistentPropertyAccessor) constructorMap
-					.computeIfAbsent(propertyAccessorClass, k -> propertyAccessorClass.getConstructors()[0]).newInstance(bean);
+			return (PersistentPropertyAccessor) constructor.newInstance(args);
 		} catch (Exception e) {
 			throw new IllegalArgumentException(String.format("Cannot create persistent property accessor for %s", entity), e);
+		} finally {
+			args[0] = null;
 		}
 	}
 
