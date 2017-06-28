@@ -15,18 +15,20 @@
  */
 package org.springframework.data.mapping.model;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.WeakHashMap;
 
 import org.springframework.util.Assert;
 
 /**
  * Simple container to hold a set of types to be considered simple types.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -70,11 +72,11 @@ public class SimpleTypeHolder {
 	};
 	public static final SimpleTypeHolder DEFAULT = new SimpleTypeHolder();
 
-	private final Set<Class<?>> simpleTypes;
+	private volatile Map<Class<?>, Class<?>> simpleTypes;
 
 	/**
 	 * Creates a new {@link SimpleTypeHolder} containing the default types.
-	 * 
+	 *
 	 * @see #SimpleTypeHolder(Set, boolean)
 	 */
 	protected SimpleTypeHolder() {
@@ -84,23 +86,25 @@ public class SimpleTypeHolder {
 	/**
 	 * Creates a new {@link SimpleTypeHolder} to carry the given custom simple types. Registration of default simple types
 	 * can be deactivated by passing {@literal false} for {@code registerDefaults}.
-	 * 
+	 *
 	 * @param customSimpleTypes
 	 * @param registerDefaults
 	 */
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, boolean registerDefaults) {
 
 		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null!");
-		this.simpleTypes = new CopyOnWriteArraySet<>(customSimpleTypes);
+		this.simpleTypes = new WeakHashMap<>(customSimpleTypes.size() + DEFAULTS.size());
+
+		register(customSimpleTypes);
 
 		if (registerDefaults) {
-			this.simpleTypes.addAll(DEFAULTS);
+			register(DEFAULTS);
 		}
 	}
 
 	/**
 	 * Copy constructor to create a new {@link SimpleTypeHolder} that carries the given additional custom simple types.
-	 * 
+	 *
 	 * @param customSimpleTypes must not be {@literal null}
 	 * @param source must not be {@literal null}
 	 */
@@ -109,13 +113,16 @@ public class SimpleTypeHolder {
 		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null!");
 		Assert.notNull(source, "SourceTypeHolder must not be null!");
 
-		this.simpleTypes = new CopyOnWriteArraySet<>(customSimpleTypes);
-		this.simpleTypes.addAll(source.simpleTypes);
+		this.simpleTypes = new WeakHashMap<>(customSimpleTypes.size() + source.simpleTypes.size());
+
+		register(customSimpleTypes);
+
+		this.simpleTypes.putAll(source.simpleTypes);
 	}
 
 	/**
 	 * Returns whether the given type is considered a simple one.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -123,7 +130,9 @@ public class SimpleTypeHolder {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		if (Object.class.equals(type) || simpleTypes.contains(type)) {
+		Map<Class<?>, Class<?>> localSimpleTypes = this.simpleTypes;
+
+		if (Object.class.equals(type) || localSimpleTypes.containsKey(type)) {
 			return true;
 		}
 
@@ -131,8 +140,23 @@ public class SimpleTypeHolder {
 			return true;
 		}
 
-		return simpleTypes.stream()//
-				.filter(it -> it.isAssignableFrom(type))//
-				.peek(it -> simpleTypes.add(type)).findFirst().isPresent();
+		for (Class<?> simpleType : localSimpleTypes.keySet()) {
+
+			if (simpleType.isAssignableFrom(type)) {
+
+				Map<Class<?>, Class<?>> simpleTypes = new WeakHashMap<>(localSimpleTypes);
+				simpleTypes.put(type, type);
+
+				this.simpleTypes = simpleTypes;
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private void register(Collection<? extends Class<?>> types) {
+		types.forEach(customSimpleType -> this.simpleTypes.put(customSimpleType, customSimpleType));
 	}
 }
