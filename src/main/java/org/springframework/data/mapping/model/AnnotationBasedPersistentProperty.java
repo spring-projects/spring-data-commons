@@ -65,6 +65,11 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	private final Lazy<Boolean> isTransient = Lazy.of(() -> super.isTransient() || isAnnotationPresent(Transient.class)
 			|| isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class));
 
+	private final Lazy<Boolean> writable = Lazy.of(() -> !isTransient() && !isAnnotationPresent(ReadOnlyProperty.class));
+	private final Lazy<Boolean> reference = Lazy.of(() -> !isTransient() && isAnnotationPresent(Reference.class));
+	private final Lazy<Boolean> isId = Lazy.of(() -> isAnnotationPresent(Id.class));
+	private final Lazy<Boolean> isVersion = Lazy.of(() -> isAnnotationPresent(Version.class));
+
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
 	 *
@@ -173,7 +178,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @see org.springframework.data.mapping.PersistentProperty#isIdProperty()
 	 */
 	public boolean isIdProperty() {
-		return isAnnotationPresent(Id.class);
+		return isId.get();
 	}
 
 	/*
@@ -181,7 +186,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @see org.springframework.data.mapping.PersistentProperty#isVersionProperty()
 	 */
 	public boolean isVersionProperty() {
-		return isAnnotationPresent(Version.class);
+		return isVersion.get();
 	}
 
 	/**
@@ -189,7 +194,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	@Override
 	public boolean isAssociation() {
-		return !isTransient() && isAnnotationPresent(Reference.class);
+		return reference.get();
 	}
 
 	/*
@@ -198,7 +203,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	@Override
 	public boolean isWritable() {
-		return !isTransient() && !isAnnotationPresent(ReadOnlyProperty.class);
+		return writable.get();
 	}
 
 	/**
