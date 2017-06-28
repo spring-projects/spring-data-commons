@@ -22,7 +22,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -70,25 +79,23 @@ public class CustomConversions {
 		DEFAULT_CONVERTERS = Collections.unmodifiableList(defaults);
 	}
 
-	private final Set<ConvertiblePair> readingPairs = new LinkedHashSet<>();
-	private final Set<ConvertiblePair> writingPairs = new LinkedHashSet<>();
-	private final Set<Class<?>> customSimpleTypes;
 	private final SimpleTypeHolder simpleTypeHolder;
-
 	private final List<Object> converters;
 
-	private final Map<ConvertiblePair, Optional<Class<?>>> customReadTargetTypes;
-	private final Map<ConvertiblePair, Optional<Class<?>>> customWriteTargetTypes;
-	private final Map<Class<?>, Optional<Class<?>>> rawWriteTargetTypes;
+	private final Set<ConvertiblePair> readingPairs = new LinkedHashSet<>();
+	private final Set<ConvertiblePair> writingPairs = new LinkedHashSet<>();
+	private final Set<Class<?>> customSimpleTypes = new HashSet<>();
+	private final ConversionTargetsCache customReadTargetTypes = new ConversionTargetsCache();
+	private final ConversionTargetsCache customWriteTargetTypes = new ConversionTargetsCache();
 
-	private final Function<ConvertiblePair, Optional<Class<?>>> getCustomReadTarget = it -> getCustomTarget(
-			it.getSourceType(), Optional.of(it.getTargetType()), readingPairs);
+	private final Function<ConvertiblePair, Optional<Class<?>>> getReadTarget = convertiblePair -> getCustomTarget(
+			convertiblePair.getSourceType(), Optional.of(convertiblePair.getTargetType()), readingPairs);
 
-	private final Function<Class<?>, Optional<Class<?>>> getCustomWriteTargetForSource = it -> getCustomTarget(it,
-			Optional.empty(), writingPairs);
+	private Function<ConvertiblePair, Optional<Class<?>>> getWriteTarget = convertiblePair -> getCustomTarget(
+			convertiblePair.getSourceType(), Optional.of(convertiblePair.getTargetType()), writingPairs);
 
-	private final Function<ConvertiblePair, Optional<Class<?>>> getCustomWriteTarget = it -> getCustomTarget(
-			it.getSourceType(), Optional.of(it.getTargetType()), writingPairs);
+	private Function<ConvertiblePair, Optional<Class<?>>> getRawWriteTarget = convertiblePair -> getCustomTarget(
+			convertiblePair.getSourceType(), Optional.empty(), writingPairs);
 
 	/**
 	 * Creates a new {@link CustomConversions} instance registering the given converters.
@@ -101,12 +108,7 @@ public class CustomConversions {
 		Assert.notNull(storeConversions, "StoreConversions must not be null!");
 		Assert.notNull(converters, "List of converters must not be null!");
 
-		this.customSimpleTypes = new HashSet<>();
-		this.customReadTargetTypes = new ConcurrentHashMap<>();
-		this.customWriteTargetTypes = new ConcurrentHashMap<>();
-		this.rawWriteTargetTypes = new ConcurrentHashMap<>();
-
-		List<Object> toRegister = new ArrayList<Object>();
+		List<Object> toRegister = new ArrayList<>();
 
 		// Add user provided converters to make sure they can override the defaults
 		toRegister.addAll(converters);
@@ -237,7 +239,7 @@ public class CustomConversions {
 
 		Assert.notNull(sourceType, "Source type must not be null!");
 
-		return rawWriteTargetTypes.computeIfAbsent(sourceType, getCustomWriteTargetForSource);
+		return customWriteTargetTypes.computeIfAbsent(sourceType, getRawWriteTarget);
 	}
 
 	/**
@@ -254,8 +256,7 @@ public class CustomConversions {
 		Assert.notNull(sourceType, "Source type must not be null!");
 		Assert.notNull(requestedTargetType, "Target type must not be null!");
 
-		return customWriteTargetTypes.computeIfAbsent(new ConvertiblePair(sourceType, requestedTargetType),
-				getCustomWriteTarget);
+		return customWriteTargetTypes.computeIfAbsent(sourceType, requestedTargetType, getWriteTarget);
 	}
 
 	/**
@@ -313,8 +314,7 @@ public class CustomConversions {
 	 * @return
 	 */
 	private Optional<Class<?>> getCustomReadTarget(Class<?> sourceType, Class<?> targetType) {
-
-		return customReadTargetTypes.computeIfAbsent(new ConvertiblePair(sourceType, targetType), getCustomReadTarget);
+		return customReadTargetTypes.computeIfAbsent(sourceType, targetType, getReadTarget);
 	}
 
 	/**
@@ -349,7 +349,82 @@ public class CustomConversions {
 
 		return !requestedTargetType.isPresent() //
 				? true //
-				: requestedTargetType.map(it -> targetType.isAssignableFrom(it)).orElse(false);
+				: requestedTargetType.map(targetType::isAssignableFrom).orElse(false);
+	}
+
+	/**
+	 * Value object to cache custom conversion targets.
+	 *
+	 * @author Mark Paluch
+	 */
+	static class ConversionTargetsCache {
+
+		private final Map<Class<?>, TargetTypes> customReadTargetTypes = new ConcurrentHashMap<>();
+
+		/**
+		 * Get or compute a target type given its {@code sourceType}. Returns a cached {@link Optional} if the value
+		 * (present/absent target) was computed once. Otherwise, uses a {@link Function mappingFunction} to determine a
+		 * possibly existing target type.
+		 *
+		 * @param sourceType must not be {@literal null}.
+		 * @param mappingFunction must not be {@literal null}.
+		 * @return the optional target type.
+		 */
+		public Optional<Class<?>> computeIfAbsent(Class<?> sourceType,
+				Function<ConvertiblePair, Optional<Class<?>>> mappingFunction) {
+			return computeIfAbsent(sourceType, Object.class, mappingFunction);
+		}
+
+		/**
+		 * Get or compute a target type given its {@code sourceType} and {@code targetType}. Returns a cached
+		 * {@link Optional} if the value (present/absent target) was computed once. Otherwise, uses a {@link Function
+		 * mappingFunction} to determine a possibly existing target type.
+		 *
+		 * @param sourceType must not be {@literal null}.
+		 * @param targetType must not be {@literal null}.
+		 * @param mappingFunction must not be {@literal null}.
+		 * @return the optional target type.
+		 */
+		public Optional<Class<?>> computeIfAbsent(Class<?> sourceType, Class<?> targetType,
+				Function<ConvertiblePair, Optional<Class<?>>> mappingFunction) {
+
+			TargetTypes targetTypes = customReadTargetTypes.computeIfAbsent(sourceType, TargetTypes::new);
+			return targetTypes.computeIfAbsent(targetType, mappingFunction);
+		}
+	}
+
+	/**
+	 * Value object for a specific {@code Class source type} to determine possible target conversion types.
+	 *
+	 * @author Mark Paluch
+	 */
+	@RequiredArgsConstructor
+	static class TargetTypes {
+
+		private final @NonNull Class<?> sourceType;
+		private final Map<Class<?>, Optional<Class<?>>> conversionTargets = new ConcurrentHashMap<>();
+
+		/**
+		 * Get or compute a target type given its {@code targetType}. Returns a cached {@link Optional} if the value
+		 * (present/absent target) was computed once. Otherwise, uses a {@link Function mappingFunction} to determine a
+		 * possibly existing target type.
+		 *
+		 * @param targetType must not be {@literal null}.
+		 * @param mappingFunction must not be {@literal null}.
+		 * @return the optional target type.
+		 */
+		public Optional<Class<?>> computeIfAbsent(Class<?> targetType,
+				Function<ConvertiblePair, Optional<Class<?>>> mappingFunction) {
+
+			Optional<Class<?>> optionalTarget = conversionTargets.get(targetType);
+
+			if (optionalTarget == null) {
+				optionalTarget = mappingFunction.apply(new ConvertiblePair(sourceType, targetType));
+				conversionTargets.put(targetType, optionalTarget);
+			}
+
+			return optionalTarget;
+		}
 	}
 
 	/**
@@ -359,7 +434,7 @@ public class CustomConversions {
 	 * @author Mark Paluch
 	 */
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	private static class ConverterRegistration {
+	static class ConverterRegistration {
 
 		private final @NonNull ConvertiblePair convertiblePair;
 		private final @NonNull StoreConversions storeConversions;
