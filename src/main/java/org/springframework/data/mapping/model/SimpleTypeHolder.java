@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -31,6 +32,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class SimpleTypeHolder {
 
@@ -72,7 +74,7 @@ public class SimpleTypeHolder {
 	};
 	public static final SimpleTypeHolder DEFAULT = new SimpleTypeHolder();
 
-	private volatile Map<Class<?>, Class<?>> simpleTypes;
+	private volatile Map<Class<?>, Boolean> simpleTypes;
 
 	/**
 	 * Creates a new {@link SimpleTypeHolder} containing the default types.
@@ -93,6 +95,7 @@ public class SimpleTypeHolder {
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, boolean registerDefaults) {
 
 		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null!");
+
 		this.simpleTypes = new WeakHashMap<>(customSimpleTypes.size() + DEFAULTS.size());
 
 		register(customSimpleTypes);
@@ -116,24 +119,40 @@ public class SimpleTypeHolder {
 		this.simpleTypes = new WeakHashMap<>(customSimpleTypes.size() + source.simpleTypes.size());
 
 		register(customSimpleTypes);
+		registerCachePositives(source.simpleTypes);
+	}
 
-		this.simpleTypes.putAll(source.simpleTypes);
+	private void registerCachePositives(Map<Class<?>, Boolean> source) {
+
+		for (Entry<Class<?>, Boolean> entry : source.entrySet()) {
+
+			if (!entry.getValue()) {
+				continue;
+			}
+
+			this.simpleTypes.put(entry.getKey(), true);
+		}
 	}
 
 	/**
 	 * Returns whether the given type is considered a simple one.
 	 *
-	 * @param type
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
 	public boolean isSimpleType(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		Map<Class<?>, Class<?>> localSimpleTypes = this.simpleTypes;
+		Map<Class<?>, Boolean> localSimpleTypes = this.simpleTypes;
+		Boolean isSimpleType = localSimpleTypes.get(type);
 
-		if (Object.class.equals(type) || localSimpleTypes.containsKey(type)) {
+		if (Object.class.equals(type)) {
 			return true;
+		}
+
+		if (isSimpleType != null) {
+			return isSimpleType;
 		}
 
 		if (type.getName().startsWith("java.lang")) {
@@ -144,19 +163,25 @@ public class SimpleTypeHolder {
 
 			if (simpleType.isAssignableFrom(type)) {
 
-				Map<Class<?>, Class<?>> simpleTypes = new WeakHashMap<>(localSimpleTypes);
-				simpleTypes.put(type, type);
-
-				this.simpleTypes = simpleTypes;
-
-				return true;
+				isSimpleType = localSimpleTypes.get(simpleType);
+				this.simpleTypes = put(localSimpleTypes, type, isSimpleType);
+				return isSimpleType;
 			}
 		}
 
+		this.simpleTypes = put(localSimpleTypes, type, false);
 		return false;
 	}
 
 	private void register(Collection<? extends Class<?>> types) {
-		types.forEach(customSimpleType -> this.simpleTypes.put(customSimpleType, customSimpleType));
+		types.forEach(customSimpleType -> this.simpleTypes.put(customSimpleType, true));
+	}
+
+	private static Map<Class<?>, Boolean> put(Map<Class<?>, Boolean> simpleTypes, Class<?> type, boolean isSimpleType) {
+
+		Map<Class<?>, Boolean> copy = new WeakHashMap<>(simpleTypes);
+		copy.put(type, isSimpleType);
+
+		return copy;
 	}
 }

@@ -27,8 +27,9 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
  * Unit tests for {@link SimpleTypeHolder}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class SimpleTypeHolderUnitTests {
 
@@ -113,6 +114,23 @@ public class SimpleTypeHolderUnitTests {
 		assertThat(holder.isSimpleType(Type.class)).isTrue();
 	}
 
+	@Test // DATACMNS-1101
+	public void considersExtendedTypeAsSimple() {
+
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
+
+		assertThat(holder.isSimpleType(ExtendedPerson.class)).isFalse();
+	}
+
+	@Test // DATACMNS-1101
+	public void considersExtendedTypeAsSimpleSeenBaseClassBefore() {
+
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
+
+		assertThat(holder.isSimpleType(Person.class)).isFalse();
+		assertThat(holder.isSimpleType(ExtendedPerson.class)).isFalse();
+	}
+
 	enum SimpleEnum {
 
 		FOO;
@@ -128,5 +146,13 @@ public class SimpleTypeHolderUnitTests {
 		};
 
 		abstract boolean method();
+	}
+
+	static class Person {
+
+	}
+
+	static class ExtendedPerson extends Person {
+
 	}
 }
