@@ -447,10 +447,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public PersistentPropertyAccessor getPropertyAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
-
-		if (!getType().isInstance(bean)) { // prevent capturing lambda
-			throw new IllegalArgumentException(String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
-		}
+		Assert.isTrue(getType().isInstance(bean),
+				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
 
 		return propertyAccessorFactory.getPropertyAccessor(this, bean);
 	}
@@ -463,10 +461,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	public IdentifierAccessor getIdentifierAccessor(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
-
-		if (!getType().isInstance(bean)) { // prevent capturing lambda
-			throw new IllegalArgumentException(String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
-		}
+		Assert.isTrue(getType().isInstance(bean),
+				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
 
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : new AbsentIdentifierAccessor(bean);
 	}
