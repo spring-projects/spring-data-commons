@@ -27,9 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
-import org.assertj.core.api.OptionalAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +36,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Unit tests for {@link ParameterizedTypeInformation}.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  */
@@ -81,48 +79,44 @@ public class ParameterizedTypeUnitTests {
 	public void resolvesMapValueTypeCorrectly() {
 
 		TypeInformation<Foo> type = ClassTypeInformation.from(Foo.class);
-		Optional<TypeInformation<?>> propertyType = type.getProperty("param");
+		TypeInformation<?> propertyType = type.getProperty("param");
+		TypeInformation<?> value = propertyType.getProperty("value");
 
-		OptionalAssert<TypeInformation<?>> assertion = assertThat(propertyType);
-
-		assertion.flatMap(it -> it.getProperty("value"))
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
-		assertion.flatMap(TypeInformation::getMapValueType)
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertThat(value.getType()).isEqualTo(String.class);
+		assertThat(propertyType.getMapValueType().getType()).isEqualTo(String.class);
 
 		propertyType = type.getProperty("param2");
+		value = propertyType.getProperty("value");
 
-		assertion.flatMap(it -> it.getProperty("value"))
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
-		assertion.flatMap(TypeInformation::getMapValueType)
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertThat(value.getType()).isEqualTo(String.class);
+		assertThat(propertyType.getMapValueType().getType()).isEqualTo(Locale.class);
 	}
 
 	@Test // DATACMNS-446
 	public void createsToStringRepresentation() {
 
-		assertThat(from(Foo.class).getProperty("param")).map(Object::toString)
-				.hasValue("org.springframework.data.util.ParameterizedTypeUnitTests$Localized<java.lang.String>");
+		assertThat(from(Foo.class).getProperty("param").toString())
+				.isEqualTo("org.springframework.data.util.ParameterizedTypeUnitTests$Localized<java.lang.String>");
 	}
 
 	@Test // DATACMNS-485
 	public void hashCodeShouldBeConsistentWithEqualsForResolvedTypes() {
 
-		Optional<TypeInformation<?>> first = from(First.class).getProperty("property");
-		Optional<TypeInformation<?>> second = from(Second.class).getProperty("property");
+		TypeInformation<?> first = from(First.class).getProperty("property");
+		TypeInformation<?> second = from(Second.class).getProperty("property");
 
 		assertThat(first).isEqualTo(second);
 
-		assertThat(first).hasValueSatisfying(left -> assertThat(second)
-				.hasValueSatisfying(right -> assertThat(left.hashCode()).isEqualTo(right.hashCode())));
+		assertThat(first).satisfies(
+				left -> assertThat(second).satisfies(right -> assertThat(left.hashCode()).isEqualTo(right.hashCode())));
 	}
 
 	@Test // DATACMNS-485
 	public void getActualTypeShouldNotUnwrapParameterizedTypes() {
 
-		Optional<TypeInformation<?>> type = from(First.class).getProperty("property");
+		TypeInformation<?> type = from(First.class).getProperty("property");
 
-		assertThat(type).map(TypeInformation::getActualType).isEqualTo(type);
+		assertThat(type.getActualType()).isEqualTo(type);
 	}
 
 	@Test // DATACMNS-697
@@ -130,20 +124,16 @@ public class ParameterizedTypeUnitTests {
 
 		TypeInformation<NormalizedProfile> information = ClassTypeInformation.from(NormalizedProfile.class);
 
-		assertThat(information.getProperty("education2.data"))//
-				.flatMap(TypeInformation::getComponentType)//
-				.flatMap(it -> it.getProperty("value"))//
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Education.class));
+		assertThat(information.getProperty("education2.data").getComponentType().getProperty("value"))//
+				.satisfies(it -> assertThat(it.getType()).isEqualTo(Education.class));
 	}
 
 	@Test // DATACMNS-899
 	public void returnsEmptyOptionalMapValueTypeForNonMapProperties() {
 
-		OptionalAssert<TypeInformation<?>> assertion = assertThat(
-				ClassTypeInformation.from(Bar.class).getProperty("param"));
-
-		assertion.hasValueSatisfying(it -> assertThat(it).isInstanceOf(ParameterizedTypeInformation.class));
-		assertion.flatMap(TypeInformation::getMapValueType).isEmpty();
+		TypeInformation<?> typeInformation = ClassTypeInformation.from(Bar.class).getProperty("param");
+		assertThat(typeInformation).isInstanceOf(ParameterizedTypeInformation.class);
+		assertThat(typeInformation.getMapValueType()).isNull();
 	}
 
 	@SuppressWarnings("serial")

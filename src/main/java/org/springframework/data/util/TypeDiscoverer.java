@@ -28,7 +28,16 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -43,6 +52,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
@@ -68,8 +78,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private final int hashCode;
 
 	private final Lazy<Class<S>> resolvedType;
-	private final Lazy<Optional<TypeInformation<?>>> componentType;
-	private final Lazy<Optional<TypeInformation<?>>> valueType;
+	private final Lazy<TypeInformation<?>> componentType;
+	private final Lazy<TypeInformation<?>> valueType;
 
 	/**
 	 * Creates a new {@link TypeDiscoverer} for the given type, type variable map and parent.
@@ -99,18 +109,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return typeVariableMap;
 	}
 
-	private TypeInformation<?> createInfo(Optional<Type> fieldType) {
-		return fieldType.map(this::createInfo).orElseThrow(IllegalArgumentException::new);
-	}
-
 	/**
 	 * Creates {@link TypeInformation} for the given {@link Type}.
 	 *
-	 * @param fieldType
+	 * @param fieldType must not be {@literal null}.
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked", "deprecation" })
 	protected TypeInformation<?> createInfo(Type fieldType) {
+
+		Assert.notNull(fieldType, "Field type must not be null!");
 
 		if (fieldType.equals(this.type)) {
 			return this;
@@ -203,18 +211,22 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getProperty(java.lang.String)
 	 */
-	public Optional<TypeInformation<?>> getProperty(String fieldname) {
+	public TypeInformation<?> getProperty(String fieldname) {
 
 		int separatorIndex = fieldname.indexOf('.');
 
 		if (separatorIndex == -1) {
-			return fieldTypes.computeIfAbsent(fieldname, this::getPropertyInformation);
+			return fieldTypes.computeIfAbsent(fieldname, this::getPropertyInformation).orElse(null);
 		}
 
 		String head = fieldname.substring(0, separatorIndex);
-		Optional<TypeInformation<?>> info = getProperty(head);
+		TypeInformation<?> info = getProperty(head);
 
-		return info.map(it -> it.getProperty(fieldname.substring(separatorIndex + 1))).orElseGet(Optional::empty);
+		if (info == null) {
+			return null;
+		}
+
+		return info.getProperty(fieldname.substring(separatorIndex + 1));
 	}
 
 	/**
@@ -235,7 +247,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		return findPropertyDescriptor(rawType, fieldname).map(it -> createInfo(getGenericType(it)));
-
 	}
 
 	/**
@@ -269,22 +280,22 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param descriptor must not be {@literal null}
 	 * @return
 	 */
-	private static Optional<Type> getGenericType(PropertyDescriptor descriptor) {
+	private static Type getGenericType(PropertyDescriptor descriptor) {
 
 		Method method = descriptor.getReadMethod();
 
 		if (method != null) {
-			return Optional.of(method.getGenericReturnType());
+			return method.getGenericReturnType();
 		}
 
 		method = descriptor.getWriteMethod();
 
 		if (method == null) {
-			return Optional.empty();
+			return null;
 		}
 
 		Type[] parameterTypes = method.getGenericParameterTypes();
-		return Optional.ofNullable(parameterTypes.length == 0 ? null : parameterTypes[0]);
+		return parameterTypes.length == 0 ? null : parameterTypes[0];
 	}
 
 	/*
@@ -311,11 +322,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public TypeInformation<?> getActualType() {
 
 		if (isMap()) {
-			return getMapValueType().orElse(null);
+			return getMapValueType();
 		}
 
 		if (isCollectionLike()) {
-			return getComponentType().orElse(null);
+			return getComponentType();
 		}
 
 		return this;
@@ -342,12 +353,13 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getMapValueType()
 	 */
-	public Optional<TypeInformation<?>> getMapValueType() {
+	public TypeInformation<?> getMapValueType() {
 		return valueType.get();
 	}
 
-	protected Optional<TypeInformation<?>> doGetMapValueType() {
-		return isMap() ? getTypeArgument(getBaseType(MAP_TYPES), 1) : getTypeArguments().stream().skip(1).findFirst();
+	protected TypeInformation<?> doGetMapValueType() {
+		return isMap() ? getTypeArgument(getBaseType(MAP_TYPES), 1)
+				: getTypeArguments().stream().skip(1).findFirst().orElse(null);
 	}
 
 	/*
@@ -365,16 +377,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeInformation#getComponentType()
 	 */
-	public final Optional<TypeInformation<?>> getComponentType() {
+	public final TypeInformation<?> getComponentType() {
 		return componentType.get();
 	}
 
-	protected Optional<TypeInformation<?>> doGetComponentType() {
+	protected TypeInformation<?> doGetComponentType() {
 
 		Class<S> rawType = getType();
 
 		if (rawType.isArray()) {
-			return Optional.of(createInfo(rawType.getComponentType()));
+			return createInfo(rawType.getComponentType());
 		}
 
 		if (isMap()) {
@@ -387,7 +399,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
 
-		return arguments.size() > 0 ? Optional.of(arguments.get(0)) : Optional.empty();
+		return arguments.size() > 0 ? arguments.get(0) : null;
 	}
 
 	/*
@@ -486,16 +498,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 				: createInfo(new SyntheticParamterizedType(type, arguments)));
 	}
 
-	private Optional<TypeInformation<?>> getTypeArgument(Class<?> bound, int index) {
+	private TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
 
 		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
 
 		if (arguments == null) {
-			return Optional.ofNullable(
-					getSuperTypeInformation(bound) instanceof ParameterizedTypeInformation ? ClassTypeInformation.OBJECT : null);
+			return getSuperTypeInformation(bound) instanceof ParameterizedTypeInformation ? ClassTypeInformation.OBJECT
+					: null;
 		}
 
-		return Optional.of(createInfo(arguments[index]));
+		return createInfo(arguments[index]);
 	}
 
 	private Class<?> getBaseType(Class<?>[] candidates) {

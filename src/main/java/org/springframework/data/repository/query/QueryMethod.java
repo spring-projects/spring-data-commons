@@ -37,11 +37,12 @@ import org.springframework.util.Assert;
 /**
  * Abstraction of a method that is designated to execute a finder query. Enriches the standard {@link Method} interface
  * with specific information that is necessary to construct {@link RepositoryQuery}s for the method.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Maciek Opała
+ * @author Mark Paluch
  */
 public class QueryMethod {
 
@@ -55,7 +56,7 @@ public class QueryMethod {
 	/**
 	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct query to use for following
 	 * invocations of the method given.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
@@ -113,7 +114,7 @@ public class QueryMethod {
 
 	/**
 	 * Creates a {@link Parameters} instance.
-	 * 
+	 *
 	 * @param method
 	 * @return must not return {@literal null}.
 	 */
@@ -123,7 +124,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns the method's name.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getName() {
@@ -137,7 +138,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns the name of the named query this method belongs to.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getNamedQueryName() {
@@ -146,7 +147,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns the domain class the query method is targeted at.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	protected Class<?> getDomainClass() {
@@ -155,7 +156,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns the type of the object that will be returned.
-	 * 
+	 *
 	 * @return
 	 */
 	public Class<?> getReturnedObjectType() {
@@ -164,7 +165,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns whether the finder will actually return a collection of entities or a single one.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isCollectionQuery() {
@@ -190,7 +191,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns whether the query method will return a {@link Slice}.
-	 * 
+	 *
 	 * @return
 	 * @since 1.8
 	 */
@@ -200,7 +201,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns whether the finder will return a {@link Page} of results.
-	 * 
+	 *
 	 * @return
 	 */
 	public final boolean isPageQuery() {
@@ -209,7 +210,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns whether the query method is a modifying one.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isModifyingQuery() {
@@ -218,7 +219,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns whether the query for this method actually returns entities.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isQueryForEntity() {
@@ -227,7 +228,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns whether the method returns a Stream.
-	 * 
+	 *
 	 * @return
 	 * @since 1.10
 	 */
@@ -237,7 +238,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns the {@link Parameters} wrapper to gain additional information about {@link Method} parameters.
-	 * 
+	 *
 	 * @return
 	 */
 	public Parameters<?, ?> getParameters() {
@@ -246,7 +247,7 @@ public class QueryMethod {
 
 	/**
 	 * Returns the {@link ResultProcessor} to be used with the query method.
-	 * 
+	 *
 	 * @return the resultFactory
 	 */
 	public ResultProcessor getResultProcessor() {
@@ -265,10 +266,17 @@ public class QueryMethod {
 	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(Method method) {
 
 		if (QueryExecutionConverters.supports(method.getReturnType())) {
+
 			// unwrap only one level to handle cases like Future<List<Entity>> correctly.
-			return ClassTypeInformation.fromReturnTypeOf(method).getComponentType().map(TypeInformation::getType)
-					.orElseThrow(() -> new IllegalStateException(
-							String.format("Couldn't find component type for return value of method %s!", method)));
+
+			TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(method).getComponentType();
+
+			if (componentType == null) {
+				throw new IllegalStateException(
+						String.format("Couldn't find component type for return value of method %s!", method));
+			}
+
+			return componentType.getType();
 		}
 
 		return method.getReturnType();

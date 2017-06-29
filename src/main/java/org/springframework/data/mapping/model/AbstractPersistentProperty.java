@@ -268,7 +268,16 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Class<?> getMapValueType() {
-		return isMap() ? information.getMapValueType().map(TypeInformation::getType).orElse(null) : null;
+
+		if (isMap()) {
+
+			TypeInformation<?> mapValueType = information.getMapValueType();
+			if (mapValueType != null) {
+				return mapValueType.getType();
+			}
+		}
+
+		return null;
 	}
 
 	/*

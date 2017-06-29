@@ -18,36 +18,30 @@ package org.springframework.data.util;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
-import org.assertj.core.api.OptionalAssert;
 import org.junit.Test;
 
 /**
  * Unit tests to reproduce issues reported in DATACMNS-511.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class DataCmns511Tests {
 
 	@Test // DATACMNS-511
 	public void detectsEqualTypeVariableTypeInformationInstances() {
 
-		OptionalAssert<TypeInformation<?>> assertion = assertThat(
-				ClassTypeInformation.from(AbstractRole.class).getProperty("createdBy"));
+		TypeInformation<?> createdBy = ClassTypeInformation.from(AbstractRole.class).getProperty("createdBy");
 
-		assertion.flatMap(it -> it.getProperty("roles"))//
-				.map(TypeInformation::getActualType)//
-				.flatMap(it -> it.getProperty("createdBy"))//
-				.hasValueSatisfying(second -> {
+		assertThat(createdBy.getProperty("roles").getActualType().getProperty("createdBy"))//
+				.satisfies(second -> {
 
-					Optional<TypeInformation<?>> third = second.getProperty("roles")//
-							.map(TypeInformation::getActualType)//
-							.flatMap(it -> it.getProperty("createdBy"));
+					TypeInformation<?> third = second.getProperty("roles").getActualType().getProperty("createdBy");
 
-					assertThat(third).hasValue(second);
-					assertThat(third).map(Object::hashCode).hasValue(second.hashCode());
+					assertThat(third).isEqualTo(second);
+					assertThat(third.hashCode()).isEqualTo(second.hashCode());
 				});
 	}
 

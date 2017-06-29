@@ -31,7 +31,7 @@ import org.springframework.util.StringUtils;
 /**
  * Base class for all types that include parameterization of some kind. Crucial as we have to take note of the parent
  * class we will have to resolve generic parameters against.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -43,7 +43,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 
 	/**
 	 * Creates a new {@link ParameterizedTypeInformation} for the given {@link Type} and parent {@link TypeDiscoverer}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}
 	 * @param parent must not be {@literal null}
 	 */
@@ -59,14 +59,14 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetMapValueType()
 	 */
 	@Override
-	protected Optional<TypeInformation<?>> doGetMapValueType() {
+	protected TypeInformation<?> doGetMapValueType() {
 
 		if (Map.class.isAssignableFrom(getType())) {
 
 			Type[] arguments = type.getActualTypeArguments();
 
 			if (arguments.length > 1) {
-				return Optional.of(createInfo(arguments[1]));
+				return createInfo(arguments[1]);
 			}
 		}
 
@@ -79,14 +79,14 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		Optional<TypeInformation<?>> result = supertypes.stream()//
 				.map(it -> Pair.of(it, resolveType(it)))//
 				.filter(it -> Map.class.isAssignableFrom(it.getSecond()))//
-				.<TypeInformation<?>>map(it -> {
+				.<TypeInformation<?>> map(it -> {
 
 					ParameterizedType parameterizedSupertype = (ParameterizedType) it.getFirst();
 					Type[] arguments = parameterizedSupertype.getActualTypeArguments();
 					return createInfo(arguments[1]);
 				}).findFirst();
 
-		return result.isPresent() ? result : super.doGetMapValueType();
+		return result.orElseGet(super::doGetMapValueType);
 	}
 
 	/*
@@ -105,7 +105,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return result;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#isAssignableFrom(org.springframework.data.util.TypeInformation)
 	 */
@@ -147,11 +147,11 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
 	 */
 	@Override
-	protected Optional<TypeInformation<?>> doGetComponentType() {
-		return Optional.of(createInfo(type.getActualTypeArguments()[0]));
+	protected TypeInformation<?> doGetComponentType() {
+		return createInfo(type.getActualTypeArguments()[0]);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
 	 */
@@ -175,7 +175,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return super.equals(obj);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#hashCode()
 	 */
@@ -184,7 +184,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return isResolvedCompletely() ? this.type.hashCode() : super.hashCode();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

@@ -16,7 +16,7 @@
 package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.util.ClassTypeInformation.from;
+import static org.springframework.data.util.ClassTypeInformation.*;
 
 import javaslang.collection.Traversable;
 
@@ -28,14 +28,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
-import org.assertj.core.api.OptionalAssert;
 import org.junit.Test;
 import org.springframework.data.mapping.Person;
 
 /**
  * Unit tests for {@link ClassTypeInformation}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class ClassTypeInformationUnitTests {
 
@@ -46,11 +46,11 @@ public class ClassTypeInformationUnitTests {
 
 		assertThat(discoverer.getType()).isEqualTo(ConcreteType.class);
 
-		OptionalAssert<TypeInformation<?>> assertThat = assertThat(discoverer.getProperty("content"));
+		TypeInformation<?> content = discoverer.getProperty("content");
 
-		assertThat.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
-		assertThat.flatMap(TypeInformation::getComponentType).isNotPresent();
-		assertThat.flatMap(TypeInformation::getMapValueType).isNotPresent();
+		assertThat(content.getType()).isEqualTo(String.class);
+		assertThat(content.getComponentType()).isNull();
+		assertThat(content.getMapValueType()).isNull();
 	}
 
 	@Test
@@ -59,14 +59,13 @@ public class ClassTypeInformationUnitTests {
 		TypeInformation<ConcreteWrapper> discoverer = ClassTypeInformation.from(ConcreteWrapper.class);
 		assertThat(discoverer.getType()).isEqualTo(ConcreteWrapper.class);
 
-		assertThat(discoverer.getProperty("wrapped")).hasValueSatisfying(it -> {
+		assertThat(discoverer.getProperty("wrapped")).satisfies(it -> {
 			assertThat(it.getType()).isEqualTo(GenericType.class);
-			assertThat(it.getProperty("content"))
-					.hasValueSatisfying(nested -> assertThat(nested.getType()).isEqualTo(String.class));
+			assertThat(it.getProperty("content")).satisfies(nested -> assertThat(nested.getType()).isEqualTo(String.class));
 		});
 
 		assertThat(discoverer.getProperty("wrapped.content"))
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+				.satisfies(it -> assertThat(it.getType()).isEqualTo(String.class));
 	}
 
 	@Test
@@ -74,8 +73,7 @@ public class ClassTypeInformationUnitTests {
 	public void discoversBoundType() {
 
 		TypeInformation<GenericTypeWithBound> information = ClassTypeInformation.from(GenericTypeWithBound.class);
-		assertThat(information.getProperty("person"))
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Person.class));
+		assertThat(information.getProperty("person")).satisfies(it -> assertThat(it.getType()).isEqualTo(Person.class));
 	}
 
 	@Test
@@ -84,7 +82,7 @@ public class ClassTypeInformationUnitTests {
 		TypeInformation<SpecialGenericTypeWithBound> information = ClassTypeInformation
 				.from(SpecialGenericTypeWithBound.class);
 		assertThat(information.getProperty("person"))
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(SpecialPerson.class));
+				.satisfies(it -> assertThat(it.getType()).isEqualTo(SpecialPerson.class));
 	}
 
 	@Test
@@ -94,9 +92,9 @@ public class ClassTypeInformationUnitTests {
 		TypeInformation<AnotherGenericType> information = ClassTypeInformation.from(AnotherGenericType.class);
 
 		assertThat(information.getProperty("nested"))
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(GenericTypeWithBound.class));
+				.satisfies(it -> assertThat(it.getType()).isEqualTo(GenericTypeWithBound.class));
 		assertThat(information.getProperty("nested.person"))
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Person.class));
+				.satisfies(it -> assertThat(it.getType()).isEqualTo(Person.class));
 	}
 
 	@Test
@@ -104,47 +102,41 @@ public class ClassTypeInformationUnitTests {
 
 		TypeInformation<StringCollectionContainer> information = ClassTypeInformation.from(StringCollectionContainer.class);
 
-		OptionalAssert<TypeInformation<?>> optional = assertThat(information.getProperty("array"));
+		TypeInformation<?> array = information.getProperty("array");
 
-		optional.flatMap(TypeInformation::getComponentType)
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
-		optional.map(TypeInformation::getType).hasValueSatisfying(it -> {
-			assertThat(it).isEqualTo(String[].class);
-			assertThat(it.isArray()).isTrue();
-		});
+		assertThat(array.getComponentType().getType()).isEqualTo(String.class);
+		assertThat(array.getType()).isEqualTo(String[].class);
+		assertThat(array.getType().isArray()).isTrue();
 
-		optional = assertThat(information.getProperty("foo"));
+		TypeInformation<?> foo = information.getProperty("foo");
 
-		optional.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Collection[].class));
-		optional.flatMap(TypeInformation::getComponentType).hasValueSatisfying(it -> {
+		assertThat(foo.getType()).isEqualTo(Collection[].class);
+		assertThat(foo.getComponentType()).satisfies(it -> {
 			assertThat(it.getType()).isEqualTo(Collection.class);
-			assertThat(it.getComponentType())
-					.hasValueSatisfying(nested -> assertThat(nested.getType()).isEqualTo(String.class));
+			assertThat(it.getComponentType()).satisfies(nested -> assertThat(nested.getType()).isEqualTo(String.class));
 		});
 
-		optional = assertThat(information.getProperty("rawSet"));
+		TypeInformation<?> rawSet = information.getProperty("rawSet");
 
-		optional.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Set.class));
-		optional.flatMap(TypeInformation::getComponentType)
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Object.class));
-		optional.flatMap(TypeInformation::getMapValueType).isNotPresent();
+		assertThat(rawSet.getType()).isEqualTo(Set.class);
+		assertThat(rawSet.getComponentType().getType()).isEqualTo(Object.class);
+		assertThat(rawSet.getMapValueType()).isNull();
 	}
 
 	@Test
 	public void discoversMapValueType() {
 
 		TypeInformation<StringMapContainer> information = ClassTypeInformation.from(StringMapContainer.class);
-		OptionalAssert<TypeInformation<?>> assertion = assertThat(information.getProperty("genericMap"));
 
-		assertion.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Map.class));
-		assertion.flatMap(TypeInformation::getMapValueType)
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		TypeInformation<?> genericMap = information.getProperty("genericMap");
 
-		assertion = assertThat(information.getProperty("map"));
+		assertThat(genericMap.getType()).isEqualTo(Map.class);
+		assertThat(genericMap.getMapValueType().getType()).isEqualTo(String.class);
 
-		assertion.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Map.class));
-		assertion.flatMap(TypeInformation::getMapValueType)
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Calendar.class));
+		TypeInformation<?> map = information.getProperty("map");
+
+		assertThat(map.getType()).isEqualTo(Map.class);
+		assertThat(map.getMapValueType().getType()).isEqualTo(Calendar.class);
 	}
 
 	@Test
@@ -161,8 +153,8 @@ public class ClassTypeInformationUnitTests {
 
 		TypeInformation<PropertyGetter> from = ClassTypeInformation.from(PropertyGetter.class);
 
-		assertThat(from.getProperty("_name")).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
-		assertThat(from.getProperty("name")).hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(byte[].class));
+		assertThat(from.getProperty("_name")).satisfies(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertThat(from.getProperty("name")).satisfies(it -> assertThat(it.getType()).isEqualTo(byte[].class));
 	}
 
 	@Test // DATACMNS-77
@@ -177,19 +169,17 @@ public class ClassTypeInformationUnitTests {
 
 		TypeInformation<ClassWithWildCardBound> information = ClassTypeInformation.from(ClassWithWildCardBound.class);
 
-		OptionalAssert<TypeInformation<?>> assertion = assertThat(information.getProperty("wildcard"));
+		TypeInformation<?> wildcard = information.getProperty("wildcard");
 
-		assertion.map(TypeInformation::isCollectionLike).hasValue(true);
-		assertion.flatMap(TypeInformation::getComponentType)
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
+		assertThat(wildcard.isCollectionLike()).isTrue();
+		assertThat(wildcard.getComponentType().getType()).isEqualTo(String.class);
 
-		assertion = assertThat(information.getProperty("complexWildcard"));
+		TypeInformation<?> complexWildcard = information.getProperty("complexWildcard");
 
-		assertion.map(TypeInformation::isCollectionLike).hasValue(true);
-		assertion.flatMap(TypeInformation::getComponentType).hasValueSatisfying(it -> {
+		assertThat(complexWildcard.isCollectionLike()).isTrue();
+		assertThat(complexWildcard.getComponentType()).satisfies(it -> {
 			assertThat(it.isCollectionLike()).isEqualTo(true);
-			assertThat(it.getComponentType())
-					.hasValueSatisfying(nested -> assertThat(nested.getType()).isEqualTo(String.class));
+			assertThat(it.getComponentType()).satisfies(nested -> assertThat(nested.getType()).isEqualTo(String.class));
 		});
 	}
 
@@ -279,8 +269,7 @@ public class ClassTypeInformationUnitTests {
 		TypeInformation<?> information = from(String[][].class);
 
 		assertThat(information.getType()).isEqualTo(String[][].class);
-		assertThat(information.getComponentType())
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String[].class));
+		assertThat(information.getComponentType()).satisfies(it -> assertThat(it.getType()).isEqualTo(String[].class));
 		assertThat(information.getActualType().getActualType().getType()).isEqualTo(String.class);
 	}
 
@@ -289,7 +278,7 @@ public class ClassTypeInformationUnitTests {
 
 		TypeInformation<Product> information = from(Product.class);
 
-		assertThat(information.getProperty("category.id")).hasValue(from(Long.class));
+		assertThat(information.getProperty("category.id")).isEqualTo(from(Long.class));
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
@@ -300,30 +289,28 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-422
 	public void returnsEmptyOptionalForRawTypesOnly() {
 
-		assertThat(from(MyRawIterable.class).getComponentType()).isNotPresent();
-		assertThat(from(MyIterable.class).getComponentType()).isPresent();
+		assertThat(from(MyRawIterable.class).getComponentType()).isNull();
+		assertThat(from(MyIterable.class).getComponentType()).isNotNull();
 	}
 
 	@Test // DATACMNS-440
 	public void detectsSpecialMapAsMapValueType() {
 
-		OptionalAssert<TypeInformation<?>> assertion = assertThat(
-				ClassTypeInformation.from(SuperGenerics.class).getProperty("seriously"));
+		TypeInformation<?> seriously = ClassTypeInformation.from(SuperGenerics.class).getProperty("seriously");
 
-		assertion//
-				// Type
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(SortedMap.class))//
+		// Type
+		assertThat(seriously.getType()).isEqualTo(SortedMap.class);
 
-				// Map value type
-				.flatMap(TypeInformation::getMapValueType).hasValueSatisfying(value -> {
-					assertThat(value.getType()).isEqualTo(SortedMap.class);
-					assertThat(value.getComponentType())
-							.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(String.class));
-				}).flatMap(TypeInformation::getMapValueType).hasValueSatisfying(nestedValue -> {
-					assertThat(nestedValue.getType()).isEqualTo(List.class);
-					assertThat(nestedValue.getComponentType())
-							.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Person.class));
-				});
+		// Map value type
+		assertThat(seriously.getMapValueType()).satisfies(value -> {
+			assertThat(value.getType()).isEqualTo(SortedMap.class);
+			assertThat(value.getComponentType()).satisfies(it -> assertThat(it.getType()).isEqualTo(String.class));
+		});
+
+		assertThat(seriously.getMapValueType().getMapValueType()).satisfies(nestedValue -> {
+			assertThat(nestedValue.getType()).isEqualTo(List.class);
+			assertThat(nestedValue.getComponentType()).satisfies(it -> assertThat(it.getType()).isEqualTo(Person.class));
+		});
 	}
 
 	@Test // DATACMNS-446
@@ -337,18 +324,16 @@ public class ClassTypeInformationUnitTests {
 
 		ClassTypeInformation<ConcreteRoot> rootType = from(ConcreteRoot.class);
 
-		assertThat(rootType.getProperty("subs"))//
-				.map(TypeInformation::getActualType)//
-				.flatMap(it -> it.getProperty("subSub"))//
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(ConcreteSubSub.class));
+		assertThat(rootType.getProperty("subs").getActualType().getProperty("subSub").getType())//
+				.isEqualTo(ConcreteSubSub.class);
 	}
 
 	@Test // DATACMNS-594
 	public void considersGenericsOfTypeBounds() {
 
 		assertThat(ClassTypeInformation.from(ConcreteRootIntermediate.class)
-				.getProperty("intermediate.content.intermediate.content"))//
-						.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Leaf.class));
+				.getProperty("intermediate.content.intermediate.content").getType())//
+						.isEqualTo(Leaf.class);
 	}
 
 	@Test // DATACMNS-783, DATACMNS-853
@@ -356,14 +341,11 @@ public class ClassTypeInformationUnitTests {
 
 		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
 
-		assertThat(root.getProperty("abstractBar"))//
-				.map(it -> it.specialize(ClassTypeInformation.from(Bar.class)))//
-				.hasValueSatisfying(it -> {
+		assertThat(root.getProperty("abstractBar").specialize(ClassTypeInformation.from(Bar.class)))//
+				.satisfies(it -> {
 					assertThat(it.getType()).isEqualTo(Bar.class);
-					assertThat(it.getProperty("field"))
-							.hasValueSatisfying(nested -> assertThat(nested.getType()).isEqualTo(Character.class));
-					assertThat(it.getProperty("anotherField"))
-							.hasValueSatisfying(nested -> assertThat(nested.getType()).isEqualTo(Integer.class));
+					assertThat(it.getProperty("field").getType()).isEqualTo(Character.class);
+					assertThat(it.getProperty("anotherField").getType()).isEqualTo(Integer.class);
 				});
 	}
 
@@ -373,7 +355,7 @@ public class ClassTypeInformationUnitTests {
 		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
 		ClassTypeInformation<?> from = ClassTypeInformation.from(Bar.class);
 
-		assertThat(root.getProperty("object")).hasValueSatisfying(it -> assertThat(it.specialize(from)).isEqualTo(from));
+		assertThat(root.getProperty("object").specialize(from)).isEqualTo(from);
 	}
 
 	@Test // DATACMNS-855
@@ -381,12 +363,10 @@ public class ClassTypeInformationUnitTests {
 
 		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
 
-		OptionalAssert<TypeInformation<?>> assertion = assertThat(root.getProperty("abstractBar"));
+		TypeInformation<?> abstractBar = root.getProperty("abstractBar");
 
-		assertion
-				.map(it -> Pair.of(it.specialize(ClassTypeInformation.from(Bar.class)),
-						it.specialize(ClassTypeInformation.from(Bar.class))))//
-				.hasValueSatisfying(pair -> {
+		assertThat(Pair.of(abstractBar.specialize(ClassTypeInformation.from(Bar.class)),
+				abstractBar.specialize(ClassTypeInformation.from(Bar.class)))).satisfies(pair -> {
 					assertThat(pair.getFirst()).isEqualTo(pair.getSecond());
 					assertThat(pair.getSecond()).isEqualTo(pair.getFirst());
 					assertThat(pair.getFirst().hashCode()).isEqualTo(pair.getSecond().hashCode());
@@ -398,8 +378,7 @@ public class ClassTypeInformationUnitTests {
 
 		ClassTypeInformation<Concrete> information = ClassTypeInformation.from(Concrete.class);
 
-		assertThat(information.getProperty("field"))
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Nested.class));
+		assertThat(information.getProperty("field").getType()).isEqualTo(Nested.class);
 	}
 
 	@Test // DATACMNS-940
@@ -407,8 +386,7 @@ public class ClassTypeInformationUnitTests {
 
 		ClassTypeInformation<SampleTraversable> information = ClassTypeInformation.from(SampleTraversable.class);
 
-		assertThat(information.getComponentType())
-				.hasValueSatisfying(it -> assertThat(it.getType()).isAssignableFrom(Integer.class));
+		assertThat(information.getComponentType().getType()).isAssignableFrom(Integer.class);
 	}
 
 	@Test // DATACMNS-940
@@ -416,11 +394,9 @@ public class ClassTypeInformationUnitTests {
 
 		ClassTypeInformation<SampleMap> information = ClassTypeInformation.from(SampleMap.class);
 
-		assertThat(information.getComponentType())
-				.hasValueSatisfying(it -> assertThat(it.getType()).isAssignableFrom(String.class));
+		assertThat(information.getComponentType().getType()).isAssignableFrom(String.class);
 
-		assertThat(information.getMapValueType())
-				.hasValueSatisfying(it -> assertThat(it.getType()).isAssignableFrom(Integer.class));
+		assertThat(information.getMapValueType().getType()).isAssignableFrom(Integer.class);
 	}
 
 	static class StringMapContainer extends MapContainer<String> {

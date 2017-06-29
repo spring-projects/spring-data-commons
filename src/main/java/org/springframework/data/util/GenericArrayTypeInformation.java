@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Special {@link TypeDiscoverer} handling {@link GenericArrayType}s.
- * 
+ *
  * @author Oliver Gierke
  */
 class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
@@ -34,7 +33,7 @@ class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 	/**
 	 * Creates a new {@link GenericArrayTypeInformation} for the given {@link GenericArrayTypeInformation} and
 	 * {@link TypeDiscoverer}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param parent must not be {@literal null}.
 	 * @param typeVariableMap must not be {@literal null}.
@@ -61,13 +60,13 @@ class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
 	 */
 	@Override
-	protected Optional<TypeInformation<?>> doGetComponentType() {
+	protected TypeInformation<?> doGetComponentType() {
 
 		Type componentType = type.getGenericComponentType();
-		return Optional.of(createInfo(componentType));
+		return createInfo(componentType);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

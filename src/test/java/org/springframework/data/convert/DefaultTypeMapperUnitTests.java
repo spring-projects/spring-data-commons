@@ -34,6 +34,7 @@ import org.springframework.data.util.TypeInformation;
  * Unit tests for {@link DefaultTypeMapper}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultTypeMapperUnitTests {
@@ -81,8 +82,7 @@ public class DefaultTypeMapperUnitTests {
 	public void specializesRawSourceTypeUsingGenericContext() {
 
 		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
-		TypeInformation<?> propertyType = root.getProperty("abstractBar")
-				.orElseThrow(() -> new IllegalStateException("Property abstractBar not found!"));
+		TypeInformation<?> propertyType = root.getProperty("abstractBar");
 		TypeInformation<?> barType = ClassTypeInformation.from(Bar.class);
 
 		doReturn(Alias.of(barType)).when(accessor).readAliasFrom(source);
@@ -95,8 +95,7 @@ public class DefaultTypeMapperUnitTests {
 		TypeInformation<?> typeInformation = TypeInformation.class.cast(result);
 
 		assertThat(typeInformation.getType()).isEqualTo(Bar.class);
-		assertThat(typeInformation.getProperty("field"))
-				.hasValueSatisfying(it -> assertThat(it.getType()).isEqualTo(Character.class));
+		assertThat(typeInformation.getProperty("field").getType()).isEqualTo(Character.class);
 	}
 
 	static class TypeWithAbstractGenericType<T> {
