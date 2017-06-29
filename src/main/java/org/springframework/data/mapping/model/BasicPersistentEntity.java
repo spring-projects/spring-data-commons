@@ -72,6 +72,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private final Map<String, P> propertyCache;
 	private final Map<Class<? extends Annotation>, Optional<Annotation>> annotationCache;
+	private final Map<Class<? extends Annotation>, Optional<P>> propertyAnnotationCache;
 
 	private P idProperty;
 	private P versionProperty;
@@ -109,6 +110,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		this.propertyCache = new HashMap<>();
 		this.annotationCache = new HashMap<>();
+		this.propertyAnnotationCache = new HashMap<>();
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 	}
@@ -265,14 +267,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperty(java.lang.String)
 	 */
 	public P getPersistentProperty(String name) {
-
-		P property = propertyCache.get(name);
-
-		if (property != null) {
-			return property;
-		}
-
-		return null;
+		return propertyCache.get(name);
 	}
 
 	/*
@@ -284,12 +279,23 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(annotationType, "Annotation type must not be null!");
 
-		Optional<P> property = properties.stream()//
-				.filter(it -> it.isAnnotationPresent(annotationType))//
+		return propertyAnnotationCache.computeIfAbsent(annotationType, this::doFindPersistentProperty).orElse(null);
+	}
+
+	private Optional<P> doFindPersistentProperty(Class<? extends Annotation> annotationType) {
+
+		Optional<P> property = properties.stream() //
+				.filter(it -> it.isAnnotationPresent(annotationType)) //
 				.findAny();
 
-		return property.orElseGet(() -> associations.stream().map(Association::getInverse)//
-				.filter(it -> it.isAnnotationPresent(annotationType)).findAny().orElse(null));
+		if (property.isPresent()) {
+
+			return property;
+		}
+
+		return associations.stream() //
+				.map(Association::getInverse) //
+				.filter(it -> it.isAnnotationPresent(annotationType)).findAny();
 	}
 
 	/*
