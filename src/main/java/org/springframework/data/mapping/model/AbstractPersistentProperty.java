@@ -258,13 +258,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#getComponentType()
 	 */
 	@Override
-	public Optional<Class<?>> getComponentType() {
-
-		if (!isMap() && !isCollectionLike()) {
-			return Optional.empty();
-		}
-
-		return Optional.of(information.getRequiredComponentType().getType());
+	public Class<?> getComponentType() {
+		return isMap() || isCollectionLike() ? information.getRequiredComponentType().getType() : null;
 	}
 
 	/*
@@ -272,8 +267,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * @see org.springframework.data.mapping.PersistentProperty#getMapValueType()
 	 */
 	@Override
-	public Optional<Class<?>> getMapValueType() {
-		return isMap() ? information.getMapValueType().map(TypeInformation::getType) : Optional.empty();
+	public Class<?> getMapValueType() {
+		return isMap() ? information.getMapValueType().map(TypeInformation::getType).orElse(null) : null;
 	}
 
 	/*
