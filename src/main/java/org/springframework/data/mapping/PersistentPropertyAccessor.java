@@ -35,7 +35,7 @@ public interface PersistentPropertyAccessor {
 	 *
 	 * @param property must not be {@literal null}.
 	 * @param value can be {@literal null}.
-	 * @throws org.springframework.data.mapping.model.MappingException in case an exception occurred when setting the
+	 * @throws MappingException in case an exception occurred when setting the
 	 *           property value.
 	 */
 	void setProperty(PersistentProperty<?> property, Object value);

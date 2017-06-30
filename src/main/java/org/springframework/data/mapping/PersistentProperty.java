@@ -35,7 +35,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	/**
 	 * Returns the {@link PersistentEntity} owning the current {@link PersistentProperty}.
 	 *
-	 * @return
+	 * @return never {@literal null}.
 	 */
 	PersistentEntity<?, P> getOwner();
 
@@ -87,10 +87,22 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	Field getField();
 
+	/**
+	 * @return {@literal null} if no expression defined.
+	 */
 	String getSpelExpression();
 
+	/**
+	 * @return {@literal null} if property is not part of an {@link Association}.
+	 */
 	Association<P> getAssociation();
 
+	/**
+	 * Get the {@link Association} of this property.
+	 *
+	 * @return never {@literal null}.
+	 * @throws IllegalStateException if not involved in an {@link Association}.
+	 */
 	default Association<P> getRequiredAssociation() {
 
 		Association<P> association = getAssociation();
@@ -106,7 +118,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * Returns whether the type of the {@link PersistentProperty} is actually to be regarded as {@link PersistentEntity}
 	 * in turn.
 	 *
-	 * @return
+	 * @return {@literal true} a {@link PersistentEntity}.
 	 */
 	boolean isEntity();
 
@@ -116,7 +128,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * {@link PersistentEntity} creation you should rather call {@link PersistentEntity#isIdProperty(PersistentProperty)}
 	 * to determine whether the current property is the id property of that {@link PersistentEntity} under consideration.
 	 *
-	 * @return
+	 * @return {@literal true} if the {@literal id} property.
 	 */
 	boolean isIdProperty();
 
@@ -210,7 +222,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * potentially backing field and traverse accessor methods to potentially available super types.
 	 *
 	 * @param annotationType the annotation to look up, must not be {@literal null}.
-	 * @return the annotation of the given type.
+	 * @return the annotation of the given type. Can be {@literal null}.
 	 * @see AnnotationUtils#findAnnotation(Method, Class)
 	 */
 	<A extends Annotation> A findAnnotation(Class<A> annotationType);
@@ -220,7 +232,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * Usefull to lookup annotations that can be configured on the type but overridden on an individual property.
 	 *
 	 * @param annotationType must not be {@literal null}.
-	 * @return
+	 * @return the annotation of the given type. Can be {@literal null}.
 	 */
 	<A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType);
 

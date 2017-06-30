@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;

@@ -20,6 +20,7 @@ import java.util.Collection;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -31,13 +32,14 @@ import org.springframework.data.util.TypeInformation;
  * @author Jon Brisbin
  * @author Graeme Rocher
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public interface MappingContext<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> {
 
 	/**
 	 * Returns all {@link PersistentEntity}s held in the context.
 	 *
-	 * @return
+	 * @return never {@literal null}.
 	 */
 	Collection<E> getPersistentEntities();
 
@@ -47,7 +49,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 *
 	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return {@literal null} if no {@link PersistentEntity} found for {@literal type}.
 	 */
 	E getPersistentEntity(Class<?> type);
 
@@ -57,7 +59,9 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 *
 	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return never {@literal null}.
+	 * @throws MappingException when no {@link PersistentEntity} can be found for given {@literal type}.
+	 * @since 2.0
 	 */
 	default E getRequiredPersistentEntity(Class<?> type) {
 
@@ -67,14 +71,14 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 			return entity;
 		}
 
-		throw new IllegalArgumentException(String.format("Couldn't find PersistentEntity for type %s!", type));
+		throw new MappingException(String.format("Couldn't find PersistentEntity for type %s!", type));
 	}
 
 	/**
 	 * Returns whether the {@link MappingContext} currently contains a {@link PersistentEntity} for the type.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if {@link PersistentEntity} present for given {@literal type}.
 	 * @since 1.8
 	 */
 	boolean hasPersistentEntityFor(Class<?> type);
@@ -85,7 +89,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 *
 	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return {@literal null} if no {@link PersistentEntity} found for {@link TypeInformation}.
 	 */
 	E getPersistentEntity(TypeInformation<?> type);
 
@@ -95,7 +99,8 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 *
 	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return never {@literal null}.
+	 * @throws MappingException when no {@link PersistentEntity} can be found for given {@link TypeInformation}.
 	 */
 	default E getRequiredPersistentEntity(TypeInformation<?> type) {
 
@@ -105,7 +110,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 			return entity;
 		}
 
-		throw new IllegalArgumentException(String.format("Couldn't find PersistentEntity for type %s!", type));
+		throw new MappingException(String.format("Couldn't find PersistentEntity for type %s!", type));
 	}
 
 	/**
@@ -123,10 +128,12 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * Returns the {@link PersistentEntity} mapped by the given {@link PersistentProperty}.
 	 *
 	 * @param persistentProperty must not be {@literal null}.
-	 * @return the {@link PersistentEntity} mapped by the given {@link PersistentProperty} or null if no
+	 * @return the {@link PersistentEntity} mapped by the given {@link PersistentProperty} or {@literal null} if no
 	 *         {@link PersistentEntity} exists for it or the {@link PersistentProperty} does not refer to an entity (the
 	 *         type of the property is considered simple see
 	 *         {@link org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)}).
+	 * @throws MappingException when no {@link PersistentEntity} can be found for given
+	 *           {@link PersistentProperty}.
 	 */
 	default E getRequiredPersistentEntity(P persistentProperty) {
 
@@ -136,7 +143,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 			return entity;
 		}
 
-		throw new IllegalArgumentException(
+		throw new MappingException(
 				String.format("Couldn't find PersistentEntity for property %s!", persistentProperty));
 	}
 

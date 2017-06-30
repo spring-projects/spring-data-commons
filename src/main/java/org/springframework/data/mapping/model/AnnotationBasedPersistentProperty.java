@@ -34,6 +34,7 @@ import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.Lazy;
@@ -65,8 +66,9 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	private final Lazy<Boolean> isTransient = Lazy.of(() -> super.isTransient() || isAnnotationPresent(Transient.class)
 			|| isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class));
 
-	private final Lazy<Boolean> writable = Lazy.of(() -> !isTransient() && !isAnnotationPresent(ReadOnlyProperty.class));
-	private final Lazy<Boolean> reference = Lazy.of(() -> !isTransient() && isAnnotationPresent(Reference.class));
+	private final Lazy<Boolean> isWritable = Lazy
+			.of(() -> !isTransient() && !isAnnotationPresent(ReadOnlyProperty.class));
+	private final Lazy<Boolean> isReference = Lazy.of(() -> !isTransient() && isAnnotationPresent(Reference.class));
 	private final Lazy<Boolean> isId = Lazy.of(() -> isAnnotationPresent(Id.class));
 	private final Lazy<Boolean> isVersion = Lazy.of(() -> isAnnotationPresent(Version.class));
 
@@ -194,7 +196,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	@Override
 	public boolean isAssociation() {
-		return reference.get();
+		return isReference.get();
 	}
 
 	/*
@@ -203,7 +205,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	@Override
 	public boolean isWritable() {
-		return writable.get();
+		return isWritable.get();
 	}
 
 	/**
@@ -212,9 +214,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * subclasses.
 	 *
 	 * @param annotationType must not be {@literal null}.
-	 * @return
+	 * @return {@literal null} if annotation type not found on property.
 	 */
-
 	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 
 		Assert.notNull(annotationType, "Annotation type must not be null!");

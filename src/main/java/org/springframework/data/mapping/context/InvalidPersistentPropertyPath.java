@@ -15,7 +15,7 @@
  */
 package org.springframework.data.mapping.context;
 
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 

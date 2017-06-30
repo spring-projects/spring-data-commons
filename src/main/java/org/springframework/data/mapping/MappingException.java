@@ -1,4 +1,5 @@
-/* Copyright (C) 2010 SpringSource
+/*
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,26 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping.model;
+package org.springframework.data.mapping;
 
 /**
- * Thrown when an error occurs reading the mapping between object and datastore
- * 
- * @author Graeme Rocher
- * @since 1.0
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class IllegalMappingException extends RuntimeException {
+public class MappingException extends RuntimeException {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public IllegalMappingException(String s, Throwable throwable) {
-		super(s, throwable);
+	public MappingException(String s) {
+		super(s);
 	}
 
-	public IllegalMappingException(String s) {
-		super(s);
+	public MappingException(String s, Throwable throwable) {
+		super(s, throwable);
 	}
 }
