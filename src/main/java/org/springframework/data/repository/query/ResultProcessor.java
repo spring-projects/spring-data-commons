@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.query;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +45,7 @@ import org.springframework.util.Assert;
  * @author John Blum
  * @since 1.12
  */
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResultProcessor {
 
 	private final QueryMethod method;
@@ -94,7 +97,7 @@ public class ResultProcessor {
 
 		Class<?> projectionType = accessor.getDynamicProjection();
 
-		return projectionType == null ? this : new ResultProcessor(method, factory, projectionType);
+		return projectionType == null ? this : withType(projectionType);
 	}
 
 	/**
@@ -157,6 +160,12 @@ public class ResultProcessor {
 		}
 
 		return (T) converter.convert(source);
+	}
+
+	private ResultProcessor withType(Class<?> type) {
+
+		ReturnedType returnedType = ReturnedType.of(type, method.getDomainClass(), factory);
+		return new ResultProcessor(method, converter.withType(returnedType), factory, returnedType);
 	}
 
 	/**
@@ -238,7 +247,30 @@ public class ResultProcessor {
 
 		private final @NonNull ReturnedType type;
 		private final @NonNull ProjectionFactory factory;
-		private final ConversionService conversionService = new DefaultConversionService();
+		private final @NonNull ConversionService conversionService;
+
+		/**
+		 * Creates a new {@link ProjectingConverter} for the given {@link ReturnedType} and {@link ProjectionFactory}.
+		 * 
+		 * @param type must not be {@literal null}.
+		 * @param factory must not be {@literal null}.
+		 */
+		ProjectingConverter(ReturnedType type, ProjectionFactory factory) {
+			this(type, factory, new DefaultConversionService());
+		}
+
+		/**
+		 * Creates a new {@link ProjectingConverter} for the given {@link ReturnedType}.
+		 * 
+		 * @param type must not be {@literal null}.
+		 * @return
+		 */
+		ProjectingConverter withType(ReturnedType type) {
+
+			Assert.notNull(type, "ReturnedType must not be null!");
+
+			return new ProjectingConverter(type, factory, conversionService);
+		}
 
 		/* 
 		 * (non-Javadoc)
