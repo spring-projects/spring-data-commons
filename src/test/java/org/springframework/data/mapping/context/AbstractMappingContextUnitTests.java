@@ -155,7 +155,7 @@ public class AbstractMappingContextUnitTests {
 
 		assertThat(entity.getPersistentProperty("persons"))
 				.satisfies(it -> assertThat(mappingContext.getPersistentEntity(it))
-						.satisfies(inner -> assertThat(inner.getType()).isEqualTo(Person.class)));
+						.satisfies(inner -> assertThat(((PersistentEntity)inner).getType()).isEqualTo(Person.class)));
 	}
 
 	@Test // DATACMNS-380

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -355,15 +356,6 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentEntity#getPersistentProperties()
-	 */
-	@Override
-	public List<P> getPersistentProperties() {
-		return Collections.unmodifiableList(persistentPropertiesCache);
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#doWithAssociations(org.springframework.data.mapping.AssociationHandler)
 	 */
 	public void doWithAssociations(AssociationHandler<P> handler) {
@@ -386,15 +378,6 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		for (Association<? extends PersistentProperty<?>> association : associations) {
 			handler.doWithAssociation(association);
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentEntity#getAssociations()
-	 */
-	@Override
-	public Set<Association<P>> getAssociations() {
-		return Collections.unmodifiableSet(associations);
 	}
 
 	/*
@@ -469,6 +452,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
 
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : new AbsentIdentifierAccessor(bean);
+	}
+
+	@Override
+	public Iterator<P> iterator() {
+		return Collections.unmodifiableList(properties).iterator();
 	}
 
 	/**

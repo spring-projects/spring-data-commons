@@ -31,7 +31,7 @@ import org.springframework.data.util.TypeInformation;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-public interface PersistentEntity<T, P extends PersistentProperty<P>> {
+public interface PersistentEntity<T, P extends PersistentProperty<P>> extends Iterable<P> {
 
 	/**
 	 * The entity name including any package prefix.
@@ -225,14 +225,6 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	void doWithProperties(SimplePropertyHandler handler);
 
 	/**
-	 * Get {@link Iterable}
-	 * 
-	 * @return
-	 * @since 2.0
-	 */
-	Iterable<P> getPersistentProperties();
-
-	/**
 	 * Applies the given {@link AssociationHandler} to all {@link Association} contained in this {@link PersistentEntity}.
 	 *
 	 * @param handler must not be {@literal null}.
@@ -240,8 +232,6 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> {
 	void doWithAssociations(AssociationHandler<P> handler);
 
 	void doWithAssociations(SimpleAssociationHandler handler);
-
-	Iterable<Association<P>> getAssociations();
 
 	/**
 	 * Looks up the annotation of the given type on the {@link PersistentEntity}.
