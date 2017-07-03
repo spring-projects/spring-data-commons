@@ -298,7 +298,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		}
 
 		String builder = annotationCache.values().stream() //
-				.flatMap(Optionals::toStream) //
+				.flatMap(it -> Optionals.toStream(it)) //
 				.map(Object::toString) //
 				.collect(Collectors.joining(" "));
 
