@@ -81,8 +81,9 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 				MappingAuditingMetadata metadata = metadataCache.computeIfAbsent(type,
 						key -> new MappingAuditingMetadata(entity));
 
-				return Optional.<AuditableBeanWrapper> ofNullable(metadata.isAuditable()
-						? new MappingMetadataAuditableBeanWrapper(entity.getPropertyAccessor(it), metadata) : null);
+				return Optional.<AuditableBeanWrapper> ofNullable(
+						metadata.isAuditable() ? new MappingMetadataAuditableBeanWrapper(entity.getPropertyAccessor(it), metadata)
+								: null);
 
 			}).orElseGet(() -> super.getBeanWrapperFor(source));
 		});
@@ -190,8 +191,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 */
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
-			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.map(accessor::getProperty),
-					LocalDateTime.class);
+			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.map(accessor::getProperty), LocalDateTime.class);
 		}
 
 		/*
@@ -205,7 +205,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 		private <T, P extends PersistentProperty<?>> T setProperty(Optional<P> property, T value) {
 
-			property.ifPresent(it -> this.accessor.setProperty(it, Optional.of(value)));
+			property.ifPresent(it -> this.accessor.setProperty(it, value));
 
 			return value;
 		}
@@ -213,8 +213,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		private <P extends PersistentProperty<?>> TemporalAccessor setDateProperty(Optional<P> property,
 				TemporalAccessor value) {
 
-			property.ifPresent(
-					it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), accessor.getBean())));
+			property
+					.ifPresent(it -> this.accessor.setProperty(it, getDateValueToSet(value, it.getType(), accessor.getBean())));
 
 			return value;
 		}
