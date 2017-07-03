@@ -44,6 +44,7 @@ import org.threeten.bp.LocalDateTime;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 2.0
  */
 public class CustomConversionsUnitTests {
@@ -69,6 +70,17 @@ public class CustomConversionsUnitTests {
 
 		assertThat(conversions.getCustomWriteTarget(Long.class)).hasValue(String.class);
 		assertThat(conversions.hasCustomReadTarget(String.class, Long.class)).isTrue();
+	}
+
+	@Test // DATACMNS-1101
+	public void considersSubtypeCachingCorrectly() {
+
+		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
+				Arrays.asList(NumberToStringConverter.INSTANCE, StringToNumberConverter.INSTANCE));
+
+		assertThat(conversions.getCustomWriteTarget(Long.class, Object.class)).isEmpty();
+		assertThat(conversions.getCustomWriteTarget(Long.class)).hasValue(String.class);
+		assertThat(conversions.getCustomWriteTarget(Long.class, Object.class)).isEmpty();
 	}
 
 	@Test // DATACMNS-1035

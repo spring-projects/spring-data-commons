@@ -372,7 +372,7 @@ public class CustomConversions {
 		 */
 		public Optional<Class<?>> computeIfAbsent(Class<?> sourceType,
 				Function<ConvertiblePair, Optional<Class<?>>> mappingFunction) {
-			return computeIfAbsent(sourceType, Object.class, mappingFunction);
+			return computeIfAbsent(sourceType, AbsentTargetTypeMarker.class, mappingFunction);
 		}
 
 		/**
@@ -391,6 +391,11 @@ public class CustomConversions {
 			TargetTypes targetTypes = customReadTargetTypes.computeIfAbsent(sourceType, TargetTypes::new);
 			return targetTypes.computeIfAbsent(targetType, mappingFunction);
 		}
+
+		/**
+		 * Marker type for absent target type caching.
+		 */
+		interface AbsentTargetTypeMarker {}
 	}
 
 	/**
