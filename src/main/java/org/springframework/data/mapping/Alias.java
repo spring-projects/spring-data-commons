@@ -19,8 +19,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
-import java.util.Optional;
-
 import org.springframework.util.Assert;
 
 /**
@@ -69,20 +67,6 @@ public class Alias {
 	 */
 	public static Alias ofNullable(Object alias) {
 		return alias == null ? NONE : new Alias(alias);
-	}
-
-	/**
-	 * Create an {@link Alias} from an {@link Optional}. Returns an {@link Alias} object of the optional value is present,
-	 * otherwise {@link #empty()}.
-	 *
-	 * @param optional must not be {@literal null}.
-	 * @return the {@link Alias} for {@code alias} or {@link #empty()} if the given alias was {@literal null}.
-	 */
-	public static Alias ofOptional(Optional<? extends Object> optional) {
-
-		Assert.notNull(optional, "Optional must not be null!");
-
-		return optional.map(Alias::new).orElse(NONE);
 	}
 
 	/**

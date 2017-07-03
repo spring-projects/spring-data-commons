@@ -32,7 +32,18 @@ import java.util.TreeSet;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mapping.*;
+import org.springframework.data.mapping.Alias;
+import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.mapping.IdentifierAccessor;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.SimpleAssociationHandler;
+import org.springframework.data.mapping.SimplePropertyHandler;
+import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -99,11 +110,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.propertyCache = new HashMap<>();
 		this.annotationCache = new HashMap<>();
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
-
-		this.typeAlias = Lazy.of(() -> Alias
-				.ofOptional(Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(getType(), TypeAlias.class))//
-						.map(TypeAlias::value)//
-						.filter(StringUtils::hasText)));
+		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 	}
 
 	/*
@@ -456,6 +463,22 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : new AbsentIdentifierAccessor(bean);
+	}
+
+	/**
+	 * Calculates the {@link Alias} to be used for the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static Alias getAliasFromAnnotation(Class<?> type) {
+
+		Optional<String> typeAliasValue = Optional
+				.ofNullable(AnnotatedElementUtils.findMergedAnnotation(type, TypeAlias.class))//
+				.map(TypeAlias::value)//
+				.filter(StringUtils::hasText);
+
+		return Alias.ofNullable(typeAliasValue.orElse(null));
 	}
 
 	/**
