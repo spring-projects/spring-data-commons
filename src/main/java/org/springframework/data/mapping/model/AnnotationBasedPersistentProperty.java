@@ -80,11 +80,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 		Value value = findAnnotation(Value.class);
 
-		if (value != null) {
-			this.value = value.value();
-		} else {
-			this.value = null;
-		}
+		this.value = value == null ? null : value.value();
 	}
 
 	/**
