@@ -28,6 +28,8 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -48,6 +50,7 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 			ProxyProjectionFactory.class.getClassLoader());
 
 	private final List<MethodInterceptorFactory> factories;
+	private final ConversionService conversionService;
 	private ClassLoader classLoader;
 
 	/**
@@ -58,6 +61,8 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 		this.factories = new ArrayList<MethodInterceptorFactory>();
 		this.factories.add(MapAccessingMethodInterceptorFactory.INSTANCE);
 		this.factories.add(PropertyAccessingMethodInvokerFactory.INSTANCE);
+
+		this.conversionService = new DefaultConversionService();
 	}
 
 	/**
@@ -175,7 +180,7 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 				.createMethodInterceptor(source, projectionType);
 
 		return new ProjectingMethodInterceptor(this,
-				postProcessAccessorInterceptor(propertyInvocationInterceptor, source, projectionType));
+				postProcessAccessorInterceptor(propertyInvocationInterceptor, source, projectionType), conversionService);
 	}
 
 	/**

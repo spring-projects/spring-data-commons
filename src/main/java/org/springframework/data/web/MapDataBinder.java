@@ -15,6 +15,9 @@
  */
 package org.springframework.data.web;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.beans.PropertyDescriptor;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +34,6 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.util.TypeInformation;
@@ -97,32 +99,15 @@ class MapDataBinder extends WebDataBinder {
 	 * @author Oliver Gierke
 	 * @since 1.10
 	 */
+	@RequiredArgsConstructor
 	private static class MapPropertyAccessor extends AbstractPropertyAccessor {
 
 		private static final SpelExpressionParser PARSER = new SpelExpressionParser(
 				new SpelParserConfiguration(false, true));
 
-		private final Class<?> type;
-		private final Map<String, Object> map;
-		private final ConversionService conversionService;
-
-		/**
-		 * Creates a new {@link MapPropertyAccessor} for the given type, map and {@link ConversionService}.
-		 * 
-		 * @param type must not be {@literal null}.
-		 * @param map must not be {@literal null}.
-		 * @param conversionService must not be {@literal null}.
-		 */
-		public MapPropertyAccessor(Class<?> type, Map<String, Object> map, ConversionService conversionService) {
-
-			Assert.notNull(type, "Type must not be null!");
-			Assert.notNull(map, "Map must not be null!");
-			Assert.notNull(conversionService, "ConversionService must not be null!");
-
-			this.type = type;
-			this.map = map;
-			this.conversionService = conversionService;
-		}
+		private final @NonNull Class<?> type;
+		private final @NonNull Map<String, Object> map;
+		private final @NonNull ConversionService conversionService;
 
 		/* 
 		 * (non-Javadoc)
@@ -177,7 +162,7 @@ class MapDataBinder extends WebDataBinder {
 			}
 
 			StandardEvaluationContext context = new StandardEvaluationContext();
-			context.addPropertyAccessor(new PropertyTraversingMapAccessor(type, new DefaultConversionService()));
+			context.addPropertyAccessor(new PropertyTraversingMapAccessor(type, conversionService));
 			context.setTypeConverter(new StandardTypeConverter(conversionService));
 			context.setRootObject(map);
 

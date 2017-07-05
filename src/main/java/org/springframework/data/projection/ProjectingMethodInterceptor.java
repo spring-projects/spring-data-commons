@@ -15,6 +15,9 @@
  */
 package org.springframework.data.projection;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +30,6 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -41,29 +43,12 @@ import org.springframework.util.ObjectUtils;
  * @author Oliver Gierke
  * @since 1.10
  */
+@RequiredArgsConstructor
 class ProjectingMethodInterceptor implements MethodInterceptor {
 
-	private final ProjectionFactory factory;
-	private final MethodInterceptor delegate;
-	private final ConversionService conversionService;
-
-	/**
-	 * Creates a new {@link ProjectingMethodInterceptor} using the given {@link ProjectionFactory} and delegate
-	 * {@link MethodInterceptor}.
-	 * 
-	 * @param factory the {@link ProjectionFactory} to use to create projections if types do not match, must not be
-	 *          {@literal null}..
-	 * @param delegate the {@link MethodInterceptor} to trigger to create the source value, must not be {@literal null}..
-	 */
-	public ProjectingMethodInterceptor(ProjectionFactory factory, MethodInterceptor delegate) {
-
-		Assert.notNull(factory, "ProjectionFactory must not be null!");
-		Assert.notNull(delegate, "Delegate MethodInterceptor must not be null!");
-
-		this.factory = factory;
-		this.delegate = delegate;
-		this.conversionService = new DefaultConversionService();
-	}
+	private final @NonNull ProjectionFactory factory;
+	private final @NonNull MethodInterceptor delegate;
+	private final @NonNull ConversionService conversionService;
 
 	/* 
 	 * (non-Javadoc)
