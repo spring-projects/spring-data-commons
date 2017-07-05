@@ -56,7 +56,6 @@ public class MapDataBinderUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	@SuppressWarnings("rawtypes")
 	public void bindsNestedCollectionElement() {
 
 		MutablePropertyValues values = new MutablePropertyValues();
@@ -71,7 +70,6 @@ public class MapDataBinderUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	@SuppressWarnings("rawtypes")
 	public void bindsNestedPrimitive() {
 
 		MutablePropertyValues values = new MutablePropertyValues();

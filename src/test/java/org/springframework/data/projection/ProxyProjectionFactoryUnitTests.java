@@ -77,7 +77,6 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATAREST-221, DATACMNS-630
-	@SuppressWarnings("rawtypes")
 	public void proxyExposesTargetClassAware() {
 
 		CustomerExcerpt proxy = factory.createProjection(CustomerExcerpt.class);

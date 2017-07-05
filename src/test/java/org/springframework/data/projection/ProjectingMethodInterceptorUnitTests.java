@@ -16,6 +16,7 @@
 package org.springframework.data.projection;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collection;
@@ -30,6 +31,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 
 /**
  * Unit tests for {@link ProjectingMethodInterceptor}.
@@ -43,11 +46,13 @@ public class ProjectingMethodInterceptorUnitTests {
 	@Mock MethodInterceptor interceptor;
 	@Mock MethodInvocation invocation;
 	@Mock ProjectionFactory factory;
+	ConversionService conversionService = new DefaultConversionService();
 
 	@Test // DATAREST-221
 	public void wrapsDelegateResultInProxyIfTypesDontMatch() throws Throwable {
 
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
+				conversionService);
 
 		when(invocation.getMethod()).thenReturn(Helper.class.getMethod("getHelper"));
 		when(interceptor.invoke(invocation)).thenReturn("Foo");
@@ -58,7 +63,7 @@ public class ProjectingMethodInterceptorUnitTests {
 	@Test // DATAREST-221
 	public void retunsDelegateResultAsIsIfTypesMatch() throws Throwable {
 
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor);
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
 
 		when(invocation.getMethod()).thenReturn(Helper.class.getMethod("getString"));
 		when(interceptor.invoke(invocation)).thenReturn("Foo");
@@ -69,7 +74,7 @@ public class ProjectingMethodInterceptorUnitTests {
 	@Test // DATAREST-221
 	public void returnsNullAsIs() throws Throwable {
 
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor);
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
 
 		when(interceptor.invoke(invocation)).thenReturn(null);
 
@@ -79,20 +84,21 @@ public class ProjectingMethodInterceptorUnitTests {
 	@Test // DATAREST-221
 	public void considersPrimitivesAsWrappers() throws Throwable {
 
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor);
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
 
 		when(invocation.getMethod()).thenReturn(Helper.class.getMethod("getPrimitive"));
 		when(interceptor.invoke(invocation)).thenReturn(1L);
 
 		assertThat(methodInterceptor.invoke(invocation)).isEqualTo(1L);
-		verify(factory, times(0)).createProjection((Class<?>) anyObject(), anyObject());
+		verify(factory, times(0)).createProjection((Class<?>) any(), any());
 	}
 
 	@Test // DATAREST-394, DATAREST-408
 	@SuppressWarnings("unchecked")
 	public void appliesProjectionToNonEmptySets() throws Throwable {
 
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
+				conversionService);
 		Object result = methodInterceptor
 				.invoke(mockInvocationOf("getHelperCollection", Collections.singleton(mock(Helper.class))));
 
@@ -107,7 +113,8 @@ public class ProjectingMethodInterceptorUnitTests {
 	@SuppressWarnings("unchecked")
 	public void appliesProjectionToNonEmptyLists() throws Throwable {
 
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
+				conversionService);
 		Object result = methodInterceptor
 				.invoke(mockInvocationOf("getHelperList", Collections.singletonList(mock(Helper.class))));
 
@@ -123,7 +130,8 @@ public class ProjectingMethodInterceptorUnitTests {
 	@SuppressWarnings("unchecked")
 	public void allowsMaskingAnArrayIntoACollection() throws Throwable {
 
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
+				conversionService);
 		Object result = methodInterceptor.invoke(mockInvocationOf("getHelperArray", new Helper[] { mock(Helper.class) }));
 
 		assertThat(result).isInstanceOf(Collection.class);
@@ -138,7 +146,8 @@ public class ProjectingMethodInterceptorUnitTests {
 	@SuppressWarnings("unchecked")
 	public void appliesProjectionToNonEmptyMap() throws Throwable {
 
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
+				conversionService);
 
 		Object result = methodInterceptor
 				.invoke(mockInvocationOf("getHelperMap", Collections.singletonMap("foo", mock(Helper.class))));
@@ -154,7 +163,8 @@ public class ProjectingMethodInterceptorUnitTests {
 	@Test
 	public void returnsSingleElementCollectionForTargetThatReturnsNonCollection() throws Throwable {
 
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor);
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
+				conversionService);
 
 		Helper reference = mock(Helper.class);
 		Object result = methodInterceptor.invoke(mockInvocationOf("getHelperCollection", reference));
