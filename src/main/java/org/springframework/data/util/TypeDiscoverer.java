@@ -115,7 +115,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param fieldType must not be {@literal null}.
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked", "deprecation" })
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected TypeInformation<?> createInfo(Type fieldType) {
 
 		Assert.notNull(fieldType, "Field type must not be null!");
@@ -180,7 +180,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param type
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes", "deprecation" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected Class<S> resolveType(Type type) {
 
 		Map<TypeVariable, Type> map = new HashMap<>();

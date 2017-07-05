@@ -15,12 +15,13 @@
  */
 package org.springframework.data.support;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Collection;
 
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.PropertySpecifier;
-import org.springframework.data.util.StringMatcher;
-import org.springframework.util.Assert;
 
 /**
  * Accessor for the {@link ExampleMatcher} to use in modules that support query by example (QBE) querying.
@@ -31,21 +32,10 @@ import org.springframework.util.Assert;
  * @author Jens Schauder
  * @since 1.12
  */
+@RequiredArgsConstructor
 public class ExampleMatcherAccessor {
 
-	private final ExampleMatcher matcher;
-
-	/**
-	 * Creates a new {@link ExampleMatcherAccessor} for the given {@link ExampleMatcher}.
-	 * 
-	 * @param matcher must not be {@literal null}.
-	 */
-	public ExampleMatcherAccessor(ExampleMatcher matcher) {
-
-		Assert.notNull(matcher, "ExampleMatcher must not be null!");
-
-		this.matcher = matcher;
-	}
+	private final @NonNull ExampleMatcher matcher;
 
 	/**
 	 * Returns the {@link PropertySpecifier}s of the underlying {@link ExampleMatcher}.

@@ -117,7 +117,6 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		return getTypeVariableMap(type, new HashSet<>());
 	}
 
-	@SuppressWarnings("deprecation")
 	private static Map<TypeVariable<?>, Type> getTypeVariableMap(Class<?> type, Collection<Type> visited) {
 
 		if (visited.contains(type)) {

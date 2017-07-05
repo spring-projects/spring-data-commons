@@ -60,7 +60,7 @@ public class ReflectionUtils {
 	public static <T> T createInstanceIfPresent(String classname, T defaultInstance) {
 
 		try {
-			Class<?> type = ClassUtils.getDefaultClassLoader().loadClass(classname);
+			Class<?> type = ClassUtils.forName(classname, ClassUtils.getDefaultClassLoader());
 			return (T) BeanUtils.instantiateClass(type);
 		} catch (Exception e) {
 			return defaultInstance;

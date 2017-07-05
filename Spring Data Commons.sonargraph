@@ -57,6 +57,7 @@
                         <element type="IncludeTypePattern" name="**.core.support.**"/>
                     </element>
                     <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
+                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Support" type="AllowedDependency"/>
                     <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Core" type="AllowedDependency"/>
                     <dependency toName="Project|spring-data-commons::Layer|Repositories::Subsystem|Query" type="AllowedDependency"/>
                 </element>
@@ -84,6 +85,7 @@
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.cdi.**"/>
                     </element>
+                    <dependency toName="External|External::Subsystem|JRE" type="AllowedDependency"/>
                     <dependency toName="External|External::Subsystem|JavaEE" type="AllowedDependency"/>
                     <dependency toName="External|External::Subsystem|Logging" type="AllowedDependency"/>
                     <dependency toName="External|External::Subsystem|Reflection" type="AllowedDependency"/>
@@ -142,60 +144,10 @@
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.context.**"/>
                     </element>
+                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Support" type="AllowedDependency"/>
                     <dependency toName="Project|spring-data-commons::Layer|Mapping::Subsystem|Model" type="AllowedDependency"/>
                 </element>
                 <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
-            </element>
-            <element type="Layer" name="Core">
-                <element type="TypeFilter" name="Assignment"/>
-                <element type="Subsystem" name="Types">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.util.**"/>
-                    </element>
-                    <stereotype name="Public"/>
-                </element>
-                <element type="Subsystem" name="Annotations">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.annotation.**"/>
-                    </element>
-                    <stereotype name="Public"/>
-                </element>
-                <element type="Subsystem" name="Geo">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.geo.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Authentication">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.authentication.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="History">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.history.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Support">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.support.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Transactions">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.transaction.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Configuration">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="WeakTypePattern" name="**.config.**"/>
-                    </element>
-                </element>
-                <element type="Subsystem" name="Projection">
-                    <element type="TypeFilter" name="Assignment">
-                        <element type="IncludeTypePattern" name="**.projection.**"/>
-                    </element>
-                </element>
-                <dependency toName="Project|spring-data-commons::Layer|Application" type="AllowedDependency"/>
             </element>
             <element type="Layer" name="Application">
                 <element type="TypeFilter" name="Assignment"/>
@@ -216,6 +168,68 @@
                     <element type="TypeFilter" name="Assignment">
                         <element type="IncludeTypePattern" name="**.crossstore.**"/>
                     </element>
+                </element>
+                <element type="Subsystem" name="Geo">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.geo.**"/>
+                    </element>
+                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="History">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.history.**"/>
+                    </element>
+                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="Support">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.support.**"/>
+                    </element>
+                    <dependency toName="Project|spring-data-commons::Layer|Application::Subsystem|Domain" type="AllowedDependency"/>
+                </element>
+                <dependency toName="Project|spring-data-commons::Layer|Core" type="AllowedDependency"/>
+            </element>
+            <element type="Layer" name="Core">
+                <element type="TypeFilter" name="Assignment"/>
+                <element type="Subsystem" name="Types">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.util.**Information"/>
+                        <element type="IncludeTypePattern" name="**.util.TypeDiscoverer**"/>
+                    </element>
+                    <stereotype name="Public"/>
+                    <dependency toName="Project|spring-data-commons::Layer|Core::Subsystem|Util" type="AllowedDependency"/>
+                </element>
+                <element type="Subsystem" name="Util">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.util.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Annotations">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.annotation.**"/>
+                    </element>
+                    <stereotype name="Public"/>
+                </element>
+                <element type="Subsystem" name="Authentication">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.authentication.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Transactions">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.transaction.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Configuration">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="WeakTypePattern" name="**.config.**"/>
+                    </element>
+                </element>
+                <element type="Subsystem" name="Projection">
+                    <element type="TypeFilter" name="Assignment">
+                        <element type="IncludeTypePattern" name="**.projection.**"/>
+                    </element>
+                    <dependency toName="Project|spring-data-commons::Layer|Core::Subsystem|Util" type="AllowedDependency"/>
                 </element>
             </element>
         </architecture>
@@ -346,6 +360,16 @@
             <element type="Subsystem" name="ThreeTen Backport">
                 <element type="TypeFilter" name="Assignment">
                     <element type="IncludeTypePattern" name="org.threeten.bp.**"/>
+                </element>
+            </element>
+            <element type="Subsystem" name="Vavr">
+                <element type="TypeFilter" name="Assignment">
+                    <element type="IncludeTypePattern" name="io.vavr.**"/>
+                </element>
+            </element>
+            <element type="Subsystem" name="Lombok">
+                <element type="TypeFilter" name="Assignment">
+                    <element type="IncludeTypePattern" name="lombok.**"/>
                 </element>
             </element>
         </architecture>

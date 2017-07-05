@@ -17,8 +17,6 @@ package org.springframework.data.domain;
 
 import java.util.function.Function;
 
-import org.springframework.core.convert.converter.Converter;
-
 /**
  * A page is a sublist of a list of objects. It allows gain information about the position of it in the containing
  * entire list.
@@ -43,10 +41,10 @@ public interface Page<T> extends Slice<T> {
 	long getTotalElements();
 
 	/**
-	 * Returns a new {@link Page} with the content of the current one mapped by the given {@link Converter}.
+	 * Returns a new {@link Page} with the content of the current one mapped by the given {@link Function}.
 	 * 
 	 * @param converter must not be {@literal null}.
-	 * @return a new {@link Page} with the content of the current one mapped by the given {@link Converter}.
+	 * @return a new {@link Page} with the content of the current one mapped by the given {@link Function}.
 	 * @since 1.10
 	 */
 	<U> Page<U> map(Function<? super T, ? extends U> converter);
