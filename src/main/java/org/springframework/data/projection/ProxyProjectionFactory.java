@@ -28,6 +28,8 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -47,6 +49,7 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
 			ProxyProjectionFactory.class.getClassLoader());
 
+	private final ConversionService conversionService = new DefaultConversionService();
 	private ClassLoader classLoader;
 
 	/**
@@ -152,7 +155,7 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 				: new PropertyAccessingMethodInterceptor(source);
 
 		return new ProjectingMethodInterceptor(this,
-				postProcessAccessorInterceptor(propertyInvocationInterceptor, source, projectionType));
+				postProcessAccessorInterceptor(propertyInvocationInterceptor, source, projectionType), conversionService);
 	}
 
 	/**
