@@ -265,6 +265,7 @@
 			<groupId>de.schauderhaft.degraph</groupId>
 			<artifactId>degraph-check</artifactId>
 			<version>0.1.4</version>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
