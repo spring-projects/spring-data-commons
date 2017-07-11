@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.util.AnnotationDetectionMethodCallback;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -68,25 +69,17 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 	protected MethodInterceptor postProcessAccessorInterceptor(MethodInterceptor interceptor, Object source,
 			Class<?> projectionType) {
 
-		if (!typeCache.containsKey(projectionType)) {
-
-			AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class);
-			ReflectionUtils.doWithMethods(projectionType, callback);
-
-			typeCache.put(projectionType, callback.hasFoundAnnotation());
-		}
-
-		return typeCache.get(projectionType)
+		return typeCache.computeIfAbsent(projectionType, SpelAwareProxyProjectionFactory::hasMethodWithValueAnnotation)
 				? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory, parser, projectionType)
 				: interceptor;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.ProxyProjectionFactory#getProjectionInformation(java.lang.Class)
+	 * @see org.springframework.data.projection.ProxyProjectionFactory#createProjectionInformation(java.lang.Class)
 	 */
 	@Override
-	public ProjectionInformation getProjectionInformation(Class<?> projectionType) {
+	protected ProjectionInformation createProjectionInformation(Class<?> projectionType) {
 
 		return new DefaultProjectionInformation(projectionType) {
 
@@ -110,5 +103,21 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 				return AnnotationUtils.findAnnotation(readMethod, Value.class) == null;
 			}
 		};
+	}
+
+	/**
+	 * Returns whether the given type as a method annotated with {@link Value}.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean hasMethodWithValueAnnotation(Class<?> type) {
+
+		Assert.notNull(type, "Type must not be null!");
+
+		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class);
+		ReflectionUtils.doWithMethods(type, callback);
+
+		return callback.hasFoundAnnotation();
 	}
 }

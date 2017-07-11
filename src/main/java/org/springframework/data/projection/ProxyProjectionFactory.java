@@ -30,6 +30,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * A {@link ProjectionFactory} to create JDK proxies to back interfaces and handle method invocations on them. By
@@ -46,6 +47,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 
 	private final List<MethodInterceptorFactory> factories;
 	private final ConversionService conversionService;
+	private final Map<Class<?>, ProjectionInformation> projectionInformationCache = new ConcurrentReferenceHashMap<>();
 	private ClassLoader classLoader;
 
 	/**
@@ -127,7 +129,18 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	 * @see org.springframework.data.projection.ProjectionFactory#getProjectionInformation(java.lang.Class)
 	 */
 	@Override
-	public ProjectionInformation getProjectionInformation(Class<?> projectionType) {
+	public final ProjectionInformation getProjectionInformation(Class<?> projectionType) {
+
+		return projectionInformationCache.computeIfAbsent(projectionType, this::createProjectionInformation);
+	}
+
+	/**
+	 * Creates a fresh, cacheable {@link ProjectionInformation} instance for the given projection type.
+	 * 
+	 * @param projectionType must not be {@literal null}.
+	 * @return
+	 */
+	protected ProjectionInformation createProjectionInformation(Class<?> projectionType) {
 		return new DefaultProjectionInformation(projectionType);
 	}
 
