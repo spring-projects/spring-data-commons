@@ -56,24 +56,6 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 		this.beanFactory = beanFactory;
 	}
 
-	/**
-	 * Inspects the given target type for methods with {@link Value} annotations and caches the result. Will create a
-	 * {@link SpelEvaluatingMethodInterceptor} if an annotation was found or return the delegate as is if not.
-	 * 
-	 * @param interceptor the root {@link MethodInterceptor}.
-	 * @param source The backing source object.
-	 * @param projectionType the proxy target type.
-	 * @return
-	 */
-	@Override
-	protected MethodInterceptor postProcessAccessorInterceptor(MethodInterceptor interceptor, Object source,
-			Class<?> projectionType) {
-
-		return typeCache.computeIfAbsent(projectionType, SpelAwareProxyProjectionFactory::hasMethodWithValueAnnotation)
-				? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory, parser, projectionType)
-				: interceptor;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.projection.ProxyProjectionFactory#createProjectionInformation(java.lang.Class)
@@ -103,6 +85,24 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 				return AnnotationUtils.findAnnotation(readMethod, Value.class) == null;
 			}
 		};
+	}
+
+	/**
+	 * Inspects the given target type for methods with {@link Value} annotations and caches the result. Will create a
+	 * {@link SpelEvaluatingMethodInterceptor} if an annotation was found or return the delegate as is if not.
+	 * 
+	 * @param interceptor the root {@link MethodInterceptor}.
+	 * @param source The backing source object.
+	 * @param projectionType the proxy target type.
+	 * @return
+	 */
+	@Override
+	protected MethodInterceptor postProcessAccessorInterceptor(MethodInterceptor interceptor, Object source,
+			Class<?> projectionType) {
+
+		return typeCache.computeIfAbsent(projectionType, SpelAwareProxyProjectionFactory::hasMethodWithValueAnnotation)
+				? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory, parser, projectionType)
+				: interceptor;
 	}
 
 	/**

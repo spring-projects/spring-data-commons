@@ -135,6 +135,20 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	}
 
 	/**
+	 * Post-process the given {@link MethodInterceptor} for the given source instance and projection type. Default
+	 * implementation will simply return the given interceptor.
+	 * 
+	 * @param interceptor will never be {@literal null}.
+	 * @param source will never be {@literal null}.
+	 * @param projectionType will never be {@literal null}.
+	 * @return
+	 */
+	protected MethodInterceptor postProcessAccessorInterceptor(MethodInterceptor interceptor, Object source,
+			Class<?> projectionType) {
+		return interceptor;
+	}
+
+	/**
 	 * Creates a fresh, cacheable {@link ProjectionInformation} instance for the given projection type.
 	 * 
 	 * @param projectionType must not be {@literal null}.
@@ -176,20 +190,6 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		}
 
 		throw new IllegalStateException("No MethodInterceptorFactory found for type ".concat(source.getClass().getName()));
-	}
-
-	/**
-	 * Post-process the given {@link MethodInterceptor} for the given source instance and projection type. Default
-	 * implementation will simply return the given interceptor.
-	 * 
-	 * @param interceptor will never be {@literal null}.
-	 * @param source will never be {@literal null}.
-	 * @param projectionType will never be {@literal null}.
-	 * @return
-	 */
-	protected MethodInterceptor postProcessAccessorInterceptor(MethodInterceptor interceptor, Object source,
-			Class<?> projectionType) {
-		return interceptor;
 	}
 
 	/**
