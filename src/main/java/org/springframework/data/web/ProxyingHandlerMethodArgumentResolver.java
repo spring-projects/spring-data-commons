@@ -23,11 +23,9 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.WebDataBinder;
@@ -43,7 +41,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * @since 1.10
  */
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
-		implements BeanFactoryAware, ResourceLoaderAware, BeanClassLoaderAware {
+		implements BeanFactoryAware, BeanClassLoaderAware {
 
 	private static final List<String> IGNORED_PACKAGES = Arrays.asList("java", "org.springframework");
 
@@ -70,16 +68,6 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.proxyFactory.setBeanFactory(beanFactory);
-	}
-
-	/**
-	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
-	 * @deprecated rather set the {@link ClassLoader} via {@link #setBeanClassLoader(ClassLoader)}.
-	 */
-	@Override
-	@Deprecated
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.proxyFactory.setResourceLoader(resourceLoader);
 	}
 
 	/* 
@@ -115,13 +103,9 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		}
 
 		// Fallback for only user defined interfaces
-		for (String prefix : IGNORED_PACKAGES) {
-			if (ClassUtils.getPackageName(type).startsWith(prefix)) {
-				return false;
-			}
-		}
+		String packageName = ClassUtils.getPackageName(type);
 
-		return true;
+		return !IGNORED_PACKAGES.stream().anyMatch(it -> packageName.startsWith(it));
 	}
 
 	/* 

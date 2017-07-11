@@ -17,6 +17,7 @@ package org.springframework.data.projection;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.beans.PropertyDescriptor;
 import java.util.List;
 
 import org.junit.Before;
@@ -58,9 +59,13 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-630
 	public void excludesAtValueAnnotatedMethodsForInputProperties() {
 
-		List<String> properties = factory.getInputProperties(CustomerExcerpt.class);
+		List<PropertyDescriptor> properties = factory //
+				.getProjectionInformation(CustomerExcerpt.class) //
+				.getInputProperties();
 
-		assertThat(properties).containsExactly("firstname");
+		assertThat(properties) //
+				.extracting(PropertyDescriptor::getName) //
+				.containsExactly("firstname");
 	}
 
 	@Test // DATACMNS-89

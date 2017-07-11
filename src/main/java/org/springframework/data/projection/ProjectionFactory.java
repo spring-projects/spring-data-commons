@@ -15,8 +15,6 @@
  */
 package org.springframework.data.projection;
 
-import java.util.List;
-
 /**
  * A factory to create projecting instances for other objects usually used to allow easy creation of representation
  * projections to define which properties of a domain objects shall be exported in which way.
@@ -43,16 +41,6 @@ public interface ProjectionFactory {
 	 * @return
 	 */
 	<T> T createProjection(Class<T> projectionType);
-
-	/**
-	 * Returns the properties that will be consumed by the given projection type.
-	 * 
-	 * @param projectionType must not be {@literal null}.
-	 * @return
-	 * @deprecated use {@link #getProjectionInformation(Class)}
-	 */
-	@Deprecated
-	List<String> getInputProperties(Class<?> projectionType);
 
 	/**
 	 * Returns the {@link ProjectionInformation} for the given projection type.

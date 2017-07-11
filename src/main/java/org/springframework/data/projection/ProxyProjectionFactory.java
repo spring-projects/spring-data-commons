@@ -15,7 +15,6 @@
  */
 package org.springframework.data.projection;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,10 +26,8 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -45,10 +42,7 @@ import org.springframework.util.ClassUtils;
  * @see SpelAwareProxyProjectionFactory
  * @since 1.10
  */
-class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, BeanClassLoaderAware {
-
-	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
-			ProxyProjectionFactory.class.getClassLoader());
+class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware {
 
 	private final List<MethodInterceptorFactory> factories;
 	private final ConversionService conversionService;
@@ -64,16 +58,6 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 		this.factories.add(PropertyAccessingMethodInvokerFactory.INSTANCE);
 
 		this.conversionService = new DefaultConversionService();
-	}
-
-	/**
-	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
-	 * @deprecated rather set the {@link ClassLoader} directly via {@link #setBeanClassLoader(ClassLoader)}.
-	 */
-	@Override
-	@Deprecated
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.classLoader = resourceLoader.getClassLoader();
 	}
 
 	/* 
@@ -119,10 +103,7 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 		factory.setOpaque(true);
 		factory.setInterfaces(projectionType, TargetAware.class);
 
-		if (IS_JAVA_8) {
-			factory.addAdvice(new DefaultMethodInvokingMethodInterceptor());
-		}
-
+		factory.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		factory.addAdvice(new TargetAwareMethodInterceptor(source.getClass()));
 		factory.addAdvice(getMethodInterceptor(source, projectionType));
 
@@ -139,24 +120,6 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 		Assert.notNull(projectionType, "Projection type must not be null!");
 
 		return createProjection(projectionType, new HashMap<String, Object>());
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.ProjectionFactory#getProperties(java.lang.Class)
-	 */
-	@Override
-	public List<String> getInputProperties(Class<?> projectionType) {
-
-		Assert.notNull(projectionType, "Projection type must not be null!");
-
-		List<String> result = new ArrayList<>();
-
-		for (PropertyDescriptor descriptor : getProjectionInformation(projectionType).getInputProperties()) {
-			result.add(descriptor.getName());
-		}
-
-		return result;
 	}
 
 	/* 

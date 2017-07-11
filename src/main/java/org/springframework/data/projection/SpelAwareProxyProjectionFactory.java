@@ -77,7 +77,8 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 		}
 
 		return typeCache.get(projectionType)
-				? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory, parser, projectionType) : interceptor;
+				? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory, parser, projectionType)
+				: interceptor;
 	}
 
 	/* 

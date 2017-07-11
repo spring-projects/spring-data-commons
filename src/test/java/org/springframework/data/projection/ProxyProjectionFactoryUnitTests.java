@@ -49,11 +49,6 @@ public class ProxyProjectionFactoryUnitTests {
 		factory.createProjection(null, new Object());
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
-	public void rejectsNullProjectionTypeForInputProperties() {
-		factory.getInputProperties(null);
-	}
-
 	@Test // DATACMNS-630
 	public void returnsNullForNullSource() {
 		assertThat(factory.createProjection(CustomerExcerpt.class, null)).isNull();
