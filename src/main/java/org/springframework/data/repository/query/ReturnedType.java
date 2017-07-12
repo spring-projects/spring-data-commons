@@ -18,6 +18,7 @@ package org.springframework.data.repository.query;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.mapping.PreferredConstructor;
@@ -33,6 +35,7 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * A representation of the type returned by a {@link QueryMethod}.
@@ -43,6 +46,8 @@ import org.springframework.util.ClassUtils;
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public abstract class ReturnedType {
+
+	private static final Map<CacheKey, ReturnedType> CACHE = new ConcurrentReferenceHashMap<>(32);
 
 	private final @NonNull Class<?> domainType;
 
@@ -60,9 +65,12 @@ public abstract class ReturnedType {
 		Assert.notNull(domainType, "Domain type must not be null!");
 		Assert.notNull(factory, "ProjectionFactory must not be null!");
 
-		return returnedType.isInterface()
-				? new ReturnedInterface(factory.getProjectionInformation(returnedType), domainType)
-				: new ReturnedClass(returnedType, domainType);
+		return CACHE.computeIfAbsent(CacheKey.of(returnedType, domainType, factory.hashCode()), key -> {
+
+			return returnedType.isInterface()
+					? new ReturnedInterface(factory.getProjectionInformation(returnedType), domainType)
+					: new ReturnedClass(returnedType, domainType);
+		});
 	}
 
 	/**
@@ -315,5 +323,11 @@ public abstract class ReturnedType {
 		private boolean isPrimitiveOrWrapper() {
 			return ClassUtils.isPrimitiveOrWrapper(type);
 		}
+	}
+
+	@Value(staticConstructor = "of")
+	private static class CacheKey {
+		Class<?> returnedType, domainType;
+		int projectionFactoryHashCode;
 	}
 }

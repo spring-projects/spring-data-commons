@@ -157,6 +157,17 @@ public class ReturnedTypeUnitTests {
 		assertThat(properties).containsExactly("firstname");
 	}
 
+	@Test // DATACMNS-1112
+	public void cachesInstancesBySourceTypes() {
+
+		SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+
+		ReturnedType left = ReturnedType.of(Child.class, Object.class, factory);
+		ReturnedType right = ReturnedType.of(Child.class, Object.class, factory);
+
+		assertThat(left).isSameAs(right);
+	}
+
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor().getReturnedType();
 	}
