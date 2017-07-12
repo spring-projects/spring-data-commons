@@ -41,25 +41,30 @@ import org.springframework.util.MultiValueMap;
 public interface StreamUtils {
 
 	/**
-	 * Returns a {@link Stream} backed by the given {@link Iterator}.
-	 * <p>
-	 * If the given iterator is an {@link CloseableIterator} add a {@link CloseableIteratorDisposingRunnable} wrapping the
-	 * given iterator to propagate {@link Stream#close()} accordingly.
+	 * Returns a {@link Stream} backed by the given {@link Iterator}
 	 * 
-	 * @param iterator must not be {@literal null}
+	 * @param iterator must not be {@literal null}.
 	 * @return
-	 * @since 1.8
 	 */
 	public static <T> Stream<T> createStreamFromIterator(Iterator<T> iterator) {
 
+		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL);
+		return StreamSupport.stream(spliterator, false);
+	}
+
+	/**
+	 * Returns a {@link Stream} backed by the given {@link CloseableIterator} and forwarding calls to
+	 * {@link Stream#close()} to the iterator.
+	 * 
+	 * @param iterator must not be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
+	public static <T> Stream<T> createStreamFromIterator(CloseableIterator<T> iterator) {
+
 		Assert.notNull(iterator, "Iterator must not be null!");
 
-		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL);
-		Stream<T> stream = StreamSupport.stream(spliterator, false);
-
-		return iterator instanceof CloseableIterator//
-				? stream.onClose(() -> ((CloseableIterator<T>) iterator).close()) //
-				: stream;
+		return createStreamFromIterator((Iterator<T>) iterator).onClose(() -> iterator.close());
 	}
 
 	/**
