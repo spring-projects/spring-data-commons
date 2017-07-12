@@ -71,6 +71,7 @@ public abstract class ThreeTenBackPortConverters {
 		converters.add(InstantToDateConverter.INSTANCE);
 		converters.add(ZoneIdToStringConverter.INSTANCE);
 		converters.add(StringToZoneIdConverter.INSTANCE);
+		converters.add(LocalDateTimeToJsr310LocalDateTimeConverter.INSTANCE);
 
 		return converters;
 	}
@@ -83,6 +84,24 @@ public abstract class ThreeTenBackPortConverters {
 
 		return Arrays.<Class<?>> asList(LocalDateTime.class, LocalDate.class, LocalTime.class, Instant.class)
 				.contains(type);
+	}
+
+	public static enum LocalDateTimeToJsr310LocalDateTimeConverter
+			implements Converter<LocalDateTime, java.time.LocalDateTime> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Override
+		public java.time.LocalDateTime convert(LocalDateTime source) {
+
+			Date date = toDate(source.atZone(ZoneId.systemDefault()).toInstant());
+
+			return source == null ? null : Jsr310Converters.DateToLocalDateTimeConverter.INSTANCE.convert(date);
+		}
 	}
 
 	public static enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {

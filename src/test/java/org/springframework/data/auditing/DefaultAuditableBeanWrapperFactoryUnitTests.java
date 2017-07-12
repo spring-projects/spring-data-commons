@@ -79,7 +79,7 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-867
-	public void errorsWhenUnableToConvertDateViaIntermedeateJavaUtilDateConversion() {
+	public void errorsWhenUnableToConvertDateViaIntermediateJavaUtilDateConversion() {
 
 		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
 		ZonedDateTime zonedDateTime = ZonedDateTime.now();

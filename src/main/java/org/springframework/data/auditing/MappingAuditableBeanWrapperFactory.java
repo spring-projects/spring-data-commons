@@ -15,7 +15,6 @@
  */
 package org.springframework.data.auditing;
 
-import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.Map;
@@ -191,7 +190,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 */
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
-			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.map(accessor::getProperty), LocalDateTime.class);
+			return getAsTemporalAccessor(metadata.lastModifiedDateProperty.map(accessor::getProperty),
+					TemporalAccessor.class);
 		}
 
 		/*

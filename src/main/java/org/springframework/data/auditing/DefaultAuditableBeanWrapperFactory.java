@@ -19,10 +19,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
@@ -216,7 +218,23 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@SuppressWarnings("unchecked")
 		protected <T extends TemporalAccessor> Optional<T> getAsTemporalAccessor(Optional<? extends Object> source,
 				Class<? extends T> target) {
-			return source.map(it -> target.isInstance(it) ? (T) it : conversionService.convert(it, target));
+
+			return source.map(it -> {
+
+				if (target.isInstance(it)) {
+					return (T) it;
+				}
+
+				Class<?> typeToConvertTo = Stream.of(target, LocalDateTime.class)//
+						.filter(type -> target.isAssignableFrom(type))//
+						.filter(type -> conversionService.canConvert(it.getClass(), type))//
+						.findFirst()
+						.orElseThrow(() -> new IllegalArgumentException(
+								String.format("Invalid date type for member %s! Supported types are %s.", source,
+										AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES)));
+
+				return (T) conversionService.convert(it, typeToConvertTo);
+			});
 		}
 	}
 

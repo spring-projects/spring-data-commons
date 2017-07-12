@@ -20,32 +20,33 @@ import static org.mockito.Mockito.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Optional;
 
-import org.joda.time.DateTime;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper;
-import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter;
+import org.springframework.data.convert.JodaTimeConverters;
+import org.springframework.data.convert.Jsr310Converters;
+import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.context.SampleMappingContext;
 
 /**
- * Unit tests for {@link MappingAuditableBeanWrapperFactory}. TODO: Which date types to support?
+ * Unit tests for {@link MappingAuditableBeanWrapperFactory}.
  * 
  * @author Oliver Gierke
  * @since 1.8
  */
-@Ignore
 public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 	DefaultAuditableBeanWrapperFactory factory;
@@ -54,8 +55,8 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 	public void setUp() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		context.setInitialEntitySet(Collections.singleton(Sample.class));
-		context.afterPropertiesSet();
+		context.getPersistentEntity(Sample.class);
+		context.getPersistentEntity(SampleWithInstant.class);
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(context));
 		factory = new MappingAuditableBeanWrapperFactory(entities);
@@ -66,7 +67,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Sample sample = new Sample();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(sample));
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
@@ -80,7 +81,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Sample sample = new Sample();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(sample));
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
@@ -94,20 +95,20 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Sample sample = new Sample();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(sample));
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
 
 		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(Instant.now()));
 	}
 
 	@Test // DATACMNS-365
 	public void doesNotReturnWrapperForEntityNotUsingAuditing() {
-		assertThat(factory.getBeanWrapperFor(Optional.of(new NoAuditing()))).isNotPresent();
+		assertThat(factory.getBeanWrapperFor(new NoAuditing())).isNotPresent();
 	}
 
 	@Test // DATACMNS-365
 	public void returnsAuditableWrapperForAuditable() {
 
-		assertThat(factory.getBeanWrapperFor(Optional.of(mock(ExtendingAuditable.class))))
+		assertThat(factory.getBeanWrapperFor(mock(ExtendingAuditable.class)))
 				.hasValueSatisfying(it -> assertThat(it).isInstanceOf(AuditableInterfaceBeanWrapper.class));
 	}
 
@@ -119,15 +120,17 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(reference);
 
-		assertLastModificationDate(calendar, reference);
+		assertLastModificationDate(calendar, //
+				Jsr310Converters.DateToLocalDateTimeConverter.INSTANCE.convert(reference));
 	}
 
 	@Test // DATACMNS-638
 	public void returnsLastModificationDateTimeAsCalendar() {
 
-		DateTime reference = new DateTime();
+		org.joda.time.LocalDateTime reference = new org.joda.time.LocalDateTime();
 
-		assertLastModificationDate(reference, reference.toDate());
+		assertLastModificationDate(reference,
+				JodaTimeConverters.LocalDateTimeToJsr310Converter.INSTANCE.convert(reference));
 	}
 
 	@Test // DATACMNS-638
@@ -135,7 +138,8 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Date reference = new Date();
 
-		assertLastModificationDate(reference, reference);
+		assertLastModificationDate(reference, //
+				Jsr310Converters.DateToLocalDateTimeConverter.INSTANCE.convert(reference));
 	}
 
 	@Test // DATACMNS-638, DATACMNS-43
@@ -143,7 +147,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		LocalDateTime reference = LocalDateTime.now();
 
-		assertLastModificationDate(reference, LocalDateTimeToDateConverter.INSTANCE.convert(reference));
+		assertLastModificationDate(reference, reference);
 	}
 
 	@Test // DATACMNS-638, DATACMNS-43
@@ -152,18 +156,27 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		org.threeten.bp.LocalDateTime reference = org.threeten.bp.LocalDateTime.now();
 
 		assertLastModificationDate(reference,
-				org.springframework.data.convert.ThreeTenBackPortConverters.LocalDateTimeToDateConverter.INSTANCE
-						.convert(reference));
+				ThreeTenBackPortConverters.LocalDateTimeToJsr310LocalDateTimeConverter.INSTANCE.convert(reference));
 	}
 
-	private void assertLastModificationDate(Object source, Object expected) {
+	@Test
+	public void exposesInstantAsModificationDate() {
+
+		SampleWithInstant sample = new SampleWithInstant();
+		sample.modified = Instant.now();
+
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
+		assertThat(wrapper.flatMap(it -> it.getLastModifiedDate())).hasValue(sample.modified);
+	}
+
+	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
 
 		Sample sample = new Sample();
 		sample.lastModifiedDate = source;
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(Optional.of(sample));
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
 
-		assertThat(wrapper).hasValueSatisfying(it -> assertThat(it.getLastModifiedDate()).isEqualTo(expected));
+		assertThat(wrapper.flatMap(it -> it.getLastModifiedDate())).hasValue(expected);
 	}
 
 	static class Sample {
@@ -178,12 +191,13 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		}
 	}
 
-	static class NoAuditing {
+	static class SampleWithInstant {
 
+		@CreatedDate Instant created;
+		@LastModifiedDate Instant modified;
 	}
 
-	@SuppressWarnings("serial")
-	static abstract class ExtendingAuditable implements Auditable<Object, Long, LocalDateTime> {
+	static class NoAuditing {}
 
-	}
+	static abstract class ExtendingAuditable implements Auditable<Object, Long, LocalDateTime> {}
 }

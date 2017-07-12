@@ -15,6 +15,7 @@
  */
 package org.springframework.data.convert;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,7 +36,6 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Jens Schauder
  */
-@SuppressWarnings("deprecation")
 public abstract class JodaTimeConverters {
 
 	private static final boolean JODA_TIME_IS_PRESENT = ClassUtils.isPresent("org.joda.time.LocalDate", null);
@@ -63,7 +63,19 @@ public abstract class JodaTimeConverters {
 		converters.add(LocalDateTimeToJodaLocalDateTime.INSTANCE);
 		converters.add(LocalDateTimeToJodaDateTime.INSTANCE);
 
+		converters.add(LocalDateTimeToJsr310Converter.INSTANCE);
+
 		return converters;
+	}
+
+	public enum LocalDateTimeToJsr310Converter implements Converter<LocalDateTime, java.time.LocalDateTime> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.LocalDateTime convert(LocalDateTime source) {
+			return source == null ? null : java.time.LocalDateTime.ofInstant(source.toDate().toInstant(), ZoneId.of("UTC"));
+		}
 	}
 
 	public enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
