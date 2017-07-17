@@ -17,10 +17,10 @@ package org.springframework.data.mapping.context;
 
 import java.util.Collection;
 
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -63,7 +63,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @throws MappingException when no {@link PersistentEntity} can be found for given {@literal type}.
 	 * @since 2.0
 	 */
-	default E getRequiredPersistentEntity(Class<?> type) {
+	default E getRequiredPersistentEntity(Class<?> type) throws MappingException {
 
 		E entity = getPersistentEntity(type);
 
@@ -102,7 +102,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @return never {@literal null}.
 	 * @throws MappingException when no {@link PersistentEntity} can be found for given {@link TypeInformation}.
 	 */
-	default E getRequiredPersistentEntity(TypeInformation<?> type) {
+	default E getRequiredPersistentEntity(TypeInformation<?> type) throws MappingException {
 
 		E entity = getPersistentEntity(type);
 
@@ -132,10 +132,9 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 *         {@link PersistentEntity} exists for it or the {@link PersistentProperty} does not refer to an entity (the
 	 *         type of the property is considered simple see
 	 *         {@link org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)}).
-	 * @throws MappingException when no {@link PersistentEntity} can be found for given
-	 *           {@link PersistentProperty}.
+	 * @throws MappingException when no {@link PersistentEntity} can be found for given {@link PersistentProperty}.
 	 */
-	default E getRequiredPersistentEntity(P persistentProperty) {
+	default E getRequiredPersistentEntity(P persistentProperty) throws MappingException {
 
 		E entity = getPersistentEntity(persistentProperty);
 
@@ -143,8 +142,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 			return entity;
 		}
 
-		throw new MappingException(
-				String.format("Couldn't find PersistentEntity for property %s!", persistentProperty));
+		throw new MappingException(String.format("Couldn't find PersistentEntity for property %s!", persistentProperty));
 	}
 
 	/**
@@ -155,7 +153,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @throws InvalidPersistentPropertyPath in case not all of the segments of the given {@link PropertyPath} can be
 	 *           resolved.
 	 */
-	PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath);
+	PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath) throws InvalidPersistentPropertyPath;
 
 	/**
 	 * Returns all {@link PersistentProperty}s for the given dot path notation based on the given type.
@@ -165,7 +163,8 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @return the {@link PersistentPropertyPath} representing the given property path on the given type.
 	 * @throws InvalidPersistentPropertyPath in case not all of the segments of the given property path can be resolved.
 	 */
-	PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type);
+	PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type)
+			throws InvalidPersistentPropertyPath;
 
 	/**
 	 * Returns the {@link PersistentPropertyPath} for the resolvable part of the given
@@ -175,7 +174,10 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @return the {@link PersistentPropertyPath} for the resolvable part of the given
 	 *         {@link InvalidPersistentPropertyPath}.
 	 * @since 1.11
+	 * @deprecated since 2.0, use {@link #getPersistentPropertyPath(PropertyPath)} with
+	 *             {@link InvalidPersistentPropertyPath#getResolvedPath()} instead.
 	 */
+	@Deprecated
 	PersistentPropertyPath<P> getPersistentPropertyPath(InvalidPersistentPropertyPath invalidPath);
 
 	/**
