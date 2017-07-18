@@ -17,15 +17,20 @@ package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.io.IOException;
+
 import javax.inject.Named;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.annotation.ScannedGenericBeanDefinition;
+import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 
 /**
@@ -36,12 +41,13 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
  */
 public class RepositoryBeanNameGeneratorUnitTests {
 
+	static final String SAMPLE_IMPLEMENTATION_BEAN_NAME = "repositoryBeanNameGeneratorUnitTests.SomeImplementation";
+
 	RepositoryBeanNameGenerator generator;
 	BeanDefinitionRegistry registry;
 
 	@Before
 	public void setUp() {
-
 		this.generator = new RepositoryBeanNameGenerator(Thread.currentThread().getContextClassLoader());
 	}
 
@@ -55,6 +61,25 @@ public class RepositoryBeanNameGeneratorUnitTests {
 		assertThat(generator.generateBeanName(getBeanDefinitionFor(AnnotatedInterface.class))).isEqualTo("specialName");
 	}
 
+	@Test // DATACMNS-1115
+	public void usesClassNameOfScannedBeanDefinition() throws IOException {
+
+		MetadataReaderFactory factory = new SimpleMetadataReaderFactory();
+		MetadataReader reader = factory.getMetadataReader(SomeImplementation.class.getName());
+
+		BeanDefinition definition = new ScannedGenericBeanDefinition(reader);
+
+		assertThat(generator.generateBeanName(definition)).isEqualTo(SAMPLE_IMPLEMENTATION_BEAN_NAME);
+	}
+
+	@Test // DATACMNS-1115
+	public void usesClassNameOfAnnotatedBeanDefinition() {
+
+		BeanDefinition definition = new AnnotatedGenericBeanDefinition(SomeImplementation.class);
+
+		assertThat(generator.generateBeanName(definition)).isEqualTo(SAMPLE_IMPLEMENTATION_BEAN_NAME);
+	}
+
 	private BeanDefinition getBeanDefinitionFor(Class<?> repositoryInterface) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(RepositoryFactoryBeanSupport.class);
@@ -62,12 +87,10 @@ public class RepositoryBeanNameGeneratorUnitTests {
 		return builder.getBeanDefinition();
 	}
 
-	interface PlainInterface {
-
-	}
+	interface PlainInterface {}
 
 	@Named("specialName")
-	interface AnnotatedInterface {
+	interface AnnotatedInterface {}
 
-	}
+	static class SomeImplementation {}
 }

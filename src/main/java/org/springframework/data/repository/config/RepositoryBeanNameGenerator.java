@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefiniti
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
-import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -49,7 +48,9 @@ public class RepositoryBeanNameGenerator {
 	 */
 	public String generateBeanName(BeanDefinition definition) {
 
-		AnnotatedBeanDefinition beanDefinition = new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
+		AnnotatedBeanDefinition beanDefinition = definition instanceof AnnotatedBeanDefinition
+				? (AnnotatedBeanDefinition) definition
+				: new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
 		return DELEGATE.generateBeanName(beanDefinition, null);
 	}
 
@@ -62,18 +63,7 @@ public class RepositoryBeanNameGenerator {
 	 * @return
 	 */
 	private Class<?> getRepositoryInterfaceFrom(BeanDefinition beanDefinition) {
-
-		if (beanDefinition instanceof ScannedGenericBeanDefinition) {
-
-			try {
-				return ((ScannedGenericBeanDefinition) beanDefinition).resolveBeanClass(beanClassLoader);
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException("Could not resolve bean class.", e);
-			}
-
-		} else {
-			return getRepositoryInterfaceFromFactory(beanDefinition);
-		}
+		return getRepositoryInterfaceFromFactory(beanDefinition);
 	}
 
 	private Class<?> getRepositoryInterfaceFromFactory(BeanDefinition beanDefinition) {
