@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,14 +51,17 @@ public class RepositoryBeanNameGenerator implements BeanNameGenerator, BeanClass
 	 */
 	public String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
 
-		AnnotatedBeanDefinition beanDefinition = new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
+		AnnotatedBeanDefinition beanDefinition = definition instanceof AnnotatedBeanDefinition //
+				? (AnnotatedBeanDefinition) definition //
+				: new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
+
 		return DELEGATE.generateBeanName(beanDefinition, registry);
 	}
 
 	/**
-	 * Returns the type configured for the {@code repositoryInterface} property of the given bean definition. Uses a
-	 * potential {@link Class} being configured as is or tries to load a class with the given value's {@link #toString()}
-	 * representation.
+	 * Returns the type configured for the {@code repositoryInterface} constructor argument of the given bean definition.
+	 * Uses a potential {@link Class} being configured as is or tries to load a class with the given value's
+	 * {@link #toString()} representation.
 	 * 
 	 * @param beanDefinition
 	 * @return
