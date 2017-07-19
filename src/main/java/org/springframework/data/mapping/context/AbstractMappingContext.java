@@ -18,6 +18,7 @@ package org.springframework.data.mapping.context;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,6 +57,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.FieldFilter;
@@ -83,6 +86,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	private final Optional<E> NONE = Optional.empty();
 	private final Map<TypeInformation<?>, Optional<E>> persistentEntities = new HashMap<>();
+	private final Map<TypeAndProperties, PersistentPropertyPath<P>> propertyPaths = new ConcurrentReferenceHashMap<>();
 	private final PersistentPropertyAccessorFactory persistentPropertyAccessorFactory = new ClassGeneratingPropertyAccessorFactory();
 
 	private ApplicationEventPublisher applicationEventPublisher;
@@ -268,18 +272,21 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	}
 
 	private PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
-		return getPersistentPropertyPath(Arrays.asList(propertyPath.split("\\.")), type);
+
+		return propertyPaths.computeIfAbsent(TypeAndProperties.of(type, propertyPath),
+				it -> createPersistentPropertyPath(it.getPath(), it.getType()));
 	}
 
 	/**
 	 * Creates a {@link PersistentPropertyPath} for the given parts and {@link TypeInformation}.
 	 *
-	 * @param parts must not be {@literal null} or empty.
+	 * @param propertyPath must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	private PersistentPropertyPath<P> getPersistentPropertyPath(Collection<String> parts, TypeInformation<?> type) {
+	private PersistentPropertyPath<P> createPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
 
+		List<String> parts = Arrays.asList(propertyPath.split("\\."));
 		DefaultPersistentPropertyPath<P> path = DefaultPersistentPropertyPath.empty();
 		Iterator<String> iterator = parts.iterator();
 		E current = getRequiredPersistentEntity(type);
@@ -543,6 +550,13 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			property.getPersistentEntityType().forEach(AbstractMappingContext.this::addPersistentEntity);
 		}
+	}
+
+	@Value(staticConstructor = "of")
+	static class TypeAndProperties {
+
+		TypeInformation<?> type;
+		String path;
 	}
 
 	/**

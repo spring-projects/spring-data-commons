@@ -31,10 +31,10 @@ import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -155,7 +155,7 @@ public class AbstractMappingContextUnitTests {
 
 		assertThat(entity.getPersistentProperty("persons"))
 				.satisfies(it -> assertThat(mappingContext.getPersistentEntity(it))
-						.satisfies(inner -> assertThat(((PersistentEntity)inner).getType()).isEqualTo(Person.class)));
+						.satisfies(inner -> assertThat(((PersistentEntity) inner).getType()).isEqualTo(Person.class)));
 	}
 
 	@Test // DATACMNS-380
@@ -224,6 +224,13 @@ public class AbstractMappingContextUnitTests {
 				.matches(e -> e.getResolvedPath().equals("persons"))//
 				.matches(e -> e.getUnresolvableSegment().equals("firstname"))//
 				.matches(e -> context.getPersistentPropertyPath(e) != null);
+	}
+
+	@Test // DATACMNS-1116
+	public void cachesPersistentPropertyPaths() {
+
+		assertThat(context.getPersistentPropertyPath("persons.name", Sample.class)) //
+				.isSameAs(context.getPersistentPropertyPath("persons.name", Sample.class));
 	}
 
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
