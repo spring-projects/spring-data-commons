@@ -109,8 +109,8 @@ class ProxyProjectionFactory implements ProjectionFactory, ResourceLoaderAware, 
 		Assert.notNull(projectionType, "Projection type must not be null!");
 		Assert.isTrue(projectionType.isInterface(), "Projection type must be an interface!");
 
-		if (source == null) {
-			return null;
+		if (source == null || projectionType.isInstance(source)) {
+			return (T) source;
 		}
 
 		ProxyFactory factory = new ProxyFactory();
