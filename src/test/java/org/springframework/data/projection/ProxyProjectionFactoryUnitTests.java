@@ -264,7 +264,17 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(data.get("key"), is(nullValue()));
 	}
 
-	static class Customer {
+	@Test // DATACMNS-1121
+	public void doesNotCreateWrappingProxyIfTargetImplementsProjectionInterface() {
+
+		Customer customer = new Customer();
+
+		assertThat(factory.createProjection(Contact.class, customer) == customer, is(true));
+	}
+
+	interface Contact {}
+
+	static class Customer implements Contact {
 
 		public Long id;
 		public String firstname, lastname;
