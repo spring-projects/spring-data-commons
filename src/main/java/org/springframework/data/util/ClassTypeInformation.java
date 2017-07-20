@@ -15,8 +15,6 @@
  */
 package org.springframework.data.util;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -29,11 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * {@link TypeInformation} for a plain {@link Class}.
@@ -50,13 +48,10 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	public static final ClassTypeInformation<Map> MAP = new ClassTypeInformation(Map.class);
 	public static final ClassTypeInformation<Object> OBJECT = new ClassTypeInformation(Object.class);
 
-	private static final Map<Class<?>, Reference<ClassTypeInformation<?>>> CACHE = Collections
-			.synchronizedMap(new WeakHashMap<Class<?>, Reference<ClassTypeInformation<?>>>());
+	private static final Map<Class<?>, ClassTypeInformation<?>> CACHE = new ConcurrentReferenceHashMap<>();
 
 	static {
-		for (ClassTypeInformation<?> info : Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT)) {
-			CACHE.put(info.getType(), new WeakReference<>(info));
-		}
+		Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT).forEach(it -> CACHE.put(it.getType(), it));
 	}
 
 	private final Class<S> type;
@@ -72,16 +67,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		Reference<ClassTypeInformation<?>> cachedReference = CACHE.get(type);
-		TypeInformation<?> cachedTypeInfo = cachedReference == null ? null : cachedReference.get();
-
-		if (cachedTypeInfo != null) {
-			return (ClassTypeInformation<S>) cachedTypeInfo;
-		}
-
-		ClassTypeInformation<S> result = new ClassTypeInformation<>(type);
-		CACHE.put(type, new WeakReference<>(result));
-		return result;
+		return (ClassTypeInformation<S>) CACHE.computeIfAbsent(type, it -> new ClassTypeInformation<>(type));
 	}
 
 	/**
