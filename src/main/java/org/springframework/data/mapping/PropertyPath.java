@@ -17,11 +17,13 @@ package org.springframework.data.mapping;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +32,7 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
 
 /**
@@ -46,6 +49,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	private static final String ALL_UPPERCASE = "[A-Z0-9._$]+";
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final Pattern SPLITTER_FOR_QUOTED = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", "\\."));
+	private static final Map<Key, PropertyPath> CACHE = new ConcurrentReferenceHashMap<>();
 
 	private final TypeInformation<?> owningType;
 	private final String name;
@@ -229,30 +233,33 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.hasText(source, "Source must not be null or empty!");
 		Assert.notNull(type, "TypeInformation must not be null or empty!");
 
-		List<String> iteratorSource = new ArrayList<>();
+		return CACHE.computeIfAbsent(Key.of(type, source), it -> {
 
-		Matcher matcher = isQuoted(source) ? SPLITTER_FOR_QUOTED.matcher(source.replace("\\Q", "").replace("\\E", ""))
-				: SPLITTER.matcher("_" + source);
+			List<String> iteratorSource = new ArrayList<>();
 
-		while (matcher.find()) {
-			iteratorSource.add(matcher.group(1));
-		}
+			Matcher matcher = isQuoted(it.path) ? SPLITTER_FOR_QUOTED.matcher(it.path.replace("\\Q", "").replace("\\E", ""))
+					: SPLITTER.matcher("_" + it.path);
 
-		Iterator<String> parts = iteratorSource.iterator();
-
-		PropertyPath result = null;
-		Stack<PropertyPath> current = new Stack<>();
-
-		while (parts.hasNext()) {
-			if (result == null) {
-				result = create(parts.next(), type, current);
-				current.push(result);
-			} else {
-				current.push(create(parts.next(), current));
+			while (matcher.find()) {
+				iteratorSource.add(matcher.group(1));
 			}
-		}
 
-		return result;
+			Iterator<String> parts = iteratorSource.iterator();
+
+			PropertyPath result = null;
+			Stack<PropertyPath> current = new Stack<>();
+
+			while (parts.hasNext()) {
+				if (result == null) {
+					result = create(parts.next(), it.type, current);
+					current.push(result);
+				} else {
+					current.push(create(parts.next(), current));
+				}
+			}
+
+			return result;
+		});
 	}
 
 	private static boolean isQuoted(String source) {
@@ -356,5 +363,12 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	@Override
 	public String toString() {
 		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
+	}
+
+	@Value(staticConstructor = "of")
+	private static class Key {
+
+		TypeInformation<?> type;
+		String path;
 	}
 }

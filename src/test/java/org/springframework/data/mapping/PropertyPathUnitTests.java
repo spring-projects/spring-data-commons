@@ -16,7 +16,7 @@
 package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.mapping.PropertyPath.*;
+import static org.springframework.data.mapping.PropertyPath.from;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -343,6 +343,11 @@ public class PropertyPathUnitTests {
 		assertThat(path).isNotNull();
 		assertThat(path.getSegment()).isEqualTo("var_name_with_underscore");
 		assertThat(path.hasNext()).isFalse();
+	}
+
+	@Test // DATACMNS-1120
+	public void cachesPropertyPathsByPathAndType() {
+		assertThat(from("userName", Foo.class)).isSameAs(from("userName", Foo.class));
 	}
 
 	private class Foo {
