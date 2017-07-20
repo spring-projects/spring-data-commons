@@ -235,7 +235,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @param metadata
 	 * @return
 	 */
-	protected RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata) {
+	private RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata) {
 
 		RepositoryComposition composition = RepositoryComposition.empty();
 
@@ -288,13 +288,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		Assert.notNull(fragments, "RepositoryFragments must not be null!");
 
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
-		RepositoryComposition composition = getRepositoryComposition(metadata);
-		RepositoryFragments repositoryAspects = getRepositoryFragments(metadata);
+		RepositoryComposition composition = getRepositoryComposition(metadata, fragments);
+		RepositoryInformation information = getRepositoryInformation(metadata, composition);
 
-		RepositoryComposition compositionToUse = composition.append(fragments).append(repositoryAspects);
-		RepositoryInformation information = getRepositoryInformation(metadata, compositionToUse);
-
-		validate(information, compositionToUse);
+		validate(information, composition);
 
 		Object target = getTargetRepository(information);
 
@@ -311,8 +308,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		result.addAdvice(new QueryExecutorMethodInterceptor(information));
 
-		compositionToUse = compositionToUse.append(RepositoryFragment.implemented(target));
-		result.addAdvice(new ImplementationMethodExecutionInterceptor(compositionToUse));
+		composition = composition.append(RepositoryFragment.implemented(target));
+		result.addAdvice(new ImplementationMethodExecutionInterceptor(composition));
 
 		return (T) result.getProxy(classLoader);
 	}
@@ -328,13 +325,44 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	}
 
 	/**
+	 * Returns the {@link RepositoryInformation} for the given {@link RepositoryMetadata} and custom
+	 * {@link RepositoryFragments}.
+	 * 
+	 * @param metadata must not be {@literal null}.
+	 * @param fragments must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	protected RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata, RepositoryFragments fragments) {
+		return getRepositoryInformation(metadata, getRepositoryComposition(metadata, fragments));
+	}
+
+	/**
+	 * Returns the {@link RepositoryComposition} for the given {@link RepositoryMetadata} and extra
+	 * {@link RepositoryFragments}.
+	 * 
+	 * @param metadata must not be {@literal null}.
+	 * @param fragments must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	private RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata, RepositoryFragments fragments) {
+
+		Assert.notNull(metadata, "RepositoryMetadata must not be null!");
+		Assert.notNull(fragments, "RepositoryFragments must not be null!");
+
+		RepositoryComposition composition = getRepositoryComposition(metadata);
+		RepositoryFragments repositoryAspects = getRepositoryFragments(metadata);
+
+		return composition.append(fragments).append(repositoryAspects);
+	}
+
+	/**
 	 * Returns the {@link RepositoryInformation} for the given repository interface.
 	 *
 	 * @param metadata
 	 * @param composition
 	 * @return
 	 */
-	protected RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata,
+	private RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata,
 			RepositoryComposition composition) {
 
 		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, composition);

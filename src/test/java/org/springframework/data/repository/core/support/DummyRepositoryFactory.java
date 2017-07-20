@@ -22,10 +22,12 @@ import java.util.Optional;
 
 import org.mockito.Mockito;
 import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests.MyRepositoryQuery;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -44,6 +46,8 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	public final RepositoryQuery queryTwo = mock(RepositoryQuery.class);
 	public final QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
 
+	@SuppressWarnings("unchecked") private final QuerydslPredicateExecutor<Object> querydsl = mock(
+			QuerydslPredicateExecutor.class);
 	private final Object repository;
 
 	public DummyRepositoryFactory(Object repository) {
@@ -90,5 +94,19 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
 			EvaluationContextProvider evaluationContextProvider) {
 		return Optional.of(strategy);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryFragments(org.springframework.data.repository.core.RepositoryMetadata)
+	 */
+	@Override
+	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
+
+		RepositoryFragments fragments = super.getRepositoryFragments(metadata);
+
+		return QuerydslPredicateExecutor.class.isAssignableFrom(metadata.getRepositoryInterface()) //
+				? fragments.append(RepositoryFragments.just(querydsl)) //
+				: fragments;
 	}
 }

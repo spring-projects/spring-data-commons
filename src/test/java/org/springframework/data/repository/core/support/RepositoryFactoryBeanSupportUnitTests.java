@@ -21,8 +21,9 @@ import static org.mockito.Mockito.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -59,5 +60,19 @@ public class RepositoryFactoryBeanSupportUnitTests {
 				.withMessageContaining("Repository interface");
 	}
 
+	@Test // DATACMNS-1117
+	public void returnsRepositoryInformationForFragmentSetup() {
+
+		RepositoryFactoryBeanSupport<SampleWithQuerydslRepository, Object, Long> factoryBean = //
+				new DummyRepositoryFactoryBean<>(SampleWithQuerydslRepository.class);
+		factoryBean.afterPropertiesSet();
+
+		RepositoryInformation information = factoryBean.getRepositoryInformation();
+
+		assertThat(information.getQueryMethods()).isEmpty();
+	}
+
 	interface SampleRepository extends Repository<Object, Long> {}
+
+	interface SampleWithQuerydslRepository extends Repository<Object, Long>, QuerydslPredicateExecutor<Object> {}
 }

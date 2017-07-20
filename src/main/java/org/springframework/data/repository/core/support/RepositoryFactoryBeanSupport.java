@@ -202,8 +202,11 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getRepositoryInformation()
 	 */
 	public RepositoryInformation getRepositoryInformation() {
-		return this.factory.getRepositoryInformation(repositoryMetadata,
-				customImplementation.map(RepositoryComposition::just).orElse(RepositoryComposition.empty()));
+
+		RepositoryFragments fragments = customImplementation.map(RepositoryFragments::just)//
+				.orElse(RepositoryFragments.empty());
+
+		return factory.getRepositoryInformation(repositoryMetadata, fragments);
 	}
 
 	/*
@@ -216,7 +219,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 				.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getQueryMethods()
 	 */
 	public List<QueryMethod> getQueryMethods() {
