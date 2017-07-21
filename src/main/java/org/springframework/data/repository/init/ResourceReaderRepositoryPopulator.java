@@ -59,7 +59,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	}
 
 	/**
-	 * Createsa a new {@link ResourceReaderRepositoryPopulator} using the given {@link ResourceReader} and
+	 * Creates a new {@link ResourceReaderRepositoryPopulator} using the given {@link ResourceReader} and
 	 * {@link ClassLoader}.
 	 * 
 	 * @param reader must not be {@literal null}.

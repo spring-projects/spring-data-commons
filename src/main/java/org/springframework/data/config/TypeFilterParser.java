@@ -106,7 +106,7 @@ public class TypeFilterParser {
 	}
 
 	/**
-	 * Createsa a {@link TypeFilter} instance from the given {@link Element} and {@link ClassLoader}.
+	 * Creates a {@link TypeFilter} instance from the given {@link Element} and {@link ClassLoader}.
 	 * 
 	 * @param element must not be {@literal null}.
 	 * @param classLoader must not be {@literal null}.
