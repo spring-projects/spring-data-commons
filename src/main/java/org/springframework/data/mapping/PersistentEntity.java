@@ -151,7 +151,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 			return property;
 		}
 
-		throw new IllegalStateException(String.format("Required identifier property not found for %s!", getType()));
+		throw new IllegalStateException(String.format("Required property %s not found for %s!", name, getType()));
 	}
 
 	/**

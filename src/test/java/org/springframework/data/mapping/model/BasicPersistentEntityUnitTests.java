@@ -165,6 +165,16 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getPersistentProperty(CreatedDate.class)).isNull();
 	}
 
+	@Test // DATACMNS-1122
+	public void reportsRequiredPropertyName() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
+
+		assertThatThrownBy(() -> entity.getRequiredPersistentProperty("foo"))
+				.hasMessageContaining("Required property foo not found");
+	}
+
 	@Test // DATACMNS-596
 	public void returnsBeanWrapperForPropertyAccessor() {
 
