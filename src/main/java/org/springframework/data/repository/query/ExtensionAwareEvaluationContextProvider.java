@@ -39,6 +39,7 @@ import org.springframework.data.repository.query.EvaluationContextExtensionInfor
 import org.springframework.data.repository.query.EvaluationContextExtensionInformation.RootObjectInformation;
 import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.data.repository.query.spi.Function;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
@@ -68,7 +69,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new HashMap<>();
 
-	private @Nullable List<? extends EvaluationContextExtension> extensions;
+	private final Lazy<List<? extends EvaluationContextExtension>> extensions;
 	private Optional<ListableBeanFactory> beanFactory = Optional.empty();
 
 	/**
@@ -76,7 +77,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * {@link BeanFactory} configured.
 	 */
 	public ExtensionAwareEvaluationContextProvider() {
-		this.extensions = null;
+		this.extensions = Lazy.of(() -> getExtensionsFrom(beanFactory));
 	}
 
 	/**
@@ -87,7 +88,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	public ExtensionAwareEvaluationContextProvider(List<? extends EvaluationContextExtension> extensions) {
 
 		Assert.notNull(extensions, "List of EvaluationContextExtensions must not be null!");
-		this.extensions = extensions;
+		this.extensions = Lazy.of(() -> extensions);
 	}
 
 	/* 
@@ -110,7 +111,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		beanFactory.ifPresent(it -> ec.setBeanResolver(new BeanFactoryResolver(it)));
 
-		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(getExtensions());
+		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(extensions.get());
 
 		ec.addPropertyAccessor(accessor);
 		ec.addPropertyAccessor(new ReflectivePropertyAccessor());
@@ -151,24 +152,19 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	}
 
 	/**
-	 * Returns the {@link EvaluationContextExtension} to be used. Either from the current configuration or the configured
-	 * {@link BeanFactory}.
+	 * Looks up all {@link EvaluationContextExtension} instances from the given {@link ListableBeanFactory}.
 	 * 
+	 * @param beanFactory must not be {@literal null}.
 	 * @return
 	 */
-	private List<? extends EvaluationContextExtension> getExtensions() {
-
-		if (this.extensions != null) {
-			return this.extensions;
-		}
+	private static List<? extends EvaluationContextExtension> getExtensionsFrom(
+			Optional<ListableBeanFactory> beanFactory) {
 
 		Collection<? extends EvaluationContextExtension> extensions = beanFactory//
 				.map(it -> it.getBeansOfType(EvaluationContextExtension.class, true, false).values())//
 				.orElseGet(() -> Collections.emptyList());
 
-		this.extensions = new ArrayList<>(extensions);
-
-		return this.extensions;
+		return new ArrayList<>(extensions);
 	}
 
 	/**

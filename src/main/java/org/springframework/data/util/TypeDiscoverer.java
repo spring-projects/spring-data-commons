@@ -360,7 +360,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	@Nullable
 	public TypeInformation<?> getMapValueType() {
-		return valueType.getNullable();
+		return valueType.orElse(null);
 	}
 
 	@Nullable
@@ -386,7 +386,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	@Nullable
 	public final TypeInformation<?> getComponentType() {
-		return componentType.getNullable();
+		return componentType.orElse(null);
 	}
 
 	@Nullable

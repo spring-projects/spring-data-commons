@@ -124,7 +124,6 @@ public class VersionUnitTests {
 		assertThat(version.compareTo(nextBugfix)).isLessThan(0);
 		assertThat(version.compareTo(nextBuild)).isLessThan(0);
 
-		assertThat(version.compareTo(null)).isGreaterThan(0);
 		assertThat(nextMajor.compareTo(version)).isGreaterThan(0);
 		assertThat(nextMinor.compareTo(version)).isGreaterThan(0);
 		assertThat(nextBugfix.compareTo(version)).isGreaterThan(0);

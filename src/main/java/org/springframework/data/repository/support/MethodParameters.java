@@ -160,7 +160,7 @@ class MethodParameters {
 		@Nullable
 		@Override
 		public String getParameterName() {
-			return name.getNullable();
+			return name.orElse(null);
 		}
 	}
 }

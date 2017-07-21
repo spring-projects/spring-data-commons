@@ -1361,8 +1361,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * @see java.lang.Comparable#compareTo(java.lang.Object)
 		 */
 		@Override
-		public int compareTo(@Nullable PropertyStackAddress o) {
-			return o == null ? 1 : (hash < o.hash) ? -1 : ((hash == o.hash) ? 0 : 1);
+		public int compareTo(@SuppressWarnings("null") PropertyStackAddress o) {
+			return hash < o.hash ? -1 : hash == o.hash ? 0 : 1;
 		}
 	}
 

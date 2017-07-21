@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core;
 
-import org.springframework.lang.Nullable;
-
 /**
  * Abstraction of a map of {@link NamedQueries} that can be looked up by their names.
  * 
@@ -28,17 +26,18 @@ public interface NamedQueries {
 	 * Returns whether the map contains a named query for the given name. If this method returns {@literal true} you can
 	 * expect {@link #getQuery(String)} to return a non-{@literal null} query for the very same name.
 	 * 
-	 * @param queryName
+	 * @param queryName must not be {@literal null} or empty.
 	 * @return
+	 * @throws IllegalArgumentException in case the given name is {@literal null} or empty.
 	 */
 	boolean hasQuery(String queryName);
 
 	/**
-	 * Returns the named query with the given name or {@literal null} if none exists.
+	 * Returns the named query with the given name.
 	 * 
-	 * @param queryName
+	 * @param queryName must not be {@literal null} or empty.
 	 * @return
+	 * @throws IllegalArgumentException in case no query with the given name exists.
 	 */
-	@Nullable
 	String getQuery(String queryName);
 }

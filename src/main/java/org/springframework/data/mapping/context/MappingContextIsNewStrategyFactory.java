@@ -72,11 +72,8 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	@Nullable
 	@Override
 	protected IsNewStrategy doGetIsNewStrategy(Class<?> type) {
-		return MappingContextIsNewStrategyFactory.getIsNewStrategy(context.getRequiredPersistentEntity(type));
-	}
 
-	@Nullable
-	private static IsNewStrategy getIsNewStrategy(PersistentEntity<?, ?> entity) {
+		PersistentEntity<?, ? extends PersistentProperty<?>> entity = context.getRequiredPersistentEntity(type);
 
 		if (entity.hasVersionProperty()) {
 

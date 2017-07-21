@@ -21,7 +21,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
+import javax.annotation.Nonnull;
 
 /**
  * Special {@link TypeDiscoverer} handling {@link GenericArrayType}s.
@@ -62,7 +62,7 @@ class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
 	 */
 	@Override
-	@Nullable
+	@Nonnull
 	protected TypeInformation<?> doGetComponentType() {
 
 		Type componentType = type.getGenericComponentType();

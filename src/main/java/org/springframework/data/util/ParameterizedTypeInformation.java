@@ -41,7 +41,7 @@ import org.springframework.util.StringUtils;
 class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
 	private final ParameterizedType type;
-	private @javax.annotation.Nullable Boolean resolved;
+	private final Lazy<Boolean> resolved;
 
 	/**
 	 * Creates a new {@link ParameterizedTypeInformation} for the given {@link Type} and parent {@link TypeDiscoverer}.
@@ -53,7 +53,9 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 			Map<TypeVariable<?>, Type> typeVariableMap) {
 
 		super(type, parent, typeVariableMap);
+
 		this.type = type;
+		this.resolved = Lazy.of(() -> isResolvedCompletely());
 	}
 
 	/*
@@ -173,7 +175,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 
 		ParameterizedTypeInformation<?> that = (ParameterizedTypeInformation<?>) obj;
 
-		if (this.isResolvedCompletely() && that.isResolvedCompletely()) {
+		if (this.isResolved() && that.isResolved()) {
 			return this.type.equals(that.type);
 		}
 
@@ -186,7 +188,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 */
 	@Override
 	public int hashCode() {
-		return isResolvedCompletely() ? this.type.hashCode() : super.hashCode();
+		return isResolved() ? this.type.hashCode() : super.hashCode();
 	}
 
 	/*
@@ -200,16 +202,16 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 				StringUtils.collectionToCommaDelimitedString(getTypeArguments()));
 	}
 
-	private boolean isResolvedCompletely() {
+	private boolean isResolved() {
+		return resolved.get();
+	}
 
-		if (resolved != null) {
-			return resolved;
-		}
+	private boolean isResolvedCompletely() {
 
 		Type[] typeArguments = type.getActualTypeArguments();
 
 		if (typeArguments.length == 0) {
-			return cacheAndReturn(false);
+			return false;
 		}
 
 		for (Type typeArgument : typeArguments) {
@@ -218,21 +220,15 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 
 			if (info instanceof ParameterizedTypeInformation) {
 				if (!((ParameterizedTypeInformation<?>) info).isResolvedCompletely()) {
-					return cacheAndReturn(false);
+					return false;
 				}
 			}
 
 			if (!(info instanceof ClassTypeInformation)) {
-				return cacheAndReturn(false);
+				return false;
 			}
 		}
 
-		return cacheAndReturn(true);
-	}
-
-	private boolean cacheAndReturn(boolean resolved) {
-
-		this.resolved = resolved;
-		return resolved;
+		return true;
 	}
 }

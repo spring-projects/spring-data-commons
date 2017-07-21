@@ -141,11 +141,7 @@ public class Version implements Comparable<Version> {
 	 * (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(@Nullable Version that) {
-
-		if (that == null) {
-			return 1;
-		}
+	public int compareTo(@SuppressWarnings("null") Version that) {
 
 		if (major != that.major) {
 			return major - that.major;

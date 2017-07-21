@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -36,8 +37,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
-
-import com.google.common.base.Supplier;
 
 /**
  * {@link RepositoryProxyPostProcessor} to register a {@link MethodInterceptor} to intercept the

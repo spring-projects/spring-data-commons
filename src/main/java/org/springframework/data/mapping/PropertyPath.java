@@ -277,11 +277,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 			PropertyPath result = null;
 			Stack<PropertyPath> current = new Stack<>();
-				current.push(result);
-			} else {
-				current.push(create(parts.next(), current));
-			}
-		}
 
 			while (parts.hasNext()) {
 				if (result == null) {
@@ -292,10 +287,10 @@ public class PropertyPath implements Streamable<PropertyPath> {
 				}
 			}
 
-		if (result == null) {
-			throw new IllegalStateException(
-					String.format("Expected parsing to yield a PropertyPath from %s but got null!", source));
-		}
+			if (result == null) {
+				throw new IllegalStateException(
+						String.format("Expected parsing to yield a PropertyPath from %s but got null!", source));
+			}
 
 			return result;
 		});

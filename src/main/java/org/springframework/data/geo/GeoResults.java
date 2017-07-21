@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -49,7 +48,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	 * @param results must not be {@literal null}.
 	 */
 	public GeoResults(List<? extends GeoResult<T>> results) {
-		this(results, (Metric) null);
+		this(results, Metrics.NEUTRAL);
 	}
 
 	/**
@@ -57,9 +56,9 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	 * from the distance values of the given {@link GeoResult}s.
 	 * 
 	 * @param results must not be {@literal null}.
-	 * @param metric can be {@literal null}.
+	 * @param metric must not be {@literal null}.
 	 */
-	public GeoResults(List<? extends GeoResult<T>> results, @Nullable Metric metric) {
+	public GeoResults(List<? extends GeoResult<T>> results, Metric metric) {
 		this(results, calculateAverageDistance(results, metric));
 	}
 
@@ -67,12 +66,13 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	 * Creates a new {@link GeoResults} instance from the given {@link GeoResult}s and average distance.
 	 * 
 	 * @param results must not be {@literal null}.
-	 * @param averageDistance can be {@literal null}.
+	 * @param averageDistance must not be {@literal null}.
 	 */
 	@PersistenceConstructor
 	public GeoResults(List<? extends GeoResult<T>> results, Distance averageDistance) {
 
 		Assert.notNull(results, "Results must not be null!");
+		Assert.notNull(averageDistance, "Average Distance must not be null!");
 
 		this.results = results;
 		this.averageDistance = averageDistance;
@@ -115,16 +115,19 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 				StringUtils.collectionToCommaDelimitedString(results));
 	}
 
-	private static Distance calculateAverageDistance(List<? extends GeoResult<?>> results, @Nullable Metric metric) {
+	private static Distance calculateAverageDistance(List<? extends GeoResult<?>> results, Metric metric) {
+
+		Assert.notNull(results, "Results must not be null!");
+		Assert.notNull(metric, "Metric must not be null!");
 
 		if (results.isEmpty()) {
-			return metric == null ? new Distance(0) : new Distance(0, metric);
+			return new Distance(0, metric);
 		}
 
 		double averageDistance = results.stream()//
 				.mapToDouble(it -> it.getDistance().getValue())//
 				.average().orElse(0);
 
-		return metric == null ? new Distance(averageDistance) : new Distance(averageDistance, metric);
+		return new Distance(averageDistance, metric);
 	}
 }

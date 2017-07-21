@@ -192,7 +192,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	@Nullable
 	@Override
 	public Association<P> getAssociation() {
-		return association.getNullable();
+		return association.orElse(null);
 	}
 
 	/*

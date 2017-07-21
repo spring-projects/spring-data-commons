@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
  */
 package org.springframework.data.repository.core.support;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Properties;
 
 import org.springframework.data.repository.core.NamedQueries;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -26,29 +28,23 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
+@RequiredArgsConstructor
 public class PropertiesBasedNamedQueries implements NamedQueries {
+
+	private static final String NO_QUERY_FOUND = "No query with name %s found! Make sure you call hasQuery(…) before calling this method!";
 
 	public static final NamedQueries EMPTY = new PropertiesBasedNamedQueries(new Properties());
 
-	private final Properties properties;
-
-	/**
-	 * Creates a new {@link PropertiesBasedNamedQueries} for the given {@link Properties} instance.
-	 * 
-	 * @param properties must not be {@literal null}.
-	 */
-	public PropertiesBasedNamedQueries(Properties properties) {
-
-		Assert.notNull(properties, "Properties must not be null!");
-
-		this.properties = properties;
-	}
+	private final @NonNull Properties properties;
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.NamedQueries#hasNamedQuery(java.lang.String)
 	 */
 	public boolean hasQuery(String queryName) {
+
+		Assert.hasText(queryName, "Query name must not be null or empty!");
+
 		return properties.containsKey(queryName);
 	}
 
@@ -56,8 +52,16 @@ public class PropertiesBasedNamedQueries implements NamedQueries {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.NamedQueries#getNamedQuery(java.lang.String)
 	 */
-	@Nullable
 	public String getQuery(String queryName) {
-		return properties.getProperty(queryName);
+
+		Assert.hasText(queryName, "Query name must not be null or empty!");
+
+		String query = properties.getProperty(queryName);
+
+		if (query == null) {
+			throw new IllegalArgumentException(String.format(NO_QUERY_FOUND, queryName));
+		}
+
+		return query;
 	}
 }

@@ -202,9 +202,7 @@ public class ExampleMatcher {
 			propertySpecifier = propertySpecifier.withStringMatcher(genericPropertyMatcher.stringMatcher);
 		}
 
-		if (genericPropertyMatcher.valueTransformer != null) {
-			propertySpecifier = propertySpecifier.withValueTransformer(genericPropertyMatcher.valueTransformer);
-		}
+		propertySpecifier = propertySpecifier.withValueTransformer(genericPropertyMatcher.valueTransformer);
 
 		propertySpecifiers.add(propertySpecifier);
 
