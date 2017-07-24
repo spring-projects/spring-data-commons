@@ -1,6 +1,19 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.5.RELEASE (2017-07-24)
+----------------------------------------------
+* DATACMNS-1124 - Upgrade to Javaslang 2.0.6.
+* DATACMNS-1123 - Make sure XmlBeamHttpMessageConverter still works on XmlBeam > 1.4.10.
+* DATACMNS-1121 - Avoid unnecessary proxy creation if target instance already implements projection interface.
+* DATACMNS-1115 - RepositoryBeanNameGenerator fails to resolve bean names for custom implementations detected via Spring's component index.
+* DATACMNS-1102 - Avoid superfluous recreation of DefaultConversionService in ResultProcessor.
+* DATACMNS-1095 - ClassGeneratingEntityInstantiator never gets used as ObjectInstantiator is not visible.
+* DATACMNS-1087 - Converting to Vavr Option fails for present value.
+* DATACMNS-1085 - Small documentation improvements.
+* DATACMNS-1084 - Release 1.13.5 (Ingalls SR5).
+
+
 Changes in version 2.0.0.M4 (2017-06-14)
 ----------------------------------------
 * DATACMNS-1089 - Prepare upgrade to AssertJ 3.8.
