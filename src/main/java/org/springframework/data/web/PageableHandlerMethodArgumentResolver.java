@@ -188,7 +188,7 @@ public class PageableHandlerMethodArgumentResolver implements PageableArgumentRe
 	 * The delimiter to be used between the qualifier and the actual page number and size properties. Defaults to
 	 * {@code _}. So a qualifier of {@code foo} will result in a page number parameter of {@code foo_page}.
 	 * 
-	 * @param qualifierDelimiter the delimter to be used or {@literal null} to reset to the default.
+	 * @param qualifierDelimiter the delimiter to be used or {@literal null} to reset to the default.
 	 */
 	public void setQualifierDelimiter(String qualifierDelimiter) {
 		this.qualifierDelimiter = qualifierDelimiter == null ? DEFAULT_QUALIFIER_DELIMITER : qualifierDelimiter;

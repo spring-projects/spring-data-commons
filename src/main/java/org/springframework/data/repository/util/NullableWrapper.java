@@ -48,7 +48,7 @@ public class NullableWrapper {
 	}
 
 	/**
-	 * Returns the backing valie
+	 * Returns the backing value.
 	 * 
 	 * @return the value can be {@literal null}.
 	 */

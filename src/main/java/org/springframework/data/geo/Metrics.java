@@ -30,9 +30,10 @@ public enum Metrics implements Metric {
 	private final String abbreviation;
 
 	/**
-	 * Creates a new {@link Metrics} using the given muliplier.
+	 * Creates a new {@link Metrics} using the given multiplier.
 	 * 
-	 * @param multiplier the earth radius at equator.
+	 * @param multiplier the earth radius at equator, must not be {@literal null}.
+	 * @param abbreviation the abbreviation to use for this {@link Metric}, must not be {@literal null}.
 	 */
 	private Metrics(double multiplier, String abbreviation) {
 
