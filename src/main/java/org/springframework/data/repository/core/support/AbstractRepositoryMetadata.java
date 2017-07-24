@@ -57,7 +57,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	}
 
 	/**
-	 * Creates a new {@link RepositoryMetadata} for the given repsository interface.
+	 * Creates a new {@link RepositoryMetadata} for the given repository interface.
 	 * 
 	 * @param repositoryInterface must not be {@literal null}.
 	 * @since 1.9
