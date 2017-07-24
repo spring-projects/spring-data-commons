@@ -208,7 +208,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * Returns a new {@link Sort} consisting of the {@link Order}s of the current {@link Sort} combined with the given
 	 * ones.
 	 * 
-	 * @param sort can be {@literal null}.
+	 * @param sort must not be {@literal null}.
 	 * @return
 	 */
 	public Sort and(Sort sort) {
