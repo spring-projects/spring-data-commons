@@ -30,7 +30,6 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.util.ConcurrentReferenceHashMap;
-import org.xmlbeam.ProjectionFactory;
 import org.xmlbeam.XBProjector;
 
 /**
@@ -43,7 +42,7 @@ import org.xmlbeam.XBProjector;
  */
 public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Object> {
 
-	private final ProjectionFactory projectionFactory;
+	private final XBProjector projectionFactory;
 	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentReferenceHashMap<>();
 
 	/**

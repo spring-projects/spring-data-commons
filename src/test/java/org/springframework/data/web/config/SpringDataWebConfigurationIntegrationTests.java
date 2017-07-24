@@ -27,7 +27,7 @@ import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.xmlbeam.ProjectionFactory;
+import org.xmlbeam.XBProjector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
@@ -66,7 +66,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		ClassLoader classLoader = HidingClassLoader.hide(ProjectionFactory.class);
+		ClassLoader classLoader = HidingClassLoader.hide(XBProjector.class);
 		createConfigWithClassLoader(classLoader).extendMessageConverters(converters);
 
 		assertThat(converters).areNot(instanceWithClassName(XmlBeamHttpMessageConverter.class));

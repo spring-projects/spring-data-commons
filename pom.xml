@@ -19,7 +19,7 @@
 		<javaslang>2.0.4</javaslang>
 		<vavr>0.9.0</vavr>
 		<scala>2.11.7</scala>
-		<xmlbeam>1.4.8</xmlbeam>
+		<xmlbeam>1.4.12</xmlbeam>
 	</properties>
 
 	<dependencies>
