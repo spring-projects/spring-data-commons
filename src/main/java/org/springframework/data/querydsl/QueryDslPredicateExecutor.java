@@ -99,7 +99,7 @@ public interface QueryDslPredicateExecutor<T> {
 	/**
 	 * Checks whether the data store contains elements that match the given {@link Predicate}.
 	 *
-	 * @param predicate the {@link Predicate} to use for the existance check, can be {@literal null}.
+	 * @param predicate the {@link Predicate} to use for the existence check, can be {@literal null}.
 	 * @return {@literal true} if the data store contains elements that match the given {@link Predicate}.
 	 */
 	boolean exists(Predicate predicate);

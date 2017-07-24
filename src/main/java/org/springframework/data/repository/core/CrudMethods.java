@@ -31,10 +31,10 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 public interface CrudMethods {
 
 	/**
-	 * Returns the method to be used for saving entities. Usually siganture compatible to
+	 * Returns the method to be used for saving entities. Usually signature compatible to
 	 * {@link CrudRepository#save(Object)}.
 	 * 
-	 * @return the method to save entities or {@literal null} if noen exposed.
+	 * @return the method to save entities or {@literal null} if none exposed.
 	 * @see #hasSaveMethod()
 	 */
 	Method getSaveMethod();
@@ -47,7 +47,7 @@ public interface CrudMethods {
 	boolean hasSaveMethod();
 
 	/**
-	 * Returns the find all method of the repository. Implementations should prefer more detailled methods like
+	 * Returns the find all method of the repository. Implementations should prefer more detailed methods like
 	 * {@link PagingAndSortingRepository}'s taking a {@link Pageable} or {@link Sort} instance.
 	 * 
 	 * @return the find all method of the repository or {@literal null} if not available.
@@ -87,7 +87,7 @@ public interface CrudMethods {
 	Method getDeleteMethod();
 
 	/**
-	 * Returns whether the repository esposes a delete method.
+	 * Returns whether the repository exposes a delete method.
 	 * 
 	 * @return
 	 */
