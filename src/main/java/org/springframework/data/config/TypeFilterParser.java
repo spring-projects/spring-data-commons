@@ -106,7 +106,7 @@ public class TypeFilterParser {
 	}
 
 	/**
-	 * Createsa a {@link TypeFilter} instance from the given {@link Element} and {@link ClassLoader}.
+	 * Creates a {@link TypeFilter} instance from the given {@link Element} and {@link ClassLoader}.
 	 * 
 	 * @param element must not be {@literal null}.
 	 * @param classLoader must not be {@literal null}.
@@ -171,8 +171,8 @@ public class TypeFilterParser {
 
 				Class<?> filterClass = classLoader.loadClass(expression);
 				if (!TypeFilter.class.isAssignableFrom(filterClass)) {
-					throw new IllegalArgumentException("Class is not assignable to [" + TypeFilter.class.getName() + "]: "
-							+ expression);
+					throw new IllegalArgumentException(
+							"Class is not assignable to [" + TypeFilter.class.getName() + "]: " + expression);
 				}
 				return (TypeFilter) BeanUtils.instantiateClass(filterClass);
 			}

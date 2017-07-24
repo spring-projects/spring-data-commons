@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
 public @interface QuerydslPredicate {
 
 	/**
-	 * The root type to create the {@link com.mysema.query.types.Predicate}. Specify this explictly if the type is not
+	 * The root type to create the {@link com.mysema.query.types.Predicate}. Specify this explicitly if the type is not
 	 * contained in the controller method's return type.
 	 * 
 	 * @return

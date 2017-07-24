@@ -88,7 +88,7 @@ public class QueryMethod {
 
 			if (hasParameterOfType(method, Sort.class)) {
 				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameter. "
-						+ "Use sorting capabilities on Pageble instead! Offending method: %s", method.toString()));
+						+ "Use sorting capabilities on Pageable instead! Offending method: %s", method.toString()));
 			}
 		}
 
@@ -106,7 +106,8 @@ public class QueryMethod {
 			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
 
 			return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)
-					? methodDomainClass : repositoryDomainClass;
+					? methodDomainClass
+					: repositoryDomainClass;
 		});
 
 		this.resultProcessor = new ResultProcessor(this, factory);

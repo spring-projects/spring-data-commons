@@ -187,7 +187,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	}
 
 	/**
-	 * Returns a new {@link Sort} with the current setup but ascendin order direction.
+	 * Returns a new {@link Sort} with the current setup but ascending order direction.
 	 * 
 	 * @return
 	 */

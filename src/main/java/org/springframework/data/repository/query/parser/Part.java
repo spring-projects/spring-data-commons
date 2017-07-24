@@ -68,7 +68,7 @@ public class Part {
 	 */
 	public Part(String source, Class<?> clazz, boolean alwaysIgnoreCase) {
 
-		Assert.hasText(source, "Part source must not be null or emtpy!");
+		Assert.hasText(source, "Part source must not be null or empty!");
 		Assert.notNull(clazz, "Type must not be null!");
 
 		String partToUse = detectAndSetIgnoreCase(source);
@@ -150,14 +150,16 @@ public class Part {
 
 		BETWEEN(2, "IsBetween", "Between"), IS_NOT_NULL(0, "IsNotNull", "NotNull"), IS_NULL(0, "IsNull", "Null"), LESS_THAN(
 				"IsLessThan", "LessThan"), LESS_THAN_EQUAL("IsLessThanEqual", "LessThanEqual"), GREATER_THAN("IsGreaterThan",
-				"GreaterThan"), GREATER_THAN_EQUAL("IsGreaterThanEqual", "GreaterThanEqual"), BEFORE("IsBefore", "Before"), AFTER(
-				"IsAfter", "After"), NOT_LIKE("IsNotLike", "NotLike"), LIKE("IsLike", "Like"), STARTING_WITH("IsStartingWith",
-				"StartingWith", "StartsWith"), ENDING_WITH("IsEndingWith", "EndingWith", "EndsWith"), IS_NOT_EMPTY(0, "IsNotEmpty",
-				"NotEmpty"), IS_EMPTY(0, "IsEmpty", "Empty"), NOT_CONTAINING("IsNotContaining", "NotContaining", "NotContains"),
-				CONTAINING("IsContaining", "Containing", "Contains"), NOT_IN("IsNotIn", "NotIn"), IN("IsIn", "In"), NEAR("IsNear",
-				"Near"), WITHIN("IsWithin", "Within"), REGEX("MatchesRegex", "Matches", "Regex"), EXISTS(0, "Exists"), TRUE(0,
-				"IsTrue", "True"), FALSE(0, "IsFalse", "False"), NEGATING_SIMPLE_PROPERTY("IsNot", "Not"), SIMPLE_PROPERTY("Is",
-				"Equals");
+						"GreaterThan"), GREATER_THAN_EQUAL("IsGreaterThanEqual", "GreaterThanEqual"), BEFORE("IsBefore",
+								"Before"), AFTER("IsAfter", "After"), NOT_LIKE("IsNotLike", "NotLike"), LIKE("IsLike",
+										"Like"), STARTING_WITH("IsStartingWith", "StartingWith", "StartsWith"), ENDING_WITH("IsEndingWith",
+												"EndingWith", "EndsWith"), IS_NOT_EMPTY(0, "IsNotEmpty", "NotEmpty"), IS_EMPTY(0, "IsEmpty",
+														"Empty"), NOT_CONTAINING("IsNotContaining", "NotContaining", "NotContains"), CONTAINING(
+																"IsContaining", "Containing", "Contains"), NOT_IN("IsNotIn", "NotIn"), IN("IsIn",
+																		"In"), NEAR("IsNear", "Near"), WITHIN("IsWithin", "Within"), REGEX("MatchesRegex",
+																				"Matches", "Regex"), EXISTS(0, "Exists"), TRUE(0, "IsTrue", "True"), FALSE(0,
+																						"IsFalse", "False"), NEGATING_SIMPLE_PROPERTY("IsNot",
+																								"Not"), SIMPLE_PROPERTY("Is", "Equals");
 
 		// Need to list them again explicitly as the order is important
 		// (esp. for IS_NULL, IS_NOT_NULL)
