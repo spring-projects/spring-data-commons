@@ -328,12 +328,11 @@ public class PartTreeUnitTests {
 				DomainObjectWithSpecialChars.class);
 
 		Iterator<OrPart> parts = tree.iterator();
-		assertPartsIn(parts.next(),
-				new Part[] { //
-						new Part("이름", DomainObjectWithSpecialChars.class), //
-						new Part("order.id", DomainObjectWithSpecialChars.class), //
-						new Part("nested.이름", DomainObjectWithSpecialChars.class) //
-				});
+		assertPartsIn(parts.next(), new Part[] { //
+				new Part("이름", DomainObjectWithSpecialChars.class), //
+				new Part("order.id", DomainObjectWithSpecialChars.class), //
+				new Part("nested.이름", DomainObjectWithSpecialChars.class) //
+		});
 		assertPartsIn(parts.next(), new Part[] { //
 				new Part("nested.order.id", DomainObjectWithSpecialChars.class) //
 		});
@@ -358,21 +357,19 @@ public class PartTreeUnitTests {
 				DomainObjectWithSpecialChars.class);
 
 		Iterator<OrPart> parts = tree.iterator();
-		assertPartsIn(parts.next(),
-				new Part[] { //
-						new Part("이름", DomainObjectWithSpecialChars.class), //
-						new Part("order.id", DomainObjectWithSpecialChars.class), //
-						new Part("anders", DomainObjectWithSpecialChars.class), //
-						new Part("property1", DomainObjectWithSpecialChars.class), //
-						new Part("øre", DomainObjectWithSpecialChars.class), //
-						new Part("år", DomainObjectWithSpecialChars.class) //
-				});
-		assertPartsIn(parts.next(),
-				new Part[] { //
-						new Part("nested.order.id", DomainObjectWithSpecialChars.class), //
-						new Part("nested.property1", DomainObjectWithSpecialChars.class), //
-						new Part("property1", DomainObjectWithSpecialChars.class) //
-				});
+		assertPartsIn(parts.next(), new Part[] { //
+				new Part("이름", DomainObjectWithSpecialChars.class), //
+				new Part("order.id", DomainObjectWithSpecialChars.class), //
+				new Part("anders", DomainObjectWithSpecialChars.class), //
+				new Part("property1", DomainObjectWithSpecialChars.class), //
+				new Part("øre", DomainObjectWithSpecialChars.class), //
+				new Part("år", DomainObjectWithSpecialChars.class) //
+		});
+		assertPartsIn(parts.next(), new Part[] { //
+				new Part("nested.order.id", DomainObjectWithSpecialChars.class), //
+				new Part("nested.property1", DomainObjectWithSpecialChars.class), //
+				new Part("property1", DomainObjectWithSpecialChars.class) //
+		});
 
 		assertThat(tree.getSort().getOrderFor("생일").isAscending()).isTrue();
 	}
