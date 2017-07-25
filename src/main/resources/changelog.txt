@@ -1,6 +1,36 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.0.RC1 (2017-07-25)
+-----------------------------------------
+* DATACMNS-1124 - Upgrade to Javaslang 2.0.6.
+* DATACMNS-1123 - Make sure XmlBeamHttpMessageConverter still works on XmlBeam > 1.4.10.
+* DATACMNS-1122 - PersistentEntity.getRequiredPersistentProperty() does not report property name.
+* DATACMNS-1121 - Avoid unnecessary proxy creation if target instance already implements projection interface.
+* DATACMNS-1120 - Introduce caching for PropertyPath.
+* DATACMNS-1119 - Switch to ConcurrentReferenceHashMap for ClassTypeInformation caching.
+* DATACMNS-1118 - Inherit Project Reactor version from dependency management.
+* DATACMNS-1117 - RepositoryFactoryBeanSupport.getRepositoryInformation() does not set up RepositoryComposition correctly.
+* DATACMNS-1116 - Cache PersistentPropertyPath instances in AbstractMappingContext.
+* DATACMNS-1115 - RepositoryBeanNameGenerator fails to resolve bean names for custom implementations detected via Spring's component index.
+* DATACMNS-1114 - Introduce nullable annotations.
+* DATACMNS-1113 - API polishing in MappingContext.
+* DATACMNS-1112 - Cache instances of ReturnedType to avoid inspection overhead on creation.
+* DATACMNS-1110 - Introduce StreamUtils.createStreamFromIterator(CloseableIterator) to avoid instance of check.
+* DATACMNS-1109 - Allow any TemporalAccessor to be used as last modified date in auditing.
+* DATACMNS-1107 - Cache ProjectionInformation instances created.
+* DATACMNS-1106 - Remove deprecations in ProjectionFactory.
+* DATACMNS-1104 - Degraph dependency has wrong scope.
+* DATACMNS-1102 - Avoid superfluous recreation of DefaultConversionService in ResultProcessor.
+* DATACMNS-1101 - Improve mapping performance caused by overuse of Optional and Stream.
+* DATACMNS-1097 - Move classes to better matching packages.
+* DATACMNS-1096 - Remove references to Spring's converter from domain package.
+* DATACMNS-1095 - ClassGeneratingEntityInstantiator never gets used as ObjectInstantiator is not visible.
+* DATACMNS-1091 - Sporadic test failures in tests for JSR-310 conversions.
+* DATACMNS-1090 - Release 2.0 RC1 (Kay).
+* DATACMNS-1085 - Small documentation improvements.
+
+
 Changes in version 1.13.5.RELEASE (2017-07-24)
 ----------------------------------------------
 * DATACMNS-1124 - Upgrade to Javaslang 2.0.6.
