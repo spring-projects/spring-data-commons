@@ -589,6 +589,20 @@ public class PartTreeUnitTests {
 		assertType(asList("emptyIs"), SIMPLE_PROPERTY, "empty", 1, true);
 	}
 
+	@Test // DATACMNS-1129
+	public void emptyTreeDoesNotContainParts() {
+
+		PartTree tree = partTree("");
+
+		assertThat(tree).isEmpty();
+		assertThat(tree.hasPredicate()).isFalse();
+
+		tree = partTree("findByOrderByFirstname");
+
+		assertThat(tree).isEmpty();
+		assertThat(tree.hasPredicate()).isFalse();
+	}
+
 	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {
 		assertLimiting(methodName, entityType, limiting, maxResults, false);
 	}

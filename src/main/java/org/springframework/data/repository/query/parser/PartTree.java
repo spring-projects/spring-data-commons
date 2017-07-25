@@ -190,6 +190,15 @@ public class PartTree implements Streamable<OrPart> {
 		return getParts().filter(part -> part.getType().equals(type));
 	}
 
+	/**
+	 * Returns whether the {@link PartTree} contains predicate {@link Part}s.
+	 * 
+	 * @return
+	 */
+	public boolean hasPredicate() {
+		return predicate.iterator().hasNext();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -364,8 +373,9 @@ public class PartTree implements Streamable<OrPart> {
 				throw new IllegalArgumentException("OrderBy must not be used more than once in a method name!");
 			}
 
-			this.nodes = Arrays.stream(split(parts[0], "Or"))//
-					.map(part -> new OrPart(part, domainClass, alwaysIgnoreCase))//
+			this.nodes = Arrays.stream(split(parts[0], "Or")) //
+					.filter(part -> StringUtils.hasText(part)) //
+					.map(part -> new OrPart(part, domainClass, alwaysIgnoreCase)) //
 					.collect(Collectors.toList());
 
 			this.orderBySource = parts.length == 2 ? new OrderBySource(parts[1], Optional.of(domainClass))
