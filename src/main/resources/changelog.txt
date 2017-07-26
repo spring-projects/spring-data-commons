@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.6.RELEASE (2017-07-26)
+----------------------------------------------
+* DATACMNS-1127 - Release 1.13.6 (Ingalls SR6).
+
+
 Changes in version 2.0.0.RC2 (2017-07-25)
 -----------------------------------------
 * DATACMNS-1129 - PartTree for empty predicate should be empty iterable.
