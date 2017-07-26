@@ -51,8 +51,6 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 
 	@Mock PersistentEntity<?, P> entity;
 	@Mock ParameterValueProvider<P> provider;
-	@Mock PreferredConstructor<?, P> constructor;
-	@Mock Parameter<?, P> parameter;
 
 	@Test
 	public void instantiatesSimpleObjectCorrectly() {
@@ -68,10 +66,10 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 		INSTANCE.createInstance(entity, provider);
 	}
 
-	@Test
+	@Test // DATACMNS-1126
 	public void instantiatesTypeWithPreferredConstructorUsingParameterValueProvider() {
 
-		PreferredConstructor<Foo, P> constructor = new PreferredConstructorDiscoverer<Foo, P>(Foo.class).getConstructor();
+		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
 		doReturn(constructor).when(entity).getPersistenceConstructor();
 

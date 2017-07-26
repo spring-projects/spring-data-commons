@@ -45,6 +45,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.12
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -296,8 +297,7 @@ public abstract class ReturnedType {
 				return Collections.emptyList();
 			}
 
-			PreferredConstructorDiscoverer<?, ?> discoverer = new PreferredConstructorDiscoverer(type);
-			PreferredConstructor<?, ?> constructor = discoverer.getConstructor();
+			PreferredConstructor<?, ?> constructor = PreferredConstructorDiscoverer.discover(type);
 
 			if (constructor == null) {
 				return Collections.emptyList();

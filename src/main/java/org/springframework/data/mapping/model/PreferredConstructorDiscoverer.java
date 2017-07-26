@@ -15,19 +15,13 @@
  */
 package org.springframework.data.mapping.model;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.util.List;
-
-import org.springframework.core.DefaultParameterNameDiscoverer;
-import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
+
+import com.mysema.commons.lang.Assert;
 
 /**
  * Helper class to find a {@link PreferredConstructor}.
@@ -37,108 +31,34 @@ import org.springframework.lang.Nullable;
  * @author Roman Rodov
  * @author Mark Paluch
  */
-public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
-
-	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
-
-	private @Nullable PreferredConstructor<T, P> constructor;
+public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
 
 	/**
-	 * Creates a new {@link PreferredConstructorDiscoverer} for the given type.
+	 * Discovers the {@link PreferredConstructor} for the given type.
 	 *
 	 * @param type must not be {@literal null}.
-	 */
-	public PreferredConstructorDiscoverer(Class<T> type) {
-		this(ClassTypeInformation.from(type), null);
-	}
-
-	/**
-	 * Creates a new {@link PreferredConstructorDiscoverer} for the given {@link PersistentEntity}.
-	 *
-	 * @param entity must not be {@literal null}.
-	 */
-	public PreferredConstructorDiscoverer(PersistentEntity<T, P> entity) {
-		this(entity.getTypeInformation(), entity);
-	}
-
-	/**
-	 * Creates a new {@link PreferredConstructorDiscoverer} for the given type.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @param entity
-	 */
-	protected PreferredConstructorDiscoverer(TypeInformation<T> type, @Nullable PersistentEntity<T, P> entity) {
-
-		boolean noArgConstructorFound = false;
-		int numberOfArgConstructors = 0;
-		Class<?> rawOwningType = type.getType();
-
-		for (Constructor<?> candidate : rawOwningType.getDeclaredConstructors()) {
-
-			PreferredConstructor<T, P> preferredConstructor = buildPreferredConstructor(candidate, type, entity);
-
-			// Synthetic constructors should not be considered
-			if (preferredConstructor.getConstructor().isSynthetic()) {
-				continue;
-			}
-
-			// Explicitly defined constructor trumps all
-			if (preferredConstructor.isExplicitlyAnnotated()) {
-				this.constructor = preferredConstructor;
-				return;
-			}
-
-			// No-arg constructor trumps custom ones
-			if (this.constructor == null || preferredConstructor.isNoArgConstructor()) {
-				this.constructor = preferredConstructor;
-			}
-
-			if (preferredConstructor.isNoArgConstructor()) {
-				noArgConstructorFound = true;
-			} else {
-				numberOfArgConstructors++;
-			}
-		}
-
-		if (!noArgConstructorFound && numberOfArgConstructors > 1) {
-			this.constructor = null;
-		}
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private PreferredConstructor<T, P> buildPreferredConstructor(Constructor<?> constructor,
-			TypeInformation<T> typeInformation, @Nullable PersistentEntity<T, P> entity) {
-
-		List<TypeInformation<?>> parameterTypes = typeInformation.getParameterTypes(constructor);
-
-		if (parameterTypes.isEmpty()) {
-			return new PreferredConstructor<>((Constructor<T>) constructor);
-		}
-
-		String[] parameterNames = discoverer.getParameterNames(constructor);
-
-		Parameter<Object, P>[] parameters = new Parameter[parameterTypes.size()];
-		Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
-
-		for (int i = 0; i < parameterTypes.size(); i++) {
-
-			String name = parameterNames == null ? null : parameterNames[i];
-			TypeInformation<?> type = parameterTypes.get(i);
-			Annotation[] annotations = parameterAnnotations[i];
-
-			parameters[i] = new Parameter(name, type, annotations, entity);
-		}
-
-		return new PreferredConstructor<>((Constructor<T>) constructor, parameters);
-	}
-
-	/**
-	 * Returns the discovered {@link PreferredConstructor}.
-	 *
-	 * @return
+	 * @return the {@link PreferredConstructor} if found or {@literal null}.
 	 */
 	@Nullable
-	public PreferredConstructor<T, P> getConstructor() {
-		return constructor;
+	static <T, P extends PersistentProperty<P>> PreferredConstructor<T, P> discover(Class<T> type) {
+
+		Assert.notNull(type, "Type must not be null!");
+
+		return PreferredConstructorDiscoverers.findDiscoverer(type).discover(ClassTypeInformation.from(type), null);
+	}
+
+	/**
+	 * Discovers the {@link PreferredConstructorDiscoverer} for the given {@link PersistentEntity}.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @return the {@link PreferredConstructor} if found or {@literal null}.
+	 */
+	@Nullable
+	static <T, P extends PersistentProperty<P>> PreferredConstructor<T, P> discover(PersistentEntity<T, P> entity) {
+
+		Assert.notNull(entity, "PersistentEntity must not be null!");
+
+		return PreferredConstructorDiscoverers.findDiscoverer(entity.getType()).discover(entity.getTypeInformation(),
+				entity);
 	}
 }

@@ -21,10 +21,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.asm.ClassWriter;
@@ -56,6 +54,19 @@ import org.springframework.util.ClassUtils;
  * @since 1.11
  */
 public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
+
+	private static final int ARG_CACHE_SIZE = 100;
+
+	private static final ThreadLocal<Object[][]> OBJECT_POOL = ThreadLocal.withInitial(() -> {
+
+		Object[][] cached = new Object[ARG_CACHE_SIZE][];
+
+		for (int i = 0; i < ARG_CACHE_SIZE; i++) {
+			cached[i] = new Object[i];
+		}
+
+		return cached;
+	});
 
 	private final ObjectInstantiatorClassGenerator generator;
 
@@ -120,10 +131,18 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 
 		try {
-			return new EntityInstantiatorAdapter(createObjectInstantiator(entity));
+			return doCreateEntityInstantiator(entity);
 		} catch (Throwable ex) {
 			return ReflectionEntityInstantiator.INSTANCE;
 		}
+	}
+
+	/**
+	 * @param entity
+	 * @return
+	 */
+	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
+		return new EntityInstantiatorAdapter(createObjectInstantiator(entity, entity.getPersistenceConstructor()));
 	}
 
 	/**
@@ -151,17 +170,46 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	}
 
 	/**
-	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link PersistentEntity}. There will
-	 * always be exactly one {@link ObjectInstantiator} instance per {@link PersistentEntity}.
-	 * <p>
+	 * Allocates an object array for instance creation. This method uses the argument array cache if possible.
+	 *
+	 * @param argumentCount
+	 * @return
+	 * @since 2.0
+	 * @see #ARG_CACHE_SIZE
+	 */
+	static Object[] allocateArguments(int argumentCount) {
+		return argumentCount < ARG_CACHE_SIZE ? OBJECT_POOL.get()[argumentCount] : new Object[argumentCount];
+	}
+
+	/**
+	 * Deallocates an object array used for instance creation. Parameters are cleared if the array was cached.
+	 *
+	 * @param argumentCount
+	 * @return
+	 * @since 2.0
+	 * @see #ARG_CACHE_SIZE
+	 */
+	static void deallocateArguments(Object[] params) {
+
+		if (params.length != 0 && params.length < ARG_CACHE_SIZE) {
+			Arrays.fill(params, null);
+		}
+	}
+
+	/**
+	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link PersistentEntity} and
+	 * {@link PreferredConstructor}. There will always be exactly one {@link ObjectInstantiator} instance per
+	 * {@link PersistentEntity}.
 	 *
 	 * @param entity
+	 * @param constructor
 	 * @return
 	 */
-	private ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity) {
+	ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity,
+			@Nullable PreferredConstructor<?, ?> constructor) {
 
 		try {
-			return (ObjectInstantiator) this.generator.generateCustomInstantiatorClass(entity).newInstance();
+			return (ObjectInstantiator) this.generator.generateCustomInstantiatorClass(entity, constructor).newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -172,10 +220,9 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 *
 	 * @author Thomas Darimont
 	 * @author Oliver Gierke
+	 * @author Mark Paluch
 	 */
 	private static class EntityInstantiatorAdapter implements EntityInstantiator {
-
-		private static final Object[] EMPTY_ARRAY = new Object[0];
 
 		private final ObjectInstantiator instantiator;
 
@@ -203,6 +250,8 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 				return (T) instantiator.newInstance(params);
 			} catch (Exception e) {
 				throw new MappingInstantiationException(entity, Arrays.asList(params), e);
+			} finally {
+				deallocateArguments(params);
 			}
 		}
 
@@ -216,17 +265,18 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
 				@Nullable PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
 
-			if (provider == null || constructor == null || !constructor.hasParameters()) {
-				return EMPTY_ARRAY;
+			if (constructor == null || !constructor.hasParameters()) {
+				return allocateArguments(0);
 			}
 
-			List<Object> params = new ArrayList<>(constructor.getConstructor().getParameterCount());
+			Object[] params = allocateArguments(constructor.getConstructor().getParameterCount());
 
+			int index = 0;
 			for (Parameter<?, P> parameter : constructor.getParameters()) {
-				params.add(provider.getParameterValue(parameter));
+				params[index++] = provider.getParameterValue(parameter);
 			}
 
-			return params.toArray();
+			return params;
 		}
 	}
 
@@ -290,7 +340,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		private final ByteArrayClassLoader classLoader;
 
-		private ObjectInstantiatorClassGenerator() {
+		ObjectInstantiatorClassGenerator() {
 
 			this.classLoader = AccessController.doPrivileged(
 					(PrivilegedAction<ByteArrayClassLoader>) () -> new ByteArrayClassLoader(ClassUtils.getDefaultClassLoader()));
@@ -300,12 +350,14 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * Generate a new class for the given {@link PersistentEntity}.
 		 *
 		 * @param entity
+		 * @param constructor
 		 * @return
 		 */
-		public Class<?> generateCustomInstantiatorClass(PersistentEntity<?, ?> entity) {
+		public Class<?> generateCustomInstantiatorClass(PersistentEntity<?, ?> entity,
+				@Nullable PreferredConstructor<?, ?> constructor) {
 
 			String className = generateClassName(entity);
-			byte[] bytecode = generateBytecode(className, entity);
+			byte[] bytecode = generateBytecode(className, entity, constructor);
 
 			return classLoader.loadClass(className, bytecode);
 		}
@@ -323,9 +375,11 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 *
 		 * @param internalClassName
 		 * @param entity
+		 * @param constructor
 		 * @return
 		 */
-		public byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity) {
+		public byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity,
+				@Nullable PreferredConstructor<?, ?> constructor) {
 
 			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
@@ -334,7 +388,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 			visitDefaultConstructor(cw);
 
-			visitCreateMethod(cw, entity);
+			visitCreateMethod(cw, entity, constructor);
 
 			cw.visitEnd();
 
@@ -357,8 +411,10 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 *
 		 * @param cw
 		 * @param entity
+		 * @param constructor
 		 */
-		private void visitCreateMethod(ClassWriter cw, PersistentEntity<?, ?> entity) {
+		private void visitCreateMethod(ClassWriter cw, PersistentEntity<?, ?> entity,
+				@Nullable PreferredConstructor<?, ?> constructor) {
 
 			String entityTypeResourcePath = Type.getInternalName(entity.getType());
 
@@ -367,8 +423,6 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			mv.visitCode();
 			mv.visitTypeInsn(NEW, entityTypeResourcePath);
 			mv.visitInsn(DUP);
-
-			PreferredConstructor<?, ?> constructor = entity.getPersistenceConstructor();
 
 			if (constructor != null) {
 

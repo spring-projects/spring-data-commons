@@ -44,10 +44,14 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.5
  */
 @UtilityClass
 public class ReflectionUtils {
+
+	private static final boolean KOTLIN_IS_PRESENT = ClassUtils.isPresent("kotlin.Unit",
+			BeanUtils.class.getClassLoader());
 
 	/**
 	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
@@ -337,5 +341,18 @@ public class ReflectionUtils {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Return true if the specified class is a Kotlin one.
+	 *
+	 * @return {@literal true} if {@code type} is a Kotlin class.
+	 * @since 2.0
+	 */
+	public static boolean isKotlinClass(Class<?> type) {
+
+		return KOTLIN_IS_PRESENT && Arrays.stream(type.getDeclaredAnnotations()) //
+				.map(Annotation::annotationType) //
+				.anyMatch(annotation -> annotation.getName().equals("kotlin.Metadata"));
 	}
 }
