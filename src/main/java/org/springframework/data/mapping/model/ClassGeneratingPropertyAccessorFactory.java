@@ -19,7 +19,6 @@ import static org.springframework.asm.Opcodes.*;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -43,6 +42,7 @@ import org.springframework.asm.Label;
 import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
+import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -52,6 +52,7 @@ import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * A factory that can generate byte code to speed-up dynamic property access. Uses the {@link PersistentEntity}'s
@@ -118,17 +119,17 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 
-		return isClassLoaderDefineClassAccessible(entity) && isTypeInjectable(entity) && hasUniquePropertyHashCodes(entity);
+		return isClassLoaderDefineClassAvailable(entity) && isTypeInjectable(entity) && hasUniquePropertyHashCodes(entity);
 	}
 
-	private static boolean isClassLoaderDefineClassAccessible(PersistentEntity<?, ?> entity) {
+	private static boolean isClassLoaderDefineClassAvailable(PersistentEntity<?, ?> entity) {
 
 		try {
-			Evil.getClassLoaderMethod(entity);
-		} catch (Exception o_O) {
+			return ReflectionUtils.findMethod(entity.getType().getClassLoader().getClass(), "defineClass", String.class,
+					byte[].class, Integer.TYPE, Integer.TYPE, ProtectionDomain.class) != null;
+		} catch (Exception e) {
 			return false;
 		}
-		return true;
 	}
 
 	private static boolean isTypeInjectable(PersistentEntity<?, ?> entity) {
@@ -295,8 +296,13 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			String className = generateClassName(entity);
 			byte[] bytecode = generateBytecode(className.replace('.', '/'), entity);
+			Class<?> type = entity.getType();
 
-			return Evil.defineClass(className, bytecode, 0, bytecode.length, entity);
+			try {
+				return ReflectUtils.defineClass(className, bytecode, type.getClassLoader(), type.getProtectionDomain());
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
 		}
 
 		/**
@@ -1363,50 +1369,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		@Override
 		public int compareTo(@SuppressWarnings("null") PropertyStackAddress o) {
 			return hash < o.hash ? -1 : hash == o.hash ? 0 : 1;
-		}
-	}
-
-	/**
-	 * Yep, the name tells the truth. This little guy registers a class in the class loader of the
-	 * {@link PersistentEntity} to allow protected and package-default access as protected/package-default members must be
-	 * accessed from a class in the same class loader.
-	 *
-	 * @author Mark Paluch
-	 * @author Oliver Gierke
-	 */
-	@UtilityClass
-	private static class Evil {
-
-		/**
-		 * Define a Class in the {@link ClassLoader} of the {@link PersistentEntity} type.
-		 */
-		Class<?> defineClass(String name, byte[] bytes, int offset, int len, PersistentEntity<?, ?> persistentEntity) {
-
-			ClassLoader classLoader = persistentEntity.getType().getClassLoader();
-
-			try {
-
-				Method defineClass = getClassLoaderMethod(persistentEntity);
-
-				return (Class<?>) defineClass.invoke(classLoader, name, bytes, offset, len,
-						persistentEntity.getClass().getProtectionDomain());
-
-			} catch (ReflectiveOperationException e) {
-				throw new IllegalStateException(e);
-			}
-		}
-
-		static Method getClassLoaderMethod(PersistentEntity<?, ?> entity) {
-
-			ClassLoader classLoader = entity.getType().getClassLoader();
-			Class<?> classLoaderClass = classLoader.getClass();
-
-			Method defineClass = org.springframework.data.util.ReflectionUtils.findRequiredMethod(classLoaderClass,
-					"defineClass", String.class, byte[].class, Integer.TYPE, Integer.TYPE, ProtectionDomain.class);
-
-			defineClass.setAccessible(true);
-
-			return defineClass;
 		}
 	}
 }
