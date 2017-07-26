@@ -15,6 +15,11 @@
  */
 package org.springframework.data.mapping.model;
 
+import kotlin.jvm.JvmClassMappingKt;
+import kotlin.reflect.KFunction;
+import kotlin.reflect.full.KClasses;
+import kotlin.reflect.jvm.ReflectJvmMapping;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.List;
@@ -26,6 +31,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
@@ -72,6 +78,33 @@ public class PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> 
 		boolean noArgConstructorFound = false;
 		int numberOfArgConstructors = 0;
 		Class<?> rawOwningType = type.getType();
+
+		if (ReflectionUtils.isKotlinClass(type.getType())) {
+
+			for (Constructor<?> candidate : rawOwningType.getDeclaredConstructors()) {
+
+				PreferredConstructor<T, P> preferredConstructor = buildPreferredConstructor(candidate, type, entity);
+
+				// Synthetic constructors should not be considered
+				if (preferredConstructor.getConstructor().isSynthetic()) {
+					continue;
+				}
+
+				// Explicitly defined constructor trumps all
+				if (preferredConstructor.isExplicitlyAnnotated()) {
+					this.constructor = preferredConstructor;
+					return;
+				}
+			}
+
+			KFunction<T> primaryConstructor = KClasses
+					.getPrimaryConstructor(JvmClassMappingKt.getKotlinClass(type.getType()));
+			Constructor<T> javaConstructor = ReflectJvmMapping.getJavaConstructor(primaryConstructor);
+			if (javaConstructor != null) {
+				this.constructor = buildPreferredConstructor(javaConstructor, type, entity);
+				return;
+			}
+		}
 
 		for (Constructor<?> candidate : rawOwningType.getDeclaredConstructors()) {
 
