@@ -30,7 +30,7 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1126
 	fun `should discover simple constructor`() {
 
-		val constructor = PreferredConstructorDiscoverer<Simple, SamplePersistentProperty>(Simple::class.java).constructor
+		val constructor = PreferredConstructorDiscoverer.discover<Simple, SamplePersistentProperty>(Simple::class.java)
 
 		Assertions.assertThat(constructor.parameters.size).isEqualTo(1)
 	}
@@ -38,7 +38,7 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1126
 	fun `should reject two constructors`() {
 
-		val constructor = PreferredConstructorDiscoverer<TwoConstructors, SamplePersistentProperty>(TwoConstructors::class.java).constructor
+		val constructor = PreferredConstructorDiscoverer.discover<TwoConstructors, SamplePersistentProperty>(TwoConstructors::class.java)
 
 		Assertions.assertThat(constructor.parameters.size).isEqualTo(1)
 	}
@@ -46,7 +46,7 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1126
 	fun `should discover annotated constructor`() {
 
-		val constructor = PreferredConstructorDiscoverer<AnnotatedConstructors, SamplePersistentProperty>(AnnotatedConstructors::class.java).constructor
+		val constructor = PreferredConstructorDiscoverer.discover<AnnotatedConstructors, SamplePersistentProperty>(AnnotatedConstructors::class.java)
 
 		Assertions.assertThat(constructor.parameters.size).isEqualTo(2)
 	}
@@ -54,7 +54,7 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1126
 	fun `should discover default constructor`() {
 
-		val constructor = PreferredConstructorDiscoverer<DefaultConstructor, SamplePersistentProperty>(DefaultConstructor::class.java).constructor
+		val constructor = PreferredConstructorDiscoverer.discover<DefaultConstructor, SamplePersistentProperty>(DefaultConstructor::class.java)
 
 		Assertions.assertThat(constructor.parameters.size).isEqualTo(1)
 	}
@@ -62,7 +62,7 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1126
 	fun `should discover default annotated constructor`() {
 
-		val constructor = PreferredConstructorDiscoverer<TwoDefaultConstructorsAnnotated, SamplePersistentProperty>(TwoDefaultConstructorsAnnotated::class.java).constructor
+		val constructor = PreferredConstructorDiscoverer.discover<TwoDefaultConstructorsAnnotated, SamplePersistentProperty>(TwoDefaultConstructorsAnnotated::class.java)
 
 		Assertions.assertThat(constructor.parameters.size).isEqualTo(3)
 	}

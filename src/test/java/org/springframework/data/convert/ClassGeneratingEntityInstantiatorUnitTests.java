@@ -53,8 +53,6 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 
 	@Mock PersistentEntity<?, P> entity;
 	@Mock ParameterValueProvider<P> provider;
-	@Mock PreferredConstructor<?, P> constructor;
-	@Mock Parameter<?, P> parameter;
 
 	@Test
 	public void instantiatesSimpleObjectCorrectly() {
@@ -72,11 +70,10 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		this.instance.createInstance(entity, provider);
 	}
 
-	@Test
+	@Test // DATACMNS-1126
 	public void instantiatesTypeWithPreferredConstructorUsingParameterValueProvider() {
 
-		PreferredConstructor<Foo, P> constructor = new PreferredConstructorDiscoverer<Foo, P>(Foo.class)
-				.getConstructor();
+		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
 		doReturn(Foo.class).when(entity).getType();
 		doReturn(constructor).when(entity).getPersistenceConstructor();
@@ -150,23 +147,21 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		}
 	}
 
-	@Test // DATACMNS-578
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test // DATACMNS-578, DATACMNS-1126
 	public void instantiateObjCtorDefault() {
 
 		doReturn(ObjCtorDefault.class).when(entity).getType();
-		doReturn(new PreferredConstructorDiscoverer<>(ObjCtorDefault.class).getConstructor())//
+		doReturn(PreferredConstructorDiscoverer.discover(ObjCtorDefault.class))//
 				.when(entity).getPersistenceConstructor();
 
 		IntStream.range(0, 2).forEach(i -> assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ObjCtorDefault.class));
 	}
 
-	@Test // DATACMNS-578
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test // DATACMNS-578, DATACMNS-1126
 	public void instantiateObjCtorNoArgs() {
 
 		doReturn(ObjCtorNoArgs.class).when(entity).getType();
-		doReturn(new PreferredConstructorDiscoverer<>(ObjCtorNoArgs.class).getConstructor())//
+		doReturn(PreferredConstructorDiscoverer.discover(ObjCtorNoArgs.class))//
 				.when(entity).getPersistenceConstructor();
 
 		IntStream.range(0, 2).forEach(i -> {
@@ -178,12 +173,11 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		});
 	}
 
-	@Test // DATACMNS-578
-	@SuppressWarnings("unchecked")
+	@Test // DATACMNS-578, DATACMNS-1126
 	public void instantiateObjCtor1ParamString() {
 
 		doReturn(ObjCtor1ParamString.class).when(entity).getType();
-		doReturn(new PreferredConstructorDiscoverer<>(ObjCtor1ParamString.class).getConstructor())//
+		doReturn(PreferredConstructorDiscoverer.discover(ObjCtor1ParamString.class))//
 				.when(entity).getPersistenceConstructor();
 		doReturn("FOO").when(provider).getParameterValue(any());
 
@@ -197,12 +191,11 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		});
 	}
 
-	@Test // DATACMNS-578
-	@SuppressWarnings("unchecked")
+	@Test // DATACMNS-578, DATACMNS-1126
 	public void instantiateObjCtor2ParamStringString() {
 
 		doReturn(ObjCtor2ParamStringString.class).when(entity).getType();
-		doReturn(new PreferredConstructorDiscoverer<>(ObjCtor2ParamStringString.class).getConstructor())//
+		doReturn(PreferredConstructorDiscoverer.discover(ObjCtor2ParamStringString.class))//
 				.when(entity).getPersistenceConstructor();
 
 		IntStream.range(0, 2).forEach(i -> {
@@ -218,12 +211,11 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		});
 	}
 
-	@Test // DATACMNS-578
-	@SuppressWarnings("unchecked")
+	@Test // DATACMNS-578, DATACMNS-1126
 	public void instantiateObjectCtor1ParamInt() {
 
 		doReturn(ObjectCtor1ParamInt.class).when(entity).getType();
-		doReturn(new PreferredConstructorDiscoverer<>(ObjectCtor1ParamInt.class).getConstructor())//
+		doReturn(PreferredConstructorDiscoverer.discover(ObjectCtor1ParamInt.class))//
 				.when(entity).getPersistenceConstructor();
 
 		IntStream.range(0, 2).forEach(i -> {
@@ -237,12 +229,12 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		});
 	}
 
-	@Test // DATACMNS-578
+	@Test // DATACMNS-578, DATACMNS-1126
 	@SuppressWarnings("unchecked")
 	public void instantiateObjectCtor7ParamsString5IntsString() {
 
 		doReturn(ObjectCtor7ParamsString5IntsString.class).when(entity).getType();
-		doReturn(new PreferredConstructorDiscoverer<>(ObjectCtor7ParamsString5IntsString.class).getConstructor())//
+		doReturn(PreferredConstructorDiscoverer.discover(ObjectCtor7ParamsString5IntsString.class))//
 				.when(entity).getPersistenceConstructor();
 
 		IntStream.range(0, 2).forEach(i -> {

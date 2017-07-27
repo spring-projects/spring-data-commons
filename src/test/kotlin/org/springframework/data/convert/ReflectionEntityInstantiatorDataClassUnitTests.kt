@@ -30,7 +30,7 @@ import org.springframework.data.mapping.model.PreferredConstructorDiscoverer
 
 /**
  * Unit tests for [ReflectionEntityInstantiator] creating instances using Kotlin data classes.
-
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner::class)
@@ -44,7 +44,7 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 	fun `should create instance`() {
 
 		val entity = this.entity as PersistentEntity<Contact, SamplePersistentProperty>
-		val constructor = PreferredConstructorDiscoverer<Contact, SamplePersistentProperty>(Contact::class.java).constructor
+		val constructor = PreferredConstructorDiscoverer.discover<Contact, SamplePersistentProperty>(Contact::class.java)
 
 		doReturn("Walter", "White").`when`(provider).getParameterValue<SamplePersistentProperty>(any())
 		doReturn(constructor).whenever(entity).persistenceConstructor
@@ -59,7 +59,7 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 	fun `should create instance and fill in defaults`() {
 
 		val entity = this.entity as PersistentEntity<ContactWithDefaulting, SamplePersistentProperty>
-		val constructor = PreferredConstructorDiscoverer<ContactWithDefaulting, SamplePersistentProperty>(ContactWithDefaulting::class.java).constructor
+		val constructor = PreferredConstructorDiscoverer.discover<ContactWithDefaulting, SamplePersistentProperty>(ContactWithDefaulting::class.java)
 
 		doReturn("Walter", null).`when`(provider).getParameterValue<SamplePersistentProperty>(any())
 		doReturn(constructor).whenever(entity).persistenceConstructor
