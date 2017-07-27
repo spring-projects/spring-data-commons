@@ -29,13 +29,13 @@ import org.springframework.data.mapping.model.ParameterValueProvider
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer
 
 /**
- * Unit tests for [ClassGeneratingEntityInstantiator] creating instances using Kotlin data classes.
+ * Unit tests for [ClassGeneratingKotlinEntityInstantiator] creating instances using Kotlin data classes.
  *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner::class)
 @Suppress("UNCHECKED_CAST")
-class ClassGeneratingEntityInstantiatorDataClassUnitTests {
+class ClassGeneratingKotlinEntityInstantiatorUnitTests {
 
 	@Mock lateinit var entity: PersistentEntity<*, *>
 	@Mock lateinit var provider: ParameterValueProvider<SamplePersistentProperty>
@@ -50,7 +50,7 @@ class ClassGeneratingEntityInstantiatorDataClassUnitTests {
 		doReturn(constructor).whenever(entity).persistenceConstructor
 		doReturn(constructor.constructor.declaringClass).whenever(entity).type
 
-		val instance: Contact = ClassGeneratingEntityInstantiator().createInstance(entity, provider)
+		val instance: Contact = ClassGeneratingKotlinEntityInstantiator().createInstance(entity, provider)
 
 		Assertions.assertThat(instance.firstname).isEqualTo("Walter")
 		Assertions.assertThat(instance.lastname).isEqualTo("White")
@@ -69,7 +69,7 @@ class ClassGeneratingEntityInstantiatorDataClassUnitTests {
 		doReturn(constructor).whenever(entity).persistenceConstructor
 		doReturn(constructor.constructor.declaringClass).whenever(entity).type
 
-		val instance: ContactWithDefaulting = ClassGeneratingEntityInstantiator().createInstance(entity, provider)
+		val instance: ContactWithDefaulting = ClassGeneratingKotlinEntityInstantiator().createInstance(entity, provider)
 
 		Assertions.assertThat(instance.prop0).isEqualTo("Walter")
 		Assertions.assertThat(instance.prop2).isEqualTo("Skyler")

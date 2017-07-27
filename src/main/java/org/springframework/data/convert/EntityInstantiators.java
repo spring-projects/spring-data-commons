@@ -24,10 +24,11 @@ import org.springframework.util.Assert;
 /**
  * Simple value object allowing access to {@link EntityInstantiator} instances for a given type falling back to a
  * default one.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class EntityInstantiators {
 
@@ -43,7 +44,7 @@ public class EntityInstantiators {
 
 	/**
 	 * Creates a new {@link EntityInstantiators} using the given {@link EntityInstantiator} as fallback.
-	 * 
+	 *
 	 * @param fallback must not be {@literal null}.
 	 */
 	public EntityInstantiators(EntityInstantiator fallback) {
@@ -52,17 +53,17 @@ public class EntityInstantiators {
 
 	/**
 	 * Creates a new {@link EntityInstantiators} using the default fallback instantiator and the given custom ones.
-	 * 
+	 *
 	 * @param customInstantiators must not be {@literal null}.
 	 */
 	public EntityInstantiators(Map<Class<?>, EntityInstantiator> customInstantiators) {
-		this(new ClassGeneratingEntityInstantiator(), customInstantiators);
+		this(new ClassGeneratingKotlinEntityInstantiator(), customInstantiators);
 	}
 
 	/**
 	 * Creates a new {@link EntityInstantiator} using the given fallback {@link EntityInstantiator} and the given custom
 	 * ones.
-	 * 
+	 *
 	 * @param defaultInstantiator must not be {@literal null}.
 	 * @param customInstantiators must not be {@literal null}.
 	 */
@@ -78,7 +79,7 @@ public class EntityInstantiators {
 
 	/**
 	 * Returns the {@link EntityInstantiator} to be used to create the given {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */

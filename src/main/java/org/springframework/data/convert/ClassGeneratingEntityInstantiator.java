@@ -17,20 +17,13 @@ package org.springframework.data.convert;
 
 import static org.springframework.asm.Opcodes.*;
 
-import kotlin.reflect.KFunction;
-import kotlin.reflect.KParameter;
-import kotlin.reflect.jvm.ReflectJvmMapping;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.MethodVisitor;
@@ -42,7 +35,6 @@ import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -53,8 +45,6 @@ import org.springframework.util.ClassUtils;
  * {@link PersistentEntity}'s {@link PreferredConstructor} to instantiate an instance of the entity by dynamically
  * generating factory methods with appropriate constructor invocations via ASM. If we cannot generate byte code for a
  * type, we gracefully fall-back to the {@link ReflectionEntityInstantiator}.
- * <p/>
- * Adopts to Kotlin constructors using parameter defaulting.
  *
  * @author Thomas Darimont
  * @author Oliver Gierke
@@ -141,22 +131,18 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 
 		try {
-
-			if (ReflectionUtils.isKotlinClass(entity.getType())) {
-
-				PreferredConstructor<?, ?> defaultConstructor = new DefaultingKotlinConstructorResolver(entity)
-						.getDefaultConstructor();
-
-				if (defaultConstructor != null) {
-					return new DefaultingKotlinClassEntityInstantiator(createObjectInstantiator(entity, defaultConstructor),
-							entity.getPersistenceConstructor());
-				}
-			}
-
-			return new EntityInstantiatorAdapter(createObjectInstantiator(entity, entity.getPersistenceConstructor()));
+			return doCreateEntityInstantiator(entity);
 		} catch (Throwable ex) {
 			return ReflectionEntityInstantiator.INSTANCE;
 		}
+	}
+
+	/**
+	 * @param entity
+	 * @return
+	 */
+	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
+		return new EntityInstantiatorAdapter(createObjectInstantiator(entity, entity.getPersistenceConstructor()));
 	}
 
 	/**
@@ -184,6 +170,33 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	}
 
 	/**
+	 * Allocates an object array for instance creation. This method uses the argument array cache if possible.
+	 *
+	 * @param argumentCount
+	 * @return
+	 * @since 2.0
+	 * @see #ARG_CACHE_SIZE
+	 */
+	static Object[] allocateArguments(int argumentCount) {
+		return argumentCount < ARG_CACHE_SIZE ? OBJECT_POOL.get()[argumentCount] : new Object[argumentCount];
+	}
+
+	/**
+	 * Deallocates an object array used for instance creation. Parameters are cleared if the array was cached.
+	 *
+	 * @param argumentCount
+	 * @return
+	 * @since 2.0
+	 * @see #ARG_CACHE_SIZE
+	 */
+	static void deallocateArguments(Object[] params) {
+
+		if (params.length != 0 && params.length < ARG_CACHE_SIZE) {
+			Arrays.fill(params, null);
+		}
+	}
+
+	/**
 	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link PersistentEntity} and
 	 * {@link PreferredConstructor}. There will always be exactly one {@link ObjectInstantiator} instance per
 	 * {@link PersistentEntity}.
@@ -192,7 +205,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @param constructor
 	 * @return
 	 */
-	private ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity,
+	ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity,
 			@Nullable PreferredConstructor<?, ?> constructor) {
 
 		try {
@@ -202,19 +215,14 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 	}
 
-	private static Object[] allocateArguments(int argumentCount) {
-		return argumentCount < ARG_CACHE_SIZE ? OBJECT_POOL.get()[argumentCount] : new Object[argumentCount];
-	}
-
 	/**
 	 * Adapter to forward an invocation of the {@link EntityInstantiator} API to an {@link ObjectInstantiator}.
 	 *
 	 * @author Thomas Darimont
 	 * @author Oliver Gierke
+	 * @author Mark Paluch
 	 */
 	private static class EntityInstantiatorAdapter implements EntityInstantiator {
-
-		private static final Object[] EMPTY_ARRAY = new Object[0];
 
 		private final ObjectInstantiator instantiator;
 
@@ -242,6 +250,8 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 				return (T) instantiator.newInstance(params);
 			} catch (Exception e) {
 				throw new MappingInstantiationException(entity, Arrays.asList(params), e);
+			} finally {
+				deallocateArguments(params);
 			}
 		}
 
@@ -256,190 +266,17 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 				@Nullable PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
 
 			if (constructor == null || !constructor.hasParameters()) {
-				return EMPTY_ARRAY;
+				return allocateArguments(0);
 			}
 
-			List<Object> params = new ArrayList<>(constructor.getConstructor().getParameterCount());
+			Object[] params = allocateArguments(constructor.getConstructor().getParameterCount());
 
+			int index = 0;
 			for (Parameter<?, P> parameter : constructor.getParameters()) {
-				params.add(provider.getParameterValue(parameter));
+				params[index++] = provider.getParameterValue(parameter);
 			}
 
-			return params.toArray();
-		}
-	}
-
-	/**
-	 * Resolves a {@link PreferredConstructor} to a synthetic Kotlin constructor accepting the same user-space parameters
-	 * suffixed by Kotlin-specifics required for defaulting and the {@code kotlin.jvm.internal.DefaultConstructorMarker}.
-	 *
-	 * @since 2.0
-	 * @author Mark Paluch
-	 */
-	static class DefaultingKotlinConstructorResolver {
-
-		@Nullable private final PreferredConstructor<?, ?> defaultConstructor;
-
-		@SuppressWarnings("unchecked")
-		DefaultingKotlinConstructorResolver(PersistentEntity<?, ?> entity) {
-
-			Constructor<?> hit = resolveDefaultConstructor(entity);
-			PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
-
-			if (hit != null && persistenceConstructor != null) {
-				this.defaultConstructor = new PreferredConstructor<>(hit,
-						persistenceConstructor.getParameters().toArray(new Parameter[0]));
-			} else {
-				this.defaultConstructor = null;
-			}
-		}
-
-		@Nullable
-		private static Constructor<?> resolveDefaultConstructor(PersistentEntity<?, ?> entity) {
-
-			if (entity.getPersistenceConstructor() == null) {
-				return null;
-			}
-
-			Constructor<?> hit = null;
-			Constructor<?> constructor = entity.getPersistenceConstructor().getConstructor();
-
-			for (Constructor<?> candidate : entity.getType().getDeclaredConstructors()) {
-
-				// use only synthetic constructors
-				if (!candidate.isSynthetic()) {
-					continue;
-				}
-
-				// with a parameter count greater zero
-				if (constructor.getParameterCount() == 0) {
-					continue;
-				}
-
-				// candidates must contain at least two additional parameters (int, DefaultConstructorMarker)
-				if (constructor.getParameterCount() + 2 > candidate.getParameterCount()) {
-					continue;
-				}
-
-				java.lang.reflect.Parameter[] constructorParameters = constructor.getParameters();
-				java.lang.reflect.Parameter[] candidateParameters = candidate.getParameters();
-
-				if (!candidateParameters[candidateParameters.length - 1].getType().getName()
-						.equals("kotlin.jvm.internal.DefaultConstructorMarker")) {
-					continue;
-				}
-
-				if (parametersMatch(constructorParameters, candidateParameters)) {
-					hit = candidate;
-					break;
-				}
-			}
-
-			return hit;
-		}
-
-		private static boolean parametersMatch(java.lang.reflect.Parameter[] constructorParameters,
-				java.lang.reflect.Parameter[] candidateParameters) {
-
-			return IntStream.range(0, constructorParameters.length)
-					.allMatch(i -> constructorParameters[i].getType().equals(candidateParameters[i].getType()));
-		}
-
-		@Nullable
-		PreferredConstructor<?, ?> getDefaultConstructor() {
-			return defaultConstructor;
-		}
-	}
-
-	/**
-	 * Entity instantiator for Kotlin constructors that apply parameter defaulting. Kotlin constructors that apply
-	 * argument defaulting are marked with {@link kotlin.jvm.internal.DefaultConstructorMarker} and accept additional
-	 * parameters besides the regular (user-space) parameters. Additional parameters are:
-	 * <ul>
-	 * <li>defaulting bitmask ({@code int}), a bit mask slot for each 32 parameters</li>
-	 * <li>{@code DefaultConstructorMarker} (usually null)</li>
-	 * </ul>
-	 * <strong>Defaulting bitmask</strong>
-	 * <p/>
-	 * The defaulting bitmask is a 32 bit integer representing which positional argument should be defaulted. Defaulted
-	 * arguments are passed as {@literal null} and require the appropriate positional bit set ( {@code 1 << 2} for the 2.
-	 * argument)). Since the bitmask represents only 32 bit states, it requires additional masks (slots) if more than 32
-	 * arguments are represented.
-	 *
-	 * @author Mark Paluch
-	 * @since 2.0
-	 */
-	static class DefaultingKotlinClassEntityInstantiator implements EntityInstantiator {
-
-		private final ObjectInstantiator instantiator;
-		private final List<KParameter> kParameters;
-		private final Constructor<?> synthetic;
-
-		DefaultingKotlinClassEntityInstantiator(ObjectInstantiator instantiator, PreferredConstructor<?, ?> constructor) {
-
-			KFunction<?> kotlinConstructor = ReflectJvmMapping.getKotlinFunction(constructor.getConstructor());
-
-			if (kotlinConstructor == null) {
-				throw new IllegalArgumentException(
-						"No corresponding Kotlin constructor found for " + constructor.getConstructor());
-			}
-
-			this.instantiator = instantiator;
-			this.kParameters = kotlinConstructor.getParameters();
-			this.synthetic = constructor.getConstructor();
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
-		 */
-		@Override
-		@SuppressWarnings("unchecked")
-		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
-				ParameterValueProvider<P> provider) {
-
-			PreferredConstructor<? extends T, P> preferredConstructor = entity.getPersistenceConstructor();
-			Assert.notNull(preferredConstructor, "PreferredConstructor must not be null!");
-
-			int[] defaulting = new int[(synthetic.getParameterCount() / 32) + 1];
-
-			Object[] params = allocateArguments(
-					synthetic.getParameterCount() + defaulting.length + /* DefaultConstructorMarker */1);
-			int userParameterCount = kParameters.size();
-
-			List<Parameter<Object, P>> parameters = preferredConstructor.getParameters();
-
-			// Prepare user-space arguments
-			for (int i = 0; i < userParameterCount; i++) {
-
-				int slot = i / 32;
-				int offset = slot * 32;
-
-				Object param = provider.getParameterValue(parameters.get(i));
-
-				KParameter kParameter = kParameters.get(i);
-
-				// what about null and parameter is mandatory? What if parameter is non-null?
-				if (kParameter.isOptional()) {
-
-					if (param == null) {
-						defaulting[slot] = defaulting[slot] | (1 << (i - offset));
-					}
-				}
-
-				params[i] = param;
-			}
-
-			// append nullability masks to creation arguments
-			for (int i = 0; i < defaulting.length; i++) {
-				params[userParameterCount + i] = defaulting[i];
-			}
-
-			try {
-				return (T) instantiator.newInstance(params);
-			} finally {
-				Arrays.fill(params, null);
-			}
+			return params;
 		}
 	}
 
