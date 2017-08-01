@@ -20,6 +20,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +46,39 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @param type must not be {@literal null}
 	 * @param parent must not be {@literal null}
 	 */
-	public ParameterizedTypeInformation(ParameterizedType type, TypeDiscoverer<?> parent,
-			Map<TypeVariable<?>, Type> typeVariableMap) {
+	public ParameterizedTypeInformation(ParameterizedType type, Class<?> resolvedType, TypeDiscoverer<?> parent) {
 
-		super(type, parent, typeVariableMap);
+		super(type, parent, calculateTypeVariables(type, resolvedType, parent));
 		this.type = type;
+	}
+
+	/**
+	 * Resolves the type variables to be used. Uses the parent's type variable map but overwrites variables locally
+	 * declared.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param resolvedType must not be {@literal null}.
+	 * @param parent must not be {@literal null}.
+	 * @return
+	 */
+	private static Map<TypeVariable<?>, Type> calculateTypeVariables(ParameterizedType type, Class<?> resolvedType,
+			TypeDiscoverer<?> parent) {
+
+		TypeVariable<?>[] typeParameters = resolvedType.getTypeParameters();
+		Type[] arguments = type.getActualTypeArguments();
+
+		Map<TypeVariable<?>, Type> localTypeVariables = new HashMap<TypeVariable<?>, Type>(parent.getTypeVariableMap());
+
+		for (int i = 0; i < typeParameters.length; i++) {
+
+			Type value = arguments[i];
+
+			if (!(value instanceof TypeVariable)) {
+				localTypeVariables.put(typeParameters[i], value);
+			}
+		}
+
+		return localTypeVariables;
 	}
 
 	/*
@@ -123,8 +152,8 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 			return false;
 		}
 
-		TypeInformation<?> otherTypeInformation = rawType.equals(rawTargetType) ? target : target
-				.getSuperTypeInformation(rawType);
+		TypeInformation<?> otherTypeInformation = rawType.equals(rawTargetType) ? target
+				: target.getSuperTypeInformation(rawType);
 
 		List<TypeInformation<?>> myParameters = getTypeArguments();
 		List<TypeInformation<?>> typeParameters = otherTypeInformation.getTypeArguments();
