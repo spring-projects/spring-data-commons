@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.core.GenericTypeResolver;
 
 /**
  * Unit tests for {@link ParameterizedTypeInformation}.
@@ -47,6 +48,7 @@ public class ParameterizedTypeUnitTests {
 	static final Map<TypeVariable<?>, Type> EMPTY_MAP = Collections.emptyMap();
 
 	@Mock ParameterizedType one;
+	Class<?> resolvedOne = GenericTypeResolver.resolveType(one, Collections.<TypeVariable, Type> emptyMap());
 
 	@Before
 	public void setUp() {
@@ -59,8 +61,10 @@ public class ParameterizedTypeUnitTests {
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, EMPTY_MAP);
 		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<Object>(Object.class, EMPTY_MAP);
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent, EMPTY_MAP);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, objectParent, EMPTY_MAP);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, resolvedOne,
+				stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, resolvedOne,
+				objectParent);
 
 		assertThat(first, is(not(second)));
 	}
@@ -70,8 +74,10 @@ public class ParameterizedTypeUnitTests {
 
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, EMPTY_MAP);
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent, EMPTY_MAP);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, stringParent, EMPTY_MAP);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, resolvedOne,
+				stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, resolvedOne,
+				stringParent);
 
 		assertTrue(first.equals(second));
 	}
@@ -142,13 +148,24 @@ public class ParameterizedTypeUnitTests {
 	 * @see DATACMNS-899
 	 */
 	@Test
-	public void returnsNullMapValueTypeForNonMapProperties(){
+	public void returnsNullMapValueTypeForNonMapProperties() {
 
 		TypeInformation<?> valueType = ClassTypeInformation.from(Bar.class).getProperty("param");
 		TypeInformation<?> mapValueType = valueType.getMapValueType();
 
 		assertThat(valueType, instanceOf(ParameterizedTypeInformation.class));
 		assertThat(mapValueType, is(nullValue()));
+	}
+
+	@Test // DATACMNS-1135
+	public void prefersLocalGenericsDeclarationOverParentBound() {
+
+		ClassTypeInformation<Candidate> candidate = ClassTypeInformation.from(Candidate.class);
+
+		TypeInformation<?> componentType = candidate.getProperty("experiences.values").getComponentType();
+		componentType = componentType.getProperty("responsibilities.values").getComponentType();
+
+		assertThat(componentType.getType(), is(typeCompatibleWith(Responsibility.class)));
 	}
 
 	@SuppressWarnings("serial")
@@ -198,4 +215,22 @@ public class ParameterizedTypeUnitTests {
 	}
 
 	class Education {}
+
+	// DATACMNS-1135
+
+	abstract class CandidateInfo {}
+
+	class Responsibility extends CandidateInfo {}
+
+	class Experience extends CandidateInfo {
+		CandidateInfoContainer<Responsibility> responsibilities;
+	}
+
+	class CandidateInfoContainer<E extends CandidateInfo> {
+		List<E> values;
+	}
+
+	class Candidate {
+		CandidateInfoContainer<Experience> experiences;
+	}
 }

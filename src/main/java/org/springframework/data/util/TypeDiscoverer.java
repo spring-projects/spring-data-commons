@@ -107,30 +107,19 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		Class<S> resolveType = resolveType(fieldType);
-		Map<TypeVariable, Type> variableMap = new HashMap<TypeVariable, Type>();
-		variableMap.putAll(GenericTypeResolver.getTypeVariableMap(resolveType));
 
 		if (fieldType instanceof ParameterizedType) {
-
 			ParameterizedType parameterizedType = (ParameterizedType) fieldType;
-
-			TypeVariable<Class<S>>[] typeParameters = resolveType.getTypeParameters();
-			Type[] arguments = parameterizedType.getActualTypeArguments();
-
-			for (int i = 0; i < typeParameters.length; i++) {
-				variableMap.put(typeParameters[i], arguments[i]);
-			}
-
-			return new ParameterizedTypeInformation(parameterizedType, this, variableMap);
+			return new ParameterizedTypeInformation(parameterizedType, resolveType, this);
 		}
 
 		if (fieldType instanceof TypeVariable) {
 			TypeVariable<?> variable = (TypeVariable<?>) fieldType;
-			return new TypeVariableTypeInformation(variable, type, this, variableMap);
+			return new TypeVariableTypeInformation(variable, type, this);
 		}
 
 		if (fieldType instanceof GenericArrayType) {
-			return new GenericArrayTypeInformation((GenericArrayType) fieldType, this, variableMap);
+			return new GenericArrayTypeInformation((GenericArrayType) fieldType, this);
 		}
 
 		if (fieldType instanceof WildcardType) {
@@ -506,7 +495,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Override
 	public TypeInformation<?> specialize(ClassTypeInformation<?> type) {
 
-		Assert.isTrue(getType().isAssignableFrom(type.getType()), String.format("%s must be assignable from %s", getType(), type.getType()));
+		Assert.isTrue(getType().isAssignableFrom(type.getType()),
+				String.format("%s must be assignable from %s", getType(), type.getType()));
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
 
