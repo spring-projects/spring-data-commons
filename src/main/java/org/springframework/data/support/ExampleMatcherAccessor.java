@@ -15,12 +15,11 @@
  */
 package org.springframework.data.support;
 
+import java.util.Collection;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Collection;
-
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.DateMatcher;
 import org.springframework.data.domain.ExampleMatcher.PropertySpecifier;
 import org.springframework.data.domain.ExampleMatcher.StringMatcher;
 
@@ -93,6 +92,18 @@ public class ExampleMatcherAccessor {
 		return stringMatcher != null ? stringMatcher : matcher.getDefaultStringMatcher();
 	}
 
+        
+        public ExampleMatcher.DateMatcher getDateMatcherForPath(String path){
+            if (!hasPropertySpecifier(path)) {
+			return matcher.getDefaultDateMatcher();
+		}
+
+		ExampleMatcher.PropertySpecifier specifier = getPropertySpecifier(path);
+		DateMatcher dateMatcher = specifier.getDateMatcher();
+
+		return dateMatcher != null ? dateMatcher : matcher.getDefaultDateMatcher();
+        }
+        
 	/**
 	 * Get defined null handling.
 	 *

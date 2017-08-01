@@ -15,13 +15,6 @@
  */
 package org.springframework.data.domain;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.Wither;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +24,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.Wither;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -64,9 +62,11 @@ public class ExampleMatcher {
 	boolean defaultIgnoreCase;
 	@Wither(AccessLevel.PRIVATE) MatchMode mode;
 
+        DateMatcher defaultDateMatcher;
+        
 	private ExampleMatcher() {
 		this(NullHandler.IGNORE, StringMatcher.DEFAULT, new PropertySpecifiers(), Collections.emptySet(), false,
-				MatchMode.ALL);
+				MatchMode.ALL, DateMatcher.DEFAULT);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class ExampleMatcher {
 		newIgnoredPaths.addAll(Arrays.asList(ignoredPaths));
 
 		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, newIgnoredPaths, defaultIgnoreCase,
-				mode);
+				mode, defaultDateMatcher);
 	}
 
 	/**
@@ -134,9 +134,24 @@ public class ExampleMatcher {
 		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty!");
 
 		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
-				mode);
+				mode, defaultDateMatcher);
 	}
 
+        /**
+	 * Returns a copy of this {@link ExampleMatcher} with the specified string matching of {@code defaultDateMatcher}.
+	 * This instance is immutable and unaffected by this method call.
+	 *
+	 * @param defaultDateMatcher must not be {@literal null}.
+	 * @return
+	 */
+	public ExampleMatcher withDateMatcher(DateMatcher defaultDateMatcher) {
+
+		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty!");
+
+		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
+				mode, defaultDateMatcher);
+	}
+        
 	/**
 	 * Returns a copy of this {@link ExampleMatcher} with ignoring case sensitivity by default. This instance is immutable
 	 * and unaffected by this method call.
@@ -156,7 +171,7 @@ public class ExampleMatcher {
 	 */
 	public ExampleMatcher withIgnoreCase(boolean defaultIgnoreCase) {
 		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
-				mode);
+				mode, defaultDateMatcher);
 	}
 
 	/**
@@ -202,12 +217,14 @@ public class ExampleMatcher {
 			propertySpecifier = propertySpecifier.withStringMatcher(genericPropertyMatcher.stringMatcher);
 		}
 
+               
+                
 		propertySpecifier = propertySpecifier.withValueTransformer(genericPropertyMatcher.valueTransformer);
 
 		propertySpecifiers.add(propertySpecifier);
 
 		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
-				mode);
+				mode, defaultDateMatcher);
 	}
 
 	/**
@@ -229,7 +246,7 @@ public class ExampleMatcher {
 		propertySpecifiers.add(propertySpecifier.withValueTransformer(propertyValueTransformer));
 
 		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
-				mode);
+				mode, defaultDateMatcher);
 	}
 
 	/**
@@ -252,7 +269,7 @@ public class ExampleMatcher {
 		}
 
 		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
-				mode);
+				mode, defaultDateMatcher);
 	}
 
 	private PropertySpecifier getOrCreatePropertySpecifier(String propertyPath, PropertySpecifiers propertySpecifiers) {
@@ -295,7 +312,7 @@ public class ExampleMatcher {
 
 		Assert.notNull(nullHandler, "NullHandler must not be null!");
 		return new ExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths, defaultIgnoreCase,
-				mode);
+				mode, defaultDateMatcher);
 	}
 
 	/**
@@ -316,6 +333,15 @@ public class ExampleMatcher {
 		return defaultStringMatcher;
 	}
 
+        /**
+	 * Get defined {@link ExampleMatcher.DateMatcher}.
+	 *
+	 * @return never {@literal null}.
+	 */
+	public ExampleMatcher.DateMatcher getDefaultDateMatcher() {
+		return defaultDateMatcher;
+	}
+        
 	/**
 	 * @return {@literal true} if {@link String} should be matched with ignore case option.
 	 */
@@ -396,7 +422,8 @@ public class ExampleMatcher {
 		@Nullable StringMatcher stringMatcher = null;
 		@Nullable Boolean ignoreCase = null;
 		PropertyValueTransformer valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
-
+                @Nullable DateMatcher dateMatcher = null;
+                
 		/**
 		 * Creates an unconfigured {@link GenericPropertyMatcher}.
 		 */
@@ -412,15 +439,15 @@ public class ExampleMatcher {
 		public static GenericPropertyMatcher of(StringMatcher stringMatcher, boolean ignoreCase) {
 			return new GenericPropertyMatcher().stringMatcher(stringMatcher).ignoreCase(ignoreCase);
 		}
-
+                
 		/**
-		 * Creates a new {@link GenericPropertyMatcher} with a {@link StringMatcher} and {@code ignoreCase}.
+		 * Creates a new {@link GenericPropertyMatcher} with a {@link DateMatcher} and {@code ignoreCase}.
 		 *
-		 * @param stringMatcher must not be {@literal null}.
+		 * @param dateMatcher must not be {@literal null}.
 		 * @return
 		 */
-		public static GenericPropertyMatcher of(StringMatcher stringMatcher) {
-			return new GenericPropertyMatcher().stringMatcher(stringMatcher);
+		public static GenericPropertyMatcher of(DateMatcher dateMatcher) {
+			return new GenericPropertyMatcher().dateMatcher(dateMatcher);
 		}
 
 		/**
@@ -523,6 +550,72 @@ public class ExampleMatcher {
 			return this;
 		}
 
+                /**
+		 * Sets date matcher to {@link DateMatcher#DEFAULT}.
+		 *
+		 * @return
+		 */
+		public GenericPropertyMatcher storeDefaultDateMatching() {
+
+			this.dateMatcher = DateMatcher.DEFAULT;
+			return this;
+		}
+                
+                /**
+		 * Sets date matcher to {@link DateMatcher#EQUALS}.
+		 *
+		 * @return
+		 */
+                public GenericPropertyMatcher equals() {
+
+			this.dateMatcher = DateMatcher.EQUALS;
+			return this;
+		}
+                
+                /**
+		 * Sets date matcher to {@link DateMatcher#LESSTHAN}.
+		 *
+		 * @return
+		 */
+                public GenericPropertyMatcher less() {
+
+			this.dateMatcher = DateMatcher.LESSTHAN;
+			return this;
+		}
+
+                 /**
+		 * Sets date matcher to {@link DateMatcher#LESSTHANEQUAL}.
+		 *
+		 * @return
+		 */
+                public GenericPropertyMatcher lessEquals() {
+
+			this.dateMatcher = DateMatcher.LESSTHANEQUAL;
+			return this;
+		}
+                
+                 /**
+		 * Sets date matcher to {@link DateMatcher#GREATHERTHAN}.
+		 *
+		 * @return
+		 */
+                public GenericPropertyMatcher greater() {
+
+			this.dateMatcher = DateMatcher.GREATHERTHAN;
+			return this;
+		}
+                
+                 /**
+		 * Sets date matcher to {@link DateMatcher#GREATHERTHANEQUAL}.
+		 *
+		 * @return
+		 */
+                public GenericPropertyMatcher greaterEquals() {
+
+			this.dateMatcher = DateMatcher.GREATHERTHANEQUAL;
+			return this;
+		}
+                
 		/**
 		 * Sets string matcher to {@code stringMatcher}.
 		 *
@@ -536,6 +629,19 @@ public class ExampleMatcher {
 			return this;
 		}
 
+                /**
+		 * Sets string matcher to {@code dateMatcher}.
+		 *
+		 * @param dateMatcher must not be {@literal null}.
+		 * @return
+		 */
+		public GenericPropertyMatcher dateMatcher(DateMatcher dateMatcher) {
+
+			Assert.notNull(dateMatcher, "StringMatcher must not be null!");
+			this.dateMatcher = dateMatcher;
+			return this;
+		}
+                
 		/**
 		 * Sets the {@link PropertyValueTransformer} to {@code propertyValueTransformer}.
 		 *
@@ -611,7 +717,7 @@ public class ExampleMatcher {
 		public static GenericPropertyMatcher exact() {
 			return new GenericPropertyMatcher().exact();
 		}
-
+                
 		/**
 		 * Creates a {@link GenericPropertyMatcher} that matches string using {@link StringMatcher#DEFAULT}.
 		 *
@@ -631,6 +737,15 @@ public class ExampleMatcher {
 		}
 	}
 
+        public enum DateMatcher{
+            DEFAULT,
+            EQUALS,
+            GREATHERTHAN,
+            GREATHERTHANEQUAL,
+            LESSTHAN,
+            LESSTHANEQUAL
+        }
+        
 	/**
 	 * Match modes for treatment of {@link String} values.
 	 *
@@ -718,7 +833,8 @@ public class ExampleMatcher {
 		@Nullable StringMatcher stringMatcher;
 		@Nullable Boolean ignoreCase;
 		PropertyValueTransformer valueTransformer;
-
+                @Nullable DateMatcher dateMatcher;
+                
 		/**
 		 * Creates new {@link PropertySpecifier} for given path.
 		 *
@@ -728,7 +844,7 @@ public class ExampleMatcher {
 
 			Assert.hasText(path, "Path must not be null/empty!");
 			this.path = path;
-
+                        this.dateMatcher=null;
 			this.stringMatcher = null;
 			this.ignoreCase = null;
 			this.valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
@@ -744,9 +860,21 @@ public class ExampleMatcher {
 		public PropertySpecifier withStringMatcher(StringMatcher stringMatcher) {
 
 			Assert.notNull(stringMatcher, "StringMatcher must not be null!");
-			return new PropertySpecifier(this.path, stringMatcher, this.ignoreCase, this.valueTransformer);
+			return new PropertySpecifier(this.path, stringMatcher, this.ignoreCase, this.valueTransformer, this.dateMatcher);
 		}
 
+                /**
+		 * Creates a new {@link PropertySpecifier} containing all values from the current instance and sets
+		 * {@link DateMatcher} in the returned instance.
+		 *
+		 * @param dateMatcher must not be {@literal null}.
+		 * @return
+		 */
+                public PropertySpecifier withDateMatcher(DateMatcher dateMatcher) {
+                    Assert.notNull(dateMatcher, "DateMatcher must not be null!");
+			return new PropertySpecifier(this.path, this.stringMatcher, this.ignoreCase, this.valueTransformer, dateMatcher);
+                }
+                
 		/**
 		 * Creates a new {@link PropertySpecifier} containing all values from the current instance and sets
 		 * {@code ignoreCase}.
@@ -755,7 +883,7 @@ public class ExampleMatcher {
 		 * @return
 		 */
 		public PropertySpecifier withIgnoreCase(boolean ignoreCase) {
-			return new PropertySpecifier(this.path, this.stringMatcher, ignoreCase, this.valueTransformer);
+			return new PropertySpecifier(this.path, this.stringMatcher, ignoreCase, this.valueTransformer, this.dateMatcher);
 		}
 
 		/**
@@ -768,7 +896,7 @@ public class ExampleMatcher {
 		public PropertySpecifier withValueTransformer(PropertyValueTransformer valueTransformer) {
 
 			Assert.notNull(valueTransformer, "PropertyValueTransformer must not be null!");
-			return new PropertySpecifier(this.path, this.stringMatcher, this.ignoreCase, valueTransformer);
+			return new PropertySpecifier(this.path, this.stringMatcher, this.ignoreCase, valueTransformer, this.dateMatcher);
 		}
 
 		/**
@@ -790,6 +918,10 @@ public class ExampleMatcher {
 			return stringMatcher;
 		}
 
+                public DateMatcher getDateMatcher(){
+                    return dateMatcher;
+                }
+                
 		/**
 		 * @return {@literal null} if not set.
 		 */
