@@ -17,7 +17,6 @@ package org.springframework.data.util;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -35,28 +34,23 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @param parent must not be {@literal null}.
-	 * @param map must not be {@literal null}.
 	 */
-	protected ParentTypeAwareTypeInformation(Type type, TypeDiscoverer<?> parent, Map<TypeVariable<?>, Type> map) {
-
-		super(type, mergeMaps(parent, map));
-		this.parent = parent;
+	protected ParentTypeAwareTypeInformation(Type type, TypeDiscoverer<?> parent) {
+		this(type, parent, parent.getTypeVariableMap());
 	}
 
 	/**
-	 * Merges the type variable maps of the given parent with the new map.
+	 * Creates a new {@link ParentTypeAwareTypeInformation} with the given type variables.
 	 * 
+	 * @param type must not be {@literal null}.
 	 * @param parent must not be {@literal null}.
-	 * @param map must not be {@literal null}.
-	 * @return
+	 * @param typeVariables must not be {@literal null}.
 	 */
-	private static Map<TypeVariable<?>, Type> mergeMaps(TypeDiscoverer<?> parent, Map<TypeVariable<?>, Type> map) {
+	protected ParentTypeAwareTypeInformation(Type type, TypeDiscoverer<?> parent,
+			Map<TypeVariable<?>, Type> typeVariables) {
 
-		Map<TypeVariable<?>, Type> typeVariableMap = new HashMap<TypeVariable<?>, Type>();
-		typeVariableMap.putAll(map);
-		typeVariableMap.putAll(parent.getTypeVariableMap());
-
-		return typeVariableMap;
+		super(type, typeVariables);
+		this.parent = parent;
 	}
 
 	/* 
