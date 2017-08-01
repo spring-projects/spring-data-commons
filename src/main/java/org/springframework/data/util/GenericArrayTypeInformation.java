@@ -18,8 +18,6 @@ package org.springframework.data.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -38,12 +36,10 @@ class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param parent must not be {@literal null}.
-	 * @param typeVariableMap must not be {@literal null}.
 	 */
-	protected GenericArrayTypeInformation(GenericArrayType type, TypeDiscoverer<?> parent,
-			Map<TypeVariable<?>, Type> typeVariableMap) {
+	protected GenericArrayTypeInformation(GenericArrayType type, TypeDiscoverer<?> parent) {
 
-		super(type, parent, typeVariableMap);
+		super(type, parent);
 		this.type = type;
 	}
 

@@ -21,11 +21,13 @@ import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
@@ -49,13 +51,37 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @param type must not be {@literal null}
 	 * @param parent must not be {@literal null}
 	 */
-	public ParameterizedTypeInformation(ParameterizedType type, TypeDiscoverer<?> parent,
-			Map<TypeVariable<?>, Type> typeVariableMap) {
+	public ParameterizedTypeInformation(ParameterizedType type, Class<?> resolvedType, TypeDiscoverer<?> parent) {
 
-		super(type, parent, typeVariableMap);
+		super(type, parent, calculateTypeVariables(type, resolvedType, parent));
 
 		this.type = type;
 		this.resolved = Lazy.of(() -> isResolvedCompletely());
+	}
+
+	/**
+	 * Resolves the type variables to be used. Uses the parent's type variable map but overwrites variables locally
+	 * declared.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param resolvedType must not be {@literal null}.
+	 * @param parent must not be {@literal null}.
+	 * @return
+	 */
+	private static Map<TypeVariable<?>, Type> calculateTypeVariables(ParameterizedType type, Class<?> resolvedType,
+			TypeDiscoverer<?> parent) {
+
+		TypeVariable<?>[] typeParameters = resolvedType.getTypeParameters();
+		Type[] arguments = type.getActualTypeArguments();
+
+		Map<TypeVariable<?>, Type> localTypeVariables = new HashMap<>(parent.getTypeVariableMap());
+
+		IntStream.range(0, typeParameters.length) //
+				.mapToObj(it -> Pair.of(typeParameters[it], arguments[it])) //
+				.filter(it -> !(it.getSecond() instanceof TypeVariable)) //
+				.forEach(it -> localTypeVariables.put(it.getFirst(), it.getSecond()));
+
+		return localTypeVariables;
 	}
 
 	/*

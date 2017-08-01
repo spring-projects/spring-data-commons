@@ -15,24 +15,24 @@
  */
 package org.springframework.data.util;
 
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.util.ClassTypeInformation.*;
+import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.GenericTypeResolver;
 
 /**
  * Unit tests for {@link ParameterizedTypeInformation}.
@@ -43,23 +43,23 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ParameterizedTypeUnitTests {
 
-	static final Map<TypeVariable<?>, Type> EMPTY_MAP = Collections.emptyMap();
-
 	@Mock ParameterizedType one;
+	Class<?> resolvedOne;
 
 	@Before
 	public void setUp() {
 		when(one.getActualTypeArguments()).thenReturn(new Type[0]);
+		this.resolvedOne = GenericTypeResolver.resolveType(one, emptyMap());
 	}
 
 	@Test
 	public void considersTypeInformationsWithDifferingParentsNotEqual() {
 
-		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, EMPTY_MAP);
-		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<>(Object.class, EMPTY_MAP);
+		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, emptyMap());
+		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<>(Object.class, emptyMap());
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, stringParent, EMPTY_MAP);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, objectParent, EMPTY_MAP);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, resolvedOne, stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, resolvedOne, objectParent);
 
 		assertThat(first).isNotEqualTo(second);
 	}
@@ -67,10 +67,10 @@ public class ParameterizedTypeUnitTests {
 	@Test
 	public void considersTypeInformationsWithSameParentsNotEqual() {
 
-		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, EMPTY_MAP);
+		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, emptyMap());
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, stringParent, EMPTY_MAP);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, stringParent, EMPTY_MAP);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, resolvedOne, stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, resolvedOne, stringParent);
 
 		assertThat(first.equals(second)).isTrue();
 	}
@@ -136,6 +136,17 @@ public class ParameterizedTypeUnitTests {
 		assertThat(typeInformation.getMapValueType()).isNull();
 	}
 
+	@Test // DATACMNS-1135
+	public void prefersLocalGenericsDeclarationOverParentBound() {
+
+		ClassTypeInformation<Candidate> candidate = ClassTypeInformation.from(Candidate.class);
+
+		TypeInformation<?> componentType = candidate.getRequiredProperty("experiences.values").getRequiredComponentType();
+		componentType = componentType.getRequiredProperty("responsibilities.values").getRequiredComponentType();
+
+		assertThat(componentType.getType()).isEqualTo(Responsibility.class);
+	}
+
 	@SuppressWarnings("serial")
 	class Localized<S> extends HashMap<Locale, S> {
 		S value;
@@ -183,4 +194,22 @@ public class ParameterizedTypeUnitTests {
 	}
 
 	class Education {}
+
+	// DATACMNS-1135
+
+	abstract class CandidateInfo {}
+
+	class Responsibility extends CandidateInfo {}
+
+	class Experience extends CandidateInfo {
+		CandidateInfoContainer<Responsibility> responsibilities;
+	}
+
+	class CandidateInfoContainer<E extends CandidateInfo> {
+		List<E> values = new ArrayList<>();
+	}
+
+	class Candidate {
+		CandidateInfoContainer<Experience> experiences;
+	}
 }
