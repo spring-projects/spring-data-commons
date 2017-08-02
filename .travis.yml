@@ -15,7 +15,7 @@ cache:
 
 install: true
 
-script: "mvn clean dependency:list test -P${PROFILE} -Dsort -U"
+script: "./mvnw clean dependency:list test -P${PROFILE} -Dsort -U"
 
 notifications:
   slack:
