@@ -588,17 +588,19 @@ UserRepository repository = factory.getRepository(UserRepository.class);
 
 [[repositories.custom-implementations]]
 == Custom implementations for Spring Data repositories
-Often it is necessary to provide a custom implementation for a few repository methods. Spring Data repositories easily allow you to provide custom repository code and integrate it with generic CRUD abstraction and query method functionality.
+In this section you will learn about repository customization and how fragments form a composite repository.
 
-[[repositories.single-repository-behaviour]]
-=== Adding custom behavior to single repositories
-To enrich a repository with custom functionality you first define an interface and an implementation for the custom functionality. Use the repository interface you provided to extend the custom interface.
+When query method require a different behavior or can't be implemented by query derivation than it's necessary to provide a custom implementation. Spring Data repositories easily allow you to provide custom repository code and integrate it with generic CRUD abstraction and query method functionality.
+
+[[repositories.single-repository-behavior]]
+=== Customizing individual repositories
+To enrich a repository with custom functionality, you first define a fragment interface and an implementation for the custom functionality. Then let your repository interface additionally extend from the fragment interface.
 
 .Interface for custom repository functionality
 ====
 [source, java]
 ----
-interface UserRepositoryCustom {
+interface CustomizedUserRepository {
   public void someCustomMethod(User user);
 }
 ----
@@ -608,7 +610,7 @@ interface UserRepositoryCustom {
 ====
 [source, java]
 ----
-class UserRepositoryImpl implements UserRepositoryCustom {
+class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
 
   public void someCustomMethod(User user) {
     // Your custom implementation
@@ -617,25 +619,104 @@ class UserRepositoryImpl implements UserRepositoryCustom {
 ----
 ====
 
-NOTE: The most important bit for the class to be found is the `Impl` postfix of the name on it compared to the core repository interface (see below).
+NOTE: The most important bit for the class to be found is the `Impl` postfix of the name on it compared to the fragment interface.
 
 The implementation itself does not depend on Spring Data and can be a regular Spring bean. So you can use standard dependency injection behavior to inject references to other beans like a `JdbcTemplate`, take part in aspects, and so on.
 
-.Changes to the your basic repository interface
+.Changes to your repository interface
 ====
 [source, java]
 ----
-interface UserRepository extends CrudRepository<User, Long>, UserRepositoryCustom {
+interface UserRepository extends CrudRepository<User, Long>, CustomizedUserRepository {
 
   // Declare query methods here
 }
 ----
 ====
 
-Let your standard repository interface extend the custom one. Doing so combines the CRUD and custom functionality and makes it available to clients.
+Let your repository interface extend the fragment one. Doing so combines the CRUD and custom functionality and makes it available to clients.
+
+Spring Data repositories are implemented by using fragments that form a repository composition. Fragments are the base repository, functional aspects such as <<core.extensions.querydsl,QueryDsl>> and custom interfaces along with their implementation. Each time you add an interface to your repository interface, you enhance the composition by adding a fragment. The base repository and repository aspect implementations are provided by each Spring Data module.
+
+.Fragments with their implementations
+====
+[source, java]
+----
+interface HumanRepository {
+  void someHumanMethod(User user);
+}
+
+class HumanRepositoryImpl implements HumanRepository {
+
+  public void someHumanMethod(User user) {
+    // Your custom implementation
+  }
+}
+
+interface EmployeeRepository {
+
+  void someEmployeeMethod(User user);
+
+  User anotherEmployeeMethod(User user);
+}
+
+class ContactRepositoryImpl implements ContactRepository {
+
+  public void someContactMethod(User user) {
+    // Your custom implementation
+  }
+
+  public User anotherContactMethod(User user) {
+    // Your custom implementation
+  }
+}
+----
+====
+
+.Changes to your repository interface
+====
+[source, java]
+----
+interface UserRepository extends CrudRepository<User, Long>, HumanRepository, ContactRepository {
+
+  // Declare query methods here
+}
+----
+====
+
+Repositories may be composed of multiple custom implementations that are imported in the order of their declaration. Custom implementations have a higher priority than the base implementation and repository aspects. This ordering allows you to override base repository and aspect methods and resolves ambiguity if two fragments contribute the same method signature. Repository fragments are not limited to be used in a single repository interface. Multiple repositories may use a fragment interface to reuse customizations across different repositories.
+
+.Fragments overriding `save(…)`
+====
+[source, java]
+----
+interface CustomizedSave<T> {
+  <S extends T> S save(S entity);
+}
+
+class CustomizedSaveImpl<T> implements CustomizedSave<T> {
+
+  public <S extends T> S save(S entity) {
+    // Your custom implementation
+  }
+}
+----
+====
+
+.Customized repository interfaces
+====
+[source, java]
+----
+interface UserRepository extends CrudRepository<User, Long>, CustomizedSave<User> {
+}
+
+interface PersonRepository extends CrudRepository<Person, Long>, CustomizedSave<Person> {
+}
+----
+====
 
 ==== Configuration
-If you use namespace configuration, the repository infrastructure tries to autodetect custom implementations by scanning for classes below the package we found a repository in. These classes need to follow the naming convention of appending the namespace element's attribute `repository-impl-postfix` to the found repository interface name. This postfix defaults to `Impl`.
+If you use namespace configuration, the repository infrastructure tries to autodetect custom implementation fragments by scanning for classes below the package we found a repository in. These classes need to follow the naming convention of appending the namespace element's attribute `repository-impl-postfix` to the found fragment interface name. This postfix defaults to `Impl`.
 
 .Configuration example
 ====
@@ -647,15 +728,15 @@ If you use namespace configuration, the repository infrastructure tries to autod
 ----
 ====
 
-The first configuration example will try to look up a class `com.acme.repository.UserRepositoryImpl` to act as custom repository implementation, whereas the second example will try to lookup `com.acme.repository.UserRepositoryFooBar`.
+The first configuration example will try to look up a class `com.acme.repository.CustomizedUserRepositoryImpl` to act as custom repository implementation, whereas the second example will try to lookup `com.acme.repository.CustomizedUserRepositoryFooBar`.
 
 [[repositories.single-repository-behaviour.ambiguity]]
 ===== Resolution of ambiguity
 
 If multiple implementations with matching class names get found in different packages, Spring Data uses the bean names to identify the correct one to use.
 
-Given the following two custom implementations for the `UserRepository` introduced above the first implementation will get picked.
-Its bean name is `userRepositoryImpl` matches that of the repository interface (`userRepository`) plus the postfix `Impl`.
+Given the following two custom implementations for the `CustomizedUserRepository` introduced above the first implementation will get picked.
+Its bean name is `customizedUserRepositoryImpl` matches that of the fragment interface (`CustomizedUserRepository`) plus the postfix `Impl`.
 
 .Resolution of amibiguous implementations
 ====
@@ -663,7 +744,7 @@ Its bean name is `userRepositoryImpl` matches that of the repository interface (
 ----
 package com.acme.impl.one;
 
-class UserRepositoryImpl implements UserRepositoryCustom {
+class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
 
   // Your custom implementation
 }
@@ -673,7 +754,7 @@ class UserRepositoryImpl implements UserRepositoryCustom {
 package com.acme.impl.two;
 
 @Component("specialCustomImpl")
-class UserRepositoryImpl implements UserRepositoryCustom {
+class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
 
   // Your custom implementation
 }
@@ -684,7 +765,7 @@ If you annotate the `UserRepository` interface with `@Component("specialCustom")
 
 ===== Manual wiring
 
-The approach just shown works well if your custom implementation uses annotation-based configuration and autowiring only, as it will be treated as any other Spring bean. If your custom implementation bean needs special wiring, you simply declare the bean and name it after the conventions just described. The infrastructure will then refer to the manually defined bean definition by name instead of creating one itself.
+The approach just shown works well if your custom implementation uses annotation-based configuration and autowiring only, as it will be treated as any other Spring bean. If your implementation fragment bean needs special wiring, you simply declare the bean and name it after the conventions just described. The infrastructure will then refer to the manually defined bean definition by name instead of creating one itself.
 
 .Manual wiring of custom implementations
 ====
@@ -698,32 +779,17 @@ The approach just shown works well if your custom implementation uses annotation
 ----
 ====
 
-[[repositories.custom-behaviour-for-all-repositories]]
-=== Adding custom behavior to all repositories
+[[repositories.customize-base-repository]]
+=== Customize the base repository
 
-The preceding approach is not feasible when you want to add a single method to all your repository interfaces. To add custom behavior to all repositories, you first add an intermediate interface to declare the shared behavior.
-
-.An interface declaring custom shared behavior
-====
-[source, java]
-----
-@NoRepositoryBean
-public interface MyRepository<T, ID extends Serializable>
-  extends PagingAndSortingRepository<T, ID> {
-
-  void sharedCustomMethod(ID id);
-}
-----
-====
-
-Now your individual repository interfaces will extend this intermediate interface instead of the `Repository` interface to include the functionality declared. Next, create an implementation of the intermediate interface that extends the persistence technology-specific repository base class. This class will then act as a custom base class for the repository proxies.
+The preceding approach requires customization of all repository interfaces when you want to customize the base repository behavior, so all repositories are affected. To change behavior for all repositories, you need to create an implementation that extends the persistence technology-specific repository base class. This class will then act as a custom base class for the repository proxies.
 
 .Custom repository base class
 ====
 [source, java]
 ----
 public class MyRepositoryImpl<T, ID extends Serializable>
-  extends SimpleJpaRepository<T, ID> implements MyRepository<T, ID> {
+  extends SimpleJpaRepository<T, ID> {
 
   private final EntityManager entityManager;
 
@@ -735,7 +801,8 @@ public class MyRepositoryImpl<T, ID extends Serializable>
     this.entityManager = entityManager;
   }
 
-  public void sharedCustomMethod(ID id) {
+  @Transactional
+  public <S extends T> S save(S entity) {
     // implementation goes here
   }
 }
@@ -743,8 +810,6 @@ public class MyRepositoryImpl<T, ID extends Serializable>
 ====
 
 WARNING: The class needs to have a constructor of the super class which the store-specific repository factory implementation is using. In case the repository base class has multiple constructors, override the one taking an `EntityInformation` plus a store specific infrastructure object (e.g. an `EntityManager` or a template class).
-
-The default behavior of the Spring `<repositories />` namespace is to provide an implementation for all interfaces that fall under the `base-package`. This means that if left in its current state, an implementation instance of `MyRepository` will be created by Spring. This is of course not desired as it is just supposed to act as an intermediary between `Repository` and the actual repository interfaces you want to define for each entity. To exclude an interface that extends `Repository` from being instantiated as a repository instance, you can either annotate it with `@NoRepositoryBean` (as seen above) or move it outside of the configured `base-package`.
 
 The final step is to make the Spring Data infrastructure aware of the customized repository base class. In JavaConfig this is achieved by using the `repositoryBaseClass` attribute of the `@Enable…Repositories` annotation:
 
