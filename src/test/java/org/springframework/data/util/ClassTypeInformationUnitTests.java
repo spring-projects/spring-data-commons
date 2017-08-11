@@ -106,7 +106,7 @@ public class ClassTypeInformationUnitTests {
 
 		property = information.getProperty("rawSet");
 		assertEquals(Set.class, property.getType());
-		assertThat(property.getComponentType().getType(), is(Matchers.<Class<?>>equalTo(Object.class)));
+		assertThat(property.getComponentType().getType(), is(Matchers.<Class<?>> equalTo(Object.class)));
 		assertNull(property.getMapValueType());
 	}
 
@@ -413,6 +413,18 @@ public class ClassTypeInformationUnitTests {
 		assertThat(information.getProperty("field").getType(), is(typeCompatibleWith(Nested.class)));
 	}
 
+	@Test // DATACMNS-1138
+	@SuppressWarnings("rawtypes")
+	public void usesTargetTypeForWildcardedBaseOnSpecialization() {
+
+		ClassTypeInformation<WildcardedWrapper> wrapper = ClassTypeInformation.from(WildcardedWrapper.class);
+		ClassTypeInformation<SomeConcrete> concrete = ClassTypeInformation.from(SomeConcrete.class);
+
+		TypeInformation<?> property = wrapper.getProperty("wildcarded");
+
+		assertThat(property.specialize(concrete), is((TypeInformation) concrete));
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -611,4 +623,16 @@ public class ClassTypeInformationUnitTests {
 	static class Nested extends SomeType<String> {}
 
 	static class Concrete extends SomeType<Nested> {}
+
+	// DATACMNS-1138
+
+	static class SomeGeneric<T> {
+		T value;
+	}
+
+	static class SomeConcrete extends SomeGeneric<String> {}
+
+	static class WildcardedWrapper {
+		SomeGeneric<?> wildcarded;
+	}
 }
