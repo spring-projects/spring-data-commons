@@ -184,6 +184,16 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return createInfo(type.getActualTypeArguments()[0]);
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#specialize(org.springframework.data.util.ClassTypeInformation)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public TypeInformation<? extends T> specialize(ClassTypeInformation<?> type) {
+		return isResolvedCompletely() ? (TypeInformation<? extends T>) type : super.specialize(type);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)

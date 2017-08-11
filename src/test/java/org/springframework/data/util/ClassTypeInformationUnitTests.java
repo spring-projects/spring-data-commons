@@ -16,7 +16,7 @@
 package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.util.ClassTypeInformation.*;
+import static org.springframework.data.util.ClassTypeInformation.from;
 
 import javaslang.collection.Traversable;
 
@@ -399,6 +399,17 @@ public class ClassTypeInformationUnitTests {
 		assertThat(information.getMapValueType().getType()).isAssignableFrom(Integer.class);
 	}
 
+	@Test // DATACMNS-1138
+	public void usesTargetTypeForWildcardedBaseOnSpecialization() {
+
+		ClassTypeInformation<WildcardedWrapper> wrapper = ClassTypeInformation.from(WildcardedWrapper.class);
+		ClassTypeInformation<SomeConcrete> concrete = ClassTypeInformation.from(SomeConcrete.class);
+
+		TypeInformation<?> property = wrapper.getRequiredProperty("wildcarded");
+
+		assertThat(property.specialize(concrete)).isEqualTo(concrete);
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -601,4 +612,16 @@ public class ClassTypeInformationUnitTests {
 	static interface SampleTraversable extends Traversable<Integer> {}
 
 	static interface SampleMap extends javaslang.collection.Map<String, Integer> {}
+
+	// DATACMNS-1138
+
+	static class SomeGeneric<T> {
+		T value;
+	}
+
+	static class SomeConcrete extends SomeGeneric<String> {}
+
+	static class WildcardedWrapper {
+		SomeGeneric<?> wildcarded;
+	}
 }
