@@ -23,13 +23,11 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
@@ -74,9 +72,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		Assert.notNull(owner, "Owner entity must not be null!");
 
 		this.name = property.getName();
-		this.rawType = property.getType();
-		this.information = PropertyPath.from(Pattern.quote(property.getName()), owner.getTypeInformation())
-				.getTypeInformation();
+		this.information = owner.getTypeInformation().getRequiredProperty(getName());
+		this.rawType = this.information.getType();
 		this.property = property;
 		this.association = Lazy.of(() -> isAssociation() ? createAssociation() : null);
 		this.owner = owner;

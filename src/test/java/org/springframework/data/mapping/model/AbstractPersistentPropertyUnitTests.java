@@ -200,6 +200,14 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getName()).isEqualTo("var_name_with_underscores");
 	}
 
+	@Test // DATACMNS-1139
+	public void resolvesGenericsForRawType() {
+
+		SamplePersistentProperty property = getProperty(FirstConcrete.class, "genericField");
+
+		assertThat(property.getRawType()).isEqualTo(String.class);
+	}
+
 	private <T> BasicPersistentEntity<T, SamplePersistentProperty> getEntity(Class<T> type) {
 		return new BasicPersistentEntity<>(ClassTypeInformation.from(type));
 	}
@@ -209,11 +217,9 @@ public class AbstractPersistentPropertyUnitTests {
 		Optional<Field> field = Optional.ofNullable(ReflectionUtils.findField(type, name));
 		Optional<PropertyDescriptor> descriptor = getPropertyDescriptor(type, name);
 
-		Property property = field
-				.map(it -> descriptor//
-						.map(foo -> Property.of(it, foo))//
-						.orElseGet(() -> Property.of(it)))
-				.orElseGet(() -> getPropertyDescriptor(type, name)//
+		Property property = field.map(it -> descriptor//
+				.map(foo -> Property.of(it, foo))//
+				.orElseGet(() -> Property.of(it))).orElseGet(() -> getPropertyDescriptor(type, name)//
 						.map(it -> Property.of(it))//
 						.orElseThrow(
 								() -> new IllegalArgumentException(String.format("Couldn't find property %s on %s!", name, type))));
