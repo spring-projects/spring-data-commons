@@ -36,7 +36,6 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.Person;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -46,15 +45,10 @@ import org.springframework.util.ReflectionUtils;
  */
 public class AbstractPersistentPropertyUnitTests {
 
-	TypeInformation<TestClassComplex> typeInfo;
-	PersistentEntity<TestClassComplex, SamplePersistentProperty> entity;
 	SimpleTypeHolder typeHolder;
 
 	@Before
 	public void setUp() {
-
-		typeInfo = ClassTypeInformation.from(TestClassComplex.class);
-		entity = new BasicPersistentEntity<TestClassComplex, SamplePersistentProperty>(typeInfo);
 		typeHolder = new SimpleTypeHolder();
 	}
 
@@ -64,9 +58,8 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void discoversComponentTypeCorrectly() throws Exception {
 
-		Field field = ReflectionUtils.findField(TestClassComplex.class, "testClassSet");
+		SamplePersistentProperty property = getProperty(TestClassComplex.class, "testClassSet");
 
-		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
 		property.getComponentType();
 	}
 
@@ -76,9 +69,8 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void returnsNestedEntityTypeCorrectly() {
 
-		Field field = ReflectionUtils.findField(TestClassComplex.class, "testClassSet");
+		SamplePersistentProperty property = getProperty(TestClassComplex.class, "testClassSet", null);
 
-		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
 		assertThat(property.getPersistentEntityType().iterator().hasNext(), is(false));
 	}
 
@@ -88,8 +80,8 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void isEntityWorksForUntypedMaps() throws Exception {
 
-		Field field = ReflectionUtils.findField(TestClassComplex.class, "map");
-		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
+		SamplePersistentProperty property = getProperty(TestClassComplex.class, "map", null);
+
 		assertThat(property.isEntity(), is(false));
 	}
 
@@ -99,8 +91,8 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void isEntityWorksForUntypedCollection() throws Exception {
 
-		Field field = ReflectionUtils.findField(TestClassComplex.class, "collection");
-		SamplePersistentProperty property = new SamplePersistentProperty(field, null, entity, typeHolder);
+		SamplePersistentProperty property = getProperty(TestClassComplex.class, "collection", null);
+
 		assertThat(property.isEntity(), is(false));
 	}
 
@@ -110,11 +102,8 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void considersPropertiesEqualIfFieldEquals() {
 
-		Field first = ReflectionUtils.findField(FirstConcrete.class, "genericField");
-		Field second = ReflectionUtils.findField(SecondConcrete.class, "genericField");
-
-		SamplePersistentProperty firstProperty = new SamplePersistentProperty(first, null, entity, typeHolder);
-		SamplePersistentProperty secondProperty = new SamplePersistentProperty(second, null, entity, typeHolder);
+		SamplePersistentProperty firstProperty = getProperty(FirstConcrete.class, "genericField", null);
+		SamplePersistentProperty secondProperty = getProperty(SecondConcrete.class, "genericField", null);
 
 		assertThat(firstProperty, is(secondProperty));
 		assertThat(firstProperty.hashCode(), is(secondProperty.hashCode()));
@@ -126,9 +115,8 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void doesNotConsiderJavaTransientFieldsTransient() {
 
-		Field transientField = ReflectionUtils.findField(TestClassComplex.class, "transientField");
+		PersistentProperty<?> property = getProperty(TestClassComplex.class, "transientField", null);
 
-		PersistentProperty<?> property = new SamplePersistentProperty(transientField, null, entity, typeHolder);
 		assertThat(property.isTransient(), is(false));
 	}
 
@@ -138,9 +126,7 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void findsSimpleGettersAndASetters() {
 
-		Field field = ReflectionUtils.findField(AccessorTestClass.class, "id");
-		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, getPropertyDescriptor(
-				AccessorTestClass.class, "id"), entity, typeHolder);
+		PersistentProperty<SamplePersistentProperty> property = getProperty(AccessorTestClass.class, "id");
 
 		assertThat(property.getGetter(), is(notNullValue()));
 		assertThat(property.getSetter(), is(notNullValue()));
@@ -152,9 +138,7 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void doesNotUseInvalidGettersAndASetters() {
 
-		Field field = ReflectionUtils.findField(AccessorTestClass.class, "anotherId");
-		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, getPropertyDescriptor(
-				AccessorTestClass.class, "anotherId"), entity, typeHolder);
+		PersistentProperty<SamplePersistentProperty> property = getProperty(AccessorTestClass.class, "anotherId");
 
 		assertThat(property.getGetter(), is(nullValue()));
 		assertThat(property.getSetter(), is(nullValue()));
@@ -166,9 +150,7 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void usesCustomGetter() {
 
-		Field field = ReflectionUtils.findField(AccessorTestClass.class, "yetAnotherId");
-		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, getPropertyDescriptor(
-				AccessorTestClass.class, "yetAnotherId"), entity, typeHolder);
+		PersistentProperty<SamplePersistentProperty> property = getProperty(AccessorTestClass.class, "yetAnotherId");
 
 		assertThat(property.getGetter(), is(notNullValue()));
 		assertThat(property.getSetter(), is(nullValue()));
@@ -180,9 +162,8 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void usesCustomSetter() {
 
-		Field field = ReflectionUtils.findField(AccessorTestClass.class, "yetYetAnotherId");
-		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, getPropertyDescriptor(
-				AccessorTestClass.class, "yetYetAnotherId"), entity, typeHolder);
+		PersistentProperty<SamplePersistentProperty> property = getProperty(AccessorTestClass.class, "yetAnotherId",
+				getPropertyDescriptor(AccessorTestClass.class, "yetYetAnotherId"));
 
 		assertThat(property.getGetter(), is(nullValue()));
 		assertThat(property.getSetter(), is(notNullValue()));
@@ -194,9 +175,7 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test
 	public void returnsNullGetterAndSetterIfNoPropertyDescriptorGiven() {
 
-		Field field = ReflectionUtils.findField(AccessorTestClass.class, "id");
-		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(field, null, entity,
-				typeHolder);
+		PersistentProperty<SamplePersistentProperty> property = getProperty(AccessorTestClass.class, "id", null);
 
 		assertThat(property.getGetter(), is(nullValue()));
 		assertThat(property.getSetter(), is(nullValue()));
@@ -272,13 +251,25 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.isEntity(), is(false));
 	}
 
+	@Test // DATACMNS-1139
+	public void resolvesGenericsForRawType() {
+
+		SamplePersistentProperty property = getProperty(FirstConcrete.class, "genericField");
+
+		assertThat(property.getRawType(), is(typeCompatibleWith(String.class)));
+	}
+
 	private <T> SamplePersistentProperty getProperty(Class<T> type, String name) {
+		return getProperty(type, name, getPropertyDescriptor(type, name));
+	}
+
+	private <T> SamplePersistentProperty getProperty(Class<T> type, String name, PropertyDescriptor descriptor) {
 
 		BasicPersistentEntity<T, SamplePersistentProperty> entity = new BasicPersistentEntity<T, SamplePersistentProperty>(
 				ClassTypeInformation.from(type));
 
 		Field field = ReflectionUtils.findField(type, name);
-		return new SamplePersistentProperty(field, null, entity, typeHolder);
+		return new SamplePersistentProperty(field, descriptor, entity, typeHolder);
 	}
 
 	private static PropertyDescriptor getPropertyDescriptor(Class<?> type, String propertyName) {
