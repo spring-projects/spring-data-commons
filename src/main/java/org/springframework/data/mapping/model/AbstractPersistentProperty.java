@@ -62,8 +62,9 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		Assert.notNull(owner, "Owner entity must not be null!");
 
 		this.name = field == null ? propertyDescriptor.getName() : field.getName();
-		this.rawType = field == null ? propertyDescriptor.getPropertyType() : field.getType();
 		this.information = owner.getTypeInformation().getProperty(this.name);
+		this.rawType = this.information != null ? information.getType()
+				: field == null ? propertyDescriptor.getPropertyType() : field.getType();
 		this.propertyDescriptor = propertyDescriptor;
 		this.field = field;
 		this.association = isAssociation() ? createAssociation() : null;
