@@ -15,12 +15,6 @@
  */
 package org.springframework.data.domain;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-
 import org.springframework.util.ClassUtils;
 
 /**
@@ -33,13 +27,7 @@ import org.springframework.util.ClassUtils;
  * @param <T> the type of the probe.
  * @since 1.12
  */
-@ToString
-@EqualsAndHashCode
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class Example<T> {
-
-	private final @NonNull T probe;
-	private final @NonNull ExampleMatcher matcher;
+public interface Example<T> {
 
 	/**
 	 * Create a new {@link Example} including all non-null properties by default.
@@ -47,8 +35,8 @@ public class Example<T> {
 	 * @param probe must not be {@literal null}.
 	 * @return
 	 */
-	public static <T> Example<T> of(T probe) {
-		return new Example<>(probe, ExampleMatcher.matching());
+	static <T> Example<T> of(T probe) {
+		return new TypedExample<>(probe, ExampleMatcher.matching());
 	}
 
 	/**
@@ -58,8 +46,8 @@ public class Example<T> {
 	 * @param matcher must not be {@literal null}.
 	 * @return
 	 */
-	public static <T> Example<T> of(T probe, ExampleMatcher matcher) {
-		return new Example<>(probe, matcher);
+	static <T> Example<T> of(T probe, ExampleMatcher matcher) {
+		return new TypedExample<>(probe, matcher);
 	}
 
 	/**
@@ -67,18 +55,14 @@ public class Example<T> {
 	 *
 	 * @return never {@literal null}.
 	 */
-	public T getProbe() {
-		return probe;
-	}
+	T getProbe();
 
 	/**
 	 * Get the {@link ExampleMatcher} used.
 	 *
 	 * @return never {@literal null}.
 	 */
-	public ExampleMatcher getMatcher() {
-		return matcher;
-	}
+	ExampleMatcher getMatcher();
 
 	/**
 	 * Get the actual type for the probe used. This is usually the given class, but the original class in case of a
@@ -88,7 +72,7 @@ public class Example<T> {
 	 * @see ClassUtils#getUserClass(Class)
 	 */
 	@SuppressWarnings("unchecked")
-	public Class<T> getProbeType() {
-		return (Class<T>) ClassUtils.getUserClass(probe.getClass());
+	default Class<T> getProbeType() {
+		return (Class<T>) ClassUtils.getUserClass(getProbe().getClass());
 	}
 }
