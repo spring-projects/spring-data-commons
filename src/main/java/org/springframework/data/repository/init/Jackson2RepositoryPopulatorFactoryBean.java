@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.repository.init;
 
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -23,18 +24,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * {@link FactoryBean} to set up a {@link ResourceReaderRepositoryPopulator} with a {@link Jackson2ResourceReader}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.6
  */
 public class Jackson2RepositoryPopulatorFactoryBean extends AbstractRepositoryPopulatorFactoryBean {
 
-	private ObjectMapper mapper;
+	private @Nullable ObjectMapper mapper;
 
 	/**
 	 * Configures the {@link ObjectMapper} to be used.
-	 * 
-	 * @param mapper
+	 *
+	 * @param mapper can be {@literal null}.
 	 */
-	public void setMapper(ObjectMapper mapper) {
+	public void setMapper(@Nullable ObjectMapper mapper) {
 		this.mapper = mapper;
 	}
 

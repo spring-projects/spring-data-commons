@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,13 @@ import java.io.IOException;
 import javax.xml.transform.stream.StreamSource;
 
 import org.springframework.core.io.Resource;
+import org.springframework.lang.Nullable;
 import org.springframework.oxm.Unmarshaller;
+import org.springframework.util.Assert;
 
 /**
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class UnmarshallingResourceReader implements ResourceReader {
 
@@ -40,7 +43,10 @@ public class UnmarshallingResourceReader implements ResourceReader {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.init.ResourceReader#readFrom(org.springframework.core.io.Resource, java.lang.ClassLoader)
 	 */
-	public Object readFrom(Resource resource, ClassLoader classLoader) throws IOException {
+	public Object readFrom(Resource resource, @Nullable ClassLoader classLoader) throws IOException {
+
+		Assert.notNull(resource, "Resource must not be null!");
+
 		StreamSource source = new StreamSource(resource.getInputStream());
 		return unmarshaller.unmarshal(source);
 	}

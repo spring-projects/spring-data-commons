@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.repository.init;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +31,14 @@ import org.springframework.data.repository.support.DefaultRepositoryInvokerFacto
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
  * A {@link RepositoryPopulator} using a {@link ResourceReader} to read objects from the configured {@link Resource}s.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.4
  */
 public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, ApplicationEventPublisherAware {
@@ -46,8 +49,8 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	private final ResourceReader reader;
 	private final ClassLoader classLoader;
 
-	private ApplicationEventPublisher publisher;
-	private Collection<Resource> resources;
+	private @Nullable ApplicationEventPublisher publisher;
+	private Collection<Resource> resources = Collections.emptySet();
 
 	/**
 	 * Creates a new {@link ResourceReaderRepositoryPopulator} using the given {@link ResourceReader}.
@@ -63,9 +66,9 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * {@link ClassLoader}.
 	 * 
 	 * @param reader must not be {@literal null}.
-	 * @param classLoader
+	 * @param classLoader can be {@literal null}.
 	 */
-	public ResourceReaderRepositoryPopulator(ResourceReader reader, ClassLoader classLoader) {
+	public ResourceReaderRepositoryPopulator(ResourceReader reader, @Nullable ClassLoader classLoader) {
 
 		Assert.notNull(reader, "Reader must not be null!");
 
@@ -99,7 +102,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
 	 */
-	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+	public void setApplicationEventPublisher(@Nullable ApplicationEventPublisher publisher) {
 		this.publisher = publisher;
 	}
 
@@ -108,6 +111,8 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * @see org.springframework.data.repository.init.RepositoryPopulator#initialize()
 	 */
 	public void populate(Repositories repositories) {
+
+		Assert.notNull(repositories, "Repositories must not be null!");
 
 		RepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories);
 
@@ -153,7 +158,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * Persists the given {@link Object} using a suitable repository.
 	 * 
 	 * @param object must not be {@literal null}.
-	 * @param repositories must not be {@literal null}.
+	 * @param invokerFactory must not be {@literal null}.
 	 */
 	private void persist(Object object, RepositoryInvokerFactory invokerFactory) {
 

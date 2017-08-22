@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.repository.init;
 
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.lang.Nullable;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.util.Assert;
 
@@ -23,10 +24,11 @@ import org.springframework.util.Assert;
  * {@link FactoryBean} to create a {@link ResourceReaderRepositoryPopulator} using an {@link Unmarshaller}.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractRepositoryPopulatorFactoryBean {
 
-	private Unmarshaller unmarshaller;
+	private @Nullable Unmarshaller unmarshaller;
 
 	/**
 	 * Configures the {@link Unmarshaller} to be used.
@@ -51,7 +53,8 @@ public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractReposito
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(unmarshaller, "No Unmarshaller configured!");
+
+		Assert.state(unmarshaller != null, "No Unmarshaller configured!");
 		super.afterPropertiesSet();
 	}
 }

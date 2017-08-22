@@ -29,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -105,9 +106,9 @@ public class PartTree implements Streamable<OrPart> {
 	}
 
 	/**
-	 * Returns the {@link Sort} specification parsed from the source or <tt>null</tt>.
-	 * 
-	 * @return the sort
+	 * Returns the {@link Sort} specification parsed from the source.
+	 *
+	 * @return never {@literal null}.
 	 */
 	public Sort getSort() {
 		return predicate.getOrderBySource().toSort();
@@ -164,9 +165,10 @@ public class PartTree implements Streamable<OrPart> {
 	/**
 	 * Return the number of maximal results to return or {@literal null} if not restricted.
 	 * 
-	 * @return
+	 * @return {@literal null} if not restricted.
 	 * @since 1.9
 	 */
+	@Nullable
 	public Integer getMaxResults() {
 		return subject.getMaxResults().orElse(null);
 	}

@@ -56,7 +56,7 @@ class OrderBySource {
 	 * 
 	 * @param clause must not be {@literal null}.
 	 */
-	public OrderBySource(String clause) {
+	OrderBySource(String clause) {
 		this(clause, Optional.empty());
 	}
 
@@ -67,7 +67,7 @@ class OrderBySource {
 	 * @param clause must not be {@literal null}.
 	 * @param domainClass must not be {@literal null}.
 	 */
-	public OrderBySource(String clause, Optional<Class<?>> domainClass) {
+	OrderBySource(String clause, Optional<Class<?>> domainClass) {
 
 		this.orders = new ArrayList<>();
 
@@ -100,8 +100,8 @@ class OrderBySource {
 	 * is given, we will use it for nested property traversal checks.
 	 * 
 	 * @param propertySource
-	 * @param direction
-	 * @param domainClass can be {@literal null}.
+	 * @param direction must not be {@literal null}.
+	 * @param domainClass must not be {@literal null}.
 	 * @return
 	 * @see PropertyPath#from(String, Class)
 	 */

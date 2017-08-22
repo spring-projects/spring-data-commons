@@ -3,4 +3,5 @@
  * 
  * @see org.springframework.data.transaction.ChainedTransactionManager
  */
+@org.springframework.lang.NonNullApi
 package org.springframework.data.transaction;

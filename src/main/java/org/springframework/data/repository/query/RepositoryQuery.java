@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,29 @@
  */
 package org.springframework.data.repository.query;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Interface for a query abstraction.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public interface RepositoryQuery {
 
 	/**
 	 * Executes the {@link RepositoryQuery} with the given parameters.
 	 *
-	 * @param parameters
-	 * @return
+	 * @param parameters must not be {@literal null}.
+	 * @return execution result. Can be {@literal null}.
 	 */
+	@Nullable
 	Object execute(Object[] parameters);
 
 	/**
-	 * Returns the
+	 * Returns the related {@link QueryMethod}.
 	 *
-	 * @return
+	 * @return never {@literal null}.
 	 */
 	QueryMethod getQueryMethod();
 }
