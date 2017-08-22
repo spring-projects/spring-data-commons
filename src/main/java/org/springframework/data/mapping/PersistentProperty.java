@@ -270,6 +270,27 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	<A extends Annotation> A findAnnotation(Class<A> annotationType);
 
 	/**
+	 * Looks up the annotation of the given type on the {@link PersistentProperty}. Will inspect accessors and the
+	 * potentially backing field and traverse accessor methods to potentially available super types.
+	 *
+	 * @param annotationType the annotation to look up, must not be {@literal null}.
+	 * @return the annotation of the given type.
+	 * @throws IllegalStateException if the required {@code annotationType} is not found.
+	 * @since 2.0
+	 */
+	default <A extends Annotation> A getRequiredAnnotation(Class<A> annotationType) throws IllegalStateException {
+
+		A annotation = findAnnotation(annotationType);
+
+		if (annotation != null) {
+			return annotation;
+		}
+
+		throw new IllegalStateException(
+				String.format("Required annotation %s not found for %s!", annotationType, getName()));
+	}
+
+	/**
 	 * Looks up the annotation of the given type on the property and the owning type if no annotation can be found on it.
 	 * Useful to lookup annotations that can be configured on the type but overridden on an individual property.
 	 *

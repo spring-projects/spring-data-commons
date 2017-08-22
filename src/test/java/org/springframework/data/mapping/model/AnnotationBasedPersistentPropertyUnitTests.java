@@ -25,8 +25,6 @@ import java.lang.annotation.Target;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.lang.Nullable;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.annotation.AliasFor;
@@ -37,8 +35,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
+import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -46,6 +46,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBasedPersistentProperty<P>> {
 
@@ -217,9 +218,25 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		assertThat(entity.getPersistentProperty("setter")).satisfies(
 				property -> assertThat(property.findAnnotation(RevisedAnnnotationWithAliasFor.class)).satisfies(annotation -> {
-			assertThat(annotation.name()).isEqualTo("my-value");
-			assertThat(annotation.value()).isEqualTo("my-value");
-		}));
+					assertThat(annotation.name()).isEqualTo("my-value");
+					assertThat(annotation.value()).isEqualTo("my-value");
+				}));
+	}
+
+	@Test // DATACMNS-1141
+	public void getRequiredAnnotationReturnsAnnotation() {
+
+		PersistentProperty property = getProperty(Sample.class, "id");
+
+		assertThat(property.getRequiredAnnotation(Id.class)).isNotNull();
+	}
+
+	@Test // DATACMNS-1141
+	public void getRequiredAnnotationThrowsException() {
+
+		PersistentProperty property = getProperty(Sample.class, "id");
+
+		assertThatThrownBy(() -> property.getRequiredAnnotation(Transient.class)).isInstanceOf(IllegalStateException.class);
 	}
 
 	@SuppressWarnings("unchecked")

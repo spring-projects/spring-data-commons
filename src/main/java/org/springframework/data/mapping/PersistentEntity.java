@@ -250,6 +250,26 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	<A extends Annotation> A findAnnotation(Class<A> annotationType);
 
 	/**
+	 * Returns the required annotation of the given type on the {@link PersistentEntity}.
+	 *
+	 * @param annotationType must not be {@literal null}.
+	 * @return the annotation.
+	 * @throws IllegalStateException if the required {@code annotationType} is not found.
+	 * @since 2.0
+	 */
+	default <A extends Annotation> A getRequiredAnnotation(Class<A> annotationType) throws IllegalStateException {
+
+		A annotation = findAnnotation(annotationType);
+
+		if (annotation != null) {
+			return annotation;
+		}
+
+		throw new IllegalStateException(
+				String.format("Required annotation %s not found for %s!", annotationType, getType()));
+	}
+
+	/**
 	 * Checks whether the annotation of the given type is present on the {@link PersistentEntity}.
 	 *
 	 * @param annotationType must not be {@literal null}.

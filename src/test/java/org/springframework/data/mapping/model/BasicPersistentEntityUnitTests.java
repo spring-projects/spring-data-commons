@@ -39,6 +39,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Alias;
+import org.springframework.data.mapping.Document;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentEntitySpec;
@@ -256,6 +257,23 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		MutablePersistentEntity<Entity, T> entity = createEntity(Entity.class);
 
 		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> entity.addAssociation(null));
+	}
+
+	@Test // DATACMNS-1141
+	public void getRequiredAnnotationReturnsAnnotation() {
+
+		PersistentEntity<AliasEntityUsingComposedAnnotation, T> entity = createEntity(
+				AliasEntityUsingComposedAnnotation.class);
+		assertThat(entity.getRequiredAnnotation(TypeAlias.class).value()).isEqualTo("bar");
+	}
+
+	@Test // DATACMNS-1141
+	public void getRequiredAnnotationThrowsException() {
+
+		PersistentEntity<AliasEntityUsingComposedAnnotation, T> entity = createEntity(
+				AliasEntityUsingComposedAnnotation.class);
+
+		assertThatThrownBy(() -> entity.getRequiredAnnotation(Document.class)).isInstanceOf(IllegalStateException.class);
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
