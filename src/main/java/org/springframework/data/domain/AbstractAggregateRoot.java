@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,31 @@
  */
 package org.springframework.data.domain;
 
-import lombok.Getter;
-
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.util.Assert;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Convenience base class for aggregate roots that exposes a {@link #registerEvent(Object)} to capture domain events and
- * expose them via {@link #getDomainEvents()}. The implementation is using the general event publication mechanism
- * implied by {@link DomainEvents} and {@link AfterDomainEventPublication}. If in doubt or need to customize anything
- * here, rather build your own base class and use the annotations directly.
+ * expose them via {@link #domainEvents())}. The implementation is using the general event publication mechanism implied
+ * by {@link DomainEvents} and {@link AfterDomainEventPublication}. If in doubt or need to customize anything here,
+ * rather build your own base class and use the annotations directly.
  * 
  * @author Oliver Gierke
  * @since 1.13
  */
 public class AbstractAggregateRoot {
 
-	/**
-	 * All domain events currently captured by the aggregate.
-	 */
-	@Getter(onMethod = @__(@DomainEvents)) //
-	private transient final List<Object> domainEvents = new ArrayList<Object>();
+	private transient final @Transient List<Object> domainEvents = new ArrayList<Object>();
 
 	/**
-	 * Registers the given event object for publication on a call to a Spring Data repository's save method.
+	 * Registers the given event object for publication on a call to a Spring Data repository's save methods.
 	 * 
 	 * @param event must not be {@literal null}.
 	 * @return
@@ -58,7 +57,25 @@ public class AbstractAggregateRoot {
 	 * repositories.
 	 */
 	@AfterDomainEventPublication
-	public void clearDomainEvents() {
+	protected void clearDomainEvents() {
 		this.domainEvents.clear();
+	}
+
+	/**
+	 * All domain events currently captured by the aggregate.
+	 */
+	@DomainEvents
+	protected Collection<Object> domainEvents() {
+		return Collections.unmodifiableList(domainEvents);
+	}
+
+	/**
+	 * @see #domainEvents()
+	 * @deprecated since 1.13.7, prefer {@link #domainEvents()}
+	 */
+	@JsonIgnore
+	@Deprecated
+	public List<Object> getDomainEvents() {
+		return (List<Object>) domainEvents();
 	}
 }
