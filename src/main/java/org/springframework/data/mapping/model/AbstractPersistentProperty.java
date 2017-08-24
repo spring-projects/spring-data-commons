@@ -15,9 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -47,6 +44,30 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	private static final Field CAUSE_FIELD;
 
+	public PersistentEntity<?, P> getOwner() {
+		return this.owner;
+	}
+
+	@SuppressWarnings("null")
+	protected Property getProperty() {
+		return this.property;
+	}
+
+	@Nullable
+	public Method getGetter() {
+		return this.getter;
+	}
+
+	@Nullable
+	public Method getSetter() {
+		return this.setter;
+	}
+
+	@Nullable
+	public Field getField() {
+		return this.field;
+	}
+
 	static {
 		CAUSE_FIELD = ReflectionUtils.findRequiredField(Throwable.class, "cause");
 	}
@@ -55,17 +76,17 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final TypeInformation<?> information;
 	private final Class<?> rawType;
 	private final Lazy<Association<P>> association;
-	private final @Getter PersistentEntity<?, P> owner;
+	private final PersistentEntity<?, P> owner;
 
 	@SuppressWarnings("null") //
-	private final @Getter(value = AccessLevel.PROTECTED, onMethod = @__(@SuppressWarnings("null"))) Property property;
+	private final Property property;
 	private final Lazy<Integer> hashCode;
 	private final Lazy<Boolean> usePropertyAccess;
 	private final Lazy<Optional<? extends TypeInformation<?>>> entityTypeInformation;
 
-	private final @Getter(onMethod = @__(@Nullable)) Method getter;
-	private final @Getter(onMethod = @__(@Nullable)) Method setter;
-	private final @Getter(onMethod = @__(@Nullable)) Field field;
+	private final Method getter;
+	private final Method setter;
+	private final Field field;
 	private final @Getter(onMethod = @__(@Nullable)) Method wither;
 	private final boolean immutable;
 

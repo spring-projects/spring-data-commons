@@ -35,6 +35,9 @@ import org.springframework.util.Assert;
  */
 public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 
+	/**
+	 * All domain events currently captured by the aggregate.
+	 */
 	private transient final @Transient List<Object> domainEvents = new ArrayList<>();
 
 	/**
