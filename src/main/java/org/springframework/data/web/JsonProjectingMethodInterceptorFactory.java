@@ -42,6 +42,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ParseContext;
+import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.TypeRef;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 
@@ -135,24 +136,31 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 			ResolvableType type = ResolvableType.forMethodReturnType(method);
 			String jsonPath = getJsonPath(method);
 
-			if (returnType.getActualType().getType().isInterface()) {
+			try {
 
-				List<?> result = context.read(jsonPath);
-				return result.isEmpty() ? null : result.get(0);
+				if (returnType.getActualType().getType().isInterface()) {
+
+					List<?> result = context.read(jsonPath);
+					return result.isEmpty() ? null : result.get(0);
+				}
+
+				boolean isCollectionResult = Collection.class.isAssignableFrom(type.getRawClass());
+				type = isCollectionResult ? type : ResolvableType.forClassWithGenerics(List.class, type);
+				type = isCollectionResult && JsonPath.isPathDefinite(jsonPath)
+						? ResolvableType.forClassWithGenerics(List.class, type)
+						: type;
+
+				List<?> result = (List<?>) context.read(jsonPath, new ResolvableTypeRef(type));
+
+				if (isCollectionResult && JsonPath.isPathDefinite(jsonPath)) {
+					result = (List<?>) result.get(0);
+				}
+
+				return isCollectionResult ? result : result.isEmpty() ? null : result.get(0);
+
+			} catch (PathNotFoundException o_O) {
+				return null;
 			}
-
-			boolean isCollectionResult = Collection.class.isAssignableFrom(type.getRawClass());
-			type = isCollectionResult ? type : ResolvableType.forClassWithGenerics(List.class, type);
-			type = isCollectionResult && JsonPath.isPathDefinite(jsonPath)
-					? ResolvableType.forClassWithGenerics(List.class, type) : type;
-
-			List<?> result = (List<?>) context.read(jsonPath, new ResolvableTypeRef(type));
-
-			if (isCollectionResult && JsonPath.isPathDefinite(jsonPath)) {
-				result = (List<?>) result.get(0);
-			}
-
-			return isCollectionResult ? result : result.isEmpty() ? null : result.get(0);
 		}
 
 		/**
