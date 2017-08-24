@@ -136,6 +136,16 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 		assertThat(customer.getNestedCities()).hasSize(2);
 	}
 
+	@Test // DATACMNS-1144
+	public void returnsNullForNonExistantValue() {
+		assertThat(customer.getName().getLastname()).isNull();
+	}
+
+	@Test // DATACMNS-1144
+	public void triesMultipleDeclaredPathsIfNotAvailable() {
+		assertThat(customer.getName().getSomeName()).isEqualTo(customer.getName().getFirstname());
+	}
+
 	interface Customer {
 
 		String getFirstname();
@@ -187,8 +197,13 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 		@JsonPath("$.firstname")
 		String getFirstname();
 
+		// Not available in the payload
 		@JsonPath("$.lastname")
 		String getLastname();
+
+		// First one not available in the payload
+		@JsonPath({ "$.lastname", "$.firstname" })
+		String getSomeName();
 	}
 
 	interface AnotherAddressProjection {

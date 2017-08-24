@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import net.minidev.json.JSONObject;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +45,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ParseContext;
+import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.TypeRef;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 
@@ -135,27 +138,39 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 			Method method = invocation.getMethod();
 			TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 			ResolvableType type = ResolvableType.forMethodReturnType(method);
-			String jsonPath = getJsonPath(method);
-
-			if (returnType.getRequiredActualType().getType().isInterface()) {
-
-				List<?> result = context.read(jsonPath);
-				return result.isEmpty() ? null : result.get(0);
-			}
-
 			boolean isCollectionResult = Collection.class.isAssignableFrom(type.getRawClass());
 			type = isCollectionResult ? type : ResolvableType.forClassWithGenerics(List.class, type);
-			type = isCollectionResult && JsonPath.isPathDefinite(jsonPath)
-					? ResolvableType.forClassWithGenerics(List.class, type)
-					: type;
 
-			List<?> result = (List<?>) context.read(jsonPath, new ResolvableTypeRef(type));
+			Iterable<String> jsonPaths = getJsonPaths(method);
 
-			if (isCollectionResult && JsonPath.isPathDefinite(jsonPath)) {
-				result = (List<?>) result.get(0);
+			for (String jsonPath : jsonPaths) {
+
+				try {
+
+					if (returnType.getRequiredActualType().getType().isInterface()) {
+
+						List<?> result = context.read(jsonPath);
+						return result.isEmpty() ? null : result.get(0);
+					}
+
+					type = isCollectionResult && JsonPath.isPathDefinite(jsonPath)
+							? ResolvableType.forClassWithGenerics(List.class, type)
+							: type;
+
+					List<?> result = (List<?>) context.read(jsonPath, new ResolvableTypeRef(type));
+
+					if (isCollectionResult && JsonPath.isPathDefinite(jsonPath)) {
+						result = (List<?>) result.get(0);
+					}
+
+					return isCollectionResult ? result : result.isEmpty() ? null : result.get(0);
+
+				} catch (PathNotFoundException o_O) {
+					// continue with next path
+				}
 			}
 
-			return isCollectionResult ? result : result.isEmpty() ? null : result.get(0);
+			return null;
 		}
 
 		/**
@@ -164,12 +179,16 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		 * @param method
 		 * @return
 		 */
-		private static String getJsonPath(Method method) {
+		private static Collection<String> getJsonPaths(Method method) {
 
 			org.springframework.data.web.JsonPath annotation = AnnotationUtils.findAnnotation(method,
 					org.springframework.data.web.JsonPath.class);
 
-			return annotation != null ? annotation.value() : "$.".concat(new Accessor(method).getPropertyName());
+			if (annotation != null) {
+				return Arrays.asList(annotation.value());
+			}
+
+			return Collections.singletonList("$.".concat(new Accessor(method).getPropertyName()));
 		}
 
 		@RequiredArgsConstructor
