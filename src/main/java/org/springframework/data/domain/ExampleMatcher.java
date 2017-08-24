@@ -48,8 +48,8 @@ import org.springframework.util.Assert;
 public interface ExampleMatcher {
 
 	/**
-	 * Create a new {@link ExampleMatcher} including all non-null properties by default exposing that all resulting
-	 * predicates are supposed to be AND-concatenated.
+	 * Create a new {@link ExampleMatcher} including all non-null properties by default matching <strong>all</strong>
+	 * predicates derived from the example.
 	 *
 	 * @return new instance of {@link ExampleMatcher}.
 	 * @see #matchingAll()
@@ -232,7 +232,7 @@ public interface ExampleMatcher {
 	/**
 	 * Returns whether all of the predicates of the {@link Example} are supposed to match. If {@literal false} is
 	 * returned, it's sufficient if any of the predicates derived from the {@link Example} match.
-	 * 
+	 *
 	 * @return whether all of the predicates of the {@link Example} are supposed to match or any of them is sufficient.
 	 */
 	default boolean isAllMatching() {
@@ -242,7 +242,7 @@ public interface ExampleMatcher {
 	/**
 	 * Returns whether it's sufficient that any of the predicates of the {@link Example} match. If {@literal false} is
 	 * returned, all predicates derived from the example need to match to produce results.
-	 * 
+	 *
 	 * @return whether it's sufficient that any of the predicates of the {@link Example} match or all need to match.
 	 */
 	default boolean isAnyMatching() {
@@ -564,7 +564,7 @@ public interface ExampleMatcher {
 
 		/**
 		 * For backwards compatibility of clients used to invoke Spring's Converter interface.
-		 * 
+		 *
 		 * @param source
 		 * @return
 		 */
@@ -583,7 +583,7 @@ public interface ExampleMatcher {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.util.function.Function#apply(java.lang.Object)
 		 */
