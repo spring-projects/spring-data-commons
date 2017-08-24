@@ -137,6 +137,11 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 		assertThat(customer.getNestedCities(), hasSize(2));
 	}
 
+	@Test // DATACMNS-1144
+	public void returnsNullForNonExistantValue() {
+		assertThat(customer.getName().getLastname(), is(nullValue()));
+	}
+
 	interface Customer {
 
 		String getFirstname();
