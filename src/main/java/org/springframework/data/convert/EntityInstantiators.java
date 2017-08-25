@@ -57,7 +57,7 @@ public class EntityInstantiators {
 	 * @param customInstantiators must not be {@literal null}.
 	 */
 	public EntityInstantiators(Map<Class<?>, EntityInstantiator> customInstantiators) {
-		this(new ClassGeneratingKotlinEntityInstantiator(), customInstantiators);
+		this(new KotlinClassGeneratingEntityInstantiator(), customInstantiators);
 	}
 
 	/**

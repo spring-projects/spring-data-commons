@@ -30,16 +30,16 @@ import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
 /**
  * Kotlin-specific extension to {@link ClassGeneratingEntityInstantiator} that adapts Kotlin constructors with
  * defaulting.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @since 2.0
  */
-public class ClassGeneratingKotlinEntityInstantiator extends ClassGeneratingEntityInstantiator {
+public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInstantiator {
 
 	/*
 	 * (non-Javadoc)
@@ -48,14 +48,18 @@ public class ClassGeneratingKotlinEntityInstantiator extends ClassGeneratingEnti
 	@Override
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
 
-		if (ReflectionUtils.isKotlinClass(entity.getType()) && entity.getPersistenceConstructor() != null) {
+		PreferredConstructor<?, ?> constructor = entity.getPersistenceConstructor();
+
+		if (ReflectionUtils.isKotlinClass(entity.getType()) && constructor != null) {
 
 			PreferredConstructor<?, ?> defaultConstructor = new DefaultingKotlinConstructorResolver(entity)
 					.getDefaultConstructor();
 
 			if (defaultConstructor != null) {
-				return new DefaultingKotlinClassInstantiatorAdapter(createObjectInstantiator(entity, defaultConstructor),
-						entity.getPersistenceConstructor());
+
+				ObjectInstantiator instantiator = createObjectInstantiator(entity, defaultConstructor);
+
+				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, constructor);
 			}
 		}
 
@@ -71,7 +75,7 @@ public class ClassGeneratingKotlinEntityInstantiator extends ClassGeneratingEnti
 	 */
 	static class DefaultingKotlinConstructorResolver {
 
-		@Nullable private final PreferredConstructor<?, ?> defaultConstructor;
+		private final @Nullable PreferredConstructor<?, ?> defaultConstructor;
 
 		@SuppressWarnings("unchecked")
 		DefaultingKotlinConstructorResolver(PersistentEntity<?, ?> entity) {
@@ -90,12 +94,14 @@ public class ClassGeneratingKotlinEntityInstantiator extends ClassGeneratingEnti
 		@Nullable
 		private static Constructor<?> resolveDefaultConstructor(PersistentEntity<?, ?> entity) {
 
-			if (entity.getPersistenceConstructor() == null) {
+			PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
+
+			if (persistenceConstructor == null) {
 				return null;
 			}
 
 			Constructor<?> hit = null;
-			Constructor<?> constructor = entity.getPersistenceConstructor().getConstructor();
+			Constructor<?> constructor = persistenceConstructor.getConstructor();
 
 			for (Constructor<?> candidate : entity.getType().getDeclaredConstructors()) {
 
@@ -192,7 +198,10 @@ public class ClassGeneratingKotlinEntityInstantiator extends ClassGeneratingEnti
 				ParameterValueProvider<P> provider) {
 
 			PreferredConstructor<? extends T, P> preferredConstructor = entity.getPersistenceConstructor();
-			Assert.notNull(preferredConstructor, "PreferredConstructor must not be null!");
+
+			if (preferredConstructor == null) {
+				throw new IllegalArgumentException("PreferredConstructor must not be null!");
+			}
 
 			int[] defaulting = new int[(synthetic.getParameterCount() / 32) + 1];
 
