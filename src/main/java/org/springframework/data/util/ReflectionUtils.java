@@ -40,7 +40,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
 
 /**
  * Spring Data specific reflection utility methods and classes.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
@@ -56,7 +56,7 @@ public class ReflectionUtils {
 	/**
 	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
 	 * class cannot be loaded or instantiated.
-	 * 
+	 *
 	 * @param classname the fully qualified class name to create an instance for.
 	 * @param defaultInstance the instance to fall back to in case the given class cannot be loaded or instantiated.
 	 * @return
@@ -74,7 +74,7 @@ public class ReflectionUtils {
 
 	/**
 	 * A {@link FieldFilter} that has a description.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	public interface DescribedFieldFilter extends FieldFilter {
@@ -82,7 +82,7 @@ public class ReflectionUtils {
 		/**
 		 * Returns the description of the field filter. Used in exceptions being thrown in case uniqueness shall be enforced
 		 * on the field filter.
-		 * 
+		 *
 		 * @return
 		 */
 		String getDescription();
@@ -90,7 +90,7 @@ public class ReflectionUtils {
 
 	/**
 	 * A {@link FieldFilter} for a given annotation.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@RequiredArgsConstructor
@@ -98,7 +98,7 @@ public class ReflectionUtils {
 
 		private final @NonNull Class<? extends Annotation> annotationType;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.util.ReflectionUtils.FieldFilter#matches(java.lang.reflect.Field)
 		 */
@@ -106,7 +106,7 @@ public class ReflectionUtils {
 			return AnnotationUtils.getAnnotation(field, annotationType) != null;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.util.ReflectionUtils.DescribedFieldFilter#getDescription()
 		 */
@@ -117,7 +117,7 @@ public class ReflectionUtils {
 
 	/**
 	 * Finds the first field on the given class matching the given {@link FieldFilter}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param filter must not be {@literal null}.
 	 * @return the field matching the filter or {@literal null} in case no field could be found.
@@ -140,7 +140,7 @@ public class ReflectionUtils {
 	/**
 	 * Finds the field matching the given {@link DescribedFieldFilter}. Will make sure there's only one field matching the
 	 * filter.
-	 * 
+	 *
 	 * @see #findField(Class, DescribedFieldFilter, boolean)
 	 * @param type must not be {@literal null}.
 	 * @param filter must not be {@literal null}.
@@ -155,7 +155,7 @@ public class ReflectionUtils {
 	/**
 	 * Finds the field matching the given {@link DescribedFieldFilter}. Will make sure there's only one field matching the
 	 * filter in case {@code enforceUniqueness} is {@literal true}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param filter must not be {@literal null}.
 	 * @param enforceUniqueness whether to enforce uniqueness of the field
@@ -198,7 +198,7 @@ public class ReflectionUtils {
 
 	/**
 	 * Finds the field of the given name on the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param name must not be {@literal null} or empty.
 	 * @return
@@ -217,7 +217,7 @@ public class ReflectionUtils {
 
 	/**
 	 * Sets the given field on the given object to the given value. Will make sure the given field is accessible.
-	 * 
+	 *
 	 * @param field must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param value
@@ -230,7 +230,7 @@ public class ReflectionUtils {
 
 	/**
 	 * Finds a constructor on the given type that matches the given constructor arguments.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param constructorArguments must not be {@literal null}.
 	 * @return a {@link Constructor} that is compatible with the given arguments.
@@ -247,7 +247,7 @@ public class ReflectionUtils {
 
 	/**
 	 * Returns the method with the given name of the given class and parameter types.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param name must not be {@literal null}.
 	 * @param parameterTypes must not be {@literal null}.
@@ -273,7 +273,7 @@ public class ReflectionUtils {
 
 	/**
 	 * Returns a {@link Stream} of the return and parameters types of the given {@link Method}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @return
 	 * @since 2.0
@@ -290,7 +290,7 @@ public class ReflectionUtils {
 
 	/**
 	 * Returns the {@link Method} with the given name and parameters declared on the given type, if available.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param name must not be {@literal null} or empty.
 	 * @param parameterTypes must not be {@literal null}.
