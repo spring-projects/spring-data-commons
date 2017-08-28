@@ -138,7 +138,7 @@ public class PartTree implements Streamable<OrPart> {
 	 * @return
 	 * @since 1.13
 	 */
-	public Boolean isExistsProjection() {
+	public boolean isExistsProjection() {
 		return subject.isExistsProjection();
 	}
 
