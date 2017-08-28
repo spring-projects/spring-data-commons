@@ -28,6 +28,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
@@ -69,6 +71,17 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		assertBeanDefinitionRegisteredFor("mixinImpl");
 		assertBeanDefinitionRegisteredFor("mixinImplFragment");
 		assertNoBeanDefinitionRegisteredFor("profileRepository");
+	}
+
+	@Test // DATACMNS-1147
+	public void registersBeanDefinitionWithoutFragmentImplementations() {
+
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(FragmentExclusionConfiguration.class, true);
+
+		registrar.registerBeanDefinitions(metadata, registry);
+
+		assertBeanDefinitionRegisteredFor("repositoryWithFragmentExclusion");
+		assertNoBeanDefinitionRegisteredFor("excludedRepositoryImpl");
 	}
 
 	@Test // DATACMNS-360
@@ -134,5 +147,12 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		protected String getModulePrefix() {
 			return "commons";
 		}
+	}
+
+	@EnableRepositories(
+			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, value = RepositoryWithFragmentExclusion.class),
+			basePackageClasses = RepositoryWithFragmentExclusion.class)
+	static class FragmentExclusionConfiguration {
+
 	}
 }

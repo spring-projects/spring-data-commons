@@ -31,6 +31,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
@@ -175,13 +176,21 @@ class RepositoryBeanDefinitionBuilder {
 
 		ClassMetadata classMetadata = getClassMetadata(configuration.getRepositoryInterface());
 
-		return Arrays.stream(classMetadata.getInterfaceNames())
+		return Arrays.stream(classMetadata.getInterfaceNames()) //
+				.filter(this::isFragmentInterfaceCandidate) //
 				.map(it -> detectRepositoryFragmentConfiguration(configuration, it)) //
 				.filter(Optional::isPresent) //
 				.map(Optional::get) //
 				.peek(it -> potentiallyRegisterFragmentImplementation(configuration, it)) //
 				.peek(it -> potentiallyRegisterRepositoryFragment(configuration, it)) //
 				.collect(Collectors.toList());
+	}
+
+	private boolean isFragmentInterfaceCandidate(String interfaceName) {
+
+		AnnotationMetadata metadata = getAnnotationMetadata(interfaceName);
+
+		return !metadata.hasAnnotation(NoRepositoryBean.class.getName());
 	}
 
 	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(
@@ -248,6 +257,15 @@ class RepositoryBeanDefinitionBuilder {
 
 		try {
 			return metadataReaderFactory.getMetadataReader(className).getClassMetadata();
+		} catch (IOException e) {
+			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
+		}
+	}
+
+	private AnnotationMetadata getAnnotationMetadata(String className) {
+
+		try {
+			return metadataReaderFactory.getMetadataReader(className).getAnnotationMetadata();
 		} catch (IOException e) {
 			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
 		}

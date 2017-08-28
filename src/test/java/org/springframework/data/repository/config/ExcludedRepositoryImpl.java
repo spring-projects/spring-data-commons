@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,17 @@
  */
 package org.springframework.data.repository.config;
 
-import org.springframework.context.annotation.ComponentScan.Filter;
-import org.springframework.context.annotation.FilterType;
+/**
+ * @author Mark Paluch
+ */
+public class ExcludedRepositoryImpl<T, ID> implements ExcludedRepository<T, ID> {
 
-@EnableRepositories(
-		excludeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = MyOtherRepository.class),
-				@Filter(type = FilterType.ASSIGNABLE_TYPE, value = ExcludedRepository.class) },
-		basePackageClasses = AnnotationRepositoryConfigurationSourceUnitTests.class)
-class SampleConfiguration {
-
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.ExcludedRepository#getImplementationId()
+	 */
+	@Override
+	public String getImplementationId() {
+		return getClass().getName();
+	}
 }
