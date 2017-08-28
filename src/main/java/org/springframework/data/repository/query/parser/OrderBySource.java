@@ -34,14 +34,14 @@ import org.springframework.util.StringUtils;
  * Simple helper class to create a {@link Sort} instance from a method name end. It expects the last part of the method
  * name to be given and supports lining up multiple properties ending with the sorting direction. So the following
  * method ends are valid: {@code LastnameUsernameDesc}, {@code LastnameAscUsernameDesc}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
  */
 class OrderBySource {
 
-	public static OrderBySource EMPTY = new OrderBySource("");
+	static OrderBySource EMPTY = new OrderBySource("");
 
 	private static final String BLOCK_SPLIT = "(?<=Asc|Desc)(?=\\p{Lu})";
 	private static final Pattern DIRECTION_SPLIT = Pattern.compile("(.+?)(Asc|Desc)?$");
@@ -53,7 +53,7 @@ class OrderBySource {
 	/**
 	 * Creates a new {@link OrderBySource} for the given String clause not doing any checks whether the referenced
 	 * property actually exists.
-	 * 
+	 *
 	 * @param clause must not be {@literal null}.
 	 */
 	OrderBySource(String clause) {
@@ -63,7 +63,7 @@ class OrderBySource {
 	/**
 	 * Creates a new {@link OrderBySource} for the given clause, checking the property referenced exists on the given
 	 * type.
-	 * 
+	 *
 	 * @param clause must not be {@literal null}.
 	 * @param domainClass must not be {@literal null}.
 	 */
@@ -98,7 +98,7 @@ class OrderBySource {
 	/**
 	 * Creates an {@link Order} instance from the given property source, direction and domain class. If the domain class
 	 * is given, we will use it for nested property traversal checks.
-	 * 
+	 *
 	 * @param propertySource
 	 * @param direction must not be {@literal null}.
 	 * @param domainClass must not be {@literal null}.
@@ -120,10 +120,10 @@ class OrderBySource {
 
 	/**
 	 * Returns the clause as {@link Sort}.
-	 * 
+	 *
 	 * @return the {@link Sort}.
 	 */
-	public Sort toSort() {
+	Sort toSort() {
 		return Sort.by(this.orders);
 	}
 

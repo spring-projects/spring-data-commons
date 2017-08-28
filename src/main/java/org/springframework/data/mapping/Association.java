@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.mapping;
+
+import org.springframework.lang.Nullable;
 
 /**
  * Value object to capture {@link Association}s.
@@ -26,7 +27,7 @@ package org.springframework.data.mapping;
 public class Association<P extends PersistentProperty<P>> {
 
 	private final P inverse;
-	private final P obverse;
+	private final @Nullable P obverse;
 
 	/**
 	 * Creates a new {@link Association} between the two given {@link PersistentProperty}s.
@@ -34,7 +35,7 @@ public class Association<P extends PersistentProperty<P>> {
 	 * @param inverse
 	 * @param obverse
 	 */
-	public Association(P inverse, P obverse) {
+	public Association(P inverse, @Nullable P obverse) {
 		this.inverse = inverse;
 		this.obverse = obverse;
 	}
@@ -43,6 +44,7 @@ public class Association<P extends PersistentProperty<P>> {
 		return inverse;
 	}
 
+	@Nullable
 	public P getObverse() {
 		return obverse;
 	}

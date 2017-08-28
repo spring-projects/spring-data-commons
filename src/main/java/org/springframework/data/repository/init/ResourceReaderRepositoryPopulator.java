@@ -36,7 +36,7 @@ import org.springframework.util.Assert;
 
 /**
  * A {@link RepositoryPopulator} using a {@link ResourceReader} to read objects from the configured {@link Resource}s.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.4
@@ -45,16 +45,16 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaderRepositoryPopulator.class);
 
-	private final ResourcePatternResolver resolver;
 	private final ResourceReader reader;
-	private final ClassLoader classLoader;
+	private final @Nullable ClassLoader classLoader;
+	private final ResourcePatternResolver resolver;
 
 	private @Nullable ApplicationEventPublisher publisher;
 	private Collection<Resource> resources = Collections.emptySet();
 
 	/**
 	 * Creates a new {@link ResourceReaderRepositoryPopulator} using the given {@link ResourceReader}.
-	 * 
+	 *
 	 * @param reader must not be {@literal null}.
 	 */
 	public ResourceReaderRepositoryPopulator(ResourceReader reader) {
@@ -64,7 +64,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	/**
 	 * Creates a new {@link ResourceReaderRepositoryPopulator} using the given {@link ResourceReader} and
 	 * {@link ClassLoader}.
-	 * 
+	 *
 	 * @param reader must not be {@literal null}.
 	 * @param classLoader can be {@literal null}.
 	 */
@@ -80,7 +80,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 	/**
 	 * Configures the location of the {@link Resource}s to be used to initialize the repositories.
-	 * 
+	 *
 	 * @param location must not be {@literal null} or empty.
 	 * @throws IOException
 	 */
@@ -91,22 +91,22 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 	/**
 	 * Configures the {@link Resource}s to be used to initialize the repositories.
-	 * 
+	 *
 	 * @param resources
 	 */
 	public void setResources(Resource... resources) {
 		this.resources = Arrays.asList(resources);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
 	 */
-	public void setApplicationEventPublisher(@Nullable ApplicationEventPublisher publisher) {
+	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
 		this.publisher = publisher;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.init.RepositoryPopulator#initialize()
 	 */
@@ -142,7 +142,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 	/**
 	 * Reads the given resource into an {@link Object} using the configured {@link ResourceReader}.
-	 * 
+	 *
 	 * @param resource must not be {@literal null}.
 	 * @return
 	 */
@@ -156,7 +156,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 	/**
 	 * Persists the given {@link Object} using a suitable repository.
-	 * 
+	 *
 	 * @param object must not be {@literal null}.
 	 * @param invokerFactory must not be {@literal null}.
 	 */

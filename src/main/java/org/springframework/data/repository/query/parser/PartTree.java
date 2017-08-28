@@ -38,7 +38,7 @@ import org.springframework.util.StringUtils;
  * Takes a domain class as well to validate that each of the {@link Part}s are referring to a property of the domain
  * class. The {@link PartTree} can then be used to build queries based on its API instead of parsing the method name for
  * each query execution.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
@@ -76,7 +76,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * Creates a new {@link PartTree} by parsing the given {@link String}.
-	 * 
+	 *
 	 * @param source the {@link String} to parse
 	 * @param domainClass the domain class to check individual parts against to ensure they refer to a property of the
 	 *          class
@@ -116,7 +116,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * Returns whether we indicate distinct lookup of entities.
-	 * 
+	 *
 	 * @return {@literal true} if distinct
 	 */
 	public boolean isDistinct() {
@@ -125,7 +125,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * Returns whether a count projection shall be applied.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isCountProjection() {
@@ -144,7 +144,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * return true if the created {@link PartTree} is meant to be used for delete operation.
-	 * 
+	 *
 	 * @return
 	 * @since 1.8
 	 */
@@ -154,7 +154,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * Return {@literal true} if the create {@link PartTree} is meant to be used for a query with limited maximal results.
-	 * 
+	 *
 	 * @return
 	 * @since 1.9
 	 */
@@ -164,7 +164,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * Return the number of maximal results to return or {@literal null} if not restricted.
-	 * 
+	 *
 	 * @return {@literal null} if not restricted.
 	 * @since 1.9
 	 */
@@ -175,7 +175,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * Returns an {@link Iterable} of all parts contained in the {@link PartTree}.
-	 * 
+	 *
 	 * @return the iterable {@link Part}s
 	 */
 	public Streamable<Part> getParts() {
@@ -184,7 +184,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * Returns all {@link Part}s of the {@link PartTree} of the given {@link Type}.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -194,7 +194,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * Returns whether the {@link PartTree} contains predicate {@link Part}s.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasPredicate() {
@@ -215,7 +215,7 @@ public class PartTree implements Streamable<OrPart> {
 	/**
 	 * Splits the given text at the given keywords. Expects camel-case style to only match concrete keywords and not
 	 * derivatives of it.
-	 * 
+	 *
 	 * @param text the text to split
 	 * @param keyword the keyword to split around
 	 * @return an array of split items
@@ -236,7 +236,7 @@ public class PartTree implements Streamable<OrPart> {
 
 		/**
 		 * Creates a new {@link OrPart}.
-		 * 
+		 *
 		 * @param source the source to split up into {@literal And} parts in turn.
 		 * @param domainClass the domain class to check the resulting {@link Part}s against.
 		 * @param alwaysIgnoreCase if always ignoring case
@@ -264,7 +264,7 @@ public class PartTree implements Streamable<OrPart> {
 	/**
 	 * Represents the subject part of the query. E.g. {@code findDistinctUserByNameOrderByAge} would have the subject
 	 * {@code DistinctUser}.
-	 * 
+	 *
 	 * @author Phil Webb
 	 * @author Oliver Gierke
 	 * @author Christoph Strobl
@@ -317,7 +317,7 @@ public class PartTree implements Streamable<OrPart> {
 
 		/**
 		 * Returns {@literal true} if {@link Subject} matches {@link #DELETE_BY_TEMPLATE}.
-		 * 
+		 *
 		 * @return
 		 * @since 1.8
 		 */
@@ -354,7 +354,7 @@ public class PartTree implements Streamable<OrPart> {
 
 	/**
 	 * Represents the predicate part of the query.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @author Phil Webb
 	 */
@@ -376,7 +376,7 @@ public class PartTree implements Streamable<OrPart> {
 			}
 
 			this.nodes = Arrays.stream(split(parts[0], "Or")) //
-					.filter(part -> StringUtils.hasText(part)) //
+					.filter(StringUtils::hasText) //
 					.map(part -> new OrPart(part, domainClass, alwaysIgnoreCase)) //
 					.collect(Collectors.toList());
 
@@ -396,7 +396,7 @@ public class PartTree implements Streamable<OrPart> {
 			return predicate;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Iterable#iterator()
 		 */

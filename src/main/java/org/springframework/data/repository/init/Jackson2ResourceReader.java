@@ -33,9 +33,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A {@link ResourceReader} using Jackson to read JSON into objects.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.6
  */
 public class Jackson2ResourceReader implements ResourceReader {
@@ -59,7 +60,7 @@ public class Jackson2ResourceReader implements ResourceReader {
 
 	/**
 	 * Creates a new {@link Jackson2ResourceReader} using the given {@link ObjectMapper}.
-	 * 
+	 *
 	 * @param mapper
 	 */
 	public Jackson2ResourceReader(@Nullable ObjectMapper mapper) {
@@ -69,7 +70,7 @@ public class Jackson2ResourceReader implements ResourceReader {
 	/**
 	 * Configures the JSON document's key to lookup the type to instantiate the object. Defaults to
 	 * {@link Jackson2ResourceReader#DEFAULT_TYPE_KEY}.
-	 * 
+	 *
 	 * @param typeKey
 	 */
 	public void setTypeKey(@Nullable String typeKey) {
@@ -105,7 +106,7 @@ public class Jackson2ResourceReader implements ResourceReader {
 
 	/**
 	 * Reads the given {@link JsonNode} into an instance of the type encoded in it using the configured type key.
-	 * 
+	 *
 	 * @param node must not be {@literal null}.
 	 * @param classLoader can be {@literal null}.
 	 * @return
@@ -118,7 +119,7 @@ public class Jackson2ResourceReader implements ResourceReader {
 			throw new IllegalArgumentException(String.format("Could not find type for type key '%s'!", typeKey));
 		}
 
-		String typeName = typeNode == null ? null : typeNode.asText();
+		String typeName = typeNode.asText();
 		Class<?> type = ClassUtils.resolveClassName(typeName, classLoader);
 
 		return mapper.readerFor(type).readValue(node);
