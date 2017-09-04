@@ -52,6 +52,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	private final EvaluationContext evaluationContext;
 	private final MethodInterceptor delegate;
 	private final Map<Integer, Expression> expressions;
+	private final Object target;
 
 	/**
 	 * Creates a new {@link SpelEvaluatingMethodInterceptor} delegating to the given {@link MethodInterceptor} as fallback
@@ -72,7 +73,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 		Assert.notNull(parser, "SpelExpressionParser must not be null!");
 		Assert.notNull(targetInterface, "Target interface must not be null!");
 
-		StandardEvaluationContext evaluationContext = new StandardEvaluationContext(new TargetWrapper(target));
+		StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
 
 		if (target instanceof Map) {
 			evaluationContext.addPropertyAccessor(new MapAccessor());
@@ -86,6 +87,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 
 		this.evaluationContext = evaluationContext;
 		this.delegate = delegate;
+		this.target = target;
 	}
 
 	/**
@@ -134,7 +136,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 			return delegate.invoke(invocation);
 		}
 
-		return expression.getValue(evaluationContext);
+		return expression.getValue(evaluationContext, TargetWrapper.of(target, invocation.getArguments()));
 	}
 
 	/**
@@ -142,19 +144,10 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@lombok.Value(staticConstructor = "of")
 	static class TargetWrapper {
 
-		private final Object target;
-
-		public TargetWrapper(Object target) {
-			this.target = target;
-		}
-
-		/**
-		 * @return the target
-		 */
-		public Object getTarget() {
-			return target;
-		}
+		Object target;
+		Object[] args;
 	}
 }
