@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1469,15 +1469,15 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 */
 		Class<?> defineClass(String name, byte[] bytes, int offset, int len, PersistentEntity<?, ?> persistentEntity) {
 
-			ClassLoader classLoader = persistentEntity.getType().getClassLoader();
+			Class<?> entityType = persistentEntity.getType();
+			ClassLoader classLoader = entityType.getClassLoader();
 
 			try {
 
 				Method defineClass = getClassLoaderMethod(persistentEntity);
 				defineClass.setAccessible(true);
 
-				return (Class<?>) defineClass.invoke(classLoader, name, bytes, offset, len,
-						persistentEntity.getClass().getProtectionDomain());
+				return (Class<?>) defineClass.invoke(classLoader, name, bytes, offset, len, entityType.getProtectionDomain());
 
 			} catch (ReflectiveOperationException e) {
 				throw new IllegalStateException(e);
