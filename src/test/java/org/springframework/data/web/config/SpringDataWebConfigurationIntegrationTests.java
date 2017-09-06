@@ -19,15 +19,20 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.xmlbeam.XBProjector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,7 +52,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		createConfigWithClassLoader(HidingClassLoader.hide(ObjectMapper.class)).extendMessageConverters(converters);
+		createConfigWithClassLoader(HidingClassLoader.hide(ObjectMapper.class), triggerExtendConverters(converters));
 
 		assertThat(converters, not(hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
 	}
@@ -57,7 +62,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		createConfigWithClassLoader(HidingClassLoader.hide(DocumentContext.class)).extendMessageConverters(converters);
+		createConfigWithClassLoader(HidingClassLoader.hide(DocumentContext.class), triggerExtendConverters(converters));
 
 		assertThat(converters, not(hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class))));
 	}
@@ -67,8 +72,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		ClassLoader classLoader = HidingClassLoader.hide(XBProjector.class);
-		createConfigWithClassLoader(classLoader).extendMessageConverters(converters);
+		createConfigWithClassLoader(HidingClassLoader.hide(XBProjector.class), triggerExtendConverters(converters));
 
 		assertThat(converters, not(hasItem(instanceWithClassName(XmlBeamHttpMessageConverter.class))));
 	}
@@ -78,21 +82,49 @@ public class SpringDataWebConfigurationIntegrationTests {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
-		createConfigWithClassLoader(getClass().getClassLoader()).extendMessageConverters(converters);
+		createConfigWithClassLoader(getClass().getClassLoader(), triggerExtendConverters(converters));
 
 		assertThat(converters, hasItem(instanceWithClassName(XmlBeamHttpMessageConverter.class)));
 		assertThat(converters, hasItem(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class)));
 	}
 
-	private SpringDataWebConfiguration createConfigWithClassLoader(ClassLoader classLoader) {
+	@Test // DATACMNS-1152
+	public void usesCustomObjectMapper() {
+
+		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
+
+		createConfigWithClassLoader(getClass().getClassLoader(), triggerExtendConverters(converters),
+				SomeConfiguration.class);
+
+		boolean found = false;
+
+		for (HttpMessageConverter<?> converter : converters) {
+
+			if (converter instanceof ProjectingJackson2HttpMessageConverter) {
+
+				found = true;
+
+				assertThat(ReflectionTestUtils.getField(converter, "objectMapper"),
+						is(sameInstance((Object) SomeConfiguration.MAPPER)));
+			}
+		}
+
+		assertThat(found, is(true));
+	}
+
+	private void createConfigWithClassLoader(ClassLoader classLoader, Consumer<SpringDataWebConfiguration> callback,
+			Class<?>... additionalConfigurationClasses) {
+
+		List<Class<?>> configClasses = new ArrayList<Class<?>>(Arrays.asList(additionalConfigurationClasses));
+		configClasses.add(SpringDataWebConfiguration.class);
 
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SpringDataWebConfiguration.class);
+				configClasses.toArray(new Class<?>[configClasses.size()]));
 
 		context.setClassLoader(classLoader);
 
 		try {
-			return context.getBean(SpringDataWebConfiguration.class);
+			callback.accept(context.getBean(SpringDataWebConfiguration.class));
 		} finally {
 			context.close();
 		}
@@ -107,5 +139,28 @@ public class SpringDataWebConfigurationIntegrationTests {
 	 */
 	private static <T> Matcher<? super T> instanceWithClassName(Class<T> expectedClass) {
 		return hasProperty("class", hasProperty("name", equalTo(expectedClass.getName())));
+	}
+
+	private static Consumer<SpringDataWebConfiguration> triggerExtendConverters(
+			final List<HttpMessageConverter<?>> converters) {
+
+		return new Consumer<SpringDataWebConfiguration>() {
+
+			@Override
+			public void accept(SpringDataWebConfiguration t) {
+				t.extendMessageConverters(converters);
+			}
+		};
+	}
+
+	@Configuration
+	static class SomeConfiguration {
+
+		static ObjectMapper MAPPER = new ObjectMapper();
+
+		@Bean
+		ObjectMapper mapper() {
+			return MAPPER;
+		}
 	}
 }

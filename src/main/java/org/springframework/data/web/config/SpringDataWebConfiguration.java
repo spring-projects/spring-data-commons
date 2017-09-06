@@ -17,6 +17,7 @@ package org.springframework.data.web.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -122,7 +123,10 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())
 				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
-			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(new ObjectMapper());
+			ObjectMapper mapper = getUniqueBean(ObjectMapper.class, context);
+			mapper = mapper == null ? new ObjectMapper() : mapper;
+
+			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
 			converter.setBeanClassLoader(context.getClassLoader());
 			converter.setBeanFactory(context);
 
@@ -131,6 +135,15 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
 		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
 			converters.add(0, new XmlBeamHttpMessageConverter());
+		}
+	}
+
+	private static <T> T getUniqueBean(Class<T> type, ApplicationContext context) {
+
+		try {
+			return context.getBean(type);
+		} catch (NoSuchBeanDefinitionException o_O) {
+			return null;
 		}
 	}
 }
