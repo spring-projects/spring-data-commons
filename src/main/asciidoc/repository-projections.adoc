@@ -1,7 +1,7 @@
 [[projections]]
 = Projections
 
-The result of a Spring Data query method is usually one or multiple instances of the aggregate root managed by the repository.
+Spring Data query methods usually return one or multiple instances of the aggregate root managed by the repository.
 However, it might sometimes be desirable to rather project on certain attributes of those types.
 Spring Data allows to model dedicated return types to more selectively retrieve partial views onto the managed aggregates.
 
@@ -127,9 +127,10 @@ interface NamesOnly {
 ====
 
 The aggregate root backing the projection is available via the `target` variable.
-A projection interface using `@Value` is called open projection, and will cause Spring Data not being able to apply query execution optimizations anymore as the SpEL expression could use any attributes of the aggregate root.
+A projection interface using `@Value` an open projection.
+Spring Data won't be able to apply query execution optimizations in this case as the SpEL expression could use any attributes of the aggregate root.
 
-The expressions used in `@Value` shouldn't become to complex as you'd want to avoid programming in ``String``s.
+The expressions used in `@Value` shouldn't become too complex as you'd want to avoid programming in ``String``s.
 For very simple expressions, one option might be to resort to default methods:
 
 [[projections.interfaces.open.default]]
@@ -190,12 +191,15 @@ interface NamesOnly {
 ----
 ====
 
-Again, for more complex expressions rather use a Spring bean and let the expression just invoke a method as described in <<projections.interfaces.open.bean-reference, above>>.
+Again, for more complex expressions rather use a Spring bean and let the expression just invoke a method as described  <<projections.interfaces.open.bean-reference, above>>.
 
 [[projections.dtos]]
 == Class-based projections (DTOs)
 
-Another way of defining
+Another way of defining projections is using value type DTOs that hold properties for the fields that are supposed to be retrieved.
+These DTO types can be used exactly the same way projection interfaces are used, except that no proxying is going on here and no nested projections can be applied.
+
+In case the store optimizes the query execution by limiting the fields to be loaded, the ones to be loaded are determined from the parameter names of the constructor that is exposed.
 
 .A projecting DTO
 ====
@@ -206,6 +210,7 @@ class NamesOnly {
   private final String firstname, lastname;
 
   NamesOnly(String firstname, String lastname) {
+
     this.firstname = firstname;
     this.lastname = lastname;
   }
@@ -243,9 +248,9 @@ Fields are private final by default, the class exposes a constructor taking all 
 [[projection.dynamic]]
 == Dynamic projections
 
-So far we have seen the projection type to be used declared as return type or element type of a collection.
+So far we have used the projection type as the return type or element type of a collection.
 However, it might be desirable to rather select the type to be used at invocation time.
-To achieve this, a repository query method can be used like this:
+To apply dynamic projections, use a query method like this:
 
 .A repository using a dynamic projection parameter
 ====
