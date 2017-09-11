@@ -1,6 +1,28 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.0.RC3 (2017-09-11)
+-----------------------------------------
+* DATACMNS-1153 - Remove unreachable assertion in XmlRepositoryConfigurationSource.
+* DATACMNS-1152 - Jackson configuration is not used by ProjectingJackson2HttpMessageConverter.
+* DATACMNS-1150 - Support parameters in @Value-backed methods of projection interfaces.
+* DATACMNS-1148 - Return primitive boolean in PartTree.isExistsProjection(...).
+* DATACMNS-1147 - @NoRepositoryBean interfaces are considered as fragment interfaces.
+* DATACMNS-1144 - @JsonPath should support multiple paths.
+* DATACMNS-1143 - Improve design of AbstractAggregateRoot.
+* DATACMNS-1141 - Add missing NonNullApi annotations.
+* DATACMNS-1140 - Open up Query by Example to allow extension in module implementations.
+* DATACMNS-1139 - AbstractPersistentProperty.getRawType() does not consider generics.
+* DATACMNS-1138 - Invalid generics resolution for locally declared wildcard and fully resolved target type.
+* DATACMNS-1136 - Update reference documentation for composite repositories.
+* DATACMNS-1135 - Incorrect generic type resolution for multiply nested types of same wrapper.
+* DATACMNS-1130 - Release 2.0 RC3 (Kay).
+* DATACMNS-1126 - Assert compatibility with Kotlin classes using default constructor arguments.
+* DATACMNS-1080 - Inject generated property accessor classes via ReflectUtils.defineClass(…).
+* DATACMNS-1077 - Remove RxJava1CrudRepository and RxJava1SortingRepository interfaces.
+* DATACMNS-1011 - Improve documentation for projections.
+
+
 Changes in version 1.13.7.RELEASE (2017-09-11)
 ----------------------------------------------
 * DATACMNS-1153 - Remove unreachable assertion in XmlRepositoryConfigurationSource.
