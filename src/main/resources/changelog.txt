@@ -1,6 +1,19 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.7.RELEASE (2017-09-11)
+----------------------------------------------
+* DATACMNS-1153 - Remove unreachable assertion in XmlRepositoryConfigurationSource.
+* DATACMNS-1152 - Jackson configuration is not used by ProjectingJackson2HttpMessageConverter.
+* DATACMNS-1151 - Generated property accessors fail to load when using with signed jars.
+* DATACMNS-1145 - @JsonPath value lookups should return null for non-existent paths.
+* DATACMNS-1143 - Improve design of AbstractAggregateRoot.
+* DATACMNS-1139 - AbstractPersistentProperty.getRawType() does not consider generics.
+* DATACMNS-1138 - Invalid generics resolution for locally declared wildcard and fully resolved target type.
+* DATACMNS-1135 - Incorrect generic type resolution for multiply nested types of same wrapper.
+* DATACMNS-1131 - Release 1.13.7 (Ingalls SR7).
+
+
 Changes in version 1.13.6.RELEASE (2017-07-26)
 ----------------------------------------------
 * DATACMNS-1127 - Release 1.13.6 (Ingalls SR6).
