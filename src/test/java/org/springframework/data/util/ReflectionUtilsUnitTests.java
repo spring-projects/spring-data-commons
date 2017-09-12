@@ -23,6 +23,8 @@ import java.lang.reflect.Field;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.MethodParameter;
+import org.springframework.data.repository.sample.User;
 import org.springframework.data.util.ReflectionUtils.DescribedFieldFilter;
 import org.springframework.util.ReflectionUtils.FieldFilter;
 
@@ -104,6 +106,42 @@ public class ReflectionUtilsUnitTests {
 	@Test // DATACMNS-542
 	public void rejectsConstructorForNullForPrimitiveArgument() throws Exception {
 		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, null, "test")).isNotPresent();
+	}
+
+	@Test // DATACMNS-1154
+	public void discoversNoReturnType() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("noReturnValue"), -1);
+		assertThat(ReflectionUtils.isNullable(parameter)).isTrue();
+	}
+
+	@Test // DATACMNS-1154
+	public void discoversNullableReturnType() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("nullableReturnValue"), -1);
+		assertThat(ReflectionUtils.isNullable(parameter)).isTrue();
+	}
+
+	@Test // DATACMNS-1154
+	public void discoversNonNullableReturnType() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("mandatoryReturnValue"), -1);
+		assertThat(ReflectionUtils.isNullable(parameter)).isFalse();
+	}
+
+	@Test // DATACMNS-1154
+	public void discoversNullableParameter() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(
+				DummyInterface.class.getDeclaredMethod("nullableParameter", User.class), 0);
+		assertThat(ReflectionUtils.isNullable(parameter)).isTrue();
+	}
+
+	@Test // DATACMNS-1154
+	public void discoversNonNullablePrimitiveParameter() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("primitive", int.class), 0);
+		assertThat(ReflectionUtils.isNullable(parameter)).isFalse();
 	}
 
 	static class Sample {

@@ -39,7 +39,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.SpringVersion;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -55,6 +57,7 @@ import org.springframework.data.repository.core.support.RepositoryComposition.Re
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.sample.User;
 import org.springframework.data.util.Version;
+import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -142,6 +145,8 @@ public class RepositoryFactorySupportUnitTests {
 
 		CustomRepository repository = factory.getRepository(CustomRepository.class);
 		Pageable pageable = PageRequest.of(0, 10);
+
+		when(backingRepo.findAll(pageable)).thenReturn(new PageImpl<>(Collections.emptyList()));
 		repository.findAll(pageable);
 
 		verify(backingRepo, times(1)).findAll(pageable);
@@ -299,6 +304,42 @@ public class RepositoryFactorySupportUnitTests {
 		verifyZeroInteractions(backingRepo);
 	}
 
+	@Test // DATACMNS-1154
+	public void considersRequiredReturnValue() {
+
+		KotlinUserRepository repository = factory.getRepository(KotlinUserRepository.class);
+
+		assertThatThrownBy(() -> repository.findById("")).isInstanceOf(EmptyResultDataAccessException.class)
+				.hasMessageContaining("Result must not be null!");
+		assertThat(repository.findByUsername("")).isNull();
+	}
+
+	@Test // DATACMNS-1154
+	public void considersRequiredParameter() {
+
+		ObjectRepository repository = factory.getRepository(ObjectRepository.class);
+
+		assertThatThrownBy(() -> repository.findByClass(null)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("must not be null!");
+	}
+
+	@Test // DATACMNS-1154
+	public void considersRequiredKotlinParameter() {
+
+		KotlinUserRepository repository = factory.getRepository(KotlinUserRepository.class);
+
+		assertThatThrownBy(() -> repository.findById(null)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("must not be null!");
+	}
+
+	@Test // DATACMNS-1154
+	public void considersRequiredKotlinNullableParameter() {
+
+		KotlinUserRepository repository = factory.getRepository(KotlinUserRepository.class);
+
+		assertThat(repository.findByOptionalId(null)).isNull();
+	}
+
 	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {
 
 		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(invocation -> {
@@ -330,10 +371,13 @@ public class RepositoryFactorySupportUnitTests {
 
 	interface ObjectRepository extends Repository<Object, Object>, ObjectRepositoryCustom {
 
+		@Nullable
 		Object findByClass(Class<?> clazz);
 
+		@Nullable
 		Object findByFoo();
 
+		@Nullable
 		Object save(Object entity);
 
 		static String staticMethod() {
@@ -347,6 +391,7 @@ public class RepositoryFactorySupportUnitTests {
 
 	interface ObjectRepositoryCustom {
 
+		@Nullable
 		Object findById(Object id);
 	}
 
