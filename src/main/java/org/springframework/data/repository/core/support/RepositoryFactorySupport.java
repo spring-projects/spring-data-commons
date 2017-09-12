@@ -122,7 +122,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private EvaluationContextProvider evaluationContextProvider;
 	private BeanFactory beanFactory;
 
-	private QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
+	private final QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
 	@SuppressWarnings("null")
 	public RepositoryFactorySupport() {
@@ -302,6 +302,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.setTarget(target);
 		result.setInterfaces(repositoryInterface, Repository.class, TransactionalProxy.class);
 
+		if (MethodInvocationValidator.supports(repositoryInterface)) {
+			result.addAdvice(new MethodInvocationValidator());
+		}
+
 		result.addAdvice(SurroundingTransactionDetectorMethodInterceptor.INSTANCE);
 		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 
@@ -329,7 +333,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	/**
 	 * Returns the {@link RepositoryInformation} for the given {@link RepositoryMetadata} and custom
 	 * {@link RepositoryFragments}.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param fragments must not be {@literal null}.
 	 * @return will never be {@literal null}.
@@ -341,7 +345,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	/**
 	 * Returns the {@link RepositoryComposition} for the given {@link RepositoryMetadata} and extra
 	 * {@link RepositoryFragments}.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param fragments must not be {@literal null}.
 	 * @return will never be {@literal null}.
@@ -543,6 +547,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
+		@Override
 		@Nullable
 		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
@@ -578,6 +583,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			return queries.containsKey(method);
 		}
 	}
+
 
 	/**
 	 * Method interceptor that calls methods on the {@link RepositoryComposition}.
@@ -622,11 +628,12 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		/**
 		 * All {@link QueryMethod}s.
 		 */
-		private List<QueryMethod> queryMethods = new ArrayList<>();
+		private final List<QueryMethod> queryMethods = new ArrayList<>();
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.core.support.QueryCreationListener#onCreation(org.springframework.data.repository.query.RepositoryQuery)
 		 */
+		@Override
 		public void onCreation(RepositoryQuery query) {
 			this.queryMethods.add(query.getQueryMethod());
 		}

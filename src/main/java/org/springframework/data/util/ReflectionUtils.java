@@ -15,6 +15,9 @@
  */
 package org.springframework.data.util;
 
+import kotlin.reflect.KFunction;
+import kotlin.reflect.KType;
+import kotlin.reflect.jvm.ReflectJvmMapping;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
@@ -31,6 +34,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.Nullable;
@@ -354,5 +358,35 @@ public class ReflectionUtils {
 		return KOTLIN_IS_PRESENT && Arrays.stream(type.getDeclaredAnnotations()) //
 				.map(Annotation::annotationType) //
 				.anyMatch(annotation -> annotation.getName().equals("kotlin.Metadata"));
+	}
+
+	/**
+	 * Returns {@literal} whether the given {@link MethodParameter} is nullable. Nullable parameters are reference types
+	 * and ones that are defined in Kotlin as such.
+	 *
+	 * @return {@literal true} if {@link MethodParameter} is nullable.
+	 * @since 2.0
+	 */
+	public static boolean isNullable(MethodParameter parameter) {
+
+		if (Void.class.equals(parameter.getParameterType()) || Void.TYPE.equals(parameter.getParameterType())) {
+			return true;
+		}
+
+		if (isKotlinClass(parameter.getDeclaringClass())) {
+
+			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(parameter.getMethod());
+
+			if (kotlinFunction == null) {
+				throw new IllegalArgumentException(String.format("Cannot resolve %s to a Kotlin function!", parameter));
+			}
+
+			KType type = parameter.getParameterIndex() == -1 ? kotlinFunction.getReturnType()
+					: kotlinFunction.getParameters().get(parameter.getParameterIndex() + 1).getType();
+
+			return type.isMarkedNullable();
+		}
+
+		return !parameter.getParameterType().isPrimitive();
 	}
 }
