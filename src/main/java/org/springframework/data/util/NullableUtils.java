@@ -85,14 +85,13 @@ import org.springframework.util.MultiValueMap;
 public class NullableUtils {
 
 	private static final String NON_NULL_CLASS_NAME = "javax.annotation.Nonnull";
-	private static final String NULLABLE_CLASS_NAME = "javax.annotation.Nullable";
 	private static final String TYPE_QUALIFIER_CLASS_NAME = "javax.annotation.meta.TypeQualifierDefault";
 
 	private static final Optional<Class<Annotation>> NON_NULL_ANNOTATION_CLASS = findClass(NON_NULL_CLASS_NAME);
 
-	private static final Set<Class<?>> NULLABLE_ANNOTATIONS = findClasses(NULLABLE_CLASS_NAME, Nullable.class.getName());
-	private static final Set<Class<?>> NON_NULLABLE_ANNOTATIONS = findClasses(NON_NULL_CLASS_NAME,
-			"reactor.util.lang.NonNullApi", NonNullApi.class.getName());
+	private static final Set<Class<?>> NULLABLE_ANNOTATIONS = findClasses(Nullable.class.getName());
+	private static final Set<Class<?>> NON_NULLABLE_ANNOTATIONS = findClasses("reactor.util.lang.NonNullApi",
+			NonNullApi.class.getName());
 
 	private static final Set<String> WHEN_NULLABLE = new HashSet<>(Arrays.asList("UNKNOWN", "MAYBE", "NEVER"));
 	private static final Set<String> WHEN_NON_NULLABLE = new HashSet<>(Collections.singletonList("ALWAYS"));
@@ -138,11 +137,10 @@ public class NullableUtils {
 
 		for (Annotation annotation : element.getAnnotations()) {
 
-			if (NON_NULL_ANNOTATION_CLASS.isPresent() && isNonNull(annotation, elementType)) {
-				return true;
-			}
+			boolean isNonNull = NON_NULL_ANNOTATION_CLASS.isPresent() ? isNonNull(annotation, elementType)
+					: NON_NULLABLE_ANNOTATIONS.contains(annotation.annotationType());
 
-			if (NON_NULLABLE_ANNOTATIONS.contains(annotation.annotationType())) {
+			if (isNonNull) {
 				return true;
 			}
 		}
@@ -193,11 +191,10 @@ public class NullableUtils {
 
 		for (Annotation annotation : annotations) {
 
-			if (isNullable(annotation)) {
-				return true;
-			}
+			boolean isNullable = NON_NULL_ANNOTATION_CLASS.isPresent() ? isNullable(annotation)
+					: NULLABLE_ANNOTATIONS.contains(annotation.annotationType());
 
-			if (NULLABLE_ANNOTATIONS.contains(annotation.annotationType())) {
+			if (isNullable) {
 				return true;
 			}
 		}
