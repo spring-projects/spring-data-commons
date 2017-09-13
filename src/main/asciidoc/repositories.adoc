@@ -852,14 +852,14 @@ class AnAggregateRoot {
         // … return events you want to get published here
     }
 
-    @AfterDomainEventsPublication <2>
+    @AfterDomainEventPublication <2>
     void callbackMethod() {
        // … potentially clean up domain events list
     }
 }
 ----
 <1> The method using `@DomainEvents` can either return a single event instance or a collection of events. It must not take any arguments.
-<2> After all events have been published, a method annotated with `@AfterDomainEventsPublication`. It e.g. can be used to potentially clean the list of events to be published.
+<2> After all events have been published, a method annotated with `@AfterDomainEventPublication`. It e.g. can be used to potentially clean the list of events to be published.
 ====
 
 The methods will be called every time one of a Spring Data repository's `save(…)` methods is called.
