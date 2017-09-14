@@ -151,8 +151,13 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		}
 
 		private static boolean isNullableParameter(MethodParameter parameter) {
-			return NullableUtils.isExplicitNullable(parameter)
+
+			return requiresNoValue(parameter) || NullableUtils.isExplicitNullable(parameter)
 					|| (ReflectionUtils.isKotlinClass(parameter.getDeclaringClass()) && ReflectionUtils.isNullable(parameter));
+		}
+
+		private static boolean requiresNoValue(MethodParameter parameter) {
+			return parameter.getParameterType().equals(Void.class) || parameter.getParameterType().equals(Void.TYPE);
 		}
 	}
 }

@@ -324,6 +324,16 @@ public class RepositoryFactorySupportUnitTests {
 	}
 
 	@Test // DATACMNS-1154
+	public void shouldAllowVoidMethods() {
+
+		ObjectRepository repository = factory.getRepository(ObjectRepository.class, backingRepo);
+
+		repository.deleteAll();
+
+		verify(backingRepo).deleteAll();
+	}
+
+	@Test // DATACMNS-1154
 	public void considersRequiredKotlinParameter() {
 
 		KotlinUserRepository repository = factory.getRepository(KotlinUserRepository.class);
@@ -393,6 +403,8 @@ public class RepositoryFactorySupportUnitTests {
 
 		@Nullable
 		Object findById(Object id);
+
+		void deleteAll();
 	}
 
 	interface PlainQueryCreationListener extends QueryCreationListener<RepositoryQuery> {
