@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.util.Streamable;
@@ -32,6 +33,7 @@ import org.springframework.data.util.Streamable;
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 @RunWith(MockitoJUnitRunner.class)
 public class QueryExecutorMethodInterceptorUnitTests {
@@ -46,7 +48,7 @@ public class QueryExecutorMethodInterceptorUnitTests {
 		when(information.hasQueryMethods()).thenReturn(true);
 		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.empty());
 
-		factory.new QueryExecutorMethodInterceptor(information);
+		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory());
 	}
 
 	@Test
@@ -55,7 +57,7 @@ public class QueryExecutorMethodInterceptorUnitTests {
 		when(information.getQueryMethods()).thenReturn(Streamable.empty());
 		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.of(strategy));
 
-		factory.new QueryExecutorMethodInterceptor(information);
+		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory());
 
 		verify(strategy, times(0)).resolveQuery(any(), any(), any(), any());
 	}
