@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -45,6 +46,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
@@ -77,6 +79,7 @@ import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Jens Schauder
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
@@ -312,12 +315,25 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		postProcessors.forEach(processor -> processor.postProcess(result, information));
 
 		result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
-		result.addAdvice(new QueryExecutorMethodInterceptor(information));
+		result.addAdvice(new QueryExecutorMethodInterceptor( //
+				information, //
+				getProjectionFactory(classLoader, beanFactory) //
+		));
 
 		composition = composition.append(RepositoryFragment.implemented(target));
 		result.addAdvice(new ImplementationMethodExecutionInterceptor(composition));
 
 		return (T) result.getProxy(classLoader);
+	}
+
+	@NotNull
+	protected ProjectionFactory getProjectionFactory(ClassLoader classLoader, BeanFactory beanFactory) {
+
+		SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+		factory.setBeanClassLoader(classLoader);
+		factory.setBeanFactory(beanFactory);
+
+		return factory;
 	}
 
 	/**
@@ -501,7 +517,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model of {@link QueryMethod}s to be invoked on
 		 * execution of repository interface methods.
 		 */
-		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation) {
+		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation,
+				ProjectionFactory projectionFactory) {
 
 			this.resultHandler = new QueryExecutionResultHandler();
 
@@ -515,18 +532,20 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 						+ "infrastructure apparently does not support query methods!");
 			}
 
-			this.queries = lookupStrategy.map(it -> {
+			this.queries = lookupStrategy.map( //
+					it -> mapMethodsToQuery(repositoryInformation, projectionFactory, it) //
+			).orElse(Collections.emptyMap());
+		}
 
-				SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-				factory.setBeanClassLoader(classLoader);
-				factory.setBeanFactory(beanFactory);
+		private Map<Method, RepositoryQuery> mapMethodsToQuery(RepositoryInformation repositoryInformation,
+				ProjectionFactory projectionFactory, QueryLookupStrategy lookupStrategy) {
 
-				return repositoryInformation.getQueryMethods().stream()//
-						.map(method -> Pair.of(method, it.resolveQuery(method, repositoryInformation, factory, namedQueries)))//
-						.peek(pair -> invokeListeners(pair.getSecond()))//
-						.collect(Pair.toMap());
-
-			}).orElse(Collections.emptyMap());
+			return repositoryInformation.getQueryMethods().stream() //
+					.map(method -> Pair.of( //
+							method, //
+							lookupStrategy.resolveQuery(method, repositoryInformation, projectionFactory, namedQueries))) //
+					.peek(pair -> invokeListeners(pair.getSecond())) //
+					.collect(Pair.toMap());
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
