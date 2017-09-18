@@ -21,4 +21,4 @@ import javax.annotation.Nonnull;
  * @author Mark Paluch
  */
 @Nonnull
-public interface NonNullAnnotatedType {}
+public interface Jsr305NonnullAnnotatedType {}

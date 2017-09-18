@@ -24,8 +24,8 @@ import org.junit.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.util.nonnull.NullableAnnotatedType;
 import org.springframework.data.util.nonnull.packagelevel.NonNullOnPackage;
+import org.springframework.data.util.nonnull.type.Jsr305NonnullAnnotatedType;
 import org.springframework.data.util.nonnull.type.NonAnnotatedType;
-import org.springframework.data.util.nonnull.type.NonNullAnnotatedType;
 import org.springframework.data.util.nonnull.type.NonNullableParameters;
 import org.springframework.util.ReflectionUtils;
 
@@ -68,10 +68,10 @@ public class NullableUtilsUnitTests {
 	}
 
 	@Test // DATACMNS-1154
-	public void shouldConsiderJsr305JustNonNullAnnotation() {
+	public void shouldConsiderJsr305NonNullAnnotation() {
 
-		assertThat(NullableUtils.isNonNull(NonNullAnnotatedType.class, ElementType.PARAMETER)).isTrue();
-		assertThat(NullableUtils.isNonNull(NonNullAnnotatedType.class, ElementType.FIELD)).isTrue();
+		assertThat(NullableUtils.isNonNull(Jsr305NonnullAnnotatedType.class, ElementType.PARAMETER)).isTrue();
+		assertThat(NullableUtils.isNonNull(Jsr305NonnullAnnotatedType.class, ElementType.FIELD)).isTrue();
 	}
 
 	@Test // DATACMNS-1154
