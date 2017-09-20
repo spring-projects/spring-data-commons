@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @since 1.13
  */
-public class AbstractAggregateRoot {
+public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 
 	private transient final @Transient List<Object> domainEvents = new ArrayList<>();
 
@@ -41,7 +41,8 @@ public class AbstractAggregateRoot {
 	 * Registers the given event object for publication on a call to a Spring Data repository's save methods.
 	 * 
 	 * @param event must not be {@literal null}.
-	 * @return
+	 * @return the event that has been added.
+	 * @see #andEvent(Object)
 	 */
 	protected <T> T registerEvent(T event) {
 
@@ -66,5 +67,35 @@ public class AbstractAggregateRoot {
 	@DomainEvents
 	protected Collection<Object> domainEvents() {
 		return Collections.unmodifiableList(domainEvents);
+	}
+
+	/**
+	 * Adds all events contained in the given aggregate to the current one.
+	 * 
+	 * @param aggregate must not be {@literal null}.
+	 * @return the aggregate
+	 */
+	protected final A andEventsFrom(A aggregate) {
+
+		Assert.notNull(aggregate, "Aggregate must not be null!");
+
+		this.domainEvents.addAll(aggregate.domainEvents());
+
+		return (A) this;
+	}
+
+	/**
+	 * Adds the given event to the aggregate for later publication when calling a Spring Data repository's save-method.
+	 * Does the same as {@link #registerEvent(Object)} but returns the aggregate instead of the event.
+	 * 
+	 * @param event must not be {@literal null}.
+	 * @return the aggregate
+	 * @see #registerEvent(Object)
+	 */
+	protected final A andEvent(Object event) {
+
+		registerEvent(event);
+
+		return (A) this;
 	}
 }
