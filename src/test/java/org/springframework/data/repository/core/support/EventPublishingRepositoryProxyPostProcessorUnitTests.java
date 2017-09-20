@@ -241,12 +241,33 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(secondEntity, times(1)).clearDomainEvents();
 	}
 
+	@Test // DATACMNS-1163
+	public void publishesEventFromParameter() throws Throwable {
+
+		Object event = new Object();
+		MultipleEvents parameter = MultipleEvents.of(Collections.singleton(event));
+		MultipleEvents returnValue = MultipleEvents.of(Collections.emptySet());
+
+		Method method = SampleRepository.class.getMethod("save", Object.class);
+		mockInvocation(invocation, method, parameter, returnValue);
+
+		EventPublishingMethodInterceptor.of(EventPublishingMethod.of(MultipleEvents.class), publisher).invoke(invocation);
+
+		verify(publisher, times(1)).publishEvent(event);
+	}
+
 	private static void mockInvocation(MethodInvocation invocation, Method method, Object parameterAndReturnValue)
 			throws Throwable {
 
+		mockInvocation(invocation, method, parameterAndReturnValue, parameterAndReturnValue);
+	}
+
+	private static void mockInvocation(MethodInvocation invocation, Method method, Object parameter, Object returnValue)
+			throws Throwable {
+
 		doReturn(method).when(invocation).getMethod();
-		doReturn(new Object[] { parameterAndReturnValue }).when(invocation).getArguments();
-		doReturn(parameterAndReturnValue).when(invocation).proceed();
+		doReturn(new Object[] { parameter }).when(invocation).getArguments();
+		doReturn(returnValue).when(invocation).proceed();
 	}
 
 	@Value(staticConstructor = "of")
