@@ -257,6 +257,7 @@ public abstract class QueryExecutionConverters {
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
+		conversionService.addConverter(IterableToStreamableConverter.INSTANCE);
 	}
 
 	/**
@@ -694,6 +695,21 @@ public abstract class QueryExecutionConverters {
 			}
 
 			return source;
+		}
+	}
+
+	private static enum IterableToStreamableConverter implements Converter<Iterable<?>, Streamable<?>> {
+
+		INSTANCE;
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Nonnull
+		@Override
+		public Streamable<?> convert(Iterable<?> source) {
+			return Streamable.of(source);
 		}
 	}
 

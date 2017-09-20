@@ -25,11 +25,13 @@ import rx.Observable;
 import rx.Single;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.reactivestreams.Publisher;
@@ -37,6 +39,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link QueryExecutionResultHandler}.
@@ -346,6 +349,18 @@ public class QueryExecutionResultHandlerUnitTests {
 		Object result = handler.postProcessInvocationResult(entity, TypeDescriptor.valueOf(Option.class));
 
 		assertThat(result).isInstanceOfSatisfying(Option.class, it -> assertThat(it.get()).isEqualTo(value));
+	}
+
+	@Test // DATACMNS-1165
+	@SuppressWarnings("unchecked")
+	public void convertsIterableIntoStreamable() {
+
+		Iterable<?> source = Arrays.asList(new Object());
+
+		Object result = handler.postProcessInvocationResult(source, TypeDescriptor.valueOf(Streamable.class));
+
+		assertThat(result).isInstanceOfSatisfying(Streamable.class,
+				it -> assertThat(it.stream().collect(Collectors.toList())).isEqualTo(source));
 	}
 
 	private static TypeDescriptor getTypeDescriptorFor(String methodName) throws Exception {
