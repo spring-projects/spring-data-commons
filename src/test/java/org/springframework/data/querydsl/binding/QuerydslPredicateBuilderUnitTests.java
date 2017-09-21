@@ -38,6 +38,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.querydsl.collections.CollQueryFactory;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Constant;
 import com.querydsl.core.types.Predicate;
 
@@ -72,9 +73,10 @@ public class QuerydslPredicateBuilderUnitTests {
 		builder.getPredicate(null, values, null);
 	}
 
-	@Test // DATACMNS-669
+	@Test // DATACMNS-669, DATACMNS-1168
 	public void getPredicateShouldReturnEmptyPredicateWhenPropertiesAreEmpty() {
-		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS)).isNull();
+		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS))
+				.isEqualTo(new BooleanBuilder());
 	}
 
 	@Test // DATACMNS-669

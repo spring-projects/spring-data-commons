@@ -90,7 +90,7 @@ public class QuerydslPredicateBuilder {
 		BooleanBuilder builder = new BooleanBuilder();
 
 		if (values.isEmpty()) {
-			return builder.getValue();
+			return builder;
 		}
 
 		for (Entry<String, List<String>> entry : values.entrySet()) {
