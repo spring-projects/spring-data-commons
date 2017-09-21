@@ -554,7 +554,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
-			property.getPersistentEntityType().forEach(AbstractMappingContext.this::addPersistentEntity);
+			property.getPersistentEntityTypes().forEach(AbstractMappingContext.this::addPersistentEntity);
 		}
 	}
 
