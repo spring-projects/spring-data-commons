@@ -67,7 +67,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * {@literal null} in case it refers to a simple type. Will return {@link Collection}'s component type or the
 	 * {@link Map}'s value type transparently.
 	 *
-	 * @Deprecated Use getPersistentEntityTypes instead.
+	 * @deprecated Use getPersistentEntityTypes instead.
 	 */
 	@Deprecated
 	Iterable<? extends TypeInformation<?>> getPersistentEntityType();
