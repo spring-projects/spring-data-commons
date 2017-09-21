@@ -20,6 +20,8 @@
 		<vavr>0.9.1</vavr>
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.12</xmlbeam>
+
+		<java-module-name>spring.data.commons</java-module-name>
 	</properties>
 
 	<dependencies>
