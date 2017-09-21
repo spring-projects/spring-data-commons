@@ -44,6 +44,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jens Schauder
  */
 public class AbstractPersistentPropertyUnitTests {
 
@@ -66,6 +67,7 @@ public class AbstractPersistentPropertyUnitTests {
 
 	@Test // DATACMNS-101
 	public void returnsNestedEntityTypeCorrectly() {
+		assertThat(getProperty(TestClassComplex.class, "testClassSet").getPersistentEntityTypes()).isEmpty();
 		assertThat(getProperty(TestClassComplex.class, "testClassSet").getPersistentEntityType()).isEmpty();
 	}
 
@@ -189,6 +191,7 @@ public class AbstractPersistentPropertyUnitTests {
 	public void doesNotConsiderPropertyWithTreeMapMapValueAnEntity() {
 
 		SamplePersistentProperty property = getProperty(TreeMapWrapper.class, "map");
+		assertThat(property.getPersistentEntityTypes()).isEmpty();
 		assertThat(property.getPersistentEntityType()).isEmpty();
 		assertThat(property.isEntity()).isFalse();
 	}

@@ -30,6 +30,7 @@ import org.springframework.lang.Nullable;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 public interface PersistentProperty<P extends PersistentProperty<P>> {
 
@@ -66,9 +67,21 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * {@literal null} in case it refers to a simple type. Will return {@link Collection}'s component type or the
 	 * {@link Map}'s value type transparently.
 	 *
+	 * @Deprecated Use getPersistentEntityTypes instead.
+	 */
+	@Deprecated
+	Iterable<? extends TypeInformation<?>> getPersistentEntityType();
+
+	/**
+	 * Returns the {@link TypeInformation} if the property references a {@link PersistentEntity}. Will return
+	 * {@literal null} in case it refers to a simple type. Will return {@link Collection}'s component type or the
+	 * {@link Map}'s value type transparently.
+	 *
 	 * @return
 	 */
-	Iterable<? extends TypeInformation<?>> getPersistentEntityType();
+	default Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
+		return getPersistentEntityType();
+	};
 
 	/**
 	 * Returns the getter method to access the property value if available. Might return {@literal null} in case there is

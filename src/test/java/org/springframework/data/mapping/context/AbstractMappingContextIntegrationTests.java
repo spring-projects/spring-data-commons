@@ -113,7 +113,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 
 			when(prop.getTypeInformation()).thenReturn(owner.getTypeInformation());
 			when(prop.getName()).thenReturn(property.getName());
-			when(prop.getPersistentEntityType()).thenReturn(Collections.EMPTY_SET);
+			when(prop.getPersistentEntityTypes()).thenReturn(Collections.EMPTY_SET);
 
 			try {
 				Thread.sleep(200);
