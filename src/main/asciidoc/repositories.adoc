@@ -869,7 +869,7 @@ The methods will be called every time one of a Spring Data repository's `save(â€
 
 Repository methods let you improve null-safety to deal with `null` values at compile time rather than bumping into the famous `NullPointerException` at runtime. This makes your applications safer through clean nullability declarations, expressing "value or no value" semantics without paying the cost of a wrapper like `Optional`.
 
-You can express null-safe repository methods by using Spring Frameworks annotations. They provide a tooling-friendly approach and opt-in for `null` checks during runtime:
+You can express null-safe repository methods by using Spring Framework's annotations. They provide a tooling-friendly approach and opt-in for `null` checks during runtime:
 
 * `@NonNullApi` annotations at package level declare non-null as the default behavior
 
@@ -919,9 +919,9 @@ If you declare your repository interfaces with Kotlin, then you can use Kotlin's
 ----
 interface UserRepository : Repository<User, String> {
 
-	fun findByLastname(username: String?): List<User>
+  fun findByLastname(username: String?): List<User>
 
-	fun findByFirstnameAndLastname(firstname: String, lastname: String): User?
+  fun findByFirstnameAndLastname(firstname: String, lastname: String): User?
 }
 ----
 ====
