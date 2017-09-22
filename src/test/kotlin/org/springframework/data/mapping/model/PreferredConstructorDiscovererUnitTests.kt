@@ -43,6 +43,14 @@ class PreferredConstructorDiscovererUnitTests {
 		Assertions.assertThat(constructor.parameters.size).isEqualTo(1)
 	}
 
+	@Test // DATACMNS-1170
+	fun `should fall back to no-args constructor if no primary constructor available`() {
+
+		val constructor = PreferredConstructorDiscoverer.discover<TwoConstructorsWithoutDefault, SamplePersistentProperty>(TwoConstructorsWithoutDefault::class.java)
+
+		Assertions.assertThat(constructor.parameters).isEmpty()
+	}
+
 	@Test // DATACMNS-1126
 	fun `should discover annotated constructor`() {
 
@@ -68,6 +76,17 @@ class PreferredConstructorDiscovererUnitTests {
 	}
 
 	data class Simple(val firstname: String)
+
+	class TwoConstructorsWithoutDefault {
+
+		var firstname: String? = null
+
+		constructor() {}
+
+		constructor(firstname: String?) {
+			this.firstname = firstname
+		}
+	}
 
 	class TwoConstructors(val firstname: String) {
 		constructor(firstname: String, lastname: String) : this(firstname)

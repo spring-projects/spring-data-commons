@@ -166,6 +166,11 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 
 							KFunction<T> primaryConstructor = KClasses
 									.getPrimaryConstructor(JvmClassMappingKt.getKotlinClass(type.getType()));
+
+							if (primaryConstructor == null) {
+								return DEFAULT.discover(type, entity);
+							}
+
 							Constructor<T> javaConstructor = ReflectJvmMapping.getJavaConstructor(primaryConstructor);
 
 							return javaConstructor != null ? buildPreferredConstructor(javaConstructor, type, entity) : null;
