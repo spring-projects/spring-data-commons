@@ -45,6 +45,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 public class AbstractMappingContextUnitTests {
 
@@ -208,6 +209,16 @@ public class AbstractMappingContextUnitTests {
 
 		context.getPersistentEntity(Sample.class);
 		assertHasEntityFor(TreeMap.class, context, false);
+	}
+
+	@Test // DATACMNS-1171
+	public void shouldCreateEntityForKotlinDataClass() {
+		assertThat(context.getPersistentEntity(SimpleDataClass.class)).isNotNull();
+	}
+
+	@Test // DATACMNS-1171
+	public void shouldNotCreateEntityForSyntheticKotlinClass() {
+		assertThat(context.getPersistentEntity(TypeCreatingSyntheticClass.class)).isNotNull();
 	}
 
 	@Test // DATACMNS-695
