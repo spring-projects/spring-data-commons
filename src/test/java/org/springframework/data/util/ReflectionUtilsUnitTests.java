@@ -24,12 +24,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
+import org.springframework.data.mapping.model.TypeCreatingSyntheticClassKt;
 import org.springframework.data.repository.sample.User;
 import org.springframework.data.util.ReflectionUtils.DescribedFieldFilter;
 import org.springframework.util.ReflectionUtils.FieldFilter;
 
 /**
+ * Unit tests for {@link ReflectionUtils}.
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class ReflectionUtilsUnitTests {
 
@@ -142,6 +146,20 @@ public class ReflectionUtilsUnitTests {
 
 		MethodParameter parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("primitive", int.class), 0);
 		assertThat(ReflectionUtils.isNullable(parameter)).isFalse();
+	}
+	
+	@Test // DATACMNS-1171
+	public void discoversKotlinClass() {
+
+		assertThat(ReflectionUtils.isKotlinClass(TypeCreatingSyntheticClass.class)).isTrue();
+		assertThat(ReflectionUtils.isSupportedKotlinClass(TypeCreatingSyntheticClass.class)).isTrue();
+	}
+	
+	@Test // DATACMNS-1171
+	public void discoversUnsupportedKotlinClass() {
+
+		assertThat(ReflectionUtils.isKotlinClass(TypeCreatingSyntheticClassKt.class)).isTrue();
+		assertThat(ReflectionUtils.isSupportedKotlinClass(TypeCreatingSyntheticClassKt.class)).isFalse();
 	}
 
 	static class Sample {

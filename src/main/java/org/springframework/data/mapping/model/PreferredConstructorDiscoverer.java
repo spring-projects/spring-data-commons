@@ -187,7 +187,7 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 		 * @return the appropriate discoverer for {@code type}.
 		 */
 		private static Discoverers findDiscoverer(Class<?> type) {
-			return ReflectionUtils.isKotlinClass(type) ? KOTLIN : DEFAULT;
+			return ReflectionUtils.isSupportedKotlinClass(type) ? KOTLIN : DEFAULT;
 		}
 
 		/**

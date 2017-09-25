@@ -18,6 +18,9 @@ package org.springframework.data.util;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.KType;
 import kotlin.reflect.jvm.ReflectJvmMapping;
+import kotlin.reflect.jvm.internal.impl.load.kotlin.header.KotlinClassHeader;
+import kotlin.reflect.jvm.internal.impl.load.kotlin.header.KotlinClassHeader.Kind;
+import kotlin.reflect.jvm.internal.impl.load.kotlin.reflect.ReflectKotlinClass;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
@@ -348,7 +351,7 @@ public class ReflectionUtils {
 	}
 
 	/**
-	 * Return true if the specified class is a Kotlin one.
+	 * Return {@literal true} if the specified class is a Kotlin one.
 	 *
 	 * @return {@literal true} if {@code type} is a Kotlin class.
 	 * @since 2.0
@@ -358,6 +361,31 @@ public class ReflectionUtils {
 		return KOTLIN_IS_PRESENT && Arrays.stream(type.getDeclaredAnnotations()) //
 				.map(Annotation::annotationType) //
 				.anyMatch(annotation -> annotation.getName().equals("kotlin.Metadata"));
+	}
+
+	/**
+	 * Return {@literal true} if the specified class is a supported Kotlin class. Currently supported are only
+	 * {@link Kind#CLASS regular Kotlin classes}. Other class types (synthetic, SAM, lambdas) are not supported via
+	 * reflection.
+	 *
+	 * @return {@literal true} if {@code type} is a supported Kotlin class.
+	 * @since 2.0
+	 */
+	public static boolean isSupportedKotlinClass(Class<?> type) {
+
+		if (!isKotlinClass(type)) {
+			return false;
+		}
+
+		ReflectKotlinClass kotlinClass = ReflectKotlinClass.Factory.create(type);
+
+		if (kotlinClass == null) {
+			return false;
+		}
+
+		KotlinClassHeader classHeader = kotlinClass.getClassHeader();
+
+		return classHeader.getKind() == Kind.CLASS;
 	}
 
 	/**
@@ -373,7 +401,7 @@ public class ReflectionUtils {
 			return true;
 		}
 
-		if (isKotlinClass(parameter.getDeclaringClass())) {
+		if (isSupportedKotlinClass(parameter.getDeclaringClass())) {
 
 			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(parameter.getMethod());
 

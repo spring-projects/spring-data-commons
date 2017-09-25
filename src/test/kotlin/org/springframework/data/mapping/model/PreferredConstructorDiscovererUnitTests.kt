@@ -74,6 +74,17 @@ class PreferredConstructorDiscovererUnitTests {
 
 		Assertions.assertThat(constructor.parameters.size).isEqualTo(3)
 	}
+	
+	@Test // DATACMNS-1171
+	@Suppress("UNCHECKED_CAST")
+	fun `should not resolve constructor for synthetic Kotlin class`() {
+
+		val c = Class.forName("org.springframework.data.mapping.model.TypeCreatingSyntheticClassKt") as Class<Any>
+		
+		val constructor = PreferredConstructorDiscoverer.discover<Any, SamplePersistentProperty>(c)
+
+		Assertions.assertThat(constructor).isNull()
+	}
 
 	data class Simple(val firstname: String)
 
