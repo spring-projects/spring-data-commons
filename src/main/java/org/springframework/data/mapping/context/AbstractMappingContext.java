@@ -471,15 +471,22 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Returns whether a {@link PersistentEntity} instance should be created for the given {@link TypeInformation}. By
-	 * default this will reject this for all types considered simple, but it might be necessary to tweak that in case you
-	 * have registered custom converters for top level types (which renders them to be considered simple) but still need
-	 * meta-information about them.
+	 * default this will reject all types considered simple and non-supported Kotlin classes, but it might be necessary to
+	 * tweak that in case you have registered custom converters for top level types (which renders them to be considered
+	 * simple) but still need meta-information about them.
+	 * <p/>
 	 *
 	 * @param type will never be {@literal null}.
 	 * @return
 	 */
 	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> type) {
-		return !simpleTypeHolder.isSimpleType(type.getType());
+
+		if (simpleTypeHolder.isSimpleType(type.getType())) {
+			return false;
+		}
+
+		return !org.springframework.data.util.ReflectionUtils.isKotlinClass(type.getType())
+				|| org.springframework.data.util.ReflectionUtils.isSupportedKotlinClass(type.getType());
 	}
 
 	/**
