@@ -85,9 +85,9 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 
 		return Lazy.of(() -> {
 
-			AnnotationDetectionFieldCallback numberCallback = new AnnotationDetectionFieldCallback(annotationType);
-			ReflectionUtils.doWithFields(entity.getClass(), numberCallback);
-			return numberCallback.getValue(entity);
+			AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(annotationType);
+			ReflectionUtils.doWithFields(entity.getClass(), callback);
+			return Optional.ofNullable(callback.getValue(entity));
 		});
 	}
 }

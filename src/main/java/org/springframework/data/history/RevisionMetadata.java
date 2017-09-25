@@ -40,8 +40,8 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 	 * @throws IllegalStateException if no revision number is available.
 	 */
 	default N getRequiredRevisionNumber() {
-		return getRevisionNumber()
-				.orElseThrow(() -> new IllegalStateException(String.format("No revision number found on %s!", getDelegate())));
+		return getRevisionNumber().orElseThrow(
+				() -> new IllegalStateException(String.format("No revision number found on %s!", (Object) getDelegate())));
 	}
 
 	/**
@@ -58,8 +58,8 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 	 * @throw IllegalStateException if no revision date is available.
 	 */
 	default LocalDateTime getRequiredRevisionDate() {
-		return getRevisionDate()
-				.orElseThrow(() -> new IllegalStateException(String.format("No revision date found on %s!", getDelegate())));
+		return getRevisionDate().orElseThrow(
+				() -> new IllegalStateException(String.format("No revision date found on %s!", (Object) getDelegate())));
 	}
 
 	/**
