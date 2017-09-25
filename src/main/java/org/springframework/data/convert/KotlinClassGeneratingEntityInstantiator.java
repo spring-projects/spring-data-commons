@@ -50,7 +50,7 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 
 		PreferredConstructor<?, ?> constructor = entity.getPersistenceConstructor();
 
-		if (ReflectionUtils.isKotlinClass(entity.getType()) && constructor != null) {
+		if (ReflectionUtils.isSupportedKotlinClass(entity.getType()) && constructor != null) {
 
 			PreferredConstructor<?, ?> defaultConstructor = new DefaultingKotlinConstructorResolver(entity)
 					.getDefaultConstructor();

@@ -59,7 +59,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	 */
 	public static boolean supports(Class<?> repositoryInterface) {
 
-		return ReflectionUtils.isKotlinClass(repositoryInterface)
+		return ReflectionUtils.isSupportedKotlinClass(repositoryInterface)
 				|| NullableUtils.isNonNull(repositoryInterface, ElementType.METHOD)
 				|| NullableUtils.isNonNull(repositoryInterface, ElementType.PARAMETER);
 	}
@@ -153,7 +153,8 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		private static boolean isNullableParameter(MethodParameter parameter) {
 
 			return requiresNoValue(parameter) || NullableUtils.isExplicitNullable(parameter)
-					|| (ReflectionUtils.isKotlinClass(parameter.getDeclaringClass()) && ReflectionUtils.isNullable(parameter));
+					|| (ReflectionUtils.isSupportedKotlinClass(parameter.getDeclaringClass())
+							&& ReflectionUtils.isNullable(parameter));
 		}
 
 		private static boolean requiresNoValue(MethodParameter parameter) {
