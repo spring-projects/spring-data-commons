@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.PropertyPathMapper;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -36,6 +37,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  * @author Martin Baumgartner
+ * @author Ales Justin
  */
 @EqualsAndHashCode
 public class Part {
@@ -67,6 +69,19 @@ public class Part {
 	 * @param alwaysIgnoreCase
 	 */
 	public Part(String source, Class<?> clazz, boolean alwaysIgnoreCase) {
+		this(source, clazz, alwaysIgnoreCase, null);
+	}
+
+	/**
+	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
+	 * start parameter index.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @param clazz must not be {@literal null}.
+	 * @param alwaysIgnoreCase
+	 * @param mapper property path mapper
+	 */
+	public Part(String source, Class<?> clazz, boolean alwaysIgnoreCase, PropertyPathMapper mapper) {
 
 		Assert.hasText(source, "Part source must not be null or empty!");
 		Assert.notNull(clazz, "Type must not be null!");
@@ -78,7 +93,9 @@ public class Part {
 		}
 
 		this.type = Type.fromProperty(partToUse);
-		this.propertyPath = PropertyPath.from(type.extractProperty(partToUse), clazz);
+		String property = type.extractProperty(partToUse);
+		this.propertyPath = (mapper != null) ? PropertyPath.from(property, clazz, mapper)
+				: PropertyPath.from(property, clazz);
 	}
 
 	private String detectAndSetIgnoreCase(String part) {

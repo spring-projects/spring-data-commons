@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PropertyPathMapper;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.data.util.Streamable;
@@ -43,6 +44,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Ales Justin
  */
 public class PartTree implements Streamable<OrPart> {
 
@@ -82,6 +84,18 @@ public class PartTree implements Streamable<OrPart> {
 	 *          class
 	 */
 	public PartTree(String source, Class<?> domainClass) {
+		this(source, domainClass, null);
+	}
+
+	/**
+	 * Creates a new {@link PartTree} by parsing the given {@link String}.
+	 *
+	 * @param source the {@link String} to parse
+	 * @param domainClass the domain class to check individual parts against to ensure they refer to a property of the
+	 *          class
+	 * @param mapper the property path mapper
+	 */
+	public PartTree(String source, Class<?> domainClass, PropertyPathMapper mapper) {
 
 		Assert.notNull(source, "Source must not be null");
 		Assert.notNull(domainClass, "Domain class must not be null");
@@ -90,10 +104,10 @@ public class PartTree implements Streamable<OrPart> {
 
 		if (!matcher.find()) {
 			this.subject = new Subject(Optional.empty());
-			this.predicate = new Predicate(source, domainClass);
+			this.predicate = new Predicate(source, domainClass, mapper);
 		} else {
 			this.subject = new Subject(Optional.of(matcher.group(0)));
-			this.predicate = new Predicate(source.substring(matcher.group().length()), domainClass);
+			this.predicate = new Predicate(source.substring(matcher.group().length()), domainClass, mapper);
 		}
 	}
 
@@ -241,13 +255,13 @@ public class PartTree implements Streamable<OrPart> {
 		 * @param domainClass the domain class to check the resulting {@link Part}s against.
 		 * @param alwaysIgnoreCase if always ignoring case
 		 */
-		OrPart(String source, Class<?> domainClass, boolean alwaysIgnoreCase) {
+		OrPart(String source, Class<?> domainClass, boolean alwaysIgnoreCase, PropertyPathMapper mapper) {
 
 			String[] split = split(source, "And");
 
 			this.children = Arrays.stream(split)//
 					.filter(StringUtils::hasText)//
-					.map(part -> new Part(part, domainClass, alwaysIgnoreCase))//
+					.map(part -> new Part(part, domainClass, alwaysIgnoreCase, mapper))//
 					.collect(Collectors.toList());
 		}
 
@@ -367,7 +381,7 @@ public class PartTree implements Streamable<OrPart> {
 		private final @Getter OrderBySource orderBySource;
 		private boolean alwaysIgnoreCase;
 
-		public Predicate(String predicate, Class<?> domainClass) {
+		public Predicate(String predicate, Class<?> domainClass, PropertyPathMapper mapper) {
 
 			String[] parts = split(detectAndSetAllIgnoreCase(predicate), ORDER_BY);
 
@@ -377,7 +391,7 @@ public class PartTree implements Streamable<OrPart> {
 
 			this.nodes = Arrays.stream(split(parts[0], "Or")) //
 					.filter(StringUtils::hasText) //
-					.map(part -> new OrPart(part, domainClass, alwaysIgnoreCase)) //
+					.map(part -> new OrPart(part, domainClass, alwaysIgnoreCase, mapper)) //
 					.collect(Collectors.toList());
 
 			this.orderBySource = parts.length == 2 ? new OrderBySource(parts[1], Optional.of(domainClass))

@@ -42,6 +42,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Ales Justin
  */
 @EqualsAndHashCode
 public class PropertyPath implements Streamable<PropertyPath> {
@@ -78,13 +79,25 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @param base the {@link PropertyPath} previously found.
 	 */
 	PropertyPath(String name, TypeInformation<?> owningType, List<PropertyPath> base) {
+		this(name, owningType, base, PropertyPathMapper.DEFAULT);
+	}
+
+	/**
+	 * Creates a leaf {@link PropertyPath} (no nested ones with the given name and owning type.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @param owningType must not be {@literal null}.
+	 * @param base the {@link PropertyPath} previously found.
+	 * @param mapper the property path mapper
+	 */
+	PropertyPath(String name, TypeInformation<?> owningType, List<PropertyPath> base, PropertyPathMapper mapper) {
 
 		Assert.hasText(name, "Name must not be null or empty!");
 		Assert.notNull(owningType, "Owning type must not be null!");
 		Assert.notNull(base, "Perviously found properties must not be null!");
 
 		String propertyName = name.matches(ALL_UPPERCASE) ? name : StringUtils.uncapitalize(name);
-		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
+		TypeInformation<?> propertyType = mapper.getProperty(owningType, propertyName);
 
 		if (propertyType == null) {
 			throw new PropertyReferenceException(propertyName, owningType, base);
@@ -249,6 +262,18 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
+	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and type.
+	 *
+	 * @param source
+	 * @param type
+	 * @param mapper
+	 * @return
+	 */
+	public static PropertyPath from(String source, Class<?> type, PropertyPathMapper mapper) {
+		return from(source, ClassTypeInformation.from(type), mapper);
+	}
+
+	/**
 	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}. <br />
 	 * Uses {@link #SPLITTER} by default and {@link #SPLITTER_FOR_QUOTED} for {@link Pattern#quote(String) quoted}
 	 * literals.
@@ -258,6 +283,20 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @return
 	 */
 	public static PropertyPath from(String source, TypeInformation<?> type) {
+		return from(source, type, PropertyPathMapper.DEFAULT);
+	}
+
+	/**
+	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}. <br />
+	 * Uses {@link #SPLITTER} by default and {@link #SPLITTER_FOR_QUOTED} for {@link Pattern#quote(String) quoted}
+	 * literals.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @param type
+	 * @param mapper must not be {@literal null}.
+	 * @return
+	 */
+	public static PropertyPath from(String source, TypeInformation<?> type, PropertyPathMapper mapper) {
 
 		Assert.hasText(source, "Source must not be null or empty!");
 		Assert.notNull(type, "TypeInformation must not be null or empty!");
@@ -280,10 +319,10 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 			while (parts.hasNext()) {
 				if (result == null) {
-					result = create(parts.next(), it.type, current);
+					result = create(parts.next(), it.type, current, mapper);
 					current.push(result);
 				} else {
-					current.push(create(parts.next(), current));
+					current.push(create(parts.next(), current, mapper));
 				}
 			}
 
@@ -305,13 +344,14 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 *
 	 * @param source
 	 * @param base
+	 * @param mapper
 	 * @return
 	 */
-	private static PropertyPath create(String source, Stack<PropertyPath> base) {
+	private static PropertyPath create(String source, Stack<PropertyPath> base, PropertyPathMapper mapper) {
 
 		PropertyPath previous = base.peek();
 
-		PropertyPath propertyPath = create(source, previous.typeInformation.getRequiredActualType(), base);
+		PropertyPath propertyPath = create(source, previous.typeInformation.getRequiredActualType(), base, mapper);
 		previous.next = propertyPath;
 		return propertyPath;
 	}
@@ -324,10 +364,12 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 *
 	 * @param source
 	 * @param type
+	 * @param mapper
 	 * @return
 	 */
-	private static PropertyPath create(String source, TypeInformation<?> type, List<PropertyPath> base) {
-		return create(source, type, "", base);
+	private static PropertyPath create(String source, TypeInformation<?> type, List<PropertyPath> base,
+			PropertyPathMapper mapper) {
+		return create(source, type, "", base, mapper);
 	}
 
 	/**
@@ -338,16 +380,19 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @param source
 	 * @param type
 	 * @param addTail
+	 * @param base
+	 * @param mapper
 	 * @return
 	 */
-	private static PropertyPath create(String source, TypeInformation<?> type, String addTail, List<PropertyPath> base) {
+	private static PropertyPath create(String source, TypeInformation<?> type, String addTail, List<PropertyPath> base,
+			PropertyPathMapper mapper) {
 
-		PropertyReferenceException exception = null;
+		PropertyReferenceException exception;
 		PropertyPath current = null;
 
 		try {
 
-			current = new PropertyPath(source, type, base);
+			current = new PropertyPath(source, type, base, mapper);
 
 			if (!base.isEmpty()) {
 				base.get(base.size() - 1).next = current;
@@ -357,7 +402,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			newBase.add(current);
 
 			if (StringUtils.hasText(addTail)) {
-				current.next = create(addTail, current.actualTypeInformation, newBase);
+				current.next = create(addTail, current.actualTypeInformation, newBase, mapper);
 			}
 
 			return current;
@@ -381,7 +426,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			String tail = source.substring(position);
 
 			try {
-				return create(head, type, tail + addTail, base);
+				return create(head, type, tail + addTail, base, mapper);
 			} catch (PropertyReferenceException e) {
 				throw e.hasDeeperResolutionDepthThan(exception) ? e : exception;
 			}

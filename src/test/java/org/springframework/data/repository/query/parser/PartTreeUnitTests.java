@@ -33,6 +33,7 @@ import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link PartTree}.
@@ -44,6 +45,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Michael Cramer
+ * @author Ales Justin
  */
 public class PartTreeUnitTests {
 
@@ -598,6 +600,15 @@ public class PartTreeUnitTests {
 
 		assertThat(tree).isEmpty();
 		assertThat(tree.hasPredicate()).isFalse();
+	}
+
+	@Test // DATACMNS-1176
+	public void usePropertyPathMapper() {
+
+		PartTree tree = new PartTree("findByOrder", Product.class, (owningType, name) -> owningType.getProperty("anders"));
+		Streamable<Part> parts = tree.getParts();
+		assertThat(parts.stream().count()).isNotZero();
+		assertThat(parts.stream().findFirst().get().getProperty().getType()).isEqualTo(Anders.class);
 	}
 
 	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {
