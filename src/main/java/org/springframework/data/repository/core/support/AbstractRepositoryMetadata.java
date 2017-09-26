@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
@@ -37,6 +36,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Jens Schauder
  */
 public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
@@ -79,7 +79,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
 	 */
 	public Class<?> getReturnedDomainClass(Method method) {
-		return unwrapWrapperTypes(typeInformation.getReturnType(method));
+		return QueryExecutionConverters.unwrapWrapperTypes(typeInformation.getReturnType(method)).getType();
 	}
 
 	/* 
@@ -127,21 +127,5 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	@Override
 	public boolean isReactiveRepository() {
 		return ReactiveWrappers.usesReactiveType(repositoryInterface);
-	}
-
-	/**
-	 * Recursively unwraps well known wrapper types from the given {@link TypeInformation}.
-	 * 
-	 * @param type must not be {@literal null}.
-	 * @return
-	 */
-	private static Class<?> unwrapWrapperTypes(TypeInformation<?> type) {
-
-		Class<?> rawType = type.getType();
-
-		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray()
-				|| QueryExecutionConverters.supports(rawType) || Stream.class.isAssignableFrom(rawType);
-
-		return needToUnwrap ? unwrapWrapperTypes(type.getRequiredComponentType()) : rawType;
 	}
 }
