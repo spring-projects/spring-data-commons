@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -47,6 +48,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
@@ -76,6 +78,7 @@ import com.google.common.base.Optional;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Maciek Opała
+ * @author Jens Schauder
  * @since 1.8
  * @see ReactiveWrappers
  */
@@ -283,6 +286,23 @@ public abstract class QueryExecutionConverters {
 		}
 
 		return source;
+	}
+
+	/**
+	 * Recursively unwraps well known wrapper types from the given {@link TypeInformation}.
+	 *
+	 * @param type must not be {@literal null}.
+	 */
+	public static TypeInformation<?> unwrapWrapperTypes(TypeInformation<?> type) {
+
+		Assert.notNull(type, "type must not be null");
+
+		Class<?> rawType = type.getType();
+
+		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray() || supports(rawType)
+				|| Stream.class.isAssignableFrom(rawType);
+
+		return needToUnwrap ? unwrapWrapperTypes(type.getRequiredComponentType()) : type;
 	}
 
 	/**
