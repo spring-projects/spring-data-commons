@@ -237,11 +237,7 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 				params[userParameterCount + i] = defaulting[i];
 			}
 
-			try {
-				return (T) instantiator.newInstance(params);
-			} finally {
-				deallocateArguments(params);
-			}
+			return (T) instantiator.newInstance(params);
 		}
 	}
 }

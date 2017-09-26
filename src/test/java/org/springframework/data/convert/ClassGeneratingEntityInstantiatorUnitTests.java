@@ -147,6 +147,40 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		}
 	}
 
+	@Test // DATACMNS-1175
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void createsInstancesWithRecursionAndSameCtorArgCountCorrectly() {
+
+		PersistentEntity<SampleWithReference, P> outer = new BasicPersistentEntity<>(from(SampleWithReference.class));
+		PersistentEntity<Sample, P> inner = new BasicPersistentEntity<>(from(Sample.class));
+
+		doReturn(2L, "FOO").when(provider).getParameterValue(any(Parameter.class));
+
+		ParameterValueProvider<P> recursive = new ParameterValueProvider<P>() {
+
+			@Override
+			public <T> T getParameterValue(Parameter<T, P> parameter) {
+
+				if (parameter.getName().equals("id")) {
+					return (T) Long.valueOf(1);
+				}
+
+				if (parameter.getName().equals("sample")) {
+					return (T) instance.createInstance(inner, provider);
+				}
+
+				throw new UnsupportedOperationException(parameter.getName());
+			}
+		};
+
+		SampleWithReference reference = this.instance.createInstance(outer, recursive);
+
+		assertThat(reference.id).isEqualTo(1L);
+		assertThat(reference.sample).isNotNull();
+		assertThat(reference.sample.id).isEqualTo(2L);
+		assertThat(reference.sample.name).isEqualTo("FOO");
+	}
+
 	@Test // DATACMNS-578, DATACMNS-1126
 	public void instantiateObjCtorDefault() {
 
@@ -154,7 +188,8 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		doReturn(PreferredConstructorDiscoverer.discover(ObjCtorDefault.class))//
 				.when(entity).getPersistenceConstructor();
 
-		IntStream.range(0, 2).forEach(i -> assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ObjCtorDefault.class));
+		IntStream.range(0, 2)
+				.forEach(i -> assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ObjCtorDefault.class));
 	}
 
 	@Test // DATACMNS-578, DATACMNS-1126
@@ -280,6 +315,18 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 
 			this.id = id;
 			this.name = name;
+		}
+	}
+
+	static class SampleWithReference {
+
+		final Long id;
+		final Sample sample;
+
+		public SampleWithReference(Long id, Sample sample) {
+
+			this.id = id;
+			this.sample = sample;
 		}
 	}
 
