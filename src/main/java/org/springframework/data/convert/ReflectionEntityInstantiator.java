@@ -40,18 +40,7 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 
 	INSTANCE;
 
-	private final int ARG_CACHE_SIZE = 100;
-
-	private final ThreadLocal<Object[][]> objectPool = ThreadLocal.withInitial(() -> {
-
-		Object[][] cached = new Object[ARG_CACHE_SIZE][];
-
-		for (int i = 0; i < ARG_CACHE_SIZE; i++) {
-			cached[i] = new Object[i];
-		}
-
-		return cached;
-	});
+	private static final Object[] EMPTY_ARGS = new Object[0];
 
 	@SuppressWarnings("unchecked")
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
@@ -80,7 +69,7 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 		}
 		int parameterCount = constructor.getConstructor().getParameterCount();
 
-		Object[] params = parameterCount < ARG_CACHE_SIZE ? objectPool.get()[parameterCount] : new Object[parameterCount];
+		Object[] params = parameterCount == 0 ? EMPTY_ARGS : new Object[parameterCount];
 		int i = 0;
 		for (Parameter<?, P> parameter : constructor.getParameters()) {
 			params[i++] = provider.getParameterValue(parameter);
@@ -90,8 +79,6 @@ public enum ReflectionEntityInstantiator implements EntityInstantiator {
 			return BeanUtils.instantiateClass(constructor.getConstructor(), params);
 		} catch (BeanInstantiationException e) {
 			throw new MappingInstantiationException(entity, new ArrayList<>(Arrays.asList(params)), e);
-		} finally {
-			Arrays.fill(params, null);
 		}
 	}
 }
