@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * Class to abstract a single parameter of a query method. It is held in the context of a {@link Parameters} instance.
  * 
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class Parameter {
 
@@ -201,7 +202,8 @@ public class Parameter {
 
 		TypeInformation<?> bound = parameterTypes.getTypeArguments().get(0);
 		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
-		return bound.equals(returnType.getActualType());
+
+		return bound.equals(QueryExecutionConverters.unwrapWrapperTypes(returnType));
 	}
 
 	/**

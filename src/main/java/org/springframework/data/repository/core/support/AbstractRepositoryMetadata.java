@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Jens Schauder
  */
 public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
@@ -76,7 +77,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
 	 */
 	public Class<?> getReturnedDomainClass(Method method) {
-		return unwrapWrapperTypes(typeInformation.getReturnType(method));
+		return QueryExecutionConverters.unwrapWrapperTypes(typeInformation.getReturnType(method)).getType();
 	}
 
 	/* 
