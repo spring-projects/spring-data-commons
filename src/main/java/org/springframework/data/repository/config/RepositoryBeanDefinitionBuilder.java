@@ -15,16 +15,21 @@
  */
 package org.springframework.data.repository.config;
 
+import lombok.Value;
+
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -42,6 +47,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.core.support.RepositoryFragmentsFactoryBean;
 import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
+import org.springframework.data.util.Optionals;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -127,7 +133,6 @@ class RepositoryBeanDefinitionBuilder {
 				.rootBeanDefinition(RepositoryFragmentsFactoryBean.class);
 
 		List<String> fragmentBeanNames = registerRepositoryFragmentsImplementation(configuration) //
-				.stream() //
 				.map(RepositoryFragmentConfiguration::getFragmentBeanName) //
 				.collect(Collectors.toList());
 
@@ -171,41 +176,29 @@ class RepositoryBeanDefinitionBuilder {
 		});
 	}
 
-	private List<RepositoryFragmentConfiguration> registerRepositoryFragmentsImplementation(
+	private Stream<RepositoryFragmentConfiguration> registerRepositoryFragmentsImplementation(
 			RepositoryConfiguration<?> configuration) {
 
 		ClassMetadata classMetadata = getClassMetadata(configuration.getRepositoryInterface());
 
 		return Arrays.stream(classMetadata.getInterfaceNames()) //
-				.filter(this::isFragmentInterfaceCandidate) //
-				.map(it -> detectRepositoryFragmentConfiguration(configuration, it)) //
-				.filter(Optional::isPresent) //
-				.map(Optional::get) //
+				.filter(it -> FragmentMetadata.isCandidate(it, metadataReaderFactory)) //
+				.map(it -> FragmentMetadata.of(it, configuration)) //
+				.map(it -> detectRepositoryFragmentConfiguration(it)) //
+				.flatMap(it -> Optionals.toStream(it)) //
 				.peek(it -> potentiallyRegisterFragmentImplementation(configuration, it)) //
-				.peek(it -> potentiallyRegisterRepositoryFragment(configuration, it)) //
-				.collect(Collectors.toList());
-	}
-
-	private boolean isFragmentInterfaceCandidate(String interfaceName) {
-
-		AnnotationMetadata metadata = getAnnotationMetadata(interfaceName);
-
-		return !metadata.hasAnnotation(NoRepositoryBean.class.getName());
+				.peek(it -> potentiallyRegisterRepositoryFragment(configuration, it));
 	}
 
 	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(
-			RepositoryConfiguration<?> configuration, String fragmentInterfaceName) {
+			FragmentMetadata configuration) {
 
-		List<TypeFilter> exclusions = getExclusions(configuration);
-
-		String className = ClassUtils.getShortName(fragmentInterfaceName)
-				.concat(configuration.getConfigurationSource().getRepositoryImplementationPostfix().orElse("Impl"));
+		String className = configuration.getFragmentImplementationClassName();
 
 		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(className, null,
-				configuration.getImplementationBasePackages(fragmentInterfaceName), exclusions,
-				bd -> configuration.getConfigurationSource().generateBeanName(bd));
+				configuration.getBasePackages(), configuration.getExclusions(), configuration.getBeanNameGenerator());
 
-		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterfaceName, bd));
+		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(configuration.getFragmentInterfaceName(), bd));
 	}
 
 	private void potentiallyRegisterFragmentImplementation(RepositoryConfiguration<?> repositoryConfiguration,
@@ -263,19 +256,84 @@ class RepositoryBeanDefinitionBuilder {
 		}
 	}
 
-	private AnnotationMetadata getAnnotationMetadata(String className) {
+	@Value(staticConstructor = "of")
+	static class FragmentMetadata {
 
-		try {
-			return metadataReaderFactory.getMetadataReader(className).getAnnotationMetadata();
-		} catch (IOException e) {
-			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
+		String fragmentInterfaceName;
+		RepositoryConfiguration<?> configuration;
+
+		/**
+		 * Returns whether the given interface is a fragment candidate.
+		 * 
+		 * @param interfaceName must not be {@literal null} or empty.
+		 * @param factory must not be {@literal null}.
+		 * @return
+		 */
+		public static boolean isCandidate(String interfaceName, MetadataReaderFactory factory) {
+
+			Assert.hasText(interfaceName, "Interface name must not be null or empty!");
+			Assert.notNull(factory, "MetadataReaderFactory must not be null!");
+
+			AnnotationMetadata metadata = getAnnotationMetadata(interfaceName, factory);
+
+			return !metadata.hasAnnotation(NoRepositoryBean.class.getName());
 		}
-	}
 
-	private static List<TypeFilter> getExclusions(RepositoryConfiguration<?> configuration) {
+		/**
+		 * Returns the exclusions to be used when scanning for fragment implementations.
+		 * 
+		 * @return
+		 */
+		public List<TypeFilter> getExclusions() {
 
-		return Stream
-				.concat(configuration.getExcludeFilters().stream(), Stream.of(new AnnotationTypeFilter(NoRepositoryBean.class)))//
-				.collect(StreamUtils.toUnmodifiableList());
+			Stream<TypeFilter> configurationExcludes = configuration.getExcludeFilters().stream();
+			Stream<AnnotationTypeFilter> noRepositoryBeans = Stream.of(new AnnotationTypeFilter(NoRepositoryBean.class));
+
+			return Stream.concat(configurationExcludes, noRepositoryBeans).collect(StreamUtils.toUnmodifiableList());
+		}
+
+		/**
+		 * Returns the name of the implementation class to be detected for the fragment interface.
+		 * 
+		 * @return
+		 */
+		public String getFragmentImplementationClassName() {
+
+			RepositoryConfigurationSource configurationSource = configuration.getConfigurationSource();
+			String postfix = configurationSource.getRepositoryImplementationPostfix().orElse("Impl");
+
+			return ClassUtils.getShortName(fragmentInterfaceName).concat(postfix);
+		}
+
+		/**
+		 * Returns the base packages to be scanned to find implementations of the current fragment interface.
+		 * 
+		 * @return
+		 */
+		public Iterable<String> getBasePackages() {
+
+			return configuration.getConfigurationSource().shouldLimitRepositoryImplementationBasePackages() ? //
+					Collections.singleton(ClassUtils.getPackageName(fragmentInterfaceName)) : //
+					configuration.getImplementationBasePackages();
+		}
+
+		/**
+		 * Returns the bean name generating function to be used for the fragment.
+		 * 
+		 * @return
+		 */
+		public Function<BeanDefinition, String> getBeanNameGenerator() {
+			return definition -> configuration.getConfigurationSource().generateBeanName(definition);
+		}
+
+		private static AnnotationMetadata getAnnotationMetadata(String className,
+				MetadataReaderFactory metadataReaderFactory) {
+
+			try {
+				return metadataReaderFactory.getMetadataReader(className).getAnnotationMetadata();
+			} catch (IOException e) {
+				throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
+			}
+		}
 	}
 }

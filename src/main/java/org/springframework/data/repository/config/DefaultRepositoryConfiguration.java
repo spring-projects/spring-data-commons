@@ -74,13 +74,13 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getBasePackages(String)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationBasePackages()
 	 */
 	@Override
-	public Streamable<String> getImplementationBasePackages(String interfaceClassName) {
+	public Streamable<String> getImplementationBasePackages() {
 
 		return configurationSource.shouldLimitRepositoryImplementationBasePackages()
-				? Streamable.of(ClassUtils.getPackageName(interfaceClassName))
+				? Streamable.of(ClassUtils.getPackageName(getRepositoryInterface()))
 				: getBasePackages();
 	}
 

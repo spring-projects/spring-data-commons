@@ -72,7 +72,7 @@ public class CustomRepositoryImplementationDetector {
 		return detectCustomImplementation( //
 				configuration.getImplementationClassName(), //
 				configuration.getImplementationBeanName(), //
-				configuration.getImplementationBasePackages(configuration.getImplementationClassName()), //
+				configuration.getImplementationBasePackages(), //
 				configuration.getExcludeFilters(), //
 				bd -> configuration.getConfigurationSource().generateBeanName(bd));
 	}

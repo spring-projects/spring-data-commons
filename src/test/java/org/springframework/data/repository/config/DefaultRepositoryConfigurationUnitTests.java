@@ -89,7 +89,7 @@ public class DefaultRepositoryConfigurationUnitTests {
 
 		when(source.shouldLimitRepositoryImplementationBasePackages()).thenReturn(true);
 
-		assertThat(getConfiguration(source).getImplementationBasePackages("com.acme.MyRepository"))
+		assertThat(getConfiguration(source, "com.acme.MyRepository").getImplementationBasePackages())
 				.containsOnly("com.acme");
 	}
 
@@ -98,7 +98,7 @@ public class DefaultRepositoryConfigurationUnitTests {
 
 		when(source.shouldLimitRepositoryImplementationBasePackages()).thenReturn(true);
 
-		assertThat(getConfiguration(source).getImplementationBasePackages(NestedInterface.class.getName()))
+		assertThat(getConfiguration(source, NestedInterface.class.getName()).getImplementationBasePackages())
 				.containsOnly("org.springframework.data.repository.config");
 	}
 
@@ -107,13 +107,18 @@ public class DefaultRepositoryConfigurationUnitTests {
 
 		when(source.getBasePackages()).thenReturn(Streamable.of("com", "org.coyote"));
 
-		assertThat(getConfiguration(source).getImplementationBasePackages("com.acme.MyRepository")).contains("com",
+		assertThat(getConfiguration(source, "com.acme.MyRepository").getImplementationBasePackages()).contains("com",
 				"org.coyote");
 	}
 
 	private DefaultRepositoryConfiguration<RepositoryConfigurationSource> getConfiguration(
 			RepositoryConfigurationSource source) {
-		RootBeanDefinition beanDefinition = createBeanDefinition();
+		return getConfiguration(source, "com.acme.MyRepository");
+	}
+
+	private DefaultRepositoryConfiguration<RepositoryConfigurationSource> getConfiguration(
+			RepositoryConfigurationSource source, String repositoryInterfaceName) {
+		RootBeanDefinition beanDefinition = createBeanDefinition(repositoryInterfaceName);
 		return new DefaultRepositoryConfiguration<>(source, beanDefinition, extension);
 	}
 
@@ -123,9 +128,9 @@ public class DefaultRepositoryConfigurationUnitTests {
 		String repositoryFactoryBeanClassName, modulePrefix;
 	}
 
-	private static RootBeanDefinition createBeanDefinition() {
+	private static RootBeanDefinition createBeanDefinition(String repositoryInterfaceName) {
 
-		RootBeanDefinition beanDefinition = new RootBeanDefinition("com.acme.MyRepository");
+		RootBeanDefinition beanDefinition = new RootBeanDefinition(repositoryInterfaceName);
 
 		ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
 		constructorArgumentValues.addGenericArgumentValue(MyRepository.class);
