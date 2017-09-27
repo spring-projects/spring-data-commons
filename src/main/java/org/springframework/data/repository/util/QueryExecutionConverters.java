@@ -588,7 +588,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.12
 	 */
-	private static enum GuavaOptionalUnwrapper implements Converter<Object, Object> {
+	private enum GuavaOptionalUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -609,7 +609,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.12
 	 */
-	private static enum Jdk8OptionalUnwrapper implements Converter<Object, Object> {
+	private enum Jdk8OptionalUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -631,7 +631,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Mark Paluch
 	 * @since 1.12
 	 */
-	private static enum ScalOptionUnwrapper implements Converter<Object, Object> {
+	private enum ScalOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -665,7 +665,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.13
 	 */
-	private static enum JavaslangOptionUnwrapper implements Converter<Object, Object> {
+	private enum JavaslangOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -696,7 +696,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 2.0
 	 */
-	private static enum VavrOptionUnwrapper implements Converter<Object, Object> {
+	private enum VavrOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -721,7 +721,7 @@ public abstract class QueryExecutionConverters {
 		}
 	}
 
-	private static enum IterableToStreamableConverter implements Converter<Iterable<?>, Streamable<?>> {
+	private enum IterableToStreamableConverter implements Converter<Iterable<?>, Streamable<?>> {
 
 		INSTANCE;
 
