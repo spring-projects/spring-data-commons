@@ -83,11 +83,11 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getBasePackages(String)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationBasePackages()
 	 */
 	@Override
-	public Iterable<String> getImplementationBasePackages(String interfaceClassName) {
-		return Collections.singleton(ClassUtils.getPackageName(interfaceClassName));
+	public Iterable<String> getImplementationBasePackages() {
+		return Collections.singleton(ClassUtils.getPackageName(getRepositoryInterface()));
 	}
 
 	/* 
