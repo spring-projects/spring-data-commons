@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 @RequiredArgsConstructor
 public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSource>
@@ -69,6 +70,18 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 */
 	public Streamable<String> getBasePackages() {
 		return configurationSource.getBasePackages();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getBasePackages(String)
+	 */
+	@Override
+	public Streamable<String> getImplementationBasePackages(String interfaceClassName) {
+
+		return configurationSource.shouldLimitRepositoryImplementationBasePackages()
+				? Streamable.of(ClassUtils.getPackageName(interfaceClassName))
+				: getBasePackages();
 	}
 
 	/* 

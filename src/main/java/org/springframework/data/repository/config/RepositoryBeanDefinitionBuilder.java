@@ -202,7 +202,8 @@ class RepositoryBeanDefinitionBuilder {
 				.concat(configuration.getConfigurationSource().getRepositoryImplementationPostfix().orElse("Impl"));
 
 		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(className, null,
-				configuration.getBasePackages(), exclusions, bd -> configuration.getConfigurationSource().generateBeanName(bd));
+				configuration.getImplementationBasePackages(fragmentInterfaceName), exclusions,
+				bd -> configuration.getConfigurationSource().generateBeanName(bd));
 
 		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterfaceName, bd));
 	}

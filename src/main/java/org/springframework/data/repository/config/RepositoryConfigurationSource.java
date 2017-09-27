@@ -31,6 +31,7 @@ import org.springframework.lang.Nullable;
  * @author Thomas Darimont
  * @author Peter Rietzler
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 public interface RepositoryConfigurationSource {
 
@@ -61,6 +62,17 @@ public interface RepositoryConfigurationSource {
 	 * @return the postfix to use or {@link Optional#empty()} in case none is configured.
 	 */
 	Optional<String> getRepositoryImplementationPostfix();
+
+	/**
+	 * Returns whether to limit repository implementation base packages for custom implementation scanning. If
+	 * {@literal true}, then custom implementation scanning considers only the package of the repository/fragment
+	 * interface and its subpackages for a scan. Otherwise, all {@link #getBasePackages()} are scanned for repository
+	 * implementations
+	 * 
+	 * @return {@literal true} if base packages are limited to the actual repository package.
+	 * @since 2.0
+	 */
+	boolean shouldLimitRepositoryImplementationBasePackages();
 
 	/**
 	 * @return

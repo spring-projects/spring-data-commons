@@ -34,6 +34,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.data.repository.config.basepackage.FragmentImpl;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 
 /**
@@ -82,6 +83,28 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		assertBeanDefinitionRegisteredFor("repositoryWithFragmentExclusion");
 		assertNoBeanDefinitionRegisteredFor("excludedRepositoryImpl");
+	}
+
+	@Test // DATACMNS-1172
+	public void shouldLimitImplementationBasePackages() {
+
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(LimitsImplementationBasePackages.class, true);
+
+		registrar.registerBeanDefinitions(metadata, registry);
+
+		assertBeanDefinitionRegisteredFor("personRepository");
+		assertNoBeanDefinitionRegisteredFor("fragmentImpl");
+	}
+
+	@Test // DATACMNS-1172
+	public void shouldNotLimitImplementationBasePackages() {
+
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(UnlimitedImplementationBasePackages.class, true);
+
+		registrar.registerBeanDefinitions(metadata, registry);
+
+		assertBeanDefinitionRegisteredFor("personRepository");
+		assertBeanDefinitionRegisteredFor("fragmentImpl");
 	}
 
 	@Test // DATACMNS-360
@@ -152,7 +175,11 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@EnableRepositories(
 			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, value = RepositoryWithFragmentExclusion.class),
 			basePackageClasses = RepositoryWithFragmentExclusion.class)
-	static class FragmentExclusionConfiguration {
+	static class FragmentExclusionConfiguration {}
 
-	}
+	@EnableRepositories(basePackageClasses = FragmentImpl.class)
+	static class LimitsImplementationBasePackages {}
+
+	@EnableRepositories(basePackageClasses = FragmentImpl.class, limitImplementationBasePackages = false)
+	static class UnlimitedImplementationBasePackages {}
 }
