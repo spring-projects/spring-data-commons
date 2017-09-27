@@ -53,6 +53,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Peter Rietzler
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -64,6 +65,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS = "repositoryFactoryBeanClass";
 	private static final String REPOSITORY_BASE_CLASS = "repositoryBaseClass";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "considerNestedRepositories";
+	private static final String LIMIT_IMPLEMENTATION_BASE_PACKAGES = "limitImplementationBasePackages";
 
 	private final AnnotationMetadata configMetadata;
 	private final AnnotationMetadata enableAnnotationMetadata;
@@ -318,6 +320,20 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	@Override
 	public boolean shouldConsiderNestedRepositories() {
 		return attributes.containsKey(CONSIDER_NESTED_REPOSITORIES) && attributes.getBoolean(CONSIDER_NESTED_REPOSITORIES);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#shouldLimitRepositoryImplementationBasePackages()
+	 */
+	@Override
+	public boolean shouldLimitRepositoryImplementationBasePackages() {
+
+		if (!attributes.containsKey(LIMIT_IMPLEMENTATION_BASE_PACKAGES)) {
+			return true;
+		}
+
+		return attributes.getBoolean(LIMIT_IMPLEMENTATION_BASE_PACKAGES);
 	}
 
 	/* 

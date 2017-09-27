@@ -73,8 +73,9 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 		Streamable<BeanDefinition> candidates = source.getCandidates(new DefaultResourceLoader());
 
-		assertThat(candidates).hasSize(2).extracting("beanClassName").containsOnly(MyRepository.class.getName(),
-				ComposedRepository.class.getName());
+		assertThat(candidates).extracting("beanClassName")
+				.contains(MyRepository.class.getName(), ComposedRepository.class.getName())
+				.doesNotContain(MyOtherRepository.class.getName(), ExcludedRepository.class.getName());
 	}
 
 	@Test // DATACMNS-47
@@ -100,6 +101,14 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithNestedRepositories.class);
 		assertThat(source.shouldConsiderNestedRepositories()).isTrue();
+	}
+
+	@Test // DATACMNS-1172
+	public void returnsLimitImplementationBasePackages() {
+
+		assertThat(getConfigSource(DefaultConfiguration.class).shouldLimitRepositoryImplementationBasePackages()).isTrue();
+		assertThat(getConfigSource(DefaultConfigurationWithoutBasePackageLimit.class)
+				.shouldLimitRepositoryImplementationBasePackages()).isFalse();
 	}
 
 	@Test // DATACMNS-456
@@ -154,6 +163,9 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	@EnableRepositories(considerNestedRepositories = true)
 	static class DefaultConfigurationWithNestedRepositories {}
+
+	@EnableRepositories(limitImplementationBasePackages = false)
+	static class DefaultConfigurationWithoutBasePackageLimit {}
 
 	@EnableRepositories(excludeFilters = { @Filter(Primary.class) })
 	static class ConfigurationWithExplicitFilter {}
