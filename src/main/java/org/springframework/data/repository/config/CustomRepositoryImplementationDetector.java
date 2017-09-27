@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Peter Rietzler
+ * @author Mark Paluch
  */
 public class CustomRepositoryImplementationDetector {
 
@@ -80,7 +81,7 @@ public class CustomRepositoryImplementationDetector {
 		// TODO 2.0: Extract into dedicated interface for custom implementation lookup configuration.
 
 		return detectCustomImplementation(configuration.getImplementationClassName(), //
-				configuration.getBasePackages(), //
+				configuration.getImplementationBasePackages(configuration.getRepositoryInterface()), //
 				configuration.getExcludeFilters());
 	}
 

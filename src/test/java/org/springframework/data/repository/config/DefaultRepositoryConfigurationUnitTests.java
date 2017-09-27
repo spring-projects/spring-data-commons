@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
@@ -29,6 +30,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * Unit tests for {@link DefaultRepositoryConfiguration}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryConfigurationUnitTests {
@@ -48,4 +50,39 @@ public class DefaultRepositoryConfigurationUnitTests {
 		assertThat(configuration.getQueryLookupStrategyKey(), is((Object) Key.CREATE_IF_NOT_FOUND));
 		assertThat(configuration.isLazyInit(), is(false));
 	}
+
+	@Test // DATACMNS-1172
+	public void limitsImplementationBasePackages() {
+
+		Iterable<String> packages = getConfiguration(source).getImplementationBasePackages("com.acme.MyRepository");
+
+		assertThat(packages, hasItem("com.acme"));
+	}
+
+	@Test // DATACMNS-1172
+	public void limitsImplementationBasePackagesOfNestedClass() {
+
+		Iterable<String> packages = getConfiguration(source).getImplementationBasePackages(NestedInterface.class.getName());
+
+		assertThat(packages, hasItem("org.springframework.data.repository.config"));
+	}
+
+	private DefaultRepositoryConfiguration<RepositoryConfigurationSource> getConfiguration(
+			RepositoryConfigurationSource source) {
+		RootBeanDefinition beanDefinition = createBeanDefinition();
+		return new DefaultRepositoryConfiguration<RepositoryConfigurationSource>(source, beanDefinition);
+	}
+
+	private static RootBeanDefinition createBeanDefinition() {
+
+		RootBeanDefinition beanDefinition = new RootBeanDefinition("com.acme.MyRepository");
+
+		ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
+		constructorArgumentValues.addGenericArgumentValue(MyRepository.class);
+		beanDefinition.setConstructorArgumentValues(constructorArgumentValues);
+
+		return beanDefinition;
+	}
+
+	private interface NestedInterface {}
 }
