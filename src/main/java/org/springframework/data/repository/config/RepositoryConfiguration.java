@@ -40,7 +40,7 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 * @return
 	 * @since 1.13.8
 	 */
-	Iterable<String> getImplementationBasePackages(String interfaceClassName);
+	Iterable<String> getImplementationBasePackages();
 
 	/**
 	 * Returns the interface name of the repository.

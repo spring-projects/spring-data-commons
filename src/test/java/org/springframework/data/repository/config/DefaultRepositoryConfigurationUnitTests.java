@@ -54,7 +54,7 @@ public class DefaultRepositoryConfigurationUnitTests {
 	@Test // DATACMNS-1172
 	public void limitsImplementationBasePackages() {
 
-		Iterable<String> packages = getConfiguration(source).getImplementationBasePackages("com.acme.MyRepository");
+		Iterable<String> packages = getConfiguration(source, "com.acme.MyRepository").getImplementationBasePackages();
 
 		assertThat(packages, hasItem("com.acme"));
 	}
@@ -62,20 +62,22 @@ public class DefaultRepositoryConfigurationUnitTests {
 	@Test // DATACMNS-1172
 	public void limitsImplementationBasePackagesOfNestedClass() {
 
-		Iterable<String> packages = getConfiguration(source).getImplementationBasePackages(NestedInterface.class.getName());
+		Iterable<String> packages = getConfiguration(source, MyRepository.class.getName()).getImplementationBasePackages();
 
 		assertThat(packages, hasItem("org.springframework.data.repository.config"));
 	}
 
 	private DefaultRepositoryConfiguration<RepositoryConfigurationSource> getConfiguration(
-			RepositoryConfigurationSource source) {
-		RootBeanDefinition beanDefinition = createBeanDefinition();
+			RepositoryConfigurationSource source, String repositoryInterfaceName) {
+
+		RootBeanDefinition beanDefinition = createBeanDefinition(repositoryInterfaceName);
+
 		return new DefaultRepositoryConfiguration<RepositoryConfigurationSource>(source, beanDefinition);
 	}
 
-	private static RootBeanDefinition createBeanDefinition() {
+	private static RootBeanDefinition createBeanDefinition(String repositoryInterfaceName) {
 
-		RootBeanDefinition beanDefinition = new RootBeanDefinition("com.acme.MyRepository");
+		RootBeanDefinition beanDefinition = new RootBeanDefinition(repositoryInterfaceName);
 
 		ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
 		constructorArgumentValues.addGenericArgumentValue(MyRepository.class);

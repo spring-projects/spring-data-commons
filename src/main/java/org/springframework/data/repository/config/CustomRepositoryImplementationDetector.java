@@ -81,7 +81,7 @@ public class CustomRepositoryImplementationDetector {
 		// TODO 2.0: Extract into dedicated interface for custom implementation lookup configuration.
 
 		return detectCustomImplementation(configuration.getImplementationClassName(), //
-				configuration.getImplementationBasePackages(configuration.getRepositoryInterface()), //
+				configuration.getImplementationBasePackages(), //
 				configuration.getExcludeFilters());
 	}
 
