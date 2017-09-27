@@ -1,0 +1,68 @@
+/*
+ * Copyright 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.repository.query;
+
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
+import org.junit.Test;
+import org.springframework.core.MethodParameter;
+
+/**
+ * Unit tests for {@link Parameter}.
+ *
+ * @author Jens Schauder
+ */
+public class ParameterUnitTests {
+
+	@Test // DATAJPA-1185
+	public void classParameterWithSameTypeParameterAsReturnedListIsDynamicProjectionParameter() throws Exception {
+
+		Parameter parameter = new Parameter(getMethodParameter("dynamicProjectionWithList"));
+
+		assertThat(parameter.isDynamicProjectionParameter(), is(true));
+	}
+
+	@Test // DATAJPA-1185
+	public void classParameterWithSameTypeParameterAsReturnedStreamIsDynamicProjectionParameter() throws Exception {
+
+		Parameter parameter = new Parameter(getMethodParameter("dynamicProjectionWithStream"));
+
+		assertThat(parameter.isDynamicProjectionParameter(), is(true));
+	}
+
+	private MethodParameter getMethodParameter(String methodName) throws NoSuchMethodException {
+
+		return new MethodParameter( //
+				this.getClass().getDeclaredMethod( //
+						methodName, //
+						Class.class //
+				), //
+				0);
+	}
+
+	<T> List<T> dynamicProjectionWithList(Class<T> type) {
+		return Collections.emptyList();
+	}
+
+	<T> Stream<T> dynamicProjectionWithStream(Class<T> type) {
+		return null;
+	}
+}

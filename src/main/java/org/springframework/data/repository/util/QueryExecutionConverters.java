@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -40,6 +41,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -67,6 +69,7 @@ import com.google.common.base.Optional;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Maciek Opała
+ * @author Jens Schauder
  * @since 1.8
  */
 public abstract class QueryExecutionConverters {
@@ -141,7 +144,6 @@ public abstract class QueryExecutionConverters {
 	 * Returns whether the given type is a supported wrapper type.
 	 * 
 	 * @param type must not be {@literal null}.
-	 * @return
 	 */
 	public static boolean supports(Class<?> type) {
 
@@ -170,8 +172,6 @@ public abstract class QueryExecutionConverters {
 	/**
 	 * Returns the types that are supported on paginating query methods. Will include custom collection types of e.g.
 	 * Javaslang.
-	 * 
-	 * @return
 	 */
 	public static Set<Class<?>> getAllowedPageableTypes() {
 		return Collections.unmodifiableSet(ALLOWED_PAGEABLE_TYPES);
@@ -218,7 +218,6 @@ public abstract class QueryExecutionConverters {
 	 * Unwraps the given source value in case it's one of the currently supported wrapper types detected at runtime.
 	 * 
 	 * @param source can be {@literal null}.
-	 * @return
 	 */
 	public static Object unwrap(Object source) {
 
@@ -236,6 +235,23 @@ public abstract class QueryExecutionConverters {
 		}
 
 		return source;
+	}
+
+	/**
+	 * Recursively unwraps well known wrapper types from the given {@link TypeInformation}.
+	 *
+	 * @param type must not be {@literal null}.
+	 */
+	public static TypeInformation<?> unwrapWrapperTypes(TypeInformation<?> type) {
+
+		Assert.notNull(type, "type must not be null");
+
+		Class<?> rawType = type.getType();
+
+		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray() || supports(rawType)
+				|| Stream.class.isAssignableFrom(rawType);
+
+		return needToUnwrap ? unwrapWrapperTypes(type.getComponentType()) : type;
 	}
 
 	/**
@@ -544,7 +560,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.12
 	 */
-	private static enum GuavaOptionalUnwrapper implements Converter<Object, Object> {
+	private enum GuavaOptionalUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -564,7 +580,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.12
 	 */
-	private static enum Jdk8OptionalUnwrapper implements Converter<Object, Object> {
+	private enum Jdk8OptionalUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -585,7 +601,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Mark Paluch
 	 * @since 1.12
 	 */
-	private static enum ScalOptionUnwrapper implements Converter<Object, Object> {
+	private enum ScalOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -617,7 +633,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.13
 	 */
-	private static enum JavaslangOptionUnwrapper implements Converter<Object, Object> {
+	private enum JavaslangOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -658,7 +674,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 2.0
 	 */
-	private static enum VavrOptionUnwrapper implements Converter<Object, Object> {
+	private enum VavrOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * Class to abstract a single parameter of a query method. It is held in the context of a {@link Parameters} instance.
  * 
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class Parameter {
 
@@ -63,7 +64,6 @@ public class Parameter {
 	/**
 	 * Returns whether the parameter is a special parameter.
 	 * 
-	 * @return
 	 * @see #TYPES
 	 */
 	public boolean isSpecialParameter() {
@@ -72,8 +72,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the {@link Parameter} is to be bound to a query.
-	 * 
-	 * @return
 	 */
 	public boolean isBindable() {
 		return !isSpecialParameter();
@@ -81,8 +79,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the current {@link Parameter} is the one used for dynamic projections.
-	 * 
-	 * @return
 	 */
 	public boolean isDynamicProjectionParameter() {
 		return isDynamicProjectionParameter;
@@ -90,8 +86,6 @@ public class Parameter {
 
 	/**
 	 * Returns the placeholder to be used for the parameter. Can either be a named one or positional.
-	 * 
-	 * @return
 	 */
 	public String getPlaceholder() {
 
@@ -104,8 +98,6 @@ public class Parameter {
 
 	/**
 	 * Returns the position index the parameter is bound to in the context of its surrounding {@link Parameters}.
-	 * 
-	 * @return
 	 */
 	public int getIndex() {
 		return parameter.getParameterIndex();
@@ -113,8 +105,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the parameter is annotated with {@link Param}.
-	 * 
-	 * @return
 	 */
 	public boolean isNamedParameter() {
 		return !isSpecialParameter() && getName() != null;
@@ -122,8 +112,6 @@ public class Parameter {
 
 	/**
 	 * Returns the name of the parameter (through {@link Param} annotation) or null if none can be found.
-	 * 
-	 * @return
 	 */
 	public String getName() {
 
@@ -143,7 +131,6 @@ public class Parameter {
 	/**
 	 * Returns whether the parameter is named explicitly, i.e. annotated with {@link Param}.
 	 * 
-	 * @return
 	 * @since 1.11
 	 */
 	public boolean isExplicitlyNamed() {
@@ -161,8 +148,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the {@link Parameter} is a {@link Pageable} parameter.
-	 * 
-	 * @return
 	 */
 	boolean isPageable() {
 		return Pageable.class.isAssignableFrom(getType());
@@ -170,8 +155,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the {@link Parameter} is a {@link Sort} parameter.
-	 * 
-	 * @return
 	 */
 	boolean isSort() {
 		return Sort.class.isAssignableFrom(getType());
@@ -186,7 +169,6 @@ public class Parameter {
 	 * </code>
 	 * 
 	 * @param parameter must not be {@literal null}.
-	 * @return
 	 */
 	private static boolean isDynamicProjectionParameter(MethodParameter parameter) {
 
@@ -201,14 +183,14 @@ public class Parameter {
 
 		TypeInformation<?> bound = parameterTypes.getTypeArguments().get(0);
 		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
-		return bound.equals(returnType.getActualType());
+
+		return bound.equals(QueryExecutionConverters.unwrapWrapperTypes(returnType));
 	}
 
 	/**
 	 * Returns the component type if the given {@link MethodParameter} is a wrapper type.
 	 * 
 	 * @param parameter must not be {@literal null}.
-	 * @return
 	 */
 	private static Class<?> potentiallyUnwrapParameterType(MethodParameter parameter) {
 
