@@ -170,7 +170,6 @@ public abstract class QueryExecutionConverters {
 	 * Returns whether the given type is a supported wrapper type.
 	 * 
 	 * @param type must not be {@literal null}.
-	 * @return
 	 */
 	public static boolean supports(Class<?> type) {
 
@@ -189,7 +188,6 @@ public abstract class QueryExecutionConverters {
 	 * Returns whether the given wrapper type supports unwrapping.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
 	 */
 	public static boolean supportsUnwrapping(Class<?> type) {
 
@@ -218,8 +216,6 @@ public abstract class QueryExecutionConverters {
 	/**
 	 * Returns the types that are supported on paginating query methods. Will include custom collection types of e.g.
 	 * Javaslang.
-	 * 
-	 * @return
 	 */
 	public static Set<Class<?>> getAllowedPageableTypes() {
 		return Collections.unmodifiableSet(ALLOWED_PAGEABLE_TYPES);
@@ -267,7 +263,6 @@ public abstract class QueryExecutionConverters {
 	 * Unwraps the given source value in case it's one of the currently supported wrapper types detected at runtime.
 	 * 
 	 * @param source can be {@literal null}.
-	 * @return
 	 */
 	@Nullable
 	public static Object unwrap(@Nullable Object source) {
@@ -585,7 +580,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.12
 	 */
-	private static enum GuavaOptionalUnwrapper implements Converter<Object, Object> {
+	private enum GuavaOptionalUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -606,7 +601,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.12
 	 */
-	private static enum Jdk8OptionalUnwrapper implements Converter<Object, Object> {
+	private enum Jdk8OptionalUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -628,7 +623,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Mark Paluch
 	 * @since 1.12
 	 */
-	private static enum ScalOptionUnwrapper implements Converter<Object, Object> {
+	private enum ScalOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -662,7 +657,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 1.13
 	 */
-	private static enum JavaslangOptionUnwrapper implements Converter<Object, Object> {
+	private enum JavaslangOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -693,7 +688,7 @@ public abstract class QueryExecutionConverters {
 	 * @author Oliver Gierke
 	 * @since 2.0
 	 */
-	private static enum VavrOptionUnwrapper implements Converter<Object, Object> {
+	private enum VavrOptionUnwrapper implements Converter<Object, Object> {
 
 		INSTANCE;
 
@@ -718,7 +713,7 @@ public abstract class QueryExecutionConverters {
 		}
 	}
 
-	private static enum IterableToStreamableConverter implements Converter<Iterable<?>, Streamable<?>> {
+	private enum IterableToStreamableConverter implements Converter<Iterable<?>, Streamable<?>> {
 
 		INSTANCE;
 

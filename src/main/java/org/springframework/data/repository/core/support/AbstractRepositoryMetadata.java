@@ -64,7 +64,6 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 * 
 	 * @param repositoryInterface must not be {@literal null}.
 	 * @since 1.9
-	 * @return
 	 */
 	public static RepositoryMetadata getMetadata(Class<?> repositoryInterface) {
 

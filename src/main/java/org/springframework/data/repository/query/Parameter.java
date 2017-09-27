@@ -66,7 +66,6 @@ public class Parameter {
 	/**
 	 * Returns whether the parameter is a special parameter.
 	 * 
-	 * @return
 	 * @see #TYPES
 	 */
 	public boolean isSpecialParameter() {
@@ -75,8 +74,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the {@link Parameter} is to be bound to a query.
-	 * 
-	 * @return
 	 */
 	public boolean isBindable() {
 		return !isSpecialParameter();
@@ -84,8 +81,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the current {@link Parameter} is the one used for dynamic projections.
-	 * 
-	 * @return
 	 */
 	public boolean isDynamicProjectionParameter() {
 		return isDynamicProjectionParameter;
@@ -93,8 +88,6 @@ public class Parameter {
 
 	/**
 	 * Returns the placeholder to be used for the parameter. Can either be a named one or positional.
-	 * 
-	 * @return
 	 */
 	public String getPlaceholder() {
 
@@ -107,8 +100,6 @@ public class Parameter {
 
 	/**
 	 * Returns the position index the parameter is bound to in the context of its surrounding {@link Parameters}.
-	 * 
-	 * @return
 	 */
 	public int getIndex() {
 		return parameter.getParameterIndex();
@@ -116,8 +107,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the parameter is annotated with {@link Param}.
-	 * 
-	 * @return
 	 */
 	public boolean isNamedParameter() {
 		return !isSpecialParameter() && getName().isPresent();
@@ -125,8 +114,6 @@ public class Parameter {
 
 	/**
 	 * Returns the name of the parameter (through {@link Param} annotation).
-	 * 
-	 * @return
 	 */
 	public Optional<String> getName() {
 
@@ -146,7 +133,6 @@ public class Parameter {
 	/**
 	 * Returns whether the parameter is named explicitly, i.e. annotated with {@link Param}.
 	 * 
-	 * @return
 	 * @since 1.11
 	 */
 	public boolean isExplicitlyNamed() {
@@ -164,8 +150,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the {@link Parameter} is a {@link Pageable} parameter.
-	 * 
-	 * @return
 	 */
 	boolean isPageable() {
 		return Pageable.class.isAssignableFrom(getType());
@@ -173,8 +157,6 @@ public class Parameter {
 
 	/**
 	 * Returns whether the {@link Parameter} is a {@link Sort} parameter.
-	 * 
-	 * @return
 	 */
 	boolean isSort() {
 		return Sort.class.isAssignableFrom(getType());
@@ -189,7 +171,6 @@ public class Parameter {
 	 * </code>
 	 * 
 	 * @param parameter must not be {@literal null}.
-	 * @return
 	 */
 	private static boolean isDynamicProjectionParameter(MethodParameter parameter) {
 
@@ -216,7 +197,6 @@ public class Parameter {
 	 * Returns whether the {@link MethodParameter} is wrapped in a wrapper type.
 	 *
 	 * @param parameter must not be {@literal null}.
-	 * @return
 	 * @see QueryExecutionConverters
 	 */
 	private static boolean isWrapped(MethodParameter parameter) {
@@ -227,7 +207,6 @@ public class Parameter {
 	 * Returns whether the {@link MethodParameter} should be unwrapped.
 	 *
 	 * @param parameter must not be {@literal null}.
-	 * @return
 	 * @see QueryExecutionConverters
 	 */
 	private static boolean shouldUnwrap(MethodParameter parameter) {
@@ -239,7 +218,6 @@ public class Parameter {
 	 * unwrapped.
 	 * 
 	 * @param parameter must not be {@literal null}.
-	 * @return
 	 */
 	private static Class<?> potentiallyUnwrapParameterType(MethodParameter parameter) {
 
