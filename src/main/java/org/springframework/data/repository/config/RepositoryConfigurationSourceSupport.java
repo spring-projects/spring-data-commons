@@ -117,4 +117,13 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	public boolean shouldConsiderNestedRepositories() {
 		return false;
 	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#isLimitRepositoryImplementationBasePackages()
+	 */
+	@Override
+	public boolean shouldLimitRepositoryImplementationBasePackages() {
+		return true;
+	}
 }

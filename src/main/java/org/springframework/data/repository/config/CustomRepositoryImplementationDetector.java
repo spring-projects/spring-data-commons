@@ -46,6 +46,7 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @author Peter Rietzler
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 @RequiredArgsConstructor
 public class CustomRepositoryImplementationDetector {
@@ -71,7 +72,7 @@ public class CustomRepositoryImplementationDetector {
 		return detectCustomImplementation( //
 				configuration.getImplementationClassName(), //
 				configuration.getImplementationBeanName(), //
-				configuration.getBasePackages(), //
+				configuration.getImplementationBasePackages(configuration.getImplementationClassName()), //
 				configuration.getExcludeFilters(), //
 				bd -> configuration.getConfigurationSource().generateBeanName(bd));
 	}

@@ -34,19 +34,20 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link DefaultRepositoryConfiguration}.
  * 
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryConfigurationUnitTests {
 
 	@Mock RepositoryConfigurationSource source;
 
-	BeanDefinition definition = new RootBeanDefinition("com.acme.MyRepository");
 	RepositoryConfigurationExtension extension = new SimplerRepositoryConfigurationExtension("factory", "module");
 
 	@Before
@@ -83,6 +84,33 @@ public class DefaultRepositoryConfigurationUnitTests {
 		assertThat(getConfiguration(source).getRepositoryFactoryBeanClassName()).isEqualTo("custom");
 	}
 
+	@Test // DATACMNS-1172
+	public void limitsImplementationBasePackages() {
+
+		when(source.shouldLimitRepositoryImplementationBasePackages()).thenReturn(true);
+
+		assertThat(getConfiguration(source).getImplementationBasePackages("com.acme.MyRepository"))
+				.containsOnly("com.acme");
+	}
+
+	@Test // DATACMNS-1172
+	public void limitsImplementationBasePackagesOfNestedClass() {
+
+		when(source.shouldLimitRepositoryImplementationBasePackages()).thenReturn(true);
+
+		assertThat(getConfiguration(source).getImplementationBasePackages(NestedInterface.class.getName()))
+				.containsOnly("org.springframework.data.repository.config");
+	}
+
+	@Test // DATACMNS-1172
+	public void shouldNotLimitImplementationBasePackages() {
+
+		when(source.getBasePackages()).thenReturn(Streamable.of("com", "org.coyote"));
+
+		assertThat(getConfiguration(source).getImplementationBasePackages("com.acme.MyRepository")).contains("com",
+				"org.coyote");
+	}
+
 	private DefaultRepositoryConfiguration<RepositoryConfigurationSource> getConfiguration(
 			RepositoryConfigurationSource source) {
 		RootBeanDefinition beanDefinition = createBeanDefinition();
@@ -105,4 +133,6 @@ public class DefaultRepositoryConfigurationUnitTests {
 
 		return beanDefinition;
 	}
+
+	private interface NestedInterface {}
 }
