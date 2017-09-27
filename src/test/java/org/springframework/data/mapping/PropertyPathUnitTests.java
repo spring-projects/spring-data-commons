@@ -34,6 +34,7 @@ import org.springframework.data.util.TypeInformation;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Ales Justin
  */
 @SuppressWarnings("unused")
 public class PropertyPathUnitTests {
@@ -348,6 +349,12 @@ public class PropertyPathUnitTests {
 	@Test // DATACMNS-1120
 	public void cachesPropertyPathsByPathAndType() {
 		assertThat(from("userName", Foo.class)).isSameAs(from("userName", Foo.class));
+	}
+
+	@Test // DATACMNS-1176
+	public void usePropertyPathMapper() {
+		PropertyPath path = from("bar", Sample.class, ((owningType, name) -> owningType.getProperty("user")));
+		assertThat(path.getType()).isEqualTo(FooBar.class);
 	}
 
 	private class Foo {
