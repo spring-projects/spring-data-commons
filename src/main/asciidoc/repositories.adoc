@@ -1,4 +1,4 @@
-:spring-framework-docs: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+:spring-framework-docs: http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/
 
 [[repositories]]
 = Working with Spring Data Repositories
@@ -484,7 +484,7 @@ NOTE: Not all Spring Data modules currently support `Stream<T>` as a return type
 [[repositories.query-async]]
 === Async query results
 
-Repository queries can be executed asynchronously using link:{spring-framework-docs}#scheduling[Spring's asynchronous method execution capability]. This means the method will return immediately upon invocation and the actual query execution will occur in a task that has been submitted to a Spring TaskExecutor.
+Repository queries can be executed asynchronously using link:{spring-framework-docs}integration.html#scheduling[Spring's asynchronous method execution capability]. This means the method will return immediately upon invocation and the actual query execution will occur in a task that has been submitted to a Spring TaskExecutor.
 
 ====
 [source, java]
@@ -533,7 +533,7 @@ Each Spring Data module includes a repositories element that allows you to simpl
 In the preceding example, Spring is instructed to scan `com.acme.repositories` and all its sub-packages for interfaces extending `Repository` or one of its sub-interfaces. For each interface found, the infrastructure registers the persistence technology-specific `FactoryBean` to create the appropriate proxies that handle invocations of the query methods. Each bean is registered under a bean name that is derived from the interface name, so an interface of `UserRepository` would be registered under `userRepository`. The `base-package` attribute allows wildcards, so that you can define a pattern of scanned packages.
 
 ==== Using filters
-By default the infrastructure picks up every interface extending the persistence technology-specific `Repository` sub-interface located under the configured base package and creates a bean instance for it. However, you might want more fine-grained control over which interfaces bean instances get created for. To do this you use `<include-filter />` and `<exclude-filter />` elements inside `<repositories />`. The semantics are exactly equivalent to the elements in Spring's context namespace. For details, see link:{spring-framework-docs}/beans.html#beans-scanning-filters[Spring reference documentation] on these elements.
+By default the infrastructure picks up every interface extending the persistence technology-specific `Repository` sub-interface located under the configured base package and creates a bean instance for it. However, you might want more fine-grained control over which interfaces bean instances get created for. To do this you use `<include-filter />` and `<exclude-filter />` elements inside `<repositories />`. The semantics are exactly equivalent to the elements in Spring's context namespace. For details, see link:{spring-framework-docs}/core.html#beans-scanning-filters[Spring reference documentation] on these elements.
 
 For example, to exclude certain interfaces from instantiation as repository, you could use the following configuration:
 
@@ -551,7 +551,7 @@ This example excludes all interfaces ending in `SomeRepository` from being insta
 
 [[repositories.create-instances.java-config]]
 === JavaConfig
-The repository infrastructure can also be triggered using a store-specific `@Enable${store}Repositories` annotation on a JavaConfig class. For an introduction into Java-based configuration of the Spring container, see the reference documentation.footnote:[link:{spring-framework-docs}/beans.html#beans-java[JavaConfig in the Spring reference documentation]]
+The repository infrastructure can also be triggered using a store-specific `@Enable${store}Repositories` annotation on a JavaConfig class. For an introduction into Java-based configuration of the Spring container, see the reference documentation.footnote:[link:{spring-framework-docs}/core.html#beans-java[JavaConfig in the Spring reference documentation]]
 
 A sample configuration to enable Spring Data repositories looks something like this.
 
@@ -1285,7 +1285,7 @@ be read and deserialized via a Jackson `ObjectMapper`.
 
 The type to which the JSON object will be unmarshalled to will be determined by inspecting the `_class` attribute of the JSON document. The infrastructure will eventually select the appropriate repository to handle the object just deserialized.
 
-To rather use XML to define the data the repositories shall be populated with, you can use the `unmarshaller-populator` element. You configure it to use one of the XML marshaller options Spring OXM provides you with. See the link:{spring-framework-docs}/oxm.html[Spring reference documentation] for details.
+To rather use XML to define the data the repositories shall be populated with, you can use the `unmarshaller-populator` element. You configure it to use one of the XML marshaller options Spring OXM provides you with. See the link:{spring-framework-docs}/data-access.html#oxm[Spring reference documentation] for details.
 
 .Declaring an unmarshalling repository populator (using JAXB)
 ====
