@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.config;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
@@ -26,6 +28,7 @@ import org.springframework.util.StringUtils;
  * Default implementation of {@link RepositoryConfiguration}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSource>
 		implements RepositoryConfiguration<T> {
@@ -76,6 +79,15 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 */
 	public Iterable<String> getBasePackages() {
 		return configurationSource.getBasePackages();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getBasePackages(String)
+	 */
+	@Override
+	public Iterable<String> getImplementationBasePackages(String interfaceClassName) {
+		return Collections.singleton(ClassUtils.getPackageName(interfaceClassName));
 	}
 
 	/* 

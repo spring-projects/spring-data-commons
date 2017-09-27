@@ -34,6 +34,15 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	Iterable<String> getBasePackages();
 
 	/**
+	 * Returns the base packages to scan for repository implementations.
+	 *
+	 * @param interfaceClassName class name of the interface.
+	 * @return
+	 * @since 1.13.8
+	 */
+	Iterable<String> getImplementationBasePackages(String interfaceClassName);
+
+	/**
 	 * Returns the interface name of the repository.
 	 * 
 	 * @return

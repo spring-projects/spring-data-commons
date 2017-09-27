@@ -15,7 +15,8 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
@@ -31,12 +32,14 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.data.repository.config.basepackage.PersonRepositoryImpl;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 
 /**
  * Integration test for {@link RepositoryBeanDefinitionRegistrarSupport}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
@@ -64,6 +67,17 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		assertBeanDefinitionRegisteredFor("myRepository");
 		assertNoBeanDefinitionRegisteredFor("profileRepository");
+	}
+
+	@Test // DATACMNS-1172
+	public void shouldLimitImplementationBasePackages() {
+
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(LimitsImplementationBasePackages.class, true);
+
+		registrar.registerBeanDefinitions(metadata, registry);
+
+		assertBeanDefinitionRegisteredFor("personRepository");
+		assertNoBeanDefinitionRegisteredFor("personRepositoryImpl");
 	}
 
 	@Test // DATACMNS-360
@@ -130,4 +144,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 			return "commons";
 		}
 	}
+
+	@EnableRepositories(basePackageClasses = PersonRepositoryImpl.class)
+	static class LimitsImplementationBasePackages {}
 }
