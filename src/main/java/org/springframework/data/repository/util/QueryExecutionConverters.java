@@ -292,6 +292,7 @@ public abstract class QueryExecutionConverters {
 	 * Recursively unwraps well known wrapper types from the given {@link TypeInformation}.
 	 *
 	 * @param type must not be {@literal null}.
+	 * @return will never be {@literal null}.
 	 */
 	public static TypeInformation<?> unwrapWrapperTypes(TypeInformation<?> type) {
 
@@ -299,7 +300,9 @@ public abstract class QueryExecutionConverters {
 
 		Class<?> rawType = type.getType();
 
-		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) || rawType.isArray() || supports(rawType)
+		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) //
+				|| rawType.isArray() //
+				|| supports(rawType) //
 				|| Stream.class.isAssignableFrom(rawType);
 
 		return needToUnwrap ? unwrapWrapperTypes(type.getRequiredComponentType()) : type;
