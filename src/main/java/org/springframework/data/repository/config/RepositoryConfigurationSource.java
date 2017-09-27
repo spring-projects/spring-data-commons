@@ -64,17 +64,6 @@ public interface RepositoryConfigurationSource {
 	Optional<String> getRepositoryImplementationPostfix();
 
 	/**
-	 * Returns whether to limit repository implementation base packages for custom implementation scanning. If
-	 * {@literal true}, then custom implementation scanning considers only the package of the repository/fragment
-	 * interface and its subpackages for a scan. Otherwise, all {@link #getBasePackages()} are scanned for repository
-	 * implementations
-	 * 
-	 * @return {@literal true} if base packages are limited to the actual repository package.
-	 * @since 2.0
-	 */
-	boolean shouldLimitRepositoryImplementationBasePackages();
-
-	/**
 	 * @return
 	 */
 	Optional<String> getNamedQueryLocation();

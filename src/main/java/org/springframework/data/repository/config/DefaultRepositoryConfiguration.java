@@ -78,10 +78,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 */
 	@Override
 	public Streamable<String> getImplementationBasePackages() {
-
-		return configurationSource.shouldLimitRepositoryImplementationBasePackages()
-				? Streamable.of(ClassUtils.getPackageName(getRepositoryInterface()))
-				: getBasePackages();
+		return Streamable.of(ClassUtils.getPackageName(getRepositoryInterface()));
 	}
 
 	/* 

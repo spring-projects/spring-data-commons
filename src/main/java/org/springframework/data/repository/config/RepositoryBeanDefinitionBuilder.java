@@ -311,10 +311,7 @@ class RepositoryBeanDefinitionBuilder {
 		 * @return
 		 */
 		public Iterable<String> getBasePackages() {
-
-			return configuration.getConfigurationSource().shouldLimitRepositoryImplementationBasePackages() ? //
-					Collections.singleton(ClassUtils.getPackageName(fragmentInterfaceName)) : //
-					configuration.getImplementationBasePackages();
+			return Collections.singleton(ClassUtils.getPackageName(fragmentInterfaceName));
 		}
 
 		/**

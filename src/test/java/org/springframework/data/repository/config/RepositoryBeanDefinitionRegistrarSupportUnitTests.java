@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
@@ -96,17 +95,6 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		assertNoBeanDefinitionRegisteredFor("fragmentImpl");
 	}
 
-	@Test // DATACMNS-1172
-	public void shouldNotLimitImplementationBasePackages() {
-
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(UnlimitedImplementationBasePackages.class, true);
-
-		registrar.registerBeanDefinitions(metadata, registry);
-
-		assertBeanDefinitionRegisteredFor("personRepository");
-		assertBeanDefinitionRegisteredFor("fragmentImpl");
-	}
-
 	@Test // DATACMNS-360
 	public void registeredProfileRepositoriesIfProfileActivated() {
 
@@ -179,7 +167,4 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 	@EnableRepositories(basePackageClasses = FragmentImpl.class)
 	static class LimitsImplementationBasePackages {}
-
-	@EnableRepositories(basePackageClasses = FragmentImpl.class, limitImplementationBasePackages = false)
-	static class UnlimitedImplementationBasePackages {}
 }

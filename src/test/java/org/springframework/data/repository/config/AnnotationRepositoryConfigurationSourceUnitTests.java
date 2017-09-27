@@ -103,14 +103,6 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(source.shouldConsiderNestedRepositories()).isTrue();
 	}
 
-	@Test // DATACMNS-1172
-	public void returnsLimitImplementationBasePackages() {
-
-		assertThat(getConfigSource(DefaultConfiguration.class).shouldLimitRepositoryImplementationBasePackages()).isTrue();
-		assertThat(getConfigSource(DefaultConfigurationWithoutBasePackageLimit.class)
-				.shouldLimitRepositoryImplementationBasePackages()).isFalse();
-	}
-
 	@Test // DATACMNS-456
 	public void findsStringAttributeByName() {
 
@@ -163,9 +155,6 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	@EnableRepositories(considerNestedRepositories = true)
 	static class DefaultConfigurationWithNestedRepositories {}
-
-	@EnableRepositories(limitImplementationBasePackages = false)
-	static class DefaultConfigurationWithoutBasePackageLimit {}
 
 	@EnableRepositories(excludeFilters = { @Filter(Primary.class) })
 	static class ConfigurationWithExplicitFilter {}
