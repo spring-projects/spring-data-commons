@@ -122,6 +122,9 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 		 */
 		ENCAPSULATED {
 
+			private final @Nullable Method privateLookupIn = ReflectionUtils.findMethod(MethodHandles.class,
+					"privateLookupIn", Class.class, Lookup.class);
+
 			/*
 			 * (non-Javadoc)
 			 * @see org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.MethodHandleLookup#lookup(java.lang.reflect.Method)
@@ -131,8 +134,8 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 
 				MethodType methodType = MethodType.methodType(method.getReturnType(), method.getParameterTypes());
 
-				return MethodHandles.lookup().findSpecial(method.getDeclaringClass(), method.getName(), methodType,
-						method.getDeclaringClass());
+				return getLookup(method.getDeclaringClass()).findSpecial(method.getDeclaringClass(), method.getName(),
+						methodType, method.getDeclaringClass());
 			}
 
 			/*
@@ -142,6 +145,21 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 			@Override
 			boolean isAvailable() {
 				return true;
+			}
+
+			private Lookup getLookup(Class<?> declaringClass) {
+
+				Lookup lookup = MethodHandles.lookup();
+
+				if (privateLookupIn == null) {
+					return lookup;
+				}
+
+				try {
+					return (Lookup) privateLookupIn.invoke(MethodHandles.class, declaringClass, lookup);
+				} catch (ReflectiveOperationException e) {
+					return lookup;
+				}
 			}
 		};
 
