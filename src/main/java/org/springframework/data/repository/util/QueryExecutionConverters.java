@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -257,7 +256,7 @@ public abstract class QueryExecutionConverters {
 		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) //
 				|| rawType.isArray() //
 				|| supports(rawType) //
-				|| Stream.class.isAssignableFrom(rawType);
+				|| org.springframework.data.util.ReflectionUtils.isJava8StreamType(rawType);
 
 		return needToUnwrap ? unwrapWrapperTypes(type.getComponentType()) : type;
 	}
