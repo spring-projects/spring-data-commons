@@ -1,6 +1,28 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.0.RELEASE (2017-10-02)
+---------------------------------------------
+* DATACMNS-1184 - QuerydslPredicateExecutor Javadoc allows null predicates.
+* DATACMNS-1179 - Adapt to changed Spring Framework 5 documentation structure.
+* DATACMNS-1177 - Parameter.isDynamicProjectionParameter() does not handle wrapper types properly.
+* DATACMNS-1175 - EntityInstantiators deallocate params required for instantiation of parent object.
+* DATACMNS-1173 - AnnotationRevisionMetadata throws ClassCastException.
+* DATACMNS-1172 - Too excessive component scanning for repository implementation fragments causing slow bootstrap.
+* DATACMNS-1171 - PreferredConstructorDiscoverer attempts constructor discovery on synthetic Kotlin class.
+* DATACMNS-1170 - PreferredConstructor discovery fails for Kotlin types without primary constructor.
+* DATACMNS-1168 - QuerydslPredicateBuilder must not return null for empty predicate.
+* DATACMNS-1167 - Add explicit automatic module name for Java 9.
+* DATACMNS-1166 - Upgrade to Vavr 0.9.1.
+* DATACMNS-1165 - Add support for using Streamable as return type in repository methods.
+* DATACMNS-1163 - Aggregate event publishing should prefer parameters instead of returned values from save(…).
+* DATACMNS-1162 - Improve AbstractAggregateRoot to support immutable aggregates.
+* DATACMNS-1161 - Rename PersistentProperty.getPersistentEntityType() to a plural name since it returns an Iterable..
+* DATACMNS-1159 - Upgrade to OpenWebBeans 2.0.1.
+* DATACMNS-1157 - Enforce nullable/non-null API constraints on repository query methods.
+* DATACMNS-1156 - Release 2.0 GA (Kay).
+
+
 Changes in version 2.0.0.RC3 (2017-09-11)
 -----------------------------------------
 * DATACMNS-1153 - Remove unreachable assertion in XmlRepositoryConfigurationSource.
