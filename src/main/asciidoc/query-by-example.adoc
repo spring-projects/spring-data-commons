@@ -49,7 +49,7 @@ public class Person {
 ----
 ====
 
-This is a simple domain object. You can use it to create an `Example`. By default, fields having `null` values are ignored, and strings are matched using the store specific defaults. Examples can be built by either using the `of` factory method or by using <<query-by-example.matcher,`ExampleMatcher`>>. `Example` is immutable.
+This is a simple domain object. You can use it to create an `Example`. By default, fields having `null` values are ignored, and strings are matched using the store specific defaults. Examples can be built by either using the `of` factory method or by using <<query-by-example.matchers,`ExampleMatcher`>>. `Example` is immutable.
 
 .Simple Example
 ====
@@ -81,8 +81,6 @@ public interface QueryByExampleExecutor<T> {
 }
 ----
 ====
-
-You can read more about <<query-by-example.execution, Query by Example Execution>> below.
 
 [[query-by-example.matchers]]
 == Example matchers
