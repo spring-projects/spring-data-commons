@@ -26,15 +26,15 @@ public interface CrudRepository<T, ID extends Serializable>
 
     <S extends T> S save(S entity); <1>
 
-    T findOne(ID primaryKey);       <2>
+    Optional<T> findById(ID primaryKey);       <2>
 
     Iterable<T> findAll();          <3>
 
-    Long count();                   <4>
+    long count();                   <4>
 
     void delete(T entity);          <5>
 
-    boolean exists(ID primaryKey);  <6>
+    boolean existsById(ID primaryKey);  <6>
 
     // … more functionality omitted.
 }
@@ -79,9 +79,9 @@ In addition to query methods, query derivation for both count and delete queries
 ====
 [source, java]
 ----
-public interface UserRepository extends CrudRepository<User, Long> {
+interface UserRepository extends CrudRepository<User, Long> {
 
-  Long countByLastname(String lastname);
+  long countByLastname(String lastname);
 }
 ----
 ====
@@ -90,12 +90,11 @@ public interface UserRepository extends CrudRepository<User, Long> {
 ====
 [source, java]
 ----
-public interface UserRepository extends CrudRepository<User, Long> {
+interface UserRepository extends CrudRepository<User, Long> {
 
-  Long deleteByLastname(String lastname);
+  long deleteByLastname(String lastname);
 
   List<User> removeByLastname(String lastname);
-
 }
 ----
 ====
@@ -164,12 +163,15 @@ Also, note that the JavaConfig variant doesn't configure a package explictly as 
 
 [source, java]
 ----
-public class SomeClient {
+class SomeClient {
 
-  @Autowired
-  private PersonRepository repository;
+  private final PersonRepository repository;
 
-  public void doSomething() {
+  SomeClient(PersonRepository repository) {
+    this.repository = repository;
+  }
+
+  void doSomething() {
     List<Person> persons = repository.findByLastname("Matthews");
   }
 }
@@ -196,9 +198,9 @@ NOTE: This allows you to define your own abstractions on top of the provided Spr
 @NoRepositoryBean
 interface MyBaseRepository<T, ID extends Serializable> extends Repository<T, ID> {
 
-  T findOne(ID id);
+  Optional<T> findById(ID id);
 
-  T save(T entity);
+  <S extends T> S save(S entity);
 }
 
 interface UserRepository extends MyBaseRepository<User, Long> {
@@ -207,7 +209,7 @@ interface UserRepository extends MyBaseRepository<User, Long> {
 ----
 ====
 
-In this first step you defined a common base interface for all your domain repositories and exposed `findOne(…)` as well as `save(…)`.These methods will be routed into the base repository implementation of the store of your choice provided by Spring Data ,e.g. in the case if JPA `SimpleJpaRepository`, because they are matching the method signatures in `CrudRepository`. So the `UserRepository` will now be able to save users, and find single ones by id, as well as triggering a query to find `Users` by their email address.
+In this first step you defined a common base interface for all your domain repositories and exposed `findById(…)` as well as `save(…)`.These methods will be routed into the base repository implementation of the store of your choice provided by Spring Data ,e.g. in the case if JPA `SimpleJpaRepository`, because they are matching the method signatures in `CrudRepository`. So the `UserRepository` will now be able to save users, and find single ones by id, as well as triggering a query to find `Users` by their email address.
 
 NOTE: Note, that the intermediate repository interface is annotated with `@NoRepositoryBean`. Make sure you add that annotation to all repository interfaces that Spring Data should not create instances for at runtime.
 
@@ -269,7 +271,7 @@ interface PersonRepository extends Repository<Person, Long> {
 }
 
 @Entity
-public class Person {
+class Person {
   …
 }
 
@@ -278,7 +280,7 @@ interface UserRepository extends Repository<User, Long> {
 }
 
 @Document
-public class User {
+class User {
   …
 }
 ----
@@ -299,7 +301,7 @@ interface MongoDBPersonRepository extends Repository<Person, Long> {
 
 @Entity
 @Document
-public class Person {
+class Person {
   …
 }
 ----
@@ -345,7 +347,7 @@ The query builder mechanism built into Spring Data repository infrastructure is 
 ====
 [source, java]
 ----
-public interface PersonRepository extends Repository<User, Long> {
+interface PersonRepository extends Repository<User, Long> {
 
   List<Person> findByEmailAddressAndLastname(EmailAddress emailAddress, String lastname);
 
@@ -564,7 +566,7 @@ A sample configuration to enable Spring Data repositories looks something like t
 class ApplicationConfiguration {
 
   @Bean
-  public EntityManagerFactory entityManagerFactory() {
+  EntityManagerFactory entityManagerFactory() {
     // …
   }
 }
@@ -601,7 +603,7 @@ To enrich a repository with custom functionality, you first define a fragment in
 [source, java]
 ----
 interface CustomizedUserRepository {
-  public void someCustomMethod(User user);
+  void someCustomMethod(User user);
 }
 ----
 ====
@@ -788,12 +790,12 @@ The preceding approach requires customization of all repository interfaces when 
 ====
 [source, java]
 ----
-public class MyRepositoryImpl<T, ID extends Serializable>
+class MyRepositoryImpl<T, ID extends Serializable>
   extends SimpleJpaRepository<T, ID> {
 
   private final EntityManager entityManager;
 
-  public MyRepositoryImpl(JpaEntityInformation entityInformation,
+  MyRepositoryImpl(JpaEntityInformation entityInformation,
                           EntityManager entityManager) {
     super(entityInformation, entityManager);
 
@@ -946,15 +948,15 @@ Several Spring Data modules offer integration with Querydsl via `QueryDslPredica
 ----
 public interface QueryDslPredicateExecutor<T> {
 
-    T findOne(Predicate predicate);             <1>
+  Optional<T> findById(Predicate predicate);  <1>
 
-    Iterable<T> findAll(Predicate predicate);   <2>
+  Iterable<T> findAll(Predicate predicate);   <2>
 
-    long count(Predicate predicate);            <3>
+  long count(Predicate predicate);            <3>
 
-    boolean exists(Predicate predicate);        <4>
+  boolean exists(Predicate predicate);        <4>
 
-    // … more functionality omitted.
+  // … more functionality omitted.
 }
 ----
 <1> Finds and returns a single entity matching the `Predicate`.
@@ -999,7 +1001,7 @@ Spring Data modules ships with a variety of web support if the module supports t
 @Configuration
 @EnableWebMvc
 @EnableSpringDataWebSupport
-class WebConfiguration { }
+class WebConfiguration {}
 ----
 ====
 
@@ -1035,10 +1037,10 @@ The `DomainClassConverter` allows you to use domain types in your Spring MVC con
 ----
 @Controller
 @RequestMapping("/users")
-public class UserController {
+class UserController {
 
   @RequestMapping("/{id}")
-  public String showUserForm(@PathVariable("id") User user, Model model) {
+  String showUserForm(@PathVariable("id") User user, Model model) {
 
     model.addAttribute("user", user);
     return "userForm";
@@ -1047,7 +1049,7 @@ public class UserController {
 ----
 ====
 
-As you can see the method receives a User instance directly and no further lookup is necessary. The instance can be resolved by letting Spring MVC convert the path variable into the id type of the domain class first and eventually access the instance through calling `findOne(…)` on the repository instance registered for the domain type.
+As you can see the method receives a User instance directly and no further lookup is necessary. The instance can be resolved by letting Spring MVC convert the path variable into the id type of the domain class first and eventually access the instance through calling `findById(…)` on the repository instance registered for the domain type.
 
 NOTE: Currently the repository has to implement `CrudRepository` to be eligible to be discovered for conversion.
 
@@ -1061,12 +1063,16 @@ The configuration snippet above also registers a `PageableHandlerMethodArgumentR
 ----
 @Controller
 @RequestMapping("/users")
-public class UserController {
+class UserController {
 
-  @Autowired UserRepository repository;
+  private final UserRepository repository;
+
+  UserController(UserRepository repository) {
+    this.repository = repository;
+  }
 
   @RequestMapping
-  public String showUsers(Model model, Pageable pageable) {
+  String showUsers(Model model, Pageable pageable) {
 
     model.addAttribute("users", repository.findAll(pageable));
     return "users";
@@ -1100,7 +1106,7 @@ In case you need multiple `Pageable` or `Sort` instances to be resolved from the
 
 [source, java]
 ----
-public String showUsers(Model model,
+String showUsers(Model model,
       @Qualifier("foo") Pageable first,
       @Qualifier("bar") Pageable second) { … }
 ----
@@ -1224,7 +1230,7 @@ interface UserRepository extends CrudRepository<User, String>,
                                  QuerydslBinderCustomizer<QUser> {               <2>
 
   @Override
-  default public void customize(QuerydslBindings bindings, QUser user) {
+  default void customize(QuerydslBindings bindings, QUser user) {
 
     bindings.bind(user.username).first((path, value) -> path.contains(value))    <3>
     bindings.bind(String.class)
@@ -1324,21 +1330,20 @@ Given you are developing a Spring MVC web application you typically have to reso
 ----
 @Controller
 @RequestMapping("/users")
-public class UserController {
+class UserController {
 
   private final UserRepository userRepository;
 
-  @Autowired
-  public UserController(UserRepository userRepository) {
+  UserController(UserRepository userRepository) {
     Assert.notNull(repository, "Repository must not be null!");
     this.userRepository = userRepository;
   }
 
   @RequestMapping("/{id}")
-  public String showUserForm(@PathVariable("id") Long id, Model model) {
+  String showUserForm(@PathVariable("id") Long id, Model model) {
 
     // Do null check for id
-    User user = userRepository.findOne(id);
+    User user = userRepository.findById(id);
     // Do null check for user
 
     model.addAttribute("user", user);
@@ -1347,7 +1352,7 @@ public class UserController {
 }
 ----
 
-First you declare a repository dependency for each controller to look up the entity managed by the controller or repository respectively. Looking up the entity is boilerplate as well, as it's always a `findOne(…)` call. Fortunately Spring provides means to register custom components that allow conversion between a `String` value to an arbitrary type.
+First you declare a repository dependency for each controller to look up the entity managed by the controller or repository respectively. Looking up the entity is boilerplate as well, as it's always a `findById(…)` call. Fortunately Spring provides means to register custom components that allow conversion between a `String` value to an arbitrary type.
 
 [[web.legacy.property-editors]]
 ===== PropertyEditors
@@ -1373,14 +1378,13 @@ If you have configured Spring MVC as in the preceding example, you can configure
 ----
 @Controller
 @RequestMapping("/users")
-public class UserController {
+class UserController {
 
   @RequestMapping("/{id}")
-  public String showUserForm(@PathVariable("id") User user, Model model) {
+  String showUserForm(@PathVariable("id") User user, Model model) {
 
     model.addAttribute("user", user);
     return "userForm";
   }
 }
 ----
-
