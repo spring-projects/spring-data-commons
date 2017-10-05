@@ -22,21 +22,21 @@ The central interface in Spring Data repository abstraction is `Repository` (pro
 [source, java]
 ----
 public interface CrudRepository<T, ID extends Serializable>
-    extends Repository<T, ID> {
+  extends Repository<T, ID> {
 
-    <S extends T> S save(S entity); <1>
+  <S extends T> S save(S entity);      <1>
 
-    Optional<T> findById(ID primaryKey);       <2>
+  Optional<T> findById(ID primaryKey); <2>
 
-    Iterable<T> findAll();          <3>
+  Iterable<T> findAll();               <3>
 
-    long count();                   <4>
+  long count();                        <4>
 
-    void delete(T entity);          <5>
+  void delete(T entity);               <5>
 
-    boolean existsById(ID primaryKey);  <6>
+  boolean existsById(ID primaryKey);   <6>
 
-    // … more functionality omitted.
+  // … more functionality omitted.
 }
 ----
 <1> Saves the given entity.
