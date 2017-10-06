@@ -214,6 +214,82 @@ In this first step you defined a common base interface for all your domain repos
 NOTE: Note, that the intermediate repository interface is annotated with `@NoRepositoryBean`. Make sure you add that annotation to all repository interfaces that Spring Data should not create instances for at runtime.
 
 
+[[repositories.nullability]]
+=== Null handling of repository methods
+
+As of Spring Data 2.0, repository CRUD methods that return an individual aggregate instance use Java 8's `Optional` to indicate the potential absence of a value.
+Besides that, Spring Data supports to return other wrapper types on query methods:
+
+* `com.google.common.base.Optional`
+* `scala.Option`
+* `io.vavr.control.Option`
+* `javaslang.control.Option` (deprecated as Javaslang is deprecated)
+
+Alternatively query methods can choose not to use a wrapper type at all.
+The absence of a query result will then be indicated by returning `null`.
+Repository methods returning collection like values will never return null but an empty value.
+
+[[repositories.nullability.annotations]]
+==== Nullability annotations
+
+To properly validate nullability constraints on a repository method at runtime, annotations can be defined to define whether query methods are supposed to return `null`.
+To enable this, non-nullability needs to be activated on the package level, e.g. using Spring's `@NonNullApi` in `package-info.java`:
+
+.Declaring non-nullablity in `package-info.java`
+====
+[source, java]
+----
+@NonNullApi
+package com.acme;
+----
+====
+
+Once that is in place, repository query method will get runtime execution validation of the nullability constraints and exceptions will be thrown in case a query execution result violates the defined constrained, i.e. the method would return `null` for some reason but is declared as non-nullable (the default with the annotation defined on the package the repository resides in).
+If you want to opt-in to nullable results again, e.g. `@Nullable` can be used on a method selectively.
+Using the aforementioned result wrapper types will continue to work as expected, i.e. an empty result will be translated into the value representing absence.
+
+.Using different nullability constraints
+====
+[source, java]
+----
+package com.acme;
+
+interface UserRepository extends Repository<User, Long> {
+
+  User getByEmailAddress(EmailAddress emailAddress); <1>
+
+  @Nullable
+  User findByEmailAddess(@Nullable EmailAddress emailAdress); <2>
+
+  Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); <3>
+}
+----
+<1> Will throw an `EmptyResultDataAccessException` in case the query executed does not produce a result. Will throw an `IllegalArgumentException` in case the `emailAddress` handed to the method is `null`.
+<2> Will return `null` in case the query executed does not produce a result. Also accepts `null` as value for `emailAddress`.
+<3> Will return `Optional.empty()` in case the query executed does not produce a result. Will throw an `IllegalArgumentException` in case the `emailAddress` handed to the method is `null`.
+====
+
+[[repositories.nullability.kotlin]]
+==== Nullability in Kotlin-based repositories
+
+Kotlin has the definition of nullability constraints baked into the language.
+Spring Data repositories using the language mechanism to define those constraints will automatically get the same runtime checks applied:
+
+.Using nullability constraints on Kotlin repositories
+====
+[source, kotlin]
+----
+interface UserRepository : Repository<User, String> {
+
+  fun findByUsername(username: String): User <1>
+
+  fun findByFirstname(firstname: String?): User? <2>
+}
+----
+<1> The method defines both the parameter as non-nullable (the Kotlin default) as well as the result. The Kotlin compiler will already reject method invocations trying to hand `null` into the method. In case the query execution yields an empty result, an `EmptyResultDataAccessException` will be thrown.
+<2> This method accepts `null` as parameter for `firstname` and return `null` in case the query execution does not produce a result.
+====
+
 [[repositories.multiple-modules]]
 === Using Repositories with multiple Spring Data modules
 
