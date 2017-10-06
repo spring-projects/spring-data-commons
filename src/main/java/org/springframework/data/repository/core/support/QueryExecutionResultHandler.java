@@ -66,11 +66,19 @@ class QueryExecutionResultHandler {
 
 		Class<?> expectedReturnType = returnTypeDescriptor.getType();
 
+		// Early return if the raw value matches
+
 		if (result != null && expectedReturnType.isInstance(result)) {
 			return result;
 		}
 
 		result = unwrapOptional(result);
+
+		// Early return if the unrwapped value matches
+
+		if (result != null && expectedReturnType.isInstance(result)) {
+			return result;
+		}
 
 		if (QueryExecutionConverters.supports(expectedReturnType)) {
 
