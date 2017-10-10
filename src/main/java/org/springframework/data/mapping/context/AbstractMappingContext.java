@@ -301,12 +301,13 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 
 		Class<?> type = typeInformation.getType();
+		E entity = null;
 
 		try {
 
 			write.lock();
 
-			final E entity = createPersistentEntity(typeInformation);
+			entity = createPersistentEntity(typeInformation);
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
 			persistentEntities.put(typeInformation, entity);
@@ -331,18 +332,18 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				throw e;
 			}
 
-			// Inform listeners
-			if (null != applicationEventPublisher) {
-				applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(this, entity));
-			}
-
-			return entity;
-
 		} catch (BeansException e) {
 			throw new MappingException(e.getMessage(), e);
 		} finally {
 			write.unlock();
 		}
+
+		// Inform listeners
+		if (applicationEventPublisher != null && entity != null) {
+			applicationEventPublisher.publishEvent(new MappingContextEvent<E, P>(this, entity));
+		}
+
+		return entity;
 	}
 
 	/* 
