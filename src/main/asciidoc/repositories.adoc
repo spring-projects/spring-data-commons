@@ -1,4 +1,5 @@
-:spring-framework-docs: http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/
+:spring-framework-docs: http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference
+:spring-framework-javadoc: https://docs.spring.io/spring/docs/{springVersion}/javadoc-api
 
 [[repositories]]
 = Working with Spring Data Repositories
@@ -227,26 +228,21 @@ Besides that, Spring Data supports to return other wrapper types on query method
 
 Alternatively query methods can choose not to use a wrapper type at all.
 The absence of a query result will then be indicated by returning `null`.
-Repository methods returning collections, wrappers, and streams are guaranteed never to return `null` but rather the corresponding empty representation.
+Repository methods returning collections, collection alternatives, wrappers, and streams are guaranteed never to return `null` but rather the corresponding empty representation.
+See <<repository-query-return-types>> for details.
 
 [[repositories.nullability.annotations]]
 ==== Nullability annotations
 
-You can express null-safe repository methods by using link:{spring-framework-docs}core.html#null-safety[Spring Framework's annotations].
-They provide a tooling-friendly approach and opt-in for `null` checks during runtime:
+You can express nullability constraints for repository methods using link:{spring-framework-docs}/core.html#null-safety[Spring Framework's nullability annotations].
+They provide a tooling-friendly approach and opt-in `null` checks during runtime:
 
-* https://docs.spring.io/spring-framework/docs/{springVersion}/javadoc-api/org/springframework/lang/NonNull.html[`@NonNull`]
- annotation where a specific parameter or return value cannot be `null`
+* {spring-framework-javadoc}/org/springframework/lang/NonNullApi.html[`@NonNullApi`] – to be used on the package level to declare that the default behavior for parameters and return values is to not accept or produce `null` values.
+* {spring-framework-javadoc}/org/springframework/lang/NonNull.html[`@NonNull`] – to be used on a parameter or return value that must not be `null`
  (not needed on parameter and return value where `@NonNullApi` applies).
-
-* https://docs.spring.io/spring-framework/docs/{springVersion}/javadoc-api/org/springframework/lang/Nullable.html[`@Nullable`]
- annotation where a specific parameter or return value can be `null`.
-
-* https://docs.spring.io/spring-framework/docs/{springVersion}/javadoc-api/org/springframework/lang/NonNullApi.html[`@NonNullApi`]
- annotation at package level declares non-null as the default behavior for parameters and return values.
+* {spring-framework-javadoc}/org/springframework/lang/Nullable.html[`@Nullable`] – to be used on a parameter or return value that can be `null`.
 
 Spring annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR 305] annotations (a dormant but widely spread JSR). JSR 305 meta-annotations allow tooling vendors like https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], http://help.eclipse.org/oxygen/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], or link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin] to provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
-
 To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on package level using Spring’s `@NonNullApi` in `package-info.java`:
 
 .Declaring non-nullability in `package-info.java`
@@ -260,31 +256,31 @@ package com.acme;
 
 Once non-null defaulting is in place, repository query method invocations will get validated at runtime for nullability constraints.
 Exceptions will be thrown in case a query execution result violates the defined constraint, i.e. the method would return `null` for some reason but is declared as non-nullable (the default with the annotation defined on the package the repository resides in).
-If you want to opt-in to nullable results again, use selectively `@Nullable` on a method.
-
+If you want to opt-in to nullable results again, selectively use `@Nullable` that a method.
 Using the aforementioned result wrapper types will continue to work as expected, i.e. an empty result will be translated into the value representing absence.
 
 .Using different nullability constraints
 ====
 [source, java]
 ----
-package com.acme;
+package com.acme;                                                       <1>
 
 import org.springframework.lang.Nullable;
 
 interface UserRepository extends Repository<User, Long> {
 
-  User getByEmailAddress(EmailAddress emailAddress);                    <1>
+  User getByEmailAddress(EmailAddress emailAddress);                    <2>
 
   @Nullable
-  User findByEmailAddess(@Nullable EmailAddress emailAdress);           <2>
+  User findByEmailAddress(@Nullable EmailAddress emailAdress);          <3>
 
-  Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); <3>
+  Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); <4>
 }
 ----
-<1> Will throw an `EmptyResultDataAccessException` in case the query executed does not produce a result. Will throw an `IllegalArgumentException` in case the `emailAddress` handed to the method is `null`.
-<2> Will return `null` in case the query executed does not produce a result. Also accepts `null` as value for `emailAddress`.
-<3> Will return `Optional.empty()` in case the query executed does not produce a result. Will throw an `IllegalArgumentException` in case the `emailAddress` handed to the method is `null`.
+<1> The repository resides in a package (or sub-package) for which we've defined non-null behavior (see above).
+<2> Will throw an `EmptyResultDataAccessException` in case the query executed does not produce a result. Will throw an `IllegalArgumentException` in case the `emailAddress` handed to the method is `null`.
+<3> Will return `null` in case the query executed does not produce a result. Also accepts `null` as value for `emailAddress`.
+<4> Will return `Optional.empty()` in case the query executed does not produce a result. Will throw an `IllegalArgumentException` in case the `emailAddress` handed to the method is `null`.
 ====
 
 [[repositories.nullability.kotlin]]
@@ -292,7 +288,7 @@ interface UserRepository extends Repository<User, Long> {
 
 Kotlin has the definition of https://kotlinlang.org/docs/reference/null-safety.html[nullability constraints]
  baked into the language.
-Kotlin code compiles to bytecode which does not express nullability constraints using method signatures but rather compiled-in metadata. Make sure to include `kotlin-reflect` to enable introspection of Kotlin's nullability constraints.
+Kotlin code compiles to bytecode which does not express nullability constraints using method signatures but rather compiled-in metadata. Make sure to include the `kotlin-reflect` JAR in your project to enable introspection of Kotlin's nullability constraints.
 Spring Data repositories use the language mechanism to define those constraints to apply the same runtime checks:
 
 .Using nullability constraints on Kotlin repositories
@@ -301,9 +297,9 @@ Spring Data repositories use the language mechanism to define those constraints 
 ----
 interface UserRepository : Repository<User, String> {
 
-  fun findByUsername(username: String): User         <1>
+  fun findByUsername(username: String): User     <1>
 
-  fun findByFirstname(firstname: String?): User?     <2>
+  fun findByFirstname(firstname: String?): User? <2>
 }
 ----
 <1> The method defines both, the parameter as non-nullable (the Kotlin default) as well as the result. The Kotlin compiler will already reject method invocations trying to hand `null` into the method. In case the query execution yields an empty result, an `EmptyResultDataAccessException` will be thrown.
@@ -582,7 +578,7 @@ NOTE: Not all Spring Data modules currently support `Stream<T>` as a return type
 [[repositories.query-async]]
 === Async query results
 
-Repository queries can be executed asynchronously using link:{spring-framework-docs}integration.html#scheduling[Spring's asynchronous method execution capability]. This means the method will return immediately upon invocation and the actual query execution will occur in a task that has been submitted to a Spring TaskExecutor.
+Repository queries can be executed asynchronously using link:{spring-framework-docs}/integration.html#scheduling[Spring's asynchronous method execution capability]. This means the method will return immediately upon invocation and the actual query execution will occur in a task that has been submitted to a Spring TaskExecutor.
 
 ====
 [source, java]
