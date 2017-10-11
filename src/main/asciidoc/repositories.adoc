@@ -227,25 +227,41 @@ Besides that, Spring Data supports to return other wrapper types on query method
 
 Alternatively query methods can choose not to use a wrapper type at all.
 The absence of a query result will then be indicated by returning `null`.
-Repository methods returning collection like values will never return null but an empty value.
+Repository methods returning collections, wrappers, and streams are guaranteed never to return `null` but rather the corresponding empty representation.
 
 [[repositories.nullability.annotations]]
 ==== Nullability annotations
 
-To properly validate nullability constraints on a repository method at runtime, annotations can be defined to define whether query methods are supposed to return `null`.
-To enable this, non-nullability needs to be activated on the package level, e.g. using Spring's `@NonNullApi` in `package-info.java`:
+You can express null-safe repository methods by using link:{spring-framework-docs}core.html#null-safety[Spring Framework's annotations].
+They provide a tooling-friendly approach and opt-in for `null` checks during runtime:
 
-.Declaring non-nullablity in `package-info.java`
+* https://docs.spring.io/spring-framework/docs/{springVersion}/javadoc-api/org/springframework/lang/NonNull.html[`@NonNull`]
+ annotation where a specific parameter or return value cannot be `null`
+ (not needed on parameter and return value where `@NonNullApi` applies).
+
+* https://docs.spring.io/spring-framework/docs/{springVersion}/javadoc-api/org/springframework/lang/Nullable.html[`@Nullable`]
+ annotation where a specific parameter or return value can be `null`.
+
+* https://docs.spring.io/spring-framework/docs/{springVersion}/javadoc-api/org/springframework/lang/NonNullApi.html[`@NonNullApi`]
+ annotation at package level declares non-null as the default behavior for parameters and return values.
+
+Spring annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR 305] annotations (a dormant but widely spread JSR). JSR 305 meta-annotations allow tooling vendors like https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], http://help.eclipse.org/oxygen/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], or link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin] to provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
+
+To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on package level using Spring’s `@NonNullApi` in `package-info.java`:
+
+.Declaring non-nullability in `package-info.java`
 ====
 [source, java]
 ----
-@NonNullApi
+@org.springframework.lang.NonNullApi
 package com.acme;
 ----
 ====
 
-Once that is in place, repository query method will get runtime execution validation of the nullability constraints and exceptions will be thrown in case a query execution result violates the defined constrained, i.e. the method would return `null` for some reason but is declared as non-nullable (the default with the annotation defined on the package the repository resides in).
-If you want to opt-in to nullable results again, e.g. `@Nullable` can be used on a method selectively.
+Once non-null defaulting is in place, repository query method invocations will get validated at runtime for nullability constraints.
+Exceptions will be thrown in case a query execution result violates the defined constraint, i.e. the method would return `null` for some reason but is declared as non-nullable (the default with the annotation defined on the package the repository resides in).
+If you want to opt-in to nullable results again, use selectively `@Nullable` on a method.
+
 Using the aforementioned result wrapper types will continue to work as expected, i.e. an empty result will be translated into the value representing absence.
 
 .Using different nullability constraints
@@ -254,12 +270,14 @@ Using the aforementioned result wrapper types will continue to work as expected,
 ----
 package com.acme;
 
+import org.springframework.lang.Nullable;
+
 interface UserRepository extends Repository<User, Long> {
 
-  User getByEmailAddress(EmailAddress emailAddress); <1>
+  User getByEmailAddress(EmailAddress emailAddress);                    <1>
 
   @Nullable
-  User findByEmailAddess(@Nullable EmailAddress emailAdress); <2>
+  User findByEmailAddess(@Nullable EmailAddress emailAdress);           <2>
 
   Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); <3>
 }
@@ -272,8 +290,10 @@ interface UserRepository extends Repository<User, Long> {
 [[repositories.nullability.kotlin]]
 ==== Nullability in Kotlin-based repositories
 
-Kotlin has the definition of nullability constraints baked into the language.
-Spring Data repositories using the language mechanism to define those constraints will automatically get the same runtime checks applied:
+Kotlin has the definition of https://kotlinlang.org/docs/reference/null-safety.html[nullability constraints]
+ baked into the language.
+Kotlin code compiles to bytecode which does not express nullability constraints using method signatures but rather compiled-in metadata. Make sure to include `kotlin-reflect` to enable introspection of Kotlin's nullability constraints.
+Spring Data repositories use the language mechanism to define those constraints to apply the same runtime checks:
 
 .Using nullability constraints on Kotlin repositories
 ====
@@ -281,13 +301,13 @@ Spring Data repositories using the language mechanism to define those constraint
 ----
 interface UserRepository : Repository<User, String> {
 
-  fun findByUsername(username: String): User <1>
+  fun findByUsername(username: String): User         <1>
 
-  fun findByFirstname(firstname: String?): User? <2>
+  fun findByFirstname(firstname: String?): User?     <2>
 }
 ----
-<1> The method defines both the parameter as non-nullable (the Kotlin default) as well as the result. The Kotlin compiler will already reject method invocations trying to hand `null` into the method. In case the query execution yields an empty result, an `EmptyResultDataAccessException` will be thrown.
-<2> This method accepts `null` as parameter for `firstname` and return `null` in case the query execution does not produce a result.
+<1> The method defines both, the parameter as non-nullable (the Kotlin default) as well as the result. The Kotlin compiler will already reject method invocations trying to hand `null` into the method. In case the query execution yields an empty result, an `EmptyResultDataAccessException` will be thrown.
+<2> This method accepts `null` as parameter for `firstname` and returns `null` in case the query execution does not produce a result.
 ====
 
 [[repositories.multiple-modules]]
@@ -941,70 +961,6 @@ class AnAggregateRoot {
 ====
 
 The methods will be called every time one of a Spring Data repository's `save(…)` methods is called.
-
-[[core.nullability-validation]]
-== Null-safety
-
-Repository methods let you improve null-safety to deal with `null` values at compile time rather than bumping into the famous `NullPointerException` at runtime. This makes your applications safer through clean nullability declarations, expressing "value or no value" semantics without paying the cost of a wrapper like `Optional`.
-
-You can express null-safe repository methods by using Spring Framework's annotations. They provide a tooling-friendly approach and opt-in for `null` checks during runtime:
-
-* `@NonNullApi` annotations at package level declare non-null as the default behavior
-
-* `@Nullable` annotations where specific parameters or return values can be `null`.
-
-Both annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR-305] meta-annotations (a dormant JSR but supported by tools like IDEA, Eclipse, Findbugs, etc.) to provide useful warnings to Java developers.
-
-Make sure to include a JAR file containing JSR-305's `@Nonnull` annotation on your class path if you intend to use own meta-annotations.
-
-NOTE: Invocations of repository query methods in the scope of null-declarations, either declared on package-level or with Kotlin, are validated during runtime. Passing a `null` value to a query method parameter that is not-nullable is rejected with an exception. A query method that yields no result and is not-nullable throws `EmptyResultDataAccessException` instead of returning `null`.
-
-.Activating non-null defaults for a package
-====
-[source, java]
-----
-@org.springframework.lang.NonNullApi
-package com.example;
-----
-====
-
-.Declaring nullability for parameters and return values
-====
-[source, java]
-----
-package com.example;                                                   <1>
-
-interface UserRepository extends Repository<User, String> {
-
-  List<User> findByLastname(@Nullable String firstname);               <2>
-
-  @Nullable
-  User findByFirstnameAndLastname(String firstname, String lastname);  <3>
-}
-----
-<1> `@NonNullApi` on package-level declares that all API within this package
-defaults to non-null.
-<2> `@Nullable` allows `null` usage on particular parameters. Each nullable parameter
-must be annotated.
-<3>  Methods that may return `null` are annotated with `@Nullable`.
-====
-
-If you declare your repository interfaces with Kotlin, then you can use Kotlin's https://kotlinlang.org/docs/reference/null-safety.html[null-safety] to express nullability.
-
-.Declaring nullability for parameters and return values in Kotlin
-====
-[source, java]
-----
-interface UserRepository : Repository<User, String> {
-
-  fun findByLastname(username: String?): List<User>
-
-  fun findByFirstnameAndLastname(firstname: String, lastname: String): User?
-}
-----
-====
-
-NOTE: Kotlin code compiles to bytecode which does not express nullability declarations using method signatures but rather compiled-in metadata. Make sure to include `kotlin-reflect` to enable introspection of Kotlin's nullability declarations.
 
 [[core.extensions]]
 == Spring Data extensions
