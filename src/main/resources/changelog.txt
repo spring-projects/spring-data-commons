@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.8.RELEASE (2017-10-11)
+----------------------------------------------
+* DATACMNS-1193 - Typo in documentation and JavaDoc of PageableDefaults.
+* DATACMNS-1182 - Java 6 compatibility broken in QueryExecutionConverters in post Ingalls SR7 snapshots.
+* DATACMNS-1177 - Parameter.isDynamicProjectionParameter() does not handle wrapper types properly.
+* DATACMNS-1172 - Too excessive component scanning for repository implementation fragments causing slow bootstrap.
+* DATACMNS-1166 - Upgrade to Vavr 0.9.1.
+* DATACMNS-1163 - Aggregate event publishing should prefer parameters instead of returned values from save(…).
+* DATACMNS-1155 - Release 1.13.8 (Ingalls SR8).
+* DATACMNS-901 - Potential deadlock in AbstractMappingContext when creating bean while application event is being fired.
+
+
 Changes in version 2.0.0.RELEASE (2017-10-02)
 ---------------------------------------------
 * DATACMNS-1184 - QuerydslPredicateExecutor Javadoc allows null predicates.
