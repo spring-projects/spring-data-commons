@@ -59,31 +59,6 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		this.resolved = Lazy.of(() -> isResolvedCompletely());
 	}
 
-	/**
-	 * Resolves the type variables to be used. Uses the parent's type variable map but overwrites variables locally
-	 * declared.
-	 * 
-	 * @param type must not be {@literal null}.
-	 * @param resolvedType must not be {@literal null}.
-	 * @param parent must not be {@literal null}.
-	 * @return
-	 */
-	private static Map<TypeVariable<?>, Type> calculateTypeVariables(ParameterizedType type, Class<?> resolvedType,
-			TypeDiscoverer<?> parent) {
-
-		TypeVariable<?>[] typeParameters = resolvedType.getTypeParameters();
-		Type[] arguments = type.getActualTypeArguments();
-
-		Map<TypeVariable<?>, Type> localTypeVariables = new HashMap<>(parent.getTypeVariableMap());
-
-		IntStream.range(0, typeParameters.length) //
-				.mapToObj(it -> Pair.of(typeParameters[it], arguments[it])) //
-				.filter(it -> !(it.getSecond() instanceof TypeVariable)) //
-				.forEach(it -> localTypeVariables.put(it.getFirst(), it.getSecond()));
-
-		return localTypeVariables;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#doGetMapValueType()
@@ -266,5 +241,48 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		}
 
 		return true;
+	}
+
+	/**
+	 * Resolves the type variables to be used. Uses the parent's type variable map but overwrites variables locally
+	 * declared.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param resolvedType must not be {@literal null}.
+	 * @param parent must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	private static Map<TypeVariable<?>, Type> calculateTypeVariables(ParameterizedType type, Class<?> resolvedType,
+			TypeDiscoverer<?> parent) {
+
+		TypeVariable<?>[] typeParameters = resolvedType.getTypeParameters();
+		Type[] arguments = type.getActualTypeArguments();
+
+		Map<TypeVariable<?>, Type> localTypeVariables = new HashMap<>(parent.getTypeVariableMap());
+
+		IntStream.range(0, typeParameters.length) //
+				.mapToObj(it -> Pair.of(typeParameters[it], flattenTypeVariable(arguments[it], localTypeVariables))) //
+				.forEach(it -> localTypeVariables.put(it.getFirst(), it.getSecond()));
+
+		return localTypeVariables;
+	}
+
+	/**
+	 * Recursively resolves the type bound to the given {@link Type} in case it's a {@link TypeVariable} and there's an
+	 * entry in the given type variables.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @param variables must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	private static Type flattenTypeVariable(Type source, Map<TypeVariable<?>, Type> variables) {
+
+		if (!(source instanceof TypeVariable)) {
+			return source;
+		}
+
+		Type value = variables.get(source);
+
+		return value == null ? source : flattenTypeVariable(value, variables);
 	}
 }
