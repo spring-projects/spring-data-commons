@@ -43,7 +43,7 @@ import org.springframework.core.GenericTypeResolver;
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ParameterizedTypeUnitTests {
+public class ParameterizedTypeInformationUnitTests {
 
 	static final Map<TypeVariable<?>, Type> EMPTY_MAP = Collections.emptyMap();
 
@@ -99,7 +99,7 @@ public class ParameterizedTypeUnitTests {
 	public void createsToStringRepresentation() {
 
 		assertThat(from(Foo.class).getProperty("param").toString(),
-				is("org.springframework.data.util.ParameterizedTypeUnitTests$Localized<java.lang.String>"));
+				is("org.springframework.data.util.ParameterizedTypeInformationUnitTests$Localized<java.lang.String>"));
 	}
 
 	@Test // DATACMNS-485
@@ -148,6 +148,14 @@ public class ParameterizedTypeUnitTests {
 		componentType = componentType.getProperty("responsibilities.values").getComponentType();
 
 		assertThat(componentType.getType(), is(typeCompatibleWith(Responsibility.class)));
+	}
+
+	@Test // DATACMNS-1196
+	public void detectsNestedGenerics() {
+
+		TypeInformation<?> myList = ClassTypeInformation.from(EnumGeneric.class).getProperty("inner.myList");
+
+		assertThat(myList.getComponentType().getType(), is(typeCompatibleWith(MyEnum.class)));
 	}
 
 	@SuppressWarnings("serial")
@@ -214,5 +222,22 @@ public class ParameterizedTypeUnitTests {
 
 	class Candidate {
 		CandidateInfoContainer<Experience> experiences;
+	}
+
+	// FOO
+
+	static abstract class Generic<T> {
+
+		Inner<T> inner;
+
+		static class Inner<T> {
+			List<T> myList;
+		}
+	}
+
+	static class EnumGeneric extends Generic<MyEnum> {}
+
+	public enum MyEnum {
+		E1, E2
 	}
 }

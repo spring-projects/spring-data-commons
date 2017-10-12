@@ -134,7 +134,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		if (fieldType instanceof TypeVariable) {
 			TypeVariable<?> variable = (TypeVariable<?>) fieldType;
-			return new TypeVariableTypeInformation(variable, type, this);
+			return new TypeVariableTypeInformation(variable, this);
 		}
 
 		if (fieldType instanceof GenericArrayType) {
