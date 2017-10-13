@@ -350,6 +350,14 @@ public class RepositoryFactorySupportUnitTests {
 		assertThat(repository.findByOptionalId(null)).isNull();
 	}
 
+	@Test // DATACMNS-1197
+	public void considersNullabilityForKotlinInterfaceProperties() {
+
+		KotlinUserRepository repository = factory.getRepository(KotlinUserRepository.class);
+
+		assertThatThrownBy(repository::getFindRouteQuery).isInstanceOf(EmptyResultDataAccessException.class);
+	}
+
 	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {
 
 		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(invocation -> {
