@@ -28,4 +28,6 @@ interface KotlinUserRepository : Repository<User, String> {
 	fun findById(username: String): User
 
 	fun findByOptionalId(username: String?): User?
+
+	val findRouteQuery: String
 }
