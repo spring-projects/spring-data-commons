@@ -23,6 +23,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.asm.ClassWriter;
@@ -399,6 +400,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 				Constructor<?> ctor = constructor.getConstructor();
 				Class<?>[] parameterTypes = ctor.getParameterTypes();
+				List<? extends Parameter<Object, ?>> parameters = constructor.getParameters();
 
 				for (int i = 0; i < parameterTypes.length; i++) {
 
@@ -409,6 +411,11 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 					mv.visitInsn(AALOAD);
 
 					if (parameterTypes[i].isPrimitive()) {
+						
+						mv.visitInsn(DUP);
+						String parameterName = parameters.size() > i ? parameters.get(i).getName() : null;
+						
+						insertAssertNotNull(mv, parameterName == null ? String.format("at index %d", i) : parameterName);
 						insertUnboxInsns(mv, Type.getType(parameterTypes[i]).toString().charAt(0), "");
 					} else {
 						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(parameterTypes[i]));
@@ -436,6 +443,20 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			}
 
 			mv.visitLdcInsn(idx);
+		}
+
+		/**
+		 * Insert not {@literal null} assertion for a parameter.
+		 * 
+		 * @param mv the method visitor into which instructions should be inserted
+		 * @param parameterName name of the parameter to create the appropriate assertion message.
+		 */
+		private void insertAssertNotNull(MethodVisitor mv, String parameterName) {
+
+			// Assert.notNull(property)
+			mv.visitLdcInsn(String.format("Parameter %s must not be null!", parameterName));
+			mv.visitMethodInsn(INVOKESTATIC, "org/springframework/util/Assert", "notNull",
+					String.format("(%s%s)V", String.format("L%s;", JAVA_LANG_OBJECT), "Ljava/lang/String;"), false);
 		}
 
 		/**
