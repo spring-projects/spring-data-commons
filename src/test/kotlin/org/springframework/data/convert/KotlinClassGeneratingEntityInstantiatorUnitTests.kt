@@ -96,6 +96,27 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 				.hasCauseInstanceOf(IllegalArgumentException::class.java)
 	}
 
+	@Test // DATACMNS-1200
+	fun `should apply primitive defaulting for absent parameters`() {
+
+		val entity = this.entity as PersistentEntity<WithPrimitiveDefaulting, SamplePersistentProperty>
+		val constructor = PreferredConstructorDiscoverer.discover<WithPrimitiveDefaulting, SamplePersistentProperty>(WithPrimitiveDefaulting::class.java)
+
+		doReturn(constructor).whenever(entity).persistenceConstructor
+		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+
+		val instance: WithPrimitiveDefaulting = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
+
+		Assertions.assertThat(instance.aByte).isEqualTo(0)
+		Assertions.assertThat(instance.aShort).isEqualTo(0)
+		Assertions.assertThat(instance.anInt).isEqualTo(0)
+		Assertions.assertThat(instance.aLong).isEqualTo(0L)
+		Assertions.assertThat(instance.aFloat).isEqualTo(0.0f)
+		Assertions.assertThat(instance.aDouble).isEqualTo(0.0)
+		Assertions.assertThat(instance.aChar).isEqualTo('a')
+		Assertions.assertThat(instance.aBool).isTrue()
+	}
+
 	data class Contact(val firstname: String, val lastname: String)
 
 	data class ContactWithDefaulting(val prop0: String, val prop1: String = "White", val prop2: String,
@@ -113,5 +134,8 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	)
 
 	data class WithBoolean(val state: Boolean)
+
+	data class WithPrimitiveDefaulting(val aByte: Byte = 0, val aShort: Short = 0, val anInt: Int = 0, val aLong: Long = 0L,
+									   val aFloat: Float = 0.0f, val aDouble: Double = 0.0, val aChar: Char = 'a', val aBool: Boolean = true)
 }
 
