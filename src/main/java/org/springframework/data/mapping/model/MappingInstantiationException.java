@@ -15,6 +15,9 @@
  */
 package org.springframework.data.mapping.model;
 
+import kotlin.reflect.KFunction;
+import kotlin.reflect.jvm.ReflectJvmMapping;
+
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,7 @@ import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
@@ -88,10 +92,26 @@ public class MappingInstantiationException extends RuntimeException {
 			}
 
 			return String.format(TEXT_TEMPLATE, it.getType().getName(),
-					constructor.map(c -> c.getConstructor().toString()).orElse("NO_CONSTRUCTOR"), //
+					constructor.map(c -> toString(c)).orElse("NO_CONSTRUCTOR"), //
 					String.join(",", toStringArgs));
 
 		}).orElse(defaultMessage);
+	}
+
+	private static String toString(PreferredConstructor<?, ?> preferredConstructor) {
+
+		Constructor<?> constructor = preferredConstructor.getConstructor();
+
+		if (ReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
+
+			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
+
+			if (kotlinFunction != null) {
+				return kotlinFunction.toString();
+			}
+		}
+
+		return constructor.toString();
 	}
 
 	/**

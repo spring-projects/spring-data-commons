@@ -25,8 +25,10 @@ import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
+import org.springframework.data.mapping.model.MappingInstantiationException
 import org.springframework.data.mapping.model.ParameterValueProvider
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer
+import java.lang.IllegalArgumentException
 
 /**
  * Unit tests for [KotlinClassGeneratingEntityInstantiator] creating instances using Kotlin data classes.
@@ -79,6 +81,21 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		Assertions.assertThat(instance.prop34).isEqualTo("White")
 	}
 
+	@Test // DATACMNS-1200
+	fun `absent primitive value should cause MappingInstantiationException`() {
+
+		val entity = this.entity as PersistentEntity<WithBoolean, SamplePersistentProperty>
+		val constructor = PreferredConstructorDiscoverer.discover<WithBoolean, SamplePersistentProperty>(WithBoolean::class.java)
+
+		doReturn(constructor).whenever(entity).persistenceConstructor
+		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+
+		Assertions.assertThatThrownBy { KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider) } //
+				.isInstanceOf(MappingInstantiationException::class.java) //
+				.hasMessageContaining("fun <init>(kotlin.Boolean)") //
+				.hasCauseInstanceOf(IllegalArgumentException::class.java)
+	}
+
 	data class Contact(val firstname: String, val lastname: String)
 
 	data class ContactWithDefaulting(val prop0: String, val prop1: String = "White", val prop2: String,
@@ -94,5 +111,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 									 val prop30: String = "White", val prop31: String = "White", val prop32: String = "White",
 									 val prop33: String, val prop34: String = "White"
 	)
+
+	data class WithBoolean(val state: Boolean)
 }
 
