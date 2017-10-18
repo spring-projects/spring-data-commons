@@ -20,6 +20,7 @@ import kotlin.reflect.KParameter;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -27,6 +28,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
@@ -197,7 +199,17 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			PreferredConstructor<? extends T, P> preferredConstructor = entity.getPersistenceConstructor();
+			Object[] params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+
+			try {
+				return (T) instantiator.newInstance(params);
+			} catch (Exception e) {
+				throw new MappingInstantiationException(entity, Arrays.asList(params), e);
+			}
+		}
+
+		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
+				@Nullable PreferredConstructor<? extends T, P> preferredConstructor, ParameterValueProvider<P> provider) {
 
 			if (preferredConstructor == null) {
 				throw new IllegalArgumentException("PreferredConstructor must not be null!");
@@ -217,15 +229,19 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 				int slot = i / 32;
 				int offset = slot * 32;
 
-				Object param = provider.getParameterValue(parameters.get(i));
+				Parameter<Object, P> parameter = parameters.get(i);
+				Class<Object> type = parameter.getType().getType();
+				Object param = provider.getParameterValue(parameter);
 
 				KParameter kParameter = kParameters.get(i);
 
 				// what about null and parameter is mandatory? What if parameter is non-null?
-				if (kParameter.isOptional()) {
+				if (kParameter.isOptional() && param == null) {
 
-					if (param == null) {
-						defaulting[slot] = defaulting[slot] | (1 << (i - offset));
+					defaulting[slot] = defaulting[slot] | (1 << (i - offset));
+
+					if (type.isPrimitive()) {
+						param = getPrimitiveDefault(type);
 					}
 				}
 
@@ -237,7 +253,44 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 				params[userParameterCount + i] = defaulting[i];
 			}
 
-			return (T) instantiator.newInstance(params);
+			return params;
+		}
+
+		private static Object getPrimitiveDefault(Class<?> type) {
+
+			if (type == Byte.TYPE || type == Byte.class) {
+				return (byte) 0;
+			}
+
+			if (type == Short.TYPE || type == Short.class) {
+				return (short) 0;
+			}
+
+			if (type == Integer.TYPE || type == Integer.class) {
+				return 0;
+			}
+
+			if (type == Long.TYPE || type == Long.class) {
+				return 0L;
+			}
+
+			if (type == Float.TYPE || type == Float.class) {
+				return 0F;
+			}
+
+			if (type == Double.TYPE || type == Double.class) {
+				return 0D;
+			}
+
+			if (type == Character.TYPE || type == Character.class) {
+				return '\u0000';
+			}
+
+			if (type == Boolean.TYPE) {
+				return Boolean.FALSE;
+			}
+
+			throw new IllegalArgumentException(String.format("Primitive type %s not supported!", type));
 		}
 	}
 }

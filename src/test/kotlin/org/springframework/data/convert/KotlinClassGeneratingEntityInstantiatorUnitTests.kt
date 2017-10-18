@@ -25,8 +25,10 @@ import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
+import org.springframework.data.mapping.model.MappingInstantiationException
 import org.springframework.data.mapping.model.ParameterValueProvider
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer
+import java.lang.IllegalArgumentException
 
 /**
  * Unit tests for [KotlinClassGeneratingEntityInstantiator] creating instances using Kotlin data classes.
@@ -79,6 +81,42 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		Assertions.assertThat(instance.prop34).isEqualTo("White")
 	}
 
+	@Test // DATACMNS-1200
+	fun `absent primitive value should cause MappingInstantiationException`() {
+
+		val entity = this.entity as PersistentEntity<WithBoolean, SamplePersistentProperty>
+		val constructor = PreferredConstructorDiscoverer.discover<WithBoolean, SamplePersistentProperty>(WithBoolean::class.java)
+
+		doReturn(constructor).whenever(entity).persistenceConstructor
+		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+
+		Assertions.assertThatThrownBy { KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider) } //
+				.isInstanceOf(MappingInstantiationException::class.java) //
+				.hasMessageContaining("fun <init>(kotlin.Boolean)") //
+				.hasCauseInstanceOf(IllegalArgumentException::class.java)
+	}
+
+	@Test // DATACMNS-1200
+	fun `should apply primitive defaulting for absent parameters`() {
+
+		val entity = this.entity as PersistentEntity<WithPrimitiveDefaulting, SamplePersistentProperty>
+		val constructor = PreferredConstructorDiscoverer.discover<WithPrimitiveDefaulting, SamplePersistentProperty>(WithPrimitiveDefaulting::class.java)
+
+		doReturn(constructor).whenever(entity).persistenceConstructor
+		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+
+		val instance: WithPrimitiveDefaulting = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
+
+		Assertions.assertThat(instance.aByte).isEqualTo(0)
+		Assertions.assertThat(instance.aShort).isEqualTo(0)
+		Assertions.assertThat(instance.anInt).isEqualTo(0)
+		Assertions.assertThat(instance.aLong).isEqualTo(0L)
+		Assertions.assertThat(instance.aFloat).isEqualTo(0.0f)
+		Assertions.assertThat(instance.aDouble).isEqualTo(0.0)
+		Assertions.assertThat(instance.aChar).isEqualTo('a')
+		Assertions.assertThat(instance.aBool).isTrue()
+	}
+
 	data class Contact(val firstname: String, val lastname: String)
 
 	data class ContactWithDefaulting(val prop0: String, val prop1: String = "White", val prop2: String,
@@ -94,5 +132,10 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 									 val prop30: String = "White", val prop31: String = "White", val prop32: String = "White",
 									 val prop33: String, val prop34: String = "White"
 	)
+
+	data class WithBoolean(val state: Boolean)
+
+	data class WithPrimitiveDefaulting(val aByte: Byte = 0, val aShort: Short = 0, val anInt: Int = 0, val aLong: Long = 0L,
+									   val aFloat: Float = 0.0f, val aDouble: Double = 0.0, val aChar: Char = 'a', val aBool: Boolean = true)
 }
 
