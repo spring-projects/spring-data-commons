@@ -264,6 +264,17 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		});
 	}
 
+	@Test // DATACMNS-1200
+	public void instantiateObjectCtor1ParamIntWithoutValue() {
+
+		doReturn(ObjectCtor1ParamInt.class).when(entity).getType();
+		doReturn(PreferredConstructorDiscoverer.discover(ObjectCtor1ParamInt.class))//
+				.when(entity).getPersistenceConstructor();
+
+		assertThatThrownBy(() -> this.instance.createInstance(entity, provider)) //
+				.hasCauseInstanceOf(IllegalArgumentException.class);
+	}
+
 	@Test // DATACMNS-578, DATACMNS-1126
 	@SuppressWarnings("unchecked")
 	public void instantiateObjectCtor7ParamsString5IntsString() {
