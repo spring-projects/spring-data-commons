@@ -411,10 +411,10 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 					mv.visitInsn(AALOAD);
 
 					if (parameterTypes[i].isPrimitive()) {
-						
+
 						mv.visitInsn(DUP);
 						String parameterName = parameters.size() > i ? parameters.get(i).getName() : null;
-						
+
 						insertAssertNotNull(mv, parameterName == null ? String.format("at index %d", i) : parameterName);
 						insertUnboxInsns(mv, Type.getType(parameterTypes[i]).toString().charAt(0), "");
 					} else {
@@ -446,12 +446,12 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		}
 
 		/**
-		 * Insert not {@literal null} assertion for a parameter.
+		 * Insert not-{@literal null} assertion for a parameter.
 		 * 
 		 * @param mv the method visitor into which instructions should be inserted
 		 * @param parameterName name of the parameter to create the appropriate assertion message.
 		 */
-		private void insertAssertNotNull(MethodVisitor mv, String parameterName) {
+		private static void insertAssertNotNull(MethodVisitor mv, String parameterName) {
 
 			// Assert.notNull(property)
 			mv.visitLdcInsn(String.format("Parameter %s must not be null!", parameterName));
