@@ -355,6 +355,20 @@ public class PropertyPathUnitTests {
 		assertThat(from("user.name", Bar.class).getLeafType()).isEqualTo(String.class);
 	}
 
+	@Test // DATACMNS-1199
+	public void createsNestedPropertyPath() {
+		assertThat(from("user", Bar.class).nested("name")).isEqualTo(from("user.name", Bar.class));
+	}
+
+	@Test // DATACMNS-1199
+	public void rejectsNonExistantNestedPath() {
+
+		assertThatExceptionOfType(PropertyReferenceException.class) //
+				.isThrownBy(() -> from("user", Bar.class).nested("nonexistant")) //
+				.withMessageContaining("nonexistant") //
+				.withMessageContaining("Bar.user");
+	}
+
 	private class Foo {
 
 		String userName;

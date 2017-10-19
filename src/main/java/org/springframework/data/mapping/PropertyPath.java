@@ -195,6 +195,21 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return isCollection;
 	}
 
+	/**
+	 * Returns the {@link PropertyPath} for the path nested under the current property.
+	 *
+	 * @param path must not be {@literal null} or empty.
+	 * @return will never be {@literal null}.
+	 */
+	public PropertyPath nested(String path) {
+
+		Assert.hasText(path, "Path must not be null or empty!");
+
+		String lookup = toDotPath().concat(".").concat(path);
+
+		return PropertyPath.from(lookup, owningType);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
