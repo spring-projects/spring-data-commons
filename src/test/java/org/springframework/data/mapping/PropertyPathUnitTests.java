@@ -350,6 +350,11 @@ public class PropertyPathUnitTests {
 		assertThat(from("userName", Foo.class)).isSameAs(from("userName", Foo.class));
 	}
 
+	@Test // DATACMNS-1198
+	public void exposesLeafPropertyType() {
+		assertThat(from("user.name", Bar.class).getLeafType()).isEqualTo(String.class);
+	}
+
 	private class Foo {
 
 		String userName;

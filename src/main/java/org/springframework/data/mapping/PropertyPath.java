@@ -133,6 +133,15 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
+	 * Returns the type of the leaf property of the current {@link PropertyPath}.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
+	public Class<?> getLeafType() {
+		return getLeafProperty().getType();
+	}
+
+	/**
 	 * Returns the type of the property will return the plain resolved type for simple properties, the component type for
 	 * any {@link Iterable} or the value type of a {@link java.util.Map} if the property is one.
 	 *
