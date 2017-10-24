@@ -110,7 +110,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			return false;
 		}
 
-		if (entity.getType().getClassLoader() == null || entity.getType().getPackage().getName().startsWith("java")) {
+		if (!isTypeInjectable(entity)) {
 			return false;
 		}
 
@@ -141,6 +141,13 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		});
 
 		return hashCodes.size() == propertyCount.get();
+	}
+
+	private static boolean isTypeInjectable(PersistentEntity<?, ?> entity) {
+
+		Class<?> type = entity.getType();
+		return type.getClassLoader() != null
+				&& (type.getPackage() == null || !type.getPackage().getName().startsWith("java"));
 	}
 
 	/**

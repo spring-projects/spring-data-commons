@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.mapping.model;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -38,6 +38,7 @@ import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.subpackage.TypeInOtherPackage;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Unit tests for {@link ClassGeneratingPropertyAccessorFactory}
@@ -63,7 +64,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	}
 
 	@Parameters(name = "{3}")
-	public static List<Object[]> parameters() {
+	@SuppressWarnings("unchecked")
+	public static List<Object[]> parameters() throws ReflectiveOperationException {
 
 		List<Object[]> parameters = new ArrayList<Object[]>();
 		List<String> propertyNames = Arrays.asList("privateField", "packageDefaultField", "protectedField", "publicField",
@@ -80,6 +82,11 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 				ClassGeneratingPropertyAccessorPublicType.class));
 		parameters.addAll(parameters(new SubtypeOfTypeInOtherPackage(), propertyNames, SubtypeOfTypeInOtherPackage.class));
 
+		Class<Object> defaultPackageClass = (Class) Class.forName("TypeInDefaultPackage");
+
+		parameters
+				.add(new Object[] { defaultPackageClass.newInstance(), "", defaultPackageClass, "Class in default package" });
+
 		return parameters;
 	}
 
@@ -95,8 +102,15 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		return parameters;
 	}
 
+	@Test // DATACMNS-1201
+	public void shouldSupportGeneratedPropertyAccessors() {
+		assertThat(factory.isSupported(mappingContext.getPersistentEntity(bean.getClass())), is(true));
+	}
+
 	@Test // DATACMNS-809
 	public void shouldSetAndGetProperty() throws Exception {
+
+		assumeTrue(StringUtils.hasText(propertyName));
 
 		PersistentProperty<?> property = getProperty(bean, propertyName);
 		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
