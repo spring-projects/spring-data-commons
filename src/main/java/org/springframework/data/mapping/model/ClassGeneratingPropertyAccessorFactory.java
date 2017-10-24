@@ -133,7 +133,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	}
 
 	private static boolean isTypeInjectable(PersistentEntity<?, ?> entity) {
-		return entity.getType().getClassLoader() != null && !entity.getType().getPackage().getName().startsWith("java");
+
+		Class<?> type = entity.getType();
+		return type.getClassLoader() != null
+				&& (type.getPackage() == null || !type.getPackage().getName().startsWith("java"));
 	}
 
 	private boolean hasUniquePropertyHashCodes(PersistentEntity<?, ?> entity) {
