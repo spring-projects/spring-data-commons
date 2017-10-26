@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.core.GenericTypeResolver;
 
 /**
  * Unit tests for {@link ParameterizedTypeInformation}.
@@ -48,7 +47,6 @@ public class ParameterizedTypeInformationUnitTests {
 	static final Map<TypeVariable<?>, Type> EMPTY_MAP = Collections.emptyMap();
 
 	@Mock ParameterizedType one;
-	Class<?> resolvedOne = GenericTypeResolver.resolveType(one, Collections.<TypeVariable, Type> emptyMap());
 
 	@Before
 	public void setUp() {
@@ -61,10 +59,8 @@ public class ParameterizedTypeInformationUnitTests {
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, EMPTY_MAP);
 		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<Object>(Object.class, EMPTY_MAP);
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, resolvedOne,
-				stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, resolvedOne,
-				objectParent);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, objectParent);
 
 		assertThat(first, is(not(second)));
 	}
@@ -74,10 +70,8 @@ public class ParameterizedTypeInformationUnitTests {
 
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<String>(String.class, EMPTY_MAP);
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, resolvedOne,
-				stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, resolvedOne,
-				stringParent);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<Object>(one, stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<Object>(one, stringParent);
 
 		assertTrue(first.equals(second));
 	}

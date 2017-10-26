@@ -46,9 +46,9 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * @param type must not be {@literal null}
 	 * @param parent must not be {@literal null}
 	 */
-	public ParameterizedTypeInformation(ParameterizedType type, Class<?> resolvedType, TypeDiscoverer<?> parent) {
+	public ParameterizedTypeInformation(ParameterizedType type, TypeDiscoverer<?> parent) {
 
-		super(type, parent, calculateTypeVariables(type, resolvedType, parent));
+		super(type, parent, calculateTypeVariables(type, parent));
 		this.type = type;
 	}
 
@@ -245,13 +245,12 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	 * declared.
 	 * 
 	 * @param type must not be {@literal null}.
-	 * @param resolvedType must not be {@literal null}.
 	 * @param parent must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	private static Map<TypeVariable<?>, Type> calculateTypeVariables(ParameterizedType type, Class<?> resolvedType,
-			TypeDiscoverer<?> parent) {
+	private static Map<TypeVariable<?>, Type> calculateTypeVariables(ParameterizedType type, TypeDiscoverer<?> parent) {
 
+		Class<?> resolvedType = parent.resolveType(type);
 		TypeVariable<?>[] typeParameters = resolvedType.getTypeParameters();
 		Type[] arguments = type.getActualTypeArguments();
 

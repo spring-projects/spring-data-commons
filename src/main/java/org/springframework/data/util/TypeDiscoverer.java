@@ -114,7 +114,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @param fieldType
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked", "deprecation" })
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected TypeInformation<?> createInfo(Type fieldType) {
 
 		if (fieldType.equals(this.type)) {
@@ -125,11 +125,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return ClassTypeInformation.from((Class<?>) fieldType);
 		}
 
-		Class<S> resolveType = resolveType(fieldType);
-
 		if (fieldType instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) fieldType;
-			return new ParameterizedTypeInformation(parameterizedType, resolveType, this);
+			return new ParameterizedTypeInformation(parameterizedType, this);
 		}
 
 		if (fieldType instanceof TypeVariable) {
