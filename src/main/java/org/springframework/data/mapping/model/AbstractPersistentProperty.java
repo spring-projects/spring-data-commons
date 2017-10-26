@@ -61,15 +61,15 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		Assert.notNull(simpleTypeHolder, "SimpleTypeHolder must not be null!");
 		Assert.notNull(owner, "Owner entity must not be null!");
 
+		this.propertyDescriptor = propertyDescriptor;
+		this.field = field;
+		this.owner = owner;
+		this.simpleTypeHolder = simpleTypeHolder;
 		this.name = field == null ? propertyDescriptor.getName() : field.getName();
 		this.information = owner.getTypeInformation().getProperty(this.name);
 		this.rawType = this.information != null ? information.getType()
 				: field == null ? propertyDescriptor.getPropertyType() : field.getType();
-		this.propertyDescriptor = propertyDescriptor;
-		this.field = field;
 		this.association = isAssociation() ? createAssociation() : null;
-		this.owner = owner;
-		this.simpleTypeHolder = simpleTypeHolder;
 		this.hashCode = this.field == null ? this.propertyDescriptor.hashCode() : this.field.hashCode();
 	}
 
@@ -163,7 +163,11 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 			return null;
 		}
 
-		return rawType.isAssignableFrom(getter.getReturnType()) ? getter : null;
+		Class<?> returnType = owner.getTypeInformation() //
+				.getReturnType(getter) //
+				.getType();
+
+		return rawType.isAssignableFrom(returnType) ? getter : null;
 	}
 
 	/* 
@@ -183,7 +187,12 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 			return null;
 		}
 
-		return setter.getParameterTypes()[0].isAssignableFrom(rawType) ? setter : null;
+		Class<?> parameterType = owner.getTypeInformation() //
+				.getParameterTypes(setter) //
+				.get(0) //
+				.getType();
+
+		return parameterType.isAssignableFrom(rawType) ? setter : null;
 	}
 
 	/*

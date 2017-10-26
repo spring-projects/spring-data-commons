@@ -18,6 +18,9 @@ package org.springframework.data.mapping.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -208,6 +211,15 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getRawType(), is(typeCompatibleWith(String.class)));
 	}
 
+	@Test // DATACMNS-1180
+	public void returnsAccessorsForGenericReturnType() {
+
+		SamplePersistentProperty property = getProperty(ConcreteGetter.class, "genericField");
+
+		assertThat(property.getSetter(), is(notNullValue()));
+		assertThat(property.getGetter(), is(notNullValue()));
+	}
+
 	private <T> SamplePersistentProperty getProperty(Class<T> type, String name) {
 		return getProperty(type, name, getPropertyDescriptor(type, name));
 	}
@@ -252,6 +264,14 @@ public class AbstractPersistentPropertyUnitTests {
 	class SecondConcrete extends Generic<Integer> {
 
 	}
+
+	@Getter
+	@Setter
+	class GenericGetter<T> {
+		T genericField;
+	}
+
+	class ConcreteGetter extends GenericGetter<String> {}
 
 	@SuppressWarnings("serial")
 	class TestClassSet extends TreeSet<Object> {}
