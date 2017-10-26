@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.core.GenericTypeResolver;
 
 /**
  * Unit tests for {@link ParameterizedTypeInformation}.
@@ -44,12 +43,10 @@ import org.springframework.core.GenericTypeResolver;
 public class ParameterizedTypeInformationUnitTests {
 
 	@Mock ParameterizedType one;
-	Class<?> resolvedOne;
 
 	@Before
 	public void setUp() {
 		when(one.getActualTypeArguments()).thenReturn(new Type[0]);
-		this.resolvedOne = GenericTypeResolver.resolveType(one, emptyMap());
 	}
 
 	@Test
@@ -58,8 +55,8 @@ public class ParameterizedTypeInformationUnitTests {
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, emptyMap());
 		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<>(Object.class, emptyMap());
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, resolvedOne, stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, resolvedOne, objectParent);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, objectParent);
 
 		assertThat(first).isNotEqualTo(second);
 	}
@@ -69,8 +66,8 @@ public class ParameterizedTypeInformationUnitTests {
 
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, emptyMap());
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, resolvedOne, stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, resolvedOne, stringParent);
+		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, stringParent);
+		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, stringParent);
 
 		assertThat(first.equals(second)).isTrue();
 	}

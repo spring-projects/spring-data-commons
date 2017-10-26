@@ -129,12 +129,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return ClassTypeInformation.from((Class<?>) fieldType);
 		}
 
-		Class<S> resolvedType = resolveType(fieldType);
-
 		if (fieldType instanceof ParameterizedType) {
 
 			ParameterizedType parameterizedType = (ParameterizedType) fieldType;
-			return new ParameterizedTypeInformation(parameterizedType, resolvedType, this);
+			return new ParameterizedTypeInformation(parameterizedType, this);
 		}
 
 		if (fieldType instanceof TypeVariable) {
