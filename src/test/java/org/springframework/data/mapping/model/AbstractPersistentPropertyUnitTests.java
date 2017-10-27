@@ -17,6 +17,9 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -36,6 +39,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.Person;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
@@ -136,11 +140,13 @@ public class AbstractPersistentPropertyUnitTests {
 	public void doesNotDiscoverGetterAndSetterIfNoPropertyDescriptorGiven() {
 
 		Field field = ReflectionUtils.findField(AccessorTestClass.class, "id");
-		PersistentProperty<SamplePersistentProperty> property = new SamplePersistentProperty(Property.of(field),
+		Property property = Property.of(ClassTypeInformation.from(AccessorTestClass.class), field);
+
+		PersistentProperty<SamplePersistentProperty> persistentProperty = new SamplePersistentProperty(property,
 				getEntity(AccessorTestClass.class), typeHolder);
 
-		assertThat(property.getGetter()).isNull();
-		assertThat(property.getSetter()).isNull();
+		assertThat(persistentProperty.getGetter()).isNull();
+		assertThat(persistentProperty.getSetter()).isNull();
 	}
 
 	@Test // DATACMNS-337
@@ -211,21 +217,30 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getRawType()).isEqualTo(String.class);
 	}
 
+	@Test // DATACMNS-1180
+	public void returnsAccessorsForGenericReturnType() {
+
+		SamplePersistentProperty property = getProperty(ConcreteGetter.class, "genericField");
+
+		assertThat(property.getSetter()).isNotNull();
+		assertThat(property.getGetter()).isNotNull();
+	}
+
 	private <T> BasicPersistentEntity<T, SamplePersistentProperty> getEntity(Class<T> type) {
 		return new BasicPersistentEntity<>(ClassTypeInformation.from(type));
 	}
 
 	private <T> SamplePersistentProperty getProperty(Class<T> type, String name) {
 
+		TypeInformation<?> typeInformation = ClassTypeInformation.from(type);
 		Optional<Field> field = Optional.ofNullable(ReflectionUtils.findField(type, name));
 		Optional<PropertyDescriptor> descriptor = getPropertyDescriptor(type, name);
 
-		Property property = field.map(it -> descriptor//
-				.map(foo -> Property.of(it, foo))//
-				.orElseGet(() -> Property.of(it))).orElseGet(() -> getPropertyDescriptor(type, name)//
-						.map(it -> Property.of(it))//
-						.orElseThrow(
-								() -> new IllegalArgumentException(String.format("Couldn't find property %s on %s!", name, type))));
+		Property property = Optionals.firstNonEmpty( //
+				() -> Optionals.mapIfAllPresent(field, descriptor, (left, right) -> Property.of(typeInformation, left, right)), //
+				() -> field.map(it -> Property.of(typeInformation, it)), //
+				() -> descriptor.map(it -> Property.of(typeInformation, it))) //
+				.orElseThrow(() -> new IllegalArgumentException(String.format("Couldn't find property %s on %s!", name, type)));
 
 		return new SamplePersistentProperty(property, getEntity(type), typeHolder);
 	}
@@ -255,6 +270,14 @@ public class AbstractPersistentPropertyUnitTests {
 	class SecondConcrete extends Generic<Integer> {
 
 	}
+
+	@Getter
+	@Setter
+	class GenericGetter<T> {
+		T genericField;
+	}
+
+	class ConcreteGetter extends GenericGetter<String> {}
 
 	@SuppressWarnings("serial")
 	class TestClassSet extends TreeSet<Object> {}

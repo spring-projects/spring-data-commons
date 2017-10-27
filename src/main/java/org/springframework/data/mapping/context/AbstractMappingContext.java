@@ -513,12 +513,13 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		public void doWith(Field field) {
 
 			String fieldName = field.getName();
+			TypeInformation<?> type = entity.getTypeInformation();
 
 			ReflectionUtils.makeAccessible(field);
 
 			Property property = Optional.ofNullable(descriptors.get(fieldName))//
-					.map(it -> Property.of(field, it))//
-					.orElseGet(() -> Property.of(field));
+					.map(it -> Property.of(type, field, it))//
+					.orElseGet(() -> Property.of(type, field));
 
 			createAndRegisterProperty(property);
 
@@ -535,7 +536,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			remainingDescriptors.values().stream() //
 					.filter(Property::supportsStandalone) //
-					.map(Property::of) //
+					.map(it -> Property.of(entity.getTypeInformation(), it)) //
 					.filter(PersistentPropertyFilter.INSTANCE::matches) //
 					.forEach(this::createAndRegisterProperty);
 		}
