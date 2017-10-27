@@ -1,6 +1,21 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.1.RELEASE (2017-10-27)
+---------------------------------------------
+* DATACMNS-1201 - ClassGeneratingPropertyAccessorFactory.isTypeInjectable(…) fails with NPE for entities in default packages.
+* DATACMNS-1200 - Absent parameters cause NPE in ClassGeneratingEntityInstantiator.
+* DATACMNS-1197 - Adding kotlin property to (extension) interface yields IllegalArgumentException on invocation.
+* DATACMNS-1196 - Failing generic type resolution of generic types within nested generic fields.
+* DATACMNS-1193 - Typo in documentation and JavaDoc of PageableDefaults.
+* DATACMNS-1191 - Avoid unnecessary conversion invocation after Optional unwrapping.
+* DATACMNS-1190 - Add documentation section about ways to enforce nullability constraints in repositories.
+* DATACMNS-1188 - Reflect CrudRepository naming and API changes in reference documentation.
+* DATACMNS-1187 - Broken links in query-by-example sections in reference documentation.
+* DATACMNS-1185 - Release 2.0.1 (Kay SR1).
+* DATACMNS-901 - Potential deadlock in AbstractMappingContext when creating bean while application event is being fired.
+
+
 Changes in version 1.13.8.RELEASE (2017-10-11)
 ----------------------------------------------
 * DATACMNS-1193 - Typo in documentation and JavaDoc of PageableDefaults.
