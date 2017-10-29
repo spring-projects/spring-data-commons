@@ -47,7 +47,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
             .collect(Collectors.toMap(type -> (Class<?>) type,
                     type -> Array.get(Array.newInstance(type, 1), 0)));
 
-	/**
+    /**
 	 * Creates a new {@link ConvertingPropertyAccessor} for the given delegate {@link PersistentPropertyAccessor} and
 	 * {@link ConversionService}.
 	 *
@@ -55,23 +55,17 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @param conversionService must not be {@literal null}.
 	 */
 	public ConvertingPropertyAccessor(PersistentPropertyAccessor accessor, ConversionService conversionService) {
-
-		Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
-		Assert.notNull(conversionService, "ConversionService must not be null!");
-
-		this.accessor = accessor;
-		this.conversionService = conversionService;
-		this.supportNullToPrimitive = false;
+        this(accessor, conversionService, false);
 	}
 
-    /**
-     * Creates a new {@link ConvertingPropertyAccessor} for the given delegate {@link PersistentPropertyAccessor} and
-     * {@link ConversionService}.
-     *
-     * @param accessor must not be {@literal null}.
-     * @param conversionService must not be {@literal null}.
-     * @param supportNullToPrimitive 
-     */
+	/**
+	 * Creates a new {@link ConvertingPropertyAccessor} for the given delegate {@link PersistentPropertyAccessor} and
+	 * {@link ConversionService}.
+	 *
+	 * @param accessor must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
+	 * @param supportNullToPrimitive
+	 */
     public ConvertingPropertyAccessor(PersistentPropertyAccessor accessor, ConversionService conversionService, boolean supportNullToPrimitive) {
 
         Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
