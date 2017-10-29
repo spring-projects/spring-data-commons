@@ -15,6 +15,11 @@
  */
 package org.springframework.data.mapping.model;
 
+import java.lang.reflect.Array;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -34,6 +39,13 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 
 	private final PersistentPropertyAccessor accessor;
 	private final ConversionService conversionService;
+	private final boolean supportNullToPrimitive;
+	
+    private static final Map<Class<?>, Object> PRIMITIVE_DEFAULT_VALUE_MAP = Stream
+            .of(boolean.class, byte.class, char.class, double.class, float.class, int.class,
+                    long.class, short.class)
+            .collect(Collectors.toMap(type -> (Class<?>) type,
+                    type -> Array.get(Array.newInstance(type, 1), 0)));
 
 	/**
 	 * Creates a new {@link ConvertingPropertyAccessor} for the given delegate {@link PersistentPropertyAccessor} and
@@ -49,7 +61,26 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 
 		this.accessor = accessor;
 		this.conversionService = conversionService;
+		this.supportNullToPrimitive = false;
 	}
+
+    /**
+     * Creates a new {@link ConvertingPropertyAccessor} for the given delegate {@link PersistentPropertyAccessor} and
+     * {@link ConversionService}.
+     *
+     * @param accessor must not be {@literal null}.
+     * @param conversionService must not be {@literal null}.
+     * @param supportNullToPrimitive 
+     */
+    public ConvertingPropertyAccessor(PersistentPropertyAccessor accessor, ConversionService conversionService, boolean supportNullToPrimitive) {
+
+        Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
+        Assert.notNull(conversionService, "ConversionService must not be null!");
+
+        this.accessor = accessor;
+        this.conversionService = conversionService;
+        this.supportNullToPrimitive = supportNullToPrimitive;
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -106,6 +137,9 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	@Nullable
 	@SuppressWarnings("unchecked")
 	private <T> T convertIfNecessary(@Nullable Object source, Class<T> type) {
+        if (source == null && type.isPrimitive() && supportNullToPrimitive) {
+            return (T) PRIMITIVE_DEFAULT_VALUE_MAP.get(type);
+        }
 		return (T) (source == null ? null
 				: type.isAssignableFrom(source.getClass()) ? source : conversionService.convert(source, type));
 	}
