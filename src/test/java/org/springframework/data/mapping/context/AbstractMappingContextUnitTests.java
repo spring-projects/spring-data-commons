@@ -43,6 +43,7 @@ import org.springframework.util.StringUtils;
 /**
  * Unit test for {@link AbstractMappingContext}.
  *
+ * @author Bartosz Kielczewski
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
@@ -113,6 +114,14 @@ public class AbstractMappingContextUnitTests {
 
 		SampleMappingContext context = new SampleMappingContext();
 		assertThat(context.getPersistentEntity(String.class)).isNull();
+	}
+
+	@Test // DATACMNS-1208
+	public void ensureHasPersistentEntityReportsFalseForTypesThatShouldntBeCreated() {
+		SampleMappingContext context = new SampleMappingContext();
+		assertThat(context.hasPersistentEntityFor(String.class)).isFalse();
+		assertThat(context.getPersistentEntity(String.class)).isNull();
+		assertThat(context.hasPersistentEntityFor(String.class)).isFalse();
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-214
