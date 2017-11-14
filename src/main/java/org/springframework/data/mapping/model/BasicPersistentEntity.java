@@ -20,7 +20,17 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -30,7 +40,8 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
@@ -93,9 +104,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.constructor = PreferredConstructorDiscoverer.discover(this);
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
-		this.propertyCache = new HashMap<>();
-		this.annotationCache = new HashMap<>();
-		this.propertyAnnotationCache = new LinkedMultiValueMap<>();
+		this.propertyCache = new ConcurrentReferenceHashMap<>();
+		this.annotationCache = new ConcurrentReferenceHashMap<>();
+		this.propertyAnnotationCache = CollectionUtils
+				.toMultiValueMap(new ConcurrentReferenceHashMap<Class<? extends Annotation>, List<P>>());
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 	}
@@ -193,9 +205,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			persistentPropertiesCache.add(property);
 		}
 
-		if (!propertyCache.containsKey(property.getName())) {
-			propertyCache.put(property.getName(), property);
-		}
+		propertyCache.computeIfAbsent(property.getName(), key -> property);
 
 		P candidate = returnPropertyIfBetterIdPropertyCandidateOrNull(property);
 
