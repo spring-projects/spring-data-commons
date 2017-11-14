@@ -244,6 +244,16 @@ public class AbstractMappingContextUnitTests {
 				.isSameAs(context.getPersistentPropertyPath("persons.name", Sample.class));
 	}
 
+	@Test // DATACMNS-1208
+	public void ensureHasPersistentEntityReportsFalseForTypesThatShouldntBeCreated() {
+
+		SampleMappingContext context = new SampleMappingContext();
+
+		assertThat(context.hasPersistentEntityFor(String.class)).isFalse();
+		assertThat(context.getPersistentEntity(String.class)).isNull();
+		assertThat(context.hasPersistentEntityFor(String.class)).isFalse();
+	}
+
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
 
 		boolean found = false;
