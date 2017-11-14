@@ -55,7 +55,7 @@ import org.springframework.data.mapping.Person;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.Version;
+import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -286,19 +286,16 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-1210
 	public void findAnnotationShouldBeThreadSafe() throws InterruptedException {
 
-		assumeTrue("Requires Java 9",
-				Version.parse(System.getProperty("java.version")).isGreaterThanOrEqualTo(Version.parse("9.0")));
-
 		CountDownLatch latch = new CountDownLatch(2);
 		CountDownLatch syncLatch = new CountDownLatch(1);
+		AtomicBoolean failed = new AtomicBoolean(false);
 
-		final AtomicBoolean failed = new AtomicBoolean(false);
-
-		PersistentEntity<EntityWithAnnotation, T> entity = new BasicPersistentEntity(
+		PersistentEntity<EntityWithAnnotation, T> entity = new BasicPersistentEntity<EntityWithAnnotation, T>(
 				ClassTypeInformation.from(EntityWithAnnotation.class), null) {
 
+			@Nullable
 			@Override
-			public Annotation findAnnotation(Class annotationType) {
+			public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 
 				try {
 					syncLatch.await();

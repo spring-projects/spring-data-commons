@@ -30,12 +30,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mapping.*;
+import org.springframework.data.mapping.Alias;
+import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.mapping.IdentifierAccessor;
+import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.SimpleAssociationHandler;
+import org.springframework.data.mapping.SimplePropertyHandler;
+import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -106,8 +117,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		this.propertyCache = new ConcurrentReferenceHashMap<>();
 		this.annotationCache = new ConcurrentReferenceHashMap<>();
-		this.propertyAnnotationCache = CollectionUtils
-				.toMultiValueMap(new ConcurrentReferenceHashMap<Class<? extends Annotation>, List<P>>());
+		this.propertyAnnotationCache = CollectionUtils.toMultiValueMap(new ConcurrentReferenceHashMap<>());
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 	}
