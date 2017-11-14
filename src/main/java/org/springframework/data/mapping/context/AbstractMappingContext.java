@@ -35,7 +35,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -52,7 +51,6 @@ import org.springframework.data.mapping.model.PersistentPropertyAccessorFactory;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Pair;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
@@ -73,6 +71,7 @@ import org.springframework.util.StringUtils;
  *
  * @param <E> the concrete {@link PersistentEntity} type the {@link MappingContext} implementation creates
  * @param <P> the concrete {@link PersistentProperty} type the {@link MappingContext} implementation creates
+ * @author Bartosz Kielczewski
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Michael Hunger
@@ -85,8 +84,7 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
 
-	private final Optional<E> NONE = Optional.empty();
-	private final Map<TypeInformation<?>, Optional<E>> persistentEntities = new HashMap<>();
+	private final Map<TypeInformation<?>, E> persistentEntities = new HashMap<>();
 	private final Map<TypeAndProperties, PersistentPropertyPath<P>> propertyPaths = new ConcurrentReferenceHashMap<>();
 	private final PersistentPropertyAccessorFactory persistentPropertyAccessorFactory = new ClassGeneratingPropertyAccessorFactory();
 
@@ -145,7 +143,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntities()
+	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentEntities()
 	 */
 	@Override
 	public Collection<E> getPersistentEntities() {
@@ -154,9 +152,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			read.lock();
 
-			return persistentEntities.values().stream()//
-					.flatMap(Optionals::toStream)//
-					.collect(Collectors.toSet());
+			return new HashSet<>(persistentEntities.values());
 
 		} finally {
 			read.unlock();
@@ -188,7 +184,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
+	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
 	 */
 	@Nullable
 	@Override
@@ -196,37 +192,34 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		Assert.notNull(type, "Type must not be null!");
 
+		E entity = getExistingPersistentEntity(type);
+		if (entity != null) {
+			return entity;
+		} else  if (!shouldCreatePersistentEntityFor(type)) {
+			return null;
+		} else  if (strict) {
+			throw new MappingException("Unknown persistent entity " + type);
+		} else {
+			return addPersistentEntity(type);
+		}
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
+	 */
+	@Nullable
+	private E getExistingPersistentEntity(TypeInformation<?> type) {
+
 		try {
 
 			read.lock();
 
-			Optional<E> entity = persistentEntities.get(type);
-
-			if (entity != null) {
-				return entity.orElse(null);
-			}
+			return persistentEntities.get(type);
 
 		} finally {
 			read.unlock();
 		}
-
-		if (!shouldCreatePersistentEntityFor(type)) {
-
-			try {
-				write.lock();
-				persistentEntities.put(type, NONE);
-			} finally {
-				write.unlock();
-			}
-
-			return null;
-		}
-
-		if (strict) {
-			throw new MappingException("Unknown persistent entity " + type);
-		}
-
-		return addPersistentEntity(type).orElse(null);
 	}
 
 	/*
@@ -341,7 +334,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	protected Optional<E> addPersistentEntity(Class<?> type) {
+	protected E addPersistentEntity(Class<?> type) {
 		return addPersistentEntity(ClassTypeInformation.from(type));
 	}
 
@@ -351,26 +344,16 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @param typeInformation must not be {@literal null}.
 	 * @return
 	 */
-	protected Optional<E> addPersistentEntity(TypeInformation<?> typeInformation) {
+	protected E addPersistentEntity(TypeInformation<?> typeInformation) {
 
 		Assert.notNull(typeInformation, "TypeInformation must not be null!");
 
-		try {
-
-			read.lock();
-
-			Optional<E> persistentEntity = persistentEntities.get(typeInformation);
-
-			if (persistentEntity != null) {
-				return persistentEntity;
-			}
-
-		} finally {
-			read.unlock();
+		E entity = persistentEntities.get(typeInformation);
+		if (entity != null) {
+			return entity;
 		}
 
 		Class<?> type = typeInformation.getType();
-		E entity = null;
 
 		try {
 
@@ -379,7 +362,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			entity = createPersistentEntity(typeInformation);
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
-			persistentEntities.put(typeInformation, Optional.of(entity));
+			persistentEntities.put(typeInformation, entity);
 
 			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
 
@@ -416,7 +399,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			applicationEventPublisher.publishEvent(new MappingContextEvent<>(this, entity));
 		}
 
-		return Optional.of(entity);
+		return entity;
 	}
 
 	/*
