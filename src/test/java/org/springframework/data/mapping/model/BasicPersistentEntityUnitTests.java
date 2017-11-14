@@ -19,11 +19,14 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
@@ -34,9 +37,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.data.annotation.AccessType;
+import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.Document;
@@ -49,6 +55,7 @@ import org.springframework.data.mapping.Person;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Version;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -276,6 +283,64 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThatThrownBy(() -> entity.getRequiredAnnotation(Document.class)).isInstanceOf(IllegalStateException.class);
 	}
 
+	@Test // DATACMNS-1210
+	public void findAnnotationShouldBeThreadSafe() throws InterruptedException {
+
+		assumeTrue("Requires Java 9",
+				Version.parse(System.getProperty("java.version")).isGreaterThanOrEqualTo(Version.parse("9.0")));
+
+		CountDownLatch latch = new CountDownLatch(2);
+		CountDownLatch syncLatch = new CountDownLatch(1);
+
+		final AtomicBoolean failed = new AtomicBoolean(false);
+
+		PersistentEntity<EntityWithAnnotation, T> entity = new BasicPersistentEntity(
+				ClassTypeInformation.from(EntityWithAnnotation.class), null) {
+
+			@Override
+			public Annotation findAnnotation(Class annotationType) {
+
+				try {
+					syncLatch.await();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+				return super.findAnnotation(annotationType);
+			}
+		};
+
+		Runnable findAccessType = () -> {
+
+			try {
+				entity.findAnnotation(AccessType.class);
+			} catch (Exception e) {
+				failed.set(true);
+			} finally {
+				latch.countDown();
+			}
+		};
+
+		Runnable findPersistent = () -> {
+
+			try {
+				entity.findAnnotation(Persistent.class);
+			} catch (Exception e) {
+				failed.set(true);
+			} finally {
+				latch.countDown();
+			}
+		};
+
+		new Thread(findAccessType).start();
+		new Thread(findPersistent).start();
+
+		syncLatch.countDown();
+		latch.await();
+
+		assertThat(failed.get()).isFalse();
+	}
+
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
 		return createEntity(type, null);
 	}
@@ -315,4 +380,9 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	static class AliasEntityUsingComposedAnnotation {}
 
 	static class Subtype extends Entity {}
+
+	@AccessType(Type.PROPERTY)
+	static class EntityWithAnnotation {
+
+	}
 }
