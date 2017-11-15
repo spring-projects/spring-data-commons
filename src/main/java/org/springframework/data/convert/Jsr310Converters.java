@@ -192,7 +192,7 @@ public abstract class Jsr310Converters {
 		@Nonnull
 		@Override
 		public Date convert(Instant source) {
-			return Date.from(source.atZone(systemDefault()).toInstant());
+			return Date.from(source);
 		}
 	}
 
