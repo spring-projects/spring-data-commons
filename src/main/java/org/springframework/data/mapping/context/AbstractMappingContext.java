@@ -195,6 +195,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			return null;
 		}
 
+		if (!persistentProperty.isEntity()) {
+			return null;
+		}
+
 		TypeInformation<?> typeInfo = persistentProperty.getTypeInformation();
 		return getPersistentEntity(typeInfo.getActualType());
 	}

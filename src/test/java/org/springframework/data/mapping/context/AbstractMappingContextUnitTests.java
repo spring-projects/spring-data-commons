@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 
 import groovy.lang.MetaClass;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -49,13 +50,12 @@ import org.springframework.data.util.TypeInformation;
  */
 public class AbstractMappingContextUnitTests {
 
-	final SimpleTypeHolder holder = new SimpleTypeHolder();
 	SampleMappingContext context;
 
 	@Before
 	public void setUp() {
 		context = new SampleMappingContext();
-		context.setSimpleTypeHolder(holder);
+		context.setSimpleTypeHolder(new SimpleTypeHolder(Collections.singleton(LocalDateTime.class), true));
 	}
 
 	@Test
@@ -96,16 +96,15 @@ public class AbstractMappingContextUnitTests {
 	@Test
 	public void registersEntitiesOnInitialization() {
 
-		ApplicationContext context = mock(ApplicationContext.class);
+		ApplicationContext applicationContext = mock(ApplicationContext.class);
 
-		SampleMappingContext mappingContext = new SampleMappingContext();
-		mappingContext.setInitialEntitySet(Collections.singleton(Person.class));
-		mappingContext.setApplicationEventPublisher(context);
+		context.setInitialEntitySet(Collections.singleton(Person.class));
+		context.setApplicationEventPublisher(applicationContext);
 
-		verify(context, times(0)).publishEvent(Mockito.any(ApplicationEvent.class));
+		verify(applicationContext, times(0)).publishEvent(Mockito.any(ApplicationEvent.class));
 
-		mappingContext.afterPropertiesSet();
-		verify(context, times(1)).publishEvent(Mockito.any(ApplicationEvent.class));
+		context.afterPropertiesSet();
+		verify(applicationContext, times(1)).publishEvent(Mockito.any(ApplicationEvent.class));
 	}
 
 	@Test // DATACMNS-214
@@ -233,6 +232,15 @@ public class AbstractMappingContextUnitTests {
 		}
 	}
 
+	@Test // DATACMNS-1214
+	public void doesNotReturnPersistentEntityForCustomSimpleTypeProperty() {
+
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Person.class);
+		SamplePersistentProperty property = entity.getPersistentProperty("date");
+
+		assertThat(context.getPersistentEntity(property), is(nullValue()));
+	}
+
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
 
 		boolean found = false;
@@ -251,6 +259,7 @@ public class AbstractMappingContextUnitTests {
 
 	class Person {
 		String name;
+		LocalDateTime date;
 	}
 
 	class Unsupported {
