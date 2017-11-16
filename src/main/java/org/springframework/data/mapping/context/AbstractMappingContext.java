@@ -239,6 +239,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		Assert.notNull(persistentProperty, "PersistentProperty must not be null!");
 
+		if (!persistentProperty.isEntity()) {
+			return null;
+		}
+
 		TypeInformation<?> typeInfo = persistentProperty.getTypeInformation();
 		return getPersistentEntity(typeInfo.getRequiredActualType());
 	}
