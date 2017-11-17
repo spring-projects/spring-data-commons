@@ -29,8 +29,8 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 
 	private static final long serialVersionUID = 1232825578694716871L;
 
-	private final int page;
-	private final int size;
+	private final Integer page;
+	private final Integer size;
 
 	/**
 	 * Creates a new {@link AbstractPageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return
@@ -39,7 +39,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 * @param page must not be less than zero.
 	 * @param size must not be less than one.
 	 */
-	public AbstractPageRequest(int page, int size) {
+	public AbstractPageRequest(Integer page, Integer size) {
 
 		if (page < 0) {
 			throw new IllegalArgumentException("Page index must not be less than zero!");
@@ -57,7 +57,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#getPageSize()
 	 */
-	public int getPageSize() {
+	public Integer getPageSize() {
 		return size;
 	}
 
@@ -73,8 +73,8 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#getOffset()
 	 */
-	public long getOffset() {
-		return page * size;
+	public Long getOffset() {
+		return Long.valueOf(page * size);
 	}
 
 	/* 

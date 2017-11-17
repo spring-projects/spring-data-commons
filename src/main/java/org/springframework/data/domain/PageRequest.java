@@ -36,10 +36,10 @@ public class PageRequest extends AbstractPageRequest {
 	 *
 	 * @param page zero-based page index.
 	 * @param size the size of the page to be returned.
-	 * @deprecated use {@link #of(int, int)} instead.
+	 * @deprecated use {@link #of(Integer, Integer)} instead.
 	 */
 	@Deprecated
-	public PageRequest(int page, int size) {
+	public PageRequest(Integer page, Integer size) {
 		this(page, size, Sort.unsorted());
 	}
 
@@ -50,10 +50,10 @@ public class PageRequest extends AbstractPageRequest {
 	 * @param size the size of the page to be returned.
 	 * @param direction the direction of the {@link Sort} to be specified, can be {@literal null}.
 	 * @param properties the properties to sort by, must not be {@literal null} or empty.
-	 * @deprecated use {@link #of(int, int, Direction, String...)} instead.
+	 * @deprecated use {@link #of(Integer, Integer, Direction, String...)} instead.
 	 */
 	@Deprecated
-	public PageRequest(int page, int size, Direction direction, String... properties) {
+	public PageRequest(Integer page, Integer size, Direction direction, String... properties) {
 		this(page, size, Sort.by(direction, properties));
 	}
 
@@ -63,10 +63,10 @@ public class PageRequest extends AbstractPageRequest {
 	 * @param page zero-based page index.
 	 * @param size the size of the page to be returned.
 	 * @param sort can be {@literal null}.
-	 * @deprecated since 2.0, use {@link #of(int, int, Sort)} instead.
+	 * @deprecated since 2.0, use {@link #of(Integer, Integer, Sort)} instead.
 	 */
 	@Deprecated
-	public PageRequest(int page, int size, Sort sort) {
+	public PageRequest(Integer page, Integer size, Sort sort) {
 
 		super(page, size);
 
@@ -80,7 +80,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * @param size the size of the page to be returned.
 	 * @since 2.0
 	 */
-	public static PageRequest of(int page, int size) {
+	public static PageRequest of(Integer page, Integer size) {
 		return of(page, size, Sort.unsorted());
 	}
 
@@ -92,7 +92,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * @param sort must not be {@literal null}.
 	 * @since 2.0
 	 */
-	public static PageRequest of(int page, int size, Sort sort) {
+	public static PageRequest of(Integer page, Integer size, Sort sort) {
 		return new PageRequest(page, size, sort);
 	}
 
@@ -105,7 +105,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * @param properties must not be {@literal null}.
 	 * @since 2.0
 	 */
-	public static PageRequest of(int page, int size, Direction direction, String... properties) {
+	public static PageRequest of(Integer page, Integer size, Direction direction, String... properties) {
 		return of(page, size, Sort.by(direction, properties));
 	}
 
