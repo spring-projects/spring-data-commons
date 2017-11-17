@@ -39,7 +39,7 @@ public class QPageRequest extends AbstractPageRequest {
 	 * @param page
 	 * @param size
 	 */
-	public QPageRequest(int page, int size) {
+	public QPageRequest(Integer page, Integer size) {
 		this(page, size, QSort.unsorted());
 	}
 
@@ -50,7 +50,7 @@ public class QPageRequest extends AbstractPageRequest {
 	 * @param size
 	 * @param orderSpecifiers must not be {@literal null} or empty;
 	 */
-	public QPageRequest(int page, int size, OrderSpecifier<?>... orderSpecifiers) {
+	public QPageRequest(Integer page, Integer size, OrderSpecifier<?>... orderSpecifiers) {
 		this(page, size, new QSort(orderSpecifiers));
 	}
 
@@ -61,7 +61,7 @@ public class QPageRequest extends AbstractPageRequest {
 	 * @param size
 	 * @param sort
 	 */
-	public QPageRequest(int page, int size, QSort sort) {
+	public QPageRequest(Integer page, Integer size, QSort sort) {
 		super(page, size);
 
 		this.sort = sort;
