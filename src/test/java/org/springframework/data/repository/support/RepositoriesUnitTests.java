@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -138,6 +139,23 @@ public class RepositoriesUnitTests {
 
 		assertThat(information)
 				.hasValueSatisfying(it -> assertThat(it.getRepositoryInterface()).isEqualTo(PersonRepository.class));
+	}
+
+	@Test // DATACMNS-1215
+	public void exposesRepositoryForProxyType() {
+
+		ProxyFactory factory = new ProxyFactory();
+		factory.setTarget(new Person());
+		factory.setProxyTargetClass(true);
+
+		Object proxy = factory.getProxy();
+
+		assertThat(ClassUtils.isCglibProxy(proxy)).isTrue();
+
+		Repositories repositories = new Repositories(context);
+
+		assertThat(repositories.hasRepositoryFor(proxy.getClass())).isTrue();
+		assertThat(repositories.getRepositoryFor(proxy.getClass())).isNotEmpty();
 	}
 
 	class Person {}
