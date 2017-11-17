@@ -122,7 +122,9 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		return repositoryFactoryInfos.containsKey(domainClass);
+		Class<?> userClass = ClassUtils.getUserClass(domainClass);
+
+		return repositoryFactoryInfos.containsKey(userClass);
 	}
 
 	/**
@@ -135,7 +137,9 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		Optional<String> repositoryBeanName = Optional.ofNullable(repositoryBeanNames.get(domainClass));
+		Class<?> userClass = ClassUtils.getUserClass(domainClass);
+		Optional<String> repositoryBeanName = Optional.ofNullable(repositoryBeanNames.get(userClass));
+
 		return beanFactory.flatMap(it -> repositoryBeanName.map(it::getBean));
 	}
 
