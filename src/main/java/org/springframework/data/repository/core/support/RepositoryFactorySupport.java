@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -315,10 +314,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		postProcessors.forEach(processor -> processor.postProcess(result, information));
 
 		result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
-		result.addAdvice(new QueryExecutorMethodInterceptor( //
-				information, //
-				getProjectionFactory(classLoader, beanFactory) //
-		));
+
+		ProjectionFactory projectionFactory = getProjectionFactory(classLoader, beanFactory);
+		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory));
 
 		composition = composition.append(RepositoryFragment.implemented(target));
 		result.addAdvice(new ImplementationMethodExecutionInterceptor(composition));
@@ -326,7 +324,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		return (T) result.getProxy(classLoader);
 	}
 
-	@NotNull
+	/**
+	 * Returns the {@link ProjectionFactory} to be used with the repository instances created.
+	 * 
+	 * @param classLoader will never be {@literal null}.
+	 * @param beanFactory will never be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
 	protected ProjectionFactory getProjectionFactory(ClassLoader classLoader, BeanFactory beanFactory) {
 
 		SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
@@ -532,20 +536,23 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 						+ "infrastructure apparently does not support query methods!");
 			}
 
-			this.queries = lookupStrategy.map( //
-					it -> mapMethodsToQuery(repositoryInformation, projectionFactory, it) //
-			).orElse(Collections.emptyMap());
+			this.queries = lookupStrategy //
+					.map(it -> mapMethodsToQuery(repositoryInformation, it, projectionFactory)) //
+					.orElse(Collections.emptyMap());
 		}
 
 		private Map<Method, RepositoryQuery> mapMethodsToQuery(RepositoryInformation repositoryInformation,
-				ProjectionFactory projectionFactory, QueryLookupStrategy lookupStrategy) {
+				QueryLookupStrategy lookupStrategy, ProjectionFactory projectionFactory) {
 
 			return repositoryInformation.getQueryMethods().stream() //
-					.map(method -> Pair.of( //
-							method, //
-							lookupStrategy.resolveQuery(method, repositoryInformation, projectionFactory, namedQueries))) //
+					.map(method -> lookupQuery(method, repositoryInformation, lookupStrategy, projectionFactory)) //
 					.peek(pair -> invokeListeners(pair.getSecond())) //
 					.collect(Pair.toMap());
+		}
+
+		private Pair<Method, RepositoryQuery> lookupQuery(Method method, RepositoryInformation information,
+				QueryLookupStrategy strategy, ProjectionFactory projectionFactory) {
+			return Pair.of(method, strategy.resolveQuery(method, information, projectionFactory, namedQueries));
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -580,6 +587,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			return resultHandler.postProcessInvocationResult(result, methodReturnTypeDescriptor);
 		}
 
+		@Nullable
 		private Object doInvoke(MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
@@ -602,7 +610,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			return queries.containsKey(method);
 		}
 	}
-
 
 	/**
 	 * Method interceptor that calls methods on the {@link RepositoryComposition}.

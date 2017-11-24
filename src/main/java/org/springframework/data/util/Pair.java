@@ -24,6 +24,7 @@ import lombok.ToString;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A tuple of things.
@@ -72,6 +73,11 @@ public final class Pair<S, T> {
 		return second;
 	}
 
+	/**
+	 * A collector to create a {@link Map} from a {@link Stream} of {@link Pair}s.
+	 *
+	 * @return
+	 */
 	public static <S, T> Collector<Pair<S, T>, ?, Map<S, T>> toMap() {
 		return Collectors.toMap(Pair::getFirst, Pair::getSecond);
 	}
