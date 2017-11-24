@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,8 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 		}
 
 		return typeCache.get(projectionType)
-				? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory, parser, projectionType) : interceptor;
+				? new SpelEvaluatingMethodInterceptor(interceptor, source, beanFactory, parser, projectionType)
+				: interceptor;
 	}
 
 	/* 
@@ -86,28 +87,33 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 	 */
 	@Override
 	public ProjectionInformation getProjectionInformation(Class<?> projectionType) {
+		return new SpelAwareProjectionInformation(projectionType);
+	}
 
-		return new DefaultProjectionInformation(projectionType) {
+	protected static class SpelAwareProjectionInformation extends DefaultProjectionInformation {
 
-			/* 
-			 * (non-Javadoc)
-			 * @see org.springframework.data.projection.DefaultProjectionInformation#isInputProperty(java.beans.PropertyDescriptor)
-			 */
-			@Override
-			protected boolean isInputProperty(PropertyDescriptor descriptor) {
+		protected SpelAwareProjectionInformation(Class<?> projectionType) {
+			super(projectionType);
+		}
 
-				if (!super.isInputProperty(descriptor)) {
-					return false;
-				}
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.projection.DefaultProjectionInformation#isInputProperty(java.beans.PropertyDescriptor)
+		 */
+		@Override
+		protected boolean isInputProperty(PropertyDescriptor descriptor) {
 
-				Method readMethod = descriptor.getReadMethod();
-
-				if (readMethod == null) {
-					return false;
-				}
-
-				return AnnotationUtils.findAnnotation(readMethod, Value.class) == null;
+			if (!super.isInputProperty(descriptor)) {
+				return false;
 			}
-		};
+
+			Method readMethod = descriptor.getReadMethod();
+
+			if (readMethod == null) {
+				return false;
+			}
+
+			return AnnotationUtils.findAnnotation(readMethod, Value.class) == null;
+		}
 	}
 }

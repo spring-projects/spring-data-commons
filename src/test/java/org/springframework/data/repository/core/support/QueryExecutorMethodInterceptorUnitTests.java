@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -45,13 +46,15 @@ public class QueryExecutorMethodInterceptorUnitTests {
 	@Mock RepositoryInformation information;
 	@Mock QueryLookupStrategy strategy;
 
+	ProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+
 	@Test(expected = IllegalStateException.class)
 	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() throws Exception {
 
 		when(information.getQueryMethods()).thenReturn(Arrays.asList(Object.class.getMethod("toString")));
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(null);
 
-		factory.new QueryExecutorMethodInterceptor(information, null, new Object());
+		factory.new QueryExecutorMethodInterceptor(information, null, new Object(), projectionFactory);
 	}
 
 	@Test
@@ -60,7 +63,7 @@ public class QueryExecutorMethodInterceptorUnitTests {
 		when(information.getQueryMethods()).thenReturn(Collections.<Method> emptySet());
 		when(factory.getQueryLookupStrategy(any(Key.class))).thenReturn(strategy);
 
-		factory.new QueryExecutorMethodInterceptor(information, null, new Object());
+		factory.new QueryExecutorMethodInterceptor(information, null, new Object(), projectionFactory);
 		verify(strategy, times(0)).resolveQuery(any(Method.class), any(RepositoryMetadata.class),
 				any(ProjectionFactory.class), any(NamedQueries.class));
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
@@ -218,9 +219,27 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
-		result.addAdvice(new QueryExecutorMethodInterceptor(information, customImplementation, target));
+		ProjectionFactory projectionFactory = getProjectionFactory(classLoader, beanFactory);
+
+		result.addAdvice(new QueryExecutorMethodInterceptor(information, customImplementation, target, projectionFactory));
 
 		return (T) result.getProxy(classLoader);
+	}
+
+	/**
+	 * Returns the {@link ProjectionFactory} to be used with the repository instances created.
+	 * 
+	 * @param classLoader will never be {@literal null}.
+	 * @param beanFactory will never be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	protected ProjectionFactory getProjectionFactory(ClassLoader classLoader, BeanFactory beanFactory) {
+
+		SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+		factory.setBeanClassLoader(classLoader);
+		factory.setBeanFactory(beanFactory);
+
+		return factory;
 	}
 
 	/**
@@ -401,7 +420,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 * execution of repository interface methods.
 		 */
 		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation, Object customImplementation,
-				Object target) {
+				Object target, ProjectionFactory projectionFactory) {
 
 			Assert.notNull(repositoryInformation, "RepositoryInformation must not be null!");
 			Assert.notNull(target, "Target must not be null!");
@@ -427,13 +446,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 				return;
 			}
 
-			SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-			factory.setBeanClassLoader(classLoader);
-			factory.setBeanFactory(beanFactory);
-
 			for (Method method : queryMethods) {
 
-				RepositoryQuery query = lookupStrategy.resolveQuery(method, repositoryInformation, factory, namedQueries);
+				RepositoryQuery query = lookupStrategy.resolveQuery(method, repositoryInformation, projectionFactory,
+						namedQueries);
 
 				invokeListeners(query);
 				queries.put(method, query);
