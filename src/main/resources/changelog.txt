@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.2.RELEASE (2017-11-27)
+---------------------------------------------
+* DATACMNS-1218 - Upgrade to Vavr 0.9.2.
+* DATACMNS-1215 - Repositories does not expose registered repository for proxy type.
+* DATACMNS-1214 - MappingContext.getPersistentEntity(PersistentProperty) must only return an entity if the given property is one.
+* DATACMNS-1210 - Thread-safetey issue in annotation detection in BasicPersistentEntity.
+* DATACMNS-1208 - AbstractMappingContext.hasPersistentEntity(…) does not consider cached abscence.
+* DATACMNS-1202 - Release 2.0.2 (Kay SR2).
+* DATACMNS-1158 - Make ProjectionFactory configurable by module implementations.
+
+
 Changes in version 1.13.9.RELEASE (2017-11-27)
 ----------------------------------------------
 * DATACMNS-1218 - Upgrade to Vavr 0.9.2.
