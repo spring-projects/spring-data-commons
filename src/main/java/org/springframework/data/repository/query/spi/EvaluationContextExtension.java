@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.lang.Nullable;
 
 /**
  * SPI to allow adding a set of properties and function definitions accessible via the root of an
@@ -59,5 +60,6 @@ public interface EvaluationContextExtension {
 	 * 
 	 * @return
 	 */
+	@Nullable
 	Object getRootObject();
 }

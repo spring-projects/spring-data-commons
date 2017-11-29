@@ -56,6 +56,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final Lazy<Association<P>> association;
 	private final @Getter PersistentEntity<?, P> owner;
 
+	@SuppressWarnings("null") //
 	private final @Getter(value = AccessLevel.PROTECTED, onMethod = @__(@SuppressWarnings("null"))) Property property;
 	private final Lazy<Integer> hashCode;
 	private final Lazy<Boolean> usePropertyAccess;

@@ -23,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -101,6 +102,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 * @param tree must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	private S createCriteria(PartTree tree) {
 
 		S base = null;
@@ -108,11 +110,16 @@ public abstract class AbstractQueryCreator<T, S> {
 
 		for (OrPart node : tree) {
 
-			S criteria = null;
+			Iterator<Part> parts = node.iterator();
 
-			for (Part part : node) {
+			if (!parts.hasNext()) {
+				throw new IllegalStateException(String.format("No part found in PartTree %s!", tree));
+			}
 
-				criteria = criteria == null ? create(part, iterator) : and(part, criteria, iterator);
+			S criteria = create(parts.next(), iterator);
+
+			while (parts.hasNext()) {
+				criteria = and(parts.next(), criteria, iterator);
 			}
 
 			base = base == null ? criteria : or(base, criteria);
@@ -152,9 +159,9 @@ public abstract class AbstractQueryCreator<T, S> {
 	/**
 	 * Actually creates the query object applying the given criteria object and {@link Sort} definition.
 	 *
-	 * @param criteria will never be {@literal null}.
+	 * @param criteria can be {@literal null}.
 	 * @param sort must not be {@literal null}.
 	 * @return
 	 */
-	protected abstract T complete(S criteria, Sort sort);
+	protected abstract T complete(@Nullable S criteria, Sort sort);
 }

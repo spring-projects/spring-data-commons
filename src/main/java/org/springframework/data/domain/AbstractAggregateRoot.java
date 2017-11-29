@@ -75,6 +75,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 * @param aggregate must not be {@literal null}.
 	 * @return the aggregate
 	 */
+	@SuppressWarnings("unchecked")
 	protected final A andEventsFrom(A aggregate) {
 
 		Assert.notNull(aggregate, "Aggregate must not be null!");
@@ -92,6 +93,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 * @return the aggregate
 	 * @see #registerEvent(Object)
 	 */
+	@SuppressWarnings("unchecked")
 	protected final A andEvent(Object event) {
 
 		registerEvent(event);

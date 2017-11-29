@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.init;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.ApplicationContext;
@@ -37,7 +39,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 		extends AbstractFactoryBean<ResourceReaderRepositoryPopulator>
 		implements ApplicationListener<ContextRefreshedEvent>, ApplicationContextAware {
 
-	private @Nullable Resource[] resources;
+	private Resource[] resources = new Resource[0];
 	private @Nullable RepositoryPopulator populator;
 	private @Nullable ApplicationContext context;
 
@@ -64,6 +66,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#getObjectType()
 	 */
+	@Nonnull
 	@Override
 	public Class<?> getObjectType() {
 		return ResourceReaderRepositoryPopulator.class;
@@ -78,7 +81,10 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 
 		ResourceReaderRepositoryPopulator initializer = new ResourceReaderRepositoryPopulator(getResourceReader());
 		initializer.setResources(resources);
-		initializer.setApplicationEventPublisher(context);
+
+		if (context != null) {
+			initializer.setApplicationEventPublisher(context);
+		}
 
 		this.populator = initializer;
 
@@ -91,7 +97,14 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 	 */
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
+		RepositoryPopulator populator = this.populator;
+
+		if (populator == null) {
+			throw new IllegalStateException("RepositoryPopulator was not properly initialized!");
+		}
+
 		if (event.getApplicationContext().equals(context)) {
+
 			Repositories repositories = new Repositories(event.getApplicationContext());
 			populator.populate(repositories);
 		}
@@ -99,6 +112,10 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 
 	protected abstract ResourceReader getResourceReader();
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#afterPropertiesSet()
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 

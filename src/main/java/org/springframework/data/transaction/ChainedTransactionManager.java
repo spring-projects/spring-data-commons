@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.HeuristicCompletionException;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -86,9 +87,13 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 	 * (non-Javadoc)
 	 * @see org.springframework.transaction.PlatformTransactionManager#getTransaction(org.springframework.transaction.TransactionDefinition)
 	 */
-	public MultiTransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
+	public MultiTransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
 
 		MultiTransactionStatus mts = new MultiTransactionStatus(transactionManagers.get(0));
+
+		if (definition == null) {
+			return mts;
+		}
 
 		if (!synchronizationManager.isSynchronizationActive()) {
 			synchronizationManager.initSynchronization();

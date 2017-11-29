@@ -141,7 +141,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		argumentResolvers.add(pageableResolver());
 
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
-				getRequiredConversionService());
+				conversionService.getObject());
 		resolver.setBeanFactory(context);
 		forwardBeanClassLoader(resolver);
 
@@ -178,17 +178,6 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 
 	protected void customizeSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
 		sortResolverCustomizer.ifPresent(c -> c.customize(sortResolver));
-	}
-
-	private ConversionService getRequiredConversionService() {
-
-		ConversionService conversionService = this.conversionService.getObject();
-
-		if (conversionService == null) {
-			throw new IllegalStateException("No ConversionService configured!");
-		}
-
-		return conversionService;
 	}
 
 	private void forwardBeanClassLoader(BeanClassLoaderAware target) {

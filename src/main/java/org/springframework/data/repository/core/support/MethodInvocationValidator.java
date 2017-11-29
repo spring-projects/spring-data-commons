@@ -70,7 +70,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	 */
 	@Nullable
 	@Override
-	public Object invoke(MethodInvocation invocation) throws Throwable {
+	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
 		Nullability nullability = nullabilityCache.get(method);
