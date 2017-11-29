@@ -16,19 +16,32 @@
 package org.springframework.data.projection;
 
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.type.MethodMetadata;
+import org.springframework.data.type.MethodsMetadata;
+import org.springframework.data.type.MethodsMetadataReader;
+import org.springframework.data.type.classreading.MethodsMetadataReaderFactory;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Default implementation of {@link ProjectionInformation}. Exposes all properties of the type as required input
  * properties.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.12
  */
 class DefaultProjectionInformation implements ProjectionInformation {
@@ -41,7 +54,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 * 
 	 * @param type must not be {@literal null}.
 	 */
-	public DefaultProjectionInformation(Class<?> type) {
+	DefaultProjectionInformation(Class<?> type) {
 
 		Assert.notNull(type, "Projection type must not be null!");
 
@@ -105,13 +118,94 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	private static List<PropertyDescriptor> collectDescriptors(Class<?> type) {
 
 		List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
-		result.addAll(filterDefaultMethods(BeanUtils.getPropertyDescriptors(type)));
+		MethodsMetadata metadata = getMetadata(type);
+		final Map<String, Integer> orders = getMethodOrder(metadata);
 
-		for (Class<?> interfaze : type.getInterfaces()) {
-			result.addAll(collectDescriptors(interfaze));
+		for (PropertyDescriptor descriptor : filterDefaultMethods(BeanUtils.getPropertyDescriptors(type))) {
+			if (metadata == null || orders.containsKey(descriptor.getReadMethod().getName())) {
+				result.add(descriptor);
+			}
+		}
+
+		if (metadata == null) {
+			return result;
+		}
+
+		Collections.sort(result, new Comparator<PropertyDescriptor>() {
+
+			/* 
+			 * (non-Javadoc)
+			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+			 */
+			@Override
+			public int compare(PropertyDescriptor left, PropertyDescriptor right) {
+				return orders.get(left.getReadMethod().getName()) - orders.get(right.getReadMethod().getName());
+			}
+		});
+
+		for (String name : metadata.getInterfaceNames()) {
+			result.addAll(collectDescriptors(loadClass(name, type.getClassLoader())));
 		}
 
 		return result;
+	}
+
+	private static Class<?> loadClass(String className, ClassLoader classLoader) {
+
+		try {
+			return ClassUtils.forName(className, classLoader);
+		} catch (ClassNotFoundException e) {
+			throw new IllegalArgumentException(String.format("Cannot load class %s", className));
+		}
+	}
+
+	/**
+	 * Returns a {@link Map} containing method name to its positional index according to {@link MethodsMetadata}.
+	 *
+	 * @param metadata
+	 * @return
+	 */
+	private static Map<String, Integer> getMethodOrder(MethodsMetadata metadata) {
+
+		if (metadata == null) {
+			return Collections.emptyMap();
+		}
+
+		Set<MethodMetadata> methods = metadata.getMethods();
+		Map<String, Integer> result = new HashMap<String, Integer>(methods.size());
+		int i = 0;
+
+		for (MethodMetadata methodMetadata : methods) {
+
+			String name = methodMetadata.getMethodName();
+
+			if (!result.containsKey(name)) {
+				result.put(name, i++);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Attempts to obtain {@link MethodsMetadata} from {@link Class}. Returns {@link Optional} containing
+	 * {@link MethodsMetadata} if metadata was read successfully, {@link Optional#empty()} otherwise.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return the optional {@link MethodsMetadata}.
+	 */
+	private static MethodsMetadata getMetadata(Class<?> type) {
+
+		try {
+
+			MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory(type.getClassLoader());
+			MethodsMetadataReader metadataReader = factory.getMetadataReader(ClassUtils.getQualifiedName(type));
+
+			return metadataReader.getMethodsMetadata();
+
+		} catch (IOException e) {
+			return null;
+		}
 	}
 
 	/**

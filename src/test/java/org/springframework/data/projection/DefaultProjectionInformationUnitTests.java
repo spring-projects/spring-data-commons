@@ -28,6 +28,7 @@ import org.junit.Test;
  * Unit tests for {@link DefaultProjectionInformation}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class DefaultProjectionInformationUnitTests {
 
@@ -44,7 +45,24 @@ public class DefaultProjectionInformationUnitTests {
 
 		ProjectionInformation information = new DefaultProjectionInformation(ExtendedProjection.class);
 
-		assertThat(toNames(information.getInputProperties()), hasItems("age", "firstname", "lastname"));
+		assertThat(toNames(information.getInputProperties()), contains("age", "firstname", "lastname"));
+	}
+
+	@Test // DATACMNS-1206, DATACMNS-1284
+	public void discoversInputPropertiesInOrder() {
+
+		ProjectionInformation information = new DefaultProjectionInformation(SameMethodNamesInAlternateOrder.class);
+
+		assertThat(toNames(information.getInputProperties()), contains("firstname", "lastname"));
+	}
+
+	@Test // DATACMNS-1206, DATACMNS-1284
+	public void discoversAllInputPropertiesInOrder() {
+
+		assertThat(toNames(new DefaultProjectionInformation(CompositeProjection.class).getInputProperties()),
+				contains("firstname", "lastname", "age"));
+		assertThat(toNames(new DefaultProjectionInformation(ReorderedCompositeProjection.class).getInputProperties()),
+				contains("age", "firstname", "lastname"));
 	}
 
 	private static List<String> toNames(List<PropertyDescriptor> descriptors) {
@@ -66,6 +84,24 @@ public class DefaultProjectionInformationUnitTests {
 	}
 
 	interface ExtendedProjection extends CustomerProjection {
+
+		int getAge();
+	}
+
+	interface SameMethodNamesInAlternateOrder {
+
+		String getFirstname();
+
+		String getLastname();
+
+		String getFirstname(String foo);
+	}
+
+	interface CompositeProjection extends CustomerProjection, AgeProjection {}
+
+	interface ReorderedCompositeProjection extends AgeProjection, CustomerProjection {}
+
+	interface AgeProjection {
 
 		int getAge();
 	}
