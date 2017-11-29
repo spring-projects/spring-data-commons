@@ -16,14 +16,26 @@
 package org.springframework.data.projection;
 
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.type.ClassMetadata;
+import org.springframework.core.type.MethodMetadata;
+import org.springframework.data.type.MethodsMetadata;
+import org.springframework.data.type.MethodsMetadataReader;
+import org.springframework.data.type.classreading.MethodsMetadataReaderFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Default implementation of {@link ProjectionInformation}. Exposes all properties of the type as required input
@@ -31,6 +43,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.12
  */
 class DefaultProjectionInformation implements ProjectionInformation {
@@ -43,7 +56,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 *
 	 * @param type must not be {@literal null}.
 	 */
-	public DefaultProjectionInformation(Class<?> type) {
+	DefaultProjectionInformation(Class<?> type) {
 
 		Assert.notNull(type, "Projection type must not be null!");
 
@@ -102,15 +115,84 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	private static List<PropertyDescriptor> collectDescriptors(Class<?> type) {
 
 		List<PropertyDescriptor> result = new ArrayList<>();
-		result.addAll(Arrays.stream(BeanUtils.getPropertyDescriptors(type))//
-				.filter(it -> !hasDefaultGetter(it))//
-				.collect(Collectors.toList()));
 
-		for (Class<?> interfaze : type.getInterfaces()) {
-			result.addAll(collectDescriptors(interfaze));
+		Optional<MethodsMetadata> metadata = getMetadata(type);
+		Stream<PropertyDescriptor> stream = Arrays.stream(BeanUtils.getPropertyDescriptors(type))//
+				.filter(it -> !hasDefaultGetter(it));
+
+		Stream<PropertyDescriptor> streamToUse = metadata.map(DefaultProjectionInformation::getMethodOrder)
+				.filter(it -> !it.isEmpty()) //
+				.map(it -> stream.filter(descriptor -> it.containsKey(descriptor.getReadMethod().getName()))
+						.sorted(Comparator.comparingInt(left -> it.get(left.getReadMethod().getName())))) //
+				.orElse(stream);
+
+		result.addAll(streamToUse.collect(Collectors.toList()));
+
+		if (metadata.isPresent()) {
+
+			Stream<String> interfaceNames = metadata.map(ClassMetadata::getInterfaceNames) //
+					.map(Arrays::stream) //
+					.orElse(Stream.empty());
+
+			result.addAll(interfaceNames.map(it -> loadClass(it, type.getClassLoader())) //
+					.map(DefaultProjectionInformation::collectDescriptors) //
+					.flatMap(List::stream) //
+					.collect(Collectors.toList()));
+		} else {
+
+			for (Class<?> interfaze : type.getInterfaces()) {
+				result.addAll(collectDescriptors(interfaze));
+			}
 		}
 
 		return result.stream().distinct().collect(Collectors.toList());
+	}
+
+	private static Class<?> loadClass(String className, ClassLoader classLoader) {
+
+		try {
+			return ClassUtils.forName(className, classLoader);
+		} catch (ClassNotFoundException e) {
+			throw new IllegalArgumentException(String.format("Cannot load class %s", className));
+		}
+	}
+
+	/**
+	 * Returns a {@link Map} containing method name to its positional index according to {@link MethodsMetadata}.
+	 *
+	 * @param metadata
+	 * @return
+	 */
+	private static Map<String, Integer> getMethodOrder(MethodsMetadata metadata) {
+
+		List<String> methods = metadata.getMethods() //
+				.stream() //
+				.map(MethodMetadata::getMethodName) //
+				.distinct() //
+				.collect(Collectors.toList());
+
+		return IntStream.range(0, methods.size()) //
+				.boxed() //
+				.collect(Collectors.toMap(methods::get, i -> i));
+	}
+
+	/**
+	 * Attempts to obtain {@link MethodsMetadata} from {@link Class}. Returns {@link Optional} containing
+	 * {@link MethodsMetadata} if metadata was read successfully, {@link Optional#empty()} otherwise.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return the optional {@link MethodsMetadata}.
+	 */
+	private static Optional<MethodsMetadata> getMetadata(Class<?> type) {
+
+		try {
+
+			MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory(type.getClassLoader());
+			MethodsMetadataReader metadataReader = factory.getMetadataReader(ClassUtils.getQualifiedName(type));
+			return Optional.of(metadataReader.getMethodsMetadata());
+		} catch (IOException e) {
+			return Optional.empty();
+		}
 	}
 
 	/**
