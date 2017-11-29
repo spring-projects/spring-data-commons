@@ -90,6 +90,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
+	@Nullable
 	@Override
 	public Predicate resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
@@ -148,6 +149,10 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 		}
 
 		TypeInformation<?> actualType = source.getActualType();
+
+		if (actualType == null) {
+			throw new IllegalArgumentException(String.format("Could not determine domain type from %s!", source));
+		}
 
 		if (source != actualType) {
 			return detectDomainType(actualType);

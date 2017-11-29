@@ -133,8 +133,8 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 
 				MethodType methodType = MethodType.methodType(method.getReturnType(), method.getParameterTypes());
 
-				return getLookup(method.getDeclaringClass()).findSpecial(method.getDeclaringClass(), method.getName(),
-						methodType, method.getDeclaringClass());
+				return getLookup(method.getDeclaringClass(), privateLookupIn).findSpecial(method.getDeclaringClass(),
+						method.getName(), methodType, method.getDeclaringClass());
 			}
 
 			/*
@@ -146,13 +146,13 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 				return true;
 			}
 
-			private Lookup getLookup(Class<?> declaringClass) {
-
-				Lookup lookup = MethodHandles.lookup();
+			private Lookup getLookup(Class<?> declaringClass, @Nullable Method privateLookupIn) {
 
 				if (privateLookupIn == null) {
-					return lookup;
+					return MethodHandles.lookup();
 				}
+
+				Lookup lookup = MethodHandles.lookup();
 
 				try {
 					return (Lookup) privateLookupIn.invoke(MethodHandles.class, declaringClass, lookup);

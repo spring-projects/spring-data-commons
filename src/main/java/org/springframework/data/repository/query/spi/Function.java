@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.TypeUtils;
 
@@ -36,7 +37,7 @@ import org.springframework.util.TypeUtils;
 public class Function {
 
 	private final Method method;
-	private final Object target;
+	private final @Nullable Object target;
 
 	/**
 	 * Creates a new {@link Function} to statically invoke the given {@link Method}.
@@ -56,7 +57,7 @@ public class Function {
 	 * @param method must not be {@literal null}.
 	 * @param target can be {@literal null}, if so, the method
 	 */
-	public Function(Method method, Object target) {
+	public Function(Method method, @Nullable Object target) {
 
 		Assert.notNull(method, "Method must not be null!");
 		Assert.isTrue(target != null || Modifier.isStatic(method.getModifiers()),
@@ -154,7 +155,6 @@ public class Function {
 	 * Checks wether this {@code Function} has the same signature as another {@code Function}.
 	 *
 	 * @param other the {@code Function} to compare {@code this} with.
-	 *
 	 * @return {@code true} iff name and argument list are the same.
 	 */
 	public boolean isSignatureEqual(Function other) {

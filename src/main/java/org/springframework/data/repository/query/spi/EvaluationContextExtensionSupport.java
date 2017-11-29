@@ -18,6 +18,8 @@ package org.springframework.data.repository.query.spi;
 import java.util.Collections;
 import java.util.Map;
 
+import org.springframework.lang.Nullable;
+
 /**
  * A base class for {@link EvaluationContextExtension}s.
  * 
@@ -49,6 +51,7 @@ public abstract class EvaluationContextExtensionSupport implements EvaluationCon
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.spi.EvaluationContextExtension#getRootObject()
 	 */
+	@Nullable
 	@Override
 	public Object getRootObject() {
 		return null;

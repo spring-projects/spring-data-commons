@@ -262,7 +262,7 @@ public class NullableUtils {
 				.collect(Collectors.toSet());
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static <T> Optional<Class<T>> findClass(String className) {
 
 		try {

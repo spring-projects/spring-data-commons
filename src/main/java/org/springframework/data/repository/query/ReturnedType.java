@@ -290,7 +290,6 @@ public abstract class ReturnedType {
 			return inputProperties;
 		}
 
-		@SuppressWarnings({ "unchecked", "rawtypes" })
 		private List<String> detectConstructorParameterNames(Class<?> type) {
 
 			if (!isDto()) {

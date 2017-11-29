@@ -235,10 +235,6 @@ public class Part {
 		 */
 		protected boolean supports(String property) {
 
-			if (keywords == null) {
-				return true;
-			}
-
 			for (String keyword : keywords) {
 				if (property.endsWith(keyword)) {
 					return true;

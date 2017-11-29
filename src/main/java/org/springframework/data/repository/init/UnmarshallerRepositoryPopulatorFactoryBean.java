@@ -44,6 +44,13 @@ public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractReposito
 	 */
 	@Override
 	protected ResourceReader getResourceReader() {
+
+		Unmarshaller unmarshaller = this.unmarshaller;
+
+		if (unmarshaller == null) {
+			throw new IllegalStateException("No Unmarshaller configured!");
+		}
+
 		return new UnmarshallingResourceReader(unmarshaller);
 	}
 
