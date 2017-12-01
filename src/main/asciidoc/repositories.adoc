@@ -989,6 +989,43 @@ Assume we have 30 Person instances in the database. You can now trigger a reques
 
 You see that the assembler produced the correct URI and also picks up the default configuration present to resolve the parameters into a `Pageable` for an upcoming request. This means, if you change that configuration, the links will automatically adhere to the change. By default the assembler points to the controller method it was invoked in but that can be customized by handing in a custom `Link` to be used as base to build the pagination links to overloads of the `PagedResourcesAssembler.toResource(…)` method.
 
+[[core.web.binding]]
+==== Web databinding support
+
+Spring Data projections – generally described in <<projections>> – can be used to bind incoming request payloads by either using http://goessner.net/articles/JsonPath/[JSONPath] expressions (requires https://github.com/json-path/JsonPath[Jayway JasonPath] or https://www.w3.org/TR/xpath-31/[XPath] expressions (requires https://xmlbeam.org/[XmlBeam]).
+
+.HTTP payload binding using JSONPath or XPath expressions
+====
+[source, java]
+----
+@ProjectedPayload
+public interface UserPayload {
+
+  @XBRead("//firstname")
+  @JsonPath("$..firstname")
+  String getFirstname();
+
+  @XBRead("/lastname")
+  @JsonPath({ "$.lastname", "$.user.lastname" })
+  String getLastname();
+}
+----
+====
+
+The type above can be used as Spring MVC handler method argument or via `ParameterizedTypeReference` on one of ``RestTemplate``'s methods.
+The method declarations above would try to find `firstname` anywhere in the given document.
+The `lastname` XML looup is performed on the top-level of the incoming document.
+The JSON variant of that tries a top-level `lastname` first but also tries `lastname` nested in a `user` sub-document in case the former doesn't return a value.
+That way changes if the structure of the source document can be mitigated easily without having to touch clients calling the exposed methods (usually a drawback of class-based payload binding).
+
+Nested projections are supported as described in <<projections>>.
+If the method returns a complex, non-interface type, a Jackson `ObjectMapper` is used to map the final value.
+
+For Spring MVC, the necessary converters are registered automatically, as soon as `@EnableSpringDataWebSupport` is active and the required dependencies are available on the classpath.
+For usage with `RestTemplate` register a `ProjectingJackson2HttpMessageConverter` (JSON) or `XmlBeamHttpMessageConverter` manually.
+
+For more information, see the https://github.com/spring-projects/spring-data-examples/tree/master/web/projection[web projection example] in the canonical https://github.com/spring-projects/spring-data-examples[Spring Data Examples repository].
+
 [[core.web.type-safe]]
 ==== Querydsl web support
 
