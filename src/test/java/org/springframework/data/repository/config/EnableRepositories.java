@@ -51,4 +51,6 @@ public @interface EnableRepositories {
 	boolean considerNestedRepositories() default false;
 
 	boolean limitImplementationBasePackages() default true;
+
+	Class<? extends RepositoryBeanNameGenerator> nameGenerator() default RepositoryBeanNameGenerator.class;
 }

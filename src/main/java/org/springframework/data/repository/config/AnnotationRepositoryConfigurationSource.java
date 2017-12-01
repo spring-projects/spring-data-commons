@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -54,6 +55,7 @@ import org.springframework.util.StringUtils;
  * @author Peter Rietzler
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Sascha Woo
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -65,11 +67,13 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS = "repositoryFactoryBeanClass";
 	private static final String REPOSITORY_BASE_CLASS = "repositoryBaseClass";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "considerNestedRepositories";
+	private static final String BEAN_NAME_GENERATOR = "nameGenerator";
 
 	private final AnnotationMetadata configMetadata;
 	private final AnnotationMetadata enableAnnotationMetadata;
 	private final AnnotationAttributes attributes;
 	private final ResourceLoader resourceLoader;
+	private final RepositoryBeanNameGenerator beanNameGenerator;
 	private final boolean hasExplicitFilters;
 
 	/**
@@ -85,7 +89,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
 			ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry) {
 
-		super(environment, ConfigurationUtils.getRequiredClassLoader(resourceLoader), registry);
+		super(environment, registry);
 
 		Assert.notNull(metadata, "Metadata must not be null!");
 		Assert.notNull(annotation, "Annotation must not be null!");
@@ -97,10 +101,13 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			throw new IllegalStateException(String.format("Unable to obtain annotation attributes for %s!", annotation));
 		}
 
+		ClassLoader classLoader = ConfigurationUtils.getRequiredClassLoader(resourceLoader);
+
 		this.attributes = new AnnotationAttributes(annotationAttributes);
 		this.enableAnnotationMetadata = new StandardAnnotationMetadata(annotation);
 		this.configMetadata = metadata;
 		this.resourceLoader = resourceLoader;
+		this.beanNameGenerator = getBeanNameGenerator(attributes.getClass(BEAN_NAME_GENERATOR), classLoader);
 		this.hasExplicitFilters = hasExplicitFilters(attributes);
 	}
 
@@ -120,6 +127,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		}
 
 		return false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#generateBeanName()
+	 */
+	@Override
+	public String generateBeanName(BeanDefinition beanDefinition) {
+		return beanNameGenerator.generateBeanName(beanDefinition);
 	}
 
 	/*

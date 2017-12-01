@@ -41,6 +41,7 @@ import org.springframework.data.util.Streamable;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Sascha Woo
  */
 public class AnnotationRepositoryConfigurationSourceUnitTests {
 
@@ -165,6 +166,8 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 		Filter[] includeFilters() default {};
 
 		Filter[] excludeFilters() default {};
+
+		Class<? extends RepositoryBeanNameGenerator> nameGenerator() default RepositoryBeanNameGenerator.class;
 	}
 
 	@SampleAnnotation

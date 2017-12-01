@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.config;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -24,6 +26,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Base class to implement {@link RepositoryConfigurationSource}s.
@@ -32,31 +35,27 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Peter Rietzler
  * @author Jens Schauder
+ * @author Sascha Woo
  */
 public abstract class RepositoryConfigurationSourceSupport implements RepositoryConfigurationSource {
 
 	protected static final String DEFAULT_REPOSITORY_IMPL_POSTFIX = "Impl";
 
 	private final Environment environment;
-	private final RepositoryBeanNameGenerator beanNameGenerator;
 	private final BeanDefinitionRegistry registry;
 
 	/**
 	 * Creates a new {@link RepositoryConfigurationSourceSupport} with the given environment.
 	 *
 	 * @param environment must not be {@literal null}.
-	 * @param classLoader must not be {@literal null}.
 	 * @param registry must not be {@literal null}.
 	 */
-	public RepositoryConfigurationSourceSupport(Environment environment, ClassLoader classLoader,
-			BeanDefinitionRegistry registry) {
+	public RepositoryConfigurationSourceSupport(Environment environment, BeanDefinitionRegistry registry) {
 
 		Assert.notNull(environment, "Environment must not be null!");
-		Assert.notNull(classLoader, "ClassLoader must not be null!");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
 		this.environment = environment;
-		this.beanNameGenerator = new RepositoryBeanNameGenerator(classLoader);
 		this.registry = registry;
 	}
 
@@ -94,9 +93,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBeanNameGenerator()
 	 */
 	@Override
-	public String generateBeanName(BeanDefinition beanDefinition) {
-		return beanNameGenerator.generateBeanName(beanDefinition);
-	}
+	public abstract String generateBeanName(BeanDefinition beanDefinition);
 
 	/**
 	 * Return the {@link TypeFilter}s to define which types to include when scanning for repositories. Default
@@ -106,6 +103,15 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 */
 	protected Iterable<TypeFilter> getIncludeFilters() {
 		return Collections.emptySet();
+	}
+
+	protected RepositoryBeanNameGenerator getBeanNameGenerator(Class<? extends RepositoryBeanNameGenerator> beanNameGenerator, ClassLoader classLoader) {
+		try {
+			Constructor<? extends RepositoryBeanNameGenerator> ctor = ClassUtils.getConstructorIfAvailable(beanNameGenerator, ClassLoader.class);
+			return ctor.newInstance(classLoader);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new IllegalArgumentException("Unsupported bean name generator specified " + beanNameGenerator.toString());
+		}
 	}
 
 	/**

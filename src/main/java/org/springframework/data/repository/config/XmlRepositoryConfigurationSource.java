@@ -18,6 +18,7 @@ package org.springframework.data.repository.config;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.TypeFilter;
@@ -29,6 +30,7 @@ import org.springframework.data.util.ParsingUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -40,6 +42,7 @@ import org.w3c.dom.Element;
  * @author Christoph Strobl
  * @author Peter Rietzler
  * @author Jens Schauder
+ * @author Sascha Woo
  */
 public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -50,9 +53,11 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS_NAME = "factory-class";
 	private static final String REPOSITORY_BASE_CLASS_NAME = "base-class";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "consider-nested-repositories";
+	private static final String BEAN_NAME_GENERATOR = "name-generator";
 
 	private final Element element;
 	private final ParserContext context;
+	private final RepositoryBeanNameGenerator beanNameGenerator;
 
 	private final Collection<TypeFilter> includeFilters;
 	private final Collection<TypeFilter> excludeFilters;
@@ -66,7 +71,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 */
 	public XmlRepositoryConfigurationSource(Element element, ParserContext context, Environment environment) {
 
-		super(environment, ConfigurationUtils.getRequiredClassLoader(context.getReaderContext()), context.getRegistry());
+		super(environment, context.getRegistry());
 
 		Assert.notNull(element, "Element must not be null!");
 
@@ -76,6 +81,12 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		TypeFilterParser parser = new TypeFilterParser(context.getReaderContext());
 		this.includeFilters = parser.parseTypeFilters(element, Type.INCLUDE);
 		this.excludeFilters = parser.parseTypeFilters(element, Type.EXCLUDE);
+		this.beanNameGenerator = getBeanNameGenerator();
+	}
+
+	@Override
+	public String generateBeanName(BeanDefinition beanDefinition) {
+		return beanNameGenerator.generateBeanName(beanDefinition);
 	}
 
 	/* 
@@ -210,5 +221,23 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public boolean usesExplicitFilters() {
 		return !(this.includeFilters.isEmpty() && this.excludeFilters.isEmpty());
+	}
+
+	private RepositoryBeanNameGenerator getBeanNameGenerator() {
+		ClassLoader classLoader = ConfigurationUtils.getRequiredClassLoader(context.getReaderContext());
+
+		Optional<String> attributeNameGenerator = getNullDefaultedAttribute(element, BEAN_NAME_GENERATOR);
+		if (!attributeNameGenerator.isPresent())
+			return new RepositoryBeanNameGenerator(classLoader);
+
+		try {
+			@SuppressWarnings("unchecked")
+			Class<? extends RepositoryBeanNameGenerator> beanNameGenerator = (Class<? extends RepositoryBeanNameGenerator>) //
+				ClassUtils.forName(attributeNameGenerator.get(), classLoader);
+
+			return getBeanNameGenerator(beanNameGenerator, classLoader);
+		} catch (ClassNotFoundException | LinkageError e) {
+			throw new IllegalArgumentException("Unsupported bean name generator specified " + attributeNameGenerator);
+		}
 	}
 }
