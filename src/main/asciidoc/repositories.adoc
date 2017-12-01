@@ -481,7 +481,7 @@ creates the property traversal `x.address.zipCode`. The resolution algorithm sta
 
 Although this should work for most cases, it is possible for the algorithm to select the wrong property. Suppose the `Person` class has an `addressZip` property as well. The algorithm would match in the first split round already and essentially choose the wrong property and finally fail (as the type of `addressZip` probably has no `code` property).
 
-To resolve this ambiguity you can use `_` inside your method name to manually define traversal points. So our method name would end up like so:
+To resolve this ambiguity you can use `\_` inside your method name to manually define traversal points. So our method name would end up like so:
 
 [source, java]
 ----
@@ -1053,7 +1053,7 @@ Alternatively, if you are using XML configuration, register either `SpringDataWe
 The configuration setup shown above will register a few basic components:
 
 - A `DomainClassConverter` to enable Spring MVC to resolve instances of repository managed domain classes from request parameters or path variables.
-- `HandlerMethodArgumentResolver` implementations to let Spring MVC resolve Pageable and Sort instances from request parameters.
+- `HandlerMethodArgumentResolver` implementations to let Spring MVC resolve `Pageable` and `Sort` instances from request parameters.
 
 [[core.web.basic.domain-class-converter]]
 ===== DomainClassConverter
@@ -1354,7 +1354,7 @@ You can easily populate your repositories by using the populator elements of the
 This declaration causes the `data.json` file to
 be read and deserialized via a Jackson `ObjectMapper`.
 
-The type to which the JSON object will be unmarshalled to will be determined by inspecting the `_class` attribute of the JSON document. The infrastructure will eventually select the appropriate repository to handle the object just deserialized.
+The type to which the JSON object will be unmarshalled to will be determined by inspecting the `\_class` attribute of the JSON document. The infrastructure will eventually select the appropriate repository to handle the object just deserialized.
 
 To rather use XML to define the data the repositories shall be populated with, you can use the `unmarshaller-populator` element. You configure it to use one of the XML marshaller options Spring OXM provides you with. See the link:{spring-framework-docs}/data-access.html#oxm[Spring reference documentation] for details.
 
