@@ -18,6 +18,8 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
+import java.util.Arrays;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,6 +35,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  *
  * @since 1.6
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public abstract class SortDefaultUnitTests {
 
@@ -61,7 +64,7 @@ public abstract class SortDefaultUnitTests {
 	private static void assertSortStringParsedInto(Sort expected, String... source) {
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		Sort sort = resolver.parseParameterIntoSort(source, ",");
+		Sort sort = resolver.parseParameterIntoSort(Arrays.asList(source), ",");
 
 		assertThat(sort).isEqualTo(expected);
 	}
