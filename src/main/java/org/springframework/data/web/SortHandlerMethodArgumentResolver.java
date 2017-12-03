@@ -39,52 +39,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Christoph Strobl
  */
 public class SortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolverSupport
-
-	private static final String DEFAULT_PARAMETER = "sort";
-	private static final String DEFAULT_PROPERTY_DELIMITER = ",";
-	private static final String DEFAULT_QUALIFIER_DELIMITER = "_";
-	private static final Sort DEFAULT_SORT = Sort.unsorted();
-
-	private static final String SORT_DEFAULTS_NAME = SortDefaults.class.getSimpleName();
-	private static final String SORT_DEFAULT_NAME = SortDefault.class.getSimpleName();
-
-	private Sort fallbackSort = DEFAULT_SORT;
-	private String sortParameter = DEFAULT_PARAMETER;
-	private String propertyDelimiter = DEFAULT_PROPERTY_DELIMITER;
-	private String qualifierDelimiter = DEFAULT_QUALIFIER_DELIMITER;
-
-	/**
-	 * Configure the request parameter to lookup sort information from. Defaults to {@code sort}.
-	 *
-	 * @param sortParameter must not be {@literal null} or empty.
-	 */
 		implements SortArgumentResolver {
-
-		Assert.hasText(sortParameter, "SortParameter must not be null nor empty!");
-		this.sortParameter = sortParameter;
-	}
-
-	/**
-	 * Configures the delimiter used to separate property references and the direction to be sorted by. Defaults to
-	 * {@code}, which means sort values look like this: {@code firstname,lastname,asc}.
-	 *
-	 * @param propertyDelimiter must not be {@literal null} or empty.
-	 */
-	public void setPropertyDelimiter(String propertyDelimiter) {
-
-		Assert.hasText(propertyDelimiter, "Property delimiter must not be null or empty!");
-		this.propertyDelimiter = propertyDelimiter;
-	}
-
-	/**
-	 * Configures the delimiter used to separate the qualifier from the sort parameter. Defaults to {@code _}, so a
-	 * qualified sort property would look like {@code qualifier_sort}.
-	 *
-	 * @param qualifierDelimiter the qualifier delimiter to be used or {@literal null} to reset to the default.
-	 */
-	public void setQualifierDelimiter(String qualifierDelimiter) {
-		this.qualifierDelimiter = qualifierDelimiter == null ? DEFAULT_QUALIFIER_DELIMITER : qualifierDelimiter;
-	}
 
 	/*
 	 * (non-Javadoc)
