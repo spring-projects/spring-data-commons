@@ -17,6 +17,8 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 
 import org.springframework.core.MethodParameter;
@@ -57,7 +59,7 @@ public abstract class SortDefaultUnitTests {
 	private static void assertSortStringParsedInto(Sort expected, String... source) {
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		Sort sort = resolver.parseParameterIntoSort(source, ",");
+		Sort sort = resolver.parseParameterIntoSort(Arrays.asList(source), ",");
 
 		assertThat(sort).isEqualTo(expected);
 	}
