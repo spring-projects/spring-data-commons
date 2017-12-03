@@ -15,15 +15,12 @@
  */
 package org.springframework.data.web;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -41,66 +38,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-public class SortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolverSupport {
-
-	private static final String DEFAULT_PARAMETER = "sort";
-	private static final String DEFAULT_PROPERTY_DELIMITER = ",";
-	private static final String DEFAULT_QUALIFIER_DELIMITER = "_";
-	private static final Sort DEFAULT_SORT = Sort.unsorted();
-
-	private static final String SORT_DEFAULTS_NAME = SortDefault.SortDefaults.class.getSimpleName();
-	private static final String SORT_DEFAULT_NAME = SortDefault.class.getSimpleName();
-
-	private Sort fallbackSort = DEFAULT_SORT;
-	private String sortParameter = DEFAULT_PARAMETER;
-	private String propertyDelimiter = DEFAULT_PROPERTY_DELIMITER;
-	private String qualifierDelimiter = DEFAULT_QUALIFIER_DELIMITER;
-
-	/**
-	 * Configure the request parameter to lookup sort information from. Defaults to {@code sort}.
-	 *
-	 * @param sortParameter must not be {@literal null} or empty.
-	 */
-	public void setSortParameter(String sortParameter) {
-
-		Assert.hasText(sortParameter, "SortParameter must not be null nor empty!");
-		this.sortParameter = sortParameter;
-	}
-
-	/**
-	 * Configures the delimiter used to separate property references and the direction to be sorted by. Defaults to
-	 * {@code}, which means sort values look like this: {@code firstname,lastname,asc}.
-	 *
-	 * @param propertyDelimiter must not be {@literal null} or empty.
-	 */
-	public void setPropertyDelimiter(String propertyDelimiter) {
-
-		Assert.hasText(propertyDelimiter, "Property delimiter must not be null or empty!");
-		this.propertyDelimiter = propertyDelimiter;
-	}
-
-	/**
-	 * Configures the delimiter used to separate the qualifier from the sort parameter. Defaults to {@code _}, so a
-	 * qualified sort property would look like {@code qualifier_sort}.
-	 *
-	 * @param qualifierDelimiter the qualifier delimiter to be used or {@literal null} to reset to the default.
-	 */
-	public void setQualifierDelimiter(String qualifierDelimiter) {
-		this.qualifierDelimiter = qualifierDelimiter == null ? DEFAULT_QUALIFIER_DELIMITER : qualifierDelimiter;
-	}
-
-	/**
-	 * Configures the {@link Sort} to be used as fallback in case no {@link SortDefault} or {@link SortDefaults} (the
-	 * latter only supported in legacy mode) can be found at the method parameter to be resolved.
-	 * <p>
-	 * If you set this to {@literal null}, be aware that you controller methods will get {@literal null} handed into them
-	 * in case no {@link Sort} data can be found in the request.
-	 *
-	 * @param fallbackSort the {@link Sort} to be used as general fallback.
-	 */
-	public void setFallbackSort(Sort fallbackSort) {
-		this.fallbackSort = fallbackSort;
-	}
+public class SortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolverSupport
+		implements SortArgumentResolver {
 
 	/*
 	 * (non-Javadoc)

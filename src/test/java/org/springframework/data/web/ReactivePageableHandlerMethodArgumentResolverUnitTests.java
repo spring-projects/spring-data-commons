@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -221,22 +221,24 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 		assertThat(resolver.isFallbackPageable(PageRequest.of(0, 10))).isFalse();
 	}
 
-	private ReactivePageableHandlerMethodArgumentResolver getReactiveResolver() {
+	private static ReactivePageableHandlerMethodArgumentResolver getReactiveResolver() {
 
 		ReactivePageableHandlerMethodArgumentResolver resolver = new ReactivePageableHandlerMethodArgumentResolver();
 		resolver.setMaxPageSize(100);
 		return resolver;
 	}
 
-	private void assertSupportedAndResult(MethodParameter parameter, Pageable pageable) {
+	private static void assertSupportedAndResult(MethodParameter parameter, Pageable pageable) {
 		assertSupportedAndResult(parameter, pageable, TestUtils.getWebfluxRequest());
 	}
 
-	private void assertSupportedAndResult(MethodParameter parameter, Pageable pageable, MockServerHttpRequest request) {
+	private static void assertSupportedAndResult(MethodParameter parameter, Pageable pageable,
+			MockServerHttpRequest request) {
 		assertSupportedAndResult(parameter, pageable, request, getReactiveResolver());
 	}
 
-	private void assertSupportedAndResult(MethodParameter parameter, Pageable pageable, MockServerHttpRequest request,
+	private static void assertSupportedAndResult(MethodParameter parameter, Pageable pageable,
+			MockServerHttpRequest request,
 			SyncHandlerMethodArgumentResolver resolver) {
 
 		assertThat(resolver.supportsParameter(parameter)).isTrue();

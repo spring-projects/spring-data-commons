@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ import org.springframework.web.server.ServerWebExchange;
  * Reactive {@link HandlerMethodArgumentResolver} to create {@link Sort} instances from query string parameters or
  * {@link SortDefault} annotations.
  *
- * @since 2.1
+ * @since 2.2
  * @author Mark Paluch
  */
 public class ReactiveSortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolverSupport

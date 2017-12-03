@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@
 package org.springframework.data.web;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,7 @@ import org.springframework.util.StringUtils;
  * Base class providing methods for handler method argument resolvers to create {@link Sort} instances from request
  * parameters or {@link SortDefault} annotations.
  *
- * @since 2.1
+ * @since 2.2
  * @see SortHandlerMethodArgumentResolver
  * @see ReactiveSortHandlerMethodArgumentResolver
  * @author Mark Paluch
@@ -203,7 +204,9 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 				continue;
 			}
 
-			String[] elements = part.split(delimiter);
+			String[] elements = Arrays.stream(part.split(delimiter)) //
+					.filter(SortHandlerMethodArgumentResolver::notOnlyDots) //
+					.toArray(String[]::new);
 
 			Optional<Direction> direction = elements.length == 0 ? Optional.empty()
 					: Direction.fromOptionalString(elements[elements.length - 1]);
@@ -284,6 +287,16 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		}
 
 		return builder == null ? Collections.emptyList() : builder.dumpExpressionIfPresentInto(expressions);
+	}
+
+	/**
+	 * Returns whether the given source {@link String} consists of dots only.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @return
+	 */
+	static boolean notOnlyDots(String source) {
+		return StringUtils.hasText(source.replace(".", ""));
 	}
 
 	/**

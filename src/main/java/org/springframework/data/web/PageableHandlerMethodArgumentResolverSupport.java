@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,7 +35,9 @@ import org.springframework.util.StringUtils;
  * configured. Default configuration uses request parameters beginning with
  * {@link #DEFAULT_PAGE_PARAMETER}{@link #DEFAULT_QUALIFIER_DELIMITER}.
  *
- * @since 2.1
+ * @since 2.2
+ * @see PageableHandlerMethodArgumentResolver
+ * @see ReactivePageableHandlerMethodArgumentResolver
  * @author Mark Paluch
  */
 public abstract class PageableHandlerMethodArgumentResolverSupport {
@@ -83,7 +85,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 	 * @return
 	 */
 	public boolean isFallbackPageable(Pageable pageable) {
-		return fallbackPageable == null ? false : fallbackPageable.equals(pageable);
+		return fallbackPageable.equals(pageable);
 	}
 
 	/**
