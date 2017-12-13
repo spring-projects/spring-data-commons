@@ -25,6 +25,7 @@ import com.querydsl.core.annotations.QueryEntity;
  * Unit test for {@link SimpleEntityPathResolver}.
  * 
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class SimpleEntityPathResolverUnitTests {
 
@@ -43,6 +44,12 @@ public class SimpleEntityPathResolverUnitTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme() throws Exception {
 		resolver.createPath(QSimpleEntityPathResolverUnitTests_Sample.class);
+	}
+
+	@Test // DATACMNS-1235
+	public void handlesPackageSuffixCorrectly() {
+		assertThat(new SimpleEntityPathResolver(".suffix").createPath(User.class))
+				.isInstanceOf(org.springframework.data.querydsl.suffix.QUser.class);
 	}
 
 	@QueryEntity
