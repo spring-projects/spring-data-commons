@@ -29,13 +29,20 @@ import com.querydsl.core.types.EntityPath;
  * of the same type.
  *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
-public enum SimpleEntityPathResolver implements EntityPathResolver {
-
-	INSTANCE;
+public class SimpleEntityPathResolver implements EntityPathResolver {
 
 	private static final String NO_CLASS_FOUND_TEMPLATE = "Did not find a query class %s for domain class %s!";
 	private static final String NO_FIELD_FOUND_TEMPLATE = "Did not find a static field of the same type in %s!";
+
+	public static final SimpleEntityPathResolver INSTANCE = new SimpleEntityPathResolver("");
+
+	private final String querySuffix;
+
+	public SimpleEntityPathResolver(String querySuffix) {
+		this.querySuffix = querySuffix;
+	}
 
 	/**
 	 * Creates an {@link EntityPath} instance for the given domain class. Tries to lookup a class matching the naming
@@ -95,7 +102,7 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 	private String getQueryClassName(Class<?> domainClass) {
 
 		String simpleClassName = ClassUtils.getShortName(domainClass);
-		return String.format("%s.Q%s%s", domainClass.getPackage().getName(), getClassBase(simpleClassName),
+		return String.format("%s%s.Q%s%s", domainClass.getPackage().getName(), querySuffix, getClassBase(simpleClassName),
 				domainClass.getSimpleName());
 	}
 
