@@ -25,27 +25,26 @@ import org.springframework.lang.Nullable;
  * 
  * @param <T> the type of which the page consists.
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class PageImpl<T> extends Chunk<T> implements Page<T> {
 
 	private static final long serialVersionUID = 867755909294344406L;
 
 	private final long total;
-	private final Pageable pageable;
 
 	/**
 	 * Constructor of {@code PageImpl}.
 	 * 
 	 * @param content the content of this page, must not be {@literal null}.
-	 * @param pageable the paging information, can be {@literal null}.
+	 * @param pageable the paging information, must not be {@literal null}.
 	 * @param total the total amount of items available. The total might be adapted considering the length of the content
-	 *          given, if it is going to be the content of the last page. This is in place to mitigate inconsistencies
+	 *          given, if it is going to be the content of the last page. This is in place to mitigate inconsistencies.
 	 */
 	public PageImpl(List<T> content, Pageable pageable, long total) {
 
 		super(content, pageable);
 
-		this.pageable = pageable;
 		this.total = pageable.toOptional().filter(it -> !content.isEmpty())//
 				.filter(it -> it.getOffset() + it.getPageSize() > total)//
 				.map(it -> it.getOffset() + content.size())//
@@ -104,7 +103,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	 */
 	@Override
 	public <U> Page<U> map(Function<? super T, ? extends U> converter) {
-		return new PageImpl<>(getConvertedContent(converter), pageable, total);
+		return new PageImpl<>(getConvertedContent(converter), getPageable(), total);
 	}
 
 	/*
