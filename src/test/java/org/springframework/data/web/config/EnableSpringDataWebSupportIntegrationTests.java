@@ -32,6 +32,7 @@ import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
+import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
 import org.springframework.hateoas.Link;
@@ -202,6 +203,16 @@ public class EnableSpringDataWebSupportIntegrationTests {
 
 		assertThat(names).contains("testSortResolverCustomizer");
 		assertThat((String) ReflectionTestUtils.getField(resolver, "sortParameter")).isEqualTo("foo");
+	}
+
+	@Test // DATACMNS-1237
+	public void configuresProxyingHandlerMethodArgumentResolver() {
+
+		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
+
+		RequestMappingHandlerAdapter adapter = context.getBean(RequestMappingHandlerAdapter.class);
+
+		assertThat(adapter.getArgumentResolvers().get(0)).isInstanceOf(ProxyingHandlerMethodArgumentResolver.class);
 	}
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
