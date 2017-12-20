@@ -22,7 +22,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTests.SampleInterface;
 
@@ -35,8 +37,15 @@ import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTe
  */
 public class ProxyingHandlerMethodArgumentResolverUnitTests {
 
-	ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
-			new DefaultConversionService());
+	ObjectFactory<ConversionService> conversionService = new ObjectFactory<ConversionService>() {
+
+		@Override
+		public ConversionService getObject() {
+			return new DefaultConversionService();
+		}
+	};
+
+	ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
 
 	@Test // DATACMNS-776
 	public void supportAnnotatedInterface() throws Exception {

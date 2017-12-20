@@ -105,8 +105,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		argumentResolvers.add(sortResolver());
 		argumentResolvers.add(pageableResolver());
 
-		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
-				conversionService.getObject());
+		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
 		resolver.setBeanFactory(context);
 		resolver.setBeanClassLoader(context.getClassLoader());
 

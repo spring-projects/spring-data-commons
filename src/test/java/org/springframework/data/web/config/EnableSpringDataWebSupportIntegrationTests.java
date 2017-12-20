@@ -35,6 +35,7 @@ import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
+import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
 import org.springframework.hateoas.Link;
@@ -160,6 +161,16 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names, hasItem("sampleBean"));
+	}
+
+	@Test // DATACMNS-1237
+	public void configuresProxyingHandlerMethodArgumentResolver() {
+
+		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
+
+		RequestMappingHandlerAdapter adapter = context.getBean(RequestMappingHandlerAdapter.class);
+
+		assertThat(adapter.getArgumentResolvers().get(0), is(instanceOf(ProxyingHandlerMethodArgumentResolver.class)));
 	}
 
 	@SuppressWarnings("unchecked")

@@ -23,6 +23,7 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -31,6 +32,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.ModelAttributeMethodProcessor;
@@ -48,16 +50,36 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	private static final List<String> IGNORED_PACKAGES = Arrays.asList("java", "org.springframework");
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
-	private final ConversionService conversionService;
+	private final ObjectFactory<ConversionService> conversionService;
+
+	/**
+	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService} and the
+	 * {@link ModelAttribute} annotation not required.
+	 * 
+	 * @param conversionService must not be {@literal null}.
+	 * @deprecated use {@link #ProxyingHandlerMethodArgumentResolver(ObjectFactory, boolean)} instead.
+	 */
+	@Deprecated
+	public ProxyingHandlerMethodArgumentResolver(final ConversionService conversionService) {
+
+		this(new ObjectFactory<ConversionService>() {
+
+			@Override
+			public ConversionService getObject() throws BeansException {
+				return conversionService;
+			}
+		}, true);
+	}
 
 	/**
 	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService}.
 	 * 
 	 * @param conversionService must not be {@literal null}.
 	 */
-	public ProxyingHandlerMethodArgumentResolver(ConversionService conversionService) {
+	public ProxyingHandlerMethodArgumentResolver(ObjectFactory<ConversionService> conversionService,
+			boolean annotationNotRequired) {
 
-		super(true);
+		super(annotationNotRequired);
 
 		this.proxyFactory = new SpelAwareProxyProjectionFactory();
 		this.conversionService = conversionService;
@@ -98,6 +120,10 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 
+		if (!super.supportsParameter(parameter)) {
+			return false;
+		}
+
 		Class<?> type = parameter.getParameterType();
 
 		if (!type.isInterface()) {
@@ -132,7 +158,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	protected Object createAttribute(String attributeName, MethodParameter parameter, WebDataBinderFactory binderFactory,
 			NativeWebRequest request) throws Exception {
 
-		MapDataBinder binder = new MapDataBinder(parameter.getParameterType(), conversionService);
+		MapDataBinder binder = new MapDataBinder(parameter.getParameterType(), conversionService.getObject());
 		binder.bind(new MutablePropertyValues(request.getParameterMap()));
 
 		return proxyFactory.createProjection(parameter.getParameterType(), binder.getTarget());

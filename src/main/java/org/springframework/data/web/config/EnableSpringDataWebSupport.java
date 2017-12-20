@@ -115,6 +115,8 @@ public @interface EnableSpringDataWebSupport {
 
 			List<String> imports = new ArrayList<String>();
 
+			imports.add(ProjectingArgumentResolverRegistrar.class.getName());
+
 			imports.add(ClassUtils.isPresent("org.springframework.hateoas.Link", resourceLoader.getClassLoader())
 					? HateoasAwareSpringDataWebConfiguration.class.getName()
 					: SpringDataWebConfiguration.class.getName());
