@@ -159,6 +159,9 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(resource.hasLink("prev")).isTrue();
 		assertThat(resource.hasLink("next")).isTrue();
 
+		// We expect 2 as the created page has index 1. Pages itself are always 0 indexed, so we created page 2 above.
+		assertThat(resource.getMetadata().getNumber()).isEqualTo(2);
+
 		assertThat(getQueryParameters(resource.getLink("prev"))).containsEntry("page", "1");
 		assertThat(getQueryParameters(resource.getLink("next"))).containsEntry("page", "3");
 	}
