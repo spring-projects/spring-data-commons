@@ -45,6 +45,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Marcel Overdijk
  */
 public class PagedResourcesAssemblerUnitTests {
 
