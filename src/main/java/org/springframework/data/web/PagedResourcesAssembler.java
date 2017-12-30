@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Marcel Overdijk
  */
 public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, PagedResources<Resource<T>>> {
 
@@ -285,10 +286,13 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @param page must not be {@literal null}.
 	 * @return
 	 */
-	private static <T> PageMetadata asPageMetadata(Page<T> page) {
+	private PageMetadata asPageMetadata(Page<?> page) {
 
 		Assert.notNull(page, "Page must not be null!");
-		return new PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
+
+		int number = pageableResolver.isOneIndexedParameters() ? page.getNumber() + 1 : page.getNumber();
+
+		return new PageMetadata(page.getSize(), number, page.getTotalElements(), page.getTotalPages());
 	}
 
 	private static class SimplePagedResourceAssembler<T> implements ResourceAssembler<T, Resource<T>> {

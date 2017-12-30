@@ -48,6 +48,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Marcel Overdijk
  */
 public class PagedResourcesAssemblerUnitTests {
 
@@ -163,6 +164,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		assertThat(resource.hasLink("prev"), is(true));
 		assertThat(resource.hasLink("next"), is(true));
+
+		// We expect 2 as the created page has index 1. Pages itself are always 0 indexed, so we created page 2 above.
+		assertThat(resource.getMetadata().getNumber(), is(2L));
 
 		assertThat(getQueryParameters(resource.getLink("prev")), hasEntry("page", "1"));
 		assertThat(getQueryParameters(resource.getLink("next")), hasEntry("page", "3"));
