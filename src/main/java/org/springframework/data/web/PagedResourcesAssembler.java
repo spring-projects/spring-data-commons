@@ -290,10 +290,11 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @param page must not be {@literal null}.
 	 * @return
 	 */
-	private static <T> PageMetadata asPageMetadata(Page<T> page) {
+	private <T> PageMetadata asPageMetadata(Page<T> page) {
 
 		Assert.notNull(page, "Page must not be null!");
-		return new PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
+		boolean isOneIndexedParameters = pageableResolver.isOneIndexedParameters();
+		return new PageMetadata(page.getSize(), isOneIndexedParameters ? page.getNumber() + 1 : page.getNumber(), page.getTotalElements(), page.getTotalPages());
 	}
 
 	private String baseUriOrCurrentRequest() {
