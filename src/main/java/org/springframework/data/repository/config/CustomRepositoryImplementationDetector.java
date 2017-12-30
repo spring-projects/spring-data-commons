@@ -109,8 +109,8 @@ public class CustomRepositoryImplementationDetector {
 		Pattern pattern = Pattern.compile(".*\\." + className);
 
 		// Build classpath scanner and lookup bean definition
-		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-		provider.setEnvironment(environment);
+		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false,
+				environment);
 		provider.setResourceLoader(resourceLoader);
 		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
 		provider.setMetadataReaderFactory(metadataReaderFactory);
